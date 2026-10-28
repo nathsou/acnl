@@ -10,5 +10,7 @@ struct Matrix34 {
     void set_rotation_x(u16 angle);
     // Multiplies this matrix by a rotation around X (does nothing for angle 0).
     void rotate_x(u16 angle);
+    // The assignment operator: copies the other matrix (bit for bit) unless it is this one. Returns this.
+    gptr<Matrix34> copy_from(const Matrix34 &other);
 };
 GUEST_SIZE(Matrix34, 0x30);

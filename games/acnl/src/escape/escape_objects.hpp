@@ -27,16 +27,27 @@ struct EscapeTarget {
 };
 GUEST_OFFSET(EscapeTarget, flag_34, 0x34);
 
+// An object holding a signed byte value at 0x30 (meaning not known yet).
+struct EscapeValueHolder {
+    u8 unknown_00[0x30];
+    s8 value_30;
+};
+GUEST_OFFSET(EscapeValueHolder, value_30, 0x30);
+
 struct EscapeSubObject {
     u8 unknown_00[0x98];
     guest::gptr<EscapeTarget> target;
+    u8 unknown_9c[0xc0 - 0x9c];
+    guest::gptr<EscapeValueHolder> value_holder;  // may be null
 };
 GUEST_OFFSET(EscapeSubObject, target, 0x98);
+GUEST_OFFSET(EscapeSubObject, value_holder, 0xc0);
 
 struct EscapeOwner {
     u8 unknown_000[0x380];
     guest::gptr<EscapeSubObject> sub;
 
     void set_target_flag();
+    s8 held_value() const;  // sub->value_holder->value_30, or 0 without a holder
 };
 GUEST_OFFSET(EscapeOwner, sub, 0x380);

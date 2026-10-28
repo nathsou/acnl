@@ -18,6 +18,7 @@
 // Member functions work too: GUEST_EXPORT(addr, Player::update) passes r0 as `this`.
 #pragma once
 
+#include <atomic>
 #include <initializer_list>
 #include <tuple>
 #include <type_traits>
@@ -311,7 +312,13 @@ template <u32 Address, typename R, typename... A>
 struct Function<Address, R(A...)> {
     static constexpr u32 address = Address;
     R operator()(A... args) const {
-        static const GuestEntry *e = detail::lookup(Address);
+        // (no static-local initializer: a failed lookup may longjmp out of here during fuzzing)
+        static std::atomic<const GuestEntry *> cached{nullptr};
+        const GuestEntry *e = cached.load(std::memory_order_relaxed);
+        if (!e) {
+            e = detail::lookup(Address);
+            cached.store(e, std::memory_order_relaxed);
+        }
         return detail::call<R, A...>(e, Address, args...);
     }
 };

@@ -13,6 +13,8 @@ namespace arm {
 // A shift by a register: the bottom byte of the amount counts, and 32 or more shifts everything out.
 constexpr u32 lsl(u32 value, u32 amount) { return (amount & 0xff) >= 32 ? 0 : value << (amount & 0xff); }
 constexpr u32 lsr(u32 value, u32 amount) { return (amount & 0xff) >= 32 ? 0 : value >> (amount & 0xff); }
+// Arithmetic shift right by a register: 32 or more leaves only copies of the sign bit.
+constexpr s32 asr(s32 value, u32 amount) { return (amount & 0xff) >= 32 ? (value >> 31) : (value >> (amount & 0xff)); }
 
 // __aeabi_llsl, the compiler runtime's 64-bit left shift (as RVCT implements it, for any amount)
 constexpr u64 llsl(u64 value, u32 amount) {

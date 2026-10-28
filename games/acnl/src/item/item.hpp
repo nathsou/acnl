@@ -51,11 +51,17 @@ struct Item {
     bool is_empty() const;
     bool is_item() const;                       // in the range with ItemData
     bool has_number(u16 number) const;
+    bool same_number_as(const Item &other) const;  // the ids match, ignoring ID_FLAG
+    bool is_bell_bag() const;                   // has data, in CATEGORY_BELLS
     s32 index() const;                          // into the item data table, or -1
     gptr<ItemData> data() const;                // null for map objects and empty slots
     u8 category() const;                        // NO_CATEGORY without data
     gptr<u8> category_flags() const;            // the 3-byte entry of the item's category (null: not loaded)
     bool has_category_flag_4() const;           // true for kind 2 ids, else bit 4 of category_flags()[1]
+    bool has_category_flag_1() const;           // true for kind 2 ids, else bit 1 of category_flags()[1]
+    bool is_kind_2() const;                     // kind() == KIND_2
+    u8 data_unknown_0d() const;                 // ItemData::unknown_0d if valid, else 0
+    u8 data_unknown_15() const;                 // the low 4 bits of ItemData::unknown_15 if valid, else 0
     u32 price() const;                          // for a bag of bells, the bells in it
 };
 GUEST_SIZE(Item, 4);
@@ -73,16 +79,27 @@ Item &copy_item(Item &self, const Item &other);
 
 // An entry of the item data table (30 bytes). Only the price and the category are known so far.
 struct ItemData {
+    static constexpr u8 UNKNOWN_0D_LIMIT = 0xb9;   // values at or above read as 0 (meaning not known yet)
+    static constexpr u8 UNKNOWN_15_MASK = 0x0f;    // only the low 4 bits are read
+    static constexpr u8 UNKNOWN_15_LIMIT = 11;     // masked values at or above read as 0
+
     u8 unknown_00[2];
     u16 price_unit;
     u8 unknown_04[6];
     u8 category;
-    u8 unknown_0b[3];
+    u8 unknown_0b[2];
+    u8 unknown_0d;
     s8 price_multiplier;  // the base price is price_unit * price_multiplier
-    u8 unknown_0f[15];
+    u8 unknown_0f[6];
+    u8 unknown_15;
+    u8 unknown_16[8];
 
     u32 base_price() const { return u32(price_unit) * u32(s32(price_multiplier)); }
 };
+GUEST_OFFSET(ItemData, category, 0x0a);
+GUEST_OFFSET(ItemData, unknown_0d, 0x0d);
+GUEST_OFFSET(ItemData, price_multiplier, 0x0e);
+GUEST_OFFSET(ItemData, unknown_15, 0x15);
 GUEST_SIZE(ItemData, 30);
 
 // The loaded item data table (from the RomFS)

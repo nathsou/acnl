@@ -228,6 +228,38 @@ class Client:
                                              'cache_write': u.cache_creation_input_tokens}
 
 
+    async def ask_batch(self, requests, effort):
+        """[(custom_id, model, messages)] through the Message Batches API (half price, results within the hour).
+        Returns {custom_id: (text, cost, stop, usage)}; failed requests are missing."""
+        from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
+        from anthropic.types.messages.batch_create_params import Request
+        batch = await self.client.messages.batches.create(requests=[
+            Request(custom_id=cid, params=MessageCreateParamsNonStreaming(
+                model=model, max_tokens=64000,
+                system=[{'type': 'text', 'text': self.system, 'cache_control': {'type': 'ephemeral'}}],
+                thinking={'type': 'adaptive'}, output_config={'effort': effort}, messages=messages))
+            for cid, model, messages in requests])
+        log('batch %s: %d requests submitted' % (batch.id, len(requests)))
+        while True:
+            await asyncio.sleep(30)
+            b = await self.client.messages.batches.retrieve(batch.id)
+            if b.processing_status == 'ended':
+                break
+        out = {}
+        async for r in await self.client.messages.batches.results(batch.id):
+            if r.result.type != 'succeeded':
+                continue
+            msg = r.result.message
+            u = msg.usage
+            pin, pout, pcr, pcw = PRICES.get(msg.model, (4.0, 20.0, 0.2, 5.0))
+            cost = 0.5 * (u.input_tokens * pin + u.output_tokens * pout + (u.cache_read_input_tokens or 0) * pcr +
+                          (u.cache_creation_input_tokens or 0) * pcw) / 1e6
+            text = ''.join(blk.text for blk in msg.content if blk.type == 'text')
+            out[r.custom_id] = (text, cost, msg.stop_reason, {'in': u.input_tokens, 'out': u.output_tokens})
+        log('batch %s: %d results' % (batch.id, len(out)))
+        return out
+
+
 FILE_RE = re.compile(r'<file path="([^"]+)">\n?(.*?)</file>', re.S)
 SKIP_RE = re.compile(r'<skip address="(0x[0-9a-fA-F]+)">(.*?)</skip>', re.S)
 
@@ -288,6 +320,29 @@ def check_answer(job):
     if exports - fuzzed:
         return 'exported functions without GUEST_FUZZ: %s' % ', '.join('0x%08x' % a for a in sorted(exports - fuzzed))
     return None
+
+
+IMPORT_RE = re.compile(r'guest::Function<\s*(0x[0-9a-fA-F]+)\s*,')
+
+
+def check_imports(p, job):
+    """Imports must name function starts the recompiler knows (Thumb ones with bit 0 set)."""
+    bad = []
+    for body in job.files.values():
+        for a in IMPORT_RE.findall(body):
+            k = int(a, 16)
+            if k in p.funcs:
+                continue
+            hint = ''
+            if (k | 1) in p.funcs:
+                hint = ' (a Thumb function: use 0x%08x)' % (k | 1)
+            else:
+                for key, f in p.funcs.items():
+                    if f.start <= (k & ~1) < f.end:
+                        hint = ' (inside %s, which starts at 0x%08x)' % (p.label(key), key)
+                        break
+            bad.append('0x%08x is not a function start%s' % (k, hint))
+    return '; '.join(sorted(set(bad))) or None
 
 
 def apply(job, current):
@@ -431,17 +486,44 @@ def verdict(row):
 
 # ---------------------------------------------------------------- the loop
 
-async def generate(client, p, job, feedback=None):
+BATCH_MODE = False
+
+
+def prepare_messages(p, job, feedback=None):
     if not job.messages:
         job.hashes = file_hashes()
         job.messages = [{'role': 'user', 'content': user_prompt(p, job.group)}]
     elif feedback:
         job.messages.append({'role': 'user', 'content': feedback})
+
+
+async def generate_all(client, p, pairs):
+    """[(job, feedback or None)]: one request each, in parallel or as one batch."""
+    for job, fb in pairs:
+        prepare_messages(p, job, fb)
+    if not BATCH_MODE:
+        await asyncio.gather(*[generate(client, p, j, fb, prepared=True) for j, fb in pairs])
+        return
+    results = await client.ask_batch([(j.id, j.model, j.messages) for j, _ in pairs], pairs[0][0].effort)
+    for j, fb in pairs:
+        if j.id not in results:
+            j.problem = 'API error: batch request failed'
+            continue
+        finish(j, fb, *results[j.id])
+
+
+async def generate(client, p, job, feedback=None, prepared=False):
+    if not prepared:
+        prepare_messages(p, job, feedback)
     try:
         text, cost, stop, usage = await client.ask(job.model, job.messages, job.effort)
     except anthropic.APIError as e:
         job.problem = 'API error: %s' % e
         return job
+    return finish(job, feedback, text, cost, stop, usage)
+
+
+def finish(job, feedback, text, cost, stop, usage):
     job.cost += cost
     job.messages.append({'role': 'assistant', 'content': text or '(empty)'})
     with open(os.path.join(HDIR, 'log', '%s-%s-%d.json' % (job.id, job.model.split('-')[1], len(job.messages) // 2)),
@@ -475,7 +557,9 @@ def commit_if_due(state, force=False):
 async def round_(client, state, jobs, escalate):
     """Generates, applies, compiles and verifies jobs; returns the jobs that need another attempt."""
     p = Program(GAME)
-    await asyncio.gather(*[generate(client, p, j) for j in jobs if not j.files and not j.problem])
+    todo = [(j, None) for j in jobs if not j.files and not j.problem]
+    if todo:
+        await generate_all(client, p, todo)
     for j in jobs:
         state.data['cost'] += j.cost
         j.cost = 0.0
@@ -483,6 +567,8 @@ async def round_(client, state, jobs, escalate):
     current = file_hashes()
     live = []
     for j in jobs:
+        if not j.problem:
+            j.problem = check_imports(p, j)
         if not j.problem:
             j.problem = apply(j, current)
         if j.problem:
@@ -593,6 +679,8 @@ def feedback_for(j):
 
 
 async def main_run(args):
+    global BATCH_MODE
+    BATCH_MODE = args.batch_api
     state = State()
     client = Client()
     for r in range(args.rounds):
@@ -623,7 +711,7 @@ async def main_run(args):
                 j.problem = None
                 again.append((j, fb))
         if again:
-            await asyncio.gather(*[generate(client, Program(GAME), j, fb) for j, fb in again])
+            await generate_all(client, Program(GAME), again)
             final = await round_(client, state, [j for j, _ in again], None)
             for j in final:
                 for a in j.group:
@@ -689,6 +777,7 @@ def main():
     r.add_argument('--escalate-effort', default='high')
     r.add_argument('--max-attempts', type=int, default=2)
     r.add_argument('--budget', type=float, default=100.0)
+    r.add_argument('--batch-api', action='store_true', help='Message Batches API: half price, slower rounds')
     b = sub.add_parser('bench')
     b.add_argument('--models', default='claude-haiku-5-5,claude-sonnet-5-5,claude-opus-5-5')
     b.add_argument('--batches', type=int, default=6)
