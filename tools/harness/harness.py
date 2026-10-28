@@ -581,7 +581,9 @@ BATCH_MODE = False
 def prepare_messages(p, job, feedback=None):
     if not job.messages:
         job.hashes = file_hashes()
-        job.messages = [{'role': 'user', 'content': user_prompt(p, job.group)}]
+        # (a cache breakpoint on the big first message: a retry reads it back at the cache price)
+        job.messages = [{'role': 'user', 'content': [{'type': 'text', 'text': user_prompt(p, job.group),
+                                                       'cache_control': {'type': 'ephemeral'}}]}]
     elif feedback:
         job.messages.append({'role': 'user', 'content': feedback})
 
@@ -618,7 +620,7 @@ def finish(job, feedback, text, cost, stop, usage):
     with open(os.path.join(HDIR, 'log', '%s-%s-%d.json' % (job.id, job.model.split('-')[1], len(job.messages) // 2)),
               'w') as f:
         json.dump({'model': job.model, 'effort': job.effort, 'usage': usage, 'cost': cost, 'stop': stop,
-                   'prompt': job.messages[-2]['content'] if len(job.messages) <= 2 else feedback,
+                   'prompt': (job.messages[0]['content'][0]['text'] if len(job.messages) <= 2 else feedback),
                    'answer': text}, f, indent=1)
     if stop == 'refusal':
         job.problem = 'refused'
