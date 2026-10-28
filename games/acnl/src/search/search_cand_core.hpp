@@ -17,6 +17,8 @@ struct SearchCandCore {
     void mark_candidates();
     // Marks one candidate; does nothing if it is already marked.
     void mark(s32 index);
+    // Unmarks one candidate; does nothing if it is not marked.
+    void unmark(s32 index);
 };
 GUEST_OFFSET(SearchCandCore, vtable, 0x00);
 GUEST_OFFSET(SearchCandCore, count, 0x04);

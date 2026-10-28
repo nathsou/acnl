@@ -9,6 +9,8 @@ struct NpcItemSlots {
     static constexpr u32 FLAG_0 = 1u << 0;  // unknown flag
     static constexpr u32 FLAG_1 = 1u << 1;  // unknown flag
     static constexpr u32 FLAGS_16_17 = 3u << 16;  // two unknown flags, cleared together
+    static constexpr u32 SLOT_FLAGS_SHIFT = 3;    // bits 3-6: one unknown flag per slot
+    static constexpr u32 SLOT_FLAGS_MASK = 0xf;
 
     u8 unknown_0000[0x8c6];
     Item items_8c6[SLOTS];
@@ -21,6 +23,7 @@ struct NpcItemSlots {
     u32 count_items_8c6() const;       // the non-empty slots
     bool has_flag_0_only() const;      // FLAG_0 set and FLAG_1 clear
     void clear_flags_16_17();
+    bool has_slot_flag(u32 slot) const;  // the unknown flag of a slot (bits 3-6); false for slots out of range
 };
 GUEST_OFFSET(NpcItemSlots, items_8c6, 0x8c6);
 GUEST_OFFSET(NpcItemSlots, items_8d6, 0x8d6);
