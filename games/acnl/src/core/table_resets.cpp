@@ -1,104 +1,197 @@
+// Functions that put tables and blocks of state back to their initial contents. What most of these tables hold is
+// not known yet; their fields are named after their offsets.
+#include "core/word_pair.hpp"
 #include "guest/guest.hpp"
+#include "net/shared_entry.hpp"
 
 namespace {
 
-inline constexpr guest::Function<0x0077956c, void(gptr<u8> record)> reset_record_hook;
+// ---- the block of global state at 0x009ab588
+
+// A 7-byte record of the block at 0x009ab588 (contents not known yet).
+struct ResetRecord {
+    u8 unknown_00[6];
+    u8 unknown_06;  // cleared before the record's reset hook runs
+};
+GUEST_OFFSET(ResetRecord, unknown_06, 6);
+GUEST_SIZE(ResetRecord, 7);
+
+struct UnknownState9ab588 {
+    static constexpr u32 PAIR_COUNT = 6;
+    static constexpr u32 RECORD_COUNT = 4;
+
+    u32 head[4];
+    WordPair pairs_10[PAIR_COUNT];
+    WordPair pairs_40[PAIR_COUNT];
+    ResetRecord records[RECORD_COUNT];
+};
+GUEST_OFFSET(UnknownState9ab588, head, 0x00);
+GUEST_OFFSET(UnknownState9ab588, pairs_10, 0x10);
+GUEST_OFFSET(UnknownState9ab588, pairs_40, 0x40);
+GUEST_OFFSET(UnknownState9ab588, records, 0x70);
+GUEST_SIZE(UnknownState9ab588, 0x8c);
+
+inline guest::global<UnknownState9ab588, 0x009ab588> state_9ab588;
+inline guest::global<u8, 0x009516b8> flag_9516b8;  // cleared with the block (meaning not known yet)
+
+// ---- the block of global state at 0x009b41c4
+
+// A 5-byte entry (contents not known yet).
+struct MarkedEntry {
+    static constexpr u8 RESET_MARKER = 0xa5;  // the value a reset entry gets (meaning not known yet)
+
+    u8 unknown_00[2];
+    u8 marker;
+    u8 unknown_03[2];
+};
+GUEST_OFFSET(MarkedEntry, marker, 2);
+GUEST_SIZE(MarkedEntry, 5);
+
+// A 22-byte entry (contents not known yet).
+struct Entry22 {
+    u8 unknown_00[0x10];
+    u8 unknown_10;
+    u8 unknown_11;
+    u8 unknown_12[4];
+};
+GUEST_OFFSET(Entry22, unknown_10, 0x10);
+GUEST_OFFSET(Entry22, unknown_11, 0x11);
+GUEST_SIZE(Entry22, 22);
+
+struct UnknownState9b41c4 {
+    static constexpr u32 ENTRY_COUNT = 32;
+
+    MarkedEntry marked_entries[ENTRY_COUNT];
+    Entry22 entries[ENTRY_COUNT];
+    u8 buffer[0x500];
+};
+GUEST_OFFSET(UnknownState9b41c4, marked_entries, 0x000);
+GUEST_OFFSET(UnknownState9b41c4, entries, 0x0a0);
+GUEST_OFFSET(UnknownState9b41c4, buffer, 0x360);
+GUEST_SIZE(UnknownState9b41c4, 0x860);
+
+inline guest::global<UnknownState9b41c4, 0x009b41c4> state_9b41c4;
+
+// The two indices reset with the block at 0x009b41c4 (what they index is not known yet).
+struct UnknownState952694 {
+    static constexpr s32 NO_INDEX = -1;
+
+    u8 unknown_00[0x10];
+    s32 index_10;
+    s32 index_14;
+};
+GUEST_OFFSET(UnknownState952694, index_10, 0x10);
+GUEST_OFFSET(UnknownState952694, index_14, 0x14);
+
+inline guest::global<UnknownState952694, 0x00952694> state_952694;
+
+// ---- the object init_object_with_sub_objects sets up
+
+struct SubObject {
+    u8 unknown_00[0xf2];
+};
+GUEST_SIZE(SubObject, 0xf2);
+
+// Its full size is not known; the region at 0xf66 is the last part the code reaches.
+struct ObjectWithSubObjects {
+    static constexpr u32 SUB_OBJECT_COUNT = 16;
+
+    u8 unknown_000[0x30];
+    SubObject sub_objects[SUB_OBJECT_COUNT];
+    u8 unknown_f50[0xf66 - 0xf50];
+    u8 region;  // the start of a region of unknown extent
+};
+GUEST_OFFSET(ObjectWithSubObjects, sub_objects, 0x30);
+GUEST_OFFSET(ObjectWithSubObjects, region, 0xf66);
+
+// The 16 bytes the original pushes before its calls (r4-r6 and lr). Its callees read stack they have not written
+// (uninitialized locals), so they must run with their frames exactly where the original puts them.
+struct CalleeFrameOffset {
+    u32 words[4];
+};
+GUEST_SIZE(CalleeFrameOffset, 16);
+
+inline constexpr guest::Function<0x0077956c, void(gptr<ResetRecord> record)> reset_record_hook;
 inline constexpr guest::Function<0x002f825c, void(gptr<u8> buffer, u32 size)> clear_buffer;
-inline constexpr guest::Function<0x003084d0, void(gptr<u8> object)> prepare_object;
-inline constexpr guest::Function<0x003084f9, void(gptr<u8> sub_object)> init_sub_object;
+inline constexpr guest::Function<0x003084d0, void(gptr<ObjectWithSubObjects> object)> prepare_object;
+inline constexpr guest::Function<0x003084f9, void(gptr<SubObject> sub_object)> init_sub_object;
 inline constexpr guest::Function<0x0027a48c, void(gptr<u8> region)> init_region;
 
 }  // namespace
 
-/// Copies an 8-byte value.
-static void copy_8_bytes(gptr<u32> dest, gptr<u32> source) {
-    u32 first = source[0];
-    u32 second = source[1];
-    dest[0] = first;
-    dest[1] = second;
+/// Copies an 8-byte value (both words are read before either is written).
+static void copy_8_bytes(gptr<WordPair> dest, gptr<WordPair> source) {
+    WordPair value = *source;
+    *dest = value;
 }
 GUEST_EXPORT(0x003081b4, copy_8_bytes);
 GUEST_FUZZ(0x003081b4, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<u64>(), f.object<u64>());
+    f.arguments(f.object<WordPair>(), f.object<WordPair>());
 });
 
-/// Resets a table of 63 entries of 16 bytes (from offset 0x10) and the 63 flag bytes at offset 0x400.
-static void reset_entry_table(gptr<u8> base) {
-    constexpr u32 COUNT = 63;
-    constexpr u32 ENTRIES_OFFSET = 0x10;
-    constexpr u32 ENTRY_SIZE = 16;
-    constexpr u32 FLAGS_OFFSET = 0x400;
-    for (u32 i = 0; i < COUNT; i++) {
-        gptr<u8> entry = base + (ENTRIES_OFFSET + i * ENTRY_SIZE);
-        entry[5] = 0x24;
-        entry[6] = 0;
-        entry[4] = 0xa5;
+/// Resets every entry of a shared entry table (marker, flags, counter) and clears bit 0 of every entry's bits.
+static void reset_shared_entry_table(SharedEntryTable &table) {
+    for (SharedEntry &entry : table.entries) {
+        entry.flags = SharedEntry::RESET_FLAGS;
+        entry.counter = 0;
+        entry.unknown_04 = SharedEntry::RESET_MARKER;
     }
-    for (u32 i = 0; i < COUNT; i++) {
-        gptr<u8> flag = base + (FLAGS_OFFSET + i);
-        *flag = *flag & ~1;
+    for (u8 &bits : table.entry_bits) {
+        bits &= ~1;
     }
 }
-GUEST_EXPORT(0x003081c8, reset_entry_table);
-GUEST_FUZZ(0x003081c8, 200, [](guest::Fuzz &f) { f.arguments(f.allocate(0x440)); });
+GUEST_EXPORT(0x003081c8, reset_shared_entry_table);
+GUEST_FUZZ(0x003081c8, 200, [](guest::Fuzz &f) { f.arguments(f.object<SharedEntryTable>()); });
 
-/// Clears a global state block and its records.
+/// Clears the global block at 0x009ab588, runs the reset hook of each of its records, and clears a global flag.
 static void reset_global_block_a() {
-    constexpr u32 BLOCK = 0x009ab588;
-    constexpr u32 RECORDS = 0x009ab5f8;
-    constexpr u32 RECORD_SIZE = 7;
-    gptr<u32> head(BLOCK);
-    head[0] = 0;
-    head[1] = 0;
-    head[2] = 0;
-    head[3] = 0;
-    for (u32 i = 0; i < 6; i++) {
-        gptr<u32> pair(BLOCK + 0x10 + i * 8);
-        pair[0] = 0;
-        pair[1] = 0;
-        pair[0x30 / 4] = 0;
-        pair[0x34 / 4] = 0;
+    UnknownState9ab588 &block = state_9ab588;
+    for (u32 &word : block.head) {
+        word = 0;
     }
-    for (u32 i = 0; i < 4; i++) {
-        gptr<u8> record(RECORDS + i * RECORD_SIZE);
-        record[6] = 0;
-        reset_record_hook(record);
+    for (u32 i = 0; i < UnknownState9ab588::PAIR_COUNT; i++) {
+        block.pairs_10[i] = {0, 0};
+        block.pairs_40[i] = {0, 0};
     }
-    *gptr<u8>(0x009516b8) = 0;
+    for (ResetRecord &record : block.records) {
+        record.unknown_06 = 0;
+        reset_record_hook(guest::addr_of(record));
+    }
+    flag_9516b8 = 0;
 }
 GUEST_EXPORT(0x00308238, reset_global_block_a);
 GUEST_FUZZ(0x00308238, 200, [](guest::Fuzz &f) { f.arguments(); });
 
-/// Resets two global tables of 32 entries, clears a buffer and sets two indices to -1.
+/// Resets the two tables of the global block at 0x009b41c4, clears its buffer and sets two indices to -1.
 static void reset_global_block_b() {
-    constexpr u32 TABLE_A = 0x009b41c4;
-    constexpr u32 TABLE_B = 0x009b4264;
-    constexpr u32 BUFFER = 0x009b4524;
-    constexpr u32 BUFFER_SIZE = 0x500;
-    constexpr u32 INDICES = 0x00952694;
-    for (u32 i = 0; i < 32; i++) {
-        *gptr<u8>(TABLE_A + i * 5 + 2) = 0xa5;
+    UnknownState9b41c4 &block = state_9b41c4;
+    for (MarkedEntry &entry : block.marked_entries) {
+        entry.marker = MarkedEntry::RESET_MARKER;
     }
-    for (u32 i = 0; i < 32; i++) {
-        gptr<u8> entry(TABLE_B + i * 22);
-        entry[0x10] = 0;
-        entry[0x11] = 0;
+    for (Entry22 &entry : block.entries) {
+        entry.unknown_10 = 0;
+        entry.unknown_11 = 0;
     }
-    clear_buffer(gptr<u8>(BUFFER), BUFFER_SIZE);
-    gptr<s32> indices(INDICES);
-    indices[4] = -1;
-    indices[5] = -1;
+    clear_buffer(guest::addr_of(&block.buffer[0]), sizeof(block.buffer));
+    state_952694->index_10 = UnknownState952694::NO_INDEX;
+    state_952694->index_14 = UnknownState952694::NO_INDEX;
 }
 GUEST_EXPORT(0x003082bc, reset_global_block_b);
 GUEST_FUZZ(0x003082bc, 200, [](guest::Fuzz &f) { f.arguments(); });
 
-/// Prepares an object and its 16 sub-objects of 0xf2 bytes (from offset 0x30), then a region at offset 0xf66.
-static void init_object_with_sub_objects(gptr<u8> object) {
+/// Prepares an object and its 16 sub-objects, then the region at its end.
+static void init_object_with_sub_objects(gptr<ObjectWithSubObjects> object) {
+    guest::StackObject<CalleeFrameOffset> frame;
     prepare_object(object);
-    for (u32 i = 0; i < 16; i++) {
-        init_sub_object(object + (0x30 + i * 0xf2));
+    for (SubObject &sub_object : object->sub_objects) {
+        init_sub_object(guest::addr_of(sub_object));
     }
-    init_region(object + 0xf66);
+    init_region(guest::addr_of(object->region));
 }
 GUEST_EXPORT(0x00308355, init_object_with_sub_objects);
-GUEST_FUZZ(0x00308355, 200, [](guest::Fuzz &f) { f.arguments(f.allocate(0x2000)); });
+GUEST_FUZZ(0x00308355, 200, [](guest::Fuzz &f) {
+    constexpr u32 OBJECT_FUZZ_SIZE = 0x2000;  // more than the callees reach (the object's size is not known)
+    auto object = f.allocate(OBJECT_FUZZ_SIZE);
+    f.bytes(object, OBJECT_FUZZ_SIZE);
+    f.arguments(object.cast<ObjectWithSubObjects>());
+});

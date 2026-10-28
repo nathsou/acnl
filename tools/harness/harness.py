@@ -192,10 +192,38 @@ def system_prompt():
                .replace('{{examples}}', '\n\n'.join(examples)))
 
 
+def related_sources(p, group, limit=24000):
+    """Rewritten .cpp files the group is close to: its callees' and callers' files, then neighbours in the binary."""
+    scores = {}
+    for k in group:
+        f = p.funcs[k]
+        near = set(p.callees(k)) | set(c for _, c in f.callers)
+        for a, path in p.rewritten.items():
+            if not path.endswith('.cpp'):
+                continue
+            if a in near:
+                scores[path] = scores.get(path, 0) + 10
+            elif abs((a & ~1) - f.start) < 0x2000:
+                scores[path] = scores.get(path, 0) + 1
+    out, size = [], 0
+    for path, _ in sorted(scores.items(), key=lambda kv: -kv[1]):
+        text = open(os.path.join(ROOT, path)).read()
+        if size + len(text) > limit:
+            continue
+        out.append('<file path="%s">\n%s</file>' % (path, text))
+        size += len(text)
+    return '\n\n'.join(out)
+
+
 def user_prompt(p, group):
     names = ', '.join('0x%08x' % k for k in group)
+    related = related_sources(p, group)
     return ('Rewrite these functions: %s.\n\n# Existing headers (the project so far)\n\n%s\n\n'
-            '# The functions\n\n%s\n') % (names, headers_text(), '\n\n'.join(function_text(p, k) for k in group))
+            '%s# The functions\n\n%s\n') % (
+                names, headers_text(),
+                ('# Rewritten code near these functions (reuse its types and names; do not re-export it)\n\n%s\n\n'
+                 % related) if related else '',
+                '\n\n'.join(function_text(p, k) for k in group))
 
 
 # ---------------------------------------------------------------- model calls
@@ -304,10 +332,12 @@ def check_answer(job):
         if not path.startswith('games/%s/src/' % GAME) or not path.endswith(('.cpp', '.hpp')) or '..' in path:
             return 'file path not allowed: %s' % path
         full = os.path.join(ROOT, path)
-        if os.path.exists(full) and path.endswith('.cpp'):
+        if os.path.exists(full) and path.endswith('.cpp') and path not in getattr(job, 'replaceable', ()):
             return 'existing .cpp files cannot be replaced (%s): put the code in a new file' % path
     exports = job.exports()
     want = set(job.group)
+    if getattr(job, 'replaceable', None):  # a repair: the file's other functions stay exported
+        want |= getattr(job, 'keep', set())
     extra = exports - want
     if extra:
         return 'exported functions you were not asked for: %s' % ', '.join('0x%08x' % a for a in sorted(extra))
@@ -345,10 +375,47 @@ def check_imports(p, job):
     return '; '.join(sorted(set(bad))) or None
 
 
+# ---- readability lint: catches the habits that make smaller models' code unreadable
+
+RAW_OFFSET_RES = [
+    re.compile(r'gptr<\s*u(?:8|16|32)\s*>\s*\([^;\n]*\+'),           # gptr<u32>(base + 0x10 ...)
+    re.compile(r'\.addr\(\)\s*\+\s*(?:0x[0-9a-fA-F]+|\d{2,})'),        # self.addr() + 0x24
+    re.compile(r'\[\s*0x[0-9a-fA-F]+\s*/\s*\d\s*\]'),                   # words[0x30 / 4]
+    re.compile(r'\)\s*\+\s*0x[0-9a-fA-F]+\s*\)\s*\.\s*cast<'),         # (p + 0x10).cast<T>()
+]
+HEX_RE = re.compile(r'\b0x[0-9a-fA-F]{2,}\b')
+
+
+def lint(job):
+    """Findings that make the code hard to read (raw offsets, unexplained magic numbers), or None."""
+    findings = []
+    for path, body in job.files.items():
+        raw, magic = [], []
+        for n, line in enumerate(body.splitlines(), 1):
+            code = line.split('//')[0]
+            if any(r.search(code) for r in RAW_OFFSET_RES):
+                raw.append('%s:%d: %s' % (path, n, line.strip()))
+                continue
+            if '//' in line or not HEX_RE.search(code):
+                continue
+            stripped = code.strip()
+            if stripped.startswith(('GUEST_', 'inline constexpr', 'constexpr', 'static constexpr', 'inline guest::global',
+                                    '#', 'enum', 'u8 unknown', 'case ')) or re.match(r'^\w+\s*=\s*0x', stripped):
+                continue
+            magic.append('%s:%d: %s' % (path, n, line.strip()))
+        if len(raw) > 2:
+            findings.append('memory accessed through raw offsets instead of structs (define the layout as a struct '
+                            'with GUEST_OFFSET checks and access fields by name):\n' + '\n'.join(raw[:12]))
+        if len(magic) > 4:
+            findings.append('unexplained magic numbers (give them enum/constexpr names, or a comment saying what '
+                            'is known):\n' + '\n'.join(magic[:12]))
+    return '\n\n'.join(findings) or None
+
+
 def apply(job, current):
     """Writes the job's files if the headers it replaces have not changed since its prompt."""
     for path in job.files:
-        if path in current and path in job.hashes and current[path] != job.hashes[path]:
+        if current.get(path) != job.hashes.get(path):  # changed, created or deleted by another job since the prompt
             return 'conflict: %s changed since the prompt' % path
     for path, body in job.files.items():
         full = os.path.join(ROOT, path)
@@ -408,7 +475,7 @@ def link():
 TEST_INPUT = ','.join('%d:A:6' % f for f in range(600, 4000, 90))
 
 
-def verify(addresses, timeout=900, disable=()):
+def verify(addresses, timeout=300, disable=()):
     """One game run with shadow checks, fuzzing only `addresses`. Returns (summary rows, mismatch text, blamed)."""
     env_args = ['--env', 'GUEST_FUZZ=1', '--env', 'GUEST_FUZZ_FRAME=3600', '--env', 'GUEST_FUZZ_MIN=200',
                 '--env', 'GUEST_FUZZ_EXIT=1',
@@ -560,6 +627,20 @@ async def round_(client, state, jobs, escalate):
     todo = [(j, None) for j in jobs if not j.files and not j.problem]
     if todo:
         await generate_all(client, p, todo)
+    # one readability turn for answers that fail the lint (the checker still decides correctness afterwards)
+    smelly = []
+    for j in jobs:
+        if not j.problem and not getattr(j, 'linted', False):
+            j.linted = True
+            findings = lint(j)
+            if findings:
+                smelly.append((j, 'Your answer works structurally but is hard to read:\n\n%s\n\nReply with the '
+                                  'complete corrected files (same format), keeping the behaviour identical.' % findings))
+    if smelly:
+        log('lint: %d answers sent back for readability' % len(smelly))
+        for j, _ in smelly:
+            j.files, j.skips = {}, {}
+        await generate_all(client, p, smelly)
     for j in jobs:
         state.data['cost'] += j.cost
         j.cost = 0.0
@@ -725,6 +806,58 @@ async def main_run(args):
     commit_if_due(state, force=True)
 
 
+def full_check():
+    """Shadow checks and fuzzing of every rewritten function. Returns ({address: (ok, why)}, mismatch lines)."""
+    p = Program(GAME)
+    rows, mism, crashed, blamed, status = verify(sorted(p.rewritten), timeout=900)
+    results = {a: verdict(rows.get(a)) for a in p.rewritten}
+    return p, results, mism, crashed, status
+
+
+async def main_repair(args):
+    """Sends files whose rewrites fail the full check back to the model, verifies them again, commits."""
+    state = State()
+    client = Client()
+    link()
+    p, results, mism, crashed, status = full_check()
+    if crashed:
+        log('full check failed: %s' % status)
+        return
+    bad = {a for a, (ok, why) in results.items() if not ok and why == 'mismatch'}
+    log('full check: %d functions, %d mismatching' % (len(results), len(bad)))
+    by_file = {}
+    for a in bad:
+        by_file.setdefault(p.rewritten[a], set()).add(a)
+    jobs = []
+    for path, addrs in by_file.items():
+        j = Job(sorted(addrs), args.model, args.effort)
+        j.replaceable = {path}
+        j.keep = set(a for a, f in p.rewritten.items() if f == path) - addrs
+        j.hashes = file_hashes()
+        findings = '\n'.join('\n'.join(mism.get(a, [])[:10]) for a in sorted(addrs))
+        j.messages = [{'role': 'user', 'content': (
+            'These functions in %s fail verification (the original and the rewrite differ):\n%s\n\n'
+            'Reply with the complete corrected %s (and any header you need to change). Keep the file\'s other '
+            'functions exported as they are.\n\n<file path="%s">\n%s</file>\n\n# Existing headers\n\n%s\n\n'
+            '# The failing functions\n\n%s\n') % (
+                path, findings, path, path, open(os.path.join(ROOT, path)).read(), headers_text(),
+                '\n\n'.join(function_text(p, a) for a in sorted(addrs)))}]
+        jobs.append(j)
+    if not jobs:
+        return
+    await asyncio.gather(*[generate(client, p, j, prepared=True) for j in jobs])
+    for j in jobs:  # verify every function of the repaired files
+        j.group = sorted(set(j.group) | j.keep)
+    for j in jobs:
+        for a in j.group:
+            state.fn(a)['status'] = 'repairing'
+    retry = await round_(client, state, jobs, None)
+    for j in retry:  # still failing: take the failing functions out of the tree by restoring nothing; report
+        log('repair failed for %s: %s' % (sorted(j.replaceable)[0], (j.problem or '')[:300]))
+    state.save()
+    commit_if_due(state, force=True)
+
+
 async def main_bench(args):
     """The same groups through each model (no retries): verified functions and cost per model."""
     state = State()
@@ -747,6 +880,7 @@ async def main_bench(args):
         for j in jobs:
             j.cost = 0.0
         await round_(client, scratch, jobs, None)
+        cost += scratch.data['cost']  # (the readability turns)
         verified = sum(1 for v in scratch.data['functions'].values() if v['status'] == 'verified')
         total = sum(len(g) for g in groups)
         problems = [j.problem.splitlines()[0][:80] for j in jobs if j.problem]
@@ -783,6 +917,9 @@ def main():
     b.add_argument('--batches', type=int, default=6)
     b.add_argument('--group-size', type=int, default=5)
     b.add_argument('--effort', default='medium')
+    rp = sub.add_parser('repair')
+    rp.add_argument('--model', default='claude-opus-5-5')
+    rp.add_argument('--effort', default='high')
     s = sub.add_parser('select')
     s.add_argument('--batches', type=int, default=10)
     args = ap.parse_args()
@@ -791,7 +928,7 @@ def main():
         for g in select_groups(p, State(), args.batches):
             print(' '.join(p.label(k) for k in g), sum(p.funcs[k].ninsts for k in g))
         return
-    asyncio.run(main_run(args) if args.cmd == 'run' else main_bench(args))
+    asyncio.run({'run': main_run, 'bench': main_bench, 'repair': main_repair}[args.cmd](args))
 
 
 if __name__ == '__main__':

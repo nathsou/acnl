@@ -2,7 +2,6 @@
 
 #include "arm.hpp"
 
-// The original computes count - 1 here but never stores it, so the count stays as it was.
 void BitSet32::clear(u32 index) {
     if (index >= limit) {
         return;
@@ -12,16 +11,17 @@ void BitSet32::clear(u32 index) {
         return;
     }
     bits &= ~mask;
+    count -= 1;
 }
 GUEST_EXPORT(0x00116e4f, BitSet32::clear);
 
-BitSet32 &BitSet32::assign(const BitSet32 &other) {
+gptr<BitSet32> BitSet32::assign(const BitSet32 &other) {
     if (&other != this) {
         limit = other.limit;
         bits = other.bits;
         count = other.count;
     }
-    return *this;
+    return guest::addr_of(this);
 }
 GUEST_EXPORT(0x00116e93, BitSet32::assign);
 

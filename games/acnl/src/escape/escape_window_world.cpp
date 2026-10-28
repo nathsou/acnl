@@ -50,7 +50,8 @@ struct ModuleObject2da4 {
 GUEST_OFFSET(ModuleObject2da4, inner, 0x64);
 inline guest::global<gptr<gptr<ModuleObject2da4>>, 0x402dc478> module_object_2da4_pool;
 
-inline constexpr guest::Function<0x402df2c8, void(u32 object, s32 mode)> module_object_2cac_call;
+inline constexpr guest::Function<0x402df2c8, void(u32 object, s32 mode, u32 unknown_r2, u32 unknown_r3)>
+    module_object_2cac_call;
 inline constexpr guest::Function<0x4031f8f8, void(u32 handler)> run_handler_678;
 
 }  // namespace
@@ -84,9 +85,10 @@ u32 EscapeWindowWorldBase::virtual_10() const {
 }
 GUEST_EXPORT(0x402dc2c0, EscapeWindowWorldBase::virtual_10);
 
-// Forwards to f_402df2c8 on the module object behind the literal at 0x402dc44c.
-static void call_module_object_2cac(s32 mode) {
-    module_object_2cac_call(*(*module_object_2cac_pool), mode);
+// Forwards to f_402df2c8 on the module object behind the literal at 0x402dc44c. The caller's r0 is ignored
+// (replaced by the object); r1-r3 reach the callee unchanged.
+static void call_module_object_2cac(u32 /*ignored*/, s32 mode, u32 unknown_r2, u32 unknown_r3) {
+    module_object_2cac_call(*(*module_object_2cac_pool), mode, unknown_r2, unknown_r3);
 }
 GUEST_EXPORT(0x402dc440, call_module_object_2cac);
 
@@ -144,5 +146,7 @@ GUEST_FUZZ(0x402dc2c0, 200, [](guest::Fuzz &f) {
     }
     f.arguments(window);
 });
-GUEST_FUZZ(0x402dc440, 200, [](guest::Fuzz &f) { f.arguments(f.pick<s32>({1, 2})); });
+GUEST_FUZZ(0x402dc440, 200, [](guest::Fuzz &f) {
+    f.arguments(f.pick<u32>({0, 1, 2}), f.pick<s32>({1, 2}), f.pick<u32>({0, 1, 0x64}), f.pick<u32>({0, 1, 0x64}));
+});
 GUEST_FUZZ(0x402dc450, 200, [](guest::Fuzz &f) { f.arguments(); });

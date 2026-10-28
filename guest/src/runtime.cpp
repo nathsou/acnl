@@ -284,7 +284,14 @@ void abandon_run(const char *why, u32 pc) {
 }  // namespace
 
 // generated code is compiled with -Drt_svc=guest_shadow_svc -Drt_preempt=guest_shadow_preempt
+static void escape_fuzz_input_on_this_thread();  // (fuzzing, below)
+
+constexpr u32 SVC_BREAK = 0x3c;  // the game's assertion failures end here
+
 extern "C" void guest_shadow_svc(CPU *c, u32 imm) {
+    if (imm == SVC_BREAK) {
+        escape_fuzz_input_on_this_thread();  // a fuzz input tripped an assertion: drop it (before the kernel)
+    }
     abandon_run("system call", c->pc);
     rt_svc(c, imm);
 }
@@ -605,6 +612,13 @@ static void fuzz_fatal_hook(const char *msg) {
     }
     if (previous_fatal_hook) {
         previous_fatal_hook(msg);
+    }
+}
+
+static void escape_fuzz_input_on_this_thread() {
+    if (fuzz_escape_armed && pthread_equal(pthread_self(), fuzz_thread)) {
+        fuzz_escape_armed = false;
+        longjmp(fuzz_escape, 1);
     }
 }
 

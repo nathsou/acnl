@@ -10,8 +10,11 @@ struct ClearableSlot {
     u8 flag;
 
     void clear();
-    void copy_from(const ClearableSlot &other);  // takes the word, resets the flag; self-copy does nothing
+    // Takes the word and resets the flag; a self-copy does nothing. The other slot comes as a guest pointer
+    // because the self-copy check compares guest addresses.
+    void copy_from(gptr<const ClearableSlot> other);
 };
+GUEST_OFFSET(ClearableSlot, value, 0);
 GUEST_OFFSET(ClearableSlot, flag, 4);
 
 constexpr u32 RESOURCE_NODE_VTABLE = 0x00908068;
@@ -31,11 +34,11 @@ void ClearableSlot::clear() {
 }
 GUEST_EXPORT(0x005b1a1c, ClearableSlot::clear);
 
-void ClearableSlot::copy_from(const ClearableSlot &other) {
-    if (this == &other) {
+void ClearableSlot::copy_from(gptr<const ClearableSlot> other) {
+    if (guest::addr_of(this).addr() == other.addr()) {
         return;
     }
-    value = other.value;
+    value = other->value;
     flag = 0;
 }
 GUEST_EXPORT(0x005b1a2c, ClearableSlot::copy_from);
