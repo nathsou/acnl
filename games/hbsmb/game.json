@@ -1,0 +1,8 @@
+{
+  "title": "Super Mario Bros. recompilation for 3DS (homebrew, the pilot)",
+  "data": "data/hbsmb",
+  "title_id": "000400000f3c3f00",
+  "sdmc": {
+    "Super Mario Bros.nes": "data/hbsmb-sdmc/Super Mario Bros.nes"
+  }
+}
