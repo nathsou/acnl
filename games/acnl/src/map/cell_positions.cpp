@@ -50,40 +50,6 @@ s32 cell_of(float coordinate, s32 negative_argument) {
 
 }  // namespace
 
-// Puts in `out` the position for an id: the corner of the cell the id is found in, with its height, nudged
-// for some ids. Returns false (with a fallback cell) when the id is not found.
-static bool position_for_id(Vec3 &out, u32 id) {
-    guest::StackObject<CellCoordinates> cell;
-    cell->x = 0;
-    cell->z = 0;
-    if (!find_cell_of_id(guest::addr_of(cell->x), guest::addr_of(cell->z), id)) {
-        cell_corner(out, FALLBACK_CELL_X, FALLBACK_CELL_Z);
-        if (id == SPECIAL_ID_69) {
-            out.y = height_at_alternate(out, 0);
-        } else {
-            out.y = height_at(out, 0);
-        }
-        return false;
-    }
-    cell_corner(out, cell->x, cell->z);
-    out.y = height_at(out, 0);
-    if (id == SPECIAL_ID_7F || id == SPECIAL_ID_80) {
-        out.x = out.x + *offset_x;
-        out.z = out.z + *offset_z;
-        return true;
-    }
-    out.z = out.z + *offset_z;
-    if (id == SPECIAL_ID_85) {
-        u32 block = *word_95bf74;
-        if (*guest::gptr<u8>(block + WORD_95BF74_BLOCK_OFFSET + BYTE_OFFSET_IN_BLOCK) == 0) {
-            float scale = *guest::gptr<float>(SCALE_LITERAL_ADDRESS);
-            out.x = out.x - *scale_x * scale;
-        }
-    }
-    return true;
-}
-    f.arguments(f.object<Vec3>(), f.pick<u32>({0, 1, 0x58, 0x69, 0x7f, 0x80, 0x85, 0x86, f.below(0x100)}));
-});
 
 // Writes the cell (x, z) that contains the x/z of a position (rounded down, also for negative coordinates).
 static void cell_of_position(gptr<s32> out_x, gptr<s32> out_z, gptr<Vec3> position) {

@@ -638,6 +638,10 @@ def finish(job, feedback, text, cost, stop, usage):
 def commit_if_due(state, force=False):
     if state.data['uncommitted'] < 100 and not (force and state.data['uncommitted']):
         return
+    ok, errs = compile_rewrites()
+    if not ok:  # never commit a tree that does not build
+        log('not committing: the tree does not compile: %s' % json.dumps(errs)[:300])
+        return
     n = sum(1 for v in state.data['functions'].values() if v['status'] == 'verified')
     msg = 'ACNL: %d more functions rewritten by the harness (%d in all)' % (state.data['uncommitted'], n)
     run(['git', 'add', '-A', 'games', 'tools', 'docs', 'guest'], cwd=ROOT)
@@ -888,9 +892,8 @@ async def repair_pass(client, state, model, effort):
     for j in retry:  # still failing: remove those functions from the tree (they go back to the recompiled code)
         path = sorted(j.replaceable)[0]
         log('repair failed for %s: %s' % (path, (j.problem or '')[:200]))
-        failing = [a for a in j.group if a in bad]
-        if remove_functions(path, failing):
-            for a in failing:
+        if remove_functions(path, j.group):
+            for a in j.group:
                 state.fn(a).update(status='new', attempts=0)
     ok, errs = compile_rewrites()
     if not ok:
@@ -900,17 +903,11 @@ async def repair_pass(client, state, model, effort):
 
 
 def remove_functions(path, addrs):
-    """Takes rewritten functions out of a file: the whole file if nothing else is exported from it, otherwise just
-    their GUEST_EXPORT/GUEST_FUZZ lines (the definitions stay, unused, until the next repair or rewrite)."""
+    """Takes a file whose rewrite cannot be repaired out of the tree: its functions run as recompiled code again
+    (and get rewritten later). Whole files only: cutting functions out of C++ text is not safe."""
     full = os.path.join(ROOT, path)
-    body = open(full).read()
-    exports = set(int(a, 16) for a in EXPORT_RE.findall(body))
-    if exports <= set(addrs):
+    if os.path.exists(full):
         os.remove(full)
-        return True
-    lines = [l for l in body.splitlines(True)
-             if not any(re.search(r'GUEST_(EXPORT|FUZZ)\(\s*0x0*%x\b' % a, l) for a in addrs)]
-    open(full, 'w').write(''.join(lines))
     return True
 
 
