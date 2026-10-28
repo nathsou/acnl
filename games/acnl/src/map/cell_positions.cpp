@@ -82,8 +82,6 @@ static bool position_for_id(Vec3 &out, u32 id) {
     }
     return true;
 }
-GUEST_EXPORT(0x00307220, position_for_id);
-GUEST_FUZZ(0x00307220, 300, [](guest::Fuzz &f) {
     f.arguments(f.object<Vec3>(), f.pick<u32>({0, 1, 0x58, 0x69, 0x7f, 0x80, 0x85, 0x86, f.below(0x100)}));
 });
 

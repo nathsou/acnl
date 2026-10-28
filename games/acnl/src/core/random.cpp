@@ -12,11 +12,13 @@ constexpr u32 MANTISSA_SHIFT = 9;              // the top 23 bits of the state b
 
 float Random::next_float() {
     u64 product = u64(state) * MULTIPLIER;
-    u32 low = u32(product) + INCREMENT;
-    u32 carry = low < u32(product);
-    state = low + u32(product >> 32) + carry;
+    u64 sum = (product & 0xffffffffull) + INCREMENT;
+    u32 carry = u32(sum >> 32) & 1;
+    u32 high = u32(product >> 32);
+    state = u32(sum) + high + carry;
     // 23 random bits as the mantissa of a float in [1, 2)
-    return std::bit_cast<float>(ONE_AS_FLOAT_BITS | state >> MANTISSA_SHIFT) - 1.0f;
+    float one = std::bit_cast<float>(ONE_AS_FLOAT_BITS);
+    return std::bit_cast<float>(ONE_AS_FLOAT_BITS | (state >> MANTISSA_SHIFT)) - one;
 }
 GUEST_EXPORT(0x0013bb30, Random::next_float);
 

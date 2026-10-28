@@ -614,13 +614,18 @@ async def generate(client, p, job, feedback=None, prepared=False):
     return finish(job, feedback, text, cost, stop, usage)
 
 
+def first_text(message):
+    c = message['content']
+    return c if isinstance(c, str) else c[0]['text']
+
+
 def finish(job, feedback, text, cost, stop, usage):
     job.cost += cost
     job.messages.append({'role': 'assistant', 'content': text or '(empty)'})
     with open(os.path.join(HDIR, 'log', '%s-%s-%d.json' % (job.id, job.model.split('-')[1], len(job.messages) // 2)),
               'w') as f:
         json.dump({'model': job.model, 'effort': job.effort, 'usage': usage, 'cost': cost, 'stop': stop,
-                   'prompt': (job.messages[0]['content'][0]['text'] if len(job.messages) <= 2 else feedback),
+                   'prompt': (first_text(job.messages[0]) if len(job.messages) <= 2 else feedback),
                    'answer': text}, f, indent=1)
     if stop == 'refusal':
         job.problem = 'refused'

@@ -47,20 +47,22 @@ u32 FrameHeap::allocate(u32 size, s32 alignment) {
     size = align_up_4(size);
     gptr<FrameHeap> self = guest::addr_of(this);
     if (alignment >= 0) {
-        u32 block = (head + u32(alignment) - 1) & ~(u32(alignment) - 1);
+        u32 old_head = head;
+        u32 block = (old_head + u32(alignment) - 1) & ~(u32(alignment) - 1);
         u32 end = block + size;
         if (tail < end) {
             return 0;
         }
-        on_range_allocated(self, head, end - head);
+        on_range_allocated(self, old_head, end - old_head);
         head = end;
         return block;
     }
-    u32 block = (tail - size) & ~(u32(-alignment) - 1);
+    u32 old_tail = tail;
+    u32 block = (old_tail - size) & ~(u32(-alignment) - 1);
     if (head > block) {
         return 0;
     }
-    on_range_allocated(self, block, tail - block);
+    on_range_allocated(self, block, old_tail - block);
     tail = block;
     return block;
 }
@@ -106,12 +108,14 @@ bool FrameHeap::free_to_state(u32 tag) {
     u32 old_head = head;
     u32 old_tail = tail;
     u32 saved_head = state->head;
+    u32 saved_tail = state->tail;
+    gptr<FrameHeapState> older = state->next;
     head = saved_head;
-    tail = state->tail;
-    states = state->next;
+    tail = saved_tail;
+    states = older;
     gptr<FrameHeap> self = guest::addr_of(this);
     on_range_freed(self, saved_head, old_head - saved_head);
-    on_range_freed(self, old_tail, tail - old_tail);
+    on_range_freed(self, old_tail, saved_tail - old_tail);
     return true;
 }
 GUEST_EXPORT(0x0013e7fc, FrameHeap::free_to_state);
@@ -163,9 +167,9 @@ constexpr u32 BUFFER_SIZE = 256;
 
 // A heap with zeroed unknown fields, its head and tail inside a real buffer
 gptr<FrameHeap> some_heap(guest::Fuzz &f, u32 &buffer) {
+    buffer = f.allocate(BUFFER_SIZE).addr();
     auto heap = f.object<FrameHeap>();
     memset(heap->unknown_00, 0, sizeof(heap->unknown_00));
-    buffer = f.allocate(BUFFER_SIZE).addr();
     heap->head = buffer + 100 + f.below(50);
     heap->tail = buffer + 160 + f.below(50);
     if (f.below(4) == 0) {

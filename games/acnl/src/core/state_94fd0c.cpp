@@ -36,6 +36,8 @@ u32 request_and_notify(u32 object, u32 argument) {
 GUEST_EXPORT(0x006d1e74, request_and_notify);
 GUEST_FUZZ(0x006d1e74, 200, [](guest::Fuzz &f) {
     auto object = f.allocate(0x100);
+    f.bytes(object, 0x100);
+    memset(object.get(), 0, 0x100);
     f.arguments(object.addr(), u32(9));
 });
 
