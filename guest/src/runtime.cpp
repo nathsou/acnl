@@ -657,6 +657,9 @@ static void run_fuzzers(CPU *c) {
     g_fatal_hook = previous_fatal_hook;
     write_report();
     fuzzing = false;
+    if (getenv("GUEST_FUZZ_EXIT")) {  // a test run ends when its fuzzing is done (the frame count keeps going)
+        _exit(0);
+    }
 }
 
 void detail::enter(Export &e, CPU *c, u32 entry) {

@@ -355,10 +355,11 @@ TEST_INPUT = ','.join('%d:A:6' % f for f in range(600, 4000, 90))
 
 def verify(addresses, timeout=900):
     """One game run with shadow checks, fuzzing only `addresses`. Returns (summary rows, mismatch text, blamed)."""
-    env_args = ['--env', 'GUEST_FUZZ=1', '--env', 'GUEST_FUZZ_FRAME=3000', '--env', 'GUEST_FUZZ_MIN=200',
+    env_args = ['--env', 'GUEST_FUZZ=1', '--env', 'GUEST_FUZZ_FRAME=3600', '--env', 'GUEST_FUZZ_MIN=200',
+                '--env', 'GUEST_FUZZ_EXIT=1',
                 '--env', 'GUEST_FUZZ_ONLY=' + ','.join('%x' % a for a in addresses)]
     name = 'harness'
-    cmd = [sys.executable, os.path.join(ROOT, 'tools', 'run.py'), GAME, '--name', name, '--frames', '4000',
+    cmd = [sys.executable, os.path.join(ROOT, 'tools', 'run.py'), GAME, '--name', name, '--frames', '40000',
            '--input', TEST_INPUT, '--shadow', '--timeout', str(timeout)] + env_args
     rc, out = run(cmd, timeout=timeout + 120)
     rundir = os.path.join(ROOT, 'build', GAME, 'runs', name)
