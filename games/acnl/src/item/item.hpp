@@ -27,17 +27,34 @@ struct Item {
     s32 index() const;                          // into the item data table, or -1
     gptr<ItemData> data() const;                // null for map objects and empty slots
     u8 category() const;                        // NO_CATEGORY without data
+    gptr<u8> category_flags() const;            // the 3-byte entry of the item's category (null: not loaded)
+    bool has_category_flag_4() const;           // true for kind 2 ids, else bit 4 of category_flags()[1]
+    u32 price() const;                          // for a bag of bells, the bells in it
 };
 GUEST_SIZE(Item, 4);
+
+// A category's entry (12 bytes): the item number of its first item is the one thing known.
+struct CategoryInfo {
+    u16 first_item_number;
+    u8 unknown_02[10];
+};
+GUEST_SIZE(CategoryInfo, 12);
+gptr<CategoryInfo> category_info(u32 category);  // categories >= NO_CATEGORY get a shared default entry
 
 Item &construct_item(Item &self, u16 id);       // the constructor Item(u16)
 Item &copy_item(Item &self, const Item &other);
 
-// An entry of the item data table (30 bytes). Only the category is known so far.
+// An entry of the item data table (30 bytes). Only the price and the category are known so far.
 struct ItemData {
-    u8 unknown_00[0xa];
+    u8 unknown_00[2];
+    u16 price_unit;
+    u8 unknown_04[6];
     u8 category;
-    u8 unknown_0b[0x13];
+    u8 unknown_0b[3];
+    s8 price_multiplier;  // the base price is price_unit * price_multiplier
+    u8 unknown_0f[15];
+
+    u32 base_price() const { return u32(price_unit) * u32(s32(price_multiplier)); }
 };
 GUEST_SIZE(ItemData, 30);
 
@@ -48,11 +65,12 @@ struct ItemDataTable {
 };
 inline guest::global<ItemDataTable, 0x00a1838c> item_data_table;
 
-// Still recompiled code:
-// how much an item sells for; for a bag of bells, the bells in it
-inline constexpr guest::Function<0x00305630, u32(const Item &item)> item_price;
-// true for kind 2 items; otherwise bit 4 of the item's category flags. Pockets treat items that fail it as empty.
-inline constexpr guest::Function<0x00769840, bool(const Item &item)> item_category_flag_4;
+// the per-category flag table (3 bytes per category)
+struct CategoryFlagTable {
+    u32 unknown_00;
+    gptr<u8> entries;
+};
+inline guest::global<CategoryFlagTable, 0x00a1839c> category_flag_table;
 
 // Bags of bells: 0x20AC-0x20B4 hold 100-900 bells, 0x20B5-0x2117 1,000-99,000.
 constexpr u16 BELL_BAG_100 = 0x20ac;

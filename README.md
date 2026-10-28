@@ -28,7 +28,7 @@ No game files are included: the game data comes from your own dump, through 3dsr
 | Game | Rewritten | Verified |
 |---|---|---|
 | `hbsmb` (pilot: the SMB homebrew) | 108 functions: all of its own code, 3 game routines | shadow checks + whole-program memory equality |
-| `acnl` | 19 functions: random numbers, scrambled amounts, items, pockets and the wallet, the bank | shadow checks + fuzzing, 0 mismatches |
+| `acnl` | 24 functions: random numbers, scrambled amounts, items and prices, categories, pockets and the wallet, the bank | shadow checks + fuzzing, 0 mismatches |
 
 See [docs/pilot.md](docs/pilot.md) for what the pilot taught and [docs/acnl.md](docs/acnl.md) for the ACNL work.
 

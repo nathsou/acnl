@@ -21,13 +21,13 @@ rewrite recompiles only the generated files that contain the originals (seconds)
 - **Field users** (`tools/offsets.py`): which functions compute a given struct offset; the pockets (player
   + 0x6bd0): code computing that offset appears in 324 functions; the wallet (+0x6f08) in 14.
 
-## Rewritten so far (19 functions, all verified)
+## Rewritten so far (24 functions, all verified)
 
 | Area | Functions | Source |
 |---|---|---|
 | Random numbers: the global LCG and `random_below` | 2 | `core/random.*` |
 | Scrambled amounts (`EncryptedInt`, the save editors' "EncryptedInt32"): get, set, add with a cap, subtract | 4 | `core/encrypted_int.*` |
-| Items: empty/range/number tests, index, data table entry, category, constructor, copies | 9 | `item/item.*` |
+| Items: empty/range/number tests, index, data entry, category and its tables, price, constructor, copies | 14 | `item/item.*` |
 | Pockets: find an empty slot, total bells (wallet + bags), paying | 3 | `save/pockets.*` |
 | The bank: deposit | 1 | `save/player.*` |
 

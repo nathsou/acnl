@@ -3,7 +3,7 @@
 const Item &Pockets::item_at(u32 slot) const {
     if (slot < SLOTS) {
         const Item &item = items[slot];
-        if (item.is_empty() || item_category_flag_4(item)) return item;
+        if (item.is_empty() || item.has_category_flag_4()) return item;
     }
     return *empty_item;
 }
@@ -19,7 +19,7 @@ u32 Pockets::total_bells() const {
     u32 total = wallet.get();
     for (u32 slot = 0; slot < SLOTS; slot++) {
         if (slot_locked[slot]) continue;
-        if (item_at(slot).category() == CATEGORY_BELLS) total += item_price(item_at(slot));
+        if (item_at(slot).category() == CATEGORY_BELLS) total += item_at(slot).price();
     }
     return total;
 }
@@ -36,7 +36,7 @@ void Pockets::pay(u32 bells) {
     for (u32 slot = 0; slot < SLOTS; slot++) {
         if (slot_locked[slot]) continue;
         if (item_at(slot).category() != CATEGORY_BELLS) continue;
-        total += item_price(item_at(slot));
+        total += item_at(slot).price();
         pockets_set_slot(*this, slot, *empty_item, 0, 1);
     }
     s32 change = s32(total - bells);
@@ -44,7 +44,7 @@ void Pockets::pay(u32 bells) {
 
     guest::StackObject<Item> bag;
     construct_item(*bag, BELL_BAG_99000);
-    u32 bag_value = item_price(*bag);
+    u32 bag_value = bag->price();
     while (u32(change) >= 99'999) {  // (forever, if no slot is free)
         if (pockets_add(*this, *bag, 0, 1)) change -= bag_value;
     }
