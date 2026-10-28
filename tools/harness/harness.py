@@ -577,8 +577,10 @@ async def main_run(args):
             if j.problem and not j.problem.startswith(('API error', 'conflict')):
                 for a in j.group:
                     state.fn(a)['attempts'] += 1
-                if args.escalate and args.escalate != j.model:
+                if args.escalate:
                     j.model = args.escalate
+                if args.escalate_effort:
+                    j.effort = args.escalate_effort
                 fb = feedback_for(j)
                 j.files, j.skips, j.backup = {}, {}, {}
                 j.problem = None
@@ -647,6 +649,7 @@ def main():
     r.add_argument('--model', default='claude-sonnet-5-5')
     r.add_argument('--effort', default='medium')
     r.add_argument('--escalate', default='claude-opus-5-5')
+    r.add_argument('--escalate-effort', default='high')
     r.add_argument('--max-attempts', type=int, default=2)
     r.add_argument('--budget', type=float, default=100.0)
     b = sub.add_parser('bench')

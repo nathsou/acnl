@@ -72,6 +72,11 @@ register shifts where the amount can be 32 or more, `arm::llsl` = RVCT's `__aeab
 - Prefer member functions of the structure that r0 points to when r0 is clearly `this`; free functions
   otherwise. Constructors/destructors: free functions named `construct_<type>` / `destroy_<type>` returning the
   object reference.
+- Describe memory with types, never with raw offsets: no `base + 0x10`, `ptr[5]`, `gptr<u8>` byte poking or
+  `gptr<u32>(address + i * 4)` when the layout can be written down. Define a struct (in the .cpp if only it uses
+  it, in a header otherwise), use arrays of structs for tables, and `guest::global<Type, address>` for globals.
+  Unknown fields still get a place in the struct (`unknown_XX`). Raw offsets are acceptable only for a single
+  access into an object you know nothing else about, with a comment.
 - Struct definitions mirror game memory: fields at their exact offsets, unknown gaps as
   `u8 unknown_XXXX[size];`, a `GUEST_OFFSET(Type, field, offset)` check for every field you rely on and
   `GUEST_SIZE` when the size is known. Extend an existing struct by splitting its padding rather than defining a
