@@ -11,6 +11,7 @@
 //
 // GUEST_OVERLAY=0 runs the recompiled originals instead of every rewritten function.
 #include <pthread.h>
+#include <setjmp.h>
 #include <signal.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -34,6 +35,7 @@ void rt_log(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 extern "C" void rt_svc(CPU *c, u32 imm);
 extern "C" void rt_preempt(CPU *c);
 extern u64 g_frame;  // vblanks since boot
+extern void (*g_fatal_hook)(const char *msg);
 
 namespace guest {
 
@@ -588,8 +590,45 @@ static void note_fuzz_progress(const detail::Export *e) {
     }
 }
 
+// A fuzz input can lead the code under test to a fatal error (a garbage function pointer, typically). The runtime
+// calls g_fatal_hook before exiting: during fuzzing, the hook jumps back to the fuzz loop instead, which puts back the
+// pages the run wrote and drops the input.
+static jmp_buf fuzz_escape;
+static bool fuzz_escape_armed;
+static pthread_t fuzz_thread;
+static void (*previous_fatal_hook)(const char *);
+
+static void fuzz_fatal_hook(const char *msg) {
+    if (fuzz_escape_armed && pthread_equal(pthread_self(), fuzz_thread)) {
+        fuzz_escape_armed = false;
+        longjmp(fuzz_escape, 1);
+    }
+    if (previous_fatal_hook) {
+        previous_fatal_hook(msg);
+    }
+}
+
+static void recover_from_crashed_input() {
+    // memory: before the rewrite's run it was put back to the original state, and the current journal holds the
+    // first copy of every page written since (by whichever run crashed)
+    protect_all(PROT_READ | PROT_WRITE);
+    for (auto &p : journal) {
+        if (!p.foreign) {
+            memcpy(page_ptr(p.index), p.orig, page_size);
+        }
+        slot_of_page[p.index] = -1;
+    }
+    journal.clear();
+    journaling.store(false);
+    pool_used = 0;
+    busy.store(true);  // (still inside run_fuzzers)
+}
+
 static void run_fuzzers(CPU *c) {
     fuzzing = true;
+    fuzz_thread = pthread_self();
+    previous_fatal_hook = g_fatal_hook;
+    g_fatal_hook = fuzz_fatal_hook;
     for (auto &fz : fuzzers()) {
         if (!fuzz_selected(fz.e->address)) {
             continue;
@@ -603,11 +642,19 @@ static void run_fuzzers(CPU *c) {
             fz.generate(f);
             c->r[14] = RETURN_TO_HOST;
             c->pc = fz.e->address;
-            shadow_check(*fz.e, c);
+            if (setjmp(fuzz_escape) == 0) {
+                fuzz_escape_armed = true;
+                shadow_check(*fz.e, c);
+            } else {
+                recover_from_crashed_input();  // the input made the original or the rewrite crash: drop it
+                fz.e->crashed_inputs++;
+            }
+            fuzz_escape_armed = false;
             *c = saved;
         }
     }
     note_fuzz_progress(nullptr);
+    g_fatal_hook = previous_fatal_hook;
     write_report();
     fuzzing = false;
 }

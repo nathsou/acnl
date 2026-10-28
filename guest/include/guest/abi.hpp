@@ -272,6 +272,7 @@ struct Export {
     GuestFn original;
     // shadow checker counters
     u64 calls = 0, checked = 0, fuzzed = 0, mismatches = 0, unchecked = 0, unchecked_syscall = 0, unchecked_memory = 0;
+    u64 crashed_inputs = 0;  // fuzz inputs dropped because they crashed the original or the rewrite
     Export(u32 address, const char *name, Ret ret, void (*overlay)(CPU *), GuestFn original);
 };
 void enter(Export &e, CPU *c, u32 entry);
