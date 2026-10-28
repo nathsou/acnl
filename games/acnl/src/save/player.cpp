@@ -1,6 +1,6 @@
 #include "save/player.hpp"
 
-void SavePlayer::deposit(u32 bells) { bank.add(bells, 999'999'999); }
+void SavePlayer::deposit(u32 bells) { bank.add(bells, BANK_MAX); }
 GUEST_EXPORT(0x00305a40, SavePlayer::deposit);
 
 // (only the bank is real memory: deposit touches nothing else)

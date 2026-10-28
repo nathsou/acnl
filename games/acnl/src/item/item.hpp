@@ -11,16 +11,43 @@
 
 struct ItemData;
 
+// Item categories (ItemData::category). Only the ones the code relies on are named; the meaning of the others,
+// and the exact meaning of these beyond their effect, is not known yet.
+enum ItemCategory : u8 {
+    CATEGORY_BELLS = 0x02,                 // bags of bells: their price is the bells inside
+    CATEGORY_PRICED_BY_REFERENCE_33 = 0x33,  // a tenth of the price when matching the reference item (Item::price)
+    CATEGORY_PRICED_BY_REFERENCE_34 = 0x34,
+    CATEGORY_STACK_75 = 0x75,              // stacks (the count is in the flags), also priced by reference
+    CATEGORY_STACK_76 = 0x76,
+    CATEGORY_COUNT = 0x9b,                 // also used as "no category"
+};
+
+// The kind of an item number (bits 13-14)
+enum ItemKind : u32 {
+    KIND_MAP_OBJECT = 0,
+    KIND_ITEM = 1,
+    KIND_2 = 2,  // (unknown; always passes has_category_flag_4)
+    KIND_3 = 3,
+};
+
 struct Item {
     u16 id;
     u16 flags;
 
+    static constexpr u16 ID_FLAG = 0x8000;      // a flag kept in the id, not part of the item number
+    static constexpr u16 NUMBER_MASK = 0x7fff;
+    static constexpr u32 KIND_SHIFT = 13;
+    static constexpr u16 KIND_MASK = 0x6000;
     static constexpr u16 EMPTY = 0x7ffe;
     static constexpr u16 FIRST_ITEM = 0x2000;
-    static constexpr u16 ITEM_COUNT = 0x172b;  // items with data: 0x2000-0x372A
-    static constexpr u8 NO_CATEGORY = 0x9b;
+    static constexpr u16 ITEM_COUNT = 0x172b;   // items with data: 0x2000-0x372A
+    static constexpr u8 NO_CATEGORY = CATEGORY_COUNT;
 
-    u16 number() const { return id & 0x7fff; }  // the id without its flag bit
+    // flags: the top two bits are flags; for stacks, the rest is the count minus one
+    static constexpr u16 FLAGS_TOP_BITS = 0xc000;
+
+    u16 number() const { return id & NUMBER_MASK; }
+    ItemKind kind() const { return ItemKind(number() >> KIND_SHIFT); }
     bool is_empty() const;
     bool is_item() const;                       // in the range with ItemData
     bool has_number(u16 number) const;
@@ -65,7 +92,8 @@ struct ItemDataTable {
 };
 inline guest::global<ItemDataTable, 0x00a1838c> item_data_table;
 
-// the per-category flag table (3 bytes per category)
+// the per-category flag table
+constexpr u32 CATEGORY_FLAGS_SIZE = 3;  // bytes per category
 struct CategoryFlagTable {
     u32 unknown_00;
     gptr<u8> entries;
@@ -75,7 +103,6 @@ inline guest::global<CategoryFlagTable, 0x00a1839c> category_flag_table;
 // Bags of bells: 0x20AC-0x20B4 hold 100-900 bells, 0x20B5-0x2117 1,000-99,000.
 constexpr u16 BELL_BAG_100 = 0x20ac;
 constexpr u16 BELL_BAG_99000 = 0x2117;
-constexpr u8 CATEGORY_BELLS = 2;
 
 // An empty item, for slots that hold nothing usable
 inline guest::global<Item, 0x0095bfdc> empty_item;

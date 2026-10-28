@@ -60,7 +60,7 @@ void Pockets::pay(u32 bells) {
     guest::StackObject<Item> bag;
     construct_item(*bag, BELL_BAG_99000);
     u32 bag_value = bag->price();
-    while (u32(change) >= 99'999) {  // (forever, if no slot is free)
+    while (u32(change) >= WALLET_MAX) {  // (forever, if no slot is free)
         if (pockets_add(*this, *bag, 0, 1)) {
             change -= bag_value;
         }
@@ -87,7 +87,8 @@ static gptr<Pockets> some_pockets(guest::Fuzz &f) {
         item.flags = f.below(3) ? 0 : f.number();
         pockets->slot_locked[slot] = f.below(8) == 0;
     }
-    pockets->wallet = EncryptedInt::make(f.below(4) ? f.below(100'000) : f.number(), f.number(), f.below(26));
+    pockets->wallet = EncryptedInt::make(f.below(4) ? f.below(Pockets::WALLET_MAX + 1) : f.number(), f.number(),
+                                        f.below(EncryptedInt::ROTATIONS));
     return pockets;
 }
 

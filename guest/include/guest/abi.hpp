@@ -197,12 +197,15 @@ void write_result(CPU *c, const std::remove_reference_t<R> &v) {
 }
 template <typename R>
 R read_result(CPU *c) {
+    if constexpr (std::is_reference_v<R>) {
+        return from_bits<R>(c->r[0]);
+    }
     switch (ret_of<R>()) {
     case Ret::R0: return from_bits<R>(c->r[0]);
     case Ret::R0R1: return from_bits<R>(c->r[0] | (u64(c->r[1]) << 32));
     case Ret::S0: return from_bits<R>(F2U(c->s[0]));
     case Ret::D0: return from_bits<R>(F2U(c->s[0]) | (u64(F2U(c->s[1])) << 32));
-    default: return R();
+    default: return from_bits<R>(c->r[0]);
     }
 }
 

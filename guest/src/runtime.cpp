@@ -563,10 +563,41 @@ gptr<void> Fuzz::allocate(u32 size) {
     return gptr<void>(c_->r[13]);
 }
 
+// GUEST_FUZZ_ONLY=<address>,<address>...: fuzz only these functions. The fuzzer running is written to
+// guest_fuzz_progress.txt first, so that a crash or a hang can be blamed on it.
+static bool fuzz_selected(u32 address) {
+    static const char *only = getenv("GUEST_FUZZ_ONLY");
+    if (!only || !*only) {
+        return true;
+    }
+    char needle[16];
+    snprintf(needle, sizeof needle, "%x", address);
+    std::string list = std::string(",") + only + ",";
+    return list.find(std::string(",") + needle + ",") != std::string::npos ||
+           list.find(std::string(",0x") + needle + ",") != std::string::npos;
+}
+
+static void note_fuzz_progress(const detail::Export *e) {
+    if (FILE *f = fopen("guest_fuzz_progress.txt", "w")) {
+        if (e) {
+            fprintf(f, "%x %s\n", e->address, e->name);
+        } else {
+            fprintf(f, "done\n");
+        }
+        fclose(f);
+    }
+}
+
 static void run_fuzzers(CPU *c) {
     fuzzing = true;
     for (auto &fz : fuzzers()) {
-        for (int i = 0; i < fz.iterations; i++) {
+        if (!fuzz_selected(fz.e->address)) {
+            continue;
+        }
+        note_fuzz_progress(fz.e);
+        static const int minimum = getenv("GUEST_FUZZ_MIN") ? atoi(getenv("GUEST_FUZZ_MIN")) : 0;
+        int iterations = std::max(fz.iterations, minimum);  // GUEST_FUZZ_MIN: at least this many inputs each
+        for (int i = 0; i < iterations; i++) {
             const CPU saved = *c;
             Fuzz f(c, (u64(fz.e->address) << 20) + i);
             fz.generate(f);
@@ -576,6 +607,8 @@ static void run_fuzzers(CPU *c) {
             *c = saved;
         }
     }
+    note_fuzz_progress(nullptr);
+    write_report();
     fuzzing = false;
 }
 

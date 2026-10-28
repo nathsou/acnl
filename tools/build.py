@@ -84,9 +84,12 @@ def write_if_changed(path, text):
 def link(src, dst):
     if os.path.exists(dst) and os.path.samefile(src, dst):
         return
-    if os.path.lexists(dst):
+    replaced = os.path.lexists(dst)
+    if replaced:
         os.remove(dst)
     os.link(src, dst)
+    if replaced:
+        os.utime(dst, None)  # (a patched copy was there: make the build system recompile it)
 
 
 def prepare(generated, gamecode, exports):

@@ -6,13 +6,17 @@
 
 // state = state * 1664525 + 1013904223, with the product's high word folded back in (and the carry of the
 // addition): a variant of the "quick and dirty" generator from Numerical Recipes.
+constexpr u32 MULTIPLIER = 1664525, INCREMENT = 1013904223;
+constexpr u32 ONE_AS_FLOAT_BITS = 0x3f800000;  // 1.0f
+constexpr u32 MANTISSA_SHIFT = 9;              // the top 23 bits of the state become the mantissa
+
 float Random::next_float() {
-    u64 product = u64(state) * 1664525;
-    u32 low = u32(product) + 1013904223;
+    u64 product = u64(state) * MULTIPLIER;
+    u32 low = u32(product) + INCREMENT;
     u32 carry = low < u32(product);
     state = low + u32(product >> 32) + carry;
     // 23 random bits as the mantissa of a float in [1, 2)
-    return std::bit_cast<float>(0x3f800000 | state >> 9) - 1.0f;
+    return std::bit_cast<float>(ONE_AS_FLOAT_BITS | state >> MANTISSA_SHIFT) - 1.0f;
 }
 GUEST_EXPORT(0x0013bb30, Random::next_float);
 

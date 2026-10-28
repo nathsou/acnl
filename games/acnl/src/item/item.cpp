@@ -53,28 +53,30 @@ gptr<u8> Item::category_flags() const {
     if (!table) {
         return nullptr;
     }
-    return table + category * 3;
+    return table + category * CATEGORY_FLAGS_SIZE;
 }
 GUEST_EXPORT(0x00536214, Item::category_flags);
 
 bool Item::has_category_flag_4() const {
-    if ((id & 0x6000) == 0x4000) {
+    if ((id & KIND_MASK) == KIND_2 << KIND_SHIFT) {
         return true;
     }
     gptr<u8> flags = category_flags();
-    return flags && (flags[1] >> 4 & 1);
+    return flags && (flags[1] >> 4 & 1);  // (what bit 4 of the second byte means is not known yet)
 }
 GUEST_EXPORT(0x00769840, Item::has_category_flag_4);
 
 u32 ItemData_base_price(const ItemData &d) { return d.base_price(); }
 GUEST_EXPORT(0x007486fc, ItemData_base_price);
 
-// The item (at an unknown spot of the game manager) the price rule below compares against
-inline guest::global<gptr<u8>, 0x0095bf74> game_manager;  // the game manager object (a global pointer)
+// The game manager (a global pointer to a large object, mostly unknown)
+inline guest::global<gptr<u8>, 0x0095bf74> game_manager;
+// The item in the game manager that some prices are compared against (what it represents is not known yet)
+constexpr u32 REFERENCE_ITEM_OFFSET = 0x6223a;
 
-// Prices: the base price; a tenth of it for categories 0x33/0x34/0x75/0x76 when the item sits at the same position
-// within its category as the reference item; and for categories 0x75/0x76 (flowers-like stackables) multiplied by
-// the count in the item's flags (n + 1 if that is 2-9, else 0).
+constexpr u32 PRICE_DIVISOR_FOR_REFERENCE = 10;  // matching the reference item: a tenth of the price
+constexpr u32 MIN_STACK = 2, MAX_STACK = 9;      // stack counts outside this range are worth nothing
+
 static s32 offset_in_category(const Item &item) {
     gptr<ItemData> data = item.data();
     if (!data) {
@@ -84,6 +86,8 @@ static s32 offset_in_category(const Item &item) {
     return s32(item.number() - category_info(category)->first_item_number);
 }
 
+// The base price, with two rules for a few categories: a tenth of it when the item sits at the same position within
+// its category as the reference item, and for stacks, times the stack's count.
 u32 Item::price() const {
     gptr<ItemData> d = data();
     if (!d) {
@@ -94,21 +98,23 @@ u32 Item::price() const {
     if (category >= NO_CATEGORY) {
         return price;
     }
-    bool stackable = category == 0x75 || category == 0x76;
-    if (category != 0x33 && category != 0x34 && !stackable) {
+    bool stack = category == CATEGORY_STACK_75 || category == CATEGORY_STACK_76;
+    bool by_reference = category == CATEGORY_PRICED_BY_REFERENCE_33 || category == CATEGORY_PRICED_BY_REFERENCE_34;
+    if (!by_reference && !stack) {
         return price;
     }
 
-    const Item &reference = *gptr<Item>(game_manager->addr() + 0x6223a);
+    const Item &reference = *gptr<Item>(game_manager->addr() + REFERENCE_ITEM_OFFSET);
     if (offset_in_category(*this) == offset_in_category(reference)) {
-        price = s32(price) / 10;
+        price = s32(price) / PRICE_DIVISOR_FOR_REFERENCE;
     }
-    if (!stackable) {
+    if (!stack) {
         return price;
     }
 
-    u32 count = (flags & ~0xc000) + 1;
-    return (count - 2 <= 7 ? count : 0) * price;
+    u32 count = (flags & ~FLAGS_TOP_BITS) + 1;  // stored minus one
+    bool valid = count >= MIN_STACK && count <= MAX_STACK;
+    return (valid ? count : 0) * price;
 }
 GUEST_EXPORT(0x00305630, Item::price);
 
@@ -117,10 +123,10 @@ GUEST_EXPORT(0x00305630, Item::price);
 inline guest::global<guest::MemberFunctionPointer[2], 0x0088e648> kind_initializers;
 
 Item &construct_item(Item &self, u16 id) {
-    self.id = id & 0x7fff;
+    self.id = id & Item::NUMBER_MASK;
     self.flags = 0;
-    u32 kind = self.id >> 13;
-    if (kind < 2) {
+    ItemKind kind = self.kind();
+    if (kind <= KIND_ITEM) {
         guest::call_member<void>(kind_initializers[kind], guest::addr_of(self).cast<void>());
     }
     return self;

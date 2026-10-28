@@ -6,11 +6,12 @@
 
 struct Pockets {
     static constexpr u32 SLOTS = 16;
+    static constexpr u32 WALLET_MAX = 99'999;
 
     Item items[SLOTS];
     u8 slot_locked[SLOTS];      // a locked slot's bells are not counted (nor spent)
     u8 unknown_050[0x338 - 0x50];
-    EncryptedInt wallet;        // bells, up to 99,999
+    EncryptedInt wallet;        // bells, up to WALLET_MAX
 
     // The item in a slot, or the empty item if the slot holds something pockets do not accept.
     const Item &item_at(u32 slot) const;

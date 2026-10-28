@@ -6,12 +6,15 @@
 #include "guest/guest.hpp"
 
 struct EncryptedInt {
-    u32 scrambled;  // (value + offset + KEY) rotated left by rotation + 4
+    u32 scrambled;  // (value + offset + KEY) rotated left by rotation + ROTATION_BASE
     u16 offset;     // random, new on every write
-    u8 rotation;    // random, 0-25, new on every write
+    u8 rotation;    // random, below ROTATIONS, new on every write
     u8 checksum;    // checksum_of(scrambled)
 
     static constexpr u32 KEY = 0x8f187432;
+    static constexpr u32 ROTATIONS = 26;        // rotation is picked in [0, ROTATIONS)
+    static constexpr u32 ROTATION_BASE = 4;     // the value is rotated by rotation + ROTATION_BASE
+    static constexpr u8 CHECKSUM_SEED = 0xba;
 
     u32 get() const;
     void set(u32 value);
@@ -22,7 +25,7 @@ struct EncryptedInt {
     static EncryptedInt make(u32 value, u16 offset, u8 rotation);
 
     static u8 checksum_of(u32 scrambled) {
-        return scrambled + (scrambled >> 8) + (scrambled >> 16) + (scrambled >> 24) + 0xba;
+        return scrambled + (scrambled >> 8) + (scrambled >> 16) + (scrambled >> 24) + CHECKSUM_SEED;
     }
 };
 GUEST_SIZE(EncryptedInt, 8);
