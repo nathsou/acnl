@@ -379,16 +379,38 @@ def check_imports(p, job):
 
 RAW_OFFSET_RES = [
     re.compile(r'gptr<\s*u(?:8|16|32)\s*>\s*\([^;\n]*\+'),           # gptr<u32>(base + 0x10 ...)
-    re.compile(r'\.addr\(\)\s*\+\s*(?:0x[0-9a-fA-F]+|\d{2,})'),        # self.addr() + 0x24
+    re.compile(r'\.addr\(\)\s*[-+]'),                                       # self.addr() + 0x24, grid.addr() + row * n
     re.compile(r'\[\s*0x[0-9a-fA-F]+\s*/\s*\d\s*\]'),                   # words[0x30 / 4]
     re.compile(r'\)\s*\+\s*0x[0-9a-fA-F]+\s*\)\s*\.\s*cast<'),         # (p + 0x10).cast<T>()
 ]
 HEX_RE = re.compile(r'\b0x[0-9a-fA-F]{2,}\b')
 
 
+STRUCT_RE = re.compile(r'^\s*struct\s+(\w+)\s*(?::[^{]*)?\{', re.M)
+
+
+def existing_types():
+    """struct name -> header path, for the headers in the tree"""
+    types = {}
+    for dirpath, _, files in os.walk(SRC):
+        for name in files:
+            if name.endswith('.hpp'):
+                path = os.path.join(dirpath, name)
+                for t in STRUCT_RE.findall(open(path).read()):
+                    types.setdefault(t, os.path.relpath(path, ROOT))
+    return types
+
+
 def lint(job):
     """Findings that make the code hard to read (raw offsets, unexplained magic numbers), or None."""
     findings = []
+    types = existing_types()
+    for path, body in job.files.items():
+        for t in STRUCT_RE.findall(body):
+            home = types.get(t)
+            if home and home != path:
+                findings.append('struct %s is redefined in %s, but it already exists in %s: include that header and '
+                                'extend the type there instead (one definition per game type)' % (t, path, home))
     for path, body in job.files.items():
         raw, magic = [], []
         for n, line in enumerate(body.splitlines(), 1):
@@ -801,6 +823,8 @@ async def main_run(args):
                         st['status'] = 'failed' if st['attempts'] >= args.max_attempts else 'new'
                         st['last_problem'] = (j.problem or '')[:500]
         state.save()
+        if args.repair_every and (r + 1) % args.repair_every == 0:
+            await repair_pass(client, state, args.escalate, args.escalate_effort)  # the whole tree, after a commit
         log('round %d done: %d verified in all, $%.2f spent' % (
             r + 1, sum(1 for v in state.data['functions'].values() if v['status'] == 'verified'), state.data['cost']))
     commit_if_due(state, force=True)
@@ -816,8 +840,10 @@ def full_check():
 
 async def main_repair(args):
     """Sends files whose rewrites fail the full check back to the model, verifies them again, commits."""
-    state = State()
-    client = Client()
+    await repair_pass(Client(), State(), args.model, args.effort)
+
+
+async def repair_pass(client, state, model, effort):
     link()
     p, results, mism, crashed, status = full_check()
     if crashed:
@@ -830,7 +856,7 @@ async def main_repair(args):
         by_file.setdefault(p.rewritten[a], set()).add(a)
     jobs = []
     for path, addrs in by_file.items():
-        j = Job(sorted(addrs), args.model, args.effort)
+        j = Job(sorted(addrs), model, effort)
         j.replaceable = {path}
         j.keep = set(a for a, f in p.rewritten.items() if f == path) - addrs
         j.hashes = file_hashes()
@@ -852,10 +878,33 @@ async def main_repair(args):
         for a in j.group:
             state.fn(a)['status'] = 'repairing'
     retry = await round_(client, state, jobs, None)
-    for j in retry:  # still failing: take the failing functions out of the tree by restoring nothing; report
-        log('repair failed for %s: %s' % (sorted(j.replaceable)[0], (j.problem or '')[:300]))
+    for j in retry:  # still failing: remove those functions from the tree (they go back to the recompiled code)
+        path = sorted(j.replaceable)[0]
+        log('repair failed for %s: %s' % (path, (j.problem or '')[:200]))
+        failing = [a for a in j.group if a in bad]
+        if remove_functions(path, failing):
+            for a in failing:
+                state.fn(a).update(status='new', attempts=0)
+    ok, errs = compile_rewrites()
+    if not ok:
+        log('tree does not compile after repairs: %s' % json.dumps(errs)[:500])
     state.save()
     commit_if_due(state, force=True)
+
+
+def remove_functions(path, addrs):
+    """Takes rewritten functions out of a file: the whole file if nothing else is exported from it, otherwise just
+    their GUEST_EXPORT/GUEST_FUZZ lines (the definitions stay, unused, until the next repair or rewrite)."""
+    full = os.path.join(ROOT, path)
+    body = open(full).read()
+    exports = set(int(a, 16) for a in EXPORT_RE.findall(body))
+    if exports <= set(addrs):
+        os.remove(full)
+        return True
+    lines = [l for l in body.splitlines(True)
+             if not any(re.search(r'GUEST_(EXPORT|FUZZ)\(\s*0x0*%x\b' % a, l) for a in addrs)]
+    open(full, 'w').write(''.join(lines))
+    return True
 
 
 async def main_bench(args):
@@ -912,6 +961,7 @@ def main():
     r.add_argument('--max-attempts', type=int, default=2)
     r.add_argument('--budget', type=float, default=100.0)
     r.add_argument('--batch-api', action='store_true', help='Message Batches API: half price, slower rounds')
+    r.add_argument('--repair-every', type=int, default=2, help='full check + repairs every n rounds (after commits)')
     b = sub.add_parser('bench')
     b.add_argument('--models', default='claude-haiku-5-5,claude-sonnet-5-5,claude-opus-5-5')
     b.add_argument('--batches', type=int, default=6)

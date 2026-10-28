@@ -63,6 +63,31 @@ register shifts where the amount can be 32 or more, `arm::llsl` = RVCT's `__aeab
 - If a function cannot be expressed exactly (e.g. it relies on condition flags as an output, or on registers
   other than the ABI's), skip it.
 
+# Reading RVCT ARM code
+
+- Arguments arrive in r0-r3 (then `[sp]` at entry); results leave in r0 (r0:r1 for 64-bit, s0/d0 for float/
+  double). r4-r11 are saved by the callee: `push {r4-r6, lr}` / `pop {r4-r6, pc}` is just the frame.
+- Literal loads `ldr rX, [pc, #n]` are annotated with their value: addresses of globals, tables, vtables and
+  strings, or big constants.
+- Conditional instructions (`moveq`, `strne`, `addhi`...) are branches written inline: turn them into `if`s.
+  `cmp a, b` + `movlo r0, #0` + `movhs r0, #1` is `return a >= b` (unsigned).
+- Division by a constant: `umull`/`smull` with a magic number then a shift (e.g. 0xcccccccd: unsigned / 10,
+  0x66666667 + `asr` + sign fixup: signed / 10 or / 5...). Recover the divisor and keep the signedness.
+- `ldm`/`stm` of several registers between two addresses is a struct copy; `bic rX, rY, #0x8000` clears a bit.
+- A switch: `cmp rX, #n` + `addls pc, pc, rX, lsl #2` / `ldrls pc, [pc, rX, lsl #2]` (targets listed as `switch:`).
+- Virtual calls: `ldr r1, [r0]` (vtable) then `ldr rN, [r1, #off]` then `blx rN`: slot off/4. Call them with
+  `guest::call_address` on the loaded function pointer.
+- Constructors store the vtable address into `[r0]` and return r0; destructors often reset it to the base's.
+- Code after the function's own addresses (labels below its start, or shared tails) belongs to it: the compiler
+  merges common tails. Calls to `f_...` are other functions; `L_...` labels are inside this one.
+
+# How to work
+
+1. For each function: its arguments and result (types and widths), then what it reads and writes, then each path.
+2. Decide the data layout: which struct `this` and the pointer arguments are, using and extending existing types.
+3. Write the C++ so that each path produces exactly the same calls, memory writes and result.
+4. Write the fuzz generator: inputs that reach every path, built from valid objects.
+
 # Rules for readability
 
 - Name things by what they do, but only claim what the code shows. Unknown fields are `unknown_<hex offset>`,
@@ -80,7 +105,8 @@ register shifts where the amount can be 32 or more, `arm::llsl` = RVCT's `__aeab
 - Struct definitions mirror game memory: fields at their exact offsets, unknown gaps as
   `u8 unknown_XXXX[size];`, a `GUEST_OFFSET(Type, field, offset)` check for every field you rely on and
   `GUEST_SIZE` when the size is known. Extend an existing struct by splitting its padding rather than defining a
-  second struct for the same memory.
+  second struct for the same memory. Never redefine a type that exists in a header (not even in an anonymous
+  namespace): include its header, and replace that header with an extended version if you need more fields.
 - One short doc comment per function saying what it does (and any non-obvious rule); comments explain why, not
   what. No comments that restate the code. Keep functions short and clear: early returns, named locals, loops
   instead of repeated code, `constexpr` names for meaningful constants.
