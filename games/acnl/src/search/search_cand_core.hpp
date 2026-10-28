@@ -15,6 +15,8 @@ struct SearchCandCore {
 
     // Marks (sets the bit of) every candidate the virtual check accepts that was not marked yet.
     void mark_candidates();
+    // Marks one candidate; does nothing if it is already marked.
+    void mark(s32 index);
 };
 GUEST_OFFSET(SearchCandCore, vtable, 0x00);
 GUEST_OFFSET(SearchCandCore, count, 0x04);

@@ -6,8 +6,10 @@
 struct BitSet32 {
     u32 limit;  // indices at or above this are ignored
     u32 bits;
-    u32 count;  // decremented by clear() when a set flag is cleared
+    u32 count;  // incremented by set() and decremented by clear() when a flag changes
 
+    // Sets the flag at index (when in range and not set yet) and increments the count.
+    void set(u32 index);
     // Clears the flag at index (when in range and set) and decrements the count.
     void clear(u32 index);
     // The assignment operator: copies the other set unless it is this one. Returns this.

@@ -35,5 +35,11 @@ GUEST_SIZE(GridRectIterator, 16);
 
 GridRectIterator &construct_grid_rect_iterator(GridRectIterator &self, const GridRect &rect);
 
+// The iterator one past the last cell of a rectangle: the current cell is the min column on the row below max.
+void make_end_grid_rect_iterator(GridRectIterator &out, const GridRect &rect);
+
 // The rectangle moved so that origin becomes (0, 0). Returns out.
 GridRect &grid_rect_relative_to(GridRect &out, const GridRect &rect, const GridPoint &origin);
+
+// The rectangle moved by an offset. Returns out.
+GridRect &grid_rect_translated(GridRect &out, const GridRect &rect, const GridPoint &offset);
