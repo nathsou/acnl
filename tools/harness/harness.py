@@ -353,11 +353,12 @@ def link():
 TEST_INPUT = ','.join('%d:A:6' % f for f in range(600, 4000, 90))
 
 
-def verify(addresses, timeout=900):
+def verify(addresses, timeout=900, disable=()):
     """One game run with shadow checks, fuzzing only `addresses`. Returns (summary rows, mismatch text, blamed)."""
     env_args = ['--env', 'GUEST_FUZZ=1', '--env', 'GUEST_FUZZ_FRAME=3600', '--env', 'GUEST_FUZZ_MIN=200',
                 '--env', 'GUEST_FUZZ_EXIT=1',
-                '--env', 'GUEST_FUZZ_ONLY=' + ','.join('%x' % a for a in addresses)]
+                '--env', 'GUEST_FUZZ_ONLY=' + ','.join('%x' % a for a in addresses),
+                '--env', 'GUEST_DISABLE=' + ','.join('%x' % a for a in disable)]
     name = 'harness'
     cmd = [sys.executable, os.path.join(ROOT, 'tools', 'run.py'), GAME, '--name', name, '--frames', '40000',
            '--input', TEST_INPUT, '--shadow', '--timeout', str(timeout)] + env_args
@@ -391,7 +392,30 @@ def verify(addresses, timeout=900):
         first = open(prog).read().split()
         if first and first[0] != 'done':
             blamed = int(first[0], 16)
+    if crashed:
+        for logf in [os.path.join(rundir, 'stdout.txt')]:
+            if os.path.exists(logf):
+                fatal = [l for l in open(logf, errors='replace') if 'FATAL' in l]
+                if fatal:
+                    status_line += ' | ' + fatal[-1].strip()[:300]
     return rows, mism, crashed, blamed, status_line
+
+
+def find_crashing_jobs(jobs):
+    """The run crashes outside fuzzing with all these jobs' rewrites: bisect with GUEST_DISABLE."""
+    if len(jobs) == 1:
+        return jobs
+    half = len(jobs) // 2
+    first, second = jobs[:half], jobs[half:]
+    others = lambda keep: [a for j in jobs if j not in keep for a in j.exports()]
+    culprits = []
+    for part in (first, second):
+        addrs = sorted(a for j in part for a in j.exports())
+        _, _, crashed, blamed, status = verify([], disable=others(part))
+        log('bisect: %d jobs -> %s' % (len(part), 'crash' if crashed else 'ok'))
+        if crashed:
+            culprits += find_crashing_jobs(part)
+    return culprits
 
 
 def verdict(row):
@@ -505,13 +529,23 @@ async def round_(client, state, jobs, escalate):
                 j.problem = 'link failed: ' + out[-1500:]
             return jobs
         addrs = sorted(a for j in live for a in j.exports())
-        for attempt in range(4):
-            rows, mism, crashed, blamed, status = verify(addrs)
+        disable = []
+        for attempt in range(6):
+            rows, mism, crashed, blamed, status = verify(addrs, disable=disable)
             if not crashed:
                 break
             log('run failed (%s), blamed %s' % (status, '%x' % blamed if blamed else 'nothing'))
             if blamed is None:
-                break
+                # a crash in normal play: find the jobs responsible, fail them, run again without them
+                culprits = find_crashing_jobs([j for j in live if not getattr(j, 'crash', None)])
+                for j in culprits:
+                    j.crash = 'play'
+                    j.crash_status = status
+                    disable += sorted(j.exports())
+                addrs = [a for a in addrs if a not in disable]
+                if not culprits:
+                    break
+                continue
             addrs = [a for a in addrs if a != blamed]
             for j in live:
                 if blamed in j.exports():
@@ -519,7 +553,10 @@ async def round_(client, state, jobs, escalate):
         for j in live:
             results = {}
             for a in j.exports():
-                if getattr(j, 'crash', None) == a:
+                if getattr(j, 'crash', None) == 'play':
+                    results[a] = (False, 'with your rewrites the game crashes during normal play (%s)' %
+                                  getattr(j, 'crash_status', ''))
+                elif getattr(j, 'crash', None) == a:
                     results[a] = (False, 'the game crashed or hung while fuzzing it')
                 elif crashed:
                     results[a] = (False, 'the game run failed: ' + status)

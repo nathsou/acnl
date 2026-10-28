@@ -662,8 +662,19 @@ static void run_fuzzers(CPU *c) {
     }
 }
 
+// GUEST_DISABLE=<address>,<address>...: these rewrites run their originals instead (to find which one breaks a run)
+static bool disabled(const detail::Export &e) {
+    static const std::string list = getenv("GUEST_DISABLE") ? std::string(",") + getenv("GUEST_DISABLE") + "," : "";
+    if (list.empty()) {
+        return false;
+    }
+    char needle[16];
+    snprintf(needle, sizeof needle, ",%x,", e.address);
+    return list.find(needle) != std::string::npos;
+}
+
 void detail::enter(Export &e, CPU *c, u32 entry) {
-    if (entry != 0 || !settings.overlay) {
+    if (entry != 0 || !settings.overlay || disabled(e)) {
         return e.original(c, entry);  // resuming inside the original
     }
     static bool fuzzed;
