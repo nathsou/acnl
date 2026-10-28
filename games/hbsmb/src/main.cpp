@@ -47,7 +47,9 @@ int main() {
         smb::non_maskable_interrupt();  // the game's whole frame runs in its vblank handler
         clear_top_screen();
         libc::memcpy(framebuffer, top_screen.ptr(), sizeof(*top_screen));
-        if (ctru::hidKeysDown() & (ctru::KEY_L | ctru::KEY_R)) break;
+        if (ctru::hidKeysDown() & (ctru::KEY_L | ctru::KEY_R)) {
+            break;
+        }
         ctru::gfxFlushBuffers();
         ctru::gfxSwapBuffers();
         ctru::gspWaitForVBlank();

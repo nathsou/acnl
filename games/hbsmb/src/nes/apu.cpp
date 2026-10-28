@@ -40,12 +40,18 @@ static void write_status(u8 value) {
     for (int i = 0; i < 2; i++) {
         PulseChannel &pulse = apu->pulse[i];
         pulse.enabled = (value >> i) & 1;
-        if (!pulse.enabled) pulse.length_counter = 0;
+        if (!pulse.enabled) {
+            pulse.length_counter = 0;
+        }
     }
     apu->triangle.enabled = (value >> 2) & 1;
-    if (!apu->triangle.enabled) apu->triangle.length_counter = 0;
+    if (!apu->triangle.enabled) {
+        apu->triangle.length_counter = 0;
+    }
     apu->noise.enabled = (value >> 3) & 1;
-    if (!apu->noise.enabled) apu->noise.length_counter = 0;
+    if (!apu->noise.enabled) {
+        apu->noise.length_counter = 0;
+    }
 
     DmcChannel &dmc = apu->dmc;
     dmc.enabled = (value >> 4) & 1;
@@ -89,7 +95,9 @@ void apu_write_register(u16 address, u8 value) {
     case 0x400c: {
         NoiseChannel &noise = apu->noise;
         noise.envelope_loop = (value >> 5) & 1;
-        if (noise.envelope_loop) noise.length_counter = 0;  // (halting clears it here, unlike the pulse channels)
+        if (noise.envelope_loop) {
+            noise.length_counter = 0;  // (halting clears it here, unlike the pulse channels)
+        }
         noise.constant_volume = (value >> 4) & 1;
         noise.volume = value & 0xf;
         noise.envelope_divider = value & 0xf;

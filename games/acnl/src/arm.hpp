@@ -17,7 +17,9 @@ constexpr u32 lsr(u32 value, u32 amount) { return (amount & 0xff) >= 32 ? 0 : va
 // __aeabi_llsl, the compiler runtime's 64-bit left shift (as RVCT implements it, for any amount)
 constexpr u64 llsl(u64 value, u32 amount) {
     u32 low = u32(value), high = u32(value >> 32);
-    if (s32(amount - 32) >= 0) return u64(lsl(low, amount - 32)) << 32;
+    if (s32(amount - 32) >= 0) {
+        return u64(lsl(low, amount - 32)) << 32;
+    }
     return u64(lsl(high, amount) | lsr(low, 32 - amount)) << 32 | lsl(low, amount);
 }
 
@@ -29,9 +31,15 @@ constexpr u32 rotate_left(u32 value, u32 amount) {
 
 // VCVT.S32.F32: toward zero, saturating, NaN to 0
 inline s32 to_s32(float f) {
-    if (std::isnan(f)) return 0;
-    if (f >= 2147483648.0f) return INT32_MAX;
-    if (f <= -2147483648.0f) return INT32_MIN;
+    if (std::isnan(f)) {
+        return 0;
+    }
+    if (f >= 2147483648.0f) {
+        return INT32_MAX;
+    }
+    if (f <= -2147483648.0f) {
+        return INT32_MIN;
+    }
     return s32(f);
 }
 

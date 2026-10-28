@@ -4,7 +4,9 @@
 #include "core/random.hpp"
 
 u32 EncryptedInt::get() const {
-    if (checksum != checksum_of(scrambled)) return 0;
+    if (checksum != checksum_of(scrambled)) {
+        return 0;
+    }
     u32 rotated = arm::rotate_left(scrambled, 28 - rotation);  // right by rotation + 4
     return rotated - (offset + KEY);
 }
@@ -29,8 +31,11 @@ GUEST_EXPORT(0x00303534, EncryptedInt::set);
 
 void EncryptedInt::add(u32 amount, u32 max) {
     u32 value = get();
-    if (u64(value) + amount > max) set(max);
-    else set(value + amount);
+    if (u64(value) + amount > max) {
+        set(max);
+    } else {
+        set(value + amount);
+    }
 }
 GUEST_EXPORT(0x00613c8c, EncryptedInt::add);
 
@@ -45,8 +50,12 @@ GUEST_EXPORT(0x00613d38, EncryptedInt::subtract);
 // A scrambled value with a valid checksum most of the time, any rotation (corrupted data included)
 static gptr<EncryptedInt> some_encrypted_int(guest::Fuzz &f) {
     auto value = f.object<EncryptedInt>();
-    if (f.below(4) != 0) value->checksum = EncryptedInt::checksum_of(value->scrambled);
-    if (f.below(2) != 0) value->rotation %= 26;
+    if (f.below(4) != 0) {
+        value->checksum = EncryptedInt::checksum_of(value->scrambled);
+    }
+    if (f.below(2) != 0) {
+        value->rotation %= 26;
+    }
     return value;
 }
 

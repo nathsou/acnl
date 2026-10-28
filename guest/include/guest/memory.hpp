@@ -57,8 +57,11 @@ public:
 
 private:
     static constexpr std::ptrdiff_t stride() {
-        if constexpr (std::is_void_v<T> || std::is_function_v<T>) return 1;
-        else return sizeof(T);
+        if constexpr (std::is_void_v<T> || std::is_function_v<T>) {
+            return 1;
+        } else {
+            return sizeof(T);
+        }
     }
     u32 addr_ = 0;
 };

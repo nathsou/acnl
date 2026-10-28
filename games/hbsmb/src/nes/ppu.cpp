@@ -17,10 +17,18 @@ static bool is_palette_mirror(u16 address) { return (address & ~0xc) == 0x3f10; 
 
 // PPU memory: pattern tables (CHR ROM), name tables, palette
 u8 ppu_read(u16 address) {
-    if (address < 0x2000) return chr_rom[address];
-    if (address < 0x3f00) return ppu->nametables[address - 0x2000];
-    if (is_palette_mirror(address)) return ppu->palette[address - 0x3f10];
-    if (address < 0x4000) return ppu->palette[address & 0x1f];
+    if (address < 0x2000) {
+        return chr_rom[address];
+    }
+    if (address < 0x3f00) {
+        return ppu->nametables[address - 0x2000];
+    }
+    if (is_palette_mirror(address)) {
+        return ppu->palette[address - 0x3f10];
+    }
+    if (address < 0x4000) {
+        return ppu->palette[address & 0x1f];
+    }
     return 0;
 }
 GUEST_EXPORT(0x001218f0, ppu_read);
@@ -67,13 +75,19 @@ void ppu_write_register(u16 address, u8 value) {
     case 0x2003: ppu->oam_address = value; break;
     case 0x2004: ppu->oam[ppu->oam_address++] = value; break;
     case 0x2005:  // PPUSCROLL: x, then y
-        if (ppu->write_toggle == 0) ppu->scroll_x = value;
-        else ppu->scroll_y = value;
+        if (ppu->write_toggle == 0) {
+            ppu->scroll_x = value;
+        } else {
+            ppu->scroll_y = value;
+        }
         ppu->write_toggle = !ppu->write_toggle;
         break;
     case 0x2006:  // PPUADDR: high byte, then low byte
-        if (ppu->write_toggle == 0) ppu->vram_address = (ppu->vram_address & 0x00ff) | value << 8;
-        else ppu->vram_address = (ppu->vram_address & 0xff00) | value;
+        if (ppu->write_toggle == 0) {
+            ppu->vram_address = (ppu->vram_address & 0x00ff) | value << 8;
+        } else {
+            ppu->vram_address = (ppu->vram_address & 0xff00) | value;
+        }
         ppu->write_toggle = !ppu->write_toggle;
         break;
     case 0x2007:

@@ -49,12 +49,17 @@ enum class Slot { Core, Core64, Single, Double };
 
 template <typename T>
 constexpr Slot slot_of() {
-    if constexpr (std::is_reference_v<T>) return Slot::Core;  // a reference to a guest object: its address
-    else if constexpr (std::is_same_v<T, float>) return GUEST_HARDFP ? Slot::Single : Slot::Core;
-    else if constexpr (std::is_same_v<T, double>) return GUEST_HARDFP ? Slot::Double : Slot::Core64;
-    else if constexpr (is_gptr<T>::value) return Slot::Core;
-    else if constexpr (std::is_integral_v<T> || std::is_enum_v<T>) return sizeof(T) == 8 ? Slot::Core64 : Slot::Core;
-    else {
+    if constexpr (std::is_reference_v<T>) {
+        return Slot::Core;  // a reference to a guest object: its address
+    } else if constexpr (std::is_same_v<T, float>) {
+        return GUEST_HARDFP ? Slot::Single : Slot::Core;
+    } else if constexpr (std::is_same_v<T, double>) {
+        return GUEST_HARDFP ? Slot::Double : Slot::Core64;
+    } else if constexpr (is_gptr<T>::value) {
+        return Slot::Core;
+    } else if constexpr (std::is_integral_v<T> || std::is_enum_v<T>) {
+        return sizeof(T) == 8 ? Slot::Core64 : Slot::Core;
+    } else {
         static_assert(sizeof(T) == 0, "unsupported argument type: use integers, enums, float, double or gptr<T>");
         return Slot::Core;
     }
@@ -63,21 +68,31 @@ constexpr Slot slot_of() {
 // raw register bits <-> C++ values (T is the declared parameter or result type)
 template <typename T>
 u64 to_bits(const std::remove_reference_t<T> &v) {
-    if constexpr (std::is_reference_v<T>) return addr_of(&v).addr();
-    else if constexpr (std::is_same_v<T, float>) return F2U(v);
-    else if constexpr (std::is_same_v<T, double>) { u64 b; memcpy(&b, &v, 8); return b; }
-    else if constexpr (is_gptr<T>::value) return v.addr();
-    else if constexpr (sizeof(T) == 8) return u64(v);
-    else return u32(v);  // sign-extended to 32 bits like the ABI wants
+    if constexpr (std::is_reference_v<T>) {
+        return addr_of(&v).addr();
+    } else if constexpr (std::is_same_v<T, float>) {
+        return F2U(v);
+    } else if constexpr (std::is_same_v<T, double>) { u64 b; memcpy(&b, &v, 8); return b; } else if constexpr (is_gptr<T>::value) {
+        return v.addr();
+    } else if constexpr (sizeof(T) == 8) {
+        return u64(v);
+    } else {
+        return u32(v);  // sign-extended to 32 bits like the ABI wants
+    }
 }
 template <typename T>
 T from_bits(u64 b) {
-    if constexpr (std::is_reference_v<T>) return *gptr<std::remove_reference_t<T>>(u32(b));
-    else if constexpr (std::is_same_v<T, float>) return U2F(u32(b));
-    else if constexpr (std::is_same_v<T, double>) { double d; memcpy(&d, &b, 8); return d; }
-    else if constexpr (is_gptr<T>::value) return T(u32(b));
-    else if constexpr (std::is_same_v<T, bool>) return (b & 0xff) != 0;
-    else return T(b);
+    if constexpr (std::is_reference_v<T>) {
+        return *gptr<std::remove_reference_t<T>>(u32(b));
+    } else if constexpr (std::is_same_v<T, float>) {
+        return U2F(u32(b));
+    } else if constexpr (std::is_same_v<T, double>) { double d; memcpy(&d, &b, 8); return d; } else if constexpr (is_gptr<T>::value) {
+        return T(u32(b));
+    } else if constexpr (std::is_same_v<T, bool>) {
+        return (b & 0xff) != 0;
+    } else {
+        return T(b);
+    }
 }
 
 // where each argument goes (AAPCS with the VFP variant when GUEST_HARDFP)
@@ -92,7 +107,9 @@ public:
     Location next() {
         switch (slot_of<T>()) {
         case Slot::Core:
-            if (ncrn_ < 4) return {Location::Reg, u32(ncrn_++)};
+            if (ncrn_ < 4) {
+                return {Location::Reg, u32(ncrn_++)};
+            }
             return stack(4);
         case Slot::Core64:
             ncrn_ = (ncrn_ + 1) & ~1;
@@ -155,8 +172,9 @@ inline void write_location(CPU *c, Location l, u32 sp, u64 v) {
 enum class Ret : u8 { Void, R0, R0R1, S0, D0 };
 template <typename R>
 constexpr Ret ret_of() {
-    if constexpr (std::is_void_v<R>) return Ret::Void;
-    else {
+    if constexpr (std::is_void_v<R>) {
+        return Ret::Void;
+    } else {
         switch (slot_of<R>()) {
         case Slot::Core: return Ret::R0;
         case Slot::Core64: return Ret::R0R1;
@@ -224,14 +242,20 @@ void invoke(CPU *c) {
     ArgAllocator al;
     if constexpr (std::is_void_v<typename T::Class>) {
         auto args = read_args(c, al, static_cast<typename T::Args *>(nullptr));
-        if constexpr (std::is_void_v<R>) std::apply(Fn, args);
-        else write_result<R>(c, std::apply(Fn, args));
+        if constexpr (std::is_void_v<R>) {
+            std::apply(Fn, args);
+        } else {
+            write_result<R>(c, std::apply(Fn, args));
+        }
     } else {
         auto *self = gptr<typename T::Class>(u32(read_location(c, al.next<u32>(), c->r[13]))).get();
         auto args = read_args(c, al, static_cast<typename T::Args *>(nullptr));
         auto call = [self](auto... a) { return (self->*Fn)(a...); };
-        if constexpr (std::is_void_v<R>) std::apply(call, args);
-        else write_result<R>(c, std::apply(call, args));
+        if constexpr (std::is_void_v<R>) {
+            std::apply(call, args);
+        } else {
+            write_result<R>(c, std::apply(call, args));
+        }
     }
     c->pc = ret;
 }
@@ -264,10 +288,13 @@ R call(const GuestEntry *e, u32 address, A... args) {
     c->r[14] = RETURN_TO_HOST;
     c->pc = address;
     e->fn(c, e->entry);
-    if (c->pc != RETURN_TO_HOST)
+    if (c->pc != RETURN_TO_HOST) {
         fatal("guest function %08x returned to %08x instead of the rewritten caller", address, c->pc);
+    }
     c->r[13] = sp;
-    if constexpr (!std::is_void_v<R>) return read_result<R>(c);
+    if constexpr (!std::is_void_v<R>) {
+        return read_result<R>(c);
+    }
 }
 
 const GuestEntry *lookup(u32 address);
@@ -304,7 +331,9 @@ template <typename R, typename... A>
 R call_member(const MemberFunctionPointer &pointer, gptr<void> object, A... args) {
     gptr<void> self = gptr<void>(object.addr() + (pointer.adjust >> 1));
     u32 target = pointer.function;
-    if (pointer.adjust & 1) target = *gptr<u32>(*self.cast<u32>() + pointer.function);  // through the vtable
+    if (pointer.adjust & 1) {
+        target = *gptr<u32>(*self.cast<u32>() + pointer.function);  // through the vtable
+    }
     return call_address<R>(target, self, args...);
 }
 

@@ -32,7 +32,9 @@ void update_screen() {
         pha();
         lda<absolute>(Mirror_PPU_CTRL_REG1);
         ora<immediate>(0b0000'0100);  // the PPU steps by 32...
-        if (!cpu->carry) and_<immediate>(0b1111'1011);  // ...or by 1
+        if (!cpu->carry) {
+            and_<immediate>(0b1111'1011);  // ...or by 1
+        }
         sta(PPU_CTRL_REG1);  // (WritePPUReg1)
         sta(Mirror_PPU_CTRL_REG1);
         pla();
@@ -45,7 +47,9 @@ void update_screen() {
         lsr_a();
         tax();  // the length
         do {
-            if (!cpu->carry) iny();  // the next data byte, unless repeating
+            if (!cpu->carry) {
+                iny();  // the next data byte, unless repeating
+            }
             lda<indirect_y>(Temp0);
             sta(PPU_DATA);
             dex();

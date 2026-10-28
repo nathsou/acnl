@@ -15,14 +15,18 @@ GUEST_EXPORT(0x00768da0, Item::index);
 gptr<ItemData> Item::data() const {
     s32 i = index();
     gptr<ItemData> entries = item_data_table->entries;
-    if (i < 0 || !entries || i >= ITEM_COUNT) return nullptr;
+    if (i < 0 || !entries || i >= ITEM_COUNT) {
+        return nullptr;
+    }
     return entries + i;
 }
 GUEST_EXPORT(0x005361a8, Item::data);
 
 u8 Item::category() const {
     gptr<ItemData> d = data();
-    if (!d) return NO_CATEGORY;
+    if (!d) {
+        return NO_CATEGORY;
+    }
     return d->category < NO_CATEGORY ? d->category : 0;  // (an out-of-range category reads as 0)
 }
 GUEST_EXPORT(0x002fcb34, Item::category);
@@ -32,23 +36,31 @@ inline guest::global<CategoryInfo[Item::NO_CATEGORY], 0x00877770> category_infos
 inline guest::global<CategoryInfo, 0x0087917c> default_category_info;
 
 gptr<CategoryInfo> category_info(u32 category) {
-    if (category < Item::NO_CATEGORY) return category_infos.ptr().cast<CategoryInfo>() + category;
+    if (category < Item::NO_CATEGORY) {
+        return category_infos.ptr().cast<CategoryInfo>() + category;
+    }
     return default_category_info.ptr();
 }
 GUEST_EXPORT(0x005359fc, category_info);
 
 gptr<u8> Item::category_flags() const {
     gptr<ItemData> d = data();
-    if (!d) return nullptr;
+    if (!d) {
+        return nullptr;
+    }
     u32 category = d->category < NO_CATEGORY ? d->category : 0;
     gptr<u8> table = category_flag_table->entries;
-    if (!table) return nullptr;
+    if (!table) {
+        return nullptr;
+    }
     return table + category * 3;
 }
 GUEST_EXPORT(0x00536214, Item::category_flags);
 
 bool Item::has_category_flag_4() const {
-    if ((id & 0x6000) == 0x4000) return true;
+    if ((id & 0x6000) == 0x4000) {
+        return true;
+    }
     gptr<u8> flags = category_flags();
     return flags && (flags[1] >> 4 & 1);
 }
@@ -65,23 +77,35 @@ inline guest::global<gptr<u8>, 0x0095bf74> game_manager;  // the game manager ob
 // the count in the item's flags (n + 1 if that is 2-9, else 0).
 static s32 offset_in_category(const Item &item) {
     gptr<ItemData> data = item.data();
-    if (!data) return -1;
+    if (!data) {
+        return -1;
+    }
     u32 category = data->category < Item::NO_CATEGORY ? data->category : 0;
     return s32(item.number() - category_info(category)->first_item_number);
 }
 
 u32 Item::price() const {
     gptr<ItemData> d = data();
-    if (!d) return 0;
+    if (!d) {
+        return 0;
+    }
     u32 price = d->base_price();
     u8 category = d->category;
-    if (category >= NO_CATEGORY) return price;
+    if (category >= NO_CATEGORY) {
+        return price;
+    }
     bool stackable = category == 0x75 || category == 0x76;
-    if (category != 0x33 && category != 0x34 && !stackable) return price;
+    if (category != 0x33 && category != 0x34 && !stackable) {
+        return price;
+    }
 
     const Item &reference = *gptr<Item>(game_manager->addr() + 0x6223a);
-    if (offset_in_category(*this) == offset_in_category(reference)) price = s32(price) / 10;
-    if (!stackable) return price;
+    if (offset_in_category(*this) == offset_in_category(reference)) {
+        price = s32(price) / 10;
+    }
+    if (!stackable) {
+        return price;
+    }
 
     u32 count = (flags & ~0xc000) + 1;
     return (count - 2 <= 7 ? count : 0) * price;
@@ -96,7 +120,9 @@ Item &construct_item(Item &self, u16 id) {
     self.id = id & 0x7fff;
     self.flags = 0;
     u32 kind = self.id >> 13;
-    if (kind < 2) guest::call_member<void>(kind_initializers[kind], guest::addr_of(self).cast<void>());
+    if (kind < 2) {
+        guest::call_member<void>(kind_initializers[kind], guest::addr_of(self).cast<void>());
+    }
     return self;
 }
 GUEST_EXPORT(0x002fcbb0, construct_item);
@@ -141,7 +167,9 @@ GUEST_FUZZ(0x005359fc, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 
 GUEST_FUZZ(0x00536214, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
 GUEST_FUZZ(0x00769840, 300, [](guest::Fuzz &f) {
     auto item = some_item(f);
-    if (f.below(4) == 0) item->id = 0x4000 | f.below(0x2000);
+    if (f.below(4) == 0) {
+        item->id = 0x4000 | f.below(0x2000);
+    }
     f.arguments(item);
 });
 GUEST_FUZZ(0x007486fc, 200, [](guest::Fuzz &f) { f.arguments(f.object<ItemData>()); });

@@ -40,7 +40,9 @@ namespace guest {
 static thread_local CPU *tls_cpu;
 
 CPU *cpu() {
-    if (!tls_cpu) fatal("rewritten code called guest code outside a guest thread");
+    if (!tls_cpu) {
+        fatal("rewritten code called guest code outside a guest thread");
+    }
     return tls_cpu;
 }
 void detail::set_cpu(CPU *c) { tls_cpu = c; }
@@ -56,7 +58,9 @@ void fatal(const char *fmt, ...) {
 
 const GuestEntry *detail::lookup(u32 address) {
     const GuestEntry *e = dispatch_lookup(address);
-    if (!e) fatal("no guest function at %08x", address);
+    if (!e) {
+        fatal("no guest function at %08x", address);
+    }
     return e;
 }
 
@@ -98,12 +102,24 @@ static struct Settings {
     bool fuzz = false;       // GUEST_FUZZ=1: run the fuzzers once, at the first rewritten call after fuzz_frame
     u64 fuzz_frame = 600;
     Settings() {
-        if (const char *s = getenv("GUEST_FUZZ")) fuzz = atoi(s) != 0;
-        if (const char *s = getenv("GUEST_FUZZ_FRAME")) fuzz_frame = strtoull(s, nullptr, 0);
-        if (const char *s = getenv("GUEST_OVERLAY")) overlay = atoi(s) != 0;
-        if (const char *s = getenv("GUEST_SHADOW")) shadow = !strcmp(s, "all") ? 2 : atoi(s) ? 1 : 0;
-        if (const char *s = getenv("GUEST_SHADOW_FIRST")) shadow_first = strtoull(s, nullptr, 0);
-        if (const char *s = getenv("GUEST_SHADOW_EVERY")) shadow_every = std::max(1ull, strtoull(s, nullptr, 0));
+        if (const char *s = getenv("GUEST_FUZZ")) {
+            fuzz = atoi(s) != 0;
+        }
+        if (const char *s = getenv("GUEST_FUZZ_FRAME")) {
+            fuzz_frame = strtoull(s, nullptr, 0);
+        }
+        if (const char *s = getenv("GUEST_OVERLAY")) {
+            overlay = atoi(s) != 0;
+        }
+        if (const char *s = getenv("GUEST_SHADOW")) {
+            shadow = !strcmp(s, "all") ? 2 : atoi(s) ? 1 : 0;
+        }
+        if (const char *s = getenv("GUEST_SHADOW_FIRST")) {
+            shadow_first = strtoull(s, nullptr, 0);
+        }
+        if (const char *s = getenv("GUEST_SHADOW_EVERY")) {
+            shadow_every = std::max(1ull, strtoull(s, nullptr, 0));
+        }
         if (shadow) {
             // the runtime may leave with _exit (RECOMP_FRAMES): keep the summary file current instead
             std::thread([] {
@@ -157,19 +173,26 @@ struct sigaction old_segv, old_bus;
 u8 *page_ptr(u32 index) { return g_mem + PROTECT_LO + u64(index) * page_size; }
 
 void protect_all(int prot) {
-    for (const Range &r : PROTECTED) mprotect(g_mem + r.lo, r.hi - r.lo, prot);
+    for (const Range &r : PROTECTED) {
+        mprotect(g_mem + r.lo, r.hi - r.lo, prot);
+    }
 }
 
 bool is_protected(const u8 *a) {
-    for (const Range &r : PROTECTED)
-        if (a >= g_mem + r.lo && a < g_mem + r.hi) return true;
+    for (const Range &r : PROTECTED) {
+        if (a >= g_mem + r.lo && a < g_mem + r.hi) {
+            return true;
+        }
+    }
     return false;
 }
 
 void chain(int sig, siginfo_t *si, void *ctx) {
     struct sigaction &old = sig == SIGBUS ? old_bus : old_segv;
     if (old.sa_flags & SA_SIGINFO) {
-        if (old.sa_sigaction) return old.sa_sigaction(sig, si, ctx);
+        if (old.sa_sigaction) {
+            return old.sa_sigaction(sig, si, ctx);
+        }
     } else if (old.sa_handler != SIG_DFL && old.sa_handler != SIG_IGN) {
         return old.sa_handler(sig);
     }
@@ -178,7 +201,9 @@ void chain(int sig, siginfo_t *si, void *ctx) {
 
 void on_fault(int sig, siginfo_t *si, void *ctx) {
     u8 *a = static_cast<u8 *>(si->si_addr);
-    if (!is_protected(a)) return chain(sig, si, ctx);
+    if (!is_protected(a)) {
+        return chain(sig, si, ctx);
+    }
     u32 index = u32((a - (g_mem + PROTECT_LO)) / page_size);
     if (!journaling.load(std::memory_order_acquire)) {
         // another thread faulted just as a run ended (between the end of journaling and the unprotect)
@@ -231,7 +256,9 @@ void begin_journal() {
 void end_journal() {
     protect_all(PROT_READ | PROT_WRITE);
     journaling.store(false, std::memory_order_release);
-    for (auto &p : journal) slot_of_page[p.index] = -1;
+    for (auto &p : journal) {
+        slot_of_page[p.index] = -1;
+    }
 }
 
 // a system call or a preemption in the middle of a checked run: it cannot be undone, so stop journaling now
@@ -239,7 +266,9 @@ const char *abandon_why;
 u32 abandon_pc;
 
 void abandon_run(const char *why, u32 pc) {
-    if (!journaling.load() || !pthread_equal(pthread_self(), journal_owner)) return;
+    if (!journaling.load() || !pthread_equal(pthread_self(), journal_owner)) {
+        return;
+    }
     abandon_why = why;
     abandon_pc = pc;
     tainted = true;
@@ -262,7 +291,9 @@ extern "C" void guest_shadow_preempt(CPU *c) {
     // preemption waits (rt_preempt_flag stays set, so it happens at the first check after the run), unless the
     // run spins long enough to be waiting for another thread.
     static thread_local u32 deferred;
-    if (journaling.load() && pthread_equal(pthread_self(), journal_owner) && ++deferred < 100000) return;
+    if (journaling.load() && pthread_equal(pthread_self(), journal_owner) && ++deferred < 100000) {
+        return;
+    }
     deferred = 0;
     abandon_run("preemption", c->pc);
     rt_preempt(c);
@@ -318,10 +349,14 @@ static void shadow_check(detail::Export &e, CPU *c) {
     e.original(c, 0);
     tainted = abandons != abandoned_before;
     if (tainted || journal_overflow || journal.size() * 3 > POOL_PAGES) {  // (room for its results and the rewrite's)
-        if (tainted && e.unchecked_syscall++ < 3)
+        if (tainted && e.unchecked_syscall++ < 3) {
             report("unchecked %s (%08x): %s at %08x\n", e.name, e.address, abandon_why, abandon_pc);
-        else e.unchecked_memory++;
-        if (!tainted) end_journal();
+        } else {
+            e.unchecked_memory++;
+        }
+        if (!tainted) {
+            end_journal();
+        }
         pool_used = 0;
         e.unchecked++;
         return;
@@ -344,91 +379,144 @@ static void shadow_check(detail::Export &e, CPU *c) {
     e.overlay(c);
     bool ov_svc = abandons != abandoned_before, ov_overflow = journal_overflow;
     tainted = ov_svc;
-    if (!tainted) end_journal();
+    if (!tainted) {
+        end_journal();
+    }
     std::vector<Page> ov_pages = journal;
-    for (auto &p : journal) slot_of_page[p.index] = -1;
+    for (auto &p : journal) {
+        slot_of_page[p.index] = -1;
+    }
 
     // 3. compare
     std::vector<std::string> diffs;
     auto diff = [&](const std::string &s) { diffs.push_back(s); };
-    if (ov_svc) diff(format("the rewrite made a system call (or was preempted); the original did not"));
-    if (ov_overflow) diff(format("the rewrite wrote more pages than the journal holds"));
+    if (ov_svc) {
+        diff(format("the rewrite made a system call (or was preempted); the original did not"));
+    }
+    if (ov_overflow) {
+        diff(format("the rewrite wrote more pages than the journal holds"));
+    }
     auto rb = [](const CPU &x, int s) { return F2U(x.s[s]); };
     switch (e.ret) {
     case Ret::R0:
-        if (gen.r[0] != c->r[0]) diff(format("r0: original %08x, rewrite %08x", gen.r[0], c->r[0]));
+        if (gen.r[0] != c->r[0]) {
+            diff(format("r0: original %08x, rewrite %08x", gen.r[0], c->r[0]));
+        }
         break;
     case Ret::R0R1:
-        if (gen.r[0] != c->r[0] || gen.r[1] != c->r[1])
+        if (gen.r[0] != c->r[0] || gen.r[1] != c->r[1]) {
             diff(format("r0:r1: original %08x:%08x, rewrite %08x:%08x", gen.r[1], gen.r[0], c->r[1], c->r[0]));
+        }
         break;
     case Ret::S0:
-        if (rb(gen, 0) != rb(*c, 0)) diff(format("s0: original %g (%08x), rewrite %g (%08x)", gen.s[0], rb(gen, 0), c->s[0], rb(*c, 0)));
+        if (rb(gen, 0) != rb(*c, 0)) {
+            diff(format("s0: original %g (%08x), rewrite %g (%08x)", gen.s[0], rb(gen, 0), c->s[0], rb(*c, 0)));
+        }
         break;
     case Ret::D0:
-        if (rb(gen, 0) != rb(*c, 0) || rb(gen, 1) != rb(*c, 1)) diff(format("d0 differs"));
+        if (rb(gen, 0) != rb(*c, 0) || rb(gen, 1) != rb(*c, 1)) {
+            diff(format("d0 differs"));
+        }
         break;
     case Ret::Void: break;
     }
-    for (int r = 4; r <= 13; r++)  // r4-r11 and sp are preserved across calls (r12 is scratch)
-        if (r != 12 && c->r[r] != in.r[r]) diff(format("%s not preserved: %08x -> %08x", reg_name(r), in.r[r], c->r[r]));
-    if (c->pc != in.r[14]) diff(format("returned to %08x instead of %08x", c->pc, in.r[14]));
+    for (int r = 4; r <= 13; r++) {
+        if (r != 12 && c->r[r] != in.r[r]) {
+            diff(format("%s not preserved: %08x -> %08x", reg_name(r), in.r[r], c->r[r]));
+        }
+    }
+    if (c->pc != in.r[14]) {
+        diff(format("returned to %08x instead of %08x", c->pc, in.r[14]));
+    }
 
     u32 dead_lo = in.r[13] - settings.dead_stack, dead_hi = in.r[13];  // (fuzz inputs are above: allocated before the call)
     auto find = [](const std::vector<Page> &v, u32 index) -> const Page * {
-        for (auto &p : v)
-            if (p.index == index) return &p;
+        for (auto &p : v) {
+            if (p.index == index) {
+                return &p;
+            }
+        }
         return nullptr;
     };
     std::vector<u32> indices;
-    for (auto &p : gen_pages) indices.push_back(p.index);
-    for (auto &p : ov_pages) indices.push_back(p.index);
+    for (auto &p : gen_pages) {
+        indices.push_back(p.index);
+    }
+    for (auto &p : ov_pages) {
+        indices.push_back(p.index);
+    }
     std::sort(indices.begin(), indices.end());
     indices.erase(std::unique(indices.begin(), indices.end()), indices.end());
     int shown = 0, total = 0;
     for (u32 index : indices) {
         const Page *g = find(gen_pages, index), *o = find(ov_pages, index);
-        if ((g && g->foreign) || (o && o->foreign)) continue;
+        if ((g && g->foreign) || (o && o->foreign)) {
+            continue;
+        }
         const u8 *want = g ? gen_result[g - gen_pages.data()] : o->orig;
         const u8 *got = page_ptr(index);
-        if (!memcmp(want, got, page_size)) continue;
+        if (!memcmp(want, got, page_size)) {
+            continue;
+        }
         u32 base = PROTECT_LO + index * page_size;
         for (u32 off = 0; off < page_size; off += 4) {
             u32 ga = base + off;
-            if (ga >= dead_lo && ga < dead_hi) continue;
+            if (ga >= dead_lo && ga < dead_hi) {
+                continue;
+            }
             u32 w, h;
             memcpy(&w, want + off, 4);
             memcpy(&h, got + off, 4);
-            if (w == h) continue;
+            if (w == h) {
+                continue;
+            }
             total++;
-            if (shown++ < 8) diff(format("[%08x]: original %08x, rewrite %08x", ga, w, h));
+            if (shown++ < 8) {
+                diff(format("[%08x]: original %08x, rewrite %08x", ga, w, h));
+            }
         }
     }
-    if (total > 8) diff(format("... %d differing words in all", total));
+    if (total > 8) {
+        diff(format("... %d differing words in all", total));
+    }
 
     // 4. keep the original's results
-    for (auto &p : ov_pages)
-        if (!p.foreign) memcpy(page_ptr(p.index), p.orig, page_size);
-    for (size_t i = 0; i < gen_pages.size(); i++)
-        if (!gen_pages[i].foreign) memcpy(page_ptr(gen_pages[i].index), gen_result[i], page_size);
+    for (auto &p : ov_pages) {
+        if (!p.foreign) {
+            memcpy(page_ptr(p.index), p.orig, page_size);
+        }
+    }
+    for (size_t i = 0; i < gen_pages.size(); i++) {
+        if (!gen_pages[i].foreign) {
+            memcpy(page_ptr(gen_pages[i].index), gen_result[i], page_size);
+        }
+    }
     *c = gen;
     pool_used = 0;
 
     e.checked++;
-    if (fuzzing) e.fuzzed++;
+    if (fuzzing) {
+        e.fuzzed++;
+    }
     if (!diffs.empty()) {
         if (e.mismatches++ < 5) {
             report("MISMATCH %s (%08x) %s %llu, args r0=%08x r1=%08x r2=%08x r3=%08x lr=%08x\n", e.name, e.address,
                    fuzzing ? "fuzz input" : "call", (unsigned long long)(fuzzing ? e.fuzzed : e.calls), in.r[0],
                    in.r[1], in.r[2], in.r[3], in.r[14]);
-            for (auto &d : diffs) report("    %s\n", d.c_str());
+            for (auto &d : diffs) {
+                report("    %s\n", d.c_str());
+            }
         }
     }
 }
 
 static bool should_check(detail::Export &e) {
-    if (settings.shadow == 2) return true;
-    if (settings.shadow == 0) return false;
+    if (settings.shadow == 2) {
+        return true;
+    }
+    if (settings.shadow == 0) {
+        return false;
+    }
     return e.calls <= settings.shadow_first || e.calls % settings.shadow_every == 0;
 }
 
@@ -465,7 +553,9 @@ u32 Fuzz::number() {  // xorshift64*; small and boundary values more often than 
 float Fuzz::real() { return float(s32(number() % 2000000) - 1000000) / 1000.0f; }
 
 void Fuzz::bytes(gptr<void> p, u32 size) {
-    for (u32 i = 0; i < size; i++) p.cast<u8>()[i] = u8(number());
+    for (u32 i = 0; i < size; i++) {
+        p.cast<u8>()[i] = u8(number());
+    }
 }
 
 gptr<void> Fuzz::allocate(u32 size) {
@@ -490,7 +580,9 @@ static void run_fuzzers(CPU *c) {
 }
 
 void detail::enter(Export &e, CPU *c, u32 entry) {
-    if (entry != 0 || !settings.overlay) return e.original(c, entry);  // resuming inside the original
+    if (entry != 0 || !settings.overlay) {
+        return e.original(c, entry);  // resuming inside the original
+    }
     static bool fuzzed;
     if (settings.fuzz && settings.shadow && !fuzzed && g_frame >= settings.fuzz_frame && !busy.exchange(true)) {
         fuzzed = true;
@@ -508,17 +600,19 @@ void detail::enter(Export &e, CPU *c, u32 entry) {
 
 static void write_report() {
     FILE *f = fopen("guest_shadow_summary.txt.tmp", "w");
-    if (!f) return;
+    if (!f) {
+        return;
+    }
     fprintf(f, "%-8s %-32s %10s %10s %10s %10s %10s   (unchecked: system call or preemption / too much memory)\n",
             "address", "function", "calls", "checked", "fuzzed", "unchecked", "mismatch");
     auto r = registry();
     std::sort(r.begin(), r.end(), [](auto *a, auto *b) { return a->address < b->address; });
-    for (auto *e : r)
+    for (auto *e : r) {
         fprintf(f, "%08x %-32s %10llu %10llu %10llu %10llu %10llu   (%llu / %llu)\n", e->address, e->name,
                 (unsigned long long)e->calls, (unsigned long long)e->checked, (unsigned long long)e->fuzzed,
-                (unsigned long long)e->unchecked,
-                (unsigned long long)e->mismatches, (unsigned long long)e->unchecked_syscall,
-                (unsigned long long)e->unchecked_memory);
+                (unsigned long long)e->unchecked, (unsigned long long)e->mismatches,
+                (unsigned long long)e->unchecked_syscall, (unsigned long long)e->unchecked_memory);
+    }
     fclose(f);
     rename("guest_shadow_summary.txt.tmp", "guest_shadow_summary.txt");
 }

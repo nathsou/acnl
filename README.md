@@ -75,6 +75,8 @@ python3 tools/run.py acnl --shadow --env GUEST_FUZZ=1    # plus fuzzing, once, a
 4. `tools/build.py`, then a `--shadow` run (with `GUEST_FUZZ=1`), until the summary shows only checks and no
    mismatches.
 
+Style: always use braces for `if`, `for`, `while` and `else` bodies, even a single statement.
+
 Rules that keep rewrites exact: keep the original's order of floating-point operations (the build uses
 `-ffp-contract=off`), reproduce ARM behaviour where C++ differs (`arm.hpp`: shifts by 32 or more, float-to-int
 conversions), keep the original's quirks and bugs, and keep code in namespaces (the host has its own `main`, and

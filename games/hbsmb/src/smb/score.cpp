@@ -18,7 +18,9 @@ void top_score_check() {
         dex();
         dey();
     } while (!cpu->negative);
-    if (!cpu->carry) return;  // lower
+    if (!cpu->carry) {
+        return;  // lower
+    }
 
     inx();
     iny();
