@@ -9,7 +9,6 @@ struct AcNpc {
     guest::gptr<u32> list_end;
 
     // Clears the first list entry equal to value. Returns 0 if one was found, else the list length plus 1.
-    s32 clear_list_entry(u32 value);
 };
 GUEST_OFFSET(AcNpc, list_begin, 0xeb54);
 GUEST_OFFSET(AcNpc, list_end, 0xeb58);
