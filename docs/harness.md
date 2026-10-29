@@ -71,3 +71,7 @@ Found while rewriting by hand (`tools/harness/session.py`), each of them made fu
 
 The rewrites that were verified under the old checker were all checked again: two had wrong field offsets
 (`StateTask::run`, and one more fixed since).
+
+A last known weakness: during checks of real game calls, another game thread working on the same memory can very
+rarely make the original and the rewrite start from different states (one `queue_append` mismatch in about 7,500
+calls, gone on the next run). A mismatch that does not repeat is this; one that does is real.
