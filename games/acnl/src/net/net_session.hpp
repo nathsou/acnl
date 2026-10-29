@@ -19,7 +19,12 @@ struct NetSession {
     NetSessionPart part_b0;
     u8 unknown_000b1[0x1c0 - 0xb1];
     NetSessionPart part_1c0;
-    u8 unknown_001c1[0x229 - 0x1c1];
+    u8 unknown_001c1[0x1f0 - 0x1c1];
+    u8 state_1f0;     // 0 or 1: can still move on to the next state (see begin_state_1f0)
+    u8 value_1f1;
+    u8 unknown_001f2[0x214 - 0x1f2];
+    u8 state_214;     // above 2: unknown meaning (see state_214_above_2)
+    u8 unknown_00215[0x229 - 0x215];
     u8 flag_229;
     u8 unknown_0022a[0x23c - 0x22a];
     u8 count_23c;
@@ -44,18 +49,22 @@ struct NetSession {
     u8 flags;         // see FLAG_FROZEN
     u8 unknown_1326b[3];
     u8 station_mask;  // one bit per station (bit_for_index)
-    u8 unknown_1326f[0x132ac - 0x1326f];
+    u8 mode_1326f;    // meaning not known yet (see mode)
+    u8 unknown_13270[0x132ac - 0x13270];
     u8 flag_132ac;    // unknown flag
     s8 value_132ad;
     u8 flag_132ae;    // unknown flag
 
     u8 station() const;
+    u8 mode() const;
     bool has_station_bit(u32 index) const;
     s8 signed_value() const;
 };
 GUEST_OFFSET(NetSession, buffer, 0x10);
 GUEST_OFFSET(NetSession, part_b0, 0xb0);
 GUEST_OFFSET(NetSession, part_1c0, 0x1c0);
+GUEST_OFFSET(NetSession, state_1f0, 0x1f0);
+GUEST_OFFSET(NetSession, state_214, 0x214);
 GUEST_OFFSET(NetSession, flag_229, 0x229);
 GUEST_OFFSET(NetSession, count_23c, 0x23c);
 GUEST_OFFSET(NetSession, target_23d, 0x23d);
@@ -69,6 +78,7 @@ GUEST_OFFSET(NetSession, state_13266, 0x13266);
 GUEST_OFFSET(NetSession, station_bits, 0x13268);
 GUEST_OFFSET(NetSession, flags, 0x1326a);
 GUEST_OFFSET(NetSession, station_mask, 0x1326e);
+GUEST_OFFSET(NetSession, mode_1326f, 0x1326f);
 GUEST_OFFSET(NetSession, flag_132ac, 0x132ac);
 GUEST_OFFSET(NetSession, value_132ad, 0x132ad);
 GUEST_OFFSET(NetSession, flag_132ae, 0x132ae);

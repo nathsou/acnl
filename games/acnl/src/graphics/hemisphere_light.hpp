@@ -29,9 +29,12 @@ GUEST_OFFSET(HemiSphereLightData, vec3_d8, 0xd8);
 GUEST_OFFSET(HemiSphereLightData, value_e4, 0xe4);
 
 struct HemiSphereLight {
-    u8 unknown_00[0xc];
+    guest::gptr<u32> vtable;
+    guest::gptr<void> node;  // the transform node part (see g3d::TransformNode)
+    s32 unknown_08;
     guest::gptr<HemiSphereLightData> data;
-    u8 unknown_10[8];
+    u32 unknown_10;
+    u8 unknown_14[4];
 
     // The setters report success (always true).
     bool set_vec4_b8(const Float4 &value);
@@ -39,6 +42,7 @@ struct HemiSphereLight {
     bool set_vec4_c8(const Float4 &value);
     bool set_vec3_d8(const Float3 &value);
 };
+GUEST_OFFSET(HemiSphereLight, unknown_08, 8);
 GUEST_OFFSET(HemiSphereLight, data, 0xc);
 GUEST_SIZE(HemiSphereLight, 0x18);
 
