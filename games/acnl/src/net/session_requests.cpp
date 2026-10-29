@@ -26,8 +26,8 @@ constexpr u32 MASK_COUNT = 6;
 constexpr u32 FLAG_BYTE_MASK = 0xff;
 constexpr u32 PAIR_FIRST_VALUE = 0xfffffffd;  // -3
 constexpr u32 PAIR_SECOND_VALUE = 0xffffffff;
-constexpr u32 ARRAY_ELEMENT_COUNT = 0x32;
-constexpr u32 ARRAY_ELEMENT_SIZE = 4;
+constexpr u32 ARRAY_ELEMENT_COUNT = 4;
+constexpr u32 ARRAY_ELEMENT_SIZE = 0x32;
 constexpr u32 NO_DESTRUCTOR_ADDRESS = 0x0029b888;  // the element destructor, which does nothing
 
 inline constexpr guest::Function<0x00623e70, void(gptr<void> set, u32 station, u32 add)> refresh_station_set;
@@ -228,7 +228,7 @@ bool request_all(SelectionRequest &self) {
 GUEST_EXPORT(0x0061f374, request_all);
 GUEST_FUZZ(0x0061f374, 100, [](guest::Fuzz &f) { f.arguments(f.object<SelectionRequest>()); });
 
-// Destroys the fifty elements (which have nothing to destroy).
+// Destroys the four elements of 0x32 bytes (which have nothing to destroy).
 FlagArrayOwner &destroy_flag_array_owner(FlagArrayOwner &self) {
     destroy_array_elements(guest::addr_of(self.elements[0]).cast<void>(), NO_DESTRUCTOR_ADDRESS, ARRAY_ELEMENT_SIZE,
                            ARRAY_ELEMENT_COUNT);

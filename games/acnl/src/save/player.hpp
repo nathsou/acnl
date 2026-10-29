@@ -28,7 +28,9 @@ struct SavePlayer {
     u8 unknown_56c4[0x5700 - 0x56c4];
     u8 flags_5700;
     u8 flags_5701;
-    u8 unknown_5702[0x5712 - 0x5702];
+    u8 unknown_5702[0x570b - 0x5702];
+    u8 flags_570b;
+    u8 unknown_570c[0x5712 - 0x570c];
     u8 flags_5712;
     u8 flags_5713;
     u8 unknown_5714[0x6b8c - 0x5714];
@@ -37,7 +39,9 @@ struct SavePlayer {
     EncryptedInt counter_6b9c;  // capped at COUNTER_6B9C_MAX when added to
     u8 unknown_6ba4[0x6bd0 - 0x6ba4];
     Pockets pockets;
-    u8 unknown_6f10[0xa468 - 0x6bd0 - sizeof(Pockets)];
+    u8 unknown_6f10[0x8f83 - 0x6bd0 - sizeof(Pockets)];
+    u8 flags_8f83;
+    u8 unknown_8f84[0xa468 - 0x8f84];
     ListedItem listed_items[LISTED_ITEM_COUNT];
     u8 unknown_a47a[SIZE - 0xa47a];
 
@@ -48,7 +52,9 @@ GUEST_OFFSET(SavePlayer, identity.town, 0x55bc);
 GUEST_OFFSET(SavePlayer, stamp_55d2, 0x55d2);
 GUEST_OFFSET(SavePlayer, counters, 0x55dc);
 GUEST_OFFSET(SavePlayer, flags_5700, 0x5700);
+GUEST_OFFSET(SavePlayer, flags_570b, 0x570b);
 GUEST_OFFSET(SavePlayer, flags_5712, 0x5712);
+GUEST_OFFSET(SavePlayer, flags_8f83, 0x8f83);
 GUEST_OFFSET(SavePlayer, bank, 0x6b8c);
 GUEST_OFFSET(SavePlayer, counter_6b94, 0x6b94);
 GUEST_OFFSET(SavePlayer, listed_items, 0xa468);
