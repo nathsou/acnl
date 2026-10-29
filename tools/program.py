@@ -79,7 +79,7 @@ class Program:
         self.imported = {}
         src = os.path.join(ROOT, 'games', self.game, 'src')
         imp = re.compile(r'guest::Function<\s*(0x[0-9a-fA-F]+)\s*,[^;]*?>\s*(\w+)\s*;', re.S)
-        rx = re.compile(r'\bGUEST_EXPORT\(\s*(0x[0-9a-fA-F]+)\s*,\s*&?([\w:<>, ]+?)\s*\);')
+        rx = re.compile(r'\bGUEST_EXPORT(?:_FRAMED)?\(\s*(0x[0-9a-fA-F]+)\s*,\s*&?([\w:<>, ]+?)\s*(?:,[^;]*)?\);')
         for dirpath, _, files in os.walk(src):
             for f in files:
                 path = os.path.join(dirpath, f)

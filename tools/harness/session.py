@@ -89,7 +89,8 @@ def main_check(args):
     if not ok:
         print('LINK:', out[-2000:])
         return
-    rows, mism, crashed, blamed, status = h.verify(todo, timeout=args.timeout)
+    rows, mism, crashed, blamed, status = h.verify(todo, timeout=max(args.timeout, 2400) if args.deep else args.timeout,
+                                                   deep=args.deep)
     print('run:', status, '(blamed %x)' % blamed if blamed else '')
     good = 0
     for a in todo:
@@ -140,6 +141,7 @@ def main():
     c = sub.add_parser('check')
     c.add_argument('only', nargs='*', help='only these files (paths from the repo root)')
     c.add_argument('--timeout', type=int, default=300)
+    c.add_argument('--deep', action='store_true', help='run the long scripted session (to the town hall) before fuzzing: much more real calls, several minutes')
     c.add_argument('--all', action='store_true', help='check every rewritten function again (after library or header changes)')
     c.add_argument('--lines', type=int, default=8, help='mismatch lines shown per failing function')
     s = sub.add_parser('skip')

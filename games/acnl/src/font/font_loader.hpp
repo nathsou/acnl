@@ -32,10 +32,11 @@ GUEST_SIZE(FontSource, 0x10);
 // The loader used when use_load_split is set (a ssys::ma::LoadSplit, 0xec bytes).
 struct LoadSplitData {
     guest::gptr<u32> vtable;
-    u8 unknown_04[0xe4 - 4];
+    u8 unknown_04[0xd0 - 4];
     guest::gptr<void> file_data;  // what the ResFont is built from
-    u8 unknown_e8[0xec - 0xe8];
+    u8 unknown_d4[0xec - 0xd4];
 };
+GUEST_OFFSET(LoadSplitData, file_data, 0xd0);
 GUEST_SIZE(LoadSplitData, 0xec);
 
 // nw::font::ResFont (extent not known beyond what the slot leaves for it).

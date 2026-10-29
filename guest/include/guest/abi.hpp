@@ -236,8 +236,35 @@ std::tuple<A...> read_args(CPU *c, ArgAllocator &al, std::tuple<A...> *) {
 
 void set_cpu(CPU *c);
 
+// The stack frame the original function pushes (`push {r4, r5, lr}`: bit n of the mask is register n): while the
+// rewrite runs, guest code it calls sees the stack where the original's callees would have seen it, with the
+// registers stored the same way. Some game code reads stack it never wrote, so this changes what it computes.
+class PushedFrame {
+public:
+    PushedFrame(CPU *c, u32 mask) : c_(c), saved_sp_(c->r[13]) {
+        if (mask == 0) {
+            return;
+        }
+        u32 sp = saved_sp_;
+        for (int r = 15; r >= 0; r--) {
+            if (mask >> r & 1) {
+                sp -= 4;
+                *gptr<u32>(sp) = c->r[r];
+            }
+        }
+        c->r[13] = sp;
+    }
+    ~PushedFrame() { c_->r[13] = saved_sp_; }
+    PushedFrame(const PushedFrame &) = delete;
+    PushedFrame &operator=(const PushedFrame &) = delete;
+
+private:
+    CPU *c_;
+    u32 saved_sp_;
+};
+
 // runs the C++ function Fn on the arguments in c, as if the guest had called it
-template <auto Fn>
+template <auto Fn, u32 FrameMask = 0>
 void invoke(CPU *c) {
     using T = FnTraits<decltype(Fn)>;
     using R = typename T::Result;
@@ -246,6 +273,7 @@ void invoke(CPU *c) {
     ArgAllocator al;
     if constexpr (std::is_void_v<typename T::Class>) {
         auto args = read_args(c, al, static_cast<typename T::Args *>(nullptr));
+        PushedFrame frame(c, FrameMask);
         if constexpr (std::is_void_v<R>) {
             std::apply(Fn, args);
         } else {
@@ -255,6 +283,7 @@ void invoke(CPU *c) {
         auto *self = gptr<typename T::Class>(u32(read_location(c, al.next<u32>(), c->r[13]))).get();
         auto args = read_args(c, al, static_cast<typename T::Args *>(nullptr));
         auto call = [self](auto &&...a) -> decltype(auto) { return (self->*Fn)(std::forward<decltype(a)>(a)...); };
+        PushedFrame frame(c, FrameMask);
         if constexpr (std::is_void_v<R>) {
             std::apply(call, args);
         } else {
@@ -360,6 +389,21 @@ R call_member(const MemberFunctionPointer &pointer, gptr<void> object, A... args
     return call_address<R>(target, self, args...);
 }
 
+// Lowers the guest stack pointer by `bytes` for the duration of a scope, like the frame of the original function
+// (its pushes and locals): guest code called from the scope, and uninitialised locals in the frame, then sit at the
+// addresses they had in the original. `at(offset)` is an address inside the frame, counted from the new stack pointer.
+class StackFrame {
+public:
+    explicit StackFrame(u32 bytes) : saved_sp_(cpu()->r[13]) { cpu()->r[13] = saved_sp_ - bytes; }
+    ~StackFrame() { cpu()->r[13] = saved_sp_; }
+    StackFrame(const StackFrame &) = delete;
+    StackFrame &operator=(const StackFrame &) = delete;
+    template <typename T = void> gptr<T> at(u32 offset) const { return gptr<T>(cpu()->r[13] + offset); }
+
+private:
+    u32 saved_sp_;
+};
+
 // Space on the guest stack for the duration of a scope, for objects whose address is passed to guest code.
 template <typename T>
 class StackObject {
@@ -436,9 +480,13 @@ struct FuzzRegistration {
 // Replaces the guest function at `address` with the C++ function `fn`: a free function (`count_lives`, or a template
 // specialization such as `lda<absolute>`) or a member function (`Player::update`, called with r0 as `this`).
 // The recompiled original is kept as guest_gen_<address> (tools/overlay.py renames it).
-#define GUEST_EXPORT(address, fn)                                                                               \
+#define GUEST_EXPORT(address, fn) GUEST_EXPORT_FRAMED(address, fn, 0)
+
+// The same for a function whose callees must see the stack as the original leaves it: `pushed_registers` is the mask of
+// the registers the original pushes first (bit n is register n, e.g. (1 << 4) | (1 << 5) | (1 << 14) for r4, r5, lr).
+#define GUEST_EXPORT_FRAMED(address, fn, pushed_registers)                                                       \
     extern "C" void guest_gen_##address(CPU *, u32);                                                            \
     static guest::detail::Export guest_export_##address(                                                        \
         address, #fn, guest::detail::ret_of<guest::detail::FnTraits<decltype(&fn)>::Result>(),                   \
-        &guest::detail::invoke<&fn>, &guest_gen_##address);                                                      \
+        &guest::detail::invoke<&fn, pushed_registers>, &guest_gen_##address);                                    \
     extern "C" void guest_entry_##address(CPU *c, u32 entry) { guest::detail::enter(guest_export_##address, c, entry); }

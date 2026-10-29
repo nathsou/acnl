@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "guest/guest.hpp"
 
 using guest::gptr;
@@ -45,8 +47,8 @@ inline guest::global<ShadowState, 0x00ae52d4> cached_state;
 inline guest::global<u32, 0x009529c4> vector_initialized;
 inline guest::global<u32[4], 0x009c7990> default_vector;
 
-// The float the default vector is filled with lives in the literal pool of the code itself.
-constexpr u32 DEFAULT_VECTOR_LITERAL_ADDRESS = 0x0071f198;
+// The default vector is filled with 1.0f (the original loads it from its literal pool).
+constexpr float DEFAULT_VECTOR_VALUE = 1.0f;
 
 constexpr u32 PACKET_FLAG = 0x80000000;
 constexpr u32 PACKET_HEADER = 0x804f02c0;
@@ -112,9 +114,10 @@ void FrameBufferShadow::virtual_7() {
     gptr<u32> cursor = write_state_commands(state, start, 1, 1);
 
     if ((*vector_initialized & 1) == 0 && claim_flag(vector_initialized.ptr())) {
-        u32 literal = *gptr<u32>(DEFAULT_VECTOR_LITERAL_ADDRESS);
+        u32 bits;
+        std::memcpy(&bits, &DEFAULT_VECTOR_VALUE, sizeof bits);
         for (u32 i = 0; i < 4; i++) {
-            (*default_vector)[i] = literal;
+            (*default_vector)[i] = bits;
         }
     }
 

@@ -81,7 +81,11 @@ float map_value_for_id(u32 id, float value) {
     if (id == NO_RANGE_ID) {
         return *result_out_of_range;
     }
-    guest::StackObject<FloatRange> range;
+    // The original keeps the range in its frame (lr, d8 and three words of locals) and get_float_range leaves it
+    // unwritten for some ids: the stale words that are then read must be the ones at the original's addresses.
+    constexpr u32 FRAME_BYTES = 4 + 8 + 12;
+    guest::StackFrame frame(FRAME_BYTES);
+    gptr<FloatRange> range = frame.at<FloatRange>(0);
     get_float_range(guest::addr_of(range->lower), guest::addr_of(range->upper), id);
     if (!(value <= range->upper)) {
         return *result_out_of_range;

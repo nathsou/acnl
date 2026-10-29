@@ -300,7 +300,7 @@ def parse_answer(text):
 
 # ---------------------------------------------------------------- integration
 
-EXPORT_RE = re.compile(r'\bGUEST_EXPORT\(\s*(0x[0-9a-fA-F]+)\s*,')
+EXPORT_RE = re.compile(r'\bGUEST_EXPORT(?:_FRAMED)?\(\s*(0x[0-9a-fA-F]+)\s*,')
 FUZZ_RE = re.compile(r'\bGUEST_FUZZ\(\s*(0x[0-9a-fA-F]+)\s*,')
 
 
@@ -502,17 +502,23 @@ def link():
 
 
 TEST_INPUT = ','.join('%d:A:6' % f for f in range(600, 4000, 90))
+DEEP_FRAMES = 100000  # (see tools/harness/deep_input.py)
 
 
-def verify(addresses, timeout=300, disable=()):
+def deep_input():
+    return subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'harness', 'deep_input.py'), str(DEEP_FRAMES)],
+                          capture_output=True, text=True).stdout.strip()
+
+
+def verify(addresses, timeout=300, disable=(), deep=False):
     """One game run with shadow checks, fuzzing only `addresses`. Returns (summary rows, mismatch text, blamed)."""
-    env_args = ['--env', 'GUEST_FUZZ=1', '--env', 'GUEST_FUZZ_FRAME=3600', '--env', 'GUEST_FUZZ_MIN=200',
+    env_args = ['--env', 'GUEST_FUZZ=1', '--env', 'GUEST_FUZZ_FRAME=%d' % (DEEP_FRAMES if deep else 3600), '--env', 'GUEST_FUZZ_MIN=200',
                 '--env', 'GUEST_FUZZ_EXIT=1',
                 '--env', 'GUEST_FUZZ_ONLY=' + ','.join('%x' % a for a in addresses),
                 '--env', 'GUEST_DISABLE=' + ','.join('%x' % a for a in disable)]
     name = 'harness'
-    cmd = [sys.executable, os.path.join(ROOT, 'tools', 'run.py'), GAME, '--name', name, '--frames', '40000',
-           '--input', TEST_INPUT, '--shadow', '--timeout', str(timeout)] + env_args
+    cmd = [sys.executable, os.path.join(ROOT, 'tools', 'run.py'), GAME, '--name', name, '--frames', str(DEEP_FRAMES + 40000 if deep else 40000),
+           '--input', deep_input() if deep else TEST_INPUT, '--shadow', '--timeout', str(timeout)] + env_args
     rc, out = run(cmd, timeout=timeout + 120)
     rundir = os.path.join(ROOT, 'build', GAME, 'runs', name)
     rows = {}

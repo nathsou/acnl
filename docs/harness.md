@@ -75,3 +75,15 @@ The rewrites that were verified under the old checker were all checked again: tw
 A last known weakness: during checks of real game calls, another game thread working on the same memory can very
 rarely make the original and the rewrite start from different states (one `queue_append` mismatch in about 7,500
 calls, gone on the next run). A mismatch that does not repeat is this; one that does is real.
+
+## Rewrites the checker cannot judge
+
+- A function that makes system calls (file loading, waiting) is not checked while it runs: the checker abandons the
+  run, so even fuzzing proves nothing for it. `DLoadSplit::update` (font loading) had a wrong offset for years of
+  tokens and "passed"; only a plain run (no checker) crashed. `tools/harness/safe_commit.sh` now also runs the game
+  plainly for 1,500 frames before committing. When a plain run crashes and shadow runs do not, bisect with
+  `GUEST_DISABLE` per directory, then per function.
+- Game code sometimes reads stack it never wrote (the original's frame contents). `GUEST_EXPORT_FRAMED(address, fn,
+  mask)` pushes the registers the original pushes while the rewrite runs.
+- A long scripted run (name typed with `TEXT_`, "Here!" touched on the map) reaches the town hall at about frame
+  85,000 in two minutes of host time; see `tools/harness/session.py` TEST_INPUT notes.

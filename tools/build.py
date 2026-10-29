@@ -21,7 +21,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXPORT_RE = re.compile(r'\bGUEST_EXPORT\(\s*(0x[0-9a-fA-F]+)\s*,')
+EXPORT_RE = re.compile(r'\bGUEST_EXPORT(?:_FRAMED)?\(\s*(0x[0-9a-fA-F]+)\s*,')
 DEF_RE = re.compile(r'^void ([ft])_([0-9a-f]{8})\(CPU \*c, u32 entry\) \{$', re.M)
 TABLE_RE = re.compile(r'^  \{(0x[0-9a-f]+)u, ([ft]_[0-9a-f]{8}), (\d+)\},$', re.M)
 
