@@ -3,7 +3,7 @@
 # usage: tools/harness/safe_commit.sh "message"
 cd "$(dirname "$0")/../.." || exit 1
 out=build/acnl/session/check3.txt
-.venv/bin/python tools/harness/session.py check --all --timeout 900 > "$out" 2>&1
+.venv/bin/python tools/harness/session.py check --all --timeout 1200 > "$out" 2>&1
 grep -E "^(run|FAIL|verified|REGRESSION|COMPILE|LINK)" "$out" | cut -c1-200
 if grep -E "mismatch|^REGRESSION|^COMPILE|^LINK" "$out" > /dev/null; then
     echo "NOT committing: mismatches or build errors (see $out)"

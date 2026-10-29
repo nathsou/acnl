@@ -503,6 +503,7 @@ def link():
 
 TEST_INPUT = ','.join('%d:A:6' % f for f in range(600, 4000, 90))
 DEEP_FRAMES = 100000  # (see tools/harness/deep_input.py)
+FUZZ_RUN_FRAMES = 200000  # the run ends when the fuzzing is done (GUEST_FUZZ_EXIT); this only bounds it
 
 
 def deep_input():
@@ -517,7 +518,7 @@ def verify(addresses, timeout=300, disable=(), deep=False):
                 '--env', 'GUEST_FUZZ_ONLY=' + ','.join('%x' % a for a in addresses),
                 '--env', 'GUEST_DISABLE=' + ','.join('%x' % a for a in disable)]
     name = 'harness'
-    cmd = [sys.executable, os.path.join(ROOT, 'tools', 'run.py'), GAME, '--name', name, '--frames', str(DEEP_FRAMES + 40000 if deep else 40000),
+    cmd = [sys.executable, os.path.join(ROOT, 'tools', 'run.py'), GAME, '--name', name, '--frames', str(DEEP_FRAMES + 40000 if deep else FUZZ_RUN_FRAMES),
            '--input', deep_input() if deep else TEST_INPUT, '--shadow', '--timeout', str(timeout)] + env_args
     rc, out = run(cmd, timeout=timeout + 120)
     rundir = os.path.join(ROOT, 'build', GAME, 'runs', name)

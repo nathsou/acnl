@@ -69,7 +69,8 @@ u32 acquire_argument_handle(ArgumentHandle &self, u32 argument) {
 }
 GUEST_EXPORT(0x005b17fc, acquire_argument_handle);
 
-// The same with the other kinds of handle.
+// The same with the other kinds of handle (not fuzzed: acquiring takes handles from a shared pool, which differ
+// between the original's and the rewrite's run).
 u32 acquire_argument_handle_kind_b(ArgumentHandle &self, u32 argument) {
     self.argument = argument;
     self.handle = acquire_handle_kind_b(argument);
@@ -162,8 +163,6 @@ static gptr<char> some_text(guest::Fuzz &f, u32 max_length) {
 GUEST_FUZZ(0x005b17e0, 200, [](guest::Fuzz &f) { f.arguments(f.object<libms::FlowNode>(), f.number()); });
 GUEST_FUZZ(0x005b1708, 200, [](guest::Fuzz &f) { f.arguments(f.object<libms::FlowNode>(), f.object<libms::FlowNode>()); });
 GUEST_FUZZ(0x005b1734, 200, [](guest::Fuzz &f) { f.arguments(f.object<libms::FlowNode>(), f.object<libms::FlowNode>()); });
-GUEST_FUZZ(0x005b1760, 200, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>(), 1 + f.below(64)); });
-GUEST_FUZZ(0x005b17b4, 200, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>(), 1 + f.below(64)); });
 GUEST_FUZZ(0x005b177c, 100, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>()); });
 GUEST_FUZZ(0x005b17d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>()); });
 GUEST_FUZZ(0x00134f5c, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.number()); });

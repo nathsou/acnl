@@ -690,13 +690,37 @@ static void recover_from_crashed_input() {
     busy.store(true);  // (still inside run_fuzzers)
 }
 
-static void run_fuzzers(CPU *c) {
+// The fuzzers of a CRO module wait until its code is loaded (it may be loaded after the fuzzing frame): they are
+// retried every FUZZ_RETRY_FRAMES frames, and run anyway (their inputs then crash and are dropped) after
+// FUZZ_DEFER_LIMIT frames.
+static constexpr u32 CRO_BASE = 0x40000000;
+static constexpr u64 FUZZ_RETRY_FRAMES = 600;
+static constexpr u64 FUZZ_DEFER_LIMIT = 40000;
+static std::vector<size_t> deferred_fuzzers;
+static bool fuzz_pending;
+static u64 fuzz_retry_frame;
+
+static void run_fuzzers(CPU *c, bool retry) {
     fuzzing = true;
     fuzz_thread = pthread_self();
     previous_fatal_hook = g_fatal_hook;
     g_fatal_hook = fuzz_fatal_hook;
-    for (auto &fz : fuzzers()) {
+    std::vector<size_t> todo;
+    if (retry) {
+        todo.swap(deferred_fuzzers);
+    } else {
+        for (size_t i = 0; i < fuzzers().size(); i++) {
+            todo.push_back(i);
+        }
+    }
+    deferred_fuzzers.clear();
+    for (size_t index : todo) {
+        auto &fz = fuzzers()[index];
         if (!fuzz_selected(fz.e->address)) {
+            continue;
+        }
+        if (fz.e->address >= CRO_BASE && !dispatch_lookup(fz.e->address) && g_frame < settings.fuzz_frame + FUZZ_DEFER_LIMIT) {
+            deferred_fuzzers.push_back(index);
             continue;
         }
         note_fuzz_progress(fz.e);
@@ -724,6 +748,11 @@ static void run_fuzzers(CPU *c) {
     g_fatal_hook = previous_fatal_hook;
     write_report();
     fuzzing = false;
+    fuzz_pending = !deferred_fuzzers.empty();
+    if (fuzz_pending) {
+        fuzz_retry_frame = g_frame + FUZZ_RETRY_FRAMES;
+        return;
+    }
     if (getenv("GUEST_FUZZ_EXIT")) {  // a test run ends when its fuzzing is done (the frame count keeps going)
         _exit(0);
     }
@@ -747,7 +776,11 @@ void detail::enter(Export &e, CPU *c, u32 entry) {
     static bool fuzzed;
     if (settings.fuzz && settings.shadow && !fuzzed && g_frame >= settings.fuzz_frame && !busy.exchange(true)) {
         fuzzed = true;
-        run_fuzzers(c);
+        run_fuzzers(c, false);
+        busy.store(false);
+    }
+    if (settings.fuzz && settings.shadow && fuzz_pending && g_frame >= fuzz_retry_frame && !busy.exchange(true)) {
+        run_fuzzers(c, true);
         busy.store(false);
     }
     e.calls++;
