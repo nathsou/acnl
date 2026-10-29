@@ -11,6 +11,8 @@ using guest::gptr;
 
 namespace {
 
+inline constexpr guest::Function<0x005c7408, u32()> get_split_index;
+
 template <u32 Value>
 u32 return_constant() {
     return Value;
@@ -136,6 +138,11 @@ inline void change_half_bits(gptr<u8> object, u32 offset, u32 mask, bool set) {
 // The word of the table the index selects, 0 for an index past the entries.
 inline u32 table_word(u32 index, u32 count, u32 table) {
     return index < count ? *gptr<u32>(table + index * 4) : 0;
+}
+
+// The word the object keeps for the current split (four copies, one per split, after each other).
+inline u32 split_word(gptr<u8> object, u32 offset) {
+    return *gptr<u32>(object.addr() + offset + get_split_index() * sizeof(u32));
 }
 
 // Calls a virtual function of the target (slot numbers count words of the vtable).
@@ -2209,6 +2216,120 @@ GUEST_EXPORT(0x0075dbbc, read_field_u8<0x0>);
 GUEST_FUZZ(0x0075dbbc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0075e644, member_address<0x38e0>);
 GUEST_FUZZ(0x0075e644, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
+u32 split_word_at_310_767404(gptr<u8> object) { return split_word(object, 0x310); }
+GUEST_EXPORT(0x00767404, split_word_at_310_767404);
+GUEST_FUZZ(0x00767404, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x310 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_5a4_767430(gptr<u8> object) { return split_word(object, 0x5a4); }
+GUEST_EXPORT(0x00767430, split_word_at_5a4_767430);
+GUEST_FUZZ(0x00767430, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x5a4 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_540_767468(gptr<u8> object) { return split_word(object, 0x540); }
+GUEST_EXPORT(0x00767468, split_word_at_540_767468);
+GUEST_FUZZ(0x00767468, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x540 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_360_7674a4(gptr<u8> object) { return split_word(object, 0x360); }
+GUEST_EXPORT(0x007674a4, split_word_at_360_7674a4);
+GUEST_FUZZ(0x007674a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x360 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_20c_7674f4(gptr<u8> object) { return split_word(object, 0x20c); }
+GUEST_EXPORT(0x007674f4, split_word_at_20c_7674f4);
+GUEST_FUZZ(0x007674f4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x20c + FUZZ_FIELD_SLACK); });
+u32 split_word_at_1e4_767530(gptr<u8> object) { return split_word(object, 0x1e4); }
+GUEST_EXPORT(0x00767530, split_word_at_1e4_767530);
+GUEST_FUZZ(0x00767530, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1e4 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_57c_76755c(gptr<u8> object) { return split_word(object, 0x57c); }
+GUEST_EXPORT(0x0076755c, split_word_at_57c_76755c);
+GUEST_FUZZ(0x0076755c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x57c + FUZZ_FIELD_SLACK); });
+u32 split_word_at_34c_767574(gptr<u8> object) { return split_word(object, 0x34c); }
+GUEST_EXPORT(0x00767574, split_word_at_34c_767574);
+GUEST_FUZZ(0x00767574, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x34c + FUZZ_FIELD_SLACK); });
+u32 split_word_at_4c8_76758c(gptr<u8> object) { return split_word(object, 0x4c8); }
+GUEST_EXPORT(0x0076758c, split_word_at_4c8_76758c);
+GUEST_FUZZ(0x0076758c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4c8 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_3b0_7675ec(gptr<u8> object) { return split_word(object, 0x3b0); }
+GUEST_EXPORT(0x007675ec, split_word_at_3b0_7675ec);
+GUEST_FUZZ(0x007675ec, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3b0 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_374_767610(gptr<u8> object) { return split_word(object, 0x374); }
+GUEST_EXPORT(0x00767610, split_word_at_374_767610);
+GUEST_FUZZ(0x00767610, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x374 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_1d0_767634(gptr<u8> object) { return split_word(object, 0x1d0); }
+GUEST_EXPORT(0x00767634, split_word_at_1d0_767634);
+GUEST_FUZZ(0x00767634, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1d0 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_2d4_767660(gptr<u8> object) { return split_word(object, 0x2d4); }
+GUEST_EXPORT(0x00767660, split_word_at_2d4_767660);
+GUEST_FUZZ(0x00767660, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2d4 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_1f8_7676c0(gptr<u8> object) { return split_word(object, 0x1f8); }
+GUEST_EXPORT(0x007676c0, split_word_at_1f8_7676c0);
+GUEST_FUZZ(0x007676c0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1f8 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_4dc_7676d8(gptr<u8> object) { return split_word(object, 0x4dc); }
+GUEST_EXPORT(0x007676d8, split_word_at_4dc_7676d8);
+GUEST_FUZZ(0x007676d8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4dc + FUZZ_FIELD_SLACK); });
+u32 split_word_at_2fc_7676f0(gptr<u8> object) { return split_word(object, 0x2fc); }
+GUEST_EXPORT(0x007676f0, split_word_at_2fc_7676f0);
+GUEST_FUZZ(0x007676f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2fc + FUZZ_FIELD_SLACK); });
+u32 split_word_at_220_767708(gptr<u8> object) { return split_word(object, 0x220); }
+GUEST_EXPORT(0x00767708, split_word_at_220_767708);
+GUEST_FUZZ(0x00767708, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x220 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_3c4_767744(gptr<u8> object) { return split_word(object, 0x3c4); }
+GUEST_EXPORT(0x00767744, split_word_at_3c4_767744);
+GUEST_FUZZ(0x00767744, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3c4 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_4f0_76775c(gptr<u8> object) { return split_word(object, 0x4f0); }
+GUEST_EXPORT(0x0076775c, split_word_at_4f0_76775c);
+GUEST_FUZZ(0x0076775c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4f0 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_388_767788(gptr<u8> object) { return split_word(object, 0x388); }
+GUEST_EXPORT(0x00767788, split_word_at_388_767788);
+GUEST_FUZZ(0x00767788, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x388 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_590_7677ac(gptr<u8> object) { return split_word(object, 0x590); }
+GUEST_EXPORT(0x007677ac, split_word_at_590_7677ac);
+GUEST_FUZZ(0x007677ac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x590 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_39c_7677c4(gptr<u8> object) { return split_word(object, 0x39c); }
+GUEST_EXPORT(0x007677c4, split_word_at_39c_7677c4);
+GUEST_FUZZ(0x007677c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x39c + FUZZ_FIELD_SLACK); });
+u32 split_word_at_2e8_7677e8(gptr<u8> object) { return split_word(object, 0x2e8); }
+GUEST_EXPORT(0x007677e8, split_word_at_2e8_7677e8);
+GUEST_FUZZ(0x007677e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2e8 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_1a8_76780c(gptr<u8> object) { return split_word(object, 0x1a8); }
+GUEST_EXPORT(0x0076780c, split_word_at_1a8_76780c);
+GUEST_FUZZ(0x0076780c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1a8 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_554_767848(gptr<u8> object) { return split_word(object, 0x554); }
+GUEST_EXPORT(0x00767848, split_word_at_554_767848);
+GUEST_FUZZ(0x00767848, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x554 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_298_767878(gptr<u8> object) { return split_word(object, 0x298); }
+GUEST_EXPORT(0x00767878, split_word_at_298_767878);
+GUEST_FUZZ(0x00767878, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x298 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_1bc_7678a8(gptr<u8> object) { return split_word(object, 0x1bc); }
+GUEST_EXPORT(0x007678a8, split_word_at_1bc_7678a8);
+GUEST_FUZZ(0x007678a8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1bc + FUZZ_FIELD_SLACK); });
+u32 split_word_at_324_7678cc(gptr<u8> object) { return split_word(object, 0x324); }
+GUEST_EXPORT(0x007678cc, split_word_at_324_7678cc);
+GUEST_FUZZ(0x007678cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x324 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_338_767908(gptr<u8> object) { return split_word(object, 0x338); }
+GUEST_EXPORT(0x00767908, split_word_at_338_767908);
+GUEST_FUZZ(0x00767908, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x338 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_248_767920(gptr<u8> object) { return split_word(object, 0x248); }
+GUEST_EXPORT(0x00767920, split_word_at_248_767920);
+GUEST_FUZZ(0x00767920, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x248 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_504_767968(gptr<u8> object) { return split_word(object, 0x504); }
+GUEST_EXPORT(0x00767968, split_word_at_504_767968);
+GUEST_FUZZ(0x00767968, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x504 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_2ac_767980(gptr<u8> object) { return split_word(object, 0x2ac); }
+GUEST_EXPORT(0x00767980, split_word_at_2ac_767980);
+GUEST_FUZZ(0x00767980, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2ac + FUZZ_FIELD_SLACK); });
+u32 split_word_at_4a0_767998(gptr<u8> object) { return split_word(object, 0x4a0); }
+GUEST_EXPORT(0x00767998, split_word_at_4a0_767998);
+GUEST_FUZZ(0x00767998, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4a0 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_568_7679b0(gptr<u8> object) { return split_word(object, 0x568); }
+GUEST_EXPORT(0x007679b0, split_word_at_568_7679b0);
+GUEST_FUZZ(0x007679b0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x568 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_518_7679c8(gptr<u8> object) { return split_word(object, 0x518); }
+GUEST_EXPORT(0x007679c8, split_word_at_518_7679c8);
+GUEST_FUZZ(0x007679c8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x518 + FUZZ_FIELD_SLACK); });
+u32 split_word_at_52c_7679e0(gptr<u8> object) { return split_word(object, 0x52c); }
+GUEST_EXPORT(0x007679e0, split_word_at_52c_7679e0);
+GUEST_FUZZ(0x007679e0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x52c + FUZZ_FIELD_SLACK); });
+u32 split_word_at_25c_7679f8(gptr<u8> object) { return split_word(object, 0x25c); }
+GUEST_EXPORT(0x007679f8, split_word_at_25c_7679f8);
+GUEST_FUZZ(0x007679f8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25c + FUZZ_FIELD_SLACK); });
+u32 split_word_at_5e0_767a10(gptr<u8> object) { return split_word(object, 0x5e0); }
+GUEST_EXPORT(0x00767a10, split_word_at_5e0_767a10);
+GUEST_FUZZ(0x00767a10, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x5e0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0076b880, return_constant<0x0>);
 GUEST_FUZZ(0x0076b880, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0076f550, member_address<0x14>);

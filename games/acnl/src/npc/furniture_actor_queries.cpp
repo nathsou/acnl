@@ -14,6 +14,13 @@ constexpr u8 PROPERTY_MASK = 0x0f;
 constexpr u8 PROPERTY_LIMIT = 5;  // properties at or above read as 0
 constexpr u16 VALUE_08_LIMIT = 0x198;
 constexpr u8 MODE_7B4_LIMIT = 2;
+constexpr u8 FUZZ_KIND_41 = 0x41;  // the kinds of the tests below
+constexpr u8 FUZZ_KIND_15 = 0x15;
+constexpr u8 FUZZ_KIND_10 = 0x10;
+constexpr u8 FUZZ_KIND_11 = 0x11;
+constexpr u8 FUZZ_KIND_F = 0x0f;
+constexpr u32 FUZZ_KIND_RANGE = 0x60;
+constexpr u16 FUZZ_ID = 0x1234;
 
 // Effective kinds the tests compare against (what they stand for is not known yet).
 enum ActorKind : u32 {
@@ -76,17 +83,21 @@ gptr<FurnitureActor> fuzz_actor(guest::Fuzz &f) {
     actor->offset_record = nullptr;
     if (f.below(5) != 0) {
         auto furniture = f.object<FurnitureRef>();
-        furniture->kind = f.pick<u8>({0, 1, 0xb, 0xc, 0xd, 0xe, 0x12, 0x14, 0x16, 0x29, 0x2a, 0x55, 0x56, 0xff, u8(f.below(0x60))});
-        furniture->value_08 = f.pick<u16>({0, 0x197, 0x198, 0x199, 0xffff, u16(f.number())});
-        furniture->byte_17 = f.pick<u8>({0, 4, 5, 0x0f, 0xf4, u8(f.number())});
+        furniture->kind = f.pick<u8>({0, 1, KIND_B, KIND_C, KIND_D, KIND_E, KIND_12, KIND_14, KIND_16, KIND_29, KIND_2A,
+                                      FUZZ_KIND_41, FUZZ_KIND_15, FUZZ_KIND_10, FUZZ_KIND_11, FUZZ_KIND_F,
+                                      FurnitureRef::KIND_COUNT - 1, FurnitureRef::KIND_COUNT, 0xff,
+                                      u8(f.below(FUZZ_KIND_RANGE))});
+        furniture->value_08 = f.pick<u16>({0, VALUE_08_LIMIT - 1, VALUE_08_LIMIT, VALUE_08_LIMIT + 1, 0xffff,
+                                           u16(f.number())});
+        furniture->byte_17 = f.pick<u8>({0, PROPERTY_LIMIT - 1, PROPERTY_LIMIT, PROPERTY_MASK, 0xf4, u8(f.number())});
         actor->furniture = furniture;
     }
     if (f.below(2) != 0) {
         actor->offset_record = f.object<OffsetRecord>();
     }
     actor->mode_5ec = f.pick<u8>({0, 1, MODE_SPECIAL, 3});
-    actor->mode_7b4 = f.pick<u8>({0, 1, 2, 3, 0xff});
-    actor->id_0c = f.pick<u16>({0, 1, 0x1234, u16(f.number())});
+    actor->mode_7b4 = f.pick<u8>({0, 1, MODE_7B4_LIMIT, MODE_7B4_LIMIT + 1, 0xff});
+    actor->id_0c = f.pick<u16>({0, 1, FUZZ_ID, u16(f.number())});
     return actor;
 }
 
@@ -244,3 +255,51 @@ GUEST_FUZZ(0x00751990, 100, [](guest::Fuzz &f) { f.arguments(fuzz_actor_with_id(
 GUEST_FUZZ(0x007519b4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_actor_with_id(f, id_88709a)); });
 GUEST_FUZZ(0x007519d8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_actor_with_id(f, id_88709e)); });
 GUEST_FUZZ(0x007519fc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_actor_with_id(f, id_8870ce)); });
+
+namespace {
+constexpr u32 KIND_41 = 0x41;
+constexpr u32 KIND_15 = 0x15;
+constexpr u32 KIND_10 = 0x10;
+constexpr u32 KIND_11 = 0x11;
+constexpr u32 KIND_F = 0x0f;
+constexpr u32 CLASS_1 = 1;
+}  // namespace
+
+bool kind_is_41(const FurnitureActor &actor) { return kind_is(actor, KIND_41); }
+GUEST_EXPORT(0x0075009c, kind_is_41);
+GUEST_FUZZ(0x0075009c, 200, [](guest::Fuzz &f) { f.arguments(fuzz_actor(f)); });
+
+bool kind_is_15(const FurnitureActor &actor) { return kind_is(actor, KIND_15); }
+GUEST_EXPORT(0x0075097c, kind_is_15);
+GUEST_FUZZ(0x0075097c, 200, [](guest::Fuzz &f) { f.arguments(fuzz_actor(f)); });
+
+bool kind_is_f(const FurnitureActor &actor) { return kind_is(actor, KIND_F); }
+GUEST_EXPORT(0x00750d6c, kind_is_f);
+GUEST_FUZZ(0x00750d6c, 200, [](guest::Fuzz &f) { f.arguments(fuzz_actor(f)); });
+
+bool kind_is_10_or_11(const FurnitureActor &actor) {
+    u32 kind = actor.effective_kind();
+    return kind == KIND_10 || kind == KIND_11;
+}
+GUEST_EXPORT(0x00750a2c, kind_is_10_or_11);
+GUEST_FUZZ(0x00750a2c, 200, [](guest::Fuzz &f) { f.arguments(fuzz_actor(f)); });
+
+bool kind_is_11_or_12(const FurnitureActor &actor) {
+    u32 kind = actor.effective_kind();
+    return kind == KIND_11 || kind == KIND_12;
+}
+GUEST_EXPORT(0x00750d84, kind_is_11_or_12);
+GUEST_FUZZ(0x00750d84, 200, [](guest::Fuzz &f) { f.arguments(fuzz_actor(f)); });
+
+// Unless the mode is 1: whether the record is of class 1.
+bool furniture_is_class_1(const FurnitureActor &actor) {
+    if (actor.mode_7b4 == 1) {
+        return false;
+    }
+    if (!actor.furniture) {
+        return false;
+    }
+    return actor.furniture.cast<ItemData>()->class_19() == CLASS_1;
+}
+GUEST_EXPORT(0x00751240, furniture_is_class_1);
+GUEST_FUZZ(0x00751240, 200, [](guest::Fuzz &f) { f.arguments(fuzz_actor(f)); });

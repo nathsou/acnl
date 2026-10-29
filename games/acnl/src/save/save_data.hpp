@@ -57,7 +57,9 @@ struct SaveData {
     u16 flags_621b8;
     u8 unknown_621ba[0x621cf - 0x621ba];
     u8 flags_621cf;
-    u8 unknown_621d0[0x6223a - 0x621d0];
+    u8 unknown_621d0[3];
+    u8 flags_621d3;
+    u8 unknown_621d4[0x6223a - 0x621d4];
     Item reference_item;  // the item some prices are compared against (what it represents is not known yet)
     u8 unknown_6223e[0x62338 - 0x6223e];
     SaveDataPart part_62338;
@@ -87,6 +89,7 @@ GUEST_OFFSET(SaveData, entries_4bf70, 0x4bf70);
 GUEST_OFFSET(SaveData, small_values_4be80, 0x4be80);
 GUEST_OFFSET(SaveData, flags_621b8, 0x621b8);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
+GUEST_OFFSET(SaveData, flags_621d3, 0x621d3);
 GUEST_OFFSET(SaveData, reference_item, 0x6223a);
 GUEST_OFFSET(SaveData, part_62338, 0x62338);
 GUEST_OFFSET(SaveData, entries_668a0, 0x668a0);

@@ -16,6 +16,7 @@ constexpr u32 COUNT_6 = 6;
 constexpr u32 COUNT_7 = 7;
 constexpr u32 COUNT_8 = 8;
 constexpr u32 COUNT_12 = 0x12;
+constexpr u32 COUNT_11 = 0xb;
 constexpr u32 COUNT_13 = 0xd;
 constexpr u32 COUNT_18 = 0x18;
 constexpr u8 CATEGORY_7C = 0x7c;
@@ -34,6 +35,20 @@ struct Table18 {
 };
 GUEST_OFFSET(Table18, items, 2);
 GUEST_OFFSET(Table18, flags, 0x4a);
+
+struct Table11 {
+    u8 unknown_00[0x12];
+    Item items[COUNT_11];
+    u8 flags[COUNT_11];
+};
+GUEST_OFFSET(Table11, items, 0x12);
+GUEST_OFFSET(Table11, flags, 0x3e);
+
+struct Table8 {
+    Item items[COUNT_8];
+    u8 flags[COUNT_8];
+};
+GUEST_OFFSET(Table8, flags, 0x20);
 
 struct Table6 {
     u8 unknown_00[0x12];
@@ -297,4 +312,41 @@ GUEST_FUZZ(0x0071c134, 100, [](guest::Fuzz &f) {
         flag = u8(f.below(2));
     }
     f.arguments(f.object<Item>(), table, f.pick<u32>({0, 3, 6, 7, f.number()}));
+});
+
+// Like copy_table24_item, with a different placeholder for the plain ones.
+void copy_table11_item(Item &out, Table11 &table, u32 index) {
+    if (index >= COUNT_11) {
+        copy_item(out, *empty_item);
+        return;
+    }
+    if (table.flags[index] == 0) {
+        copy_item(out, table.items[index]);
+    } else if (item_is_kind_11_with_class_4_or_5(table.items[index])) {
+        construct_item(out, PLACEHOLDER_2086);
+    } else {
+        construct_item(out, PLACEHOLDER_2083);
+    }
+}
+GUEST_EXPORT(0x0071c6ac, copy_table11_item);
+GUEST_FUZZ(0x0071c6ac, 200, [](guest::Fuzz &f) {
+    auto table = f.object<Table11>();
+    fill_flags(f, table);
+    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 5, 10, 11, f.number()}));
+});
+
+void copy_table8_item(Item &out, Table8 &table, u32 index) {
+    if (index >= COUNT_8) {
+        copy_item(out, *empty_item);
+    } else if (table.flags[index] != 0) {
+        construct_item(out, PLACEHOLDER_2083);
+    } else {
+        copy_item(out, table.items[index]);
+    }
+}
+GUEST_EXPORT(0x0071e9ac, copy_table8_item);
+GUEST_FUZZ(0x0071e9ac, 200, [](guest::Fuzz &f) {
+    auto table = f.object<Table8>();
+    fill_flags(f, table);
+    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 5, 7, 8, f.number()}));
 });

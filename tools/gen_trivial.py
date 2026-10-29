@@ -83,6 +83,9 @@ def classify(p, key):
     m = re.match(r'^(ldr|ldrb|ldrsb|ldrh|ldrsh) r0, \[r0(?:, #%s)?\]\nbx lr$' % NUM, body)
     if m:
         return ('field', m.group(1), int(m.group(2) or '0', 0))
+    m = re.match(r'^push \{r4, lr\}\nmov r4, r0\nbl #0x5c7408\nadd r0, r4, r0, lsl #2\n(ldr|ldrb|ldrsb|ldrh|ldrsh) r0, \[r0(?:, #%s)?\]\npop \{r4, pc\}$' % NUM, body)
+    if m and m.group(1) == 'ldr':
+        return ('split_field', int(m.group(2) or '0', 0))
     m = re.match(r'^add r0, r0, #%s\nbx lr$' % NUM, body)
     if m:
         return ('member_address', int(m.group(1), 0))
@@ -192,7 +195,7 @@ def main():
         status = state.data['functions'].get('%x' % key, {}).get('status')
         if key in p.rewritten and p.rewritten[key] != THIS:
             continue
-        if status == 'skipped' or not f.callers or f.ninsts > 6 or f.svcs or p.callees(key) or f.icalls:
+        if status == 'skipped' or not f.callers or f.ninsts > 6 or f.svcs or f.icalls:
             continue
         kind = classify(p, key)
         if kind:
@@ -209,6 +212,8 @@ def main():
 using guest::gptr;
 
 namespace {
+
+inline constexpr guest::Function<0x005c7408, u32()> get_split_index;
 
 template <u32 Value>
 u32 return_constant() {
@@ -337,6 +342,11 @@ inline u32 table_word(u32 index, u32 count, u32 table) {
     return index < count ? *gptr<u32>(table + index * 4) : 0;
 }
 
+// The word the object keeps for the current split (four copies, one per split, after each other).
+inline u32 split_word(gptr<u8> object, u32 offset) {
+    return *gptr<u32>(object.addr() + offset + get_split_index() * sizeof(u32));
+}
+
 // Calls a virtual function of the target (slot numbers count words of the vtable).
 inline u32 call_virtual_slot(gptr<hobj::VirtualObject> target, u32 slot) {
     return guest::call_address<u32>(target->vtable[slot], target);
@@ -454,6 +464,11 @@ void do_nothing() {}
             suffix = {'ldr': 'u32', 'ldrb': 'u8', 'ldrsb': 's8', 'ldrh': 'u16', 'ldrsh': 's16'}[kind[1]]
             out.append('GUEST_EXPORT(0x%08x, read_field_%s<0x%x>);' % (key, suffix, kind[2]))
             out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x%x + FUZZ_FIELD_SLACK); });' % (key, kind[2]))
+        elif t == 'split_field':
+            name = 'split_word_at_%x_%x' % (kind[1], key)
+            out.append('u32 %s(gptr<u8> object) { return split_word(object, 0x%x); }' % (name, kind[1]))
+            out.append('GUEST_EXPORT(0x%08x, %s);' % (key, name))
+            out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x%x + FUZZ_FIELD_SLACK); });' % (key, kind[1]))
         elif t == 'member_address':
             out.append('GUEST_EXPORT(0x%08x, member_address<0x%x>);' % (key, kind[1]))
             out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });' % key)
