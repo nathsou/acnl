@@ -50,9 +50,12 @@ struct SaveData {
     u8 unknown_4068f[0x42a06 - 0x4068f];
     s8 index_42a06;  // an index of a villager (meaning not known yet)
     s8 index_42a07;  // compared with a villager's index (meaning not known yet)
-    u8 unknown_42a08[0x4bf70 - 0x42a08];
+    u8 unknown_42a08[0x4be80 - 0x42a08];
+    u8 small_values_4be80[0x4bf70 - 0x4be80];  // SmallValueHolder::clamped_value reads here
     SaveDataEntry2168 entries_4bf70[ENTRIES_4BF70_COUNT];
-    u8 unknown_546f0[0x621cf - 0x546f0];
+    u8 unknown_546f0[0x621b8 - 0x546f0];
+    u16 flags_621b8;
+    u8 unknown_621ba[0x621cf - 0x621ba];
     u8 flags_621cf;
     u8 unknown_621d0[0x6223a - 0x621d0];
     Item reference_item;  // the item some prices are compared against (what it represents is not known yet)
@@ -66,7 +69,10 @@ struct SaveData {
     SaveDataPart part_6aeb8;
     u8 unknown_6aeb9[0x6e2a6 - 0x6aeb9];
     u8 state_6e2a6;
-    u8 unknown_6e2a7[0x70f1c - 0x6e2a7];
+    u8 unknown_6e2a7[0x6e2a8 - 0x6e2a7];
+    u32 value_6e2a8;
+    u32 value_6e2ac;
+    u8 unknown_6e2b0[0x70f1c - 0x6e2b0];
     SaveDataPart part_70f1c;
 };
 GUEST_OFFSET(SaveData, players, SaveData::PLAYERS_OFFSET);
@@ -75,8 +81,11 @@ GUEST_OFFSET(SaveData, record_b, 0x40644);
 GUEST_OFFSET(SaveData, record_a, 0x4066a);
 GUEST_OFFSET(SaveData, index_42a06, 0x42a06);
 GUEST_OFFSET(SaveData, state_6e2a6, 0x6e2a6);
+GUEST_OFFSET(SaveData, value_6e2a8, 0x6e2a8);
 GUEST_OFFSET(SaveData, index_42a07, 0x42a07);
 GUEST_OFFSET(SaveData, entries_4bf70, 0x4bf70);
+GUEST_OFFSET(SaveData, small_values_4be80, 0x4be80);
+GUEST_OFFSET(SaveData, flags_621b8, 0x621b8);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
 GUEST_OFFSET(SaveData, reference_item, 0x6223a);
 GUEST_OFFSET(SaveData, part_62338, 0x62338);

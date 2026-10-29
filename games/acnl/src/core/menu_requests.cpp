@@ -20,6 +20,11 @@ constexpr u32 REQUEST_6C = 0x6c;
 constexpr u32 REQUEST_71 = 0x71;
 constexpr u32 REQUEST_72 = 0x72;
 constexpr u32 REQUEST_73 = 0x73;
+constexpr u32 REQUEST_74 = 0x74;
+constexpr u32 REQUEST_75 = 0x75;
+constexpr u32 REQUEST_76 = 0x76;
+constexpr u32 REQUEST_7A = 0x7a;
+constexpr u8 MODE_AFTER_7A = 2;
 constexpr u32 SECOND_STAGE_CODE = 0x208;  // (offset of the byte set by mark_object_ready)
 
 inline constexpr guest::Function<0x006d1ffc, u32(u32 request, u32 unknown)> try_request;
@@ -147,3 +152,36 @@ GUEST_FUZZ(0x006d465c, 100, [](guest::Fuzz &f) {
     global_98c4fc->value_04 = f.pick<u32>({0, 1});
     f.arguments();
 });
+
+void begin_request_75() {
+    if (begin_menu_request(REQUEST_75)) {
+        state_94fd0c->unknown_50 = NO_VALUE;
+    }
+}
+GUEST_EXPORT(0x006d3218, begin_request_75);
+GUEST_FUZZ(0x006d3218, 100, [](guest::Fuzz &f) { f.arguments(); });
+
+void begin_request_76() {
+    if (begin_menu_request(REQUEST_76)) {
+        state_94fd0c->unknown_50 = NO_VALUE;
+    }
+}
+GUEST_EXPORT(0x006d3790, begin_request_76);
+GUEST_FUZZ(0x006d3790, 100, [](guest::Fuzz &f) { f.arguments(); });
+
+void begin_request_74() {
+    if (begin_menu_request(REQUEST_74)) {
+        state_94fd0c->unknown_50 = NO_VALUE;
+    }
+}
+GUEST_EXPORT(0x006d3844, begin_request_74);
+GUEST_FUZZ(0x006d3844, 100, [](guest::Fuzz &f) { f.arguments(); });
+
+// Begins request 0x7a, which also sets the mode.
+void begin_request_7a() {
+    if (begin_menu_request(REQUEST_7A)) {
+        state_94fd0c->mode = MODE_AFTER_7A;
+    }
+}
+GUEST_EXPORT(0x006d38c8, begin_request_7a);
+GUEST_FUZZ(0x006d38c8, 100, [](guest::Fuzz &f) { f.arguments(); });

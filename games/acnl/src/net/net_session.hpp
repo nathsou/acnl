@@ -19,14 +19,20 @@ struct NetSession {
     NetSessionPart part_b0;
     u8 unknown_000b1[0x1c0 - 0xb1];
     NetSessionPart part_1c0;
-    u8 unknown_001c1[0x1f0 - 0x1c1];
+    u8 unknown_001c1[0x1e4 - 0x1c1];
+    NetSessionPart part_1e4;
+    u8 unknown_001e5[0x1f0 - 0x1e5];
     u8 state_1f0;     // 0 or 1: can still move on to the next state (see begin_state_1f0)
     u8 value_1f1;
     u8 unknown_001f2[0x214 - 0x1f2];
     u8 state_214;     // above 2: unknown meaning (see state_214_above_2)
     u8 unknown_00215[0x229 - 0x215];
     u8 flag_229;
-    u8 unknown_0022a[0x23c - 0x22a];
+    u8 unknown_0022a[2];
+    u8 state_22c;
+    u8 unknown_0022d[7];
+    u8 bits_234;
+    u8 unknown_00235[0x23c - 0x235];
     u8 count_23c;
     u8 target_23d;
     u8 unknown_0023e[0x277c - 0x23e];
@@ -69,9 +75,12 @@ struct NetSession {
 GUEST_OFFSET(NetSession, buffer, 0x10);
 GUEST_OFFSET(NetSession, part_b0, 0xb0);
 GUEST_OFFSET(NetSession, part_1c0, 0x1c0);
+GUEST_OFFSET(NetSession, part_1e4, 0x1e4);
 GUEST_OFFSET(NetSession, state_1f0, 0x1f0);
 GUEST_OFFSET(NetSession, state_214, 0x214);
 GUEST_OFFSET(NetSession, flag_229, 0x229);
+GUEST_OFFSET(NetSession, state_22c, 0x22c);
+GUEST_OFFSET(NetSession, bits_234, 0x234);
 GUEST_OFFSET(NetSession, count_23c, 0x23c);
 GUEST_OFFSET(NetSession, target_23d, 0x23d);
 GUEST_OFFSET(NetSession, part_277c, 0x277c);
