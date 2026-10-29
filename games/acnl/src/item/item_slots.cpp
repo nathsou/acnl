@@ -3,30 +3,6 @@
 
 namespace {
 
-// The record of a kind of actor, from a table in the game's data (only one byte is known).
-struct ActorKind {
-    static constexpr u32 COUNT = 0x6b;
-    static constexpr u32 UNKNOWN_KIND_VALUE = 2;  // what out-of-range kinds read as
-
-    u8 unknown_00[0x19];
-    u8 value_19;
-    u8 unknown_1a[0x32];
-};
-GUEST_OFFSET(ActorKind, value_19, 0x19);
-GUEST_SIZE(ActorKind, 0x4c);
-
-inline guest::global<ActorKind[ActorKind::COUNT], 0x0086a2c8> actor_kinds;
-
-// An object that points at another one with an actor kind at 0xc9 (what they are is not known yet).
-struct ActorRef {
-    struct KindedObject {
-        u8 unknown_00[0xc9];
-        u8 kind;
-    };
-
-    gptr<KindedObject> object;  // may be null
-};
-
 // Three items one after the other, then whether each was replaced.
 struct ItemTriple {
     static constexpr u32 COUNT = 3;
@@ -142,21 +118,6 @@ Item &triple_item(Item &out, const ItemTriple &triple, u32 index) {
 }
 GUEST_EXPORT(0x0071a96c, triple_item);
 
-// The actor kind's value (ActorKind::UNKNOWN_KIND_VALUE for a kind past the table).
-static u32 actor_kind_value(u32 kind) {
-    return kind < ActorKind::COUNT ? actor_kinds[kind].value_19 : ActorKind::UNKNOWN_KIND_VALUE;
-}
-GUEST_EXPORT(0x001e90bc, actor_kind_value);
-
-// The kind value of the referenced object (UNKNOWN_KIND_VALUE without one).
-u32 actor_ref_kind_value(const ActorRef &ref) {
-    if (!ref.object) {
-        return ActorKind::UNKNOWN_KIND_VALUE;
-    }
-    return actor_kind_value(ref.object->kind);
-}
-GUEST_EXPORT(0x0071aa00, actor_ref_kind_value);
-
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
 
 namespace {
@@ -210,18 +171,4 @@ GUEST_FUZZ(0x0071a96c, 300, [](guest::Fuzz &f) {
         triple->replaced[i] = f.pick<u8>({0, 0, 1});
     }
     f.arguments(f.object<Item>(), triple, f.pick<u32>({0, 1, 2, 3, 4, 0xffffffffu}));
-});
-GUEST_FUZZ(0x001e90bc, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, ActorKind::COUNT - 1, ActorKind::COUNT, 0xffffffffu, f.below(ActorKind::COUNT)}));
-});
-GUEST_FUZZ(0x0071aa00, 300, [](guest::Fuzz &f) {
-    auto ref = f.object<ActorRef>();
-    if (f.below(4) == 0) {
-        ref->object = nullptr;
-    } else {
-        auto object = f.allocate(sizeof(ActorRef::KindedObject)).cast<ActorRef::KindedObject>();
-        object->kind = u8(f.pick<u32>({0, 1, ActorKind::COUNT - 1, ActorKind::COUNT, 0xff, f.below(ActorKind::COUNT)}));
-        ref->object = object;
-    }
-    f.arguments(ref);
 });

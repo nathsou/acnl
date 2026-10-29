@@ -4,9 +4,7 @@
 
 namespace {
 
-inline constexpr guest::Function<0x007684a4, u32(const Item &item)> item_check_a;
 inline constexpr guest::Function<0x0076bb34, u32(const Item &item)> item_check_b;
-inline constexpr guest::Function<0x00768628, u32(const Item &item)> item_check_c;
 
 constexpr u32 EXPECTED_CHECK_B_RESULT = 8;  // meaning not known yet
 
@@ -58,7 +56,7 @@ GUEST_EXPORT(0x0076c458, Item::has_data_flag_1b_bit1);
 // False when the item has flag bits besides the top two and check b says 8; else bit 6 of the second category flag
 // byte (false without category flags).
 bool Item::has_category_flag_bit_1_6() const {
-    if (item_check_a(*this) != 0 && (flags & ~FLAGS_TOP_BITS) != 0 && item_check_b(*this) == EXPECTED_CHECK_B_RESULT) {
+    if (has_valid_value_06() && (flags & ~FLAGS_TOP_BITS) != 0 && item_check_b(*this) == EXPECTED_CHECK_B_RESULT) {
         return false;
     }
     gptr<u8> category = category_flags();
@@ -68,7 +66,7 @@ GUEST_EXPORT(0x0076c480, Item::has_category_flag_bit_1_6);
 
 // False for kind 2 ids and when check c passes; else bit 5 of the third category flag byte.
 bool Item::has_category_flag_bit_2_5() const {
-    if ((id & KIND_MASK) == KIND_2 << KIND_SHIFT || item_check_c(*this) != 0) {
+    if ((id & KIND_MASK) == KIND_2 << KIND_SHIFT || is_in_id_set_a()) {
         return false;
     }
     gptr<u8> category = category_flags();

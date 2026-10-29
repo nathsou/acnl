@@ -92,6 +92,14 @@ struct Item {
     WearClass wear_class() const;               // the high nibble of the entry's byte 0xd, NONE without one
     bool is_wear_class_7() const;               // wear_class() == CLASS_7
     bool data_flag_1c_bit3() const;             // true without data; else ItemData::flag_1c_bit3()
+    bool has_valid_value_06() const;            // data with a valid kind_11 and a non-zero value_06 below the limit
+    u32 class_19_if_valid_kind() const;         // ItemData::class_19 for data with a valid kind_11, else 0
+    u32 group_for_class() const;                // a group 0-9 for each kind f_007689a4 reports (0: none)
+    bool has_flag_bit_10_in_type_10() const;    // flags bit 10, for items whose indexed type is 10
+    bool is_in_id_set_a() const;                // the number is one of 0x334c, 0x3350...0x3364 (step 4) or 0x26ed
+    bool is_in_id_set_b() const;                // the number is one of 0x334e, 0x3352...0x3362 (step 4)
+    u32 quarter_price() const;                  // a quarter of the price when it is positive, else 0
+    u16 flags_value() const;                    // flags without the two top bits
     bool is_first_item() const;                 // the number is FIRST_ITEM (the flag in the id is ignored)
     bool has_data_flag_1b_bit1() const;         // bit 1 of ItemData::flags_1b (meaning not known yet)
     bool has_category_flag_bit_1_6() const;     // see item_predicates.cpp
@@ -113,21 +121,31 @@ Item &copy_item(Item &self, const Item &other);
 
 // An entry of the item data table (30 bytes). Only the price and the category are known so far.
 struct ItemData {
+    static constexpr u8 KIND_11_LAST = 0x55;
+    static constexpr u8 CLASS_19_LIMIT = 6;
+    static constexpr u32 CLASS_19_SHIFT = 4;
+    static constexpr u16 VALUE_06_LIMIT = 0x260;  // values at or above are not valid
     static constexpr u8 UNKNOWN_0D_LIMIT = 0xb9;   // values at or above read as 0 (meaning not known yet)
     static constexpr u8 UNKNOWN_15_MASK = 0x0f;    // only the low 4 bits are read
     static constexpr u8 UNKNOWN_15_LIMIT = 11;     // masked values at or above read as 0
 
     u8 unknown_00[2];
     u16 price_unit;
-    u8 unknown_04[6];
+    u8 unknown_04[2];
+    u16 value_06;      // see Item::has_valid_value_06
+    u8 unknown_08[2];
     u8 category;
     u8 unknown_0b[2];
     u8 unknown_0d;
     s8 price_multiplier;  // the base price is price_unit * price_multiplier
     u8 wear_class_index;  // into the wear class table (Item::wear_class_entry)
-    u8 unknown_10[5];
+    u8 unknown_10;
+    u8 kind_11;           // see ItemData::has_kind_11
+    u8 unknown_12[3];
     u8 unknown_15;
-    u8 unknown_16[5];
+    u8 unknown_16[3];
+    u8 class_and_flags_19;  // the high nibble is a class below 6; see ItemData::class_19
+    u8 unknown_1a;
     u8 flags_1b;  // bit 1: see Item::has_data_flag_1b_bit1
     u8 flags_1c;  // bit 3: see ItemData::flag_1c_bit3
     u8 unknown_1d;
@@ -136,12 +154,17 @@ struct ItemData {
     // True without the category flag table; otherwise bit 3 of flags_1c when bit 7 of the category's second flag byte
     // is set, else false (meaning not known yet).
     bool flag_1c_bit3() const;
+    bool has_kind_11() const;  // kind_11 is between 1 and KIND_11_LAST
+    u32 class_19() const;      // the high nibble of class_and_flags_19 when it is below CLASS_19_LIMIT, else 0
 };
+GUEST_OFFSET(ItemData, value_06, 0x06);
 GUEST_OFFSET(ItemData, category, 0x0a);
 GUEST_OFFSET(ItemData, unknown_0d, 0x0d);
 GUEST_OFFSET(ItemData, price_multiplier, 0x0e);
 GUEST_OFFSET(ItemData, wear_class_index, 0x0f);
+GUEST_OFFSET(ItemData, kind_11, 0x11);
 GUEST_OFFSET(ItemData, unknown_15, 0x15);
+GUEST_OFFSET(ItemData, class_and_flags_19, 0x19);
 GUEST_OFFSET(ItemData, flags_1b, 0x1b);
 GUEST_OFFSET(ItemData, flags_1c, 0x1c);
 GUEST_SIZE(ItemData, 30);
