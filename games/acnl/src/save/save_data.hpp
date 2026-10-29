@@ -81,6 +81,11 @@ GUEST_OFFSET(SaveData, part_6ad82, 0x6ad82);
 GUEST_OFFSET(SaveData, part_6aeb8, 0x6aeb8);
 GUEST_OFFSET(SaveData, part_70f1c, 0x70f1c);
 
+// The "data base" (what get_data_base returns) of the save data whose players start at `players`.
+inline u32 save_data_base_of_players(guest::gptr<const SavePlayer> players) {
+    return players.addr() - SaveData::PLAYERS_OFFSET + SaveData::BASE_OFFSET;
+}
+
 // The save data a "data base" (what get_data_base returns) belongs to.
 inline guest::gptr<SaveData> save_data_of_base(u32 base) {
     return guest::gptr<SaveData>(base - SaveData::BASE_OFFSET);

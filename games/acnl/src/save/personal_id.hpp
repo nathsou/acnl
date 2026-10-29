@@ -25,6 +25,8 @@ GUEST_SIZE(TownRef, 22);
 struct PersonalId {
     PlayerRef player;
     TownRef town;
+
+    bool is_set() const;  // the player id is not zero and the town part passes a check
 };
 GUEST_OFFSET(PersonalId, town, 0x16);
 GUEST_SIZE(PersonalId, 44);

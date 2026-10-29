@@ -74,3 +74,19 @@ GUEST_FUZZ(0x005b4358, 200, [](guest::Fuzz &f) {
 GUEST_FUZZ(0x005b436c, 300, [](guest::Fuzz &f) {
     f.arguments(f.pick<u32>({0, 105, 106, 107, 127, 128, 129, 0x100 + 106, f.number(), f.below(140)}));
 });
+
+namespace {
+
+struct KindStateByte1 {
+    u8 unknown_00;
+    u8 byte_01;
+};
+inline guest::global<KindStateByte1, 0x00957320> kind_state_1;
+
+}  // namespace
+
+static u8 kind_state_byte_1() {
+    return kind_state_1->byte_01;
+}
+GUEST_EXPORT(0x003041c8, kind_state_byte_1);
+GUEST_FUZZ(0x003041c8, 100, [](guest::Fuzz &f) { f.arguments(); });

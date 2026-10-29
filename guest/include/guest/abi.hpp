@@ -334,6 +334,18 @@ R call_address(u32 address, A... args) {
 struct MemberFunctionPointer {
     u32 function;
     s32 adjust;
+
+    // The ABI's comparison: equal functions, and equal adjustments (which only matter for a null function when one of
+    // the pointers is virtual).
+    bool operator==(const MemberFunctionPointer &other) const {
+        if (function != other.function) {
+            return false;
+        }
+        if (function == 0 && ((adjust | other.adjust) & 1) == 0) {
+            return true;
+        }
+        return adjust == other.adjust;
+    }
 };
 GUEST_SIZE(MemberFunctionPointer, 8);
 
