@@ -1,6 +1,7 @@
 // Small helpers around 0x0030f4d8: a bit set of 33 flags, a block picker, a lookup in the table of active entries,
 // and copies of small structures.
 #include "core/fuzz_helpers.hpp"
+#include "core/date.hpp"
 #include "guest/guest.hpp"
 #include "save/villager.hpp"
 
@@ -44,21 +45,7 @@ u32 VirtualWithWord::refresh_and_get_word() {
 }
 GUEST_EXPORT(0x0030f4d8, VirtualWithWord::refresh_and_get_word);
 
-// A date by its shape: the wide form keeps its year in a word, the narrow one in a halfword.
-struct WideDate {
-    u16 year;
-    u8 unknown_02[2];
-    u8 month;
-    u8 day;
-};
-struct NarrowDate {
-    u16 year;
-    u8 month;
-    u8 day;
-};
-GUEST_SIZE(NarrowDate, 4);
-
-void narrow_date(NarrowDate &out, const WideDate &date) {
+void narrow_date(Date &out, const WideDate &date) {
     out.year = date.year;
     out.month = date.month;
     out.day = date.day;
@@ -100,7 +87,7 @@ GUEST_FUZZ(0x0030f4d8, 200, [](guest::Fuzz &f) {
     object->vtable = fuzz::harmless_vtable(f);
     f.arguments(object);
 });
-GUEST_FUZZ(0x0030f56c, 200, [](guest::Fuzz &f) { f.arguments(f.object<NarrowDate>(), f.object<WideDate>()); });
+GUEST_FUZZ(0x0030f56c, 200, [](guest::Fuzz &f) { f.arguments(f.object<Date>(), f.object<WideDate>()); });
 GUEST_FUZZ(0x0030fbb4, 200, [](guest::Fuzz &f) {
     f.arguments(f.object<Block1228>(), f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffffu, f.below(10)}));
 });

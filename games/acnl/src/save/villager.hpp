@@ -58,7 +58,8 @@ struct SaveVillager {
     VillagerPlayerRecord player_records[PLAYER_RECORDS];
     u8 unknown_180e[0x249a - 0x180e];
     Item item_249a;
-    u8 unknown_249e[0x24e6 - 0x249e];
+    u8 unknown_249e[0x24d6 - 0x249e];
+    Item items_24d6[4];
     Item item_24e6;
     Item item_24ea;
     u8 unknown_24ee[2];
@@ -94,6 +95,7 @@ GUEST_OFFSET(SaveVillager, items_8d6, 0x8d6);
 GUEST_OFFSET(SaveVillager, item_8e6, 0x8e6);
 GUEST_OFFSET(SaveVillager, player_records, 0x8ee);
 GUEST_OFFSET(SaveVillager, item_249a, 0x249a);
+GUEST_OFFSET(SaveVillager, items_24d6, 0x24d6);
 GUEST_OFFSET(SaveVillager, item_24e6, 0x24e6);
 GUEST_OFFSET(SaveVillager, item_24ea, 0x24ea);
 GUEST_OFFSET(SaveVillager, value_24f0, 0x24f0);

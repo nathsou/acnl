@@ -8,6 +8,7 @@
 
 `closed` and `leafs` write build/acnl/session/{closed,leafs}.txt, `dump` reads closed.txt.
 """
+import bisect
 import collections
 import os
 import re
@@ -24,8 +25,33 @@ OUT = os.path.join(h.ROOT, 'build', h.GAME, 'session')
 CRO_BASE = 0x40000000
 
 
+def falls_into_function(p, key):
+    """Whether an instruction of the function runs on into the entry of another function (a boundary the analysis found
+    inside the code): the listing then stops short, and the rewrite has to include the rest."""
+    an = p.analyzer()
+    thumb = key & 1
+    start = key & ~1
+    for addr, size in p.funcs[key].insts:
+        inst = an.decode(addr, thumb)
+        if inst is not None and inst.falls_through:
+            following = addr + size
+            if following != start and (following | thumb) in p.funcs:
+                return True
+    return False
+
+
+def has_foreign_code(p, key, starts):
+    """Whether some instruction of the function lies beyond the next function's entry (blocks shared with others)."""
+    start = key & ~1
+    i = bisect.bisect_right(starts, start)
+    if i >= len(starts):
+        return False
+    return any(addr >= starts[i] for addr, _ in p.funcs[key].insts)
+
+
 def candidates(p, state):
     """Functions the game calls that are neither rewritten, verified nor skipped."""
+    starts = sorted(set(k & ~1 for k in p.funcs))
     for k, f in sorted(p.funcs.items(), key=lambda kv: kv[0] & ~1):
         a = k & ~1
         if k in p.rewritten or not f.callers or f.svcs or f.icalls:
@@ -33,6 +59,8 @@ def candidates(p, state):
         if state.data['functions'].get('%x' % k, {}).get('status') in ('verified', 'skipped'):
             continue
         if not any(lo <= a < hi for lo, hi in h.GAME_RANGES) or a >= CRO_BASE:
+            continue
+        if falls_into_function(p, k) or has_foreign_code(p, k, starts):
             continue
         yield k, f
 

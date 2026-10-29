@@ -64,7 +64,9 @@ struct SaveData {
     SaveDataPart part_6ad82;
     u8 unknown_6ad83[0x6aeb8 - 0x6ad83];
     SaveDataPart part_6aeb8;
-    u8 unknown_6aeb9[0x70f1c - 0x6aeb9];
+    u8 unknown_6aeb9[0x6e2a6 - 0x6aeb9];
+    u8 state_6e2a6;
+    u8 unknown_6e2a7[0x70f1c - 0x6e2a7];
     SaveDataPart part_70f1c;
 };
 GUEST_OFFSET(SaveData, players, SaveData::PLAYERS_OFFSET);
@@ -72,6 +74,7 @@ GUEST_OFFSET(SaveData, villagers, 0x292a4);
 GUEST_OFFSET(SaveData, record_b, 0x40644);
 GUEST_OFFSET(SaveData, record_a, 0x4066a);
 GUEST_OFFSET(SaveData, index_42a06, 0x42a06);
+GUEST_OFFSET(SaveData, state_6e2a6, 0x6e2a6);
 GUEST_OFFSET(SaveData, index_42a07, 0x42a07);
 GUEST_OFFSET(SaveData, entries_4bf70, 0x4bf70);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);

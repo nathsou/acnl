@@ -45,3 +45,14 @@ GUEST_FUZZ(0x0030a34c, 200, [](guest::Fuzz &f) {
     date->day = f.pick<u8>({1, 15, 28, 31});
     f.arguments(f.object<Value12>(), date);
 });
+
+// A date zeroed, then set from the wide form.
+Date &construct_date_from_wide(Date &self, const WideDate &date) {
+    self.year = 0;
+    self.month = 0;
+    self.day = 0;
+    narrow_date(self, date);
+    return self;
+}
+GUEST_EXPORT(0x00312080, construct_date_from_wide);
+GUEST_FUZZ(0x00312080, 100, [](guest::Fuzz &f) { f.arguments(f.object<Date>(), f.object<WideDate>()); });

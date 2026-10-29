@@ -34,3 +34,18 @@ GUEST_EXPORT(0x005d867c, construct_word_c_ptr_sv);
 GUEST_FUZZ(0x005d867c, 100, [](guest::Fuzz &f) {
     f.arguments(f.object<WordCPtrSv>(), f.number(), f.pick<u32>({9, 0xb, 0x15, 0x18, 0x41, f.number()}));
 });
+
+namespace {
+constexpr u32 WORD_CAPACITY_9 = 9;
+}
+
+// A word descriptor of capacity 9 (two identical copies in the game).
+script::WordPtrSv &construct_word_ptr_sv_9(script::WordPtrSv &self, guest::gptr<void> buffer) {
+    script::construct_word_ptr(self, buffer, WORD_CAPACITY_9);
+    self.vtable = script::WordPtrSv::VTABLE;
+    return self;
+}
+GUEST_EXPORT(0x00308944, construct_word_ptr_sv_9);
+GUEST_EXPORT(0x0031824c, construct_word_ptr_sv_9);
+GUEST_FUZZ(0x00308944, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
+GUEST_FUZZ(0x0031824c, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });

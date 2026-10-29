@@ -70,6 +70,7 @@ struct Item {
 
     // flags: the top two bits are flags; for stacks, the rest is the count minus one
     static constexpr u16 FLAGS_TOP_BITS = 0xc000;
+    static constexpr u32 FLAGS_TOP_SHIFT = 14;
 
     u16 number() const { return id & NUMBER_MASK; }
     ItemKind kind() const { return ItemKind(number() >> KIND_SHIFT); }
@@ -120,6 +121,7 @@ gptr<CategoryInfo> category_info(u32 category);  // categories >= NO_CATEGORY ge
 
 Item &construct_item(Item &self, u16 id);       // the constructor Item(u16)
 Item &copy_item(Item &self, const Item &other);
+s32 item_offset_in_category(const Item &item);  // the number minus the first number of its category; -1 without data
 
 // An entry of the item data table (30 bytes). Only the price and the category are known so far.
 struct ItemData {
@@ -143,9 +145,13 @@ struct ItemData {
     u8 wear_class_index;  // into the wear class table (Item::wear_class_entry)
     u8 unknown_10;
     u8 kind_11;           // see ItemData::has_kind_11
-    u8 unknown_12[3];
+    u8 unknown_12;
+    u8 byte_13;
+    u8 unknown_14;
     u8 unknown_15;
-    u8 unknown_16[3];
+    u8 unknown_16;
+    u8 byte_17;
+    u8 unknown_18;
     u8 class_and_flags_19;  // the high nibble is a class below 6; see ItemData::class_19
     u8 unknown_1a;
     u8 flags_1b;  // bit 1: see Item::has_data_flag_1b_bit1
@@ -165,7 +171,9 @@ GUEST_OFFSET(ItemData, unknown_0d, 0x0d);
 GUEST_OFFSET(ItemData, price_multiplier, 0x0e);
 GUEST_OFFSET(ItemData, wear_class_index, 0x0f);
 GUEST_OFFSET(ItemData, kind_11, 0x11);
+GUEST_OFFSET(ItemData, byte_13, 0x13);
 GUEST_OFFSET(ItemData, unknown_15, 0x15);
+GUEST_OFFSET(ItemData, byte_17, 0x17);
 GUEST_OFFSET(ItemData, class_and_flags_19, 0x19);
 GUEST_OFFSET(ItemData, flags_1b, 0x1b);
 GUEST_OFFSET(ItemData, flags_1c, 0x1c);
