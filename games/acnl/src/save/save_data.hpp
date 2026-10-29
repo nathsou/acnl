@@ -74,7 +74,9 @@ struct SaveData {
     u8 unknown_6e2a7[0x6e2a8 - 0x6e2a7];
     u32 value_6e2a8;
     u32 value_6e2ac;
-    u8 unknown_6e2b0[0x70f1c - 0x6e2b0];
+    u8 unknown_6e2b0[0x6fe82 - 0x6e2b0];
+    u8 record_flags_6fe82[48];  // four records of 12 bytes: the first byte of each is a flag byte
+    u8 unknown_6feb2[0x70f1c - 0x6feb2];
     SaveDataPart part_70f1c;
 };
 GUEST_OFFSET(SaveData, players, SaveData::PLAYERS_OFFSET);
@@ -84,6 +86,7 @@ GUEST_OFFSET(SaveData, record_a, 0x4066a);
 GUEST_OFFSET(SaveData, index_42a06, 0x42a06);
 GUEST_OFFSET(SaveData, state_6e2a6, 0x6e2a6);
 GUEST_OFFSET(SaveData, value_6e2a8, 0x6e2a8);
+GUEST_OFFSET(SaveData, record_flags_6fe82, 0x6fe82);
 GUEST_OFFSET(SaveData, index_42a07, 0x42a07);
 GUEST_OFFSET(SaveData, entries_4bf70, 0x4bf70);
 GUEST_OFFSET(SaveData, small_values_4be80, 0x4be80);

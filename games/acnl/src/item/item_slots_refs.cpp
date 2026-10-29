@@ -8,6 +8,8 @@
 namespace {
 
 constexpr u32 SLOT_1 = 1;
+constexpr u32 SLOT_3 = 3;
+constexpr u32 SLOT_6 = 6;
 constexpr u32 SLOT_2 = 2;
 constexpr u32 SLOT_4 = 4;
 constexpr u32 SLOT_5 = 5;
@@ -166,6 +168,7 @@ GUEST_FUZZ(0x0070afec, 100, [](guest::Fuzz &f) {
 });
 
 gptr<Item> slots_slot_5_if_class_6(ItemSlots &slots) { return slots.slot_if_class(SLOT_5, WEAR_CLASS_6); }
+
 gptr<Item> slots_slot_4_if_class_5(ItemSlots &slots) { return slots.slot_if_class(SLOT_4, WEAR_CLASS_5); }
 GUEST_EXPORT(0x0070f010, slots_slot_5_if_class_6);
 GUEST_EXPORT(0x0070f034, slots_slot_4_if_class_5);
@@ -271,6 +274,8 @@ gptr<u8> main_slot_entry(gptr<u8> table) {
     return table + (slot * SLOT_STRIDE_WORDS * ENTRY_SIZE + ENTRY_OFFSET);
 }
 GUEST_EXPORT(0x0070ef04, main_slot_entry);
+GUEST_EXPORT(0x001df3d4, main_slot_entry);
+GUEST_FUZZ(0x001df3d4, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(MAIN_SLOT_TABLE_SIZE).cast<u8>()); });
 GUEST_FUZZ(0x0070ef04, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(MAIN_SLOT_TABLE_SIZE).cast<u8>()); });
 
 u32 save_value_6e2a8() { return get_save_data()->value_6e2a8; }
@@ -289,3 +294,35 @@ GUEST_EXPORT(0x0070b460, save_excess_6e2a8);
 GUEST_FUZZ(0x0070b460, 50, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_FUZZ(0x0070b36c, 50, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_FUZZ(0x0070b2fc, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// Slot 6's item when it has class 6; the fallback's slot 5 when there are no slots of its own.
+gptr<Item> owner_slot_6_if_class_6(SlotsOwner &owner) {
+    if (owner.slots != nullptr) {
+        return owner.slots->slot_if_class(SLOT_6, WEAR_CLASS_6);
+    }
+    return owner.fallback == nullptr ? empty_item.ptr() : slots_slot_5_if_class_6(*owner.fallback);
+}
+GUEST_EXPORT(0x0070b0fc, owner_slot_6_if_class_6);
+GUEST_FUZZ(0x0070b0fc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots_owner(f)); });
+
+// Copies of single-slot accessors made for other callers.
+gptr<Item> slots_slot_3_if_class_3(ItemSlots &slots) { return slots.slot_if_class(SLOT_3, WEAR_CLASS_3); }
+gptr<Item> slots_slot_5_if_class_5(ItemSlots &slots) { return slots.slot_if_class(SLOT_5, WEAR_CLASS_5); }
+gptr<Item> slots_slot_4_if_class_4(ItemSlots &slots) { return slots.slot_if_class(SLOT_4, WEAR_CLASS_4); }
+GUEST_EXPORT(0x0071a578, slots_slot_3_if_class_3);
+GUEST_EXPORT(0x0071a694, slots_slot_5_if_class_5);
+GUEST_EXPORT(0x0071a6b8, slots_slot_4_if_class_4);
+GUEST_FUZZ(0x0071a578, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
+GUEST_FUZZ(0x0071a694, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
+GUEST_FUZZ(0x0071a6b8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
+
+// Slot 4's item when it has class 4, unless slot 2 holds a class-3 item of the blocking category.
+gptr<Item> slots_slot_4_if_slot_2_allows(ItemSlots &slots) {
+    gptr<Item> slot_2 = slots.slot_if_class(SLOT_2, WEAR_CLASS_3);
+    if (slot_2->category() == CATEGORY_BLOCKING) {
+        return empty_item.ptr();
+    }
+    return slots.slot_if_class(SLOT_4, WEAR_CLASS_4);
+}
+GUEST_EXPORT(0x0071a3a8, slots_slot_4_if_slot_2_allows);
+GUEST_FUZZ(0x0071a3a8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });

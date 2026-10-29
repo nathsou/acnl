@@ -53,3 +53,14 @@ GUEST_FUZZ(0x00589480, 200, [](guest::Fuzz &f) {
     reference_clock->minute_09 = s8(f.below(60));
     f.arguments(f.below(24), f.below(60), f.below(24), f.below(60));
 });
+
+// The clock's signed bytes 7, 8 and 9.
+s32 clock_byte_07() { return reference_clock->value_07; }
+s32 clock_byte_08() { return s8(reference_clock->hour_08); }
+s32 clock_byte_09() { return reference_clock->minute_09; }
+GUEST_EXPORT(0x00589678, clock_byte_07);
+GUEST_EXPORT(0x00589688, clock_byte_08);
+GUEST_EXPORT(0x00589698, clock_byte_09);
+GUEST_FUZZ(0x00589678, 20, [](guest::Fuzz &f) { f.arguments(); });
+GUEST_FUZZ(0x00589688, 20, [](guest::Fuzz &f) { f.arguments(); });
+GUEST_FUZZ(0x00589698, 20, [](guest::Fuzz &f) { f.arguments(); });

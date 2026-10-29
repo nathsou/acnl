@@ -46,6 +46,7 @@ constexpr u8 PLAYER_FLAG_6 = 0x40;
 constexpr u8 PLAYER_FLAG_5 = 0x20;
 constexpr u32 SEVENTH_MODE = 7;
 constexpr u32 SIXTH_MODE = 6;
+constexpr u32 WALK_MODE_2 = 2;
 constexpr u32 ROW_ITEM_COUNT = 0x80;
 
 // Two byte tables of four entries each.
@@ -292,3 +293,9 @@ bool current_player_flag_5713_bit_5() {
 }
 GUEST_EXPORT(0x006986d4, current_player_flag_5713_bit_5);
 GUEST_FUZZ(0x006986d4, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+void set_cell_target_2(CellWalker &self, s32 x, s32 z) { set_cell_target(self, WALK_MODE_2, x, z); }
+GUEST_EXPORT(0x00660724, set_cell_target_2);
+GUEST_FUZZ(0x00660724, 100, [](guest::Fuzz &f) {
+    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
+});
