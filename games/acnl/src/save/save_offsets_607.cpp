@@ -1,0 +1,115 @@
+// Offsets inside the save data that the player code asks for (the game computes them as differences of addresses,
+// so they are constants), and checks of a pending request against them.
+#include "guest/guest.hpp"
+#include "save/save_data.hpp"
+
+namespace {
+
+constexpr u32 SLOT_TABLE_OFFSET = 0x292a0;  // the data base (0x80) plus 0x29220
+constexpr u32 TOWN_BLOCK_OFFSET = 0x71900;
+constexpr u32 PENDING_VALUE_MATCH = 0x00022bcc;
+constexpr u32 RESERVED_VALUE = 0x00089a60;
+
+// A request kept in three globals: whether one is pending, where it points (0x0095148c) and what it holds.
+inline guest::global<s8, 0x00951484> request_active;
+inline guest::global<u32, 0x0095148c> request_offset;
+inline guest::global<u32, 0x00951490> request_value;
+inline guest::global<u32, 0x0088e5bc> current_value_source;
+
+inline constexpr guest::Function<0x00305f44, u32()> query_current_main_object;
+inline constexpr guest::Function<0x002ff8b0, u32(u32 index)> slot_value;
+
+struct Settings {
+    u8 unknown_00;
+    u8 slot_value_01;
+    u8 unknown_02[0x24 - 2];
+    u32 words_24[2];
+};
+GUEST_OFFSET(Settings, slot_value_01, 1);
+GUEST_OFFSET(Settings, words_24, 0x24);
+inline guest::global<Settings, 0x009506bc> settings;
+inline guest::global<u32[2], 0x008549b4> default_words;
+
+struct ClockCopy {
+    u32 words[2];
+    float value_08;
+};
+GUEST_SIZE(ClockCopy, 12);
+inline guest::global<ClockCopy, 0x00ad56b0> reference_clock;
+inline guest::global<ClockCopy, 0x00997de8> clock_copy;
+inline guest::global<u8[2], 0x009506f0> pair_9506f0;
+constexpr u8 PAIR_VALUE = 0x28;
+constexpr u32 SLOT_MAIN = 4;
+
+}  // namespace
+
+u32 save_data_base_offset() { return SaveData::BASE_OFFSET; }
+GUEST_EXPORT(0x00607198, save_data_base_offset);
+GUEST_FUZZ(0x00607198, 20, [](guest::Fuzz &f) { f.arguments(); });
+
+u32 save_slot_table_offset() { return SLOT_TABLE_OFFSET; }
+GUEST_EXPORT(0x006073cc, save_slot_table_offset);
+GUEST_FUZZ(0x006073cc, 20, [](guest::Fuzz &f) { f.arguments(); });
+
+u32 save_town_block_offset() { return TOWN_BLOCK_OFFSET; }
+GUEST_EXPORT(0x006075ec, save_town_block_offset);
+GUEST_EXPORT(0x00607690, save_town_block_offset);
+GUEST_FUZZ(0x006075ec, 20, [](guest::Fuzz &f) { f.arguments(); });
+GUEST_FUZZ(0x00607690, 20, [](guest::Fuzz &f) { f.arguments(); });
+
+// A request is pending with offset 0 and the value the current source holds.
+bool request_matches_current_source() {
+    return *request_active != 0 && *request_offset == 0 && *request_value == *current_value_source;
+}
+GUEST_EXPORT(0x00607474, request_matches_current_source);
+GUEST_FUZZ(0x00607474, 50, [](guest::Fuzz &f) {
+    *request_active = s8(f.below(2));
+    *request_offset = f.pick<u32>({0, 1});
+    *request_value = f.pick<u32>({*current_value_source, 7});
+    f.arguments();
+});
+
+// A request is pending at the slot table with the given value.
+bool request_matches_slot_table() {
+    return *request_active != 0 && *request_offset == SLOT_TABLE_OFFSET && *request_value == PENDING_VALUE_MATCH;
+}
+GUEST_EXPORT(0x006074b4, request_matches_slot_table);
+GUEST_FUZZ(0x006074b4, 50, [](guest::Fuzz &f) {
+    *request_active = s8(f.below(2));
+    *request_offset = f.pick<u32>({SLOT_TABLE_OFFSET, 1});
+    *request_value = f.pick<u32>({PENDING_VALUE_MATCH, 7});
+    f.arguments();
+});
+
+// A request is pending with offset 0 and the reserved value.
+bool request_is_reserved() {
+    return *request_active != 0 && *request_offset == 0 && *request_value == RESERVED_VALUE;
+}
+GUEST_EXPORT(0x00607bdc, request_is_reserved);
+GUEST_FUZZ(0x00607bdc, 50, [](guest::Fuzz &f) {
+    *request_active = s8(f.below(2));
+    *request_offset = f.pick<u32>({0, 1});
+    *request_value = f.pick<u32>({RESERVED_VALUE, 7});
+    f.arguments();
+});
+
+// Records the main slot's value and the default words in the settings.
+void reset_settings() {
+    query_current_main_object();
+    settings->slot_value_01 = u8(slot_value(SLOT_MAIN));
+    settings->words_24[0] = default_words[0];
+    settings->words_24[1] = default_words[1];
+}
+GUEST_EXPORT(0x00607f9c, reset_settings);
+GUEST_FUZZ(0x00607f9c, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// Copies the reference clock to a global, and sets two bytes to 0x28.
+void copy_reference_clock() {
+    clock_copy->words[0] = reference_clock->words[0];
+    clock_copy->words[1] = reference_clock->words[1];
+    clock_copy->value_08 = reference_clock->value_08;
+    (*pair_9506f0)[0] = PAIR_VALUE;
+    (*pair_9506f0)[1] = PAIR_VALUE;
+}
+GUEST_EXPORT(0x0060b0b8, copy_reference_clock);
+GUEST_FUZZ(0x0060b0b8, 20, [](guest::Fuzz &f) { f.arguments(); });

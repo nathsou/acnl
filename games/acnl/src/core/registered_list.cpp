@@ -20,6 +20,13 @@ constexpr u8 CLASS_MASK = 3;
 constexpr u8 CLASS_0 = 0;
 constexpr u8 CLASS_1 = 1;
 constexpr u32 NO_ID = 0x26;  // meaning not known yet
+constexpr u32 ID_LIMIT = 0x23;
+constexpr u32 ID_0 = 0;
+constexpr u32 ID_5 = 5;
+constexpr u32 ID_7 = 7;
+constexpr u32 ID_8 = 8;
+constexpr u32 ID_9 = 9;
+constexpr u32 ID_C = 0xc;
 
 struct RegisteredList {
     u8 unknown_00[8];
@@ -70,3 +77,47 @@ u32 first_registered_id_of_class_0() {
 }
 GUEST_EXPORT(0x003188f0, first_registered_id_of_class_0);
 GUEST_FUZZ(0x003188f0, 200, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the registry is enabled.
+bool registry_enabled() {
+    return read_global_object_byte() != REGISTRY_DISABLED;
+}
+GUEST_EXPORT(0x0058ed00, registry_enabled);
+GUEST_FUZZ(0x0058ed00, 20, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the registry has a first node and, when asked to check, that node's id is below the limit.
+bool registry_head_below_limit(u32 check) {
+    if (read_global_object_byte() == REGISTRY_DISABLED) {
+        return false;
+    }
+    gptr<RegisteredNode> head = registered_list->head;
+    if (head == nullptr) {
+        return false;
+    }
+    return check == 0 || head->id < ID_LIMIT;
+}
+GUEST_EXPORT(0x0058eb78, registry_head_below_limit);
+GUEST_FUZZ(0x0058eb78, 50, [](guest::Fuzz &f) { f.arguments(f.below(2)); });
+
+// The id of the first node whose id is 0, 5, 7, 8, 9 or 0xc; NO_ID when there is none.
+u32 first_registered_special_id() {
+    if (read_global_object_byte() == REGISTRY_DISABLED) {
+        return NO_ID;
+    }
+    for (gptr<RegisteredNode> node = registered_list->head; node; node = node->next) {
+        switch (node->id) {
+        case ID_0:
+        case ID_5:
+        case ID_7:
+        case ID_8:
+        case ID_9:
+        case ID_C:
+            return node->id;
+        default:
+            break;
+        }
+    }
+    return NO_ID;
+}
+GUEST_EXPORT(0x0058f094, first_registered_special_id);
+GUEST_FUZZ(0x0058f094, 50, [](guest::Fuzz &f) { f.arguments(); });

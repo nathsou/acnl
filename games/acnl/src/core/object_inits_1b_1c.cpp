@@ -135,6 +135,8 @@ script::WordPtrSv &construct_word_ptr_sv_17(script::WordPtrSv &self, gptr<void> 
     return self;
 }
 GUEST_EXPORT(0x001b6000, construct_word_ptr_sv_17);
+GUEST_EXPORT(0x005b7680, construct_word_ptr_sv_17);
+GUEST_FUZZ(0x005b7680, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
 GUEST_FUZZ(0x001b6000, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
 
 // Constructs the 35 six-byte entries, then sets each to its unset state.

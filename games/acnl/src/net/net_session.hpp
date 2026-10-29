@@ -49,7 +49,9 @@ struct NetSession {
     u8 station_bits;  // its low 2 bits go into every record; station() answers it
     u8 unknown_13269;
     u8 flags;         // see FLAG_FROZEN
-    u8 unknown_1326b[3];
+    u8 unknown_1326b;
+    u8 byte_1326c;
+    u8 unknown_1326d;
     u8 station_mask;  // one bit per station (bit_for_index)
     u8 mode_1326f;    // meaning not known yet (see mode)
     u8 unknown_13270[0x1329d - 0x13270];
@@ -82,6 +84,7 @@ GUEST_OFFSET(NetSession, block_13234, 0x13234);
 GUEST_OFFSET(NetSession, state_13266, 0x13266);
 GUEST_OFFSET(NetSession, station_bits, 0x13268);
 GUEST_OFFSET(NetSession, flags, 0x1326a);
+GUEST_OFFSET(NetSession, byte_1326c, 0x1326c);
 GUEST_OFFSET(NetSession, station_mask, 0x1326e);
 GUEST_OFFSET(NetSession, mode_1326f, 0x1326f);
 GUEST_OFFSET(NetSession, selector_1329d, 0x1329d);
