@@ -63,6 +63,11 @@ def disasm(p, key, own_only=False):
         if a in lits:
             d = describe(p, lits[a])
             note.append('=%08x%s' % (lits[a], ' ' + d if d else ''))
+            if p.relocated_data(lits[a]):
+                m = re.search(r'\[pc, #(0x[0-9a-f]+|\d+)\]', text)
+                if m:
+                    lit = ((a + 4) & ~3) + int(m.group(1), 0) if fn.thumb else a + 8 + int(m.group(1), 0)
+                    note.append('RELOCATED CRO data: use guest::relocated_global<T, 0x%08x>' % lit)
         if ins.mnemonic.startswith('b') and not ins.mnemonic.startswith(('bic', 'bfc', 'bfi')):
             m = HEX.search(text)
             if m:

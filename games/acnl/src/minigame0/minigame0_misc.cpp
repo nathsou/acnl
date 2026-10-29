@@ -41,7 +41,7 @@ GUEST_FUZZ(0x40303324, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 
 
 // Copies the first five bytes of the table entry for an index to out.
 void copy_tag_entry(u32 index, gptr<u8> out) {
-    gptr<MiniGame0TagEntry> entry(MiniGame0TagEntry::TABLE_ADDRESS + index * u32(sizeof(MiniGame0TagEntry)));
+    gptr<MiniGame0TagEntry> entry = minigame0_tag_table.ptr() + index;
     for (u32 i = 0; i < MiniGame0TagEntry::COPIED_SIZE; i++) {
         out[i] = entry->bytes[i];
     }

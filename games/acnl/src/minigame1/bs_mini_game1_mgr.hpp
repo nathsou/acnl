@@ -40,6 +40,6 @@ GUEST_OFFSET(BsMiniGame1Mgr, flags_444, 0x444);
 GUEST_SIZE(BsMiniGame1Mgr, 0x44c);
 
 // The running manager (set by its constructor).
-inline guest::global<guest::gptr<BsMiniGame1Mgr>, 0x4040a0b0> bs_mini_game1_instance;
+inline guest::relocated_global<guest::gptr<BsMiniGame1Mgr>, 0x403d88e4> bs_mini_game1_instance;  // (relocated CRO data)
 
 BsMiniGame1Mgr &construct_bs_mini_game1_mgr(BsMiniGame1Mgr &self);

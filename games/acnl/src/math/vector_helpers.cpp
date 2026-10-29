@@ -60,29 +60,6 @@ static void rotate_xy(Float3 &vec, u32 angle) {
 }
 GUEST_EXPORT(0x0056a274, rotate_xy);
 
-// Stores the three points and computes the (unnormalized) normal (p1 - p0) x (p2 - p1). Returns the normal.
-static gptr<Float3> set_triangle(Triangle &self, const Float3 &p0, const Float3 &p1, const Float3 &p2) {
-    self.points[0] = p0;
-    self.points[1] = p1;
-    self.points[2] = p2;
-    float ax = self.points[1].v[0] - self.points[0].v[0];
-    float ay = self.points[1].v[1] - self.points[0].v[1];
-    float az = self.points[1].v[2] - self.points[0].v[2];
-    float bx = self.points[2].v[0] - self.points[1].v[0];
-    float by = self.points[2].v[1] - self.points[1].v[1];
-    float bz = self.points[2].v[2] - self.points[1].v[2];
-    float nx = ay * bz;
-    float ny = az * bx;
-    float nz = ax * by;
-    nx = nx - az * by;
-    ny = ny - ax * bz;
-    nz = nz - ay * bx;
-    self.normal.v[0] = nx;
-    self.normal.v[1] = ny;
-    self.normal.v[2] = nz;
-    return guest::addr_of(self.normal);
-}
-GUEST_EXPORT(0x0056a2c0, set_triangle);
 
 // Scales the vector to unit length, unless it is (nearly) zero.
 static void normalize(Float3 &vec) {
@@ -123,8 +100,5 @@ static gptr<Float3> some_float3(guest::Fuzz &f) {
 
 GUEST_FUZZ(0x0056a224, 300, [](guest::Fuzz &f) { f.arguments(some_float3(f), f.number()); });
 GUEST_FUZZ(0x0056a274, 300, [](guest::Fuzz &f) { f.arguments(some_float3(f), f.number()); });
-GUEST_FUZZ(0x0056a2c0, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<Triangle>(), some_float3(f), some_float3(f), some_float3(f));
-});
 GUEST_FUZZ(0x0056a378, 300, [](guest::Fuzz &f) { f.arguments(some_float3(f)); });
 GUEST_FUZZ(0x0056a3cc, 200, [](guest::Fuzz &f) { f.arguments(some_float3(f), some_float3(f)); });

@@ -228,6 +228,11 @@ class Program:
             return None
         return ''.join(out)
 
+    def relocated_data(self, a):
+        """In a CRO module's data or bss: the loader moves those segments, so the address is not a constant."""
+        s = self.img.seg_of(a)
+        return s is not None and s.writable and s.addr >= 0x40000000
+
     def segment_name(self, a):
         s = self.img.seg_of(a)
         if s:

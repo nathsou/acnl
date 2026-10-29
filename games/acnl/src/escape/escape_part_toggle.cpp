@@ -11,7 +11,7 @@ inline constexpr guest::Function<0x40290ed0, void(gptr<void> part)> release_part
 
 constexpr u32 REGISTERED_SIZE = 11;
 constexpr u32 REGISTERED_TEXT = 0x00975bee;
-inline guest::global<gptr<void>, 0x403b2d5c> registry;
+inline guest::relocated_global<gptr<void>, 0x402fe4c4> registry;  // (CRO data: relocated by the loader)
 
 struct EscapePartOwner {
     u8 unknown_00[0x11c];

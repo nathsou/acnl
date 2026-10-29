@@ -55,6 +55,10 @@ register shifts where the amount can be 32 or more, `arm::llsl` = RVCT's `__aeab
   methods. Narrow types (`u8`, `u16`, `bool`) only when the code relies on the caller's extension.
 - Calls through function pointers or vtables: `guest::call_address<R>(address, args...)`; pointer-to-member
   tables: `guest::call_member`.
+- CRO modules (code at 0x40000000 and up) have data and bss segments that the loader places wherever the game
+  allocated them: an address into them is not a constant. The disassembly marks such literals "RELOCATED CRO
+  data" with the literal's own address: declare `inline guest::relocated_global<T, 0xLITERAL> name;` (same use as
+  `guest::global`), never the analysis-time address.
 - Objects the rewrite passes by address to guest functions must live in guest memory: use
   `guest::StackObject<T>` for locals whose address escapes; string literals passed to guest code use `"..."_g`.
 - The stack below the stack pointer at entry is ignored by the checker: do not mimic the original's stack frame

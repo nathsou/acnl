@@ -356,8 +356,15 @@ IMPORT_RE = re.compile(r'guest::Function<\s*(0x[0-9a-fA-F]+)\s*,')
 
 
 def check_imports(p, job):
-    """Imports must name function starts the recompiler knows (Thumb ones with bit 0 set)."""
+    """Imports must name function starts the recompiler knows (Thumb ones with bit 0 set), and no constant may
+    point into a CRO module's data or bss (relocated by the loader)."""
     bad = []
+    for path, body in job.files.items():
+        for m in re.finditer(r'0x[0-9a-fA-F]{8}', body):
+            if p.relocated_data(int(m.group(0), 16)):
+                bad.append('%s uses %s, an address in a CRO module\'s data: the loader moves it, so read it through '
+                           'guest::relocated_global<T, literal address> (the literal is given in the disassembly)'
+                           % (path, m.group(0)))
     for body in job.files.values():
         for a in IMPORT_RE.findall(body):
             k = int(a, 16)
@@ -810,6 +817,9 @@ async def main_run(args):
         log('round %d: %d groups, %d functions, spent so far $%.2f' % (
             r + 1, len(jobs), sum(len(g) for g in groups), state.data['cost']))
         retry = await round_(client, state, jobs, args.escalate)
+        if jobs and all((j.problem or '').startswith('API error') for j in jobs):
+            log('every request failed with an API error (limit reached?): stopping')
+            break
         # one more attempt for failures, with feedback, on the escalation model
         again = []
         for j in retry:
@@ -891,6 +901,9 @@ async def repair_pass(client, state, model, effort):
     retry = await round_(client, state, jobs, None)
     for j in retry:  # still failing: remove those functions from the tree (they go back to the recompiled code)
         path = sorted(j.replaceable)[0]
+        if (j.problem or '').startswith(('API error', 'conflict', 'refused')):
+            log('repair of %s not attempted (%s): the file stays' % (path, (j.problem or '')[:80]))
+            continue
         log('repair failed for %s: %s' % (path, (j.problem or '')[:200]))
         if remove_functions(path, j.group):
             for a in j.group:

@@ -169,6 +169,7 @@ std::vector<Page> journal;  // reserved up front: the signal handler never alloc
 bool journal_overflow;
 std::atomic<bool> busy;     // a check is in progress (on some thread)
 bool tainted;               // the run made a system call or got preempted
+u32 preemptions_deferred;   // in the current run (reset by begin_journal)
 u64 abandons;               // runs abandoned so far (a check compares the count before and after its run)
 struct sigaction old_segv, old_bus;
 
@@ -248,6 +249,7 @@ void init_journal() {
 
 void begin_journal() {
     journal.clear();
+    preemptions_deferred = 0;
     journal_overflow = false;
     tainted = false;
     journal_owner = pthread_self();
@@ -299,11 +301,9 @@ extern "C" void guest_shadow_preempt(CPU *c) {
     // The recompiler checks for preemption on every backward branch, loops or not. During a checked run the
     // preemption waits (rt_preempt_flag stays set, so it happens at the first check after the run), unless the
     // run spins long enough to be waiting for another thread.
-    static thread_local u32 deferred;
-    if (journaling.load() && pthread_equal(pthread_self(), journal_owner) && ++deferred < 100000) {
+    if (journaling.load() && pthread_equal(pthread_self(), journal_owner) && ++preemptions_deferred < 100000) {
         return;
     }
-    deferred = 0;
     abandon_run("preemption", c->pc);
     rt_preempt(c);
 }

@@ -97,6 +97,24 @@ struct global {
     constexpr gptr<T> ptr() const { return gptr<T>(Address); }
 };
 
+// A global of a CRO module's data or bss segment. The loader puts those segments wherever the game allocated them
+// and relocates the code's pointers to them, so the address is read from a word of the code's literal pool (the one
+// the original function loads) instead of being a constant:
+//     inline guest::relocated_global<Table, 0x4030358c> tag_table;   // the literal holding &tag_table
+template <typename T, u32 LiteralAddress>
+struct relocated_global {
+    static constexpr u32 literal_address = LiteralAddress;
+    static u32 address() { return *reinterpret_cast<u32 *>(g_mem + LiteralAddress); }
+    T *get() const { return reinterpret_cast<T *>(g_mem + address()); }
+    T *operator->() const { return get(); }
+    T &operator*() const { return *get(); }
+    operator T &() const { return *get(); }
+    template <typename U>
+    T &operator=(U &&v) const { return *get() = std::forward<U>(v); }
+    auto &operator[](std::ptrdiff_t i) const { return (*get())[i]; }
+    gptr<T> ptr() const { return gptr<T>(address()); }
+};
+
 // Layout checks for structs mirrored from the game: GUEST_LAYOUT(Player, 0x60, money, 0x10, name, 0x20)
 #define GUEST_SIZE(type, size) static_assert(sizeof(type) == (size), #type " has the wrong size")
 #define GUEST_OFFSET(type, field, off) static_assert(offsetof(type, field) == (off), #type "::" #field " is misplaced")
