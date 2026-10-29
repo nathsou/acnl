@@ -79,3 +79,47 @@ GUEST_FUZZ(0x002d50b8, 300, [](guest::Fuzz &f) {
     }
     f.arguments(places, first, second);
 });
+
+// A row of eight empty items followed by a flag that starts set.
+struct ItemRowWithFlag {
+    static constexpr u32 SIZE = 8;
+
+    Item items[SIZE];
+    u8 flag;
+
+    ItemRowWithFlag &construct();
+};
+GUEST_OFFSET(ItemRowWithFlag, flag, 0x20);
+
+ItemRowWithFlag &ItemRowWithFlag::construct() {
+    for (Item &item : items) {
+        item = *empty_item;
+    }
+    flag = 1;
+    return *this;
+}
+GUEST_EXPORT(0x0027b428, ItemRowWithFlag::construct);
+GUEST_FUZZ(0x0027b428, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemRowWithFlag>()); });
+
+namespace {
+
+constexpr u16 NUMBER_C9 = 0xc9;
+constexpr u16 REPLACEMENT_NUMBER = 0x2959;
+
+}  // namespace
+
+// Turns the item with number 0xc9 into item 0x2959; false for any other item.
+bool replace_number_c9(Item &item) {
+    if (!item.has_number(NUMBER_C9)) {
+        return false;
+    }
+    construct_item(item, REPLACEMENT_NUMBER);
+    return true;
+}
+GUEST_EXPORT(0x00596ab0, replace_number_c9);
+GUEST_FUZZ(0x00596ab0, 100, [](guest::Fuzz &f) {
+    auto item = f.object<Item>();
+    item->id = f.below(2) ? NUMBER_C9 : u16(Item::FIRST_ITEM + f.below(100));
+    item->flags = u16(f.number());
+    f.arguments(item);
+});

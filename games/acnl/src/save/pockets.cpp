@@ -120,6 +120,26 @@ bool Pockets::has_unlocked_item_of_category_98() const {
 }
 GUEST_EXPORT(0x0023e170, Pockets::has_unlocked_item_of_category_98);
 
+void Pockets::close_gaps() {
+    for (u32 slot = 0; slot < SLOTS; slot++) {
+        if (!items[slot].is_empty()) {
+            continue;
+        }
+        u32 next = slot + 1;
+        while (next < SLOTS && items[next].is_empty()) {
+            next++;
+        }
+        if (next >= SLOTS) {
+            return;
+        }
+        items[slot] = items[next];
+        slot_locked[slot] = slot_locked[next];
+        items[next] = *empty_item;
+        slot_locked[next] = 0;
+    }
+}
+GUEST_EXPORT(0x001b1b5c, Pockets::close_gaps);
+
 // Puts the item in the set of seen items; categories 0x24, 0x27 and 0x28 only when forced, and items without a
 // category never.
 bool register_seen_item(ItemBitSet &set, const Item &item, u32 force) {
@@ -305,3 +325,4 @@ GUEST_FUZZ(0x006ef754, 200, [](guest::Fuzz &f) {
     f.arguments(f.object<ItemBitSet>(), item, f.below(2));
 });
 GUEST_FUZZ(0x0071bc9c, 5, [](guest::Fuzz &f) { f.arguments(0u, f.pick<u32>({0, 100, 100000})); });
+GUEST_FUZZ(0x001b1b5c, 200, [](guest::Fuzz &f) { f.arguments(some_pockets(f)); });

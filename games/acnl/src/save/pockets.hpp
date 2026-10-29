@@ -24,6 +24,7 @@ struct Pockets {
     const Item &item_with_lock(s32 slot, gptr<u8> locked_out) const;
     u8 lock_of(u32 slot) const;  // 0 for slots out of range
     bool has_unlocked_item_of_category_98() const;
+    void close_gaps();  // moves the items (with their lock bytes) forward over the empty slots, keeping their order
 
     // Puts a copy of the item (cleaned up with Item::sanitize) in a slot with the lock byte, writing the stored copy to
     // `stored_out` if given; false for slots out of range and items that do not pass.

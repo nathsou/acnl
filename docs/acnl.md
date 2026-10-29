@@ -21,7 +21,7 @@ rewrite recompiles only the generated files that contain the originals (seconds)
 - **Field users** (`tools/offsets.py`): which functions compute a given struct offset; the pockets (player
   + 0x6bd0): code computing that offset appears in 324 functions; the wallet (+0x6f08) in 14.
 
-## Rewritten so far (24 functions, all verified)
+## The first rewritten functions (24, all verified)
 
 | Area | Functions | Source |
 |---|---|---|
@@ -49,12 +49,24 @@ empty), `ItemData` (30 bytes, category at +0xa), bell bags 0x20AC-0x2117 (100 to
 - Rewrites that read data the game did not write itself (save files) must reproduce ARM's behaviour exactly:
   `arm::rotate_left` is RVCT's 64-bit shift as the game uses it, valid for any amount.
 
+## Game logic in readable form (the parts mods want)
+
+Everything here is verified against the original by shadow checks and fuzzing; entry points for mods:
+
+| Topic | Where | What it gives |
+|---|---|---|
+| Giving the player items | `save/pockets_store.cpp` | `Pockets::add`, `set_slot`, `store_item` (the paths every item reward takes); `Item::sanitize` cleans an item first |
+| Money | `save/pockets.cpp` | `pay`, `add_bells`, `bells_room`, `merge_bell_bags`, `free_slots_after_paying`; wallet 99,999 max, bags of bells 100-99,000 |
+| Item data | `item/*.cpp` | categories, prices, wear classes, kind-2 items, availability rules (`item_is_available`: which items a shop may offer in which month/season) |
+| Choosing items | `item/item_set_filters.cpp`, `item_set_picking.cpp` | filtering an `ItemBitSet` by price or attribute, picking at random / from a seed / distinct |
+| Calendar | `core/time_stamp.hpp`, `calendar_math.cpp`, `time_stamp*.cpp`, `game_clock.cpp` | `TimeStamp` (date + clock), day arithmetic, the 6:00 game-day start, seasons, the reference clock, shop opening hours and ordinance hours (`shop_hours.cpp`), `GameTime` (nanoseconds from 2012-01-01) |
+| Players / villagers | `player/*.cpp`, `npc/villager_lookup.cpp` | player of a slot, villager by id, the mayor's date |
+
 ## Next
 
-- The rest of the pockets and item placement (`pockets_set_slot`, `pockets_add`, `item_price`): the core of item
-  mods.
 - `current_player` (0x2fb94c, 458 callers) and the global objects behind it: entry points for mods.
 - The money counters on the HUD (0x1ad494 switches between the wallet, wallet + bags, the 0x6b9c counter and
   the counter at 0x8d1c).
+- Per-player counters (0x24b448 with 0x7159b0): bells earned, items bought and so on.
 - A longer test script (reaching the town, Nook's, the post office) so that more rewrites get real-play checks,
   not only fuzzing.
