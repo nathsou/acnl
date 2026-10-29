@@ -11,9 +11,12 @@ struct PadState {
     u32 unknown_00;
     u32 bits_04;
     u32 bits_08;
+    u8 unknown_0c[0x110 - 0xc];
+    u32 bits_110;
 };
 GUEST_OFFSET(PadState, bits_04, 4);
 GUEST_OFFSET(PadState, bits_08, 8);
+GUEST_OFFSET(PadState, bits_110, 0x110);
 
 struct InputManager {
     u8 unknown_00[0xd0];
@@ -91,4 +94,16 @@ GUEST_EXPORT(0x00521d84, pad_bit_04_0_when_5c2cf4);
 GUEST_FUZZ(0x00521d84, 200, [](guest::Fuzz &f) {
     fuzz_input_manager(f);
     f.arguments();
+});
+
+bool pad_has_bit_110(u32 mask) {
+    if (err_eula_is_idle_with_byte_fac()) {
+        return false;
+    }
+    return (first_pad()->bits_110 & mask) != 0;
+}
+GUEST_EXPORT(0x00304c1c, pad_has_bit_110);
+GUEST_FUZZ(0x00304c1c, 200, [](guest::Fuzz &f) {
+    fuzz_input_manager(f);
+    f.arguments(f.pick<u32>({1, 2, 0x8000, 0x80000, 0xffffffffu, f.number()}));
 });

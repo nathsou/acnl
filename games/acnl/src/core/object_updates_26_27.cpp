@@ -203,3 +203,22 @@ ResourceObject &construct_object_resource(ResourceObject &self) {
 }
 GUEST_EXPORT(0x0027068c, construct_object_resource);
 GUEST_FUZZ(0x0027068c, 100, [](guest::Fuzz &f) { f.arguments(f.object<ResourceObject>()); });
+
+// The index of the first player that has an identity and the flag bit 4 set; 4 when none.
+u32 first_player_index_with_flag(PlayerList &list) {
+    for (u32 i = 0; i < SaveData::PLAYER_COUNT; i++) {
+        SavePlayer &player = list.players[i];
+        if (player.identity.is_set() && (player.flags_5700 & PLAYER_FLAG_BIT_4) != 0) {
+            return i & 0xff;
+        }
+    }
+    return SaveData::PLAYER_COUNT;
+}
+GUEST_EXPORT(0x00302204, first_player_index_with_flag);
+GUEST_FUZZ(0x00302204, 40, [](guest::Fuzz &f) {
+    auto list = f.object<PlayerList>();
+    for (SavePlayer &player : list->players) {
+        player.flags_5700 = f.pick<u8>({0, 0x10, 0xff});
+    }
+    f.arguments(list);
+});

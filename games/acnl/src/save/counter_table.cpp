@@ -19,7 +19,9 @@ void CounterTable::clear() {
     extra_e0.set(0);
 }
 GUEST_EXPORT(0x0024b7f8, CounterTable::clear);
+GUEST_EXPORT(0x003034d8, CounterTable::clear);  // (a second copy of the same code)
 GUEST_FUZZ(0x0024b7f8, 100, [](guest::Fuzz &f) { f.arguments(f.object<CounterTable>()); });
+GUEST_FUZZ(0x003034d8, 100, [](guest::Fuzz &f) { f.arguments(f.object<CounterTable>()); });
 
 void CounterTable::add(u32 index, u32 amount) {
     if (index >= COUNT) {

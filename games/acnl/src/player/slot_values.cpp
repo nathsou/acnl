@@ -71,6 +71,16 @@ u32 checked_slot_value(u32 slot) {
 
 }  // namespace
 
+// The value kept for the slot (a number of 4 or more stands for the main object's slot); 8 when it is not below 8.
+u32 slot_value(u32 slot) {
+    if (slot >= SLOT_COUNT) {
+        slot = query_current_main_object();
+    }
+    return checked_slot_value(slot);
+}
+GUEST_EXPORT(0x002ff8b0, slot_value);
+GUEST_FUZZ(0x002ff8b0, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu})); });
+
 // Whether the main object's slot holds a value that names a local slot.
 bool main_slot_value_is_local() {
     u32 slot = query_current_main_object() & SLOT_MASK;
