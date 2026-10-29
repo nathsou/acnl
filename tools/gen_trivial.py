@@ -51,9 +51,12 @@ def literal_at(p, key, index):
 
 def classify(p, key):
     fn = p.funcs[key]
-    if fn.thumb or key >= 0x40000000:
+    if fn.thumb:
         return None
     body = body_of(p, key)
+    in_cro = key >= 0x40000000  # (the literals of CRO code are relocated: only patterns without literals qualify)
+    if in_cro and 'pc' in body:
+        return None
     if body == 'bx lr':
         return ('nothing',)
     m = re.match(r'^mov r0, #%s\nbx lr$' % NUM, body)
@@ -107,6 +110,25 @@ def classify(p, key):
     m = re.match(r'^ldr r1, \[r0, #%s\]\nadd r0, r0, r1\nbx lr$' % NUM, body)
     if m:
         return ('adjusted_this', int(m.group(1), 0))
+    m = re.match(r'^(ldr|ldrb|ldrsb|ldrh|ldrsh) r0, \[r0(?:, #%s)?\]\ncmp r0, #%s\n(moveq r0, #1\nmovne r0, #0|movne r0, #1\nmoveq r0, #0)\nbx lr$' % (NUM, NUM), body)
+    if m:
+        return ('field_equals', m.group(1), int(m.group(2) or '0', 0), int(m.group(3), 0), m.group(4).startswith('moveq'))
+    m = re.match(r'^(str|strb|strh) r1, \[r0(?:, #%s)?\]\nbx lr$' % NUM, body)
+    if m:
+        return ('store_argument', m.group(1), int(m.group(2) or '0', 0))
+    m = re.match(r'^add r0, r0, #%s\nstm r0, \{r1, r2\}\nbx lr$' % NUM, body)
+    if m:
+        return ('store_two_arguments', int(m.group(1), 0))
+    m = re.match(r'^mov r1, #%s\n((?:(?:str|strb|strh) r1, \[r0(?:, #%s)?\]\n)+)bx lr$' % (NUM, NUM), body)
+    if m and int(m.group(1), 0) <= 0xff:
+        stores = re.findall(r'(str|strb|strh) r1, \[r0(?:, #(0x[0-9a-f]+|\d+))?\]', m.group(2))
+        return ('store_constants', int(m.group(1), 0), tuple((k, int(o or '0', 0)) for k, o in stores))
+    m = re.match(r'^ldrb r0, \[r0(?:, #%s)?\]\ncmp r0, #%s\nldrlo r1, \[pc(?:, #%s)?\]\nmovhs r0, #0\nldrblo r0, \[r1, r0\]\nbx lr$' % (NUM, NUM, NUM), body)
+    if m:
+        table = literal_at(p, key, 2)
+        if table is None or in_cro or p.relocated_data(table):
+            return None
+        return ('field_table_lookup', int(m.group(1) or '0', 0), int(m.group(2), 0), table)
     m = re.match(r'^ldr r2, \[pc(?:, #%s)?\]\nldr r0, \[pc(?:, #%s)?\]\nldm r2, \{r1, r2\}\nstm r0, \{r1, r2\}\nbx lr$' % (NUM, NUM), body)
     if m:
         source = literal_at(p, key, 0)
@@ -248,10 +270,53 @@ inline void copy_two_words(gptr<u32> destination, gptr<const u32> source) {
     destination[1] = second;
 }
 
+// Stores into the object at a fixed offset (one access per store).
+template <u32 Offset>
+void store_field_u32(gptr<u8> object, u32 value) {
+    *gptr<u32>(object.addr() + Offset) = value;
+}
+
+template <u32 Offset>
+void store_field_u8(gptr<u8> object, u32 value) {
+    object[Offset] = u8(value);
+}
+
+template <u32 Offset>
+void store_field_u16(gptr<u8> object, u32 value) {
+    *gptr<u16>(object.addr() + Offset) = u16(value);
+}
+
+template <u32 Offset>
+void store_two_words(gptr<u8> object, u32 first, u32 second) {
+    gptr<u32> words(object.addr() + Offset);
+    words[0] = first;
+    words[1] = second;
+}
+
 constexpr u32 FUZZ_RUNS = 10;
 constexpr u32 FUZZ_OBJECT_SIZE = 16;
 constexpr u32 FUZZ_FIELD_SLACK = 16;
 constexpr u32 MAX_FUZZ_OBJECT = 0x2000;
+
+void fuzz_store_object(guest::Fuzz &f, u32 size) {
+    auto object = f.allocate(size).cast<u8>();
+    f.bytes(object, size);
+    f.arguments(object, f.number());
+}
+
+void fuzz_store_object_two(guest::Fuzz &f, u32 size) {
+    auto object = f.allocate(size).cast<u8>();
+    f.bytes(object, size);
+    f.arguments(object, f.number(), f.number());
+}
+
+// An object whose byte at `offset` takes values around the limit of a table lookup.
+void fuzz_table_object(guest::Fuzz &f, u32 offset, u32 limit) {
+    auto object = f.allocate(offset + FUZZ_FIELD_SLACK).cast<u8>();
+    f.bytes(object, offset + FUZZ_FIELD_SLACK);
+    object[offset] = f.pick<u8>({0, 1, u8(limit - 1), u8(limit), u8(limit + 1), 0xff});
+    f.arguments(object);
+}
 
 void fuzz_field_object(guest::Fuzz &f, u32 size) {
     auto object = f.allocate(size).cast<u8>();
@@ -295,6 +360,45 @@ void do_nothing() {}
             template = 'store_byte_constant' if kind[1] == 'strb' else 'store_word_constant'
             out.append('GUEST_EXPORT(0x%08x, %s<pack(0x%x, 0x%x)>);' % (key, template, kind[2], kind[3]))
             out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x%x + FUZZ_FIELD_SLACK); });' % (key, kind[2]))
+        elif t == 'field_equals':
+            suffix = {'ldr': 'u32', 'ldrb': 'u8', 'ldrsb': 's8', 'ldrh': 'u16', 'ldrsh': 's16'}[kind[1]]
+            name = 'field_%s_%x_%s_0x%x_%x' % ('equals' if kind[4] else 'differs', kind[2], suffix, kind[3], key)
+            cond = '==' if kind[4] else '!='
+            value = kind[3] if kind[1] in ('ldr', 'ldrb', 'ldrh') else 'u32(%s)' % kind[3] if kind[3] < 0x80 else kind[3]
+            cast = {'ldr': 'u32', 'ldrb': 'u8', 'ldrsb': 's8', 'ldrh': 'u16', 'ldrsh': 's16'}[kind[1]]
+            out.append('bool %s(gptr<u8> object) { return read_field_%s<0x%x>(object) %s 0x%x; }' % (name, suffix, kind[2], cond, kind[3]))
+            out.append('GUEST_EXPORT(0x%08x, %s);' % (key, name))
+            out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x%x + FUZZ_FIELD_SLACK); });' % (key, kind[2]))
+        elif t == 'store_argument':
+            suffix = {'str': 'u32', 'strb': 'u8', 'strh': 'u16'}[kind[1]]
+            name = 'store_%s_argument_at_%x_%x' % (suffix, kind[2], key)
+            out.append('void %s(gptr<u8> object, u32 value) { store_field_%s<0x%x>(object, value); }' % (name, suffix, kind[2]))
+            out.append('GUEST_EXPORT(0x%08x, %s);' % (key, name))
+            out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x%x + FUZZ_FIELD_SLACK); });' % (key, kind[2]))
+        elif t == 'store_two_arguments':
+            name = 'store_two_words_at_%x_%x' % (kind[1], key)
+            out.append('void %s(gptr<u8> object, u32 first, u32 second) { store_two_words<0x%x>(object, first, second); }' % (name, kind[1]))
+            out.append('GUEST_EXPORT(0x%08x, %s);' % (key, name))
+            out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x%x + FUZZ_FIELD_SLACK); });' % (key, kind[1]))
+        elif t == 'store_constants':
+            name = 'store_constants_%x' % key
+            lines = ['void %s(gptr<u8> object) {' % name]
+            for how, offset in kind[2]:
+                suffix = {'str': 'u32', 'strb': 'u8', 'strh': 'u16'}[how]
+                lines.append('    store_field_%s<0x%x>(object, 0x%x);' % (suffix, offset, kind[1]))
+            lines.append('}')
+            out.extend(lines)
+            top = max(o for _, o in kind[2])
+            out.append('GUEST_EXPORT(0x%08x, %s);' % (key, name))
+            out.append('GUEST_FUZZ(0x%08x, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x%x + FUZZ_FIELD_SLACK); });' % (key, top))
+        elif t == 'field_table_lookup':
+            name = 'table_value_for_field_%x_%x' % (kind[1], key)
+            out.append('u32 %s(gptr<u8> object) {' % name)
+            out.append('    u32 index = read_field_u8<0x%x>(object);' % kind[1])
+            out.append('    return index < 0x%x ? *gptr<u8>(0x%08x + index) : 0;' % (kind[2], kind[3]))
+            out.append('}')
+            out.append('GUEST_EXPORT(0x%08x, %s);' % (key, name))
+            out.append('GUEST_FUZZ(0x%08x, 100, [](guest::Fuzz &f) { fuzz_table_object(f, 0x%x, 0x%x); });' % (key, kind[1], kind[2]))
         elif t == 'global_store_constant':
             name = 'set_byte_%x_to_%x' % (kind[1], kind[2])
             out.append('void %s() { write_global_byte(gptr<u8>(0x%08x), 0x%x); }' % (name, kind[1], kind[2]))

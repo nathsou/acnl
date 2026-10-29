@@ -7,9 +7,14 @@ struct UnknownState94fd0c {
     u8 unknown_00[2];
     u8 request_state;  // 1: ready for a request, 2: one is under way (see begin_menu_request)
     u8 request_code;
-    u8 unknown_04[0xb];
+    u8 unknown_04[2];
+    u8 byte_06;
+    u8 unknown_07[8];
     u8 byte_0f;
-    u8 unknown_10[0xf];
+    u8 byte_10;
+    u8 unknown_11;
+    u8 byte_12;
+    u8 unknown_13[0xc];
     u8 mode;  // set to 2 when a request succeeds (meaning not known yet)
     u8 unknown_20[0x10];
     u32 unknown_30;
@@ -22,7 +27,10 @@ struct UnknownState94fd0c {
     s32 unknown_50;
 };
 GUEST_OFFSET(UnknownState94fd0c, request_state, 2);
+GUEST_OFFSET(UnknownState94fd0c, byte_06, 6);
 GUEST_OFFSET(UnknownState94fd0c, byte_0f, 0xf);
+GUEST_OFFSET(UnknownState94fd0c, byte_10, 0x10);
+GUEST_OFFSET(UnknownState94fd0c, byte_12, 0x12);
 GUEST_OFFSET(UnknownState94fd0c, mode, 0x1f);
 GUEST_OFFSET(UnknownState94fd0c, unknown_30, 0x30);
 GUEST_OFFSET(UnknownState94fd0c, value_38, 0x38);

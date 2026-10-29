@@ -1,5 +1,6 @@
 // Menu requests on the global state at 0x0094fd0c: begin one when the state is ready, and the callers that reset
 // field 0x50 once a request was accepted.
+#include "core/global_98c4fc.hpp"
 #include "core/state_94fd0c.hpp"
 
 using guest::gptr;
@@ -20,12 +21,6 @@ constexpr u32 REQUEST_71 = 0x71;
 constexpr u32 REQUEST_72 = 0x72;
 constexpr u32 REQUEST_73 = 0x73;
 constexpr u32 SECOND_STAGE_CODE = 0x208;  // (offset of the byte set by mark_object_ready)
-
-struct Global98c4fc {
-    u32 unknown_00;
-    u32 value_04;
-};
-inline guest::global<Global98c4fc, 0x0098c4fc> global_98c4fc;
 
 inline constexpr guest::Function<0x006d1ffc, u32(u32 request, u32 unknown)> try_request;
 
