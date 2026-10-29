@@ -13,6 +13,19 @@ struct CommandSegment {
 };
 GUEST_SIZE(CommandSegment, 28);
 
+// PICA200 commands are two words: the parameter, then a header (register in bits 0-15, the byte mask of the
+// parameter in bits 16-19).
+constexpr u32 command_header(u32 reg, u32 byte_mask = 0xf) {
+    return byte_mask << 16 | reg;
+}
+constexpr u32 REG_FINALIZE = 0x010;
+constexpr u32 REG_FRAMEBUFFER_INVALIDATE = 0x110;
+constexpr u32 REG_FRAMEBUFFER_FLUSH = 0x111;
+constexpr u32 REG_START_DRAW_FUNC0 = 0x25e;
+constexpr u32 FINALIZE_VALUE = 0x12345678;  // the value the GPU expects to signal the end of a list
+constexpr u32 COMMAND_SIZE = 8;
+constexpr u32 FINAL_COMMANDS_SIZE = 3 * COMMAND_SIZE;  // flush, invalidate and finalize
+
 constexpr u32 SEGMENT_FLAG_CLEAR = 2;
 constexpr u32 SEGMENT_FLAG_SET = 1;
 
@@ -83,15 +96,15 @@ GUEST_FUZZ(0x001279b4, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 8, 
 void close_command_segment() {
     CommandList &list = *gpu_state->current;
     u32 length = command_cursor->addr() - list.base;
-    if (length & 8) {
-        list.end = length + 0x18;
+    if (length & COMMAND_SIZE) {  // (the segment ends on a 16-byte boundary: one more command pads it otherwise)
+        list.end = length + FINAL_COMMANDS_SIZE;
     } else {
-        list.end = length + 0x20;
-        emit(0, 0x0008025e);
+        list.end = length + FINAL_COMMANDS_SIZE + COMMAND_SIZE;
+        emit(0, command_header(REG_START_DRAW_FUNC0, 0x8));
     }
-    emit(1, 0x000f0111);
-    emit(1, 0x000f0110);
-    emit(0x12345678, 0x000f0010);
+    emit(1, command_header(REG_FRAMEBUFFER_FLUSH));
+    emit(1, command_header(REG_FRAMEBUFFER_INVALIDATE));
+    emit(FINALIZE_VALUE, command_header(REG_FINALIZE));
 
     CommandSegment &segment = list.segments[list.segment_count];
     segment.active = 1;

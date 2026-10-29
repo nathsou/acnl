@@ -8,31 +8,6 @@ using guest::gptr;
 
 namespace {
 
-// A record of the player table. Only the fields the rewritten code uses are named.
-struct PlayerRecord {
-    static constexpr u8 FLAGS_B8_BIT1 = 0x02;  // unknown flag
-    static constexpr u8 FLAGS_BC_BIT1 = 0x02;  // unknown flag: the record is in use
-    static constexpr u8 FLAGS_BC_BIT3 = 0x08;  // unknown flag
-    static constexpr u8 FLAGS_BC_BIT7 = 0x80;  // unknown flag
-
-    u8 unknown_00[0xb8];
-    u8 flags_b8;
-    u8 unknown_b9[3];
-    u8 flags_bc;
-    u8 unknown_bd[0xf2 - 0xbd];
-};
-GUEST_OFFSET(PlayerRecord, flags_b8, 0xb8);
-GUEST_OFFSET(PlayerRecord, flags_bc, 0xbc);
-GUEST_SIZE(PlayerRecord, 0xf2);
-
-struct PlayerTable {
-    static constexpr u32 RECORDS = 16;
-
-    u8 unknown_0000[0x8ee];
-    PlayerRecord records[RECORDS];
-};
-GUEST_OFFSET(PlayerTable, records, 0x8ee);
-
 // A bit more than a villager record (flags_2510 is its last word), for the fuzzing of functions that read past it.
 constexpr u32 FUZZ_VILLAGER_SIZE = 0x2600;
 
@@ -46,7 +21,7 @@ GUEST_OFFSET(TableEntry, word_44, 0x44);
 // Still recompiled code (or rewritten elsewhere, called through the game's ABI):
 inline constexpr guest::Function<0x003091e0, gptr<void>(gptr<void> argument)> get_manager_3091e0;
 inline constexpr guest::Function<0x003091ec, gptr<SavePlayer>(gptr<void> manager)> get_player_3091ec;
-inline constexpr guest::Function<0x00309eb9, gptr<PlayerRecord>(gptr<void> villager, gptr<const PersonalId> identity)>
+inline constexpr guest::Function<0x00309eb9, gptr<VillagerPlayerRecord>(gptr<void> villager, gptr<const PersonalId> identity)>
     find_player_record;
 inline constexpr guest::Function<0x00308971, s32(gptr<void> villager, gptr<void> villagers, u32 count)>
     expected_index_for;
@@ -58,8 +33,8 @@ inline constexpr guest::Function<0x0030b9d5, u32(gptr<void> villagers, gptr<void
 inline constexpr guest::Function<0x00309ac9, u32(gptr<void> villager, u32 value)> villager_check_309ac8;
 inline constexpr guest::Function<0x002fe450, gptr<TableEntry>(u32 index)> table_entry;
 inline constexpr guest::Function<0x0030e5cc, u32(gptr<TableEntry> entry, u32 value)> table_entry_check_30e5cc;
-inline constexpr guest::Function<0x002fbd54, bool(gptr<PlayerRecord> record)> record_identity_is_set;
-inline constexpr guest::Function<0x002fe940, u32(gptr<PlayerRecord> record, gptr<const PersonalId> identity)>
+inline constexpr guest::Function<0x002fbd54, bool(gptr<VillagerPlayerRecord> record)> record_identity_is_set;
+inline constexpr guest::Function<0x002fe940, u32(gptr<VillagerPlayerRecord> record, gptr<const PersonalId> identity)>
     compare_identity;
 inline constexpr guest::Function<0x00301e20, u32(gptr<void> villager)> is_valid_id;
 
@@ -68,8 +43,8 @@ constexpr u32 VILLAGERS_CHECK_EXPECTED = 3;  // what f_0030b9d4 must return
 constexpr u32 TABLE_ENTRY_CHECK_VALUE = 14;  // second argument of f_0030e5cc
 
 // A record that is in use: its identity is set and its bit 1 of flags_bc is set.
-bool record_in_use(gptr<PlayerRecord> record) {
-    return record_identity_is_set(record) && (record->flags_bc & PlayerRecord::FLAGS_BC_BIT1) != 0;
+bool record_in_use(gptr<VillagerPlayerRecord> record) {
+    return record_identity_is_set(record) && (record->flags_bc & VillagerPlayerRecord::FLAGS_BC_BIT1) != 0;
 }
 
 // Whether a villager passes a long list of conditions (meaning not known yet); `table_id` selects a table entry
@@ -81,14 +56,14 @@ bool villager_passes_checks(gptr<SaveVillager> villager, u32 table_id) {
     if (!player) {
         return false;
     }
-    gptr<PlayerRecord> record = find_player_record(villager, guest::addr_of(player->identity));
+    gptr<VillagerPlayerRecord> record = find_player_record(villager, guest::addr_of(player->identity));
     gptr<SaveData> block = *save_data;
     gptr<void> villagers = guest::addr_of(block->villagers[0]);
     s32 index = expected_index_for(villager, villagers, SaveData::VILLAGER_COUNT);
     if (!record) {
         return false;
     }
-    if ((record->flags_bc & PlayerRecord::FLAGS_BC_BIT7) == 0) {
+    if ((record->flags_bc & VillagerPlayerRecord::FLAGS_BC_BIT7) == 0) {
         return false;
     }
     if (villager_check_11a650(villager) != 0) {
@@ -119,19 +94,19 @@ bool villager_passes_checks(gptr<SaveVillager> villager, u32 table_id) {
 
 // The first record in use decides: it is returned when its identity compares equal (f_002fe940 returns 0) to the
 // given one. Null when the villager has no record, or does not have the flags the search needs.
-gptr<PlayerRecord> find_record_for_identity(gptr<PlayerTable> table, gptr<const PersonalId> identity) {
-    gptr<PlayerRecord> villager_record = find_player_record(table, identity);
+gptr<VillagerPlayerRecord> find_record_for_identity(gptr<SaveVillager> table, gptr<const PersonalId> identity) {
+    gptr<VillagerPlayerRecord> villager_record = find_player_record(table, identity);
     if (!villager_record) {
         return nullptr;
     }
-    if ((villager_record->flags_b8 & PlayerRecord::FLAGS_B8_BIT1) == 0) {
+    if ((villager_record->flags_b8 & VillagerPlayerRecord::FLAGS_B8_BIT1) == 0) {
         return nullptr;
     }
-    if ((villager_record->flags_bc & PlayerRecord::FLAGS_BC_BIT3) != 0) {
+    if ((villager_record->flags_bc & VillagerPlayerRecord::FLAGS_BC_BIT3) != 0) {
         return nullptr;
     }
-    for (u32 i = 0; i < PlayerTable::RECORDS; i++) {
-        gptr<PlayerRecord> record = guest::addr_of(table->records[i]);
+    for (u32 i = 0; i < SaveVillager::PLAYER_RECORDS; i++) {
+        gptr<VillagerPlayerRecord> record = guest::addr_of(table->player_records[i]);
         if (!record_in_use(record)) {
             continue;
         }
@@ -144,9 +119,9 @@ gptr<PlayerRecord> find_record_for_identity(gptr<PlayerTable> table, gptr<const 
 }
 
 // The index of the first record in use, or -1.
-s32 first_record_in_use(gptr<PlayerTable> table) {
-    for (u32 i = 0; i < PlayerTable::RECORDS; i++) {
-        if (record_in_use(guest::addr_of(table->records[i]))) {
+s32 first_record_in_use(gptr<SaveVillager> table) {
+    for (u32 i = 0; i < SaveVillager::PLAYER_RECORDS; i++) {
+        if (record_in_use(guest::addr_of(table->player_records[i]))) {
             return s32(i);
         }
     }
@@ -168,17 +143,17 @@ bool villager_matches_identity(gptr<void> villager, gptr<const PersonalId> ident
     if (expected_index_for(villager, villagers, SaveData::VILLAGER_COUNT) != saved_index) {
         return false;
     }
-    gptr<PlayerRecord> record = find_player_record(villager, identity);
+    gptr<VillagerPlayerRecord> record = find_player_record(villager, identity);
     if (!record) {
         return false;
     }
     if (!record_identity_is_set(record)) {
         return false;
     }
-    if ((record->flags_bc & PlayerRecord::FLAGS_BC_BIT7) == 0) {
+    if ((record->flags_bc & VillagerPlayerRecord::FLAGS_BC_BIT7) == 0) {
         return false;
     }
-    return (record->flags_b8 & PlayerRecord::FLAGS_B8_BIT1) == 0;
+    return (record->flags_b8 & VillagerPlayerRecord::FLAGS_B8_BIT1) == 0;
 }
 
 }  // namespace
@@ -218,13 +193,13 @@ gptr<void> self_referencing_object(guest::Fuzz &f, u32 size) {
     return words.cast<void>();
 }
 
-gptr<PlayerTable> some_player_table(guest::Fuzz &f) {
-    auto table = self_referencing_object(f, sizeof(PlayerTable) + 0x40).cast<PlayerTable>();
-    for (u32 i = 0; i < PlayerTable::RECORDS; i++) {
-        table->records[i].flags_b8 = u8(f.number());
-        table->records[i].flags_bc = u8(f.number());
+gptr<SaveVillager> some_player_table(guest::Fuzz &f) {
+    auto table = self_referencing_object(f, sizeof(SaveVillager) + 0x40).cast<SaveVillager>();
+    for (u32 i = 0; i < SaveVillager::PLAYER_RECORDS; i++) {
+        table->player_records[i].flags_b8 = u8(f.number());
+        table->player_records[i].flags_bc = u8(f.number());
         if (f.below(4) == 0) {
-            memset(&table->records[i], 0, sizeof(u16));  // no identity id
+            memset(&table->player_records[i], 0, sizeof(u16));  // no identity id
         }
     }
     return table;

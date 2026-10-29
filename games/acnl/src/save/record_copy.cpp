@@ -11,12 +11,30 @@ constexpr u32 ID_KIND_4000 = 0x4000;
 constexpr u32 TRANSLATION_COUNT = 0x11ad;
 constexpr u32 TRANSLATION_TABLE = 0x401b9526;  // u16 per id, TRANSLATION_COUNT entries
 
-template <typename T>
-void copy_field(gptr<u8> dest, gptr<const u8> source, u32 offset) {
-    T value;
-    memcpy(&value, (source + offset).get(), sizeof(T));
-    memcpy((dest + offset).get(), &value, sizeof(T));
-}
+// The fields copied by copy_item_fields, at their offsets in the 0x2e-byte record (some words are unaligned).
+#pragma pack(push, 1)
+struct ItemFields {
+    u16 half_00;
+    u32 word_02;
+    u32 word_06;
+    u32 word_0a;
+    u32 word_0e;
+    u16 half_12;
+    u8 byte_14;
+    u8 unknown_15;
+    u16 half_16;
+    u32 word_18;
+    u32 word_1c;
+    u32 word_20;
+    u32 word_24;
+    u16 half_28;
+    u8 byte_2a;
+    u8 unknown_2b;
+    u8 byte_2c;
+    u8 byte_2d;
+};
+#pragma pack(pop)
+GUEST_SIZE(ItemFields, 0x2e);
 
 }  // namespace
 
@@ -37,34 +55,28 @@ GUEST_FUZZ(0x401ae6d0, 200, [](guest::Fuzz &f) {
     f.arguments(dest, source);
 });
 
-// Copies the 0x2e-byte field list of a record; always succeeds.
-bool copy_item_fields(gptr<u8> dest, gptr<const u8> source) {
-    copy_field<u16>(dest, source, 0x00);
-    copy_field<u8>(dest, source, 0x14);
-    copy_field<u32>(dest, source, 0x02);
-    copy_field<u32>(dest, source, 0x06);
-    copy_field<u32>(dest, source, 0x0a);
-    copy_field<u32>(dest, source, 0x0e);
-    copy_field<u16>(dest, source, 0x12);
-    copy_field<u16>(dest, source, 0x16);
-    copy_field<u32>(dest, source, 0x18);
-    copy_field<u32>(dest, source, 0x1c);
-    copy_field<u32>(dest, source, 0x20);
-    copy_field<u32>(dest, source, 0x24);
-    copy_field<u16>(dest, source, 0x28);
-    copy_field<u8>(dest, source, 0x2a);
-    copy_field<u8>(dest, source, 0x2c);
-    copy_field<u8>(dest, source, 0x2d);
+// Copies the fields of a record of 0x2e bytes (the bytes between them are left alone); always succeeds.
+bool copy_item_fields(ItemFields &dest, const ItemFields &source) {
+    dest.half_00 = source.half_00;
+    dest.byte_14 = source.byte_14;
+    dest.word_02 = source.word_02;
+    dest.word_06 = source.word_06;
+    dest.word_0a = source.word_0a;
+    dest.word_0e = source.word_0e;
+    dest.half_12 = source.half_12;
+    dest.half_16 = source.half_16;
+    dest.word_18 = source.word_18;
+    dest.word_1c = source.word_1c;
+    dest.word_20 = source.word_20;
+    dest.word_24 = source.word_24;
+    dest.half_28 = source.half_28;
+    dest.byte_2a = source.byte_2a;
+    dest.byte_2c = source.byte_2c;
+    dest.byte_2d = source.byte_2d;
     return true;
 }
 GUEST_EXPORT(0x401ae85c, copy_item_fields);
-GUEST_FUZZ(0x401ae85c, 200, [](guest::Fuzz &f) {
-    gptr<u8> dest = f.allocate(0x40).cast<u8>();
-    gptr<u8> source = f.allocate(0x40).cast<u8>();
-    f.bytes(dest, 0x40);
-    f.bytes(source, 0x40);
-    f.arguments(dest, source);
-});
+GUEST_FUZZ(0x401ae85c, 200, [](guest::Fuzz &f) { f.arguments(f.object<ItemFields>(), f.object<ItemFields>()); });
 
 // Stores an id through `out`, translating ids of the 0x2000/0x4000 kinds through a table; false if out of range.
 bool translate_id(gptr<u16> out, u32 id) {

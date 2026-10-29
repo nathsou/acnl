@@ -1,41 +1,36 @@
 #include "guest/guest.hpp"
+#include "save/player.hpp"
+#include "save/save_data.hpp"
 
 namespace {
 
-// Global object whose field at 0x234 points at a structure holding a table used by is_allowed_name.
+// The object the current player is reached through: its field at 0x234 is the player.
 struct NameContext {
     u8 unknown_0000[0x234];
-    gptr<u8> table_owner;
+    gptr<SavePlayer> player;  // may be null
 };
-GUEST_OFFSET(NameContext, table_owner, 0x234);
+GUEST_OFFSET(NameContext, player, 0x234);
 inline guest::global<gptr<NameContext>, 0x00aaef18> name_context_ptr;
 
-inline constexpr guest::Function<0x00311a34, u32(gptr<void> a, gptr<void> b)> match_entry;
 inline constexpr guest::Function<0x002fb378, u32()> get_reference_value;
 inline constexpr guest::Function<0x00757620, u32(gptr<void> a, u32 b, s32 c)> compare_with_limit;
 
-constexpr u32 TABLE_OFFSET = 0x55a6;
-constexpr u32 ENTRY_BASE = 0x8ee;
-constexpr u32 ENTRY_SIZE = 0xf2;
-constexpr u32 ENTRY_COUNT = 16;
-constexpr u32 NOT_FOUND = 4;
-constexpr u32 BLOCK_OFFSETS[4] = {0, 0xa480, 0x14900, 0x1ed80};
 
 }  // namespace
 
-// True when the byte at offset 8 is below 0x21.
-static bool byte_8_below_33(gptr<const u8> object) {
-    return object[8] < 0x21;
+bool SavedRecordInner::has_value() const {
+    return value < NONE_VALUE;
 }
-GUEST_EXPORT(0x00309ef0, byte_8_below_33);
+GUEST_EXPORT(0x00309ef0, SavedRecordInner::has_value);
 
-// Checks a value against the context's table, then against bounds around a reference value.
+// Checks that the value starts with the current player's identity, then that it is within bounds around a reference
+// value.
 static bool passes_context_check(gptr<void> value) {
     gptr<NameContext> context = *name_context_ptr;
-    if (!context->table_owner) {
+    if (!context->player) {
         return false;
     }
-    if (!match_entry(gptr<void>(context->table_owner.addr() + TABLE_OFFSET), value)) {
+    if (!identities_match(context->player->identity, *value.cast<PersonalId>())) {
         return false;
     }
     u32 reference = get_reference_value();
@@ -46,36 +41,33 @@ static bool passes_context_check(gptr<void> value) {
 }
 GUEST_EXPORT(0x00309f04, passes_context_check);
 
-// Finds the first of 16 consecutive entries (0xf2 bytes each) that match_entry accepts.
-static gptr<void> find_matching_entry(gptr<void> base, gptr<void> key) {
-    for (u32 i = 0; i < ENTRY_COUNT; i++) {
-        gptr<void> entry = base + (ENTRY_BASE + i * ENTRY_SIZE);
-        if (match_entry(entry, key)) {
-            return entry;
-        }
+// The index of the player in the array of players (SaveData::NO_PLAYER for null or a pointer that is none of them).
+u32 player_index_in(gptr<const SavePlayer> players, gptr<const SavePlayer> player) {
+    if (!player) {
+        return SaveData::NO_PLAYER;
     }
-    return nullptr;
-}
-GUEST_EXPORT(0x00309f85, find_matching_entry);
-
-// Which of four blocks of a structure the pointer is the start of; 4 for null or none.
-static u32 block_index_of(gptr<void> base, gptr<void> block) {
-    if (!block) {
-        return NOT_FOUND;
-    }
-    for (u32 i = 0; i < 4; i++) {
-        if (base.addr() + BLOCK_OFFSETS[i] == block.addr()) {
+    for (u32 i = 0; i < SaveData::PLAYER_COUNT; i++) {
+        if (players.addr() + i * SavePlayer::SIZE == player.addr()) {
             return i;
         }
     }
-    return NOT_FOUND;
+    return SaveData::NO_PLAYER;
 }
-GUEST_EXPORT(0x00309fbc, block_index_of);
+GUEST_EXPORT(0x00309fbc, player_index_in);
 
-// Clears the byte at offset 0xe3 and returns the address of the field at 0xde.
-static gptr<u8> clear_flag_and_get_field(gptr<u8> object) {
-    object[0xe3] = 0;
-    return object + 0xde;
+// An object with a field of 5 bytes at 0xde followed by a flag byte (what it is is not known yet).
+struct FieldWithFlag {
+    u8 unknown_00[0xde];
+    u8 field_de[5];
+    u8 flag_e3;
+};
+GUEST_OFFSET(FieldWithFlag, field_de, 0xde);
+GUEST_OFFSET(FieldWithFlag, flag_e3, 0xe3);
+
+// Clears the flag and returns the address of the field.
+static gptr<u8> clear_flag_and_get_field(FieldWithFlag &object) {
+    object.flag_e3 = 0;
+    return guest::addr_of(object.field_de[0]);
 }
 GUEST_EXPORT(0x0030a014, clear_flag_and_get_field);
 
@@ -89,26 +81,15 @@ static gptr<void> some_string(guest::Fuzz &f) {
 }
 
 GUEST_FUZZ(0x00309ef0, 200, [](guest::Fuzz &f) {
-    auto o = f.object<u8[16]>();
-    (*o)[8] = f.pick<u32>({0, 0x20, 0x21, 0xff, f.number()});
-    f.arguments(o);
+    auto inner = f.object<SavedRecordInner>();
+    inner->value = f.pick<u8>({0, SavedRecordInner::NONE_VALUE - 1, SavedRecordInner::NONE_VALUE, 0xff, u8(f.number())});
+    f.arguments(inner);
 });
 GUEST_FUZZ(0x00309f04, 200, [](guest::Fuzz &f) { f.arguments(some_string(f)); });
-GUEST_FUZZ(0x00309f85, 200, [](guest::Fuzz &f) {
-    auto base = f.allocate(0x1800);
-    f.bytes(base, 0x1800);
-    f.arguments(base, some_string(f));
-});
 GUEST_FUZZ(0x00309fbc, 200, [](guest::Fuzz &f) {
-    auto base = f.allocate(16);
-    auto other = f.allocate(16);
-    gptr<void> block = f.pick<gptr<void>>({gptr<void>(nullptr), base, other,
-                                           gptr<void>(base.addr() + 0xa480), gptr<void>(base.addr() + 0x14900),
-                                           gptr<void>(base.addr() + 0x1ed80)});
-    f.arguments(base, block);
-});
-GUEST_FUZZ(0x0030a014, 200, [](guest::Fuzz &f) {
-    auto o = f.allocate(0x100);
-    f.bytes(o, 0x100);
-    f.arguments(o);
-});
+    auto data = f.allocate(16).cast<SaveData>();  // (only addresses are compared: the array is never read)
+    gptr<const SavePlayer> player = f.pick<gptr<const SavePlayer>>(
+        {gptr<const SavePlayer>(nullptr), guest::addr_of(data->players[0]), guest::addr_of(data->players[1]),
+         guest::addr_of(data->players[2]), guest::addr_of(data->players[3]), gptr<const SavePlayer>(data.addr())});
+    f.arguments(data, player);
+});GUEST_FUZZ(0x0030a014, 200, [](guest::Fuzz &f) { f.arguments(f.object<FieldWithFlag>()); });

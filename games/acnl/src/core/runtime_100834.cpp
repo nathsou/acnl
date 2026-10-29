@@ -1,6 +1,7 @@
 // Small runtime helpers around 0x00100834: a UTF-16 string length, lazily created per-context blocks, and the
 // release of two objects held by a global.
 #include "guest/guest.hpp"
+#include "hobj/house_object.hpp"
 
 namespace {
 
@@ -28,10 +29,8 @@ GUEST_OFFSET(ContextBlock, unknown_0c, 0x0c);
 GUEST_OFFSET(ContextBlock, unknown_1c, 0x1c);
 GUEST_SIZE(ContextBlock, 0x20);
 
-// An object with a vtable; slot 4 releases it.
-struct VirtualObject {
-    gptr<u32> vtable;
-};
+// Objects with a vtable (hobj::VirtualObject); slot 4 releases them.
+using hobj::VirtualObject;
 constexpr u32 RELEASE_SLOT = 4;
 
 struct GlobalObjects952c38 {

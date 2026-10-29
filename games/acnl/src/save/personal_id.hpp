@@ -41,3 +41,6 @@ struct ShortId {
 };
 GUEST_OFFSET(ShortId, town_id, 2);
 GUEST_SIZE(ShortId, 4);
+
+// Whether two identities are the same (still the recompiled comparison at 0x00311a34).
+inline constexpr guest::Function<0x00311a34, u32(const PersonalId &identity, const PersonalId &other)> identities_match;

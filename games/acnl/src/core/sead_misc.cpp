@@ -1,3 +1,4 @@
+#include "core/list_node.hpp"
 #include "guest/guest.hpp"
 
 using guest::gptr;
@@ -6,14 +7,6 @@ namespace {
 
 // A global the game reads through a getter.
 inline guest::global<u32, 0x00975c20> global_value_975c20;
-
-// An intrusive list node (ssys::st::ListNode): the vtable, an unknown link and the next node.
-struct ListNode {
-    u32 vtable;
-    u32 unknown_04;
-    gptr<ListNode> next;
-};
-GUEST_SIZE(ListNode, 12);
 
 // A list head: the first node is at offset 4.
 struct ListHead {
@@ -58,7 +51,7 @@ void clear_list(ListHead &list) {
     while (node) {
         gptr<ListNode> next = node->next;
         node->next = nullptr;
-        node->unknown_04 = 0;
+        node->prev = nullptr;
         node = next;
     }
     list.first = nullptr;
@@ -85,8 +78,8 @@ GUEST_FUZZ(0x00132478, 300, [](guest::Fuzz &f) {
 
 // The constructor of ssys::st::ListNode.
 ListNode &construct_list_node(ListNode &self) {
-    self.unknown_04 = 0;
-    self.vtable = LIST_NODE_VTABLE;
+    self.prev = nullptr;
+    self.vtable = gptr<u32>(LIST_NODE_VTABLE);
     self.next = nullptr;
     return self;
 }

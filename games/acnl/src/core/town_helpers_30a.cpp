@@ -9,11 +9,7 @@ namespace {
 
 // ---- find the first matching entry of 16
 
-inline constexpr guest::Function<0x00311a34, u32(gptr<void> a, gptr<void> b)> match_entry_fn;
 
-constexpr u32 ENTRY_TABLE_OFFSET = 0x8ee;
-constexpr u32 ENTRY_STRIDE = 0xf2;
-constexpr u32 ENTRY_TOTAL = 16;
 
 // ---- sead::BufferedSafeStringBase<char>
 
@@ -90,22 +86,8 @@ GUEST_SIZE(CalleeFrameOffset, 16);
 constexpr u32 FLAG_18 = 1u << 18;  // unknown flag
 
 // ---- fuzz sizes
-constexpr u32 ENTRY_TABLE_FUZZ_SIZE = 0x1800;  // covers the 16 entries after ENTRY_TABLE_OFFSET
-constexpr u32 ENTRY_KEY_FUZZ_SIZE = 0x40;      // more than match_entry reads of a key
 
 }  // namespace
-
-/// Finds the first of 16 consecutive entries (0xf2 bytes each) that match_entry accepts; null if none.
-static gptr<void> find_entry_matching_key(gptr<void> base, gptr<void> key) {
-    for (u32 i = 0; i < ENTRY_TOTAL; i++) {
-        gptr<void> entry = base + (ENTRY_TABLE_OFFSET + i * ENTRY_STRIDE);
-        if (match_entry_fn(entry, key)) {
-            return entry;
-        }
-    }
-    return nullptr;
-}
-GUEST_EXPORT(0x00309eb9, find_entry_matching_key);
 
 /// Constructs a buffered string with its inline buffer and copies the source text into it, truncated to fit.
 static BufferedSafeString &construct_buffered_safe_string(BufferedSafeString &self, const SafeString &source) {
@@ -193,14 +175,6 @@ static void set_flag_18(SaveVillager &self) {
 GUEST_EXPORT(0x0030a1a0, set_flag_18);
 
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00309eb9, 200, [](guest::Fuzz &f) {
-    auto base = f.allocate(ENTRY_TABLE_FUZZ_SIZE);
-    f.bytes(base, ENTRY_TABLE_FUZZ_SIZE);
-    auto key = f.allocate(ENTRY_KEY_FUZZ_SIZE);
-    f.bytes(key, ENTRY_KEY_FUZZ_SIZE);
-    f.arguments(base, key);
-});
 
 GUEST_FUZZ(0x0030a018, 300, [](guest::Fuzz &f) {
     constexpr u32 VTABLE_SLOTS = 4;

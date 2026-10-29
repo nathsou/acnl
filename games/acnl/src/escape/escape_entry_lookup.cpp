@@ -71,11 +71,11 @@ struct ResourceEntry {
 };
 GUEST_OFFSET(ResourceEntry, data, 0xc);
 
-struct ResourceLoader {
+struct ResourceTableOwner {
     u8 unknown_00[8];
     gptr<ResourceTable> resources;
 };
-GUEST_OFFSET(ResourceLoader, resources, 8);
+GUEST_OFFSET(ResourceTableOwner, resources, 8);
 
 struct HeapHolder {
     u8 unknown_00[4];
@@ -114,7 +114,7 @@ GUEST_EXPORT(0x402fe86c, find_linked_value);
 
 // Allocates an array of `count` pointers and fills each with the data of the resource named in `names`
 // (null when there is no resource table, no name, no such resource or no data). Null for a count of 0 or less.
-static gptr<gptr<void>> find_resource_array(ResourceLoader &self, gptr<gptr<const char>> names, s32 count,
+static gptr<gptr<void>> find_resource_array(ResourceTableOwner &self, gptr<gptr<const char>> names, s32 count,
                                             HeapHolder &heap_holder) {
     if (count <= 0) {
         return nullptr;
@@ -160,7 +160,7 @@ GUEST_FUZZ(0x402fe86c, 400, [](guest::Fuzz &f) {
     f.arguments(list, f.below(count), f.below(14));
 });
 GUEST_FUZZ(0x402fef20, 200, [](guest::Fuzz &f) {
-    auto loader = f.object<ResourceLoader>();
+    auto loader = f.object<ResourceTableOwner>();
     auto holder = f.object<HeapHolder>();
     f.arguments(loader, gptr<gptr<const char>>(), f.pick<s32>({0, -1, -100}), holder);
 });

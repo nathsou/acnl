@@ -1,9 +1,8 @@
 #include "guest/guest.hpp"
+#include "ui/layout_list.hpp"
 
 using guest::gptr;
 
-// Rewritten in ui/layout_list.cpp (called directly rather than through the game's dispatch).
-void notify_list_objects(u32 unused, gptr<u8> self, gptr<u8> list, u32 arg);
 
 namespace {
 
@@ -65,17 +64,9 @@ struct DragIconObject {
 };
 GUEST_OFFSET(DragIconObject, flag_122, 0x122);
 
-// The list notify_list_objects walks: the head pointer at 0x10 points to itself when the list is empty.
-struct NotifyList {
-    u8 unknown_00[0x10];
-    u32 head_10;
-    u8 unknown_14[0x1c];
-};
-GUEST_OFFSET(NotifyList, head_10, 0x10);
-
 struct DragIconTarget {
     u8 unknown_00[0x10];
-    gptr<NotifyList> list_10;  // may be null
+    gptr<ChildList> list_10;  // may be null
     u8 unknown_14[8];
     gptr<DragIconObject> object_1c;
 };
@@ -111,7 +102,7 @@ void notify_drag_icon_target(DragIconTarget &target, DragIconSource &source) {
     }
     gptr<void> object = target.object_1c;
     if (target.list_10) {
-        notify_list_objects(object.addr(), guest::addr_of(source).cast<u8>(), target.list_10.cast<u8>(), 0);
+        notify_list_objects(object, *guest::addr_of(source).cast<LayoutObject>(), *target.list_10, 0);
     } else {
         notify_object(object, guest::addr_of(source), 0);
     }
@@ -121,8 +112,8 @@ GUEST_EXPORT(0x002b6a3c, notify_drag_icon_target);
 GUEST_FUZZ(0x002b6a3c, 200, [](guest::Fuzz &f) {
     auto target = f.object<DragIconTarget>();
     auto source = f.object<DragIconSource>();
-    auto list = f.object<NotifyList>();
-    list->head_10 = guest::addr_of(list->head_10).addr();  // empty list
+    auto list = f.object<ChildList>();
+    list->sentinel.next = guest::addr_of(list->sentinel);  // empty list
     target->list_10 = list;
     target->object_1c = f.below(2) ? f.object<DragIconObject>() : gptr<DragIconObject>();
     if (f.below(3) == 0) {

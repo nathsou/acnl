@@ -1,3 +1,4 @@
+#include "core/list_node.hpp"
 #include "guest/guest.hpp"
 
 using guest::gptr;
@@ -58,16 +59,6 @@ AnimationHeader &construct_layout_animation(AnimationHeader &self) {
 }
 GUEST_EXPORT(0x00125aec, construct_layout_animation);
 GUEST_FUZZ(0x00125aec, 200, [](guest::Fuzz &f) { f.arguments(f.object<AnimationHeader>()); });
-
-// A node of a doubly linked list; the vtable decides where a node goes.
-struct ListNode {
-    gptr<u32> vtable;
-    gptr<ListNode> prev;
-    gptr<ListNode> next;
-};
-GUEST_OFFSET(ListNode, prev, 4);
-GUEST_OFFSET(ListNode, next, 8);
-GUEST_SIZE(ListNode, 12);
 
 struct LayoutList {
     gptr<void> vtable;

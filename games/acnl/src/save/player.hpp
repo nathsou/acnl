@@ -9,6 +9,7 @@
 struct SavePlayer {
     static constexpr u32 BANK_MAX = 999'999'999;
     static constexpr u32 COUNTER_6B9C_MAX = 99'999;
+    static constexpr u32 SIZE = 0xa480;
 
     u8 unknown_0000[0x55a6];
     PersonalId identity;
@@ -18,6 +19,7 @@ struct SavePlayer {
     EncryptedInt counter_6b9c;  // capped at COUNTER_6B9C_MAX when added to
     u8 unknown_6ba4[0x6bd0 - 0x6ba4];
     Pockets pockets;
+    u8 unknown_tail[SIZE - 0x6bd0 - sizeof(Pockets)];
 
     void deposit(u32 bells);
 };
@@ -26,3 +28,4 @@ GUEST_OFFSET(SavePlayer, identity.town, 0x55bc);
 GUEST_OFFSET(SavePlayer, bank, 0x6b8c);
 GUEST_OFFSET(SavePlayer, pockets, 0x6bd0);
 GUEST_OFFSET(SavePlayer, pockets.wallet, 0x6f08);
+GUEST_SIZE(SavePlayer, SavePlayer::SIZE);

@@ -1,4 +1,5 @@
 #include "guest/guest.hpp"
+#include "save/save_data.hpp"
 
 namespace {
 
@@ -46,8 +47,6 @@ GUEST_EXPORT(0x006aaa58, notify_registered);
 
 // Finds a data address from a packed id: bits 8-11 select the table, the low two nibbles are indices.
 u32 locate_by_packed_id(u32 packed) {
-    constexpr u32 TABLE_3_STRIDE = 2160;
-    constexpr u32 TABLE_6_STRIDE = 271 * 8;
     u32 low = packed & 0xf;
     u32 high = (packed >> 4) & 0xf;
     u32 table = (packed >> 8) & 0xf;
@@ -60,15 +59,15 @@ u32 locate_by_packed_id(u32 packed) {
         return f_3058c8(object + 4, high) + 0x30;
     }
     case 2:
-        return f_304ed8(get_base_2fae84(table) + 0x622b8, low);
+        return f_304ed8(guest::addr_of(save_data_of_base(get_base_2fae84(table))->part_62338).addr(), low);
     case 3:
-        return get_base_2fae84(table) + 0x66820 + (low & 7) * TABLE_3_STRIDE + 0x7c;
+        return guest::addr_of(save_data_of_base(get_base_2fae84(table))->entries_668a0[low & 7].field_7c).addr();
     case 4:
-        return f_6bc388(get_base_2fae84(table) - 0xfff951c8u, high) + 0x304;
+        return f_6bc388(guest::addr_of(save_data_of_base(get_base_2fae84(table))->part_6aeb8).addr(), high) + 0x304;
     case 5:
-        return get_base_2fae84(table) + 0x70e9c;
+        return guest::addr_of(save_data_of_base(get_base_2fae84(table))->part_70f1c).addr();
     case 6:
-        return get_base_2fae84(table) + 0x4bef0 + low * TABLE_6_STRIDE;
+        return guest::addr_of(save_data_of_base(get_base_2fae84(table))->entries_4bf70[low]).addr();
     default:
         return 0;
     }

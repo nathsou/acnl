@@ -10,36 +10,6 @@ using guest::gptr;
 
 namespace {
 
-// A record of the player table. Only the fields the rewritten code uses are named.
-struct QueryPlayerRecord {
-    static constexpr u8 FLAG_BB_BIT2 = 0x04;  // flags_bb: unknown flag
-    static constexpr u8 FLAG_BC_BIT5 = 0x20;  // flags_bc: unknown flag
-    static constexpr u8 FLAG_BC_BIT7 = 0x80;  // flags_bc: unknown flag
-    static constexpr u8 FLAGS_BE_MASK = 0x06;  // flags_be: two unknown flags
-
-    u8 unknown_00[0xb9];
-    u8 byte_b9;
-    u8 byte_ba;
-    u8 flags_bb;
-    u8 flags_bc;
-    u8 unknown_bd;
-    u8 flags_be;
-    u8 unknown_bf[0xf2 - 0xbf];
-};
-GUEST_OFFSET(QueryPlayerRecord, byte_b9, 0xb9);
-GUEST_OFFSET(QueryPlayerRecord, flags_bb, 0xbb);
-GUEST_OFFSET(QueryPlayerRecord, flags_bc, 0xbc);
-GUEST_OFFSET(QueryPlayerRecord, flags_be, 0xbe);
-GUEST_SIZE(QueryPlayerRecord, 0xf2);
-
-struct QueryPlayerTable {
-    static constexpr u32 RECORDS = 16;
-
-    u8 unknown_0000[0x8ee];
-    QueryPlayerRecord records[RECORDS];
-};
-GUEST_OFFSET(QueryPlayerTable, records, 0x8ee);
-
 struct QueryReferenceValue {
     u8 unknown_00[7];
     s8 unknown_07;
@@ -49,7 +19,7 @@ GUEST_SIZE(QueryReferenceValue, 12);
 
 // Still recompiled code (or rewritten elsewhere, called through the game's ABI):
 inline constexpr guest::Function<0x002fbd54, bool(gptr<void> identity)> identity_is_set;
-inline constexpr guest::Function<0x00309eb9, gptr<QueryPlayerRecord>(gptr<void> table, gptr<const PersonalId> identity)>
+inline constexpr guest::Function<0x00309eb9, gptr<VillagerPlayerRecord>(gptr<void> table, gptr<const PersonalId> identity)>
     find_player_record;
 inline constexpr guest::Function<0x002fb378, gptr<QueryReferenceValue>()> get_reference_value;
 inline constexpr guest::Function<0x0030fc18, u32(gptr<SavePlayer> player, gptr<QueryReferenceValue> reference)>
@@ -69,10 +39,10 @@ constexpr u32 MAX_THRESHOLD_INDEX = 3;
 constexpr s32 REFERENCE_MIN = 6;
 
 // The first record whose identity is set and that has flag bit 5 in flags_bc; null if none.
-gptr<QueryPlayerRecord> find_first_flagged_record(gptr<QueryPlayerTable> table) {
-    for (u32 i = 0; i < QueryPlayerTable::RECORDS; i++) {
-        gptr<QueryPlayerRecord> record = guest::addr_of(table->records[i]);
-        if (identity_is_set(record) && (record->flags_bc & QueryPlayerRecord::FLAG_BC_BIT5) != 0) {
+gptr<VillagerPlayerRecord> find_first_flagged_record(gptr<SaveVillager> table) {
+    for (u32 i = 0; i < SaveVillager::PLAYER_RECORDS; i++) {
+        gptr<VillagerPlayerRecord> record = guest::addr_of(table->player_records[i]);
+        if (identity_is_set(record) && (record->flags_bc & VillagerPlayerRecord::FLAGS_BC_BIT5) != 0) {
             return record;
         }
     }
@@ -81,11 +51,11 @@ gptr<QueryPlayerRecord> find_first_flagged_record(gptr<QueryPlayerTable> table) 
 
 // Whether the entry matching the identity has bit 7 of flags_bc set.
 bool entry_has_flag_bc_bit7(gptr<void> table, gptr<const PersonalId> identity) {
-    gptr<QueryPlayerRecord> record = find_player_record(table, identity);
+    gptr<VillagerPlayerRecord> record = find_player_record(table, identity);
     if (!record) {
         return false;
     }
-    return (record->flags_bc & QueryPlayerRecord::FLAG_BC_BIT7) != 0;
+    return (record->flags_bc & VillagerPlayerRecord::FLAGS_BC_BIT7) != 0;
 }
 
 // FLAG_1 set and FLAG_0 clear in the flag word of an SaveVillager.
@@ -110,14 +80,14 @@ bool villager_passes_player_checks(gptr<SaveVillager> self, gptr<SavePlayer> pla
     if (reference->unknown_07 < REFERENCE_MIN) {
         return false;
     }
-    gptr<QueryPlayerRecord> record = find_player_record(self, guest::addr_of(player->identity));
+    gptr<VillagerPlayerRecord> record = find_player_record(self, guest::addr_of(player->identity));
     if (!record) {
         return false;
     }
-    if ((record->flags_bc & QueryPlayerRecord::FLAG_BC_BIT7) == 0) {
+    if ((record->flags_bc & VillagerPlayerRecord::FLAGS_BC_BIT7) == 0) {
         return false;
     }
-    if ((record->flags_bb & QueryPlayerRecord::FLAG_BB_BIT2) != 0) {
+    if ((record->flags_bb & VillagerPlayerRecord::FLAGS_BB_BIT2) != 0) {
         return false;
     }
     gptr<const u8> thresholds(THRESHOLDS_ADDRESS);
@@ -137,7 +107,7 @@ bool villager_passes_player_checks(gptr<SaveVillager> self, gptr<SavePlayer> pla
     if (!table_entry(u32(index))) {
         return false;
     }
-    if ((record->flags_be & QueryPlayerRecord::FLAGS_BE_MASK) != 0) {
+    if ((record->flags_be & VillagerPlayerRecord::FLAGS_BE_MASK) != 0) {
         return false;
     }
     if (index_check_309ccc(index) >= 0) {
@@ -193,12 +163,12 @@ gptr<void> query_self_referencing_object(guest::Fuzz &f, u32 size) {
     return words.cast<void>();
 }
 
-gptr<QueryPlayerTable> some_query_player_table(guest::Fuzz &f) {
-    auto table = query_self_referencing_object(f, sizeof(QueryPlayerTable) + 0x40).cast<QueryPlayerTable>();
-    for (u32 i = 0; i < QueryPlayerTable::RECORDS; i++) {
-        table->records[i].flags_bc = u8(f.number());
+gptr<SaveVillager> some_query_player_table(guest::Fuzz &f) {
+    auto table = query_self_referencing_object(f, sizeof(SaveVillager) + 0x40).cast<SaveVillager>();
+    for (u32 i = 0; i < SaveVillager::PLAYER_RECORDS; i++) {
+        table->player_records[i].flags_bc = u8(f.number());
         if (f.below(4) == 0) {
-            memset(&table->records[i], 0, sizeof(u16));
+            memset(&table->player_records[i], 0, sizeof(u16));
         }
     }
     return table;

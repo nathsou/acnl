@@ -2,16 +2,14 @@
 // signed value, the villager record lookup and the vtable reset of script::WordFix<9u>.
 #include "guest/guest.hpp"
 #include "save/save_data.hpp"
+#include "hobj/house_object.hpp"
 #include "script/word.hpp"
 
 using guest::gptr;
 
 namespace {
 
-// An object reached through its vtable only.
-struct VirtualObject {
-    u32 vtable;
-};
+using hobj::VirtualObject;
 
 // An object that holds another object (with a vtable) at +4.
 struct VirtualHolder {
@@ -36,7 +34,7 @@ inline constexpr guest::Function<0x00305f2c, u32()> read_global_object_byte;
 
 u32 call_forwarded(gptr<VirtualHolder> holder, u32 slot, u32 a1, u32 a2, u32 a3) {
     gptr<VirtualObject> object = holder->object;
-    u32 target = *gptr<u32>(object->vtable + slot * 4);
+    u32 target = object->vtable[slot];
     return guest::call_address<u32>(target, object, a1, a2, a3);
 }
 
@@ -102,7 +100,7 @@ static gptr<VirtualHolder> some_holder(guest::Fuzz &f) {
         vtable[i] = read_global_object_byte.address;  // a guest function that ignores its arguments
     }
     auto inner = f.allocate(0x20).cast<VirtualObject>();
-    inner->vtable = vtable.addr();
+    inner->vtable = vtable;
     auto holder = f.allocate(0x10).cast<VirtualHolder>();
     holder->object = inner;
     return holder;

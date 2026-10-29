@@ -1,3 +1,4 @@
+#include "hobj/house_object.hpp"
 #include "script/word.hpp"
 
 namespace script {
@@ -38,10 +39,7 @@ guest::gptr<u8> terminate_short_text(ShortTextHolder &self) {
     return guest::addr_of(self.text[0]);
 }
 
-// A polymorphic object as far as this code knows it: its vtable.
-struct VirtualObject {
-    guest::gptr<u32> vtable;
-};
+using hobj::VirtualObject;
 constexpr u32 VIRTUAL_SLOT_5 = 5;  // [vtable + 0x14]
 
 // Calls the object's fifth virtual function, forwarding the other arguments (r2 holds the target, as in the
