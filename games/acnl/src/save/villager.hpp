@@ -53,7 +53,8 @@ struct SaveVillager {
     u8 unknown_0000[0x8c6];
     Item items_8c6[SLOTS];
     Item items_8d6[SLOTS];
-    u8 unknown_08e6[8];
+    Item item_8e6;
+    u8 unknown_08ea[4];
     VillagerPlayerRecord player_records[PLAYER_RECORDS];
     u8 unknown_180e[0x249a - 0x180e];
     Item item_249a;
@@ -65,7 +66,8 @@ struct SaveVillager {
     u8 unknown_24f1[0x2508 - 0x24f1];
     u8 flag_2508;          // when clear, check_11a440 fails
     u8 unknown_2509;
-    u8 unknown_250a[6];    // turned into a Value12 by f_0030a34c
+    u8 unknown_250a[5];    // turned into a Value12 by f_0030a34c
+    u8 state_250f;         // a state; 5 resets the state at 0x0094d938
     u32 flags_2510;
     u8 unknown_2514[4];
 
@@ -76,12 +78,20 @@ struct SaveVillager {
     gptr<VillagerPlayerRecord> find_player_record(const PersonalId &identity);
     gptr<Item> item_8d6_at(u32 slot);  // null when slot is out of range
     u32 count_items_8c6() const;       // the non-empty slots
+    u32 count_items_8d6() const;       // the non-empty slots of the second list
+    // Removes the item of the second list that has the same number; false if there is none (or the item is empty).
+    bool remove_item_8d6(const Item &item);
+    // Stores the item in item_8e6 when it is empty or of wear class 7; false otherwise.
+    bool set_item_8e6(const Item &item);
+    void clear_flag_bc_bit5_of_used_records();
+    void set_state_250f(u32 state);
     void clear_flags_16_17();
     bool has_slot_flag(u32 slot) const;  // the unknown flag of a slot (bits 3-6); false for slots out of range
     bool check_11a440(gptr<void> object, u32 unused_r2, gptr<const Value12> value) const;
 };
 GUEST_OFFSET(SaveVillager, items_8c6, 0x8c6);
 GUEST_OFFSET(SaveVillager, items_8d6, 0x8d6);
+GUEST_OFFSET(SaveVillager, item_8e6, 0x8e6);
 GUEST_OFFSET(SaveVillager, player_records, 0x8ee);
 GUEST_OFFSET(SaveVillager, item_249a, 0x249a);
 GUEST_OFFSET(SaveVillager, item_24e6, 0x24e6);
@@ -89,5 +99,6 @@ GUEST_OFFSET(SaveVillager, item_24ea, 0x24ea);
 GUEST_OFFSET(SaveVillager, value_24f0, 0x24f0);
 GUEST_OFFSET(SaveVillager, flag_2508, 0x2508);
 GUEST_OFFSET(SaveVillager, unknown_250a, 0x250a);
+GUEST_OFFSET(SaveVillager, state_250f, 0x250f);
 GUEST_OFFSET(SaveVillager, flags_2510, 0x2510);
 GUEST_SIZE(SaveVillager, 0x2518);
