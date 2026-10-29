@@ -1,5 +1,6 @@
-// Helpers around the main object (the global pointer at 0x0095362c) and a small bit/counter pair.
+// Helpers around the local-play session (the global at 0x0095362c) and station masks.
 #include "guest/guest.hpp"
+#include "net/station_mask.hpp"
 
 namespace {
 
@@ -9,62 +10,51 @@ constexpr u32 SLOT_COUNT = 4;
 
 inline guest::global<gptr<void>, 0x0095362c> main_object_pointer;
 
-inline constexpr guest::Function<0x00624b24, void(gptr<void> block, u32 index)> clear_slot_in_block;
 inline constexpr guest::Function<0x0075dfb4, u32(gptr<void> object, u32 station)> main_object_station_check;
-
-// A byte of slot bits and a counter of how many times new bits were added.
-struct SlotBitCounter {
-    u8 bits;
-    u8 count;  // stops growing at SLOT_COUNT
-
-    void add_slot(u32 slot);
-};
 
 // The object that owns four per-slot byte pairs (what it is, is not known yet).
 struct SlotBlocks {
-    static constexpr u32 BLOCK_6_SIZE = 8;
-    static constexpr u32 BLOCK_24_SIZE = 0x10;  // extent not known; what the sub-block helper may touch
-
     u8 unknown_00[2];
     u8 flags_02[SLOT_COUNT];
-    u8 block_06[BLOCK_6_SIZE];
+    StationMask mask_06;
+    u8 unknown_08[6];
     u8 flags_0e[SLOT_COUNT];
     u8 unknown_12[0x24 - 0x12];
-    u8 block_24[BLOCK_24_SIZE];
+    StationMask mask_24;
 
     void clear_slot(u32 slot);
 };
 GUEST_OFFSET(SlotBlocks, flags_02, 2);
-GUEST_OFFSET(SlotBlocks, block_06, 6);
+GUEST_OFFSET(SlotBlocks, mask_06, 6);
 GUEST_OFFSET(SlotBlocks, flags_0e, 0xe);
-GUEST_OFFSET(SlotBlocks, block_24, 0x24);
+GUEST_OFFSET(SlotBlocks, mask_24, 0x24);
 
 }  // namespace
 
 // Adds the slot's bit (slots below 4 only); the counter only moves when the bits changed and it is below 4.
-void SlotBitCounter::add_slot(u32 slot) {
-    u8 bit = slot < SLOT_COUNT ? u8(1u << slot) : 0;
+void StationMask::add(u32 slot) {
+    u8 bit = slot < STATION_COUNT ? u8(1u << slot) : 0;
     u8 updated = bits | bit;
     if (updated == bits) {
         return;
     }
-    if (count >= SLOT_COUNT) {
+    if (count >= MAX_COUNT) {
         return;
     }
     bits = updated;
     count = count + 1;
 }
-GUEST_EXPORT(0x00624aa4, SlotBitCounter::add_slot);
+GUEST_EXPORT(0x00624aa4, StationMask::add);
 
-// Clears the slot's two flag bytes and lets the two sub-blocks drop their entry for the slot.
+// Clears the slot's two flag bytes and removes the station from both masks.
 void SlotBlocks::clear_slot(u32 slot) {
     if (slot >= SLOT_COUNT) {
         return;
     }
     flags_02[slot] = 0;
     flags_0e[slot] = 0;
-    clear_slot_in_block(guest::addr_of(block_06).cast<void>(), slot);
-    clear_slot_in_block(guest::addr_of(block_24).cast<void>(), slot);
+    mask_06.remove(slot);
+    mask_24.remove(slot);
 }
 GUEST_EXPORT(0x00624ae4, SlotBlocks::clear_slot);
 
@@ -89,7 +79,7 @@ u32 some_slot(guest::Fuzz &f) {
 }  // namespace
 
 GUEST_FUZZ(0x00624aa4, 300, [](guest::Fuzz &f) {
-    auto object = f.object<SlotBitCounter>();
+    auto object = f.object<StationMask>();
     if (f.below(2) != 0) {
         object->count = u8(f.below(FUZZ_MAX_COUNT + 1));
     }

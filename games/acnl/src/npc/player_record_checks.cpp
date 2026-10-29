@@ -65,7 +65,7 @@ GUEST_OFFSET(TableEntry, word_44, 0x44);
 inline constexpr guest::Function<0x002fb328, gptr<SaveBlock>()> get_save_block;
 inline constexpr guest::Function<0x003091e0, gptr<void>(gptr<void> argument)> get_manager_3091e0;
 inline constexpr guest::Function<0x003091ec, gptr<SavePlayer>(gptr<void> manager)> get_player_3091ec;
-inline constexpr guest::Function<0x00309eb9, gptr<PlayerRecord>(gptr<void> villager, gptr<const u8> identity)>
+inline constexpr guest::Function<0x00309eb9, gptr<PlayerRecord>(gptr<void> villager, gptr<const PersonalId> identity)>
     find_player_record;
 inline constexpr guest::Function<0x00308971, s32(gptr<void> villager, gptr<void> villagers, u32 count)>
     expected_index_for;
@@ -78,7 +78,7 @@ inline constexpr guest::Function<0x00309ac9, u32(gptr<void> villager, u32 value)
 inline constexpr guest::Function<0x002fe450, gptr<TableEntry>(u32 index)> table_entry;
 inline constexpr guest::Function<0x0030e5cc, u32(gptr<TableEntry> entry, u32 value)> table_entry_check_30e5cc;
 inline constexpr guest::Function<0x002fbd54, bool(gptr<PlayerRecord> record)> record_identity_is_set;
-inline constexpr guest::Function<0x002fe940, u32(gptr<PlayerRecord> record, gptr<const u8> identity)>
+inline constexpr guest::Function<0x002fe940, u32(gptr<PlayerRecord> record, gptr<const PersonalId> identity)>
     compare_identity;
 inline constexpr guest::Function<0x00301e20, u32(gptr<void> villager)> is_valid_id;
 
@@ -138,7 +138,7 @@ bool villager_passes_checks(gptr<VillagerRecord> villager, u32 table_id) {
 
 // The first record in use decides: it is returned when its identity compares equal (f_002fe940 returns 0) to the
 // given one. Null when the villager has no record, or does not have the flags the search needs.
-gptr<PlayerRecord> find_record_for_identity(gptr<PlayerTable> table, gptr<const u8> identity) {
+gptr<PlayerRecord> find_record_for_identity(gptr<PlayerTable> table, gptr<const PersonalId> identity) {
     gptr<PlayerRecord> villager_record = find_player_record(table, identity);
     if (!villager_record) {
         return nullptr;
@@ -174,7 +174,7 @@ s32 first_record_in_use(gptr<PlayerTable> table) {
 
 // Whether a villager's id is valid, its index in the save is below 10 and matches the expected index, and its
 // player record is in use with bit 7 set and bit 1 of flags_b8 clear.
-bool villager_matches_identity(gptr<void> villager, gptr<const u8> identity) {
+bool villager_matches_identity(gptr<void> villager, gptr<const PersonalId> identity) {
     gptr<SaveBlock> block = get_save_block();
     gptr<void> villagers = guest::addr_of(block->villagers[0]);
     if (is_valid_id(villager) == 0) {

@@ -1,71 +1,16 @@
 // Helpers on the session state object (the global at 0x0095362c): the entry template store, a readiness check on one
 // of its parts, a per-frame update of a part, a length table, and the rebuild of the slot records.
 #include "guest/guest.hpp"
+#include "net/net_session.hpp"
 
 using guest::gptr;
 
 namespace {
 
-// A part of the session state whose extent is not known yet.
-struct Opaque {
-    u8 unknown;
-};
 
-// Reads and writes the entry templates (blocks of bytes at fixed offsets of a store) through a guarded scratch area.
-struct EntryTemplateStore {
-    static constexpr u32 TEMPLATE_COUNT = 0x96;
-    static constexpr u8 GUARD = 0xfe;
-    static constexpr u32 GUARD_SIZE = 4;  // guard bytes before and after the scratch copy
-
-    u8 unknown_00[0xc];
-    gptr<u8> templates;   // the stored templates
-    gptr<u8> scratch;     // guard bytes, the working copy, guard bytes
-    u32 scratch_size;
-    gptr<u8> results;     // one byte per template
-    u8 unknown_1c[0x44 - 0x1c];
-    u8 disabled;
-    u8 unknown_45[3];
-
-    // Lets the template's handler edit a copy of the template; if the handler stayed inside the copy and changed it,
-    // the template is replaced and the result byte set.
-    void apply(u32 id, gptr<void> entry, u32 result);
-};
-GUEST_OFFSET(EntryTemplateStore, templates, 0xc);
-GUEST_OFFSET(EntryTemplateStore, scratch, 0x10);
-GUEST_OFFSET(EntryTemplateStore, scratch_size, 0x14);
-GUEST_OFFSET(EntryTemplateStore, results, 0x18);
-GUEST_OFFSET(EntryTemplateStore, disabled, 0x44);
-GUEST_SIZE(EntryTemplateStore, 0x48);
-
-struct SessionState {
-    u8 unknown_000[0x10];
-    EntryTemplateStore buffer;
-    u8 unknown_058[0xb0 - 0x58];
-    Opaque part_b0;
-    u8 unknown_0b1[0x1c0 - 0xb1];
-    Opaque part_1c0;
-    u8 unknown_1c1[0x28ec - 0x1c1];
-    Opaque part_28ec;
-    u8 unknown_28ed[0x7874 - 0x28ed];
-    Opaque part_7874;
-    u8 unknown_7875[0x13234 - 0x7875];
-    Opaque block_13234;
-    u8 unknown_13235[0x13266 - 0x13235];
-    u8 state_13266;
-};
-GUEST_OFFSET(SessionState, buffer, 0x10);
-GUEST_OFFSET(SessionState, part_b0, 0xb0);
-GUEST_OFFSET(SessionState, part_1c0, 0x1c0);
-GUEST_OFFSET(SessionState, part_28ec, 0x28ec);
-GUEST_OFFSET(SessionState, part_7874, 0x7874);
-GUEST_OFFSET(SessionState, block_13234, 0x13234);
-GUEST_OFFSET(SessionState, state_13266, 0x13266);
-
-inline guest::global<gptr<SessionState>, 0x0095362c> session_state;
-
-inline guest::global<u32[EntryTemplateStore::TEMPLATE_COUNT], 0x0087b640> template_offsets;
-inline guest::global<u32[EntryTemplateStore::TEMPLATE_COUNT], 0x0087b190> template_sizes;
-inline guest::global<u32[EntryTemplateStore::TEMPLATE_COUNT], 0x0087baac> template_handlers;  // 0: none
+inline guest::global<u32[PacketBuffer::TEMPLATE_COUNT], 0x0087b640> template_offsets;
+inline guest::global<u32[PacketBuffer::TEMPLATE_COUNT], 0x0087b190> template_sizes;
+inline guest::global<u32[PacketBuffer::TEMPLATE_COUNT], 0x0087baac> template_handlers;  // 0: none
 
 inline constexpr guest::Function<0x002f8574, void(gptr<void> destination, gptr<void> source, u32 size)> copy_bytes;
 inline constexpr guest::Function<0x00100d2d, u32(gptr<void> first, gptr<void> second, u32 size)> memory_compare;
@@ -90,7 +35,7 @@ inline constexpr guest::Function<0x00627d44, void(gptr<void> buffer, gptr<void> 
 
 }  // namespace
 
-void EntryTemplateStore::apply(u32 id, gptr<void> entry, u32 result) {
+void PacketBuffer::apply_template(u32 id, gptr<void> entry, u32 result) {
     if (disabled != 0 || !scratch || id >= TEMPLATE_COUNT || !templates) {
         return;
     }
@@ -125,7 +70,7 @@ void EntryTemplateStore::apply(u32 id, gptr<void> entry, u32 result) {
 
 // The entry template update on the global session state's buffer.
 static void apply_entry_template(u32 template_id, gptr<void> entry, u32 result) {
-    (*session_state)->buffer.apply(template_id, entry, result);
+    (*net_session)->buffer.apply_template(template_id, entry, result);
 }
 GUEST_EXPORT(0x0062512c, apply_entry_template);
 
@@ -133,11 +78,11 @@ GUEST_EXPORT(0x0062512c, apply_entry_template);
 static bool part_1c0_ready() {
     constexpr u32 TEST_ID = 0x60;
     constexpr u32 MIN_VALUE = 4;
-    gptr<void> part = guest::addr_of((*session_state)->part_1c0).cast<void>();
+    gptr<void> part = guest::addr_of((*net_session)->part_1c0).cast<void>();
     if (part_test(part, TEST_ID) == 0) {
         return false;
     }
-    gptr<void> part_again = guest::addr_of((*session_state)->part_1c0).cast<void>();
+    gptr<void> part_again = guest::addr_of((*net_session)->part_1c0).cast<void>();
     return part_value(part_again) >= MIN_VALUE;
 }
 GUEST_EXPORT(0x0062514c, part_1c0_ready);
@@ -147,7 +92,7 @@ GUEST_EXPORT(0x0062514c, part_1c0_ready);
 static bool finish_session_step() {
     constexpr u8 WAITING_STATE = 6;
     constexpr u32 ARG = 3;
-    gptr<SessionState> state = *session_state;
+    gptr<NetSession> state = *net_session;
     if (state->state_13266 != WAITING_STATE) {
         return false;
     }
@@ -253,18 +198,18 @@ void SlotRecords::build_record(u32 slot, gptr<u8> record, gptr<u16> source) {
 // Unless the main object answers non-zero: for each slot 1-3 the main state has a bit for, rebuilds its record,
 // then flushes it to the session buffer and forgets its length.
 void SlotRecords::rebuild_all(gptr<u16> source) {
-    if (query_main_object((*session_state).cast<void>()) != 0) {
+    if (query_main_object((*net_session).cast<void>()) != 0) {
         return;
     }
     for (u32 slot = 1; slot < SLOTS; slot++) {
-        if (has_index_bit((*session_state).cast<void>(), slot) == 0) {
+        if (has_index_bit((*net_session).cast<void>(), slot) == 0) {
             continue;
         }
         u32 record = record_address(slot);
         if (record != 0) {
             build_record(slot, gptr<u8>(record), source);
         }
-        gptr<void> buffer = guest::addr_of((*session_state)->buffer).cast<void>();
+        gptr<void> buffer = guest::addr_of((*net_session)->buffer).cast<void>();
         reserve_record(buffer);
         u32 length = lengths[slot];
         if (length != 0 && record_address(slot) != 0) {
@@ -291,7 +236,7 @@ constexpr u32 FUZZ_AREA = 0x40;
 }  // namespace
 
 GUEST_FUZZ(0x0062512c, 200, [](guest::Fuzz &f) {
-    u32 id = f.pick<u32>({0x90, 0x95, f.below(EntryTemplateStore::TEMPLATE_COUNT), f.below(0x98), f.number()});
+    u32 id = f.pick<u32>({0x90, 0x95, f.below(PacketBuffer::TEMPLATE_COUNT), f.below(0x98), f.number()});
     f.arguments(id, zeroed(f, FUZZ_AREA), f.pick<u32>({0, 1, f.number()}));
 });
 GUEST_FUZZ(0x0062514c, 200, [](guest::Fuzz &f) { f.arguments(); });

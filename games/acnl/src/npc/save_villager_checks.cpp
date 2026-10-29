@@ -103,7 +103,7 @@ inline constexpr guest::Function<0x003107d5, void(Item &out, gptr<void> owner, u
 inline constexpr guest::Function<0x002f777c, void(Item &item)> finish_item;  // probably the Item destructor
 
 inline constexpr guest::Function<0x00311c50, u32(const IdentityRecord &record)> record_identity;
-inline constexpr guest::Function<0x002fe940, u32(u32 identity, gptr<const u8> player_identity)> compare_identity;
+inline constexpr guest::Function<0x002fe940, u32(u32 identity, gptr<const PersonalId> player_identity)> compare_identity;
 
 bool in_range(const Value12 &x, const Value12 &start, const Value12 &end) {
     return value12_in_range(x.words[0], x.words[1], x.words[2], start.words[0], start.words[1], start.words[2],
@@ -193,7 +193,7 @@ bool IdentityRecords::has_record_matching(gptr<SavePlayer> player) const {
     if (!player) {
         return false;
     }
-    gptr<const u8> player_identity = guest::addr_of(player->identity);
+    gptr<const PersonalId> player_identity = guest::addr_of(player->identity);
     auto matches = [&](const IdentityRecord &record) {
         u32 identity = record_identity(record);
         return identity != 0 && compare_identity(identity, player_identity) == 0;

@@ -1,6 +1,8 @@
 // A 4-slot mask with a counter (used by UI code), the constructor of an object that holds one, a 32-entry table
 // allocator and a check on the main state.
 #include "guest/guest.hpp"
+#include "net/station_mask.hpp"
+#include "save/personal_id.hpp"
 
 using guest::gptr;
 
@@ -9,18 +11,6 @@ namespace {
 struct ByteFlags {
     u8 first;
     u8 second;
-};
-
-// One bit per slot (slots 0-3) and a counter of how many bits were added (at most 4) or may still be removed.
-struct SlotMask {
-    static constexpr u32 SLOTS = 4;
-    static constexpr u8 MAX_COUNT = 4;
-
-    u8 bits;
-    u8 count;
-
-    void remove_slot(u32 slot);
-    void set_from_mask(u32 mask);
 };
 
 struct SlotObject {
@@ -46,13 +36,8 @@ constexpr u32 SLOT_INITIAL_VALUE = 0xa5;
 // The value_20 the constructor stores (meaning not known yet).
 constexpr u8 INITIAL_VALUE_20 = 4;
 
-struct TableEntry {
-    u16 first;
-    u16 second;
-};
-
 constexpr u32 TABLE_ENTRIES = 32;
-constexpr u32 TABLE_ENTRY_CONSTRUCTOR = 0x00625720;
+constexpr u32 TABLE_ENTRY_CONSTRUCTOR = 0x00625720;  // ShortId::clear
 
 // The object the global at 0x0095362c points to (only the bytes read here are named).
 struct WorldState {
@@ -97,7 +82,6 @@ inline constexpr guest::Function<0x00625c40, void(gptr<void> part)> init_part_06
 inline constexpr guest::Function<0x00621f0c, void(gptr<void> self, u32 index, u32 value)> set_slot_value;
 inline constexpr guest::Function<0x00621da4, void(gptr<void> self, u32 index, u32 value)> set_slot_state;
 inline constexpr guest::Function<0x00625b50, void(gptr<void> part)> init_part_0e;
-inline constexpr guest::Function<0x006256dc, void(gptr<TableEntry> entry)> init_table_entry;
 inline constexpr guest::Function<0x00301d0d, gptr<void>(gptr<void> memory, u32 constructor, u32 size, u32 count)>
     construct_array;
 inline constexpr guest::Function<0x0075dfe8, u32(gptr<WorldState> object)> query_main_object;
@@ -105,21 +89,21 @@ inline constexpr guest::Function<0x0075dfe8, u32(gptr<WorldState> object)> query
 }  // namespace
 
 // Removes a slot's bit, and counts down, when the bit was set and the counter is not zero.
-void SlotMask::remove_slot(u32 slot) {
-    u8 bit = slot < SLOTS ? u8(1u << slot) : 0;
+void StationMask::remove(u32 slot) {
+    u8 bit = slot < STATION_COUNT ? u8(1u << slot) : 0;
     u8 updated = bits & ~bit;
     if (bits != updated && count != 0) {
         bits = updated;
         count = count - 1;
     }
 }
-GUEST_EXPORT(0x00624b24, SlotMask::remove_slot);
+GUEST_EXPORT(0x00624b24, StationMask::remove);
 
 // Starts empty, then adds each slot in the mask that is new, while the counter is below MAX_COUNT.
-void SlotMask::set_from_mask(u32 mask) {
+void StationMask::set_from_mask(u32 mask) {
     bits = 0;
     count = 0;
-    for (u32 slot = 0; slot < SLOTS; slot++) {
+    for (u32 slot = 0; slot < STATION_COUNT; slot++) {
         u8 bit = u8(1u << slot);
         if ((bit & mask) == 0) {
             continue;
@@ -131,14 +115,14 @@ void SlotMask::set_from_mask(u32 mask) {
         }
     }
 }
-GUEST_EXPORT(0x00624b60, SlotMask::set_from_mask);
+GUEST_EXPORT(0x00624b60, StationMask::set_from_mask);
 
 // Constructor. Ends in a tail call that clears the flag pair at 0x21 and returns it.
 static ByteFlags &construct_slot_object(SlotObject &self) {
     self.byte_00 = 0;
     gptr<void> self_ptr = guest::addr_of(self).cast<void>();
     init_part_06(guest::addr_of(self.unknown_06).cast<void>());
-    for (u32 slot = 0; slot < SlotMask::SLOTS; slot++) {
+    for (u32 slot = 0; slot < StationMask::STATION_COUNT; slot++) {
         set_slot_value(self_ptr, slot, SLOT_INITIAL_VALUE);
         set_slot_state(self_ptr, slot, 0);
     }
@@ -152,11 +136,11 @@ static ByteFlags &construct_slot_object(SlotObject &self) {
 GUEST_EXPORT(0x00624be4, construct_slot_object);
 
 // Allocates and initialises a table of 32 entries; returns it.
-static gptr<TableEntry> construct_entry_table(gptr<void> memory) {
-    gptr<TableEntry> table =
-        construct_array(memory, TABLE_ENTRY_CONSTRUCTOR, sizeof(TableEntry), TABLE_ENTRIES).cast<TableEntry>();
+static gptr<ShortId> construct_entry_table(gptr<void> memory) {
+    gptr<ShortId> table =
+        construct_array(memory, TABLE_ENTRY_CONSTRUCTOR, sizeof(ShortId), TABLE_ENTRIES).cast<ShortId>();
     for (u32 i = 0; i < TABLE_ENTRIES; i++) {
-        init_table_entry(table + i);
+        table[i].clear();
     }
     return table;
 }
@@ -203,17 +187,17 @@ GUEST_EXPORT(0x00624d84, world_state_check);
 
 namespace {
 constexpr u32 ANY_BITS = 0xffffffff;
-constexpr u32 ALL_SLOTS_MASK = (1u << SlotMask::SLOTS) - 1;
+constexpr u32 ALL_SLOTS_MASK = (1u << StationMask::STATION_COUNT) - 1;
 constexpr u32 BYTE_MASK = 0xff;
 constexpr u32 SLOT_FIRST = 0;
-constexpr u32 SLOT_LAST = SlotMask::SLOTS - 1;
-constexpr u32 SLOT_PAST_END = SlotMask::SLOTS;
-constexpr u32 SLOT_FAR_PAST_END = SlotMask::SLOTS + 1;
-constexpr u32 COUNT_FUZZ_LIMIT = SlotMask::MAX_COUNT + 2;  // counts up to one past MAX_COUNT
+constexpr u32 SLOT_LAST = StationMask::STATION_COUNT - 1;
+constexpr u32 SLOT_PAST_END = StationMask::STATION_COUNT;
+constexpr u32 SLOT_FAR_PAST_END = StationMask::STATION_COUNT + 1;
+constexpr u32 COUNT_FUZZ_LIMIT = StationMask::MAX_COUNT + 2;  // counts up to one past MAX_COUNT
 }  // namespace
 
 GUEST_FUZZ(0x00624b24, 300, [](guest::Fuzz &f) {
-    auto object = f.object<SlotMask>();
+    auto object = f.object<StationMask>();
     if (f.below(2) != 0) {
         object->count = u8(f.below(COUNT_FUZZ_LIMIT));
     }
@@ -221,13 +205,13 @@ GUEST_FUZZ(0x00624b24, 300, [](guest::Fuzz &f) {
                                      SLOT_FAR_PAST_END, ANY_BITS, f.number()}));
 });
 GUEST_FUZZ(0x00624b60, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<SlotMask>(),
+    f.arguments(f.object<StationMask>(),
                 f.pick<u32>({0, 1, 1u | (1u << 2), ALL_SLOTS_MASK, BYTE_MASK, ANY_BITS, f.number()}));
 });
 GUEST_FUZZ(0x00624be4, 300, [](guest::Fuzz &f) { f.arguments(f.object<SlotObject>()); });
 GUEST_FUZZ(0x00624d48, 300, [](guest::Fuzz &f) {
-    auto memory = f.allocate(TABLE_ENTRIES * sizeof(TableEntry));
-    f.bytes(memory, TABLE_ENTRIES * sizeof(TableEntry));
+    auto memory = f.allocate(TABLE_ENTRIES * sizeof(ShortId));
+    f.bytes(memory, TABLE_ENTRIES * sizeof(ShortId));
     f.arguments(memory);
 });
 GUEST_FUZZ(0x00624d84, 300, [](guest::Fuzz &f) { f.arguments(); });

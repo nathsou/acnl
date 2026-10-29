@@ -1,18 +1,10 @@
 #include "guest/guest.hpp"
+#include "net/net_session.hpp"
 
 using guest::gptr;
 
 namespace {
 
-// The global state block (only the flags byte is known).
-struct StreamGlobals {
-    u8 unknown_00000[0x1326a];
-    u8 flags;  // see FLAG_FROZEN
-};
-GUEST_OFFSET(StreamGlobals, flags, 0x1326a);
-
-inline guest::global<gptr<StreamGlobals>, 0x0095362c> stream_globals;
-constexpr u8 FLAG_FROZEN = 1;
 constexpr u32 MAX_BYTES = 0x16800;
 
 // A 6-byte record header (meaning of the fields: see packet_buffer.cpp).
@@ -45,19 +37,6 @@ inline constexpr guest::Function<0x002f8574, void(gptr<void> destination, gptr<c
 inline constexpr guest::Function<0x007795ec, u32(gptr<Record> destination, gptr<u8> source)> copy_record;
 inline constexpr guest::Function<0x00301444, u32(gptr<void> object, u32 argument)> notify_object;
 
-struct PacketBuffer {
-    gptr<u8> start;
-    gptr<u8> flushed;
-    gptr<u8> write_pos;
-    u8 unknown_0c[0x38];
-    u8 disabled;
-
-    void append(gptr<const u8> data, u32 size);
-};
-GUEST_OFFSET(PacketBuffer, flushed, 4);
-GUEST_OFFSET(PacketBuffer, write_pos, 8);
-GUEST_OFFSET(PacketBuffer, disabled, 0x44);
-
 // An object with a pointer at 0x18 (meaning not known yet).
 struct TargetHolder {
     u8 unknown_00[0x18];
@@ -72,9 +51,9 @@ void PacketBuffer::append(gptr<const u8> data, u32 size) {
     if (!data || disabled != 0) {
         return;
     }
-    StreamGlobals &globals = **stream_globals;
+    NetSession &globals = **net_session;
     u8 flags = globals.flags;
-    if ((flags & FLAG_FROZEN) || flushed == write_pos) {
+    if ((flags & NetSession::FLAG_FROZEN) || flushed == write_pos) {
         return;
     }
     if (write_pos && u32(write_pos - start) + size <= MAX_BYTES) {
@@ -82,7 +61,7 @@ void PacketBuffer::append(gptr<const u8> data, u32 size) {
         write_pos = write_pos + size;
         return;
     }
-    globals.flags = flags | FLAG_FROZEN;
+    globals.flags = flags | NetSession::FLAG_FROZEN;
 }
 GUEST_EXPORT(0x00627d44, PacketBuffer::append);
 

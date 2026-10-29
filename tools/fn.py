@@ -7,6 +7,7 @@
 import argparse
 import os
 import re
+import struct
 import sys
 
 import capstone
@@ -68,6 +69,14 @@ def disasm(p, key, own_only=False):
                 if m:
                     lit = ((a + 4) & ~3) + int(m.group(1), 0) if fn.thumb else a + 8 + int(m.group(1), 0)
                     note.append('RELOCATED CRO data: use guest::relocated_global<T, 0x%08x>' % lit)
+        if ins.mnemonic.startswith('vldr'):
+            m = re.search(r'^([sd])\d+, \[pc(?:, #(-?0x[0-9a-f]+|-?\d+))?\]', text)
+            if m:
+                lit = ((a + 4) & ~3 if fn.thumb else a + 8) + int(m.group(2) or '0', 0)
+                lseg = p.img.seg_of(lit)
+                raw = lseg.data[lit - lseg.addr:lit - lseg.addr + (4 if m.group(1) == 's' else 8)]
+                value = struct.unpack('<f' if m.group(1) == 's' else '<d', raw)[0]
+                note.append('=%r (%s)' % (value, raw[::-1].hex()))
         if ins.mnemonic.startswith('b') and not ins.mnemonic.startswith(('bic', 'bfc', 'bfi')):
             m = HEX.search(text)
             if m:

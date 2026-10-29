@@ -63,7 +63,7 @@ GUEST_OFFSET(QueryVillagerRecord, value_24f0, 0x24f0);
 
 // Still recompiled code (or rewritten elsewhere, called through the game's ABI):
 inline constexpr guest::Function<0x002fbd54, bool(gptr<void> identity)> identity_is_set;
-inline constexpr guest::Function<0x00309eb9, gptr<QueryPlayerRecord>(gptr<void> table, gptr<const u8> identity)>
+inline constexpr guest::Function<0x00309eb9, gptr<QueryPlayerRecord>(gptr<void> table, gptr<const PersonalId> identity)>
     find_player_record;
 inline constexpr guest::Function<0x002fb378, gptr<QueryReferenceValue>()> get_reference_value;
 inline constexpr guest::Function<0x0030fc18, u32(gptr<SavePlayer> player, gptr<QueryReferenceValue> reference)>
@@ -95,7 +95,7 @@ gptr<QueryPlayerRecord> find_first_flagged_record(gptr<QueryPlayerTable> table) 
 }
 
 // Whether the entry matching the identity has bit 7 of flags_bc set.
-bool entry_has_flag_bc_bit7(gptr<void> table, gptr<const u8> identity) {
+bool entry_has_flag_bc_bit7(gptr<void> table, gptr<const PersonalId> identity) {
     gptr<QueryPlayerRecord> record = find_player_record(table, identity);
     if (!record) {
         return false;

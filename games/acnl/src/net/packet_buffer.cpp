@@ -1,22 +1,10 @@
 #include "guest/guest.hpp"
+#include "net/net_session.hpp"
 
 using guest::gptr;
 
 namespace {
 
-// The global state block the buffers consult (only two bytes are known).
-struct BufferGlobals {
-    u8 unknown_00000[0x13268];
-    u8 record_bits;  // its low 2 bits go into every record
-    u8 unknown_13269;
-    u8 flags;        // see FLAG_FROZEN
-};
-GUEST_OFFSET(BufferGlobals, record_bits, 0x13268);
-GUEST_OFFSET(BufferGlobals, flags, 0x1326a);
-
-inline guest::global<gptr<BufferGlobals>, 0x0095362c> buffer_globals;
-
-constexpr u8 FLAG_FROZEN = 1;  // set when the buffer ran out of room; nothing is recorded afterwards
 constexpr u32 RECORD_SIZE = 6;
 constexpr u32 MAX_BYTES = 0x16800;
 constexpr u32 COUNTER_MAX = 0xffffffff;
@@ -45,31 +33,6 @@ GUEST_SIZE(Record, 6);
 inline constexpr guest::Function<0x007795ec, u32(gptr<u8> destination, gptr<Record> record)> write_record;
 inline constexpr guest::Function<0x002f74c8, u8()> read_global_byte_2;
 
-struct PacketBuffer {
-    static constexpr u32 COUNTERS = 4;
-
-    gptr<u8> start;
-    gptr<u8> flushed;    // everything before this was handed out; null: nothing to write to
-    gptr<u8> write_pos;
-    u8 unknown_0c[0x10];
-    u32 counters_1c[COUNTERS];
-    u32 unknown_2c;
-    u32 values_30[COUNTERS];
-    u32 unknown_40;
-    u8 disabled;
-
-    void reserve_record();
-    void increment_counter(u32 index);
-    void clear_counter_and_value(u32 index);
-    void flush_record(u32 type, u32 value);
-    void clear_counter(u32 index);
-};
-GUEST_OFFSET(PacketBuffer, start, 0);
-GUEST_OFFSET(PacketBuffer, flushed, 4);
-GUEST_OFFSET(PacketBuffer, write_pos, 8);
-GUEST_OFFSET(PacketBuffer, counters_1c, 0x1c);
-GUEST_OFFSET(PacketBuffer, values_30, 0x30);
-GUEST_OFFSET(PacketBuffer, disabled, 0x44);
 
 }  // namespace
 
@@ -78,9 +41,9 @@ void PacketBuffer::reserve_record() {
     if (!flushed || disabled != 0) {
         return;
     }
-    BufferGlobals &globals = **buffer_globals;
+    NetSession &globals = **net_session;
     u8 flags = globals.flags;
-    if ((flags & FLAG_FROZEN) || flushed != write_pos) {
+    if ((flags & NetSession::FLAG_FROZEN) || flushed != write_pos) {
         return;
     }
     if (write_pos) {
@@ -90,7 +53,7 @@ void PacketBuffer::reserve_record() {
             return;
         }
     }
-    globals.flags = flags | FLAG_FROZEN;
+    globals.flags = flags | NetSession::FLAG_FROZEN;
 }
 GUEST_EXPORT(0x00627f74, PacketBuffer::reserve_record);
 
@@ -115,8 +78,8 @@ void PacketBuffer::flush_record(u32 type, u32 value) {
     if (disabled != 0) {
         return;
     }
-    BufferGlobals &globals = **buffer_globals;
-    if (globals.flags & FLAG_FROZEN) {
+    NetSession &globals = **net_session;
+    if (globals.flags & NetSession::FLAG_FROZEN) {
         return;
     }
     u32 pending = u32(write_pos - flushed);
@@ -126,7 +89,7 @@ void PacketBuffer::flush_record(u32 type, u32 value) {
     u32 length = pending - RECORD_SIZE;
     gptr<u8> destination = flushed;
     u8 extra = read_global_byte_2();
-    u8 global_bits = globals.record_bits;
+    u8 global_bits = globals.station_bits;
     if (destination) {
         guest::StackObject<Record> record;
         record->type = u8(type);

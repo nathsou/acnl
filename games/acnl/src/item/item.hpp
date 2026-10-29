@@ -11,6 +11,31 @@
 
 struct ItemData;
 
+// What kind of thing an item is worn/held as (0: none). Which class is which is not known yet; ItemSlots holds one
+// item per class.
+enum WearClass : u32 {
+    WEAR_CLASS_NONE = 0,
+    WEAR_CLASS_1 = 1,
+    WEAR_CLASS_2 = 2,
+    WEAR_CLASS_3 = 3,
+    WEAR_CLASS_4 = 4,
+    WEAR_CLASS_5 = 5,
+    WEAR_CLASS_6 = 6,
+    WEAR_CLASS_7 = 7,
+    WEAR_CLASS_LIMIT = 8,  // the entry's nibble must be below this
+};
+
+// An entry of the wear class table (14 bytes).
+struct WearClassEntry {
+    static constexpr u32 TABLE_SIZE = 50;  // ItemData::wear_class_index values at or above read as 0
+    static constexpr u32 CLASS_SHIFT = 4;
+
+    u8 unknown_00[13];
+    u8 class_and_flags;  // the high nibble is the WearClass
+};
+GUEST_OFFSET(WearClassEntry, class_and_flags, 0x0d);
+GUEST_SIZE(WearClassEntry, 14);
+
 // Item categories (ItemData::category). Only the ones the code relies on are named; the meaning of the others,
 // and the exact meaning of these beyond their effect, is not known yet.
 enum ItemCategory : u8 {
@@ -63,6 +88,14 @@ struct Item {
     u8 data_unknown_0d() const;                 // ItemData::unknown_0d if valid, else 0
     u8 data_unknown_15() const;                 // the low 4 bits of ItemData::unknown_15 if valid, else 0
     u32 price() const;                          // for a bag of bells, the bells in it
+    gptr<WearClassEntry> wear_class_entry() const;  // from the wear class table; null without data or table
+    WearClass wear_class() const;               // the high nibble of the entry's byte 0xd, NONE without one
+    bool is_wear_class_7() const;               // wear_class() == CLASS_7
+    bool is_first_item() const;                 // the number is FIRST_ITEM (the flag in the id is ignored)
+    bool has_data_flag_1b_bit1() const;         // bit 1 of ItemData::flags_1b (meaning not known yet)
+    bool has_category_flag_bit_1_6() const;     // see item_predicates.cpp
+    bool has_category_flag_bit_2_5() const;     // see item_predicates.cpp
+    bool is_in_category_group_24_27_28() const; // the category is 0x24, 0x27 or 0x28
 };
 GUEST_SIZE(Item, 4);
 
@@ -90,16 +123,21 @@ struct ItemData {
     u8 unknown_0b[2];
     u8 unknown_0d;
     s8 price_multiplier;  // the base price is price_unit * price_multiplier
-    u8 unknown_0f[6];
+    u8 wear_class_index;  // into the wear class table (Item::wear_class_entry)
+    u8 unknown_10[5];
     u8 unknown_15;
-    u8 unknown_16[8];
+    u8 unknown_16[5];
+    u8 flags_1b;  // bit 1: see Item::has_data_flag_1b_bit1
+    u8 unknown_1c[2];
 
     u32 base_price() const { return u32(price_unit) * u32(s32(price_multiplier)); }
 };
 GUEST_OFFSET(ItemData, category, 0x0a);
 GUEST_OFFSET(ItemData, unknown_0d, 0x0d);
 GUEST_OFFSET(ItemData, price_multiplier, 0x0e);
+GUEST_OFFSET(ItemData, wear_class_index, 0x0f);
 GUEST_OFFSET(ItemData, unknown_15, 0x15);
+GUEST_OFFSET(ItemData, flags_1b, 0x1b);
 GUEST_SIZE(ItemData, 30);
 
 // The loaded item data table (from the RomFS)
@@ -108,6 +146,13 @@ struct ItemDataTable {
     gptr<ItemData> entries;  // ITEM_COUNT of them, once loaded
 };
 inline guest::global<ItemDataTable, 0x00a1838c> item_data_table;
+
+// The wear class table
+struct WearClassTable {
+    u32 unknown_00;
+    gptr<WearClassEntry> entries;  // WearClassEntry::TABLE_SIZE of them, once loaded
+};
+inline guest::global<WearClassTable, 0x00a183ac> wear_class_table;
 
 // the per-category flag table
 constexpr u32 CATEGORY_FLAGS_SIZE = 3;  // bytes per category

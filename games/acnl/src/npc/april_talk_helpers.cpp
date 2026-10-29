@@ -158,7 +158,7 @@ struct SaveHolder {
 GUEST_OFFSET(SaveHolder, player, 0x234);
 guest::global<SaveHolder, SAVE_HOLDER_ADDRESS> save_holder;
 
-inline constexpr guest::Function<0x00309f85, u32(u32 handle, gptr<u8> identity)> check_handle_with_identity;
+inline constexpr guest::Function<0x00309f85, u32(u32 handle, gptr<const PersonalId> identity)> check_handle_with_identity;
 
 // ---- 0x006330ec
 
