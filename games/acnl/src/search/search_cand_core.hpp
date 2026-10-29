@@ -19,11 +19,28 @@ struct SearchCandCore {
     void mark(s32 index);
     // Unmarks one candidate; does nothing if it is not marked.
     void unmark(s32 index);
+    // Sets every bit of the array and sets marked_count to count.
+    void mark_all();
+    // The index of a randomly chosen marked candidate (the n-th, n = random float * marked_count), or -1.
+    s32 pick_random_marked();
 };
 GUEST_OFFSET(SearchCandCore, vtable, 0x00);
 GUEST_OFFSET(SearchCandCore, count, 0x04);
 GUEST_OFFSET(SearchCandCore, word_count, 0x08);
 GUEST_OFFSET(SearchCandCore, bits, 0x0c);
 GUEST_OFFSET(SearchCandCore, marked_count, 0x10);
+GUEST_SIZE(SearchCandCore, 0x14);
+
+// A SearchCandCore whose candidates form a grid, row after row.
+struct SearchCandGrid {
+    SearchCandCore core;
+    s32 width_14;   // candidates per row
+    s32 height_18;  // rows
+
+    // Unmarks every candidate on the border of the grid.
+    void unmark_border();
+};
+GUEST_OFFSET(SearchCandGrid, width_14, 0x14);
+GUEST_OFFSET(SearchCandGrid, height_18, 0x18);
 
 SearchCandCore &construct_search_cand_core(SearchCandCore &self, s32 count, guest::gptr<u32> bits);

@@ -24,6 +24,9 @@ struct CallbackTable {
     u8 unknown_19[3];
     guest::gptr<CallbackTableEntry> entries;
     u32 count;
+
+    // Finds the entries matching the keys, remembers the last match's keys and calls the last callback found.
+    void dispatch(u32 key1, u32 key2);
 };
 GUEST_OFFSET(CallbackTable, key1, 0xc);
 GUEST_OFFSET(CallbackTable, key2, 0x10);

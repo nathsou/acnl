@@ -17,12 +17,16 @@ GUEST_SIZE(Float4, 16);
 
 // The block the light object points to (its full size is not known).
 struct HemiSphereLightData {
-    u8 unknown_00[0xc8];
+    u8 unknown_00[0xb8];
+    Float4 vec4_b8;
     Float4 vec4_c8;
     Float3 vec3_d8;
+    float value_e4;
 };
+GUEST_OFFSET(HemiSphereLightData, vec4_b8, 0xb8);
 GUEST_OFFSET(HemiSphereLightData, vec4_c8, 0xc8);
 GUEST_OFFSET(HemiSphereLightData, vec3_d8, 0xd8);
+GUEST_OFFSET(HemiSphereLightData, value_e4, 0xe4);
 
 struct HemiSphereLight {
     u8 unknown_00[0xc];
@@ -30,6 +34,8 @@ struct HemiSphereLight {
     u8 unknown_10[8];
 
     // The setters report success (always true).
+    bool set_vec4_b8(const Float4 &value);
+    bool set_value_e4(float value);
     bool set_vec4_c8(const Float4 &value);
     bool set_vec3_d8(const Float3 &value);
 };
@@ -57,7 +63,7 @@ GUEST_OFFSET(BsLightHemiSphereBase, current, 0x58);
 GUEST_OFFSET(BsLightHemiSphereBase, light, 0x7c);
 GUEST_OFFSET(BsLightHemiSphereBase, initial, 0x94);
 
-// Still recompiled code:
+// Calls to the setters that go through the game's ABI (the first two are exported in hemisphere_light_setters.cpp):
 inline constexpr guest::Function<0x004eead8, bool(HemiSphereLight &self, const Float4 &value)>
     hemisphere_light_set_first;
 inline constexpr guest::Function<0x004eeac8, bool(HemiSphereLight &self, float value)> hemisphere_light_set_value;
