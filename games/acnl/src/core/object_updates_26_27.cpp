@@ -119,8 +119,9 @@ u32 dispatch_when_tagged_20(TaggedObject &object) { return dispatch_when_tagged(
 GUEST_EXPORT(0x0026f970, dispatch_when_tagged_20);
 GUEST_FUZZ(0x0026f970, 100, [](guest::Fuzz &f) { f.arguments(fuzz_tagged(f)); });
 
-// Whether the table entry for the global byte has bit 4 and the item's category is 0x27 or 0x28.
-bool item_category_27_or_28(const Item &item) {
+// Whether the table entry for the global byte has bit 4 and the item's category is 0x27 or 0x28 (the item is the
+// second argument; the first is the object it is asked through).
+bool item_category_27_or_28(u32 unused_this, const Item &item) {
     if (!table_entry_has_all_bits(TABLE_MASK_4, read_global_byte_2())) {
         return false;
     }
@@ -131,10 +132,10 @@ GUEST_EXPORT(0x0026d5b0, item_category_27_or_28);
 GUEST_FUZZ(0x0026d5b0, 200, [](guest::Fuzz &f) {
     auto item = f.object<Item>();
     item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(item);
+    f.arguments(f.number(), item);
 });
 
-bool item_category_24(const Item &item) {
+bool item_category_24(u32 unused_this, const Item &item) {
     if (!table_entry_has_all_bits(TABLE_MASK_4, read_global_byte_2())) {
         return false;
     }
@@ -144,7 +145,7 @@ GUEST_EXPORT(0x0026e2a0, item_category_24);
 GUEST_FUZZ(0x0026e2a0, 200, [](guest::Fuzz &f) {
     auto item = f.object<Item>();
     item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(item);
+    f.arguments(f.number(), item);
 });
 
 // Resets the flag at 0x37-style children: each non-null child is reset, then the state becomes 5.
