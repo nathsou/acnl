@@ -13,5 +13,7 @@ struct ItemBitSet {
     u32 count_items() const;             // the set bits among the first ITEM_BITS
     u32 count_all_bits() const;          // every set bit
     bool contains(const Item &item) const;  // false for items without data
+    bool set_bit_of(const Item &item);      // false when the item has no bit
+    bool clear_bit_of(const Item &item);
 };
 GUEST_SIZE(ItemBitSet, ItemBitSet::WORDS * 4);
