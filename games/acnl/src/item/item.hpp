@@ -109,10 +109,11 @@ struct Item {
 };
 GUEST_SIZE(Item, 4);
 
-// A category's entry (12 bytes): the item number of its first item is the one thing known.
+// A category's entry (12 bytes): the numbers of its first and last items are what is known.
 struct CategoryInfo {
     u16 first_item_number;
-    u8 unknown_02[10];
+    u16 last_item_number;  // the category holds the numbers from the first to this one
+    u8 unknown_04[8];
 };
 GUEST_SIZE(CategoryInfo, 12);
 gptr<CategoryInfo> category_info(u32 category);  // categories >= NO_CATEGORY get a shared default entry

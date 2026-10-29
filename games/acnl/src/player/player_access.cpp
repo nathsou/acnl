@@ -1,11 +1,9 @@
 // Small accessors for the players of the save data and for global player state.
 #include "save/player.hpp"
+#include "save/save_data.hpp"
 
 namespace {
 
-// The players follow each other in the save data, this far apart.
-constexpr u32 PLAYER_STRIDE = 0x149 << 7;  // 0xa480
-constexpr u32 PLAYER_COUNT = 4;
 
 // Offset of a block inside the object the global at 0x0095bf74 points to (what it holds is not known yet).
 constexpr u32 BLOCK_71900_OFFSET = 0x71900;
@@ -20,12 +18,12 @@ inline constexpr guest::Function<0x00607474, void()> f_00607474;
 
 }  // namespace
 
-// The player at index in the array of players, or null for an index of PLAYER_COUNT or more.
+// The player at index in the array of players, or null for an index of SaveData::PLAYER_COUNT or more.
 gptr<SavePlayer> player_at(gptr<SavePlayer> players, u32 index) {
-    if (index >= PLAYER_COUNT) {
+    if (index >= SaveData::PLAYER_COUNT) {
         return nullptr;
     }
-    return gptr<SavePlayer>(players.addr() + index * PLAYER_STRIDE);
+    return players + index;
 }
 GUEST_EXPORT(0x002fb7e8, player_at);
 

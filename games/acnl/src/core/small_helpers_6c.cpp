@@ -1,4 +1,5 @@
 // Small helpers of the code around 0x006c0000 and 0x006e0000: counters, tables of rows and records.
+#include "core/entry18.hpp"
 #include "core/fuzz_helpers.hpp"
 #include "item/item.hpp"
 #include "net/net_session.hpp"
@@ -82,11 +83,7 @@ constexpr u32 NUMBER_RANGE_COUNT = 12;
 constexpr u32 SPECIAL_NUMBER = 0xe;
 
 // ---- 18-byte entries of a table that is loaded later
-struct Entry18 {
-    u8 unknown_00[18];
-};
-GUEST_SIZE(Entry18, 18);
-constexpr u32 ENTRY18_COUNT = 0x276;
+constexpr u32 ENTRY18_COUNT = Entry18::COUNT;
 
 struct EntryTable18 {
     u8 unknown_000[0xe74];
