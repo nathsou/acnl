@@ -12,6 +12,7 @@ constexpr u16 FLAGS_BIT_10 = 1 << 10;
 constexpr u32 FLAGS_BIT_10_SHIFT = 10;
 constexpr u16 FLAGS_TOP_BITS_MASK = 0xc000;
 constexpr s32 PRICE_DIVISOR = 4;
+constexpr u8 CATEGORY_A = 0x54, CATEGORY_B = 0x55, CATEGORY_C = 0x58, CATEGORY_D = 0x59;  // meaning not known yet
 
 // For each kind item_class_kind reports (0-14): its group (meaning not known yet). Larger kinds have none.
 constexpr u8 GROUP_FOR_KIND[] = {0, 1, 2, 3, 4, 5, 0, 0, 6, 7, 8, 0, 0, 9, 7};
@@ -74,6 +75,21 @@ bool Item::has_flag_bit_10_in_type_10() const {
 }
 GUEST_EXPORT(0x007685c4, Item::has_flag_bit_10_in_type_10);
 
+bool Item::set_flags_value_if_category_54_59(u32 value) {
+    gptr<ItemData> d = data();
+    if (!d || d->category >= NO_CATEGORY) {
+        return false;
+    }
+    bool matches = d->category == CATEGORY_A || d->category == CATEGORY_B || d->category == CATEGORY_C ||
+                   d->category == CATEGORY_D;
+    if (!matches) {
+        return false;
+    }
+    flags = u16((flags & FLAGS_TOP_BITS_MASK) | value);
+    return true;
+}
+GUEST_EXPORT(0x006bb8c0, Item::set_flags_value_if_category_54_59);
+
 bool Item::is_in_id_set_a() const {
     return contains(ID_SET_A, number());
 }
@@ -133,6 +149,7 @@ GUEST_FUZZ(0x0074870c, 300, [](guest::Fuzz &f) {
     gptr<ItemData> d = item_data_table->entries;
     f.arguments(d ? d + f.below(Item::ITEM_COUNT) : f.object<ItemData>());
 });
+GUEST_FUZZ(0x006bb8c0, 300, [](guest::Fuzz &f) { f.arguments(some_item(f), f.number() & 0xffff); });
 GUEST_FUZZ(0x007684a4, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
 GUEST_FUZZ(0x007684ec, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
 GUEST_FUZZ(0x00768524, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });

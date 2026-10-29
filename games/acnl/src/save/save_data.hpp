@@ -36,6 +36,7 @@ struct SaveData {
     static constexpr u32 PLAYER_COUNT = 4;
     static constexpr u32 VILLAGER_COUNT = 10;
     static constexpr u32 NO_PLAYER = PLAYER_COUNT;  // player_index of a null player or one not in the array
+    static constexpr u8 FLAGS_621CF_BIT_1 = 1 << 1;  // unknown flag
     static constexpr u8 FLAGS_621CF_BIT_2 = 1 << 2;  // unknown flag
 
     u8 header[PLAYERS_OFFSET];

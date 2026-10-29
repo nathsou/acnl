@@ -96,6 +96,7 @@ struct Item {
     u32 class_19_if_valid_kind() const;         // ItemData::class_19 for data with a valid kind_11, else 0
     u32 group_for_class() const;                // a group 0-9 for each kind f_007689a4 reports (0: none)
     bool has_flag_bit_10_in_type_10() const;    // flags bit 10, for items whose indexed type is 10
+    bool set_flags_value_if_category_54_59(u32 value);  // sets the flags below the top bits when the category is 0x54, 0x55, 0x58 or 0x59
     bool is_in_id_set_a() const;                // the number is one of 0x334c, 0x3350...0x3364 (step 4) or 0x26ed
     bool is_in_id_set_b() const;                // the number is one of 0x334e, 0x3352...0x3362 (step 4)
     u32 quarter_price() const;                  // a quarter of the price when it is positive, else 0
