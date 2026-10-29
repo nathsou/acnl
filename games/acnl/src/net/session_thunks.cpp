@@ -16,6 +16,7 @@ constexpr u8 VALUE_1F1_BEGUN = 3;  // meaning not known yet
 constexpr u8 STATE_214_LIMIT = 2;
 
 constexpr u8 MODE_LIMIT = 1;
+constexpr u8 SELECTOR_USES_27A3 = 2;
 
 }  // namespace
 
@@ -80,5 +81,22 @@ bool mode_above_1() {
 GUEST_EXPORT(0x002fc900, mode_above_1);
 GUEST_FUZZ(0x002fc900, 100, [](guest::Fuzz &f) {
     (*net_session)->mode_1326f = f.pick<u8>({0, 1, 2, 0xff});
+    f.arguments();
+});
+
+u8 current_mode() {
+    return (*net_session)->mode();
+}
+GUEST_EXPORT(0x00625690, current_mode);
+GUEST_FUZZ(0x00625690, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// The session's target value: value_27a3 while the selector is 2, else target_23d.
+u8 current_target() {
+    NetSession &session = **net_session;
+    return session.selector_1329d == SELECTOR_USES_27A3 ? session.value_27a3 : session.target_23d;
+}
+GUEST_EXPORT(0x006256a0, current_target);
+GUEST_FUZZ(0x006256a0, 100, [](guest::Fuzz &f) {
+    (*net_session)->selector_1329d = f.pick<u8>({0, 1, 2, 3});
     f.arguments();
 });

@@ -35,7 +35,9 @@ struct NetSession {
     s8 value_2780;
     u8 unknown_02781[0x27a0 - 0x2781];
     u8 count_27a0;
-    u8 unknown_027a1[0x28ec - 0x27a1];
+    u8 unknown_027a1[2];
+    u8 value_27a3;
+    u8 unknown_027a4[0x28ec - 0x27a4];
     NetSessionPart part_28ec;
     u8 unknown_028ed[0x7874 - 0x28ed];
     NetSessionPart part_7874;
@@ -50,7 +52,9 @@ struct NetSession {
     u8 unknown_1326b[3];
     u8 station_mask;  // one bit per station (bit_for_index)
     u8 mode_1326f;    // meaning not known yet (see mode)
-    u8 unknown_13270[0x132ac - 0x13270];
+    u8 unknown_13270[0x1329d - 0x13270];
+    u8 selector_1329d;  // 2 selects value_27a3 in current_target
+    u8 unknown_1329e[0x132ac - 0x1329e];
     u8 flag_132ac;    // unknown flag
     s8 value_132ad;
     u8 flag_132ae;    // unknown flag
@@ -71,6 +75,7 @@ GUEST_OFFSET(NetSession, target_23d, 0x23d);
 GUEST_OFFSET(NetSession, part_277c, 0x277c);
 GUEST_OFFSET(NetSession, value_2780, 0x2780);
 GUEST_OFFSET(NetSession, count_27a0, 0x27a0);
+GUEST_OFFSET(NetSession, value_27a3, 0x27a3);
 GUEST_OFFSET(NetSession, part_28ec, 0x28ec);
 GUEST_OFFSET(NetSession, part_7874, 0x7874);
 GUEST_OFFSET(NetSession, block_13234, 0x13234);
@@ -79,6 +84,7 @@ GUEST_OFFSET(NetSession, station_bits, 0x13268);
 GUEST_OFFSET(NetSession, flags, 0x1326a);
 GUEST_OFFSET(NetSession, station_mask, 0x1326e);
 GUEST_OFFSET(NetSession, mode_1326f, 0x1326f);
+GUEST_OFFSET(NetSession, selector_1329d, 0x1329d);
 GUEST_OFFSET(NetSession, flag_132ac, 0x132ac);
 GUEST_OFFSET(NetSession, value_132ad, 0x132ad);
 GUEST_OFFSET(NetSession, flag_132ae, 0x132ae);

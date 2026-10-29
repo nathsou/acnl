@@ -18,6 +18,17 @@ struct SavedRecordInner {
 };
 GUEST_SIZE(SavedRecordInner, 0x0b);
 
+// The first 0x16 bytes of a SavedRecord (meaning not known yet).
+struct SavedRecordHeader {
+    static constexpr u32 SIZE = 0x16;
+
+    u8 bytes[SIZE];
+
+    void clear();
+    void copy_from(const SavedRecordHeader &other);
+};
+GUEST_SIZE(SavedRecordHeader, 0x16);
+
 struct SavedRecord {
     static constexpr s8 NO_INDEX = -1;  // unknown_21 of an empty record
 
