@@ -18,6 +18,16 @@ struct Pockets {
     s32 find_empty_slot() const;  // -1 when full
     u32 total_bells() const;      // the wallet and the bags of bells
     void pay(u32 bells);
+    u32 free_slot_count() const;
+    // How many more bells fit: the room left in the wallet, in the bags of bells, in the free slots (as new bags), and
+    // in `extra_bags` more bags.
+    u32 bells_room(u32 extra_bags) const;
+    // Adds bells (as many as fit): to the wallet, or when it would overflow, all bags are emptied into it and the
+    // excess goes back out as bags.
+    void add_bells(u32 bells);
+    void merge_bell_bags();  // empties the bags into the wallet; what does not fit in it goes back as new bags
+    // Adds an item; when the pockets have no room, merges the bags of bells first and tries again.
+    bool add_item_merging_bags(const Item &item, u32 unknown);
 };
 GUEST_OFFSET(Pockets, wallet, 0x338);
 

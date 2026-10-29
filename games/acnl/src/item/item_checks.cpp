@@ -19,15 +19,15 @@ bool Item::has_category_flag_1() const {
 }
 GUEST_EXPORT(0x00768214, Item::has_category_flag_1);
 
-u8 Item::data_unknown_0d() const {
+u8 Item::availability_rule() const {
     gptr<ItemData> d = data();
     if (!d) {
         return 0;
     }
-    u8 value = d->unknown_0d;
-    return value >= ItemData::UNKNOWN_0D_LIMIT ? 0 : value;
+    u8 value = d->availability_rule;
+    return value >= ItemData::RULE_LIMIT ? 0 : value;
 }
-GUEST_EXPORT(0x00768248, Item::data_unknown_0d);
+GUEST_EXPORT(0x00768248, Item::availability_rule);
 
 u8 Item::data_unknown_15() const {
     gptr<ItemData> d = data();

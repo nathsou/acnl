@@ -23,7 +23,8 @@ struct SavePlayer {
     u8 unknown_0000[0x55a6];
     PersonalId identity;
     u8 stamp_55d2[2];  // two bytes of a value computed by f_0035072c (meaning not known yet)
-    u8 unknown_55d4[8];
+    u8 month_55d4;     // a month (items with availability rule 0x7d are on offer in it)
+    u8 unknown_55d5[7];
     CounterTable counters;
     u8 unknown_56c4[0x5700 - 0x56c4];
     u8 flags_5700;
@@ -50,6 +51,7 @@ struct SavePlayer {
 GUEST_OFFSET(SavePlayer, identity, 0x55a6);
 GUEST_OFFSET(SavePlayer, identity.town, 0x55bc);
 GUEST_OFFSET(SavePlayer, stamp_55d2, 0x55d2);
+GUEST_OFFSET(SavePlayer, month_55d4, 0x55d4);
 GUEST_OFFSET(SavePlayer, counters, 0x55dc);
 GUEST_OFFSET(SavePlayer, flags_5700, 0x5700);
 GUEST_OFFSET(SavePlayer, flags_570b, 0x570b);

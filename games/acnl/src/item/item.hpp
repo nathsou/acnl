@@ -86,7 +86,7 @@ struct Item {
     bool has_category_flag_4() const;           // true for kind 2 ids, else bit 4 of category_flags()[1]
     bool has_category_flag_1() const;           // true for kind 2 ids, else bit 1 of category_flags()[1]
     bool is_kind_2() const;                     // kind() == KIND_2
-    u8 data_unknown_0d() const;                 // ItemData::unknown_0d if valid, else 0
+    u8 availability_rule() const;               // ItemData::availability_rule if valid, else 0
     u8 data_unknown_15() const;                 // the low 4 bits of ItemData::unknown_15 if valid, else 0
     u32 price() const;                          // for a bag of bells, the bells in it
     gptr<WearClassEntry> wear_class_entry() const;  // from the wear class table; null without data or table
@@ -130,7 +130,7 @@ struct ItemData {
     static constexpr u8 CLASS_19_LIMIT = 6;
     static constexpr u32 CLASS_19_SHIFT = 4;
     static constexpr u16 VALUE_06_LIMIT = 0x260;  // values at or above are not valid
-    static constexpr u8 UNKNOWN_0D_LIMIT = 0xb9;   // values at or above read as 0 (meaning not known yet)
+    static constexpr u8 RULE_LIMIT = 0xb9;         // availability_rule values at or above read as 0
     static constexpr u8 UNKNOWN_15_MASK = 0x0f;    // only the low 4 bits are read
     static constexpr u8 UNKNOWN_15_LIMIT = 11;     // masked values at or above read as 0
 
@@ -141,7 +141,7 @@ struct ItemData {
     u8 unknown_08[2];
     u8 category;
     u8 unknown_0b[2];
-    u8 unknown_0d;
+    u8 availability_rule;  // when the item is on offer, see item_is_available (0 for none)
     s8 price_multiplier;  // the base price is price_unit * price_multiplier
     u8 wear_class_index;  // into the wear class table (Item::wear_class_entry)
     u8 unknown_10;
@@ -150,11 +150,11 @@ struct ItemData {
     u8 byte_13;
     u8 unknown_14;
     u8 unknown_15;
-    u8 unknown_16;
+    u8 byte_16;
     u8 byte_17;
-    u8 unknown_18;
+    u8 byte_18;
     u8 class_and_flags_19;  // the high nibble is a class below 6; see ItemData::class_19
-    u8 unknown_1a;
+    u8 byte_1a;
     u8 flags_1b;  // bit 1: see Item::has_data_flag_1b_bit1
     u8 flags_1c;  // bit 3: see ItemData::flag_1c_bit3
     u8 unknown_1d;
@@ -168,14 +168,17 @@ struct ItemData {
 };
 GUEST_OFFSET(ItemData, value_06, 0x06);
 GUEST_OFFSET(ItemData, category, 0x0a);
-GUEST_OFFSET(ItemData, unknown_0d, 0x0d);
+GUEST_OFFSET(ItemData, availability_rule, 0x0d);
 GUEST_OFFSET(ItemData, price_multiplier, 0x0e);
 GUEST_OFFSET(ItemData, wear_class_index, 0x0f);
 GUEST_OFFSET(ItemData, kind_11, 0x11);
 GUEST_OFFSET(ItemData, byte_13, 0x13);
 GUEST_OFFSET(ItemData, unknown_15, 0x15);
+GUEST_OFFSET(ItemData, byte_16, 0x16);
 GUEST_OFFSET(ItemData, byte_17, 0x17);
+GUEST_OFFSET(ItemData, byte_18, 0x18);
 GUEST_OFFSET(ItemData, class_and_flags_19, 0x19);
+GUEST_OFFSET(ItemData, byte_1a, 0x1a);
 GUEST_OFFSET(ItemData, flags_1b, 0x1b);
 GUEST_OFFSET(ItemData, flags_1c, 0x1c);
 GUEST_SIZE(ItemData, 30);

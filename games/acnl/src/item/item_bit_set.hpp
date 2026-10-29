@@ -15,5 +15,6 @@ struct ItemBitSet {
     bool contains(const Item &item) const;  // false for items without data
     bool set_bit_of(const Item &item);      // false when the item has no bit
     bool clear_bit_of(const Item &item);
+    s32 index_of_nth_set_bit(u32 n) const;  // the bit index of the n-th set bit (from 0), -1 if there are fewer
 };
 GUEST_SIZE(ItemBitSet, ItemBitSet::WORDS * 4);

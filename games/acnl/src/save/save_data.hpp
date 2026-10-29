@@ -28,6 +28,14 @@ struct SaveDataEntry2160 {
 GUEST_OFFSET(SaveDataEntry2160, field_7c, 0x7c);
 GUEST_SIZE(SaveDataEntry2160, 2160);
 
+// Two items after a word (meaning not known yet).
+struct ItemPair {
+    u8 unknown_00[4];
+    Item items[2];
+};
+GUEST_OFFSET(ItemPair, items, 4);
+GUEST_SIZE(ItemPair, 12);
+
 struct SaveData {
     static constexpr u32 ENTRIES_4BF70_COUNT = 16;
     static constexpr u32 ENTRIES_668A0_COUNT = 8;
@@ -68,7 +76,9 @@ struct SaveData {
     SaveDataEntry2160 entries_668a0[ENTRIES_668A0_COUNT];
     u8 unknown_6ac20[0x6ad82 - 0x6ac20];
     SaveDataPart part_6ad82;
-    u8 unknown_6ad83[0x6aeb8 - 0x6ad83];
+    u8 unknown_6ad83[0x6ae48 - 0x6ad83];
+    ItemPair pair_6ae48;  // availability rule 0x3f: the items that match (meaning not known yet)
+    u8 unknown_6ae54[0x6aeb8 - 0x6ae54];
     SaveDataPart part_6aeb8;
     u8 unknown_6aeb9[0x6e2a6 - 0x6aeb9];
     u8 state_6e2a6;
@@ -97,6 +107,7 @@ GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
 GUEST_OFFSET(SaveData, flags_621d3, 0x621d3);
 GUEST_OFFSET(SaveData, reference_item, 0x6223a);
 GUEST_OFFSET(SaveData, part_62338, 0x62338);
+GUEST_OFFSET(SaveData, pair_6ae48, 0x6ae48);
 GUEST_OFFSET(SaveData, entries_668a0, 0x668a0);
 GUEST_OFFSET(SaveData, part_6ad82, 0x6ad82);
 GUEST_OFFSET(SaveData, part_6aeb8, 0x6aeb8);

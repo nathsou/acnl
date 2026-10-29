@@ -1,35 +1,11 @@
-// A 12-byte point in time used by the calendar code, and the helpers around it: adding days, checking that a time
-// falls in a range, and asking a table of handlers about each day of a range. The layout of the 12 bytes is not
-// known yet. The game only converts it to a 64-bit count and back (the conversion helpers are still recompiled
-// code). Adding days goes through nanoseconds divided by 1,000,000, so the count is probably in milliseconds.
+// Moving a TimeStamp (a calendar date and a clock time, see time_stamp.hpp and calendar_math.cpp) by days, hours and
+// so on, checking that a time falls in a range, and asking a table of handlers about each day of a range.
 #include <cstring>
 
+#include "core/time_stamp.hpp"
 #include "guest/guest.hpp"
 
 namespace {
-
-struct TimeStamp {
-    u32 unknown_00;  // passed as a whole word to the day handlers
-    s8 unknown_04;   // passed sign-extended to the day handlers
-    s8 unknown_05;
-    u8 unknown_06[6];
-
-    static constexpr u64 NANOSECONDS_PER_DAY = 86'400'000'000'000ull;
-    static constexpr u64 MILLION_RECIPROCAL = 0x431bde82d7b634dbull;  // x * this >> (64 + 18) == x / 1,000,000
-    static constexpr u32 MILLION_SHIFT = 18;
-
-    static TimeStamp from_words(u32 w0, u32 w1, u32 w2) {
-        u32 words[3] = {w0, w1, w2};
-        TimeStamp t;
-        std::memcpy(&t, words, sizeof(t));
-        return t;
-    }
-
-    void add_days(s32 days);
-};
-GUEST_OFFSET(TimeStamp, unknown_04, 4);
-GUEST_OFFSET(TimeStamp, unknown_05, 5);
-GUEST_SIZE(TimeStamp, 12);
 
 // A handler of the table at 0x009524ec: asked through its second virtual function whether it accepts a day.
 struct DayHandler {
@@ -56,14 +32,6 @@ enum Mode95721c : u8 {
     MODE_5 = 5,
 };
 
-inline constexpr guest::Function<0x001240fc, void(gptr<s64> out, const TimeStamp &time)> time_stamp_to_count;
-inline constexpr guest::Function<0x001264f0, void(gptr<TimeStamp> out, gptr<const s64> count)> count_to_time_stamp;
-// value / divisor, with the divisor given as a reciprocal and a shift (the shift is passed twice)
-inline constexpr guest::Function<0x0013305c, s64(gptr<const s64> value, u32 shift_r1, u64 reciprocal, u32 shift)>
-    divide_by_reciprocal;
-inline constexpr guest::Function<0x0056cb7c, void(TimeStamp &time)> time_stamp_after_change;
-inline constexpr guest::Function<0x0056be20, s64(const TimeStamp &time)> words12_to_s64;
-inline constexpr guest::Function<0x00308efc, void(TimeStamp &time)> adjust_time_stamp;
 inline constexpr guest::Function<0x00305f2c, u8()> read_global_object_byte;
 
 }  // namespace
@@ -84,36 +52,65 @@ u32 mode_95721c_index() {
 }
 GUEST_EXPORT(0x00301484, mode_95721c_index);
 
+void TimeStamp::add_milliseconds(s64 span) {
+    *this = from_milliseconds_since_2000(milliseconds_since_2000() + span);
+    wrap_year();
+}
+
 // Moves the time by a number of days (any sign).
 void TimeStamp::add_days(s32 days) {
     if (days == 0) {
         return;
     }
-    guest::StackObject<s64> span;
-    *span = s64(u64(s64(days)) * NANOSECONDS_PER_DAY);
-    guest::StackObject<s64> count;
-    time_stamp_to_count(count.ptr(), *this);
-    s64 delta = divide_by_reciprocal(span.ptr(), MILLION_SHIFT, MILLION_RECIPROCAL, MILLION_SHIFT);
-    guest::StackObject<s64> sum;
-    *sum = s64(u64(*count) + u64(delta));
-    guest::StackObject<TimeStamp> result;
-    count_to_time_stamp(result.ptr(), sum.ptr());
-    *this = *result;
-    time_stamp_after_change(*this);
+    add_milliseconds(s64(days) * MILLISECONDS_PER_DAY);
 }
 GUEST_EXPORT(0x003014b4, TimeStamp::add_days);
+
+// Moves the time by a number of hours (any sign).
+void TimeStamp::add_hours(s32 hours) {
+    if (hours == 0) {
+        return;
+    }
+    add_milliseconds(s64(hours) * MILLISECONDS_PER_HOUR);
+}
+GUEST_EXPORT(0x0056cc38, TimeStamp::add_hours);
+
+// Moves the time by days, hours, minutes and seconds (any sign).
+void TimeStamp::advance(s32 days, s32 hours, s32 minutes, s32 seconds) {
+    add_milliseconds(s64(days) * MILLISECONDS_PER_DAY + s64(hours) * MILLISECONDS_PER_HOUR +
+                     s64(minutes) * MILLISECONDS_PER_MINUTE + s64(seconds) * MILLISECONDS_PER_SECOND);
+}
+GUEST_EXPORT(0x0030a488, TimeStamp::advance);
+
+namespace {
+
+constexpr s32 DAY_START_HOUR = 6;
+constexpr s32 HOURS_BACK = -DAY_START_HOUR;
+
+// Rebuilds the time from its date and the given clock fields (the conversion through a count normalises it).
+void reset_clock(TimeStamp &time, s32 hour, s32 minute, s32 second, s32 millisecond) {
+    TimeStamp fields{time.year, time.month, time.day, 0, s8(hour), s8(minute), s8(second), s16(millisecond)};
+    time = TimeStamp::from_milliseconds_since_2000(fields.milliseconds_since_2000());
+}
+
+}  // namespace
+
+void TimeStamp::move_to_day_start() {
+    add_hours(HOURS_BACK);
+    reset_clock(*this, DAY_START_HOUR, minute, second, millisecond);
+    reset_clock(*this, hour, 0, second, millisecond);
+    reset_clock(*this, hour, minute, 0, millisecond);
+    reset_clock(*this, hour, minute, second, 0);
+}
+GUEST_EXPORT(0x00308efc, TimeStamp::move_to_day_start);
 
 // Whether time is in [begin, end), where a range with begin >= end wraps around.
 // The three times are passed by value (12 bytes each).
 bool value12_in_range(u32 time0, u32 time1, u32 time2, u32 begin0, u32 begin1, u32 begin2, u32 end0, u32 end1,
                       u32 end2) {
-    guest::StackObject<TimeStamp> time_copy, begin_copy, end_copy;
-    *time_copy = TimeStamp::from_words(time0, time1, time2);
-    *begin_copy = TimeStamp::from_words(begin0, begin1, begin2);
-    *end_copy = TimeStamp::from_words(end0, end1, end2);
-    s64 time = words12_to_s64(*time_copy);
-    s64 begin = words12_to_s64(*begin_copy);
-    s64 end = words12_to_s64(*end_copy);
+    s64 time = TimeStamp::from_words(time0, time1, time2).nanoseconds_since_origin();
+    s64 begin = TimeStamp::from_words(begin0, begin1, begin2).nanoseconds_since_origin();
+    s64 end = TimeStamp::from_words(end0, end1, end2).nanoseconds_since_origin();
     if (begin < end) {
         return time >= begin && time < end;
     }
@@ -138,7 +135,7 @@ bool any_day_handler_accepts(u32 kind, u32 start0, u32 start1, u32 start2, s32 o
         *asked = *day;
         if (read_global_object_byte() != HANDLERS_DISABLED) {
             if (adjust != 0) {
-                adjust_time_stamp(*asked);
+                asked->move_to_day_start();
             }
             for (u32 i = 0; i < DAY_HANDLER_COUNT; i++) {
                 gptr<DayHandler> handler = day_handlers[i];
@@ -146,8 +143,8 @@ bool any_day_handler_accepts(u32 kind, u32 start0, u32 start1, u32 start2, s32 o
                     continue;
                 }
                 u32 accepts = *gptr<u32>(handler->vtable + ACCEPTS_DAY_VTABLE_SLOT * 4);
-                if (guest::call_address<u32>(accepts, handler, asked->unknown_00, s32(asked->unknown_04),
-                                             s32(asked->unknown_05)) != 0) {
+                if (guest::call_address<u32>(accepts, handler, asked->year, s32(asked->month),
+                                             s32(asked->day)) != 0) {
                     return true;
                 }
             }
@@ -176,6 +173,26 @@ static TimeStamp some_time(guest::Fuzz &f) {
 static void words_of(const TimeStamp &t, u32 (&w)[3]) { std::memcpy(w, &t, sizeof(t)); }
 
 GUEST_FUZZ(0x00301484, 200, [](guest::Fuzz &f) { f.arguments(); });
+
+GUEST_FUZZ(0x0030a488, 300, [](guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    *time = some_time(f);
+    f.arguments(time, f.pick<s32>({0, 1, -1, 30, -400, s32(f.below(800)) - 400}),
+                f.pick<s32>({0, 6, -6, 25, s32(f.below(100)) - 50}), f.pick<s32>({0, 1, -90, s32(f.below(400)) - 200}),
+                f.pick<s32>({0, 30, -61, 4000, s32(f.below(20000)) - 10000}));
+});
+
+GUEST_FUZZ(0x00308efc, 300, [](guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    *time = some_time(f);
+    f.arguments(time);
+});
+
+GUEST_FUZZ(0x0056cc38, 300, [](guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    *time = some_time(f);
+    f.arguments(time, f.pick<s32>({0, 1, -1, 6, -6, 24, -30, s32(f.below(2000)) - 1000}));
+});
 
 GUEST_FUZZ(0x003014b4, 300, [](guest::Fuzz &f) {
     auto time = f.object<TimeStamp>();
