@@ -122,6 +122,95 @@ GUEST_FUZZ(0x006b9858, 200, [](guest::Fuzz &f) {
                 f.pick<u32>({FUZZ_CATEGORIES[0], FUZZ_CATEGORIES[3], FUZZ_CATEGORIES[4], FUZZ_CATEGORIES[6], f.below(Item::NO_CATEGORY)}));
 });
 
+// The number of the item at the position in the category, or the empty number past the end.
+u16 item_number_in_category(u32 category, u32 position) {
+    return number_at(category, s32(position));
+}
+GUEST_EXPORT(0x006b9b30, item_number_in_category);
+GUEST_FUZZ(0x006b9b30, 200, [](guest::Fuzz &f) {
+    f.arguments(f.pick<u32>({FUZZ_CATEGORIES[0], FUZZ_CATEGORIES[3], FUZZ_CATEGORIES[4], f.below(Item::NO_CATEGORY)}), f.below(300));
+});
+
+namespace {
+
+constexpr u32 CATEGORY_39 = 0x39;
+constexpr u16 NUMBER_2283 = 0x2283;
+constexpr u32 CATEGORY_NO_DATA = 0x9b;
+
+// The pairs of categories an item is turned into the earlier one of, when it has the later one.
+struct CategoryStep {
+    u32 from;
+    u32 to;
+};
+constexpr CategoryStep CATEGORY_STEPS[] = {{0x56, 0x54}, {0x57, 0x55}, {0x31, 0x2f}, {0x93, 6}, {0x94, 7}};
+// Item numbers that move down by one (to the item before) when no category step applies.
+constexpr u16 NUMBERS_STEPPED_DOWN[] = {0x3058, 0x305b, 0x3065, 0x3068};
+
+}  // namespace
+
+// Moves an item of category 0x39 (except number 0x2283) one place back in its category; false for other items and the
+// first one.
+bool step_back_in_category_39(Item &item) {
+    gptr<ItemData> data = item.data();
+    if (!data || data->category >= CATEGORY_NO_DATA || data->category != CATEGORY_39 || item.number() == NUMBER_2283) {
+        return false;
+    }
+    s32 position = position_in_category(item);
+    if (position <= 0) {
+        return false;
+    }
+    u16 number = number_at(CATEGORY_39, position - 1);
+    item.id = u16((item.id & Item::ID_FLAG) | (number & Item::NUMBER_MASK));
+    return true;
+}
+GUEST_EXPORT(0x006b9b78, step_back_in_category_39);
+GUEST_FUZZ(0x006b9b78, 200, [](guest::Fuzz &f) {
+    auto item = f.object<Item>();
+    item->id = f.below(3) ? number_at(CATEGORY_39, s32(f.below(40))) : u16(NUMBER_2283);
+    item->flags = u16(f.number());
+    if (f.below(4) == 0) {
+        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
+    }
+    f.arguments(item);
+});
+
+// Turns the item into its earlier form: into the same position of the earlier category for the categories in
+// CATEGORY_STEPS, and for four item numbers into the item before; false for other items.
+bool convert_to_earlier_form(Item &item) {
+    gptr<ItemData> data = item.data();
+    u32 category = !data ? CATEGORY_NO_DATA : (data->category < CATEGORY_NO_DATA ? data->category : 0);
+    for (const CategoryStep &step : CATEGORY_STEPS) {
+        if (category == step.from && convert_item_category(item, step.from, step.to)) {
+            return true;
+        }
+    }
+    u16 number = item.id & Item::NUMBER_MASK;
+    for (u16 stepped : NUMBERS_STEPPED_DOWN) {
+        if (number == stepped) {
+            item.id = u16((item.id & Item::ID_FLAG) | (number - 1));
+            return true;
+        }
+    }
+    return false;
+}
+GUEST_EXPORT(0x006ba62c, convert_to_earlier_form);
+GUEST_FUZZ(0x006ba62c, 300, [](guest::Fuzz &f) {
+    auto item = f.object<Item>();
+    switch (f.below(3)) {
+    case 0:
+        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
+        break;
+    case 1:
+        item->id = f.pick<u16>({0x3058, 0x305b, 0x3065, 0x3068, 0x3059});
+        break;
+    default:
+        item->id = number_at(f.pick<u32>({0x56, 0x57, 0x31, 0x93, 0x94, 0x54}), s32(f.below(30)));
+        break;
+    }
+    item->flags = u16(f.number());
+    f.arguments(item);
+});
+
 // The unit item of a stack item (categories 0x75 and 0x76 stand for 0x33 and 0x34), the empty number otherwise.
 u32 stack_unit_number(const Item &item) {
     u8 category = item.category();

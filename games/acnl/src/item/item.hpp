@@ -107,6 +107,7 @@ struct Item {
     bool has_category_flag_bit_1_6() const;     // see item_predicates.cpp
     bool has_category_flag_bit_2_5() const;     // see item_predicates.cpp
     bool is_in_category_group_24_27_28() const; // the category is 0x24, 0x27 or 0x28
+    bool try_make_kind_2();                     // see item_kind_2.cpp
 };
 GUEST_SIZE(Item, 4);
 

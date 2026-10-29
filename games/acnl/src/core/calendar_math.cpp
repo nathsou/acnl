@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "core/time_stamp.hpp"
+#include "core/wide_division.hpp"
 
 namespace {
 
@@ -230,6 +231,22 @@ s64 TimeStamp::nanoseconds_since_origin() const {
     return s64(u64(milliseconds_since_2000() - origin) * u64(NANOSECONDS_PER_MILLISECOND));
 }
 GUEST_EXPORT(0x0056be20, TimeStamp::nanoseconds_since_origin);
+
+// The origin plus the nanoseconds (rounded toward zero to milliseconds).
+TimeStamp TimeStamp::from_nanoseconds_since_origin(s64 nanoseconds) {
+    s64 origin = time_origin;
+    return from_milliseconds_since_2000(origin + divide_by_reciprocal_value(nanoseconds, MILLION_RECIPROCAL, MILLION_SHIFT));
+}
+
+// Writes the time that is the given nanoseconds after the origin (the second argument register is skipped).
+void time_stamp_from_nanoseconds(TimeStamp &out, s64 nanoseconds) {
+    out = TimeStamp::from_nanoseconds_since_origin(nanoseconds);
+}
+GUEST_EXPORT(0x0056c258, time_stamp_from_nanoseconds);
+GUEST_FUZZ(0x0056c258, 300, [](guest::Fuzz &f) {
+    s64 value = f.below(4) ? s64(f.below(1u << 31)) * s64(1 + f.below(1'000'000)) : -s64(f.below(1u << 31)) * s64(f.below(100));
+    f.arguments(f.object<TimeStamp>(), value);
+});
 
 void TimeStamp::wrap_year() {
     s32 current = year;

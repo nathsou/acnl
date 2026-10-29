@@ -18,3 +18,6 @@ struct ItemBitSet {
     s32 index_of_nth_set_bit(u32 n) const;  // the bit index of the n-th set bit (from 0), -1 if there are fewer
 };
 GUEST_SIZE(ItemBitSet, ItemBitSet::WORDS * 4);
+
+// Removes the item from the set unless it is the only one left; whether it was removed.
+bool clear_bit_keeping_one(ItemBitSet &set, const Item &item);

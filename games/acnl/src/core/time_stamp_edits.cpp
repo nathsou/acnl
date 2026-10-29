@@ -60,9 +60,12 @@ gptr<TimeStamp> some_time(guest::Fuzz &f) {
 
 }  // namespace
 
-// The earliest time the game uses: 2012-01-01 00:00.
+TimeStamp TimeStamp::earliest() {
+    return from_fields(EARLIEST_YEAR, 1, 1, 0, 0, 0, 0);
+}
+
 void construct_earliest_time(TimeStamp &out) {
-    out = from_fields(EARLIEST_YEAR, 1, 1, 0, 0, 0, 0);
+    out = TimeStamp::earliest();
 }
 GUEST_EXPORT(0x0056bb88, construct_earliest_time);
 GUEST_EXPORT(0x0056d00c, construct_earliest_time);

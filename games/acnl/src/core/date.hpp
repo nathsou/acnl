@@ -9,6 +9,7 @@ struct Date {
     u8 day;
 
     void set(u32 year, u32 month, u32 day);
+    bool is_today(bool game_day) const;  // see game_clock.cpp
 };
 GUEST_SIZE(Date, 4);
 

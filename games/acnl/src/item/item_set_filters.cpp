@@ -16,6 +16,9 @@ constexpr u8 FIELD_16_MASK = 0xf;
 constexpr u8 FIELD_16_LIMIT = 10;
 constexpr u32 FIELD_18_SHIFT = 4;
 constexpr u8 FIELD_18_LIMIT = 0xf;
+constexpr u32 FIELD_15_SHIFT = 4;
+constexpr u32 FIELD_15_LIMIT = 7;
+constexpr u32 FIELD_15_ALSO_KEPT = 4;
 constexpr u8 FLAGS_1C_BIT_4 = 1 << 4;
 constexpr u8 FLAGS_1C_BIT_7 = 1 << 7;
 
@@ -170,3 +173,15 @@ bool keep_items_by_flag_1c_bit3(ItemBitSet &set, u32 invert) {
 }
 GUEST_EXPORT(0x006f2504, keep_items_by_flag_1c_bit3);
 GUEST_FUZZ(0x006f2504, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(2)); });
+
+// Keeps the items whose high nibble of byte 0x15 equals `wanted` (a nibble of 7 or more counts as 0), and with
+// `keep_also_4` those with nibble 4 too.
+bool keep_items_with_field_15_high(ItemBitSet &set, u32 wanted, u32 keep_also_4) {
+    return filter_set(set, [wanted, keep_also_4](gptr<ItemData> entry) {
+        u32 nibble = entry->unknown_15 >> FIELD_15_SHIFT;
+        u32 value = nibble < FIELD_15_LIMIT ? nibble : 0;
+        return !(value == wanted || (keep_also_4 != 0 && nibble == FIELD_15_ALSO_KEPT));
+    });
+}
+GUEST_EXPORT(0x00304d30, keep_items_with_field_15_high);
+GUEST_FUZZ(0x00304d30, 150, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(9), f.below(2)); });

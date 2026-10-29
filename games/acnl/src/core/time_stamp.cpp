@@ -75,6 +75,23 @@ void TimeStamp::add_hours(s32 hours) {
 }
 GUEST_EXPORT(0x0056cc38, TimeStamp::add_hours);
 
+// Moves the time by a number of minutes or seconds (any sign).
+void TimeStamp::add_minutes(s32 minutes) {
+    if (minutes == 0) {
+        return;
+    }
+    add_milliseconds(s64(minutes) * MILLISECONDS_PER_MINUTE);
+}
+GUEST_EXPORT(0x0056cd34, TimeStamp::add_minutes);
+
+void TimeStamp::add_seconds(s32 seconds) {
+    if (seconds == 0) {
+        return;
+    }
+    add_milliseconds(s64(seconds) * MILLISECONDS_PER_SECOND);
+}
+GUEST_EXPORT(0x0056cddc, TimeStamp::add_seconds);
+
 // Moves the time by days, hours, minutes and seconds (any sign).
 void TimeStamp::advance(s32 days, s32 hours, s32 minutes, s32 seconds) {
     add_milliseconds(s64(days) * MILLISECONDS_PER_DAY + s64(hours) * MILLISECONDS_PER_HOUR +
@@ -186,6 +203,18 @@ GUEST_FUZZ(0x00308efc, 300, [](guest::Fuzz &f) {
     auto time = f.object<TimeStamp>();
     *time = some_time(f);
     f.arguments(time);
+});
+
+GUEST_FUZZ(0x0056cd34, 200, [](guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    *time = some_time(f);
+    f.arguments(time, f.pick<s32>({0, 1, -1, 90, -300, s32(f.below(20000)) - 10000}));
+});
+
+GUEST_FUZZ(0x0056cddc, 200, [](guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    *time = some_time(f);
+    f.arguments(time, f.pick<s32>({0, 1, -1, 90, -300, s32(f.below(2000000)) - 1000000}));
 });
 
 GUEST_FUZZ(0x0056cc38, 300, [](guest::Fuzz &f) {

@@ -30,8 +30,10 @@ struct TimeStamp {
     // Milliseconds since 2000-01-01 00:00 (the day count is only right for the years the game uses), and back.
     s64 milliseconds_since_2000() const;
     static TimeStamp from_milliseconds_since_2000(s64 count);
-    // The span in nanoseconds from a fixed time (a global) to this one.
+    // The span in nanoseconds from a fixed time (a global) to this one, and back.
     s64 nanoseconds_since_origin() const;
+    static TimeStamp from_nanoseconds_since_origin(s64 nanoseconds);
+    static TimeStamp earliest();  // 2012-01-01 00:00, the time the game counts from
 
     void add_milliseconds(s64 span);  // (then wrap_year)
 
@@ -49,6 +51,8 @@ struct TimeStamp {
 
     void add_days(s32 days);
     void add_hours(s32 hours);
+    void add_minutes(s32 minutes);
+    void add_seconds(s32 seconds);
     void advance(s32 days, s32 hours, s32 minutes, s32 seconds);  // (then wrap_year, even for a zero span)
     // Keeps the year in 2012..2050 by moving it by whole 39-year steps (the reason for the window is not known yet).
     void wrap_year();
@@ -66,3 +70,18 @@ GUEST_SIZE(TimeStamp, 12);
 
 // The game's reference time (the current time the game works with).
 inline guest::global<TimeStamp, 0x00ad56b0> reference_time;
+
+// A moment kept as nanoseconds since the origin time; 0 and NONE both mean "not set".
+struct GameTime {
+    static constexpr s64 NONE = 0x7fffffffffffffffll;
+
+    s64 nanoseconds;
+
+    TimeStamp to_time_stamp() const;  // earliest() when not set
+    void set_time_stamp(const TimeStamp &time);
+    void set_now();
+    void set(s64 value) { nanoseconds = value; }
+    void set_time_of_day(s32 hour, s32 minute, s32 second);  // keeps the date
+    void round_down_to_day_start();
+};
+GUEST_SIZE(GameTime, 8);

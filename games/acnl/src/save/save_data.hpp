@@ -28,6 +28,14 @@ struct SaveDataEntry2160 {
 GUEST_OFFSET(SaveDataEntry2160, field_7c, 0x7c);
 GUEST_SIZE(SaveDataEntry2160, 2160);
 
+// A block of the save data kept per player (meaning not known yet).
+struct PlayerBlock {
+    static constexpr u32 SIZE = 0x1228;
+
+    u8 unknown_0000[SIZE];
+};
+GUEST_SIZE(PlayerBlock, PlayerBlock::SIZE);
+
 // Two items after a word (meaning not known yet).
 struct ItemPair {
     u8 unknown_00[4];
@@ -61,7 +69,9 @@ struct SaveData {
     u8 unknown_42a08[0x4be80 - 0x42a08];
     u8 small_values_4be80[0x4bf70 - 0x4be80];  // SmallValueHolder::clamped_value reads here
     SaveDataEntry2168 entries_4bf70[ENTRIES_4BF70_COUNT];
-    u8 unknown_546f0[0x621b8 - 0x546f0];
+    u8 unknown_546f0[0x5d900 - 0x546f0];
+    PlayerBlock player_blocks_5d900[PLAYER_COUNT];  // one block per player (meaning not known yet)
+    u8 unknown_621a0[0x621b8 - 0x5d900 - PLAYER_COUNT * PlayerBlock::SIZE];
     u16 flags_621b8;
     u8 unknown_621ba[0x621ce - 0x621ba];
     u8 flags_621ce;
@@ -101,6 +111,7 @@ GUEST_OFFSET(SaveData, record_flags_6fe82, 0x6fe82);
 GUEST_OFFSET(SaveData, index_42a07, 0x42a07);
 GUEST_OFFSET(SaveData, entries_4bf70, 0x4bf70);
 GUEST_OFFSET(SaveData, small_values_4be80, 0x4be80);
+GUEST_OFFSET(SaveData, player_blocks_5d900, 0x5d900);
 GUEST_OFFSET(SaveData, flags_621b8, 0x621b8);
 GUEST_OFFSET(SaveData, flags_621ce, 0x621ce);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
