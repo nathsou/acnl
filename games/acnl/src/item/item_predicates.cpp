@@ -14,6 +14,8 @@ constexpr u32 EXPECTED_CHECK_B_RESULT = 8;  // meaning not known yet
 constexpr u8 FLAGS_1_BIT_6 = 1 << 6;
 constexpr u8 FLAGS_2_BIT_5 = 1 << 5;
 constexpr u8 DATA_FLAG_1B_BIT_1 = 1 << 1;
+constexpr u8 FLAGS_1C_BIT_3 = 1 << 3;
+constexpr u8 CATEGORY_FLAG_BIT_7 = 1 << 7;
 
 // The data categories this group of items is made of (meaning not known yet).
 constexpr u8 CATEGORY_GROUP_A = 0x24;
@@ -21,6 +23,26 @@ constexpr u8 CATEGORY_GROUP_B = 0x27;
 constexpr u8 CATEGORY_GROUP_C = 0x28;
 
 }  // namespace
+
+bool ItemData::flag_1c_bit3() const {
+    gptr<u8> table = category_flag_table->entries;
+    if (!table) {
+        return true;
+    }
+    u8 category_index = category < Item::NO_CATEGORY ? category : 0;
+    gptr<u8> flags = table + category_index * CATEGORY_FLAGS_SIZE;
+    if ((flags[1] & CATEGORY_FLAG_BIT_7) == 0) {
+        return false;
+    }
+    return (flags_1c & FLAGS_1C_BIT_3) != 0;
+}
+GUEST_EXPORT(0x007485d0, ItemData::flag_1c_bit3);
+
+bool Item::data_flag_1c_bit3() const {
+    gptr<ItemData> d = data();
+    return !d || d->flag_1c_bit3();
+}
+GUEST_EXPORT(0x0031079c, Item::data_flag_1c_bit3);
 
 bool Item::is_first_item() const {
     return number() == FIRST_ITEM;
@@ -95,6 +117,11 @@ gptr<Item> some_item(guest::Fuzz &f) {
 
 }  // namespace
 
+GUEST_FUZZ(0x0031079c, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
+GUEST_FUZZ(0x007485d0, 300, [](guest::Fuzz &f) {
+    gptr<ItemData> d = item_data_table->entries;
+    f.arguments(d ? d + f.below(Item::ITEM_COUNT) : f.object<ItemData>());
+});
 GUEST_FUZZ(0x0076c440, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
 GUEST_FUZZ(0x0076c458, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
 GUEST_FUZZ(0x0076c480, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });

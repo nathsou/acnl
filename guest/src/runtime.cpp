@@ -168,6 +168,7 @@ pthread_t journal_owner;
 std::vector<Page> journal;  // reserved up front: the signal handler never allocates
 bool journal_overflow;
 std::atomic<bool> busy;     // a check is in progress (on some thread)
+std::atomic<bool> fuzzing;  // run_fuzzers is running: it holds `busy` for the whole time
 bool tainted;               // the run made a system call or got preempted
 u32 preemptions_deferred;   // in the current run (reset by begin_journal)
 u64 abandons;               // runs abandoned so far (a check compares the count before and after its run)
@@ -175,9 +176,28 @@ struct sigaction old_segv, old_bus;
 
 u8 *page_ptr(u32 index) { return g_mem + PROTECT_LO + u64(index) * page_size; }
 
+// Sets the protection of [base, base + size). Where the game has unmapped memory in the range, mprotect stops at the
+// first hole and leaves everything after it as it was (the main stack sits at the top of the range): so on failure
+// the range is split until each mapped part has been done.
+void protect_range(u8 *base, u64 size, int prot) {
+    if (mprotect(base, size, prot) == 0) {
+        return;
+    }
+    if (size <= page_size) {
+        static int reported = 0;
+        if (getenv("GUEST_SHADOW_DEBUG") && reported++ < 10) {
+            fprintf(stderr, "protect_range: cannot set %d on guest %08x: %s\n", prot, u32(base - g_mem), strerror(errno));
+        }
+        return;
+    }
+    u64 half = (size / 2 + page_size - 1) / page_size * page_size;
+    protect_range(base, half, prot);
+    protect_range(base + half, size - half, prot);
+}
+
 void protect_all(int prot) {
     for (const Range &r : PROTECTED) {
-        mprotect(g_mem + r.lo, r.hi - r.lo, prot);
+        protect_range(g_mem + r.lo, r.hi - r.lo, prot);
     }
 }
 
@@ -249,6 +269,9 @@ void init_journal() {
 
 void begin_journal() {
     journal.clear();
+    // (a slot left over from an earlier run would make the handler skip a page's first copy: the page would be
+    // neither restored nor compared)
+    std::fill(slot_of_page, slot_of_page + npages, s16(-1));
     preemptions_deferred = 0;
     journal_overflow = false;
     tainted = false;
@@ -279,8 +302,11 @@ void abandon_run(const char *why, u32 pc) {
     abandons++;
     end_journal();
     // the rest of the run is just the original running: let the functions it calls be checked (a run of main
-    // never ends)
-    busy.store(false);
+    // never ends). Not while fuzzing: the fuzz loop owns the journal, and another thread starting a check would
+    // reset it under the loop.
+    if (!fuzzing.load()) {
+        busy.store(false);
+    }
 }
 
 }  // namespace
@@ -344,13 +370,17 @@ static const char *reg_name(int r) {
     return n[r];
 }
 
-static bool fuzzing;
 
 static void shadow_check(detail::Export &e, CPU *c) {
     using detail::Ret;
     static bool ready = (init_journal(), true);
     (void)ready;
     const CPU in = *c;
+    u8 dbg_before[0x40] = {};
+    static const bool dbg = getenv("GUEST_SHADOW_DEBUG") != nullptr;
+    if (dbg && in.r[0] >= 0x00100000 && in.r[0] < 0x0fffff00) {
+        memcpy(dbg_before, g_mem + in.r[0], sizeof dbg_before);
+    }
 
     // 1. the original, journaled
     u64 abandoned_before = abandons;
@@ -382,6 +412,21 @@ static void shadow_check(detail::Export &e, CPU *c) {
     }
 
     // 2. the rewrite, from the same state
+    if (dbg && in.r[0] >= 0x00100000 && in.r[0] < 0x0fffff00 && memcmp(dbg_before, g_mem + in.r[0], sizeof dbg_before)) {
+        static int printed = 0;
+        if (printed++ < 20) {
+            u32 pi = (in.r[0] - PROTECT_LO) / page_size;
+            const Page *found = nullptr;
+            for (auto &p : gen_pages) {
+                if (p.index == pi) {
+                    found = &p;
+                }
+            }
+            report("DEBUG %s: object at %08x differs; page %u %s%s; gen_pages %zu; slot_of_page=%d; pool_used=%u\n", e.name,
+                   in.r[0], pi, found ? "journaled" : "NOT journaled", found && found->foreign ? " (foreign)" : "",
+                   gen_pages.size(), int(slot_of_page[pi]), pool_used);
+        }
+    }
     *c = in;
     abandoned_before = abandons;
     begin_journal();
@@ -514,6 +559,13 @@ static void shadow_check(detail::Export &e, CPU *c) {
                    in.r[1], in.r[2], in.r[3], in.r[14]);
             for (auto &d : diffs) {
                 report("    %s\n", d.c_str());
+            }
+            if (getenv("GUEST_SHADOW_DEBUG")) {
+                int gf = 0, of = 0;
+                for (auto &p : gen_pages) gf += p.foreign;
+                for (auto &p : ov_pages) of += p.foreign;
+                report("    pages: original %zu (%d foreign), rewrite %zu (%d foreign)\n", gen_pages.size(), gf,
+                       ov_pages.size(), of);
             }
         }
     }
@@ -659,6 +711,7 @@ static void run_fuzzers(CPU *c) {
             if (setjmp(fuzz_escape) == 0) {
                 fuzz_escape_armed = true;
                 shadow_check(*fz.e, c);
+                busy.store(true);  // (an abandoned run released it)
             } else {
                 recover_from_crashed_input();  // the input made the original or the rewrite crash: drop it
                 fz.e->crashed_inputs++;

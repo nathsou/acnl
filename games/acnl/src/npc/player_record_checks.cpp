@@ -1,6 +1,7 @@
 // Checks on the player records kept in an object (16 records of 0xf2 bytes starting at 0x8ee, each beginning with
-// a player identity) and on villagers (records of the save data), plus one flag lookup of NpcItemSlots.
-#include "npc/npc_item_slots.hpp"
+// a player identity) and on villagers (records of the save data), plus one flag lookup of SaveVillager.
+#include "save/save_data.hpp"
+#include "save/villager.hpp"
 #include "save/player.hpp"
 
 using guest::gptr;
@@ -32,27 +33,8 @@ struct PlayerTable {
 };
 GUEST_OFFSET(PlayerTable, records, 0x8ee);
 
-// A villager record of the save data; only the flag word is used here.
-struct VillagerRecord {
-    static constexpr u32 FLAG_0 = 1u << 0;  // unknown flag
-    static constexpr u32 FLAG_1 = 1u << 1;  // unknown flag
-    static constexpr u32 SIZE_FOR_FUZZ = 0x2600;  // a bit more than the record (flags_2510 is its last word)
-
-    u8 unknown_0000[0x2510];
-    u32 flags_2510;
-};
-GUEST_OFFSET(VillagerRecord, flags_2510, 0x2510);
-
-// The save block; only what is used here.
-struct SaveBlock {
-    static constexpr u32 VILLAGER_COUNT = 10;
-
-    u8 unknown_00000[0x292a4];
-    u8 villagers[0x42a06 - 0x292a4];  // VILLAGER_COUNT records
-    s8 index_42a06;
-};
-GUEST_OFFSET(SaveBlock, villagers, 0x292a4);
-GUEST_OFFSET(SaveBlock, index_42a06, 0x42a06);
+// A bit more than a villager record (flags_2510 is its last word), for the fuzzing of functions that read past it.
+constexpr u32 FUZZ_VILLAGER_SIZE = 0x2600;
 
 // A table entry (of the table behind 0x002fe450); only one word is used.
 struct TableEntry {
@@ -62,7 +44,6 @@ struct TableEntry {
 GUEST_OFFSET(TableEntry, word_44, 0x44);
 
 // Still recompiled code (or rewritten elsewhere, called through the game's ABI):
-inline constexpr guest::Function<0x002fb328, gptr<SaveBlock>()> get_save_block;
 inline constexpr guest::Function<0x003091e0, gptr<void>(gptr<void> argument)> get_manager_3091e0;
 inline constexpr guest::Function<0x003091ec, gptr<SavePlayer>(gptr<void> manager)> get_player_3091ec;
 inline constexpr guest::Function<0x00309eb9, gptr<PlayerRecord>(gptr<void> villager, gptr<const PersonalId> identity)>
@@ -93,7 +74,7 @@ bool record_in_use(gptr<PlayerRecord> record) {
 
 // Whether a villager passes a long list of conditions (meaning not known yet); `table_id` selects a table entry
 // whose word at 0x44 must be zero.
-bool villager_passes_checks(gptr<VillagerRecord> villager, u32 table_id) {
+bool villager_passes_checks(gptr<SaveVillager> villager, u32 table_id) {
     get_manager_3091e0(villager);
     // (the result of the first call is what the second one is given)
     gptr<SavePlayer> player = get_player_3091ec(gptr<void>(guest::cpu()->r[0]));
@@ -101,9 +82,9 @@ bool villager_passes_checks(gptr<VillagerRecord> villager, u32 table_id) {
         return false;
     }
     gptr<PlayerRecord> record = find_player_record(villager, guest::addr_of(player->identity));
-    gptr<SaveBlock> block = get_save_block();
+    gptr<SaveData> block = *save_data;
     gptr<void> villagers = guest::addr_of(block->villagers[0]);
-    s32 index = expected_index_for(villager, villagers, SaveBlock::VILLAGER_COUNT);
+    s32 index = expected_index_for(villager, villagers, SaveData::VILLAGER_COUNT);
     if (!record) {
         return false;
     }
@@ -119,14 +100,14 @@ bool villager_passes_checks(gptr<VillagerRecord> villager, u32 table_id) {
     if (player_villager_check_30ddb0(player, villager, VILLAGER_CHECK_VALUE) != 0) {
         return false;
     }
-    villagers = guest::addr_of(get_save_block()->villagers[0]);
+    villagers = guest::addr_of((*save_data)->villagers[0]);
     if (villagers_check_30b9d4(villagers, villager) != VILLAGERS_CHECK_EXPECTED) {
         return false;
     }
     if (villager_check_309ac8(villager, 0) != 0) {
         return false;
     }
-    if ((villager->flags_2510 & (VillagerRecord::FLAG_0 | VillagerRecord::FLAG_1)) != 0) {
+    if ((villager->flags_2510 & (SaveVillager::FLAG_0 | SaveVillager::FLAG_1)) != 0) {
         return false;
     }
     gptr<TableEntry> entry = table_entry(table_id);
@@ -175,16 +156,16 @@ s32 first_record_in_use(gptr<PlayerTable> table) {
 // Whether a villager's id is valid, its index in the save is below 10 and matches the expected index, and its
 // player record is in use with bit 7 set and bit 1 of flags_b8 clear.
 bool villager_matches_identity(gptr<void> villager, gptr<const PersonalId> identity) {
-    gptr<SaveBlock> block = get_save_block();
+    gptr<SaveData> block = *save_data;
     gptr<void> villagers = guest::addr_of(block->villagers[0]);
     if (is_valid_id(villager) == 0) {
         return false;
     }
     s32 saved_index = block->index_42a06;
-    if (u32(saved_index) >= SaveBlock::VILLAGER_COUNT) {
+    if (u32(saved_index) >= SaveData::VILLAGER_COUNT) {
         return false;
     }
-    if (expected_index_for(villager, villagers, SaveBlock::VILLAGER_COUNT) != saved_index) {
+    if (expected_index_for(villager, villagers, SaveData::VILLAGER_COUNT) != saved_index) {
         return false;
     }
     gptr<PlayerRecord> record = find_player_record(villager, identity);
@@ -202,14 +183,14 @@ bool villager_matches_identity(gptr<void> villager, gptr<const PersonalId> ident
 
 }  // namespace
 
-bool NpcItemSlots::has_slot_flag(u32 slot) const {
+bool SaveVillager::has_slot_flag(u32 slot) const {
     if (slot >= SLOTS) {
         return false;
     }
     u32 slot_flags = (flags_2510 >> SLOT_FLAGS_SHIFT) & SLOT_FLAGS_MASK;
     return (slot_flags & (1u << slot)) != 0;
 }
-GUEST_EXPORT(0x0011a7df, NpcItemSlots::has_slot_flag);
+GUEST_EXPORT(0x0011a7df, SaveVillager::has_slot_flag);
 GUEST_EXPORT(0x0011ab05, villager_passes_checks);
 GUEST_EXPORT(0x0011abc9, find_record_for_identity);
 GUEST_EXPORT(0x0011af49, first_record_in_use);
@@ -219,7 +200,7 @@ GUEST_EXPORT(0x0011af89, villager_matches_identity);
 
 namespace {
 
-constexpr u32 ALL_SLOT_FLAGS = NpcItemSlots::SLOT_FLAGS_MASK << NpcItemSlots::SLOT_FLAGS_SHIFT;
+constexpr u32 ALL_SLOT_FLAGS = SaveVillager::SLOT_FLAGS_MASK << SaveVillager::SLOT_FLAGS_SHIFT;
 constexpr u32 ALL_BITS = 0xffffffff;
 constexpr u32 HIGH_BIT = 0x80000000;
 constexpr u32 FUZZ_TABLE_ID_LIMIT = 12;  // table ids a little past the 10 entries
@@ -258,20 +239,20 @@ gptr<const u8> some_identity(guest::Fuzz &f) {
 }  // namespace
 
 GUEST_FUZZ(0x0011a7df, 200, [](guest::Fuzz &f) {
-    auto slots = f.allocate(sizeof(NpcItemSlots)).cast<NpcItemSlots>();
+    auto slots = f.allocate(sizeof(SaveVillager)).cast<SaveVillager>();
     slots->flags_2510 = f.pick<u32>({0, ALL_SLOT_FLAGS, ALL_BITS, f.number()});
-    f.arguments(slots, f.pick<u32>({0, 1, NpcItemSlots::SLOTS - 1, NpcItemSlots::SLOTS, FUZZ_SLOT_LIMIT, ALL_BITS,
+    f.arguments(slots, f.pick<u32>({0, 1, SaveVillager::SLOTS - 1, SaveVillager::SLOTS, FUZZ_SLOT_LIMIT, ALL_BITS,
                                     HIGH_BIT, f.number()}));
 });
 GUEST_FUZZ(0x0011ab05, 200, [](guest::Fuzz &f) {
-    auto villager = self_referencing_object(f, VillagerRecord::SIZE_FOR_FUZZ).cast<VillagerRecord>();
-    villager->flags_2510 = f.pick<u32>({0, VillagerRecord::FLAG_0, VillagerRecord::FLAG_1,
-                                        VillagerRecord::FLAG_0 | VillagerRecord::FLAG_1, f.number()});
+    auto villager = self_referencing_object(f, FUZZ_VILLAGER_SIZE).cast<SaveVillager>();
+    villager->flags_2510 = f.pick<u32>({0, SaveVillager::FLAG_0, SaveVillager::FLAG_1,
+                                        SaveVillager::FLAG_0 | SaveVillager::FLAG_1, f.number()});
     f.arguments(villager, f.pick<u32>({0, FUZZ_LAST_ENTRY / 2, FUZZ_LAST_ENTRY, FUZZ_FIRST_INVALID_ENTRY, ALL_BITS,
                                        f.below(FUZZ_TABLE_ID_LIMIT)}));
 });
 GUEST_FUZZ(0x0011abc9, 200, [](guest::Fuzz &f) { f.arguments(some_player_table(f), some_identity(f)); });
 GUEST_FUZZ(0x0011af49, 200, [](guest::Fuzz &f) { f.arguments(some_player_table(f)); });
 GUEST_FUZZ(0x0011af89, 200, [](guest::Fuzz &f) {
-    f.arguments(self_referencing_object(f, VillagerRecord::SIZE_FOR_FUZZ), some_identity(f));
+    f.arguments(self_referencing_object(f, FUZZ_VILLAGER_SIZE), some_identity(f));
 });

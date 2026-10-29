@@ -1,3 +1,4 @@
+#include "save/save_data.hpp"
 #include "guest/guest.hpp"
 
 namespace {
@@ -15,8 +16,6 @@ inline constexpr guest::Function<0x0056bb88, void(Words12 &out)> fill_words12;
 inline constexpr guest::Function<0x0056c258, void(Words12 &self, u64 value)> apply_value_to_words12;
 inline constexpr guest::Function<0x0056be20, s64(Words12 &self)> words12_to_s64;
 
-inline guest::global<u32, 0x0095bf74> word_95bf74;
-
 u64 read_u64(gptr<const u8> p) {
     u64 v;
     memcpy(&v, p.get(), 8);
@@ -25,11 +24,11 @@ u64 read_u64(gptr<const u8> p) {
 
 }  // namespace
 
-// Returns a global word.
-static u32 get_word_95bf74() {
-    return *word_95bf74;
+// The address of the save data.
+static u32 get_save_data() {
+    return (*save_data).addr();
 }
-GUEST_EXPORT(0x002fb328, get_word_95bf74);
+GUEST_EXPORT(0x002fb328, get_save_data);
 GUEST_FUZZ(0x002fb328, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // True unless the 8-byte value is the "none" sentinel.

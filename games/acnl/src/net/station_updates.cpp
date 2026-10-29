@@ -59,8 +59,8 @@ void PlayerStamp::stamp_current_player() {
         return;
     }
     value = query_70ab10(*object_9529cc);
-    id.player_id = player->identity.player_id;
-    id.town_id = player->identity.town_id;
+    id.player_id = player->identity.player.id;
+    id.town_id = player->identity.town.id;
 }
 GUEST_EXPORT(0x00623f34, PlayerStamp::stamp_current_player);
 

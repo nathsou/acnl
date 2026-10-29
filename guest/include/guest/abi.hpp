@@ -254,7 +254,7 @@ void invoke(CPU *c) {
     } else {
         auto *self = gptr<typename T::Class>(u32(read_location(c, al.next<u32>(), c->r[13]))).get();
         auto args = read_args(c, al, static_cast<typename T::Args *>(nullptr));
-        auto call = [self](auto... a) { return (self->*Fn)(a...); };
+        auto call = [self](auto &&...a) -> decltype(auto) { return (self->*Fn)(std::forward<decltype(a)>(a)...); };
         if constexpr (std::is_void_v<R>) {
             std::apply(call, args);
         } else {

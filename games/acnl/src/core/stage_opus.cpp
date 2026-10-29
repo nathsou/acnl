@@ -1,5 +1,6 @@
 // audio::bgm::StageOpusBase and its subclasses: the objects that pick the background music of a stage (shop, cafe,
 // tour...). Only the fields the rewritten code touches are named.
+#include "save/save_data.hpp"
 #include "guest/guest.hpp"
 
 using guest::gptr;
@@ -38,12 +39,10 @@ GUEST_OFFSET(StageOpusBase, value_29, 0x29);
 
 namespace {
 
-constexpr u32 SHOP_QUERY_OFFSET = 0x62250;  // added to the global word before the query (meaning not known yet)
 constexpr u8 SHOP_VALUE_IF_SET = 0x18;
 constexpr u8 SHOP_VALUE_IF_CLEAR = 0x16;
 
-inline constexpr guest::Function<0x002fb328, u32()> read_word_95bf74;
-inline constexpr guest::Function<0x00758e08, u32(u32 address)> shop_query_758e08;
+inline constexpr guest::Function<0x00758e08, u32()> save_data_flag_621cf_bit_2;
 
 }  // namespace
 
@@ -65,9 +64,9 @@ static StageOpusBase &construct_stage_opus_base(StageOpusBase &self) {
 GUEST_EXPORT(0x00585c5c, construct_stage_opus_base);
 GUEST_FUZZ(0x00585c5c, 200, [](guest::Fuzz &f) { f.arguments(f.object<StageOpusBase>()); });
 
-// StageOpusShop::virtual_18: picks value_29 from a query on the block the global word points into.
+// StageOpusShop::virtual_18: picks value_29 from a flag of the save data.
 static void shop_pick_value(StageOpusBase &self) {
-    u32 result = shop_query_758e08(read_word_95bf74() + SHOP_QUERY_OFFSET);
+    u32 result = save_data_flag_621cf_bit_2();
     self.value_29 = result != 0 ? SHOP_VALUE_IF_SET : SHOP_VALUE_IF_CLEAR;
 }
 GUEST_EXPORT(0x00585cc0, shop_pick_value);

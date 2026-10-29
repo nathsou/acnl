@@ -5,45 +5,13 @@
 #include "guest/guest.hpp"
 #include "item/item.hpp"
 #include "save/player.hpp"
+#include "save/save_data.hpp"
+#include "save/villager.hpp"
 
 using guest::gptr;
 
 namespace {
 
-// A 12-byte value passed by value between the helpers below (probably a date; layout not known yet).
-struct Value12 {
-    u32 words[3];
-};
-GUEST_SIZE(Value12, 12);
-
-// A villager's record in the save data. Only the fields the rewritten code uses are named.
-struct SaveVillager {
-    u8 unknown_0000[0x2508];
-    u8 flag_2508;          // when clear, check_11a440 fails
-    u8 unknown_2509;
-    u8 unknown_250a[6];    // turned into a Value12 by f_0030a34c
-    u32 flags_2510;        // bit 0: unknown flag
-    u8 unknown_2514[4];
-
-    bool has_flag_2510_bit0() const;
-    bool check_11a440(gptr<void> object, u32 unused_r2, gptr<const Value12> value) const;
-};
-GUEST_OFFSET(SaveVillager, flag_2508, 0x2508);
-GUEST_OFFSET(SaveVillager, unknown_250a, 0x250a);
-GUEST_OFFSET(SaveVillager, flags_2510, 0x2510);
-GUEST_SIZE(SaveVillager, 0x2518);
-
-constexpr u32 VILLAGER_COUNT = 10;
-
-// The block get_word_95bf74 returns (save data); only what the rewritten code uses.
-struct SaveBlock {
-    u8 unknown_00000[0x292a4];
-    SaveVillager villagers[VILLAGER_COUNT];
-    u8 unknown_40594[0x42a07 - 0x40594];
-    s8 index_42a07;  // compared with a villager's index (meaning not known yet)
-};
-GUEST_OFFSET(SaveBlock, villagers, 0x292a4);
-GUEST_OFFSET(SaveBlock, index_42a07, 0x42a07);
 
 // What get_reference_value returns: a 12-byte value of which one byte is read here.
 struct ReferenceValue {
@@ -74,7 +42,6 @@ GUEST_OFFSET(IdentityRecords, extra, 0x2210);
 GUEST_SIZE(IdentityRecords, 0x2490);
 
 // Still recompiled code (or rewritten elsewhere, called through the game's ABI):
-inline constexpr guest::Function<0x002fb328, gptr<SaveBlock>()> get_word_95bf74;
 inline constexpr guest::Function<0x002fb378, gptr<ReferenceValue>()> get_reference_value;
 inline constexpr guest::Function<0x00300904, u32(gptr<const SaveVillager> villager)> villager_check_300904;
 inline constexpr guest::Function<0x00308971, s32(gptr<const SaveVillager> villager, gptr<const SaveVillager> villagers,
@@ -124,8 +91,8 @@ static bool check_villager_11a390(gptr<SaveVillager> villager) {
     if (villager_check_300904(villager) != 0) {
         return false;
     }
-    gptr<SaveBlock> block = get_word_95bf74();
-    s32 index = expected_index_for(villager, guest::addr_of(block->villagers[0]), VILLAGER_COUNT);
+    gptr<SaveData> block = *save_data;
+    s32 index = expected_index_for(villager, guest::addr_of(block->villagers[0]), SaveData::VILLAGER_COUNT);
     gptr<void> object = get_object_2fe450();
     if (object && object_check_309958(object, 5) != 0) {
         return true;

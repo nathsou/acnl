@@ -67,7 +67,7 @@ def main_next(args):
 def main_check(args):
     p = Program(h.GAME)
     state = h.State()
-    todo = sorted(a for a in p.rewritten if state.data['functions'].get('%x' % a, {}).get('status') != 'verified')
+    todo = sorted(a for a in p.rewritten if args.all or state.data['functions'].get('%x' % a, {}).get('status') != 'verified')
     if args.only:
         todo = [a for a in todo if p.rewritten[a] in args.only]
     if not todo:
@@ -95,6 +95,9 @@ def main_check(args):
     for a in todo:
         ok, why = h.verdict(rows.get(a))
         if ok and not crashed or ok and blamed and blamed != a:
+            if args.all and state.data['functions'].get('%x' % a, {}).get('status') == 'verified':
+                good += 1
+                continue
             st = state.fn(a)
             if st.get('status') != 'verified':
                 state.data['uncommitted'] += 1
@@ -137,6 +140,7 @@ def main():
     c = sub.add_parser('check')
     c.add_argument('only', nargs='*', help='only these files (paths from the repo root)')
     c.add_argument('--timeout', type=int, default=300)
+    c.add_argument('--all', action='store_true', help='check every rewritten function again (after library or header changes)')
     c.add_argument('--lines', type=int, default=8, help='mismatch lines shown per failing function')
     s = sub.add_parser('skip')
     s.add_argument('address')

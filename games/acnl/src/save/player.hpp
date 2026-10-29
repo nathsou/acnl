@@ -22,7 +22,7 @@ struct SavePlayer {
     void deposit(u32 bells);
 };
 GUEST_OFFSET(SavePlayer, identity, 0x55a6);
-GUEST_OFFSET(SavePlayer, identity.town_id, 0x55bc);
+GUEST_OFFSET(SavePlayer, identity.town, 0x55bc);
 GUEST_OFFSET(SavePlayer, bank, 0x6b8c);
 GUEST_OFFSET(SavePlayer, pockets, 0x6bd0);
 GUEST_OFFSET(SavePlayer, pockets.wallet, 0x6f08);

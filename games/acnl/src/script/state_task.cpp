@@ -24,12 +24,14 @@ constexpr u8 START_STATES[] = {0, 12, 32};
 constexpr u8 STATE_COUNT = 0x24;  // states at or past this end the run
 
 struct TaskStates {
+    u8 unknown_000[0x14];
     u8 state;
-    u8 flag_1;  // decides the final status
-    u8 unknown_002[0x164 - 2];
+    u8 flag_15;  // decides the final status
+    u8 unknown_016[0x164 - 0x16];
     gptr<TaskRequest> request;  // set while running
 };
-GUEST_OFFSET(TaskStates, flag_1, 1);
+GUEST_OFFSET(TaskStates, state, 0x14);
+GUEST_OFFSET(TaskStates, flag_15, 0x15);
 GUEST_OFFSET(TaskStates, request, 0x164);
 
 // One handler per state, called on the TaskStates part
@@ -62,7 +64,7 @@ void StateTask::run() {
         guest::call_member<void>(state_handlers[states.state], handler_object);
     }
     states.request = nullptr;
-    current->status = states.flag_1 != 0 ? STATUS_DONE_FLAG_SET : STATUS_DONE_FLAG_CLEAR;
+    current->status = states.flag_15 != 0 ? STATUS_DONE_FLAG_SET : STATUS_DONE_FLAG_CLEAR;
 }
 GUEST_EXPORT(0x005f4cf8, StateTask::run);
 
@@ -75,7 +77,7 @@ GUEST_FUZZ(0x005f4cf8, 300, [](guest::Fuzz &f) {
     auto req = f.object<TaskRequest>();
     req->start_mode = u8(sizeof(START_STATES) + f.below(256 - sizeof(START_STATES)));
     task->states.state = u8(STATE_COUNT + f.below(256 - STATE_COUNT));
-    task->states.flag_1 = f.pick<u8>({0, 1, u8(f.number())});
+    task->states.flag_15 = f.pick<u8>({0, 1, u8(f.number())});
     task->request = req;
     f.arguments(task);
 });

@@ -1,6 +1,7 @@
 // Small forwarding helpers: calls through a vtable of the object a script word holds at +4, the main object's
 // signed value, the villager record lookup and the vtable reset of script::WordFix<9u>.
 #include "guest/guest.hpp"
+#include "save/save_data.hpp"
 #include "script/word.hpp"
 
 using guest::gptr;
@@ -22,12 +23,6 @@ GUEST_OFFSET(VirtualHolder, object, 4);
 constexpr u32 FORWARDED_SLOT_A = 0x54 / 4;
 constexpr u32 FORWARDED_SLOT_B = 0x58 / 4;
 
-// The record of a villager in the save data (0x2518 bytes, ten of them).
-struct VillagerRecordSlot {
-    u8 unknown[0x2518];
-};
-GUEST_SIZE(VillagerRecordSlot, 0x2518);
-constexpr u32 VILLAGER_RECORD_COUNT = 10;
 
 constexpr u32 WORD_FIX_9_VTABLE = 0x0090a3e8;
 
@@ -35,7 +30,7 @@ constexpr u32 WORD_FIX_9_VTABLE = 0x0090a3e8;
 inline guest::global<gptr<void>, 0x0095362c> main_object;
 
 inline constexpr guest::Function<0x0075e048, s32(gptr<void> main_object)> main_object_signed_value;
-inline constexpr guest::Function<0x002fe470, u32(gptr<VillagerRecordSlot> record)> is_record_valid;
+inline constexpr guest::Function<0x002fe470, u32(gptr<SaveVillager> record)> is_record_valid;
 inline constexpr guest::Function<0x003084cc, u32(script::WordPtr &self)> word_ptr_virtual_0;
 inline constexpr guest::Function<0x00305f2c, u32()> read_global_object_byte;
 
@@ -67,11 +62,11 @@ GUEST_EXPORT(0x00300924, forward_to_held_object_slot_22);
 
 // The villager record with this index, or null when the index is out of range, the address is null or the
 // record is not valid.
-gptr<VillagerRecordSlot> villager_record_at(gptr<VillagerRecordSlot> records, u32 index) {
-    if (index >= VILLAGER_RECORD_COUNT) {
+gptr<SaveVillager> villager_record_at(gptr<SaveVillager> records, u32 index) {
+    if (index >= SaveData::VILLAGER_COUNT) {
         return nullptr;
     }
-    gptr<VillagerRecordSlot> record = records + index;
+    gptr<SaveVillager> record = records + index;
     if (!record) {
         return nullptr;
     }
@@ -121,25 +116,25 @@ GUEST_FUZZ(0x00300924, 200, [](guest::Fuzz &f) {
     f.arguments(some_holder(f), f.pick<u32>({0, 1}), f.pick<u32>({0, 1}), f.number());
 });
 GUEST_FUZZ(0x003009a9, 300, [](guest::Fuzz &f) {
-    constexpr u32 RECORD_SIZE = sizeof(VillagerRecordSlot);
+    constexpr u32 RECORD_SIZE = sizeof(SaveVillager);
     switch (f.below(4)) {
     case 0: {
         // out of range: the records are never touched
         u32 index = f.pick<u32>({10, 11, 0xffffffff, 10 + f.below(100), f.number() | 0x80000000u});
-        f.arguments(gptr<VillagerRecordSlot>(), index);
+        f.arguments(gptr<SaveVillager>(), index);
         return;
     }
     case 1: {
         // records + index is the null address
-        u32 index = f.below(VILLAGER_RECORD_COUNT);
-        f.arguments(gptr<VillagerRecordSlot>(u32(0) - index * RECORD_SIZE), index);
+        u32 index = f.below(SaveData::VILLAGER_COUNT);
+        f.arguments(gptr<SaveVillager>(u32(0) - index * RECORD_SIZE), index);
         return;
     }
     default: {
         // only the selected record is allocated; the base is moved back so that records + index lands on it
         gptr<void> record = self_referencing_block(f, RECORD_SIZE);
-        u32 index = f.pick<u32>({0, 1, 9, f.below(VILLAGER_RECORD_COUNT)});
-        f.arguments(gptr<VillagerRecordSlot>(record.addr() - index * RECORD_SIZE), index);
+        u32 index = f.pick<u32>({0, 1, 9, f.below(SaveData::VILLAGER_COUNT)});
+        f.arguments(gptr<SaveVillager>(record.addr() - index * RECORD_SIZE), index);
         return;
     }
     }

@@ -1,19 +1,19 @@
-#include "npc/npc_item_slots.hpp"
+#include "save/villager.hpp"
 
-bool NpcItemSlots::has_flag_1() const {
+bool SaveVillager::has_flag_1() const {
     return (flags_2510 & FLAG_1) != 0;
 }
-GUEST_EXPORT(0x001198e9, NpcItemSlots::has_flag_1);
+GUEST_EXPORT(0x001198e9, SaveVillager::has_flag_1);
 
-gptr<Item> NpcItemSlots::item_8d6_at(u32 slot) {
+gptr<Item> SaveVillager::item_8d6_at(u32 slot) {
     if (slot >= SLOTS) {
         return nullptr;
     }
     return guest::addr_of(items_8d6[slot]);
 }
-GUEST_EXPORT(0x001198f9, NpcItemSlots::item_8d6_at);
+GUEST_EXPORT(0x001198f9, SaveVillager::item_8d6_at);
 
-u32 NpcItemSlots::count_items_8c6() const {
+u32 SaveVillager::count_items_8c6() const {
     u32 count = 0;
     for (u32 slot = 0; slot < SLOTS; slot++) {
         if (!items_8c6[slot].is_empty()) {
@@ -22,19 +22,19 @@ u32 NpcItemSlots::count_items_8c6() const {
     }
     return count;
 }
-GUEST_EXPORT(0x00119911, NpcItemSlots::count_items_8c6);
+GUEST_EXPORT(0x00119911, SaveVillager::count_items_8c6);
 
-bool NpcItemSlots::has_flag_0_only() const {
+bool SaveVillager::has_flag_0_only() const {
     return (flags_2510 & FLAG_0) != 0 && (flags_2510 & FLAG_1) == 0;
 }
-GUEST_EXPORT(0x00119fcd, NpcItemSlots::has_flag_0_only);
+GUEST_EXPORT(0x00119fcd, SaveVillager::has_flag_0_only);
 
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
 
-static gptr<NpcItemSlots> some_slots(guest::Fuzz &f) {
-    auto slots = f.allocate(sizeof(NpcItemSlots)).cast<NpcItemSlots>();
+static gptr<SaveVillager> some_slots(guest::Fuzz &f) {
+    auto slots = f.allocate(sizeof(SaveVillager)).cast<SaveVillager>();
     slots->flags_2510 = f.pick<u32>({0, 1, 2, 3, 0xffffffff, f.number()});
-    for (u32 slot = 0; slot < NpcItemSlots::SLOTS; slot++) {
+    for (u32 slot = 0; slot < SaveVillager::SLOTS; slot++) {
         Item &item = slots->items_8c6[slot];
         switch (f.below(4)) {
         case 0: item.id = Item::EMPTY; break;

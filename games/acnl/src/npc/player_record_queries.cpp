@@ -2,8 +2,9 @@
 // classification by index.
 #include <cstring>
 
-#include "npc/npc_item_slots.hpp"
+#include "save/villager.hpp"
 #include "save/player.hpp"
+#include "save/save_data.hpp"
 
 using guest::gptr;
 
@@ -46,21 +47,6 @@ struct QueryReferenceValue {
 };
 GUEST_SIZE(QueryReferenceValue, 12);
 
-// The villager array of the save block (10 records), reached through get_save_block.
-struct QuerySaveBlock {
-    static constexpr u32 VILLAGER_COUNT = 10;
-    u8 unknown_00000[0x292a4];
-    u8 villagers[1];
-};
-GUEST_OFFSET(QuerySaveBlock, villagers, 0x292a4);
-
-// A villager's record; the byte at 0x24f0 is a signed value (meaning not known yet).
-struct QueryVillagerRecord {
-    u8 unknown_0000[0x24f0];
-    s8 value_24f0;
-};
-GUEST_OFFSET(QueryVillagerRecord, value_24f0, 0x24f0);
-
 // Still recompiled code (or rewritten elsewhere, called through the game's ABI):
 inline constexpr guest::Function<0x002fbd54, bool(gptr<void> identity)> identity_is_set;
 inline constexpr guest::Function<0x00309eb9, gptr<QueryPlayerRecord>(gptr<void> table, gptr<const PersonalId> identity)>
@@ -70,7 +56,6 @@ inline constexpr guest::Function<0x0030fc18, u32(gptr<SavePlayer> player, gptr<Q
     player_check_30fc18;
 inline constexpr guest::Function<0x003091e0, gptr<void>(gptr<void> argument)> get_manager_3091e0;
 inline constexpr guest::Function<0x003091ec, gptr<SavePlayer>(gptr<void> manager)> get_player_3091ec;
-inline constexpr guest::Function<0x002fb328, gptr<QuerySaveBlock>()> get_save_block;
 inline constexpr guest::Function<0x00308971, s32(gptr<void> villager, gptr<void> villagers, u32 count)>
     expected_index_for;
 inline constexpr guest::Function<0x002fe450, gptr<void>(u32 index)> table_entry;
@@ -103,14 +88,14 @@ bool entry_has_flag_bc_bit7(gptr<void> table, gptr<const PersonalId> identity) {
     return (record->flags_bc & QueryPlayerRecord::FLAG_BC_BIT7) != 0;
 }
 
-// FLAG_1 set and FLAG_0 clear in the flag word of an NpcItemSlots.
-bool has_flag_1_only(const NpcItemSlots &slots) {
-    return (slots.flags_2510 & NpcItemSlots::FLAG_1) != 0 && (slots.flags_2510 & NpcItemSlots::FLAG_0) == 0;
+// FLAG_1 set and FLAG_0 clear in the flag word of an SaveVillager.
+bool has_flag_1_only(const SaveVillager &slots) {
+    return (slots.flags_2510 & SaveVillager::FLAG_1) != 0 && (slots.flags_2510 & SaveVillager::FLAG_0) == 0;
 }
 
 // A long list of conditions on a villager and a player (the player is looked up when not given; meaning not
 // known yet).
-bool villager_passes_player_checks(gptr<NpcItemSlots> self, gptr<SavePlayer> player) {
+bool villager_passes_player_checks(gptr<SaveVillager> self, gptr<SavePlayer> player) {
     if (!player) {
         gptr<void> manager = get_manager_3091e0(self);
         player = get_player_3091ec(manager);
@@ -144,8 +129,8 @@ bool villager_passes_player_checks(gptr<NpcItemSlots> self, gptr<SavePlayer> pla
     if (threshold_index > MAX_THRESHOLD_INDEX) {
         return false;
     }
-    gptr<void> villagers = guest::addr_of(get_save_block()->villagers[0]);
-    s32 index = expected_index_for(self, villagers, QuerySaveBlock::VILLAGER_COUNT);
+    gptr<void> villagers = guest::addr_of((*save_data)->villagers[0]);
+    s32 index = expected_index_for(self, villagers, SaveData::VILLAGER_COUNT);
     if (index < 0) {
         return false;
     }
@@ -158,14 +143,14 @@ bool villager_passes_player_checks(gptr<NpcItemSlots> self, gptr<SavePlayer> pla
     if (index_check_309ccc(index) >= 0) {
         return false;
     }
-    if ((self->flags_2510 & NpcItemSlots::FLAG_0) != 0) {
+    if ((self->flags_2510 & SaveVillager::FLAG_0) != 0) {
         return false;
     }
     return villagers_index_309864(villagers, 0) != index;
 }
 
 // Classifies an index below 16 (3 for larger ones) depending on the signed byte at 0x24f0.
-u32 classify_index(gptr<QueryVillagerRecord> villager, u32 index) {
+u32 classify_index(gptr<SaveVillager> villager, u32 index) {
     constexpr u32 INDEX_LIMIT = 16;
     constexpr u32 SPECIAL_LIMIT = 10;
     constexpr s32 VALUE_LIMIT = 0x31;
@@ -232,18 +217,18 @@ GUEST_FUZZ(0x0011a7c5, 200, [](guest::Fuzz &f) {
     f.arguments(some_query_player_table(f), some_query_identity(f));
 });
 GUEST_FUZZ(0x0011b22d, 200, [](guest::Fuzz &f) {
-    auto slots = f.allocate(sizeof(NpcItemSlots)).cast<NpcItemSlots>();
+    auto slots = f.allocate(sizeof(SaveVillager)).cast<SaveVillager>();
     slots->flags_2510 = f.pick<u32>({0, 1, 2, 3, f.number()});
     f.arguments(slots);
 });
 GUEST_FUZZ(0x0011b249, 200, [](guest::Fuzz &f) {
-    auto villager = query_self_referencing_object(f, FUZZ_VILLAGER_SIZE).cast<NpcItemSlots>();
+    auto villager = query_self_referencing_object(f, FUZZ_VILLAGER_SIZE).cast<SaveVillager>();
     villager->flags_2510 = f.pick<u32>({0, 1, 2, f.number()});
     gptr<void> player = f.below(3) == 0 ? gptr<void>() : query_self_referencing_object(f, FUZZ_PLAYER_SIZE);
     f.arguments(villager, player);
 });
 GUEST_FUZZ(0x0011b339, 300, [](guest::Fuzz &f) {
-    auto villager = f.allocate(FUZZ_VILLAGER_SIZE).cast<QueryVillagerRecord>();
+    auto villager = f.allocate(FUZZ_VILLAGER_SIZE).cast<SaveVillager>();
     f.bytes(villager, FUZZ_VILLAGER_SIZE);
     if (f.below(2) != 0) {
         villager->value_24f0 = s8(f.pick<int>({0x30, 0x31, 0x32, -1, 0x7f, -128}));

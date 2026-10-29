@@ -16,8 +16,8 @@ GUEST_EXPORT(0x006256dc, ShortId::clear);
 GUEST_EXPORT(0x00625720, ShortId::clear);  // an identical copy
 
 void ShortId::set(const PersonalId &id) {
-    player_id = id.player_id;
-    town_id = id.town_id;
+    player_id = id.player.id;
+    town_id = id.town.id;
 }
 GUEST_EXPORT(0x006256f8, ShortId::set);
 

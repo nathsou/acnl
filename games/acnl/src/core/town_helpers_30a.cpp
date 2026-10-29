@@ -1,8 +1,9 @@
 // Small helpers around the name tables, the sead buffered string constructor and a few global blocks.
 #include "core/bit_set.hpp"
+#include "save/save_data.hpp"
 #include "core/safe_string.hpp"
 #include "guest/guest.hpp"
-#include "npc/npc_item_slots.hpp"
+#include "save/villager.hpp"
 
 namespace {
 
@@ -61,7 +62,6 @@ inline constexpr guest::Function<0x00717084, u32(gptr<void> object)> object_chec
 inline constexpr guest::Function<0x00716de4, u32(gptr<void> object)> object_check_b;
 inline constexpr guest::Function<0x00716b74, u32(gptr<void> object)> object_check_c;
 inline constexpr guest::Function<0x0076cec4, u32(gptr<void> object, u32 index)> indexed_check;
-inline constexpr guest::Function<0x002fb328, u32()> read_word_95bf74;
 
 // Flag indices set by collect_flags (what each flag means is not known yet); named after the check that sets them.
 constexpr u32 FLAG_FROM_1120F0 = 5;
@@ -75,8 +75,6 @@ constexpr u32 FLAG_FROM_OBJECT_A = 9;
 constexpr u32 MODE_FIRST_GROUP_AND_MORE = 0;  // the first group only
 constexpr u32 MODE_SKIP_FIRST_GROUP = 1;
 
-constexpr u32 OBJECT_A_OFFSET = 0x6ad82;  // from the word read by read_word_95bf74
-constexpr u32 OBJECT_B_OFFSET = 0x6aeb8;
 constexpr u32 FIRST_INDEXED = 0x4a;
 constexpr u32 LAST_INDEXED = 0x54;
 constexpr u32 INDEXED_FLAG_BIAS = 0x40;  // flag = index - bias
@@ -88,7 +86,7 @@ struct CalleeFrameOffset {
 };
 GUEST_SIZE(CalleeFrameOffset, 16);
 
-// ---- NpcItemSlots flag
+// ---- SaveVillager flag
 constexpr u32 FLAG_18 = 1u << 18;  // unknown flag
 
 // ---- fuzz sizes
@@ -171,7 +169,7 @@ static void collect_flags(BitSet32 &set, u32 mode) {
     if (check_112298()) {
         set.set(FLAG_FROM_112298);
     }
-    gptr<void> object_a(read_word_95bf74() + OBJECT_A_OFFSET);
+    gptr<void> object_a = guest::addr_of((*save_data)->part_6ad82).cast<void>();
     if (object_a) {
         if (object_check_a(object_a)) {
             if (object_check_b(object_a) || object_check_c(object_a)) {
@@ -179,7 +177,7 @@ static void collect_flags(BitSet32 &set, u32 mode) {
             }
         }
     }
-    gptr<void> object_b(read_word_95bf74() + OBJECT_B_OFFSET);
+    gptr<void> object_b = guest::addr_of((*save_data)->part_6aeb8).cast<void>();
     for (u32 index = FIRST_INDEXED; index <= LAST_INDEXED; index++) {
         if (indexed_check(object_b, index)) {
             set.set(index - INDEXED_FLAG_BIAS);
@@ -189,7 +187,7 @@ static void collect_flags(BitSet32 &set, u32 mode) {
 GUEST_EXPORT(0x0030a038, collect_flags);
 
 /// Sets flag 18 of the object's flag word.
-static void set_flag_18(NpcItemSlots &self) {
+static void set_flag_18(SaveVillager &self) {
     self.flags_2510 |= FLAG_18;
 }
 GUEST_EXPORT(0x0030a1a0, set_flag_18);
@@ -241,5 +239,5 @@ GUEST_FUZZ(0x0030a1a0, 200, [](guest::Fuzz &f) {
     constexpr u32 SIZE = 0x2600;  // past flags_2510
     auto object = f.allocate(SIZE);
     f.bytes(object, SIZE);
-    f.arguments(object.cast<NpcItemSlots>());
+    f.arguments(object.cast<SaveVillager>());
 });

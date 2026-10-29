@@ -1,6 +1,7 @@
 // Helpers on the session state object (the global at 0x0095362c): the entry template store, a readiness check on one
 // of its parts, a per-frame update of a part, a length table, and the rebuild of the slot records.
 #include "guest/guest.hpp"
+#include "save/save_data.hpp"
 #include "net/net_session.hpp"
 
 using guest::gptr;
@@ -15,7 +16,6 @@ inline guest::global<u32[PacketBuffer::TEMPLATE_COUNT], 0x0087baac> template_han
 inline constexpr guest::Function<0x002f8574, void(gptr<void> destination, gptr<void> source, u32 size)> copy_bytes;
 inline constexpr guest::Function<0x00100d2d, u32(gptr<void> first, gptr<void> second, u32 size)> memory_compare;
 inline constexpr guest::Function<0x0011916d, void(u32 destination, gptr<void> source, u32 unknown)> unknown_thumb_11916c;
-inline constexpr guest::Function<0x002fb328, u32()> get_word_95bf74;
 
 inline constexpr guest::Function<0x0075e35c, u32(gptr<void> part, u32 id)> part_test;
 inline constexpr guest::Function<0x0075e2fc, u32(gptr<void> part)> part_value;
@@ -116,8 +116,7 @@ static bool finish_session_step() {
     }
     part_finish_a724(guest::addr_of(state->part_b0).cast<void>());
     state->state_13266 = 0;
-    constexpr u32 TARGET_OFFSET = 0x292a4;  // from the word the callee returns
-    unknown_thumb_11916c(get_word_95bf74() + TARGET_OFFSET, guest::addr_of(state->block_13234).cast<void>(), 0);
+    unknown_thumb_11916c(guest::addr_of((*save_data)->villagers).addr(), guest::addr_of(state->block_13234).cast<void>(), 0);
     return true;
 }
 GUEST_EXPORT(0x00625190, finish_session_step);

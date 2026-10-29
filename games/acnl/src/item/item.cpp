@@ -1,4 +1,5 @@
 #include "item/item.hpp"
+#include "save/save_data.hpp"
 
 bool Item::is_empty() const { return number() == EMPTY; }
 GUEST_EXPORT(0x002fcaf4, Item::is_empty);
@@ -69,10 +70,6 @@ GUEST_EXPORT(0x00769840, Item::has_category_flag_4);
 u32 ItemData_base_price(const ItemData &d) { return d.base_price(); }
 GUEST_EXPORT(0x007486fc, ItemData_base_price);
 
-// The game manager (a global pointer to a large object, mostly unknown)
-inline guest::global<gptr<u8>, 0x0095bf74> game_manager;
-// The item in the game manager that some prices are compared against (what it represents is not known yet)
-constexpr u32 REFERENCE_ITEM_OFFSET = 0x6223a;
 
 constexpr u32 PRICE_DIVISOR_FOR_REFERENCE = 10;  // matching the reference item: a tenth of the price
 constexpr u32 MIN_STACK = 2, MAX_STACK = 9;      // stack counts outside this range are worth nothing
@@ -104,7 +101,7 @@ u32 Item::price() const {
         return price;
     }
 
-    const Item &reference = *gptr<Item>(game_manager->addr() + REFERENCE_ITEM_OFFSET);
+    const Item &reference = (*save_data)->reference_item;
     if (offset_in_category(*this) == offset_in_category(reference)) {
         price = s32(price) / PRICE_DIVISOR_FOR_REFERENCE;
     }

@@ -91,6 +91,7 @@ struct Item {
     gptr<WearClassEntry> wear_class_entry() const;  // from the wear class table; null without data or table
     WearClass wear_class() const;               // the high nibble of the entry's byte 0xd, NONE without one
     bool is_wear_class_7() const;               // wear_class() == CLASS_7
+    bool data_flag_1c_bit3() const;             // true without data; else ItemData::flag_1c_bit3()
     bool is_first_item() const;                 // the number is FIRST_ITEM (the flag in the id is ignored)
     bool has_data_flag_1b_bit1() const;         // bit 1 of ItemData::flags_1b (meaning not known yet)
     bool has_category_flag_bit_1_6() const;     // see item_predicates.cpp
@@ -128,9 +129,13 @@ struct ItemData {
     u8 unknown_15;
     u8 unknown_16[5];
     u8 flags_1b;  // bit 1: see Item::has_data_flag_1b_bit1
-    u8 unknown_1c[2];
+    u8 flags_1c;  // bit 3: see ItemData::flag_1c_bit3
+    u8 unknown_1d;
 
     u32 base_price() const { return u32(price_unit) * u32(s32(price_multiplier)); }
+    // True without the category flag table; otherwise bit 3 of flags_1c when bit 7 of the category's second flag byte
+    // is set, else false (meaning not known yet).
+    bool flag_1c_bit3() const;
 };
 GUEST_OFFSET(ItemData, category, 0x0a);
 GUEST_OFFSET(ItemData, unknown_0d, 0x0d);
@@ -138,6 +143,7 @@ GUEST_OFFSET(ItemData, price_multiplier, 0x0e);
 GUEST_OFFSET(ItemData, wear_class_index, 0x0f);
 GUEST_OFFSET(ItemData, unknown_15, 0x15);
 GUEST_OFFSET(ItemData, flags_1b, 0x1b);
+GUEST_OFFSET(ItemData, flags_1c, 0x1c);
 GUEST_SIZE(ItemData, 30);
 
 // The loaded item data table (from the RomFS)

@@ -56,3 +56,18 @@ gets about a quarter of the functions through.
 - Assertions (`Break`) hit by fuzz inputs deadlocked inside the kernel; they are now caught before it.
 - Functions verified by real calls only can still be wrong on unusual inputs: the repair pass found five such
   functions from the first round; four were fixed, one was taken out.
+
+## Checker bugs found later (and fixed)
+
+Found while rewriting by hand (`tools/harness/session.py`), each of them made fuzzed checks pass that should not have:
+
+- While fuzzing, a run that made a system call released the "check in progress" flag, so another game thread could
+  start its own check and reset the journal under the fuzz loop. Pages were then not restored, the rewrite ran on the
+  original's results, and rewrites that read before they write looked right. The fuzz loop now keeps the flag.
+- Setting page protections over a 255 MB range stops at the first hole the game leaves in it, leaving the main stack
+  (at the top) writable. Protection now falls back to smaller pieces.
+- `ABI`: member functions got their reference arguments as copies, so a member function writing through a
+  reference wrote to a temporary. Arguments are now forwarded.
+
+The rewrites that were verified under the old checker were all checked again: two had wrong field offsets
+(`StateTask::run`, and one more fixed since).
