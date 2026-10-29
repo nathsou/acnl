@@ -58,7 +58,8 @@ struct SaveVillager {
     VillagerPlayerRecord player_records[PLAYER_RECORDS];
     u8 unknown_180e[0x249a - 0x180e];
     Item item_249a;
-    u8 unknown_249e[0x24d6 - 0x249e];
+    u8 unknown_249e[0x24ae - 0x249e];
+    Item items_24ae[10];
     Item items_24d6[4];
     Item item_24e6;
     Item item_24ea;
@@ -86,6 +87,9 @@ struct SaveVillager {
     bool set_item_8e6(const Item &item);
     void clear_flag_bc_bit5_of_used_records();
     void set_state_250f(u32 state);
+    // Puts the item in the first empty slot of the second list (after compacting it); when all slots are taken the
+    // first one is dropped to make room. Empty items are ignored.
+    void add_item_8d6(const Item &item);
     void clear_flags_16_17();
     bool has_slot_flag(u32 slot) const;  // the unknown flag of a slot (bits 3-6); false for slots out of range
     bool check_11a440(gptr<void> object, u32 unused_r2, gptr<const Value12> value) const;
@@ -95,6 +99,7 @@ GUEST_OFFSET(SaveVillager, items_8d6, 0x8d6);
 GUEST_OFFSET(SaveVillager, item_8e6, 0x8e6);
 GUEST_OFFSET(SaveVillager, player_records, 0x8ee);
 GUEST_OFFSET(SaveVillager, item_249a, 0x249a);
+GUEST_OFFSET(SaveVillager, items_24ae, 0x24ae);
 GUEST_OFFSET(SaveVillager, items_24d6, 0x24d6);
 GUEST_OFFSET(SaveVillager, item_24e6, 0x24e6);
 GUEST_OFFSET(SaveVillager, item_24ea, 0x24ea);

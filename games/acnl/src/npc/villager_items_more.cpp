@@ -42,6 +42,27 @@ u32 SaveVillager::count_items_8d6() const {
 GUEST_EXPORT(0x0011a1a1, SaveVillager::count_items_8d6);
 GUEST_FUZZ(0x0011a1a1, 100, [](guest::Fuzz &f) { f.arguments(fuzz_villager(f)); });
 
+void SaveVillager::add_item_8d6(const Item &item) {
+    if (item.is_empty()) {
+        return;
+    }
+    compact_items_8d6(*this);
+    for (Item &slot : items_8d6) {
+        if (slot.has_number(Item::EMPTY)) {
+            slot = item;
+            return;
+        }
+    }
+    items_8d6[0] = empty_item;
+    compact_items_8d6(*this);
+    items_8d6[SLOTS - 1] = item;
+}
+GUEST_EXPORT(0x00112619, SaveVillager::add_item_8d6);
+GUEST_FUZZ(0x00112619, 200, [](guest::Fuzz &f) {
+    auto villager = fuzz_villager(f);
+    f.arguments(villager, fuzz_item(f, villager));
+});
+
 bool SaveVillager::remove_item_8d6(const Item &item) {
     if (item.is_empty()) {
         return false;
@@ -94,4 +115,14 @@ void SaveVillager::set_state_250f(u32 state) {
 GUEST_EXPORT(0x001139fd, SaveVillager::set_state_250f);
 GUEST_FUZZ(0x001139fd, 100, [](guest::Fuzz &f) {
     f.arguments(f.object<SaveVillager>(), f.pick<u32>({0, 1, 4, 5, 6, 0x105, 0xffffffffu}));
+});
+
+// A copy of the villager's item at the index of the long list (the empty item past its ten slots).
+void copy_item_24ae(Item &out, const SaveVillager &villager, u32 index) {
+    constexpr u32 LONG_LIST_SIZE = 10;
+    copy_item(out, index < LONG_LIST_SIZE ? villager.items_24ae[index] : *empty_item);
+}
+GUEST_EXPORT(0x0030b5a5, copy_item_24ae);
+GUEST_FUZZ(0x0030b5a5, 100, [](guest::Fuzz &f) {
+    f.arguments(f.object<Item>(), f.object<SaveVillager>(), f.pick<u32>({0, 5, 9, 10, f.number()}));
 });

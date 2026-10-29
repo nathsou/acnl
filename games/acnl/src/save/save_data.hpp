@@ -55,7 +55,8 @@ struct SaveData {
     SaveDataEntry2168 entries_4bf70[ENTRIES_4BF70_COUNT];
     u8 unknown_546f0[0x621b8 - 0x546f0];
     u16 flags_621b8;
-    u8 unknown_621ba[0x621cf - 0x621ba];
+    u8 unknown_621ba[0x621ce - 0x621ba];
+    u8 flags_621ce;
     u8 flags_621cf;
     u8 unknown_621d0[3];
     u8 flags_621d3;
@@ -91,6 +92,7 @@ GUEST_OFFSET(SaveData, index_42a07, 0x42a07);
 GUEST_OFFSET(SaveData, entries_4bf70, 0x4bf70);
 GUEST_OFFSET(SaveData, small_values_4be80, 0x4be80);
 GUEST_OFFSET(SaveData, flags_621b8, 0x621b8);
+GUEST_OFFSET(SaveData, flags_621ce, 0x621ce);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
 GUEST_OFFSET(SaveData, flags_621d3, 0x621d3);
 GUEST_OFFSET(SaveData, reference_item, 0x6223a);
