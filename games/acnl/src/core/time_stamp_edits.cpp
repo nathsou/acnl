@@ -82,6 +82,17 @@ GUEST_FUZZ(0x0056ca68, 200, [](guest::Fuzz &f) {
                 s32(f.below(60)), s32(f.below(60)));
 });
 
+// The same with milliseconds.
+void make_time_with_milliseconds(TimeStamp &out, s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 second,
+                                 s32 millisecond) {
+    out = from_fields(year, month, day, hour, minute, second, millisecond);
+}
+GUEST_EXPORT(0x002fd5c4, make_time_with_milliseconds);
+GUEST_FUZZ(0x002fd5c4, 200, [](guest::Fuzz &f) {
+    f.arguments(f.object<TimeStamp>(), s32(2000 + f.below(100)), s32(1 + f.below(12)), s32(1 + f.below(31)), s32(f.below(24)),
+                s32(f.below(60)), s32(f.below(60)), s32(f.below(1000)));
+});
+
 // The nanoseconds from the fixed origin time to a date and a time of day.
 s64 nanoseconds_of_date_time(s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 second) {
     return from_fields(year, month, day, hour, minute, second, 0).nanoseconds_since_origin();

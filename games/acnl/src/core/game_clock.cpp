@@ -2,6 +2,7 @@
 // state that remembers the time as nanoseconds.
 #include "core/date.hpp"
 #include "core/time_stamp.hpp"
+#include "core/wide_division.hpp"
 
 namespace {
 
@@ -35,17 +36,25 @@ inline guest::global<u32, 0x009524e4> closing_table_guard;
 
 // The time the game last set as the reference time, as nanoseconds, and the span since another time it keeps.
 struct ClockState {
-    u8 unknown_00[8];
+    static constexpr u8 FLAG_ADJUSTING = 1;  // bit 0 of flags_02: times before another are moved forward by the adjustment
+
+    u8 unknown_00[2];
+    u8 flags_02;
+    u8 unknown_03[5];
     s64 now_nanoseconds;
     s64 other_nanoseconds;
     s64 since_other_18;
     u8 unknown_20[8];
     s64 since_other_28;
+    u8 unknown_30[0x50 - 0x30];
+    s64 adjustment_nanoseconds;  // added (as milliseconds) to the earlier time in nanoseconds_between
 };
+GUEST_OFFSET(ClockState, flags_02, 2);
 GUEST_OFFSET(ClockState, now_nanoseconds, 8);
 GUEST_OFFSET(ClockState, other_nanoseconds, 0x10);
 GUEST_OFFSET(ClockState, since_other_18, 0x18);
 GUEST_OFFSET(ClockState, since_other_28, 0x28);
+GUEST_OFFSET(ClockState, adjustment_nanoseconds, 0x50);
 inline guest::global<ClockState, 0x0095c4d0> clock_state;
 
 inline constexpr guest::Function<0x00305f2c, u8()> read_global_object_byte;
@@ -219,3 +228,57 @@ GUEST_EXPORT(0x0056ca10, game_time_advanced);
 GUEST_FUZZ(0x0056ca10, 200, [](guest::Fuzz &f) {
     f.arguments(s64(f.below(1u << 30)) * 1'000'000 * 100, s32(f.below(40)) - 20, s32(f.below(48)) - 24, s32(f.below(120)) - 60, s32(f.below(120)) - 60);
 });
+
+namespace {
+
+constexpr u64 NANOSECONDS_PER_MILLISECOND_U64 = 1'000'000;
+constexpr u64 DAY_RECIPROCAL = 0x683fff6f48f948e3ull;  // for dividing by the nanoseconds in a day
+constexpr u32 DAY_SHIFT = 45;
+constexpr u64 SECOND_RECIPROCAL = 0x112e0be826d694b3ull;  // for dividing by the nanoseconds in a second
+constexpr u32 SECOND_SHIFT = 26;
+
+}  // namespace
+
+// The nanoseconds from `earlier` to `later`. With `adjust` and the clock's adjusting flag, a `later` that is before
+// `earlier` is first moved forward by the clock's adjustment.
+s64 nanoseconds_between(const TimeStamp &later, const TimeStamp &earlier, bool adjust) {
+    s64 later_ms = later.milliseconds_since_2000();
+    s64 earlier_ms = earlier.milliseconds_since_2000();
+    if (adjust && (clock_state->flags_02 & ClockState::FLAG_ADJUSTING) != 0 && later_ms < earlier_ms) {
+        later_ms += divide_by_reciprocal_value(clock_state->adjustment_nanoseconds, MILLION_RECIPROCAL, MILLION_SHIFT);
+    }
+    return s64(u64(later_ms - earlier_ms) * NANOSECONDS_PER_MILLISECOND_U64);
+}
+GUEST_EXPORT(0x0056beec, nanoseconds_between);
+
+// The whole days (rounded toward zero) from `earlier` to `later`.
+s64 days_between(const TimeStamp &later, const TimeStamp &earlier, bool adjust) {
+    return divide_by_reciprocal_value(nanoseconds_between(later, earlier, adjust), DAY_RECIPROCAL, DAY_SHIFT);
+}
+GUEST_EXPORT(0x002fd4b4, days_between);
+
+// The whole seconds from `earlier` to `later`.
+s64 seconds_between(const TimeStamp &later, const TimeStamp &earlier, bool adjust) {
+    return divide_by_reciprocal_value(nanoseconds_between(later, earlier, adjust), SECOND_RECIPROCAL, SECOND_SHIFT);
+}
+GUEST_EXPORT(0x0056c2c0, seconds_between);
+
+namespace {
+
+gptr<TimeStamp> valid_time_stamp(guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    time->year = s32(2012 + f.below(40));
+    time->month = s8(1 + f.below(12));
+    time->day = s8(1 + f.below(28));
+    time->hour = s8(f.below(24));
+    time->minute = s8(f.below(60));
+    time->second = s8(f.below(60));
+    time->millisecond = s16(f.below(1000));
+    return time;
+}
+
+}  // namespace
+
+GUEST_FUZZ(0x0056beec, 200, [](guest::Fuzz &f) { f.arguments(valid_time_stamp(f), valid_time_stamp(f), f.below(2)); });
+GUEST_FUZZ(0x002fd4b4, 200, [](guest::Fuzz &f) { f.arguments(valid_time_stamp(f), valid_time_stamp(f), f.below(2)); });
+GUEST_FUZZ(0x0056c2c0, 200, [](guest::Fuzz &f) { f.arguments(valid_time_stamp(f), valid_time_stamp(f), f.below(2)); });

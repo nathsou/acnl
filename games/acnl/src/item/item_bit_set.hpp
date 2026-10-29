@@ -9,6 +9,7 @@ struct ItemBitSet {
 
     u32 words[WORDS];
 
+    void clear();
     void add(const Item &item);          // numbers past the last item are ignored
     u32 count_items() const;             // the set bits among the first ITEM_BITS
     u32 count_all_bits() const;          // every set bit

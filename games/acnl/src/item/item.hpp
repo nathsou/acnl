@@ -107,6 +107,7 @@ struct Item {
     bool has_category_flag_bit_1_6() const;     // see item_predicates.cpp
     bool has_category_flag_bit_2_5() const;     // see item_predicates.cpp
     bool is_in_category_group_24_27_28() const; // the category is 0x24, 0x27 or 0x28
+    bool sanitize();                            // see item_sanitize.cpp
     bool try_make_kind_2();                     // see item_kind_2.cpp
 };
 GUEST_SIZE(Item, 4);
@@ -141,7 +142,8 @@ struct ItemData {
     u16 value_06;      // see Item::has_valid_value_06
     u8 unknown_08[2];
     u8 category;
-    u8 unknown_0b[2];
+    u8 unknown_0b;
+    u8 group_0c;  // items that share it belong together; see ItemData::group
     u8 availability_rule;  // when the item is on offer, see item_is_available (0 for none)
     s8 price_multiplier;  // the base price is price_unit * price_multiplier
     u8 wear_class_index;  // into the wear class table (Item::wear_class_entry)
@@ -164,11 +166,13 @@ struct ItemData {
     // True without the category flag table; otherwise bit 3 of flags_1c when bit 7 of the category's second flag byte
     // is set, else false (meaning not known yet).
     bool flag_1c_bit3() const;
+    u8 group() const;          // group_0c, 0 when it is 0x67 or more
     bool has_kind_11() const;  // kind_11 is between 1 and KIND_11_LAST
     u32 class_19() const;      // the high nibble of class_and_flags_19 when it is below CLASS_19_LIMIT, else 0
 };
 GUEST_OFFSET(ItemData, value_06, 0x06);
 GUEST_OFFSET(ItemData, category, 0x0a);
+GUEST_OFFSET(ItemData, group_0c, 0x0c);
 GUEST_OFFSET(ItemData, availability_rule, 0x0d);
 GUEST_OFFSET(ItemData, price_multiplier, 0x0e);
 GUEST_OFFSET(ItemData, wear_class_index, 0x0f);
