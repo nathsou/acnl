@@ -29,23 +29,6 @@ inline guest::global<ActiveEntry[ActiveEntry::ENTRY_COUNT], 0x00a82c58> active_e
 
 }  // namespace
 
-// A set of 33 flags kept in 5 bytes.
-struct ByteBitSet33 {
-    static constexpr u32 FLAG_COUNT = 33;
-
-    u8 bytes[5];
-
-    void set(u32 index);
-};
-
-void ByteBitSet33::set(u32 index) {
-    if (index >= FLAG_COUNT) {
-        return;
-    }
-    bytes[index / 8] = bytes[index / 8] | u8(1u << (index % 8));
-}
-GUEST_EXPORT(0x0030ebc4, ByteBitSet33::set);
-
 // Runs virtual 2, then returns the object's word at 4.
 struct VirtualWithWord {
     gptr<u32> vtable;
@@ -116,9 +99,6 @@ GUEST_FUZZ(0x0030f4d8, 200, [](guest::Fuzz &f) {
     auto object = f.object<VirtualWithWord>();
     object->vtable = fuzz::harmless_vtable(f);
     f.arguments(object);
-});
-GUEST_FUZZ(0x0030ebc4, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<ByteBitSet33>(), f.pick<u32>({0, 1, 7, 8, 31, 32, 33, 34, 0xffffffffu, f.below(40)}));
 });
 GUEST_FUZZ(0x0030f56c, 200, [](guest::Fuzz &f) { f.arguments(f.object<NarrowDate>(), f.object<WideDate>()); });
 GUEST_FUZZ(0x0030fbb4, 200, [](guest::Fuzz &f) {
