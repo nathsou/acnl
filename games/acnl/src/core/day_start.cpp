@@ -7,6 +7,11 @@
 
 namespace {
 
+inline constexpr guest::Function<0x00305f2c, u8()> read_global_object_byte;
+
+constexpr u8 TIME_FROZEN = 3;           // read_global_object_byte's value while the time does not run
+constexpr u32 FROZEN_WEEKDAY_VALUE = 7;  // value_for_weekday's answer then
+constexpr u32 WEEKDAY_TABLE_OFFSET = 8;  // the seven bytes of value_for_weekday's table
 constexpr u32 PERIOD_TABLE_ADDRESS = 0x0095213c;
 constexpr u32 PERIOD_ROW_WORDS = 10;
 
@@ -94,4 +99,44 @@ u32 period_table_value(u32 index) {
 GUEST_EXPORT(0x001e5e88, period_table_value);
 GUEST_FUZZ(0x001e5e88, 100, [](guest::Fuzz &f) {
     f.arguments(f.below(PERIOD_ROW_WORDS));
+});
+
+// Whether the game day the time falls in is not the one the clock reports as the current day.
+bool is_not_current_game_day(const TimeStamp &time) {
+    GameTime game_time;
+    game_time.set_time_stamp(time);
+    game_time.round_down_to_day_start();
+    TimeStamp current;
+    day_start_by_clock_mode(current);
+    TimeStamp day = game_time.to_time_stamp();
+    return current.year != day.year || current.month != day.month || current.day != day.day;
+}
+GUEST_EXPORT(0x0074fee0, is_not_current_game_day);
+GUEST_FUZZ(0x0074fee0, 100, [](guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    *time = *reference_time;
+    time->add_days(s32(f.below(5)) - 2);
+    time->hour = s8(f.below(24));
+    f.arguments(time);
+});
+
+// The byte of the object's table of seven (one per weekday, from Sunday) for the weekday of the game day the time falls
+// in; 7 while the time is frozen.
+u32 value_for_weekday(gptr<u8> table_owner, u32 time_word_0, u32 time_word_1, u32 time_word_2) {
+    TimeStamp day = TimeStamp::from_words(time_word_0, time_word_1, time_word_2);
+    day.move_to_day_start();
+    if (read_global_object_byte() == TIME_FROZEN) {
+        return FROZEN_WEEKDAY_VALUE;
+    }
+    return table_owner[WEEKDAY_TABLE_OFFSET + day.weekday];
+}
+GUEST_EXPORT(0x0075dad8, value_for_weekday);
+GUEST_FUZZ(0x0075dad8, 100, [](guest::Fuzz &f) {
+    auto owner = f.allocate(16).cast<u8>();
+    f.bytes(owner, 16);
+    TimeStamp time = *reference_time;
+    time.add_days(s32(f.below(14)));
+    u32 words[3];
+    std::memcpy(words, &time, sizeof(words));
+    f.arguments(owner, words[0], words[1], words[2]);
 });

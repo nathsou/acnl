@@ -8,6 +8,8 @@ namespace {
 
 inline constexpr guest::Function<0x002fccdc, u32(const Item &item)> indexed_item_type;
 inline constexpr guest::Function<0x00535a1c, gptr<u8>(const Item &item)> item_table_entry;
+inline constexpr guest::Function<0x002f74c8, u8()> read_global_byte_2;
+inline constexpr guest::Function<0x002f74e0, u32(u32 mask, u32 index)> table_entry_has_all_bits;
 
 constexpr u16 MARKER_NUMBER = 0x7ffc;  // meaning not known yet
 constexpr u8 NO_GROUP = 0x65;          // Item::group of items without data
@@ -33,6 +35,15 @@ constexpr u8 WEAR_INDEX_1E = 0x1e;
 constexpr u8 WEAR_INDICES_LIST_B[] = {0x2a, 0x30};
 
 constexpr u8 CATEGORY_0C = 0x0c;  // meaning not known yet
+
+constexpr u32 BYTE_0B_LIMIT = 0xaa;  // ItemData byte 0x0b values at or above read as 0
+constexpr u32 BYTE_17_LOW_MASK = 0xf;
+constexpr u32 BYTE_17_LOW_LIMIT = 5;
+constexpr u32 BYTE_17_LOW_WANTED = 2;
+constexpr u32 MODE_FLAG_4 = 4;
+constexpr u8 CATEGORY_48 = 0x48;
+constexpr u16 NUMBER_9D = 0x9d;
+constexpr u16 CONVERTED_NUMBER = 0x33a7;
 
 // Category 0x27 is split by position: the first 0x2a items, the next 0x1e and the rest
 constexpr u8 CATEGORY_27 = 0x27;
@@ -251,3 +262,51 @@ GUEST_FUZZ(0x0076a280, 400, [](guest::Fuzz &f) {
     f.arguments(item);
 });
 GUEST_FUZZ(0x007692f0, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_27})); });
+
+u32 Item::data_byte_0b() const {
+    gptr<ItemData> d = data();
+    if (!d) {
+        return 0;
+    }
+    return d->unknown_0b < BYTE_0B_LIMIT ? d->unknown_0b : 0;
+}
+GUEST_EXPORT(0x0076c628, Item::data_byte_0b);
+GUEST_FUZZ(0x0076c628, 200, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+bool Item::has_valid_value_06_and_flags_value() const {
+    return has_valid_value_06() && flags_value() != 0;
+}
+GUEST_EXPORT(0x0076c648, Item::has_valid_value_06_and_flags_value);
+GUEST_FUZZ(0x0076c648, 200, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+bool Item::has_data_byte_17_low_nibble_2() const {
+    gptr<ItemData> d = data();
+    if (!d) {
+        return false;
+    }
+    u32 value = d->byte_17 & BYTE_17_LOW_MASK;
+    return value < BYTE_17_LOW_LIMIT && value == BYTE_17_LOW_WANTED;
+}
+GUEST_EXPORT(0x0076c5b0, Item::has_data_byte_17_low_nibble_2);
+GUEST_FUZZ(0x0076c5b0, 200, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+bool Item::is_wear_class_7_in_mode_with_flag_4() const {
+    return is_wear_class_7() && table_entry_has_all_bits(MODE_FLAG_4, read_global_byte_2()) != 0;
+}
+GUEST_EXPORT(0x0076aa70, Item::is_wear_class_7_in_mode_with_flag_4);
+GUEST_FUZZ(0x0076aa70, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+// Items of category 0x48 and the object with number 0x9d become item number 0x33a7 (keeping the flags and the flag of the
+// id); every other item becomes the empty item.
+void item_for_category_48_or_number_9d(Item &out, const Item &item) {
+    gptr<ItemData> d = item.data();
+    bool converts = (d && d->category < Item::NO_CATEGORY && d->category == CATEGORY_48) || item.number() == NUMBER_9D;
+    if (!converts) {
+        out = *empty_item;
+        return;
+    }
+    out.id = u16((item.id & Item::ID_FLAG) | CONVERTED_NUMBER);
+    out.flags = item.flags;
+}
+GUEST_EXPORT(0x0076b8c4, item_for_category_48_or_number_9d);
+GUEST_FUZZ(0x0076b8c4, 300, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), fuzz::assorted_item(f, {CATEGORY_48})); });

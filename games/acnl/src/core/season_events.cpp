@@ -16,6 +16,7 @@ constexpr u32 SNOW_PERIOD_VALUE = 9;                     // period_table_value(0
 constexpr u32 PERIOD_VALUE_RANGE_FIRST = 5;              // period_table_value(0) between these (meaning not known yet)
 constexpr u32 PERIOD_VALUE_RANGE_LAST = 7;
 constexpr u32 PERIOD_VALUE_COLUMN = 0;
+constexpr u8 SATURDAY = 6;
 constexpr s32 SAKURA_MONTH = 4;
 constexpr s32 SAKURA_FIRST_DAY = 7;
 constexpr s32 SAKURA_LAST_DAY = 10;
@@ -121,3 +122,19 @@ GUEST_FUZZ(0x00595b18, 200, [](guest::Fuzz &f) {
     object->item.id = f.below(4) == 0 ? u16(f.number()) : group.numbers[f.below(2)];
     f.arguments(object);
 });
+
+// The opposite of is_snow_period.
+bool is_snow_free_period() {
+    return !is_snow_period();
+}
+GUEST_EXPORT(0x006cb9fc, is_snow_free_period);
+GUEST_FUZZ(0x006cb9fc, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the day start the clock reports is a Saturday (the weekday of a time is 0 for Sunday).
+bool day_start_is_saturday() {
+    TimeStamp day_start;
+    day_start_by_clock_mode(day_start);
+    return day_start.weekday == SATURDAY;
+}
+GUEST_EXPORT(0x0071728c, day_start_is_saturday);
+GUEST_FUZZ(0x0071728c, 50, [](guest::Fuzz &f) { f.arguments(); });

@@ -130,6 +130,10 @@ struct Item {
     bool has_wear_index_in_group_a() const;     // the wear class index is 0x1b, 0x1c, 0x1d or 0x1f
     bool is_wear_class_3_outside_groups() const;  // wear class 3, and no wear index of group a or 0x1e
     u32 section_in_category_27() const;         // 0-2 for the items of category 0x27 by position, 2 for all others
+    u32 data_byte_0b() const;                   // ItemData byte 0x0b when it is below 0xaa, else 0 (0 without data)
+    bool has_valid_value_06_and_flags_value() const;  // valid value_06 and a non-zero flags_value()
+    bool has_data_byte_17_low_nibble_2() const; // the low nibble of ItemData::byte_17 is 2 (and below 5)
+    bool is_wear_class_7_in_mode_with_flag_4() const;  // wear class 7, while the current mode has flag 4
     bool sanitize();                            // see item_sanitize.cpp
     bool try_make_kind_2();                     // see item_kind_2.cpp
 };
@@ -148,6 +152,7 @@ gptr<CategoryInfo> category_info(u32 category);  // categories >= NO_CATEGORY ge
 Item &construct_item(Item &self, u16 id);       // the constructor Item(u16)
 Item &copy_item(Item &self, const Item &other);
 s32 item_offset_in_category(const Item &item);  // the number minus the first number of its category; -1 without data
+void item_for_category_48_or_number_9d(Item &out, const Item &item);  // see item_class_checks.cpp
 
 // An entry of the item data table (30 bytes). Only the price and the category are known so far.
 struct ItemData {

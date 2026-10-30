@@ -78,6 +78,7 @@ struct GameTime {
     s64 nanoseconds;
 
     TimeStamp to_time_stamp() const;  // earliest() when not set
+    s64 nanoseconds_or_earliest() const;  // the value, or that of earliest() when not set
     void set_time_stamp(const TimeStamp &time);
     void set_now();
     void set(s64 value) { nanoseconds = value; }

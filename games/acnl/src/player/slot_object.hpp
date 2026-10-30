@@ -9,6 +9,8 @@ struct SlotObject {
     static constexpr u8 FLAGS_66_BIT_1 = 1 << 1;  // meaning not known yet
     static constexpr u8 FLAGS_66_BIT_5 = 1 << 5;
     static constexpr u8 FLAGS_171_BIT_5 = 1 << 5;  // set: the record's mode is not compared (meaning not known yet)
+    static constexpr u8 FLAGS_177_BIT_3 = 1 << 3;  // meaning not known yet
+    static constexpr u8 FLAGS_8C5_BIT_5 = 1 << 5;  // meaning not known yet
     static constexpr u8 FLAGS_17C_BIT_1 = 1 << 1;  // meaning not known yet
     static constexpr u8 FLAGS_17C_BIT_2 = 1 << 2;
 
@@ -20,20 +22,26 @@ struct SlotObject {
     u8 flags_66;
     u8 unknown_067[0x171 - 0x67];
     u8 flags_171;
-    u8 unknown_172[0x17c - 0x172];
+    u8 unknown_172[0x177 - 0x172];
+    u8 flags_177;
+    u8 unknown_178[0x17c - 0x178];
     u8 flags_17c;
     u8 unknown_17d[0x1a9 - 0x17d];
     u8 state_1a9;  // what the object is doing: an id the game has a table of entries for (0: none)
     u8 unknown_1aa;
     u8 byte_1ab;
+    u8 unknown_1ac[0x8c5 - 0x1ac];
+    u8 flags_8c5;
 };
 GUEST_OFFSET(SlotObject, position, 0x14);
 GUEST_OFFSET(SlotObject, angles, 0x2c);
 GUEST_OFFSET(SlotObject, flags_66, 0x66);
 GUEST_OFFSET(SlotObject, flags_171, 0x171);
+GUEST_OFFSET(SlotObject, flags_177, 0x177);
 GUEST_OFFSET(SlotObject, flags_17c, 0x17c);
 GUEST_OFFSET(SlotObject, state_1a9, 0x1a9);
 GUEST_OFFSET(SlotObject, byte_1ab, 0x1ab);
+GUEST_OFFSET(SlotObject, flags_8c5, 0x8c5);
 
 // The object of a slot (a number of 4 or more stands for the main object's slot), or null; see slot_values.cpp.
 guest::gptr<SlotObject> look_up_object(u32 id, u32 include_idle);

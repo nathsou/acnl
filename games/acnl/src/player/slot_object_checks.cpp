@@ -175,3 +175,55 @@ GUEST_EXPORT(0x005c7048, main_object_position_and_angles);
 GUEST_FUZZ(0x005c7048, 100, [](guest::Fuzz &f) {
     f.arguments(f.below(4) == 0 ? gptr<Float3>(0u) : f.object<Float3>(), f.below(4) == 0 ? gptr<u16>(0u) : f.allocate(6).cast<u16>());
 });
+
+namespace {
+
+// Parts of the object whose addresses are asked for (what they hold is not known yet).
+constexpr u32 PART_1B4_OFFSET = 0x1b4;
+constexpr u32 PART_424_OFFSET = 0x424;
+constexpr u32 PART_5EC_OFFSET = 0x5ec;
+
+gptr<u8> address_in_object(gptr<SlotObject> object, u32 offset) {
+    return object ? object.cast<u8>() + offset : gptr<u8>(0u);
+}
+
+}  // namespace
+
+// The address of the part at 0x1b4 of the slot's object (idle objects count), null without an object.
+gptr<u8> slot_object_part_1b4(u32 id) {
+    return address_in_object(look_up_object(id, INCLUDE_IDLE), PART_1B4_OFFSET);
+}
+GUEST_EXPORT(0x005c0f5c, slot_object_part_1b4);
+GUEST_EXPORT(0x005c1330, slot_object_part_1b4);
+GUEST_FUZZ(0x005c0f5c, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
+GUEST_FUZZ(0x005c1330, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
+
+// The same for the part at 0x424 (`include_idle` as for look_up_object).
+gptr<u8> slot_object_part_424(u32 id, u32 include_idle) {
+    return address_in_object(look_up_object(id, include_idle), PART_424_OFFSET);
+}
+GUEST_EXPORT(0x005c1838, slot_object_part_424);
+GUEST_FUZZ(0x005c1838, 100, [](guest::Fuzz &f) { f.arguments(some_id(f), f.below(2)); });
+
+// The same for the part at 0x5ec (idle objects count).
+gptr<u8> slot_object_part_5ec(u32 id) {
+    return address_in_object(look_up_object(id, INCLUDE_IDLE), PART_5EC_OFFSET);
+}
+GUEST_EXPORT(0x005c06cc, slot_object_part_5ec);
+GUEST_FUZZ(0x005c06cc, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
+
+// Whether the slot's object (idle ones count) has flag 5 of byte 0x8c5.
+bool slot_object_has_flag_8c5_bit_5(u32 id) {
+    gptr<SlotObject> object = look_up_object(id, INCLUDE_IDLE);
+    return object && (object->flags_8c5 & SlotObject::FLAGS_8C5_BIT_5) != 0;
+}
+GUEST_EXPORT(0x005c1940, slot_object_has_flag_8c5_bit_5);
+GUEST_FUZZ(0x005c1940, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
+
+// Whether the main object has flag 3 of byte 0x177; true when there is no main object.
+bool main_object_has_flag_177_bit_3_or_is_missing() {
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+    return !object || (object->flags_177 & SlotObject::FLAGS_177_BIT_3) != 0;
+}
+GUEST_EXPORT(0x005c6850, main_object_has_flag_177_bit_3_or_is_missing);
+GUEST_FUZZ(0x005c6850, 50, [](guest::Fuzz &f) { f.arguments(); });

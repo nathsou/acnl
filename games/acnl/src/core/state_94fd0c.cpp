@@ -12,6 +12,7 @@ inline constexpr guest::Function<0x006d1ffc, u32(u32 request, u32 unknown)> try_
 inline constexpr guest::Function<0x00194bc0, void(u32 object, u32 argument)> notify_object;
 inline constexpr guest::Function<0x002fb94c, gptr<SavePlayer>(Item &dest)> get_current_player;
 inline constexpr guest::Function<0x00724424, const Item &(Pockets &pockets, s32 slot, u32 unknown)> pockets_get_item;
+inline constexpr guest::Function<0x002fb94c, gptr<SavePlayer>()> get_current_player_unargued;
 
 constexpr u32 NOTIFY_REQUEST = 0x7b;
 
@@ -72,3 +73,21 @@ Item &copy_selected_pocket_item(Item &dest) {
 }
 GUEST_EXPORT(0x006d1f00, copy_selected_pocket_item);
 GUEST_FUZZ(0x006d1f00, 200, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });
+
+// The item in the current player's pocket slot of byte 0x19 of the global state, or the empty item when that is not a slot
+// (0x10 and above) or there is no current player.
+const Item &item_in_pocket_slot_19() {
+    gptr<SavePlayer> player = get_current_player_unargued();
+    u8 slot = state_94fd0c->pocket_slot_19;
+    if (slot >= Pockets::SLOTS || !player) {
+        return *empty_item;
+    }
+    return player->pockets.item_with_lock(slot, gptr<u8>(0u));
+}
+GUEST_EXPORT(0x0075aa60, item_in_pocket_slot_19);
+GUEST_FUZZ(0x0075aa60, 100, [](guest::Fuzz &f) {
+    if (f.below(4) == 0) {
+        state_94fd0c->pocket_slot_19 = f.pick<u8>({0, 5, 0xf, 0x10, 0xff});
+    }
+    f.arguments();
+});

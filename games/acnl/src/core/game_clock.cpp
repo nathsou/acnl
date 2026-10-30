@@ -193,6 +193,19 @@ TimeStamp GameTime::to_time_stamp() const {
     return TimeStamp::from_nanoseconds_since_origin(nanoseconds);
 }
 
+s64 GameTime::nanoseconds_or_earliest() const {
+    if (nanoseconds == NONE || nanoseconds == 0) {
+        return TimeStamp::earliest().nanoseconds_since_origin();
+    }
+    return nanoseconds;
+}
+GUEST_EXPORT(0x00759664, GameTime::nanoseconds_or_earliest);
+GUEST_FUZZ(0x00759664, 100, [](guest::Fuzz &f) {
+    auto time = f.object<GameTime>();
+    time->nanoseconds = f.pick<s64>({0, GameTime::NONE, s64(f.below(1u << 30)) * 1'000'000 * 40, s64(f.number())});
+    f.arguments(time);
+});
+
 void GameTime::set_time_stamp(const TimeStamp &time) {
     nanoseconds = time.nanoseconds_since_origin();
 }
