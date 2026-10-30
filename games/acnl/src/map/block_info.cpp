@@ -24,6 +24,9 @@ constexpr u32 LIST_C_ADDRESS = 0x0090bc4c;      // 4 kinds
 constexpr u8 CATEGORY_24 = 0x24, CATEGORY_28 = 0x28;
 constexpr u16 ID_9C = 0x9c, ID_A6 = 0xa6;
 constexpr u8 BLOCK_KIND_3 = 3;
+constexpr u32 KIND_WORD_54_ADDRESS = 0x0090bc54;  // words whose low byte is a block kind
+constexpr u32 KIND_WORD_58_ADDRESS = 0x0090bc58;
+constexpr u32 BYTE_MASK = 0xff;
 constexpr u16 IDS_3_TO_5[] = {3, 4, 5, 0xc, 0x12};
 
 bool byte_is_in_list(u32 address, u32 count, u32 value) {
@@ -119,6 +122,17 @@ bool block_kind_is_3_or_id_is_listed(s32 block_x, s32 block_z, u32 map_number) {
 }
 GUEST_EXPORT(0x006cf44c, block_kind_is_3_or_id_is_listed);
 
+// Whether the block's kind is the one the word at 0x0090bc54 (low byte) / 0x0090bc58 names.
+bool block_kind_is_word_54(s32 block_x, s32 block_z, u32 map_number) {
+    return info_of(block_x, block_z, map_number).kind == (*gptr<u32>(KIND_WORD_54_ADDRESS) & BYTE_MASK);
+}
+GUEST_EXPORT(0x006cf578, block_kind_is_word_54);
+
+bool block_kind_is_word_58(s32 block_x, s32 block_z, u32 map_number) {
+    return info_of(block_x, block_z, map_number).kind == (*gptr<u32>(KIND_WORD_58_ADDRESS) & BYTE_MASK);
+}
+GUEST_EXPORT(0x006cf5bc, block_kind_is_word_58);
+
 namespace {
 
 void fuzz_block(guest::Fuzz &f) {
@@ -135,3 +149,5 @@ GUEST_FUZZ(0x006cf44c, 200, fuzz_block);
 GUEST_FUZZ(0x005cf3bc, 200, [](guest::Fuzz &f) {
     f.arguments(f.object<BlockInfo>(), s32(f.below(8)) - 1, s32(f.below(8)) - 1, f.below(4));
 });
+GUEST_FUZZ(0x006cf578, 200, fuzz_block);
+GUEST_FUZZ(0x006cf5bc, 200, fuzz_block);

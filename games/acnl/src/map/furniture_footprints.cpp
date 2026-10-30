@@ -124,6 +124,25 @@ void furniture_first_tile(gptr<s32> out_x, gptr<s32> out_z, s32 x, s32 z, u32 la
 }
 GUEST_EXPORT(0x004e424c, furniture_first_tile);
 
+// What a furniture item is made of: its kind (byte 0) and the rotation (the low two bits of byte 1).
+struct FurnitureShape {
+    u8 kind;
+    u8 rotation_byte;
+};
+
+// The tile offset (from the first tile) of the tile with the number in the footprint of the shape; the zero offset for tiles
+// past the footprint or kinds without one.
+gptr<TileOffset> footprint_tile_offset(const FurnitureShape &shape, u32 tile_index) {
+    static constexpr u32 ZERO_OFFSET_ADDRESS = 0x00865620;
+    gptr<Footprint> footprint = shape.kind < FOOTPRINT_KINDS ? (*footprints)[shape.kind] : gptr<Footprint>(0u);
+    u32 count = shape.kind < FOOTPRINT_KINDS ? footprint->tile_count : 0;
+    if (count <= tile_index) {
+        return gptr<TileOffset>(ZERO_OFFSET_ADDRESS);
+    }
+    return footprint->rotations[shape.rotation_byte % ROTATIONS] + tile_index;
+}
+GUEST_EXPORT(0x007457a4, footprint_tile_offset);
+
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
 
 namespace {
@@ -239,4 +258,9 @@ GUEST_FUZZ(0x004e424c, 400, [](guest::Fuzz &f) {
     FurnitureScene scene = furniture_scene(f);
     f.arguments(f.below(8) != 0 ? f.object<s32>() : gptr<s32>(0u), f.below(8) != 0 ? f.object<s32>() : gptr<s32>(0u), scene.x,
                 scene.z, scene.layer, scene.map);
+});
+GUEST_FUZZ(0x007457a4, 200, [](guest::Fuzz &f) {
+    auto shape = f.object<FurnitureShape>();
+    shape->kind = f.pick<u8>({0, 1, 2, 3, 4, 5, 6});
+    f.arguments(shape, f.below(12));
 });

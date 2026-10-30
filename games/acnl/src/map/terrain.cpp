@@ -1,6 +1,9 @@
 // The terrain of the map: each block has a table of 16x16 tiles, one of whose bytes is the terrain.
 #include "core/grid_map.hpp"
 
+u32 byte_95db1c(u32 index);
+u32 byte_95d91e(u32 index);
+
 namespace {
 
 constexpr u32 TILE_MASK = GridCellLarge::SIDE - 1;
@@ -15,6 +18,9 @@ constexpr u8 SPECIAL_TERRAINS[] = {2, 3, 4, 0xa2, 0xa3, 0xa4, 0xa5, 0xf8};
 // Properties of the terrains, by terrain number (the number 0xff and above reads as 0): flag bits and a signed value.
 constexpr u32 TERRAIN_TABLE_SIZE = 0xff;
 constexpr u8 TERRAIN_FLAG_0 = 1 << 0;
+constexpr u8 TERRAIN_FLAG_1 = 1 << 1;
+constexpr u32 TERRAIN_BLOCKING = 3;       // the terrain that makes the two tiles in front of it unusable for a few checks
+constexpr u32 TERRAIN_BLOCKED_RESULT = 2;
 constexpr u8 TERRAIN_FLAG_3 = 1 << 3;
 constexpr u32 TERRAIN_FLAG_3_SHIFT = 3;
 inline guest::global<u8[TERRAIN_TABLE_SIZE], 0x0095dd1a> terrain_flags;
@@ -159,6 +165,51 @@ s32 terrain_value_at(s32 x, s32 z, u32 map_number) {
 }
 GUEST_EXPORT(0x006c8928, terrain_value_at);
 
+// Whether bit 1 of the terrain's flags is set (the first terrain's for numbers past the table).
+bool terrain_has_flag_bit_1(u32 terrain) {
+    return (terrain_flags[table_index(terrain)] & TERRAIN_FLAG_1) != 0;
+}
+GUEST_EXPORT(0x005cdf68, terrain_has_flag_bit_1);
+GUEST_FUZZ(0x005cdf68, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(TERRAIN_TABLE_SIZE + 3), 0xffffffffu})); });
+
+// The terrain one or two tiles back (z - 1, z - 2) is the terrain 3.
+static bool terrain_3_behind(s32 x, s32 z, u32 map_number) {
+    return terrain_at_world(x, z - 1, map_number) == TERRAIN_BLOCKING || terrain_at_world(x, z - 2, map_number) == TERRAIN_BLOCKING;
+}
+
+// Whether the terrain at (x, z) has flag bit 1, unless terrain 3 is one or two tiles back (then false).
+bool terrain_flag_1_unless_blocked(s32 x, s32 z, u32 map_number) {
+    if (terrain_3_behind(x, z, map_number)) {
+        return false;
+    }
+    return terrain_has_flag_bit_1(terrain_at_world(x, z, map_number));
+}
+GUEST_EXPORT(0x00300298, terrain_flag_1_unless_blocked);
+
+// The flag byte 0x0095db1c of the terrain at (x, z), unless terrain 3 is one or two tiles back (then 2).
+u32 terrain_byte_db1c_unless_blocked(s32 x, s32 z, u32 map_number) {
+    if (terrain_3_behind(x, z, map_number)) {
+        return TERRAIN_BLOCKED_RESULT;
+    }
+    return byte_95db1c(terrain_at_world(x, z, map_number));
+}
+GUEST_EXPORT(0x00300a74, terrain_byte_db1c_unless_blocked);
+
+// Whether the terrain at (x, z) has no flag byte 0x0095db1c, unless terrain 3 is one or two tiles back (then false).
+bool terrain_open_at(s32 x, s32 z, u32 map_number) {
+    if (terrain_3_behind(x, z, map_number)) {
+        return false;
+    }
+    return byte_95db1c(terrain_at_world(x, z, map_number)) == 0;
+}
+GUEST_EXPORT(0x002fe6b8, terrain_open_at);
+
+// The byte of the table at 0x0095d91e for the terrain at (x, z).
+u32 terrain_byte_d91e_at(s32 x, s32 z, u32 map_number) {
+    return byte_95d91e(terrain_at_world(x, z, map_number));
+}
+GUEST_EXPORT(0x006c5b2c, terrain_byte_d91e_at);
+
 namespace {
 
 // Fuzzing: a world position and a map number
@@ -183,3 +234,7 @@ GUEST_FUZZ(0x006c778c, 200, fuzz_world_position);
 GUEST_FUZZ(0x006c79c8, 200, fuzz_world_position);
 GUEST_FUZZ(0x006c77d8, 200, fuzz_world_position);
 GUEST_FUZZ(0x006c8928, 200, fuzz_world_position);
+GUEST_FUZZ(0x00300298, 200, fuzz_world_position);
+GUEST_FUZZ(0x00300a74, 200, fuzz_world_position);
+GUEST_FUZZ(0x002fe6b8, 200, fuzz_world_position);
+GUEST_FUZZ(0x006c5b2c, 200, fuzz_world_position);

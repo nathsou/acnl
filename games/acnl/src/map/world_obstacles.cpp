@@ -1,7 +1,24 @@
-// Whether the item on the map at a world position is one that gets in the way (trees, rocks and the like).
+// What is on the map at a position: whether an item gets in the way (trees, rocks and the like), the terrain, the ground item.
+#include "core/fuzz_helpers.hpp"
 #include "core/grid_map.hpp"
+#include "graphics/hemisphere_light.hpp"
 
 namespace {
+
+inline constexpr guest::Function<0x003171b4, void(gptr<s32> cell_x, gptr<s32> cell_z, const Float3 &position)> position_to_cell;
+inline constexpr guest::Function<0x006a69ec, void(gptr<s32> cell_x, gptr<s32> cell_z, gptr<s32> tile_x, gptr<s32> tile_z, const Float3 &position)>
+    cell_and_tile_of_position;
+inline constexpr guest::Function<0x002fe7cc, gptr<GridMap>(u32 index)> map_of_number;
+inline constexpr guest::Function<0x006a5e34, gptr<GridMap>()> world_map_object;
+inline constexpr guest::Function<0x002f74c8, u8()> read_global_byte_2;
+inline constexpr guest::Function<0x002fca6c, bool(s32 x, s32 z, u32 map_number)> is_special_terrain_at;
+inline constexpr guest::Function<0x005ce300, bool(s32 x, s32 z, u32 map_number)> terrain_flag_0_at;
+inline constexpr guest::Function<0x00300298, bool(s32 x, s32 z, u32 map_number)> terrain_flag_1_unless_blocked;
+inline constexpr guest::Function<0x002fe748, bool(const Item &item)> item_entry_flag_3;
+inline constexpr guest::Function<0x006c6590, bool(s32 x, s32 z, u32 map_number)> terrain_blocks_at_guest;
+inline constexpr guest::Function<0x002260c4, bool(s32 x, s32 z)> second_map_has_marker_guest;
+inline constexpr guest::Function<0x002266c8, bool(s32 cell_x, s32 cell_z)> object_in_cell_guest;
+inline constexpr guest::Function<0x006c5ad8, u32(s32 block_x, s32 block_z, s32 cell_x, s32 cell_z, u32 map_number)> terrain_at_block_tile;
 
 inline constexpr guest::Function<0x006a5e34, gptr<GridMap>()> world_map;
 inline constexpr guest::Function<0x002fccc4, bool(const Item &item)> item_number_is_indexed;
@@ -41,4 +58,202 @@ bool item_blocks_world_position(s32 x, s32 z) {
 GUEST_EXPORT(0x005980c0, item_blocks_world_position);
 GUEST_FUZZ(0x005980c0, 400, [](guest::Fuzz &f) {
     f.arguments(s32(f.below(WORLD_COORDINATE_RANGE)), s32(f.below(WORLD_COORDINATE_RANGE)));
+});
+
+// The terrain at a position given in world units.
+u32 terrain_at_position(const Float3 &position, u32 map_number) {
+    guest::StackObject<s32> cell_x;
+    guest::StackObject<s32> cell_z;
+    guest::StackObject<s32> tile_x;
+    guest::StackObject<s32> tile_z;
+    cell_and_tile_of_position(cell_x.ptr(), cell_z.ptr(), tile_x.ptr(), tile_z.ptr(), position);
+    return terrain_at_block_tile(*cell_x, *cell_z, *tile_x, *tile_z, map_number);
+}
+GUEST_EXPORT(0x006c5a88, terrain_at_position);
+GUEST_FUZZ(0x006c5a88, 200, [](guest::Fuzz &f) {
+    auto position = f.object<Float3>();
+    for (float &coordinate : position->v) {
+        coordinate = f.pick<float>({0.0f, -1.0f, 100.0f, 700.0f, f.real()});
+    }
+    f.arguments(position, f.below(4));
+});
+
+// The ground item (the first layer's cell) at a position given in world units, for the layer; 0 without the world map.
+gptr<Item> item_at_position(const Float3 &position, u32 layer) {
+    guest::StackObject<s32> cell_x;
+    guest::StackObject<s32> cell_z;
+    position_to_cell(cell_x.ptr(), cell_z.ptr(), position);
+    gptr<GridMap> map = world_map();
+    if (map == nullptr) {
+        return nullptr;
+    }
+    return gptr<Item>(map->process_world_position(*cell_x, *cell_z, layer));
+}
+GUEST_EXPORT(0x006500f8, item_at_position);
+GUEST_FUZZ(0x006500f8, 200, [](guest::Fuzz &f) {
+    auto position = f.object<Float3>();
+    for (float &coordinate : position->v) {
+        coordinate = f.pick<float>({0.0f, 100.0f, 700.0f, 3000.0f, f.real()});
+    }
+    f.arguments(position, f.below(2));
+});
+
+namespace {
+
+constexpr u32 SECOND_MAP = 1;
+constexpr u32 MARKER_NUMBERS[] = {0x7ff8, 0x7ff9, 0x7ffa, 0x7ffb};  // item numbers that stand for something that is not an item
+constexpr u32 FUZZ_COORDINATE_RANGE = 0x100;
+
+}  // namespace
+
+// Whether the item on the ground of the second map at (x, z) is one of the numbers 0x7ff8-0x7ffb.
+bool second_map_has_marker_at(s32 x, s32 z) {
+    gptr<GridMap> map = map_of_number(SECOND_MAP);
+    if (map == nullptr) {
+        return false;
+    }
+    gptr<Item> item(map->process_world_position(x, z, 0));
+    if (item == nullptr) {
+        return false;
+    }
+    for (u32 number : MARKER_NUMBERS) {
+        if (item->has_number(u16(number))) {
+            return true;
+        }
+    }
+    return false;
+}
+GUEST_EXPORT(0x002260c4, second_map_has_marker_at);
+GUEST_FUZZ(0x002260c4, 200, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)), s32(f.below(FUZZ_COORDINATE_RANGE)));
+});
+
+// ---- tiles that are free
+
+namespace {
+
+struct TerrainRecord {
+    u8 bytes[8];
+};
+GUEST_SIZE(TerrainRecord, 8);
+
+constexpr u32 TERRAIN_COUNT = 0xff;
+constexpr u32 MAP_COUNT = 0x20;
+constexpr u32 BLOCK_SIZE_SHIFT = 4;
+constexpr s32 BLOCK_CELL_MASK = 0xf;
+constexpr u32 MAP_ZERO = 0;
+constexpr u32 OBJECT_SLOTS = 6;
+constexpr u32 WEED_NUMBER = 0x9e;
+constexpr u32 LAST_MODE = 0xa5;  // global bytes from here on have no map
+constexpr u32 TERRAIN_BYTES_COUNT = 0xff;
+constexpr u8 NO_TERRAIN_BYTE = 0xff;
+
+inline guest::global<TerrainRecord[TERRAIN_COUNT], 0x0095c730> terrain_records;
+inline guest::global<u8[TERRAIN_BYTES_COUNT], 0x0095d91e> terrain_bytes_d91e;
+inline guest::global<u32, 0x00950694> objects_present;
+inline guest::global<gptr<Float3>[OBJECT_SLOTS], 0x00997c30> tracked_objects;
+inline constexpr guest::Function<0x002fe7cc, gptr<GridMap>(u32 index)> map_by_number;
+
+}  // namespace
+
+// The byte of the table at 0x0095d91e (the first for numbers past it).
+u8 terrain_byte_d91e(u32 index) {
+    return (*terrain_bytes_d91e)[index < TERRAIN_BYTES_COUNT ? index : 0];
+}
+
+// The record the terrain has in the table at 0x0095c730 (eight bytes; all 0xff for numbers past the table).
+void terrain_record(TerrainRecord &out, u32 terrain) {
+    if (terrain >= TERRAIN_COUNT) {
+        for (u8 &byte : out.bytes) {
+            byte = NO_TERRAIN_BYTE;
+        }
+        return;
+    }
+    out = (*terrain_records)[terrain];
+}
+GUEST_EXPORT(0x005cdfe8, terrain_record);
+GUEST_FUZZ(0x005cdfe8, 100, [](guest::Fuzz &f) {
+    f.arguments(f.object<TerrainRecord>(), f.pick<u32>({f.below(TERRAIN_COUNT + 3), 0xffffffffu}));
+});
+
+// Whether the terrain of the tile at the world position (x, z) of the map has record bytes 0 or 2 with a non-zero byte in
+// the table at 0x0095d91e.
+bool terrain_blocks_at(s32 x, s32 z, u32 map_number) {
+    s32 block_x = x >> BLOCK_SIZE_SHIFT;
+    s32 block_z = z >> BLOCK_SIZE_SHIFT;
+    gptr<GridMap> map = map_by_number(map_number);
+    if (map == nullptr) {
+        return false;
+    }
+    gptr<GridCellLarge> block = map->large_cell_at(block_x, block_z);
+    if (block == nullptr) {
+        return false;
+    }
+    u32 terrain = block->terrain_at(x & BLOCK_CELL_MASK, z & BLOCK_CELL_MASK);
+    TerrainRecord record;
+    terrain_record(record, terrain);
+    return (terrain_byte_d91e(record.bytes[0]) | terrain_byte_d91e(record.bytes[2])) != 0;
+}
+GUEST_EXPORT(0x006c6590, terrain_blocks_at);
+GUEST_FUZZ(0x006c6590, 200, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, f.below(4));
+});
+
+// Whether one of the six tracked objects is in the cell (the cell of its position).
+bool object_in_cell(s32 cell_x, s32 cell_z) {
+    if (*objects_present == 0) {
+        return false;
+    }
+    for (gptr<Float3> position : *tracked_objects) {
+        if (position == nullptr) {
+            continue;
+        }
+        guest::StackObject<s32> x;
+        guest::StackObject<s32> z;
+        position_to_cell(x.ptr(), z.ptr(), *position);
+        if (*x == cell_x && *z == cell_z) {
+            return true;
+        }
+    }
+    return false;
+}
+GUEST_EXPORT(0x002266c8, object_in_cell);
+GUEST_FUZZ(0x002266c8, 100, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)) - 4, s32(f.below(FUZZ_COORDINATE_RANGE)) - 4);
+});
+
+// Whether the tile can be used for something that needs it free: the map exists and the global byte is below 0xa5, the terrain
+// is not a special one, has flag 0 (`ground`) or flag 1 away from blocked tiles (otherwise), does not block, has no marker of the
+// second map and no tracked object; the tile holds nothing, or a weed (unless `skip_weed_check`), or something without the entry
+// flag 3. (The shadow checks of this one do not get past the terrain tests: the last part is from the disassembly only.)
+bool tile_is_free(s32 x, s32 z, bool skip_weed_check, bool ground) {
+    gptr<GridMap> map = world_map_object();
+    u8 mode = read_global_byte_2();
+    if (map == nullptr || mode >= LAST_MODE) {
+        return false;
+    }
+    if (is_special_terrain_at(x, z, MAP_ZERO)) {
+        return false;
+    }
+    if (ground ? !terrain_flag_0_at(x, z, MAP_ZERO) : !terrain_flag_1_unless_blocked(x, z, MAP_ZERO)) {
+        return false;
+    }
+    if (terrain_blocks_at(x, z, MAP_ZERO) || second_map_has_marker_at(x, z) || object_in_cell(x, z)) {
+        return false;
+    }
+    gptr<Item> item(map->process_world_position(x, z, 0));
+    if (item == nullptr) {
+        return false;
+    }
+    if (item->is_empty()) {
+        return true;
+    }
+    if (!skip_weed_check && item->has_number(u16(WEED_NUMBER))) {
+        return true;
+    }
+    return !item_entry_flag_3(*item);
+}
+GUEST_EXPORT(0x0051f70c, tile_is_free);
+GUEST_FUZZ(0x0051f70c, 300, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)), s32(f.below(FUZZ_COORDINATE_RANGE)), f.below(2), f.below(2));
 });
