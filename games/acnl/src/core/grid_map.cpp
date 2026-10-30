@@ -133,14 +133,19 @@ u32 GridMap::process_world_position(s32 x, s32 z, u32 argument) {
 }
 GUEST_EXPORT(0x002feb00, GridMap::process_world_position);
 
-bool GridMap::place_item_at_world(const Item &item, s32 x, s32 z, u32 layer) {
-    s32 block_x, block_z, cell_x, cell_z;
-    split_world_position(block_x, block_z, cell_x, cell_z, x, z);
+bool GridMap::place_item_in_block(const Item &item, s32 block_x, s32 block_z, s32 cell_x, s32 cell_z, u32 layer) {
     gptr<GridCellSmall> cell = small_cell(*this, block_x, block_z);
     if (!cell) {
         return false;
     }
     return cell->place_item(item, cell_x, cell_z, layer);
+}
+GUEST_EXPORT(0x00581428, GridMap::place_item_in_block);
+
+bool GridMap::place_item_at_world(const Item &item, s32 x, s32 z, u32 layer) {
+    s32 block_x, block_z, cell_x, cell_z;
+    split_world_position(block_x, block_z, cell_x, cell_z, x, z);
+    return place_item_in_block(item, block_x, block_z, cell_x, cell_z, layer);
 }
 GUEST_EXPORT(0x002fc994, GridMap::place_item_at_world);
 
@@ -213,4 +218,18 @@ GUEST_FUZZ(0x002fc994, 300, [](guest::Fuzz &f) {
     map->rect.min = {0, 0};
     map->rect.max = {3, 3};
     f.arguments(map, f.object<Item>(), s32(f.below(80)) - 8, s32(f.below(80)) - 8, f.below(3));
+});
+GUEST_FUZZ(0x00581428, 300, [](guest::Fuzz &f) {
+    auto map = some_map(f);
+    constexpr u32 CELLS = 16;
+    auto cells = f.allocate(CELLS * sizeof(GridCellSmall)).cast<GridCellSmall>();
+    for (u32 i = 0; i < CELLS; i++) {
+        cells[i].layers[0] = f.allocate(16 * 16 * sizeof(Item));
+        cells[i].layers[1] = f.allocate(16 * 16 * sizeof(Item));
+    }
+    map->cells_small = cells;
+    map->rect.min = {0, 0};
+    map->rect.max = {3, 3};
+    f.arguments(map, f.object<Item>(), s32(f.below(6)) - 1, s32(f.below(6)) - 1, s32(f.below(18)) - 1,
+                s32(f.below(18)) - 1, f.below(3));
 });

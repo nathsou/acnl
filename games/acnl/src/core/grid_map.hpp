@@ -61,6 +61,8 @@ struct GridMap {
     u32 process_world_position(s32 x, s32 z, u32 argument);
     // Puts a copy of the item in the cell at the world position (see GridCellSmall::place_item); whether it did.
     bool place_item_at_world(const Item &item, s32 x, s32 z, u32 layer);
+    // The same for a tile (cell_x, cell_z) of the block (block_x, block_z).
+    bool place_item_in_block(const Item &item, s32 block_x, s32 block_z, s32 cell_x, s32 cell_z, u32 layer);
 };
 GUEST_OFFSET(GridMap, rect_10, 0x10);
 GUEST_OFFSET(GridMap, cells_small, 0x20);

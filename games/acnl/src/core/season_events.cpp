@@ -70,6 +70,8 @@ bool is_period_value_5_to_7() {
            PERIOD_VALUE_RANGE_LAST - PERIOD_VALUE_RANGE_FIRST;
 }
 GUEST_EXPORT(0x0062fac8, is_period_value_5_to_7);
+GUEST_EXPORT(0x0062fb04, is_period_value_5_to_7);
+GUEST_FUZZ(0x0062fb04, 50, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_FUZZ(0x0062fac8, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether cherry blossom petals fly: both the day start the clock reports and the day start of the reference time are

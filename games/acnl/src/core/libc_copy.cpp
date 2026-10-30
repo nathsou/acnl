@@ -55,3 +55,46 @@ GUEST_FUZZ(0x0031c6d0, 300, [](guest::Fuzz &f) {
     f.bytes(buffer, FUZZ_BUFFER_SIZE);
     f.arguments(buffer + f.below(FUZZ_MAX_SIZE / 2), buffer + f.below(FUZZ_MAX_SIZE / 2), f.below(FUZZ_MAX_SIZE / 2));
 });
+
+// strlen: the number of bytes before the first zero byte.
+u32 string_length(gptr<const u8> text) {
+    u32 length = 0;
+    while (text[length] != 0) {
+        length++;
+    }
+    return length;
+}
+GUEST_EXPORT(0x002fa9d0, string_length);
+GUEST_FUZZ(0x002fa9d0, 300, [](guest::Fuzz &f) {
+    auto buffer = f.allocate(FUZZ_BUFFER_SIZE).cast<u8>();
+    f.bytes(buffer, FUZZ_BUFFER_SIZE);
+    u32 length = f.below(FUZZ_MAX_SIZE);
+    for (u32 i = 0; i < length; i++) {
+        if (buffer[i] == 0) {
+            buffer[i] = 1;
+        }
+    }
+    buffer[length] = 0;
+    f.arguments(buffer + f.below(WORD_MASK + 1));
+});
+
+// Copies a whole player record (the regions may overlap: when the destination starts inside the source, the bytes are
+// copied one after the other from the start, so the source is smeared).
+void copy_player_record(gptr<u8> destination, gptr<const u8> source) {
+    constexpr u32 PLAYER_RECORD_SIZE = 0xa480;
+    s32 distance = s32(destination.addr() - source.addr());
+    if (distance > 0 && distance < s32(PLAYER_RECORD_SIZE)) {
+        for (u32 i = 0; i < PLAYER_RECORD_SIZE; i++) {
+            destination[i] = source[i];
+        }
+        return;
+    }
+    std::memmove(destination.get(), source.get(), PLAYER_RECORD_SIZE);
+}
+GUEST_EXPORT(0x006bcdfc, copy_player_record);
+GUEST_FUZZ(0x006bcdfc, 100, [](guest::Fuzz &f) {
+    auto buffer = f.allocate(0x14000).cast<u8>();
+    f.bytes(buffer, 0x14000);
+    u32 offset = f.pick<u32>({0, 0x100, 0xa480, 0xa4c0, 0x10000});
+    f.arguments(buffer + offset, buffer);
+});

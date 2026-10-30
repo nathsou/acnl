@@ -6,6 +6,23 @@ using guest::gptr;
 namespace {
 
 inline constexpr guest::Function<0x003170f8, bool(u32 kind, u32 strict)> talk_state_matches;
+inline constexpr guest::Function<0x0052c1fc, bool()> talk_state_6_without_flag;
+inline constexpr guest::Function<0x00763818, gptr<u8>(gptr<SlotObject> object)> entry_for_state;
+
+// Two global flag bytes that say the players cannot act (meaning not known yet).
+inline guest::global<u8, 0x00aadad4> control_flags_a;
+inline guest::global<u8, 0x00aaef14> control_flags_b;
+constexpr u8 CONTROL_A_BIT_3 = 1 << 3, CONTROL_A_BIT_4 = 1 << 4, CONTROL_B_BIT_5 = 1 << 5;
+
+// The bits of the action mask of main_object_matches_action_mask, and the classes (the high nibble of byte 5 of the
+// entry for the object's state) they stand for.
+constexpr u32 MASK_CLASS_2 = 1, MASK_CLASS_3 = 2, MASK_CLASS_4 = 4, MASK_CLASS_5 = 8, MASK_STATE_70 = 0x20;
+constexpr u32 CLASS_1 = 1, CLASS_2 = 2, CLASS_3 = 3, CLASS_4 = 4, CLASS_5 = 5;
+constexpr u32 SLOT_MASK = 3;
+constexpr u32 CLASS_SHIFT = 4;
+constexpr u32 CLASS_LIMIT = 7;  // entries with this class or more match none
+constexpr u32 ENTRY_CLASS_BYTE = 5;
+constexpr u8 STATE_82 = 0x82, STATE_70 = 0x70;
 
 constexpr u32 SLOT_COUNT = 4;
 constexpr u32 MAIN_OBJECT_ID = 4;  // a number of 4 or more stands for the main object's slot
@@ -227,3 +244,186 @@ bool main_object_has_flag_177_bit_3_or_is_missing() {
 }
 GUEST_EXPORT(0x005c6850, main_object_has_flag_177_bit_3_or_is_missing);
 GUEST_FUZZ(0x005c6850, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+namespace {
+
+// The class of the state of the object (CLASS_LIMIT or more: none), or nothing without an entry.
+bool state_class_is(gptr<u8> entry, u32 wanted) {
+    u32 state_class = entry[ENTRY_CLASS_BYTE] >> CLASS_SHIFT;
+    return state_class < CLASS_LIMIT && state_class == wanted;
+}
+
+}  // namespace
+
+// Whether the main object is doing something the mask asks for. False while the global flags forbid it (`strict` also
+// looks at the first one's bit 4 and the second one's bit 5), while a talk state is on and when there is no main object
+// or it has flag 2 of byte 0x177. Then, objects with flag 2 of byte 0x17b are looked at through their flags at 0x8c5 and
+// 0x8c7 and the state 0x82; the others through the class of their state: mask 1 asks for class 2, 2 for class 3, 4 for
+// class 4, 8 for class 5 and 0x20 for state 0x70 with a zero word at 0x884.
+bool main_object_matches_action_mask(u32 mask, u32 strict) {
+    u8 flags_a = control_flags_a;
+    if (strict != 0 && ((flags_a & CONTROL_A_BIT_4) != 0 || (control_flags_b & CONTROL_B_BIT_5) != 0)) {
+        return false;
+    }
+    if ((flags_a & CONTROL_A_BIT_3) != 0 || talk_state_6_without_flag()) {
+        return false;
+    }
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+    if (!object || (object->flags_177 & SlotObject::FLAGS_177_BIT_3) != 0) {
+        return false;
+    }
+    if ((object->flags_17b & SlotObject::FLAGS_17B_BIT_2) != 0) {
+        if ((mask & MASK_CLASS_3) != 0 && (object->flags_8c7 & SlotObject::FLAGS_8C7_BIT_0) != 0) {
+            return true;
+        }
+        if ((mask & MASK_CLASS_4) != 0) {
+            gptr<SlotObject> again = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+            if (again && again->state_1a9 == STATE_82) {
+                return true;
+            }
+        }
+        if ((mask & MASK_CLASS_5) != 0 && (object->flags_8c5 & SlotObject::FLAGS_8C5_BIT_5) != 0) {
+            return true;
+        }
+        if ((mask & MASK_CLASS_2) == 0 || (object->flags_8c7 & SlotObject::FLAGS_8C7_BIT_0) != 0 ||
+            (object->flags_8c5 & SlotObject::FLAGS_8C5_BIT_5) != 0) {
+            return false;
+        }
+        gptr<SlotObject> last = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+        return !last || last->state_1a9 != STATE_82;
+    }
+    gptr<u8> entry = entry_for_state(object);
+    if (!entry) {
+        return false;
+    }
+    if ((mask & MASK_CLASS_3) != 0 && state_class_is(entry, CLASS_3)) {
+        return true;
+    }
+    if ((mask & MASK_CLASS_4) != 0 && state_class_is(entry, CLASS_4)) {
+        return true;
+    }
+    if ((mask & MASK_CLASS_5) != 0 && state_class_is(entry, CLASS_5)) {
+        return true;
+    }
+    if ((mask & MASK_CLASS_2) != 0 && state_class_is(entry, CLASS_2)) {
+        return true;
+    }
+    return (mask & MASK_STATE_70) != 0 && object->state_1a9 == STATE_70 && object->word_884 == 0;
+}
+GUEST_EXPORT(0x005c507c, main_object_matches_action_mask);
+GUEST_FUZZ(0x005c507c, 300, [](guest::Fuzz &f) {
+    f.arguments(f.pick<u32>({0, 1, 2, 4, 8, 0x20, 0x2f, f.below(64)}), f.below(2));
+});
+
+namespace {
+
+inline constexpr guest::Function<0x00305f44, u32()> query_current_main_object;
+
+// Whether a global flag forbids acting; `strict` ones are only these in some callers.
+bool global_flags_forbid(bool include_bit_3) {
+    return (control_flags_a & CONTROL_A_BIT_4) != 0 || (control_flags_b & CONTROL_B_BIT_5) != 0 ||
+           (include_bit_3 && (control_flags_a & CONTROL_A_BIT_3) != 0);
+}
+
+// The class of the object's state, or CLASS_LIMIT when it has none.
+u32 object_state_class(gptr<SlotObject> object) {
+    gptr<u8> entry = entry_for_state(object);
+    if (!entry) {
+        return CLASS_LIMIT;
+    }
+    return entry[ENTRY_CLASS_BYTE] >> CLASS_SHIFT;
+}
+
+}  // namespace
+
+// Whether the main object's state is of class 2 (false while the global flags forbid acting).
+bool main_object_state_class_is_2() {
+    if (global_flags_forbid(true)) {
+        return false;
+    }
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+    return object && object_state_class(object) == CLASS_2;
+}
+GUEST_EXPORT(0x005c5cf4, main_object_state_class_is_2);
+GUEST_FUZZ(0x005c5cf4, 100, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the main object does something of classes 1 to 5 (or is in state 0x70 with a zero word at 0x884), unless a
+// talk state is on or the global flags forbid acting.
+bool main_object_state_class_1_to_5() {
+    if (global_flags_forbid(true)) {
+        return false;
+    }
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+    if (!object || talk_state_6_without_flag()) {
+        return false;
+    }
+    gptr<u8> entry = entry_for_state(object);
+    if (!entry) {
+        return false;
+    }
+    if (object->state_1a9 == STATE_70 && object->word_884 == 0) {
+        return true;
+    }
+    u32 state_class = entry[ENTRY_CLASS_BYTE] >> CLASS_SHIFT;
+    return state_class >= CLASS_1 && state_class <= CLASS_5;
+}
+GUEST_EXPORT(0x005c2808, main_object_state_class_1_to_5);
+GUEST_FUZZ(0x005c2808, 100, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the slot's object does something of classes 2 to 5. The global flags only count for the main object's slot.
+bool slot_object_state_class_2_to_5(u32 id) {
+    u32 slot = id < SLOT_COUNT ? id & SLOT_MASK : query_current_main_object();
+    bool is_main = id >= SLOT_COUNT || query_current_main_object() == slot;
+    if (is_main && global_flags_forbid(false)) {
+        return false;
+    }
+    gptr<SlotObject> object = look_up_object(slot, EXCLUDE_IDLE);
+    if (!object) {
+        return false;
+    }
+    u32 state_class = object_state_class(object);
+    return state_class >= CLASS_2 && state_class <= CLASS_5;
+}
+GUEST_EXPORT(0x005c6238, slot_object_state_class_2_to_5);
+GUEST_FUZZ(0x005c6238, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
+
+// The action mask checks the callers use with fixed masks (see main_object_matches_action_mask).
+bool main_object_matches_masks_class_2_and_state_70() {
+    return main_object_matches_action_mask(MASK_CLASS_2 | MASK_STATE_70, 0);
+}
+GUEST_EXPORT(0x005c3470, main_object_matches_masks_class_2_and_state_70);
+GUEST_FUZZ(0x005c3470, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+bool main_object_matches_masks_class_2_and_5_strict() {
+    return main_object_matches_action_mask(MASK_CLASS_2 | MASK_CLASS_5, 1);
+}
+GUEST_EXPORT(0x005c3e78, main_object_matches_masks_class_2_and_5_strict);
+GUEST_FUZZ(0x005c3e78, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+bool main_object_matches_class_4_strict() {
+    return main_object_matches_action_mask(MASK_CLASS_4, 1);
+}
+GUEST_EXPORT(0x005c5064, main_object_matches_class_4_strict);
+GUEST_FUZZ(0x005c5064, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+bool main_object_matches_class_3_strict() {
+    return main_object_matches_action_mask(MASK_CLASS_3, 1);
+}
+GUEST_EXPORT(0x005c5284, main_object_matches_class_3_strict);
+GUEST_FUZZ(0x005c5284, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+bool main_object_matches_class_5_strict() {
+    return main_object_matches_action_mask(MASK_CLASS_5, 1);
+}
+GUEST_EXPORT(0x005c5d7c, main_object_matches_class_5_strict);
+GUEST_FUZZ(0x005c5d7c, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// While flag 3 of the first global flag byte is set: whether the main object does something of classes 2 to 5.
+bool main_object_state_class_2_to_5_when_flag_3() {
+    if ((control_flags_a & CONTROL_A_BIT_3) == 0) {
+        return false;
+    }
+    return slot_object_state_class_2_to_5(MAIN_OBJECT_ID);
+}
+GUEST_EXPORT(0x005c5cd0, main_object_state_class_2_to_5_when_flag_3);
+GUEST_FUZZ(0x005c5cd0, 50, [](guest::Fuzz &f) { f.arguments(); });

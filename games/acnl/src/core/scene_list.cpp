@@ -1,9 +1,13 @@
 // Where a mode of the game (the byte read_global_byte_2 returns) sits in the game's list of modes.
 #include "guest/guest.hpp"
 
+s32 flagged_mode_ordinal(u32 mode);
+
 namespace {
 
 inline constexpr guest::Function<0x002f74e0, u32(u32 mask, u32 index)> table_entry_has_all_bits;
+inline constexpr guest::Function<0x002fe450, gptr<u8>(u32 index)> table_a82b90_entry;
+inline constexpr guest::Function<0x002f74c8, u8()> read_global_byte_2;
 
 constexpr u32 LIST_SIZE = 0x2a;
 inline guest::global<u8[LIST_SIZE], 0x00952718> mode_list;  // the modes at positions 2-0x1d and 0x20-0x29
@@ -109,3 +113,27 @@ GUEST_EXPORT(0x006fb030, room_of_mode);
 GUEST_FUZZ(0x006fb030, 300, [](guest::Fuzz &f) {
     f.arguments(f.pick<u32>({f.below(MODE_COUNT + 1), mode_list[f.below(LIST_SIZE)], FIRST_FLAG_4000_MODE - 1 + f.below(FLAG_4000_MODE_COUNT + 2)}));
 });
+
+namespace {
+
+constexpr u32 FLAG_40 = 0x40;
+constexpr u32 FLAG_2000_MODE = 0x2000;
+constexpr u32 ENTRY_FLAGS_OFFSET = 0x44;
+constexpr u32 ENTRY_FLAG_20 = 0x20;
+
+}  // namespace
+
+// Whether the current mode has flag 0x80, 0x4000 or 0x2000 (the owned and the six more room modes), or has flag 0x40
+// and its entry in the table at 0x00a82b90 (by the mode's ordinal among the flag 0x40 modes) has flag 0x20.
+bool current_mode_is_room_like() {
+    u32 mode = read_global_byte_2();
+    gptr<u8> entry = table_a82b90_entry(flagged_mode_ordinal(mode));
+    if (table_entry_has_all_bits(FLAG_80, mode) != 0 || table_entry_has_all_bits(FLAG_4000, mode) != 0 ||
+        table_entry_has_all_bits(FLAG_2000_MODE, mode) != 0) {
+        return true;
+    }
+    return table_entry_has_all_bits(FLAG_40, mode) != 0 && entry &&
+           (*(entry + ENTRY_FLAGS_OFFSET).cast<u32>() & ENTRY_FLAG_20) != 0;
+}
+GUEST_EXPORT(0x00693410, current_mode_is_room_like);
+GUEST_FUZZ(0x00693410, 50, [](guest::Fuzz &f) { f.arguments(); });

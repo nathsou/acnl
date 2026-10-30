@@ -25,6 +25,8 @@ constexpr u32 LIST_A_BYTES = 6;
 constexpr u32 LIST_B_BYTES = 16;
 constexpr u32 LIST_A_ADDRESS = 0x0089065e;
 constexpr u32 LIST_B_ADDRESS = 0x00890672;
+constexpr u32 LIST_C_ADDRESS = 0x0089066a;
+constexpr u32 LIST_C_BYTES = 8;
 constexpr u32 TERRAIN_0X10 = 0x10;
 constexpr u32 TERRAIN_0XF9 = 0xf9;
 constexpr u32 TERRAIN_0X11 = 0x11;
@@ -146,6 +148,11 @@ bool terrain_is_in_list_b_at(s32 x, s32 z, u32 map_number) {
 }
 GUEST_EXPORT(0x006c79c8, terrain_is_in_list_b_at);
 
+bool terrain_is_in_list_c_at(s32 x, s32 z, u32 map_number) {
+    return is_in_list(LIST_C_ADDRESS, LIST_C_BYTES, terrain_at_world(x, z, map_number));
+}
+GUEST_EXPORT(0x006c77d8, terrain_is_in_list_c_at);
+
 // The signed value the terrain table has for the terrain at a world position.
 s32 terrain_value_at(s32 x, s32 z, u32 map_number) {
     return terrain_values[table_index(terrain_at_world(x, z, map_number))];
@@ -174,4 +181,5 @@ GUEST_FUZZ(0x006c86f8, 200, fuzz_world_position);
 GUEST_FUZZ(0x006c56c8, 200, fuzz_world_position);
 GUEST_FUZZ(0x006c778c, 200, fuzz_world_position);
 GUEST_FUZZ(0x006c79c8, 200, fuzz_world_position);
+GUEST_FUZZ(0x006c77d8, 200, fuzz_world_position);
 GUEST_FUZZ(0x006c8928, 200, fuzz_world_position);
