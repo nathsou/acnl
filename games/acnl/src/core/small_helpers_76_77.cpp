@@ -100,3 +100,14 @@ GUEST_FUZZ(0x002fcc14, 200, [](guest::Fuzz &f) {
     f.arguments(f.allocate(CELLS_PER_ROW * sizeof(CellRow)).cast<CellRow>(), f.object<Item>(), f.pick<u32>({0, 5, 15, 16, 20, f.number()}),
                 f.pick<u32>({0, 5, 15, 16, 20, f.number()}));
 });
+
+// Whether the halfword the pointer addresses is not zero (the game "checks a block" by its first halfword).
+bool halfword_is_nonzero(const u16 &value) {
+    return value != 0;
+}
+GUEST_EXPORT(0x0076c6d4, halfword_is_nonzero);
+GUEST_FUZZ(0x0076c6d4, 100, [](guest::Fuzz &f) {
+    auto value = f.object<u16>();
+    *value = u16(f.below(2) == 0 ? 0 : f.number());
+    f.arguments(value);
+});

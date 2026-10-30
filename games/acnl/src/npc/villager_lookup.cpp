@@ -99,3 +99,18 @@ GUEST_EXPORT(0x00308971, index_of_same_villager);
 GUEST_FUZZ(0x00308971, 100, [](guest::Fuzz &f) {
     f.arguments(f.allocate(sizeof(SaveVillager)).cast<SaveVillager>(), f.allocate(3 * sizeof(SaveVillager)).cast<SaveVillager>(), f.below(4));
 });
+
+// The index of the villager in the list of the town's villagers, as index_of_same_villager finds it.
+s32 index_of_villager_in_town(gptr<SaveVillager> villagers, gptr<SaveVillager> villager) {
+    return index_of_same_villager(villager, villagers, SaveData::VILLAGER_COUNT);
+}
+GUEST_EXPORT(0x00118c9d, index_of_villager_in_town);
+GUEST_FUZZ(0x00118c9d, 100, [](guest::Fuzz &f) {
+    gptr<SaveVillager> villagers = guest::addr_of((*save_data)->villagers[0]);
+    auto candidate = f.allocate(sizeof(SaveVillager)).cast<SaveVillager>();
+    *candidate = (*save_data)->villagers[f.below(SaveData::VILLAGER_COUNT)];
+    if (f.below(4) == 0) {
+        candidate.cast<u8>()[f.below(sizeof(SaveVillager))] ^= u8(1 + f.below(255));
+    }
+    f.arguments(villagers, candidate);
+});

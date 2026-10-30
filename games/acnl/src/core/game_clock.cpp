@@ -1,5 +1,6 @@
 // The game's clock: the reference time (a TimeStamp the game keeps up to date), the shop opening hours, and the
 // state that remembers the time as nanoseconds.
+#include "core/clock_state.hpp"
 #include "core/date.hpp"
 #include "core/time_stamp.hpp"
 #include "core/wide_division.hpp"
@@ -33,29 +34,6 @@ inline guest::global<HourEntry[TABLE_ENTRIES], 0x009b2be4> opening_table;
 inline guest::global<HourEntry[TABLE_ENTRIES], 0x009b2bf4> closing_table;
 inline guest::global<u32, 0x009524e8> opening_table_guard;
 inline guest::global<u32, 0x009524e4> closing_table_guard;
-
-// The time the game last set as the reference time, as nanoseconds, and the span since another time it keeps.
-struct ClockState {
-    static constexpr u8 FLAG_ADJUSTING = 1;  // bit 0 of flags_02: times before another are moved forward by the adjustment
-
-    u8 unknown_00[2];
-    u8 flags_02;
-    u8 unknown_03[5];
-    s64 now_nanoseconds;
-    s64 other_nanoseconds;
-    s64 since_other_18;
-    u8 unknown_20[8];
-    s64 since_other_28;
-    u8 unknown_30[0x50 - 0x30];
-    s64 adjustment_nanoseconds;  // added (as milliseconds) to the earlier time in nanoseconds_between
-};
-GUEST_OFFSET(ClockState, flags_02, 2);
-GUEST_OFFSET(ClockState, now_nanoseconds, 8);
-GUEST_OFFSET(ClockState, other_nanoseconds, 0x10);
-GUEST_OFFSET(ClockState, since_other_18, 0x18);
-GUEST_OFFSET(ClockState, since_other_28, 0x28);
-GUEST_OFFSET(ClockState, adjustment_nanoseconds, 0x50);
-inline guest::global<ClockState, 0x0095c4d0> clock_state;
 
 inline constexpr guest::Function<0x00305f2c, u8()> read_global_object_byte;
 inline constexpr guest::Function<0x002fe7dd, bool(gptr<u32> flag)> claim_flag;

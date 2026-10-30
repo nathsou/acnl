@@ -81,7 +81,8 @@ struct SaveData {
     u8 byte_621d1;  // the low nibble counts for 2 each
     u8 unknown_621d2;
     u8 flags_621d3;
-    u8 unknown_621d4[0x6223a - 0x621d4];
+    u8 unknown_621d4[0x62232 - 0x621d4];
+    u8 stored_time_62232[8];  // a GameTime (not aligned); when set and flags_621b8 is not zero it stands in for the start of the game day
     Item reference_item;  // the item some prices are compared against (what it represents is not known yet)
     u8 unknown_6223e[0x62338 - 0x6223e];
     SaveDataPart part_62338;
@@ -120,6 +121,7 @@ GUEST_OFFSET(SaveData, flags_621ce, 0x621ce);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
 GUEST_OFFSET(SaveData, byte_621d0, 0x621d0);
 GUEST_OFFSET(SaveData, flags_621d3, 0x621d3);
+GUEST_OFFSET(SaveData, stored_time_62232, 0x62232);
 GUEST_OFFSET(SaveData, reference_item, 0x6223a);
 GUEST_OFFSET(SaveData, part_62338, 0x62338);
 GUEST_OFFSET(SaveData, pair_6ae48, 0x6ae48);

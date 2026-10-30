@@ -110,6 +110,26 @@ struct Item {
     bool has_category_flag_bit_1_6() const;     // see item_predicates.cpp
     bool has_category_flag_bit_2_5() const;     // see item_predicates.cpp
     bool is_in_category_group_24_27_28() const; // the category is 0x24, 0x27 or 0x28
+    u32 valid_stack_count() const;              // the flags' count (stored minus one) when it is 2-9, else 0
+    u32 reduced_price() const;                  // see item_price_rules.cpp
+    u32 price_with_boost() const;               // see item_price_rules.cpp
+    bool can_be_sold() const;                   // see item_price_rules.cpp
+    u16 top_flag_bits_if_kind_11() const;       // flags & FLAGS_TOP_BITS for items with data and a valid kind_11, else 0
+    bool is_in_category_list_a() const;         // the category is one of 0x35, 0x3a, 0x3d, 0x4d, 0x4f, 0x51, 0x70, 0x79
+    bool is_item_without_kind_11() const;       // an item number whose data has no valid kind_11
+    bool is_in_special_set() const;             // see item_class_checks.cpp
+    bool is_in_special_set_b() const;           // see item_class_checks.cpp
+    bool is_empty_or_in_list_b() const;         // see item_class_checks.cpp
+    bool is_marker_or_has_kind_11() const;      // the number is 0x7ffc, or the data has a valid kind_11
+    u8 group() const;                           // ItemData::group, 0x65 without data
+    bool has_nonzero_flag_nibble() const;       // valid value_06, and flags bits 10-13 are 1-13
+    bool has_type_in_set_a() const;             // the indexed type is one of 0x0b-0x11, 0x14, 0x1b, 0x1c
+    bool has_type_in_set_b() const;             // set a, or type 0x13
+    u32 table_value_3() const;                  // see item_class_checks.cpp
+    bool table_flag_bit_2_unless_no_kind_11() const;  // the item table entry's bit 2 for items with a valid kind_11, else true
+    bool has_wear_index_in_group_a() const;     // the wear class index is 0x1b, 0x1c, 0x1d or 0x1f
+    bool is_wear_class_3_outside_groups() const;  // wear class 3, and no wear index of group a or 0x1e
+    u32 section_in_category_27() const;         // 0-2 for the items of category 0x27 by position, 2 for all others
     bool sanitize();                            // see item_sanitize.cpp
     bool try_make_kind_2();                     // see item_kind_2.cpp
 };

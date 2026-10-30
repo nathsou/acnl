@@ -20,6 +20,7 @@ struct SavePlayer {
     static constexpr u32 COUNTER_6B9C_MAX = 99'999;
     static constexpr u32 SIZE = 0xa480;
     static constexpr u32 LISTED_ITEM_COUNT = 3;
+    static constexpr u8 FLAGS_5700_BIT_4 = 1 << 4;  // meaning not known yet
 
     u8 unknown_0000[0x55a6];
     PersonalId identity;
@@ -32,16 +33,22 @@ struct SavePlayer {
     u8 unknown_56c4[0x5700 - 0x56c4];
     u8 flags_5700;
     u8 flags_5701;
-    u8 unknown_5702[0x570b - 0x5702];
+    u8 unknown_5702;
+    u8 flags_5703;
+    u8 unknown_5704[0x570b - 0x5704];
     u8 flags_570b;
     u8 unknown_570c[0x5712 - 0x570c];
     u8 flags_5712;
     u8 flags_5713;
-    u8 unknown_5714[0x6b8c - 0x5714];
+    u8 unknown_5714[0x5717 - 0x5714];
+    u8 byte_5717;  // bit 7 is the low bit of a 4-bit value; the high three bits are the low three of byte_5718
+    u8 byte_5718;
+    u8 unknown_5719[0x6b8c - 0x5719];
     EncryptedInt bank;  // bells in the bank, up to BANK_MAX
     EncryptedInt counter_6b94;
     EncryptedInt counter_6b9c;  // capped at COUNTER_6B9C_MAX when added to
-    u8 unknown_6ba4[0x6bd0 - 0x6ba4];
+    EncryptedInt counter_6ba4;
+    u8 unknown_6bac[0x6bd0 - 0x6bac];
     Pockets pockets;
     u8 unknown_6f10[0x8ae0 - 0x6bd0 - sizeof(Pockets)];
     u8 block_8ae0[0x8f83 - 0x8ae0];  // counters (the first argument of f_0024b448)
@@ -59,6 +66,9 @@ GUEST_OFFSET(SavePlayer, month_55d4, 0x55d4);
 GUEST_OFFSET(SavePlayer, date_55d6, 0x55d6);
 GUEST_OFFSET(SavePlayer, counters, 0x55dc);
 GUEST_OFFSET(SavePlayer, flags_5700, 0x5700);
+GUEST_OFFSET(SavePlayer, flags_5703, 0x5703);
+GUEST_OFFSET(SavePlayer, byte_5717, 0x5717);
+GUEST_OFFSET(SavePlayer, counter_6ba4, 0x6ba4);
 GUEST_OFFSET(SavePlayer, flags_570b, 0x570b);
 GUEST_OFFSET(SavePlayer, flags_5712, 0x5712);
 GUEST_OFFSET(SavePlayer, block_8ae0, 0x8ae0);

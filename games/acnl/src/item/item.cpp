@@ -83,6 +83,12 @@ static s32 offset_in_category(const Item &item) {
     return s32(item.number() - category_info(category)->first_item_number);
 }
 
+// The count of a stack: the flags below the top bits plus one. Counts outside 2-9 are worth nothing.
+u32 Item::valid_stack_count() const {
+    u32 count = (flags & ~FLAGS_TOP_BITS) + 1;  // stored minus one
+    return count >= MIN_STACK && count <= MAX_STACK ? count : 0;
+}
+
 // The base price, with two rules for a few categories: a tenth of it when the item sits at the same position within
 // its category as the reference item, and for stacks, times the stack's count.
 u32 Item::price() const {
@@ -109,9 +115,7 @@ u32 Item::price() const {
         return price;
     }
 
-    u32 count = (flags & ~FLAGS_TOP_BITS) + 1;  // stored minus one
-    bool valid = count >= MIN_STACK && count <= MAX_STACK;
-    return (valid ? count : 0) * price;
+    return valid_stack_count() * price;
 }
 GUEST_EXPORT(0x00305630, Item::price);
 
