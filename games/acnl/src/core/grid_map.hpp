@@ -20,11 +20,17 @@ struct GridCellSmall {
 GUEST_OFFSET(GridCellSmall, layers, 4);
 GUEST_SIZE(GridCellSmall, 12);
 
-// One tile of a block's table (10 bytes; only the terrain byte is known).
+// One tile of a block's table (10 bytes).
 struct GridTile {
-    u8 unknown_00[8];
-    u8 terrain;  // 0xff: none
-    u8 unknown_09;
+    static constexpr u16 CORNER_HEIGHT_MASK = 0x1f;  // the low five bits of a corner halfword
+    static constexpr u32 CORNER_HEIGHT_SHIFT = 3;    // are the height in steps of 8
+    static constexpr u8 FLAGS_09_BIT_6 = 1 << 6;     // meaning not known yet
+
+    u16 corners[4];  // one per corner of the tile (the height in the low five bits)
+    u8 terrain;      // 0xff: none
+    u8 flags_09;
+
+    u32 corner_height(u32 corner) const;
 };
 GUEST_OFFSET(GridTile, terrain, 8);
 GUEST_SIZE(GridTile, 10);
@@ -38,6 +44,10 @@ struct GridCellLarge {
 
     // The terrain byte of the tile at (x, z) of the block (taken modulo 16).
     u8 terrain_at(s32 x, s32 z) const;
+    // Whether bit 6 of the flag byte of the tile at (x, z) is set.
+    bool tile_has_flag_6(s32 x, s32 z) const;
+    // The height of the tile at (x, z) (see the corners of GridTile).
+    float tile_height(s32 x, s32 z) const;
 };
 GUEST_OFFSET(GridCellLarge, tiles, 0x1c);
 GUEST_SIZE(GridCellLarge, 0xa1c);

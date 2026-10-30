@@ -294,3 +294,15 @@ GUEST_EXPORT(0x005bdb34, limit_index_88f364);
 GUEST_FUZZ(0x005bdb34, 200, [](guest::Fuzz &f) {
     f.arguments(f.pick<s32>({0, 1, -1, 10, 100, 1000, (*limits_88f364)[f.below(SEARCH_LIMIT_COUNT)], s32(f.number())}));
 });
+
+bool value_is_4c_or_4d(u32 value) {
+    return value == 0x4c || value == 0x4d;  // (what they stand for is not known yet)
+}
+GUEST_EXPORT(0x006cac70, value_is_4c_or_4d);
+GUEST_FUZZ(0x006cac70, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0x4b, 0x4c, 0x4d, 0x4e, f.number()})); });
+
+bool value_is_12_to_41(u32 value) {
+    return value >= 0x12 && value <= 0x41;  // (what they stand for is not known yet)
+}
+GUEST_EXPORT(0x006cacc8, value_is_12_to_41);
+GUEST_FUZZ(0x006cacc8, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0x11, 0x12, 0x40, 0x41, 0x42, f.number()})); });

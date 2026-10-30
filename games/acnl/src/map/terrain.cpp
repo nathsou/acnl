@@ -71,6 +71,62 @@ GUEST_FUZZ(0x0075d608, 200, [](guest::Fuzz &f) {
     f.arguments(f.object<GridCellLarge>(), s32(f.number()), s32(f.number()));
 });
 
+bool GridCellLarge::tile_has_flag_6(s32 x, s32 z) const {
+    return (tiles[u32(z) & TILE_MASK][u32(x) & TILE_MASK].flags_09 & GridTile::FLAGS_09_BIT_6) != 0;
+}
+GUEST_EXPORT(0x0075d868, GridCellLarge::tile_has_flag_6);
+GUEST_FUZZ(0x0075d868, 200, [](guest::Fuzz &f) {
+    f.arguments(f.object<GridCellLarge>(), s32(f.number()), s32(f.number()));
+});
+
+// The height of a corner of the tile (0-3): its halfword's low five bits times 8.
+u32 GridTile::corner_height(u32 corner) const {
+    return u32(corners[corner] & CORNER_HEIGHT_MASK) << CORNER_HEIGHT_SHIFT;
+}
+
+// The same by corner for the entries the game calls separately.
+static u32 tile_corner_height_0(const GridTile &tile) {
+    return tile.corner_height(0);
+}
+GUEST_EXPORT(0x0075d828, tile_corner_height_0);
+static u32 tile_corner_height_1(const GridTile &tile) {
+    return tile.corner_height(1);
+}
+GUEST_EXPORT(0x0075d848, tile_corner_height_1);
+static u32 tile_corner_height_2(const GridTile &tile) {
+    return tile.corner_height(2);
+}
+GUEST_EXPORT(0x0075d838, tile_corner_height_2);
+static u32 tile_corner_height_3(const GridTile &tile) {
+    return tile.corner_height(3);
+}
+GUEST_EXPORT(0x0075d858, tile_corner_height_3);
+GUEST_FUZZ(0x0075d828, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
+GUEST_FUZZ(0x0075d848, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
+GUEST_FUZZ(0x0075d838, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
+GUEST_FUZZ(0x0075d858, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
+
+// The height of the tile (x, z) of the block as a number: the first corner's, or the highest corner's when the tile has not
+// got flag 6.
+float GridCellLarge::tile_height(s32 x, s32 z) const {
+    const GridTile &tile = tiles[u32(z) & TILE_MASK][u32(x) & TILE_MASK];
+    s32 height = s32(tile.corner_height(0));
+    if ((tile.flags_09 & GridTile::FLAGS_09_BIT_6) != 0) {
+        return float(height);
+    }
+    for (u32 corner : {2u, 1u, 3u}) {
+        s32 other = s32(tile.corner_height(corner));
+        if (height < other) {
+            height = other;
+        }
+    }
+    return float(height);
+}
+GUEST_EXPORT(0x006a96d8, GridCellLarge::tile_height);
+GUEST_FUZZ(0x006a96d8, 200, [](guest::Fuzz &f) {
+    f.arguments(f.object<GridCellLarge>(), s32(f.number()), s32(f.number()));
+});
+
 // The terrain of the tile (cell_x, cell_z) of the block (block_x, block_z) of the map with the given number; 0 when the
 // map or the block does not exist and for the no-terrain value.
 u32 terrain_at_block_tile(s32 block_x, s32 block_z, s32 cell_x, s32 cell_z, u32 map_number) {

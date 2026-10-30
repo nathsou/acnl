@@ -3,6 +3,8 @@
 #include "core/grid_map.hpp"
 #include "graphics/hemisphere_light.hpp"
 
+void split_world_position(s32 &block_x, s32 &block_z, s32 &cell_x, s32 &cell_z, s32 x, s32 z);
+
 namespace {
 
 inline constexpr guest::Function<0x003171b4, void(gptr<s32> cell_x, gptr<s32> cell_z, const Float3 &position)> position_to_cell;
@@ -18,6 +20,7 @@ inline constexpr guest::Function<0x002fe748, bool(const Item &item)> item_entry_
 inline constexpr guest::Function<0x006c6590, bool(s32 x, s32 z, u32 map_number)> terrain_blocks_at_guest;
 inline constexpr guest::Function<0x002260c4, bool(s32 x, s32 z)> second_map_has_marker_guest;
 inline constexpr guest::Function<0x002266c8, bool(s32 cell_x, s32 cell_z)> object_in_cell_guest;
+inline constexpr guest::Function<0x00315788, u32(s32 x, s32 z, u32 map_number)> terrain_at_world_guest;
 inline constexpr guest::Function<0x006c5ad8, u32(s32 block_x, s32 block_z, s32 cell_x, s32 cell_z, u32 map_number)> terrain_at_block_tile;
 
 inline constexpr guest::Function<0x006a5e34, gptr<GridMap>()> world_map;
@@ -256,4 +259,146 @@ bool tile_is_free(s32 x, s32 z, bool skip_weed_check, bool ground) {
 GUEST_EXPORT(0x0051f70c, tile_is_free);
 GUEST_FUZZ(0x0051f70c, 300, [](guest::Fuzz &f) {
     f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)), s32(f.below(FUZZ_COORDINATE_RANGE)), f.below(2), f.below(2));
+});
+
+// The height of the tile at a world position (x, z) of the map with the number; 0 without the map or the block.
+float tile_height_at_world(s32 x, s32 z, u32 map_number) {
+    s32 block_x, block_z, cell_x, cell_z;
+    split_world_position(block_x, block_z, cell_x, cell_z, x, z);
+    gptr<GridMap> map = map_by_number(map_number);
+    if (map == nullptr) {
+        return 0.0f;
+    }
+    gptr<GridCellLarge> block = map->large_cell_at(block_x, block_z);
+    if (block == nullptr) {
+        return 0.0f;
+    }
+    return block->tile_height(cell_x, cell_z);
+}
+GUEST_EXPORT(0x006c602c, tile_height_at_world);
+GUEST_FUZZ(0x006c602c, 200, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, f.below(4));
+});
+
+// The height of the tile at a position given in world units, in the map with the number; 0 without the map or the block.
+float tile_height_at_position(const Float3 &position, u32 map_number) {
+    guest::StackObject<s32> cell_x;
+    guest::StackObject<s32> cell_z;
+    guest::StackObject<s32> tile_x;
+    guest::StackObject<s32> tile_z;
+    cell_and_tile_of_position(cell_x.ptr(), cell_z.ptr(), tile_x.ptr(), tile_z.ptr(), position);
+    gptr<GridMap> map = map_by_number(map_number);
+    if (map == nullptr) {
+        return 0.0f;
+    }
+    gptr<GridCellLarge> block = map->large_cell_at(*cell_x, *cell_z);
+    if (block == nullptr) {
+        return 0.0f;
+    }
+    return block->tile_height(*tile_x, *tile_z);
+}
+GUEST_EXPORT(0x006c5fa0, tile_height_at_position);
+GUEST_FUZZ(0x006c5fa0, 200, [](guest::Fuzz &f) {
+    auto position = f.object<Float3>();
+    for (float &coordinate : position->v) {
+        coordinate = f.pick<float>({0.0f, 100.0f, 700.0f, 3000.0f, f.real()});
+    }
+    f.arguments(position, f.below(4));
+});
+
+// The height of the tile (cell_x, cell_z) of the block (block_x, block_z) of the map with the number; 0 without the map or block.
+float tile_height_of_block_tile(s32 block_x, s32 block_z, s32 cell_x, s32 cell_z, u32 map_number) {
+    gptr<GridMap> map = map_by_number(map_number);
+    if (map == nullptr) {
+        return 0.0f;
+    }
+    gptr<GridCellLarge> block = map->large_cell_at(block_x, block_z);
+    if (block == nullptr) {
+        return 0.0f;
+    }
+    return block->tile_height(cell_x, cell_z);
+}
+GUEST_EXPORT(0x006c60b8, tile_height_of_block_tile);
+GUEST_FUZZ(0x006c60b8, 200, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(8)) - 1, s32(f.below(8)) - 1, s32(f.below(20)) - 2, s32(f.below(20)) - 2, f.below(4));
+});
+
+namespace {
+
+constexpr u32 CELL_SHIFT = 5;  // a cell is 32 world units wide
+inline guest::global<s32, 0x0085f2e8> cell_origin_x;
+inline guest::global<s32, 0x0085f2ec> cell_origin_z;
+
+}  // namespace
+
+// The position of the corner of the cell (x, z): its x and z in world units, and the height of the tile there.
+void cell_corner_with_height(Float3 &out, s32 x, s32 z) {
+    out.v[0] = float(s32(u32(*cell_origin_x) + (u32(x) << CELL_SHIFT)));
+    out.v[1] = 0.0f;
+    out.v[2] = float(s32(u32(*cell_origin_z) + (u32(z) << CELL_SHIFT)));
+    out.v[1] = tile_height_at_world(x, z, MAP_ZERO);
+}
+GUEST_EXPORT(0x006a6dbc, cell_corner_with_height);
+GUEST_FUZZ(0x006a6dbc, 200, [](guest::Fuzz &f) {
+    f.arguments(f.object<Float3>(), s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, s32(f.below(FUZZ_COORDINATE_RANGE)) - 8);
+});
+
+namespace {
+
+constexpr u32 BLOCK_CELLS_SHIFT = 4;         // 16 cells to a block
+constexpr u32 CELL_WORLD_SHIFT_512 = 9;      // a block cell of the position helper is 512 units
+constexpr u8 TERRAIN_FIRST_BYTE_WANTED = 0xf;
+
+}  // namespace
+
+// Whether the tile at the world position (x, z) of the map has flag 6 in its flag byte (false without the map or block).
+bool tile_has_flag_6_at_world(s32 x, s32 z, u32 map_number) {
+    s32 block_x, block_z, cell_x, cell_z;
+    split_world_position(block_x, block_z, cell_x, cell_z, x, z);
+    gptr<GridMap> map = map_by_number(map_number);
+    if (map == nullptr) {
+        return false;
+    }
+    gptr<GridCellLarge> block = map->large_cell_at(block_x, block_z);
+    return block != nullptr && block->tile_has_flag_6(cell_x, cell_z);
+}
+GUEST_EXPORT(0x006c8368, tile_has_flag_6_at_world);
+GUEST_FUZZ(0x006c8368, 200, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, f.below(4));
+});
+
+// The position of the corner of the tile (cell_x, cell_z) of the block (block_x, block_z): x and z in world units, and the height.
+void tile_corner_with_height(Float3 &out, s32 block_x, s32 block_z, s32 cell_x, s32 cell_z) {
+    s32 column = cell_x + (block_x << BLOCK_CELLS_SHIFT);
+    s32 row = cell_z + (block_z << BLOCK_CELLS_SHIFT);
+    out.v[0] = float(s32(u32(*cell_origin_x) + (u32(column) << CELL_SHIFT)));
+    out.v[1] = 0.0f;
+    out.v[2] = float(s32(u32(*cell_origin_z) + (u32(row) << CELL_SHIFT)));
+    out.v[1] = tile_height_of_block_tile(block_x, block_z, cell_x, cell_z, MAP_ZERO);
+}
+GUEST_EXPORT(0x006a6e1c, tile_corner_with_height);
+GUEST_FUZZ(0x006a6e1c, 200, [](guest::Fuzz &f) {
+    f.arguments(f.object<Float3>(), s32(f.below(8)) - 1, s32(f.below(8)) - 1, s32(f.below(20)) - 2, s32(f.below(20)) - 2);
+});
+
+// Whether the first byte of the terrain's record at (x, z) is 0xf.
+bool terrain_record_starts_with_f(s32 x, s32 z, u32 map_number) {
+    TerrainRecord record;
+    terrain_record(record, terrain_at_world_guest(x, z, map_number));
+    return record.bytes[0] == TERRAIN_FIRST_BYTE_WANTED;
+}
+GUEST_EXPORT(0x006c8560, terrain_record_starts_with_f);
+GUEST_FUZZ(0x006c8560, 200, [](guest::Fuzz &f) {
+    f.arguments(s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, s32(f.below(FUZZ_COORDINATE_RANGE)) - 8, f.below(4));
+});
+
+// The position of the corner of the block (x, z) in world units (512 units a block), at height 0.
+void block_corner_position(Float3 &out, s32 x, s32 z) {
+    out.v[1] = 0.0f;
+    out.v[0] = float(s32(u32(x) << CELL_WORLD_SHIFT_512));
+    out.v[2] = float(s32(u32(z) << CELL_WORLD_SHIFT_512));
+}
+GUEST_EXPORT(0x006a5e04, block_corner_position);
+GUEST_FUZZ(0x006a5e04, 100, [](guest::Fuzz &f) {
+    f.arguments(f.object<Float3>(), s32(f.below(40)) - 4, s32(f.below(40)) - 4);
 });
