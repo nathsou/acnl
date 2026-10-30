@@ -4,6 +4,13 @@
 namespace {
 
 inline constexpr guest::Function<0x00301e20, bool(gptr<SaveVillager> villager)> is_villager_record;
+inline constexpr guest::Function<0x003009a9, gptr<SaveVillager>(gptr<SaveVillager> records, u32 index)> villager_record_at;
+inline constexpr guest::Function<0x0011b22d, bool(gptr<SaveVillager> villager)> has_flag_1_only;
+inline constexpr guest::Function<0x002fb328, gptr<SaveData>()> get_save_data;
+
+constexpr u32 ACTOR_IDS_ADDRESS = 0x0088e4ec;  // five pairs of actor ids
+constexpr u32 ACTOR_ID_PAIRS = 5;
+constexpr u32 FIRST_VILLAGER_ACTOR_ID = 8;     // villager number plus this
 
 gptr<SaveVillager> some_villagers(guest::Fuzz &f) {
     return f.allocate(SaveData::VILLAGER_COUNT * sizeof(SaveVillager)).cast<SaveVillager>();
@@ -86,3 +93,22 @@ void set_slot_flag_on_villagers(gptr<SaveVillager> villagers, u32 slot) {
 }
 GUEST_EXPORT(0x0010d645, set_slot_flag_on_villagers);
 GUEST_FUZZ(0x0010d645, 100, [](guest::Fuzz &f) { f.arguments(some_villagers(f), f.pick<u32>({0, 1, 2, 3, 4, 31, 32, f.number()})); });
+
+// For an actor id of the game's table (five pairs of ids): whether the villager that has the id minus 8 as its number
+// is a valid one with only FLAG_1.
+bool is_flag_1_only_villager_actor(u32 actor_id) {
+    gptr<const u8> ids(ACTOR_IDS_ADDRESS);
+    for (u32 pair = 0; pair < ACTOR_ID_PAIRS; pair++) {
+        if (ids[pair * 2] != actor_id && ids[pair * 2 + 1] != actor_id) {
+            continue;
+        }
+        gptr<SaveVillager> villager = villager_record_at(guest::addr_of(get_save_data()->villagers[0]), actor_id - FIRST_VILLAGER_ACTOR_ID);
+        return villager && has_flag_1_only(villager);
+    }
+    return false;
+}
+GUEST_EXPORT(0x006cbf6c, is_flag_1_only_villager_actor);
+GUEST_FUZZ(0x006cbf6c, 100, [](guest::Fuzz &f) {
+    gptr<const u8> ids(ACTOR_IDS_ADDRESS);
+    f.arguments(f.pick<u32>({0, 8, ids[f.below(ACTOR_ID_PAIRS * 2)], ids[f.below(ACTOR_ID_PAIRS * 2)], f.number()}));
+});

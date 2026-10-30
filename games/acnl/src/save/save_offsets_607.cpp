@@ -17,6 +17,7 @@ inline guest::global<u32, 0x00951490> request_value;
 inline guest::global<u32, 0x0088e5bc> current_value_source;
 
 inline constexpr guest::Function<0x00305f44, u32()> query_current_main_object;
+inline constexpr guest::Function<0x002fb328, gptr<SaveData>()> get_save_data;
 inline constexpr guest::Function<0x002ff8b0, u32(u32 index)> slot_value;
 
 struct Settings {
@@ -42,6 +43,8 @@ constexpr u8 PAIR_VALUE = 0x28;
 constexpr u32 SLOT_MAIN = 4;
 
 }  // namespace
+
+gptr<SavePlayer> player_in_array(gptr<SavePlayer> players, u32 index);
 
 u32 save_data_base_offset() { return SaveData::BASE_OFFSET; }
 GUEST_EXPORT(0x00607198, save_data_base_offset);
@@ -113,3 +116,26 @@ void copy_reference_clock() {
 }
 GUEST_EXPORT(0x0060b0b8, copy_reference_clock);
 GUEST_FUZZ(0x0060b0b8, 20, [](guest::Fuzz &f) { f.arguments(); });
+
+// How far the player record of the slot lies from the start of the save data (wrong for a slot past the fourth, whose
+// record is null).
+u32 player_offset_in_save(u32 slot) {
+    gptr<SaveData> save = get_save_data();
+    return player_in_array(guest::addr_of(save->players[0]), slot).addr() - save.addr();
+}
+GUEST_EXPORT(0x00607588, player_offset_in_save);
+GUEST_FUZZ(0x00607588, 50, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, f.number()})); });
+
+// A request is pending for the whole player record of the slot (its offset is the player's and it covers SavePlayer::SIZE).
+bool request_is_for_player(u32 slot) {
+    u32 offset = player_offset_in_save(slot);
+    return *request_active != 0 && *request_offset == offset && *request_value == SavePlayer::SIZE;
+}
+GUEST_EXPORT(0x006077c0, request_is_for_player);
+GUEST_FUZZ(0x006077c0, 100, [](guest::Fuzz &f) {
+    u32 slot = f.below(SaveData::PLAYER_COUNT);
+    *request_active = s8(f.below(2));
+    *request_offset = f.below(2) ? player_offset_in_save(slot) : f.number();
+    *request_value = f.below(2) ? SavePlayer::SIZE : f.number();
+    f.arguments(slot);
+});

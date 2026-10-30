@@ -44,3 +44,25 @@ void add_to_current_player_counter(u32 index, u32 amount) {
 }
 GUEST_EXPORT(0x0024b7b8, add_to_current_player_counter);
 GUEST_FUZZ(0x0024b7b8, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 5, 23, 24, 0xffffffffu}), f.pick<u32>({0, 1, 100, f.number()})); });
+
+namespace {
+
+constexpr u32 KIND_INFO_ADDRESS = 0x0087966c;  // a table of the game, indexed by the kind of a counter
+constexpr u32 KIND_INFO_SIZE = 16;
+
+}  // namespace
+
+// What the game knows about a kind of player counter (the table has no bounds check, kinds are small).
+struct CounterKindInfo {
+    u8 unknown_00[0xc];
+    u32 limit;  // the most a counter of this kind can reach
+    u8 unknown_10[KIND_INFO_SIZE - 0x10];
+};
+GUEST_OFFSET(CounterKindInfo, limit, 0xc);
+GUEST_SIZE(CounterKindInfo, KIND_INFO_SIZE);
+
+gptr<CounterKindInfo> counter_kind_info(u32 kind) {
+    return gptr<CounterKindInfo>(KIND_INFO_ADDRESS + kind * KIND_INFO_SIZE);
+}
+GUEST_EXPORT(0x0029b88c, counter_kind_info);
+GUEST_FUZZ(0x0029b88c, 50, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 5, 20, f.below(40)})); });

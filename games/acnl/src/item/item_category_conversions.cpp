@@ -147,3 +147,63 @@ GUEST_FUZZ(0x006bb76c, 200, [](guest::Fuzz &f) {
     item->flags = u16(f.pick<u32>({0, 1, 2, 4, 5, 0x4001, 0xc003, 0x3fff, f.number()}));
     f.arguments(item);
 });
+
+// Takes one item from a stack of category 75 or 76 (the flags below the top two bits hold the count minus one, and
+// the stack is looked at when that is 1 to 8): the count goes down by one, and a stack of two becomes a single item
+// (convert_stack_to_single). Always returns false.
+bool take_one_from_stack(Item &item) {
+    constexpr u16 STACK_MIN = 1;
+    constexpr u16 STACK_MAX = 8;
+    u8 category = item.category();
+    if (category != CATEGORY_STACK_75 && category != CATEGORY_STACK_76) {
+        return false;
+    }
+    u16 stored = item.flags & COUNTER_MASK;
+    if (stored < STACK_MIN || stored > STACK_MAX) {
+        return false;
+    }
+    if (stored > STACK_MIN) {
+        item.flags = u16(((stored - 1) & COUNTER_MASK) | (item.flags & Item::FLAGS_TOP_BITS));
+    } else {
+        convert_stack_to_single(item);
+    }
+    return false;
+}
+GUEST_EXPORT(0x006bb80c, take_one_from_stack);
+GUEST_FUZZ(0x006bb80c, 200, [](guest::Fuzz &f) {
+    auto item = an_item_in_category(f, f.below(2) ? CATEGORY_STACK_75 : CATEGORY_STACK_76);
+    item->flags = u16(f.pick<u32>({0, 1, 2, 5, 8, 9, 0x4001, 0xc002, f.number()}));
+    f.arguments(item);
+});
+
+namespace {
+
+constexpr u32 FLAG_RESET_ITEM_COUNT = 14;
+
+// An object whose items from byte 0x14 on get their category 40 flags reset (the rest of it is not known yet).
+struct ItemsWithFlagsToReset {
+    u8 unknown_00[0x14];
+    Item items[FLAG_RESET_ITEM_COUNT];
+};
+GUEST_OFFSET(ItemsWithFlagsToReset, items, 0x14);
+
+}  // namespace
+
+// Resets the flags of the category 40 items among the object's fourteen items (reset_category_40_flags on each).
+void reset_category_40_flags_of_all(ItemsWithFlagsToReset &object) {
+    for (Item &item : object.items) {
+        guest::StackObject<Item> copy;
+        *copy = item;
+        reset_category_40_flags(*copy);
+        item = *copy;
+    }
+}
+GUEST_EXPORT(0x002f9bdc, reset_category_40_flags_of_all);
+GUEST_FUZZ(0x002f9bdc, 100, [](guest::Fuzz &f) {
+    auto object = f.object<ItemsWithFlagsToReset>();
+    for (Item &item : object->items) {
+        item = *an_item_in_category(f, f.below(2) ? CATEGORY_40 : CATEGORY_35);
+        item.flags = u16(f.below(2) ? 0 : f.number());
+    }
+    f.arguments(object);
+});
