@@ -250,11 +250,13 @@ gptr<u8> record_2160_address(gptr<u8> base, u32 index) {
 }
 GUEST_EXPORT(0x00712864, record_2160_address);
 GUEST_EXPORT(0x0020bf50, record_2160_address);
+GUEST_EXPORT(0x0020bf0c, record_2160_address);
 static void fuzz_record_2160(guest::Fuzz &f) {
     f.arguments(f.allocate(8).cast<u8>(), f.pick<u32>({f.below(RECORD_COUNT_2160 + 3), 0xffffffffu}));
 }
 GUEST_FUZZ(0x00712864, 100, fuzz_record_2160);
 GUEST_FUZZ(0x0020bf50, 100, fuzz_record_2160);
+GUEST_FUZZ(0x0020bf0c, 100, fuzz_record_2160);
 
 // Whether the halfword is 0xfc or more.
 bool halfword_is_fc_or_more(const u16 &value) {
