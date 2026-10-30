@@ -8,6 +8,7 @@ using guest::gptr;
 namespace {
 
 constexpr u32 ENTRY_SIZE = 34;                // of the table at the pointer in the global at 0x009c79c4 + 4
+constexpr s32 NO_INDEX = -1;
 constexpr u32 MAX_COUNT = 0x30;               // capped_count_for_kind never returns more
 constexpr u32 FLAG_BIT_1000 = 0x1000;         // a bit of the global flag table entries (meaning not known yet)
 constexpr u32 FLAG_BIT_10000000 = 0x10000000;
@@ -157,6 +158,32 @@ bool is_special_kind(u32 kind) {
 }
 GUEST_EXPORT(0x004e58e8, is_special_kind);
 GUEST_FUZZ(0x004e58e8, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({KIND_55, KIND_2B, KIND_67, NO_TABLE_ENTRY, f.below(NO_TABLE_ENTRY)})); });
+
+// The index of the value in the list (as long as the kind's count); if it is not there, it is stored in the first empty
+// (zero) element and that index is returned; -1 when the list is full or the count is 0.
+s32 find_or_add_value_in_list(gptr<u32> list, u32 value) {
+    u32 count = capped_count_for_kind(read_global_byte_2());
+    for (u32 i = 0; i < count; i++) {
+        if (list[i] == value) {
+            return s32(i);
+        }
+    }
+    for (u32 i = 0; i < count; i++) {
+        if (list[i] == 0) {
+            list[i] = value;
+            return s32(i);
+        }
+    }
+    return NO_INDEX;
+}
+GUEST_EXPORT(0x004e9464, find_or_add_value_in_list);
+GUEST_FUZZ(0x004e9464, 150, [](guest::Fuzz &f) {
+    auto list = f.allocate(MAX_COUNT * sizeof(u32)).cast<u32>();
+    for (u32 i = 0; i < MAX_COUNT; i++) {
+        list[i] = f.below(3) == 0 ? 0 : f.below(6);
+    }
+    f.arguments(list, f.pick<u32>({0, 1, 3, 5, 9}));
+});
 
 // Zeroes the first element of the list (as long as the kind's count) that equals the value; false if none does.
 bool remove_value_from_list(gptr<u32> list, u32 value) {

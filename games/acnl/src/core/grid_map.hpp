@@ -3,17 +3,43 @@
 #pragma once
 
 #include "core/grid_rect.hpp"
+#include "item/item.hpp"
 
 // One cell of the table at 0x20 (12 bytes, contents not known yet).
 struct GridCellSmall {
-    u8 unknown_00[12];
+    static constexpr u32 LAYER_COUNT = 2;
+
+    u32 unknown_00;
+    gptr<void> layers[LAYER_COUNT];  // 16x16 cells each (may be null)
+
+    // The cell at (x, z) of the block (0-15 each) in the layer, or null (outside the block, past the layers, no layer).
+    gptr<void> cell_at(s32 x, s32 z, u32 layer);
+    // Puts a copy of the item in that cell unless a save request blocks it; whether it did.
+    bool place_item(const Item &item, s32 x, s32 z, u32 layer);
 };
+GUEST_OFFSET(GridCellSmall, layers, 4);
 GUEST_SIZE(GridCellSmall, 12);
 
-// One cell of the table at 0x24 (0xa1c bytes, contents not known yet).
-struct GridCellLarge {
-    u8 unknown_00[0xa1c];
+// One tile of a block's table (10 bytes; only the terrain byte is known).
+struct GridTile {
+    u8 unknown_00[8];
+    u8 terrain;  // 0xff: none
+    u8 unknown_09;
 };
+GUEST_OFFSET(GridTile, terrain, 8);
+GUEST_SIZE(GridTile, 10);
+
+// One cell of the table at 0x24: the 16x16 tiles of a block.
+struct GridCellLarge {
+    static constexpr u32 SIDE = 16;
+
+    u8 unknown_00[0x1c];
+    GridTile tiles[SIDE][SIDE];  // [z][x]
+
+    // The terrain byte of the tile at (x, z) of the block (taken modulo 16).
+    u8 terrain_at(s32 x, s32 z) const;
+};
+GUEST_OFFSET(GridCellLarge, tiles, 0x1c);
 GUEST_SIZE(GridCellLarge, 0xa1c);
 
 struct GridMap {
@@ -31,6 +57,10 @@ struct GridMap {
     u32 process_reported_cell(u32 query, u32 argument);
     // Hands the small cell at (x, y) to f_0075281c; 0 if not found.
     u32 process_cell(s32 x, s32 y, u32 a, u32 b, u32 c);
+    // Hands the small cell of the block the world position falls in, with the position inside the block; 0 if not found.
+    u32 process_world_position(s32 x, s32 z, u32 argument);
+    // Puts a copy of the item in the cell at the world position (see GridCellSmall::place_item); whether it did.
+    bool place_item_at_world(const Item &item, s32 x, s32 z, u32 layer);
 };
 GUEST_OFFSET(GridMap, rect_10, 0x10);
 GUEST_OFFSET(GridMap, cells_small, 0x20);

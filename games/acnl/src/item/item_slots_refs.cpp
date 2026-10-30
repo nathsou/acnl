@@ -116,6 +116,34 @@ gptr<Item> owner_slot_2_if_class_3(SlotsOwner &owner) {
 GUEST_EXPORT(0x0070b0b8, owner_slot_2_if_class_3);
 GUEST_FUZZ(0x0070b0b8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots_owner(f)); });
 
+// Whether the item can be worn together with what the owner wears: never when it has no wear class or is empty; items of
+// class 7 when the mode allows them; when the owner's slot 2 item has the blocking category, only items of that
+// category and those of the classes other than 3, 4 and 5.
+bool can_wear_with_owner_slot_2(u32 unused, const Item &item, SlotsOwner &owner) {
+    if (item.is_empty()) {
+        return false;
+    }
+    WearClass wear_class = item.wear_class();
+    u8 category = item.category();
+    u8 slot_2_category = owner_slot_2_if_class_3(owner)->category();
+    if (wear_class == WEAR_CLASS_NONE) {
+        return false;
+    }
+    if (wear_class == WEAR_CLASS_7) {
+        return item.is_wear_class_7_in_mode_with_flag_4();
+    }
+    if (slot_2_category == CATEGORY_BLOCKING && category != CATEGORY_BLOCKING) {
+        return wear_class != WEAR_CLASS_3 && wear_class != WEAR_CLASS_4 && wear_class != WEAR_CLASS_5;
+    }
+    return true;
+}
+GUEST_EXPORT(0x0026f808, can_wear_with_owner_slot_2);
+GUEST_FUZZ(0x0026f808, 300, [](guest::Fuzz &f) {
+    auto item = f.object<Item>();
+    item->id = f.below(5) == 0 ? Item::EMPTY : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
+    f.arguments(0u, item, fuzz_slots_owner(f));
+});
+
 gptr<Item> owner_slot_1_if_class_2(SlotsOwner &owner) {
     if (owner.slots != nullptr) {
         return owner.slots->slot_if_class(SLOT_1, WEAR_CLASS_2);

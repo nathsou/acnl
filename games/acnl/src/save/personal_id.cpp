@@ -10,6 +10,21 @@ PlayerRef &PlayerRef::operator=(const PlayerRef &other) {
 }
 GUEST_EXPORT(0x0030f52c, PlayerRef::operator=);
 
+void PlayerRef::clear() {
+    id = 0;
+    for (u32 i = 0; i < NAME_LENGTH - 1; i++) {
+        name[i] = 0;
+    }
+    name[NAME_LENGTH - 1] = LAST_UNIT_WHEN_CLEAR;
+}
+GUEST_EXPORT(0x0030589c, PlayerRef::clear);
+// (The game uses PlayerRef::clear for towns too.)
+void TownRef::clear() {
+    reinterpret_cast<PlayerRef *>(this)->clear();
+}
+
+GUEST_FUZZ(0x0030589c, 100, [](guest::Fuzz &f) { f.arguments(f.object<PlayerRef>()); });
+
 GUEST_FUZZ(0x0030f52c, 200, [](guest::Fuzz &f) { f.arguments(f.object<PlayerRef>(), f.object<PlayerRef>()); });
 
 namespace {

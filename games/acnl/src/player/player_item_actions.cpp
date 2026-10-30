@@ -41,6 +41,16 @@ GUEST_EXPORT(0x0065037c, register_item_for_owner);
 GUEST_EXPORT(0x00653854, register_item_for_owner);
 GUEST_EXPORT(0x00657824, register_item_for_owner);
 
+// The worn item of the owner's player in the shoes slot when it has the shoes' class, else the empty item.
+gptr<Item> worn_shoes_of_owner(PlayerSlotOwner &owner) {
+    gptr<SavePlayer> player = player_of_slot_index(owner.player_slot);
+    if (player == nullptr) {
+        return empty_item.ptr();
+    }
+    return slot_7_if_class_7(*worn_items(player));
+}
+GUEST_EXPORT(0x00762370, worn_shoes_of_owner);
+
 // Takes off the shoes when their wear class index (ItemData byte 0x0f) is the one given.
 template <u32 WEAR_INDEX>
 void take_off_shoes_with_index(u32 player_slot) {
@@ -82,6 +92,11 @@ GUEST_FUZZ(0x00657824, 100, fuzz_register);
 static void fuzz_player_slot(guest::Fuzz &f) {
     f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, f.number()}));
 }
+GUEST_FUZZ(0x00762370, 100, [](guest::Fuzz &f) {
+    auto owner = f.object<PlayerSlotOwner>();
+    owner->player_slot = u8(f.pick<u32>({0, 1, 2, 3, 4, 7}));
+    f.arguments(owner);
+});
 GUEST_FUZZ(0x006576f8, 100, fuzz_player_slot);
 GUEST_FUZZ(0x0065e058, 100, fuzz_player_slot);
 GUEST_FUZZ(0x00695880, 100, [](guest::Fuzz &f) { f.arguments(); });

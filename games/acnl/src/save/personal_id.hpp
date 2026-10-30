@@ -6,19 +6,24 @@
 
 struct PlayerRef {
     static constexpr u32 NAME_LENGTH = 10;  // UTF-16 code units (8 characters, then zeroes)
+    static constexpr u16 LAST_UNIT_WHEN_CLEAR = 10;
 
     u16 id;
     u16 name[NAME_LENGTH];
 
     PlayerRef &operator=(const PlayerRef &other);
+    void clear();  // no id, an empty name whose last unit is LAST_UNIT_WHEN_CLEAR
 };
 GUEST_SIZE(PlayerRef, 22);
 
 struct TownRef {
     static constexpr u32 NAME_LENGTH = 10;
+    static constexpr u16 LAST_UNIT_WHEN_CLEAR = 10;
 
     u16 id;
     u16 name[NAME_LENGTH];
+
+    void clear();  // the same as PlayerRef::clear
 };
 GUEST_SIZE(TownRef, 22);
 

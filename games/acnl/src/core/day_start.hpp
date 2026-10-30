@@ -10,3 +10,5 @@ void day_start_by_clock_mode(TimeStamp &out);
 bool day_has_changed();
 // A word of the row of the table for the period of the year the day start falls in.
 u32 period_table_value(u32 index);
+// The byte of the object's table of seven (one per weekday) for the weekday of the game day the time (its three words) falls in.
+u32 value_for_weekday(guest::gptr<u8> table_owner, u32 time_word_0, u32 time_word_1, u32 time_word_2);
