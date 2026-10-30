@@ -52,7 +52,7 @@ inline constexpr guest::Function<0x00309958, u32(gptr<void> object, u32 value)> 
 inline constexpr guest::Function<0x00309ccc, s32(s32 index)> index_check_309ccc;
 inline constexpr guest::Function<0x00309971, u32(gptr<const SaveVillager> villager)> villager_check_309970;
 
-inline constexpr guest::Function<0x0030a34c, void(gptr<Value12> out, gptr<const u8> source)> make_value12;
+inline constexpr guest::Function<0x0030a34c, void(gptr<Value12> out, gptr<const Date> source)> make_value12;
 inline constexpr guest::Function<0x0030a488, void(gptr<Value12> value, u32 amount, u32 unknown_r2, u32 unknown_r3,
                                                   u32 unknown_stack)>
     advance_value12;
@@ -111,13 +111,13 @@ static bool check_villager_11a390(gptr<SaveVillager> villager) {
 GUEST_EXPORT(0x0011a391, check_villager_11a390);
 
 // Needs flag_2508, both the given value and the reference value within the 14-step range starting at the value
-// built from unknown_250a; then updates a part of `object` and passes when a roll below 100 is under its value.
+// built from date_250a; then updates a part of `object` and passes when a roll below 100 is under its value.
 bool SaveVillager::check_11a440(gptr<void> object, u32, gptr<const Value12> value) const {
     constexpr u32 RANGE_LENGTH = 14;
     constexpr s32 ROLL_LIMIT = 100;
 
     guest::StackObject<Value12> start;
-    make_value12(start.ptr(), guest::addr_of(unknown_250a[0]));
+    make_value12(start.ptr(), guest::addr_of(date_250a));
     guest::StackObject<Value12> end;
     *end = *start;
     advance_value12(end.ptr(), RANGE_LENGTH, 0, 0, 0);

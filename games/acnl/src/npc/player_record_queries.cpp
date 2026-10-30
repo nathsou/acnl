@@ -32,10 +32,6 @@ inline constexpr guest::Function<0x002fe450, gptr<void>(u32 index)> table_entry;
 inline constexpr guest::Function<0x00309ccc, s32(s32 index)> index_check_309ccc;
 inline constexpr guest::Function<0x00309865, s32(gptr<void> villagers, u32 value)> villagers_index_309864;
 
-// Thresholds (ascending) the combined byte value of a record is matched against.
-constexpr u32 THRESHOLDS_ADDRESS = 0x0088ec60;
-constexpr u32 THRESHOLD_COUNT = 6;
-constexpr u32 MAX_THRESHOLD_INDEX = 3;
 constexpr s32 REFERENCE_MIN = 6;
 
 // The first record whose identity is set and that has flag bit 5 in flags_bc; null if none.
@@ -90,13 +86,7 @@ bool villager_passes_player_checks(gptr<SaveVillager> self, gptr<SavePlayer> pla
     if ((record->flags_bb & VillagerPlayerRecord::FLAGS_BB_BIT2) != 0) {
         return false;
     }
-    gptr<const u8> thresholds(THRESHOLDS_ADDRESS);
-    u32 value = (record->byte_b9 >> 1) + ((record->byte_ba & 1) << 7);
-    u32 threshold_index = 0;
-    while (threshold_index < THRESHOLD_COUNT && thresholds[threshold_index] > value) {
-        threshold_index++;
-    }
-    if (threshold_index > MAX_THRESHOLD_INDEX) {
+    if (!record->is_close()) {
         return false;
     }
     gptr<void> villagers = guest::addr_of((*save_data)->villagers[0]);

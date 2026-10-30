@@ -27,6 +27,7 @@ struct PersonalId {
     TownRef town;
 
     bool is_set() const;  // the player id is not zero and the town part passes a check
+    bool equals(const PersonalId &other) const;  // same player (id, name) and same town (id, name)
 };
 GUEST_OFFSET(PersonalId, town, 0x16);
 GUEST_SIZE(PersonalId, 44);
@@ -44,5 +45,5 @@ struct ShortId {
 GUEST_OFFSET(ShortId, town_id, 2);
 GUEST_SIZE(ShortId, 4);
 
-// Whether two identities are the same (still the recompiled comparison at 0x00311a34).
+// Whether two identities have the same player part: id, name and a flag bit (match_entry; PersonalId::equals checks the town as well).
 inline constexpr guest::Function<0x00311a34, u32(const PersonalId &identity, const PersonalId &other)> identities_match;

@@ -1,5 +1,6 @@
 // Small helpers of the code around 0x0076f000 and 0x00770000.
 #include "guest/guest.hpp"
+#include "item/item.hpp"
 
 namespace {
 
@@ -19,7 +20,10 @@ struct StatefulObject {
 GUEST_OFFSET(StatefulObject, state, 0x474);
 
 struct CellRow {
-    u32 cells[CELLS_PER_ROW];
+    union {
+        u32 cells[CELLS_PER_ROW];
+        Item items[CELLS_PER_ROW];
+    };
 };
 GUEST_SIZE(CellRow, 64);
 
@@ -81,4 +85,18 @@ GUEST_FUZZ(0x0077033c, 300, [](guest::Fuzz &f) {
 });
 GUEST_FUZZ(0x00770364, 200, [](guest::Fuzz &f) {
     f.arguments(f.allocate(64 * 8).cast<CellRow>(), f.below(20), f.below(8));
+});
+
+// Puts a copy of the item in the cell at (column, row) of a table of 16 rows of 16 items; nothing happens when the
+// position is not valid.
+void set_cell_item(gptr<CellRow> rows, const Item &item, u32 column, u32 row) {
+    if (!cell_is_valid(column, row)) {
+        return;
+    }
+    copy_item(rows[row].items[column], item);
+}
+GUEST_EXPORT(0x002fcc14, set_cell_item);
+GUEST_FUZZ(0x002fcc14, 200, [](guest::Fuzz &f) {
+    f.arguments(f.allocate(CELLS_PER_ROW * sizeof(CellRow)).cast<CellRow>(), f.object<Item>(), f.pick<u32>({0, 5, 15, 16, 20, f.number()}),
+                f.pick<u32>({0, 5, 15, 16, 20, f.number()}));
 });

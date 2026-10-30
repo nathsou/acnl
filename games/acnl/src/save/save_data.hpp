@@ -54,6 +54,7 @@ struct SaveData {
     static constexpr u32 NO_PLAYER = PLAYER_COUNT;  // player_index of a null player or one not in the array
     static constexpr u8 FLAGS_621CF_BIT_1 = 1 << 1;  // unknown flag
     static constexpr u8 FLAGS_621CF_BIT_2 = 1 << 2;  // unknown flag
+    static constexpr u8 FLAGS_621CF_BIT_3 = 1 << 3;  // adds 5 to the level
 
     u8 header[PLAYERS_OFFSET];
     SavePlayer players[PLAYER_COUNT];
@@ -76,7 +77,9 @@ struct SaveData {
     u8 unknown_621ba[0x621ce - 0x621ba];
     u8 flags_621ce;
     u8 flags_621cf;
-    u8 unknown_621d0[3];
+    u8 byte_621d0;  // the top bit counts for 1 in the level that sizes the lists of recently shown items
+    u8 byte_621d1;  // the low nibble counts for 2 each
+    u8 unknown_621d2;
     u8 flags_621d3;
     u8 unknown_621d4[0x6223a - 0x621d4];
     Item reference_item;  // the item some prices are compared against (what it represents is not known yet)
@@ -115,6 +118,7 @@ GUEST_OFFSET(SaveData, player_blocks_5d900, 0x5d900);
 GUEST_OFFSET(SaveData, flags_621b8, 0x621b8);
 GUEST_OFFSET(SaveData, flags_621ce, 0x621ce);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
+GUEST_OFFSET(SaveData, byte_621d0, 0x621d0);
 GUEST_OFFSET(SaveData, flags_621d3, 0x621d3);
 GUEST_OFFSET(SaveData, reference_item, 0x6223a);
 GUEST_OFFSET(SaveData, part_62338, 0x62338);

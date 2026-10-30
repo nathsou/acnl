@@ -34,6 +34,12 @@ bool is_villager_record(gptr<VillagerHeader> record) {
     return check_block(guest::addr_of(record->block_16).cast<void>()) != 0;
 }
 GUEST_EXPORT(0x00301e20, is_villager_record);
+GUEST_FUZZ(0x00301e20, 200, [](guest::Fuzz &f) {
+    auto record = f.object<VillagerHeader>();
+    record->id = u16(f.pick<u32>({0, 1, 100, VILLAGER_ID_LIMIT - 1, VILLAGER_ID_LIMIT, f.number()}));
+    record->personality = u8(f.pick<u32>({0, 3, PERSONALITY_LIMIT - 1, PERSONALITY_LIMIT, f.number()}));
+    f.arguments(record);
+});
 
 // The villager of the town (the first of the ten records) with the id; null if none lives there.
 gptr<SaveVillager> find_villager_by_id(gptr<SaveVillager> villagers, u32 id) {

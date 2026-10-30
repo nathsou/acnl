@@ -2,6 +2,7 @@
 #pragma once
 
 #include "guest/guest.hpp"
+#include "item/item.hpp"
 
 namespace fuzz {
 
@@ -15,6 +16,14 @@ inline guest::gptr<u32> harmless_vtable(guest::Fuzz &f, u32 slots = 8) {
         vtable[i] = ENCRYPTED_INT_GET;
     }
     return vtable;
+}
+
+// An item with a random number of the category's range (flags zero).
+inline guest::gptr<Item> item_in_category(guest::Fuzz &f, u8 category) {
+    auto item = f.object<Item>();
+    guest::gptr<CategoryInfo> info = category_info(category);
+    item->id = u16(info->first_item_number + f.below(info->item_count));
+    return item;
 }
 
 }  // namespace fuzz

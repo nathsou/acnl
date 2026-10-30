@@ -100,6 +100,9 @@ struct Item {
     bool set_flags_value_if_category_54_59(u32 value);  // sets the flags below the top bits when the category is 0x54, 0x55, 0x58 or 0x59
     bool is_in_id_set_a() const;                // the number is one of 0x334c, 0x3350...0x3364 (step 4) or 0x26ed
     bool is_in_id_set_b() const;                // the number is one of 0x334e, 0x3352...0x3362 (step 4)
+    bool is_in_id_set_c() const;                // the number is one of 0x3e, 0x43...0x6b (step 5)
+    bool is_in_id_set_d() const;                // set c, or 0x30, 0x35 or 0x70
+    bool is_in_id_set_d_without_low_flags() const;  // set d, and the low three bits of the flags are clear
     u32 quarter_price() const;                  // a quarter of the price when it is positive, else 0
     u16 flags_value() const;                    // flags without the two top bits
     bool is_first_item() const;                 // the number is FIRST_ITEM (the flag in the id is ignored)

@@ -231,6 +231,17 @@ s64 TimeStamp::nanoseconds_since_origin() const {
     return s64(u64(milliseconds_since_2000() - origin) * u64(NANOSECONDS_PER_MILLISECOND));
 }
 GUEST_EXPORT(0x0056be20, TimeStamp::nanoseconds_since_origin);
+GUEST_FUZZ(0x0056be20, 200, [](guest::Fuzz &f) {
+    auto time = f.object<TimeStamp>();
+    time->year = s32(2012 + f.below(40));
+    time->month = s8(1 + f.below(12));
+    time->day = s8(1 + f.below(28));
+    time->hour = s8(f.below(24));
+    time->minute = s8(f.below(60));
+    time->second = s8(f.below(60));
+    time->millisecond = s16(f.below(1000));
+    f.arguments(time);
+});
 
 // The origin plus the nanoseconds (rounded toward zero to milliseconds).
 TimeStamp TimeStamp::from_nanoseconds_since_origin(s64 nanoseconds) {
