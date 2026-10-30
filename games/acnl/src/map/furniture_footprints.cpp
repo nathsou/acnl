@@ -1,0 +1,242 @@
+// Furniture covers several tiles: the first tile holds the furniture's item and the others hold a marker item. Finding what
+// is on a tile therefore looks at the neighbours when the tile holds a marker.
+#include <cstring>
+#include <vector>
+
+#include "core/fuzz_helpers.hpp"
+#include "core/grid_map.hpp"
+
+namespace {
+
+inline constexpr guest::Function<0x0030b654, bool(const Item &item)> item_has_valid_data;
+inline constexpr guest::Function<0x00305570, u32(const Item &item)> item_kind_11_byte_17;
+inline constexpr guest::Function<0x0076936c, u32(const Item &item)> item_kind_11_top_bits;
+inline constexpr guest::Function<0x006a5e34, gptr<GridMap>()> world_map;
+
+constexpr u32 LAYER_COUNT = 2;
+constexpr u32 FOOTPRINT_KINDS = 5;  // the kinds (the byte 17 of the item data) that have a footprint
+constexpr u32 ROTATIONS = 4;
+constexpr u32 KIND_MASK = 0xff;
+constexpr s32 SEARCH_RADIUS = 1;
+constexpr u32 FUZZ_RANGE = 0x100;
+
+// The tiles a kind of furniture covers, for each of the four rotations: offsets from the first tile (the entry 0 of each
+// rotation is the first tile itself).
+struct TileOffset {
+    s32 x;
+    s32 z;
+};
+GUEST_SIZE(TileOffset, 8);
+
+struct Footprint {
+    gptr<TileOffset> rotations[ROTATIONS];
+    u8 tile_count;
+};
+GUEST_OFFSET(Footprint, tile_count, 0x10);
+
+// The item that fills the other tiles of a furniture (the number of the item at 0x0095bfe0).
+inline guest::global<Item, 0x0095bfe0> marker_item;
+inline guest::global<gptr<Footprint>[FOOTPRINT_KINDS], 0x009529fc> footprints;
+
+}  // namespace
+
+namespace {
+
+// The furniture whose footprint covers the tile (x, z), looked for in the eight tiles around (where its first tile is):
+// its item, and where its first tile is. Null when there is none.
+gptr<Item> furniture_covering(gptr<GridMap> map, s32 x, s32 z, u32 layer, s32 &first_x, s32 &first_z) {
+    for (s32 z_step = -SEARCH_RADIUS; z_step <= SEARCH_RADIUS; z_step++) {
+        for (s32 x_step = -SEARCH_RADIUS; x_step <= SEARCH_RADIUS; x_step++) {
+            if (x_step == 0 && z_step == 0) {
+                continue;
+            }
+            s32 candidate_x = x + x_step;
+            s32 candidate_z = z + z_step;
+            gptr<Item> first(map->process_world_position(candidate_x, candidate_z, layer));
+            if (first == nullptr || !item_has_valid_data(*first)) {
+                continue;
+            }
+            u32 kind = item_kind_11_byte_17(*first) & KIND_MASK;
+            u32 rotation = item_kind_11_top_bits(*first) % ROTATIONS;
+            if (kind >= FOOTPRINT_KINDS) {
+                continue;
+            }
+            gptr<Footprint> footprint = (*footprints)[kind];
+            for (u32 tile_index = 1; tile_index < footprint->tile_count; tile_index++) {
+                const TileOffset &offset = footprint->rotations[rotation][tile_index];
+                if (candidate_x + offset.x == x && candidate_z + offset.z == z) {
+                    first_x = candidate_x;
+                    first_z = candidate_z;
+                    return first;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+}  // namespace
+
+// The item at a tile of a layer of the map. With `exact` that is the tile's own item (a marker for the tiles that a
+// furniture covers besides its first); otherwise a marker is replaced by the item of the furniture that covers the tile (the
+// first tile is searched for in the eight tiles around). The empty item when there is none.
+gptr<Item> item_covering_tile(s32 x, s32 z, u32 layer, gptr<GridMap> map, bool exact) {
+    if (map == nullptr || layer >= LAYER_COUNT) {
+        return empty_item.ptr();
+    }
+    gptr<Item> tile(map->process_world_position(x, z, layer));
+    if (tile == nullptr || tile->is_empty()) {
+        return empty_item.ptr();
+    }
+    if (!tile->same_number_as(*marker_item) || exact) {
+        return tile;
+    }
+    s32 first_x = 0;
+    s32 first_z = 0;
+    gptr<Item> first = furniture_covering(map, x, z, layer, first_x, first_z);
+    return first != nullptr ? first : empty_item.ptr();
+}
+GUEST_EXPORT(0x004e0cec, item_covering_tile);
+
+// Where the first tile of the furniture covering the tile (x, z) is: the tile itself when it holds something other than a
+// marker, (-1, -1) when nothing covers it (and nothing is written for missing outputs, map or layer).
+void furniture_first_tile(gptr<s32> out_x, gptr<s32> out_z, s32 x, s32 z, u32 layer, gptr<GridMap> map) {
+    if (out_x == nullptr || out_z == nullptr || map == nullptr || layer >= LAYER_COUNT) {
+        return;
+    }
+    *out_z = -1;
+    *out_x = -1;
+    gptr<Item> tile(map->process_world_position(x, z, layer));
+    if (tile == nullptr) {
+        return;
+    }
+    if (!tile->same_number_as(*marker_item)) {
+        *out_x = x;
+        *out_z = z;
+        return;
+    }
+    s32 first_x = 0;
+    s32 first_z = 0;
+    if (furniture_covering(map, x, z, layer, first_x, first_z) != nullptr) {
+        *out_x = first_x;
+        *out_z = first_z;
+    }
+}
+GUEST_EXPORT(0x004e424c, furniture_first_tile);
+
+// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
+
+namespace {
+
+constexpr u32 FUZZ_PAD = 0x1000;
+constexpr u32 FUZZ_BLOCKS_PER_SIDE = 2;
+constexpr u32 FUZZ_BLOCK_CELLS = 16 * 16;
+constexpr u32 FUZZ_TILE_RANGE = FUZZ_BLOCKS_PER_SIDE * 16;
+constexpr u32 FUZZ_PLACE_MIN = 8;
+constexpr u32 FUZZ_PLACE_SPAN = 12;
+constexpr u32 FUZZ_FURNITURE_CANDIDATES = 24;
+
+// The numbers of items that are furniture covering several tiles (found once).
+const std::vector<u16> &furniture_numbers() {
+    static std::vector<u16> numbers;
+    static bool searched = false;
+    if (!searched && item_data_table->entries != nullptr) {
+        searched = true;
+        for (u32 index = 0; index < Item::ITEM_COUNT && numbers.size() < FUZZ_FURNITURE_CANDIDATES; index++) {
+            guest::StackObject<Item> item;  // (guest code needs the item in guest memory)
+            item->id = u16(Item::FIRST_ITEM + index);
+            item->flags = 0;
+            if (!item_has_valid_data(*item)) {
+                continue;
+            }
+            u32 kind = item_kind_11_byte_17(*item) & KIND_MASK;
+            if (kind < FOOTPRINT_KINDS && (*footprints)[kind]->tile_count > 1) {
+                numbers.push_back(item->id);
+            }
+        }
+    }
+    return numbers;
+}
+
+// A map of 2x2 blocks with empty layers.
+gptr<GridMap> synthetic_map(guest::Fuzz &f) {
+    f.allocate(FUZZ_PAD);
+    auto map = f.object<GridMap>();
+    map->rect.min = {0, 0};
+    map->rect.max = {FUZZ_BLOCKS_PER_SIDE - 1, FUZZ_BLOCKS_PER_SIDE - 1};
+    u32 cells = FUZZ_BLOCKS_PER_SIDE * FUZZ_BLOCKS_PER_SIDE;
+    auto small = f.allocate(cells * sizeof(GridCellSmall)).cast<GridCellSmall>();
+    std::memset(small.get(), 0, cells * sizeof(GridCellSmall));
+    for (u32 i = 0; i < cells; i++) {
+        for (u32 layer = 0; layer < LAYER_COUNT; layer++) {
+            auto items = f.allocate(FUZZ_BLOCK_CELLS * sizeof(Item));
+            std::memset(items.get(), 0, FUZZ_BLOCK_CELLS * sizeof(Item));
+            small[i].layers[layer] = items;
+        }
+    }
+    map->cells_small = small;
+    map->cells_large = gptr<GridCellLarge>(0u);
+    return map;
+}
+
+void put_item(gptr<GridMap> map, s32 x, s32 z, u32 layer, const Item &item) {
+    gptr<Item> cell(map->process_world_position(x, z, layer));
+    if (cell != nullptr) {
+        *cell = item;
+    }
+}
+
+
+
+// A map with a furniture and its markers (or the live map); the tile to ask about and the layer.
+struct FurnitureScene {
+    gptr<GridMap> map;
+    s32 x;
+    s32 z;
+    u32 layer;
+};
+
+FurnitureScene furniture_scene(guest::Fuzz &f) {
+    const std::vector<u16> &numbers = furniture_numbers();
+    if (numbers.empty() || f.below(5) == 0) {
+        return {world_map(), s32(f.below(FUZZ_RANGE)), s32(f.below(FUZZ_RANGE)), f.below(LAYER_COUNT + 1)};
+    }
+    gptr<GridMap> map = synthetic_map(f);
+    u32 layer = f.below(LAYER_COUNT);
+    s32 first_x = s32(FUZZ_PLACE_MIN + f.below(FUZZ_PLACE_SPAN));
+    s32 first_z = s32(FUZZ_PLACE_MIN + f.below(FUZZ_PLACE_SPAN));
+    auto furniture = f.object<Item>();
+    furniture->id = numbers[f.below(u32(numbers.size()))];
+    furniture->flags = u16(f.number());
+    put_item(map, first_x, first_z, layer, *furniture);
+    u32 kind = item_kind_11_byte_17(*furniture) & KIND_MASK;
+    u32 rotation = item_kind_11_top_bits(*furniture) % ROTATIONS;
+    gptr<Footprint> footprint = (*footprints)[kind];
+    s32 query_x = first_x;
+    s32 query_z = first_z;
+    for (u32 index = 1; index < footprint->tile_count; index++) {
+        const TileOffset &offset = footprint->rotations[rotation][index];
+        put_item(map, first_x + offset.x, first_z + offset.z, layer, *marker_item);
+        if (f.below(2) == 0) {
+            query_x = first_x + offset.x;
+            query_z = first_z + offset.z;
+        }
+    }
+    if (f.below(4) == 0) {
+        query_x += s32(f.below(3)) - 1;
+        query_z += s32(f.below(3)) - 1;
+    }
+    return {map, query_x, query_z, f.below(4) == 0 ? 1 - layer : layer};
+}
+
+}  // namespace
+
+GUEST_FUZZ(0x004e0cec, 400, [](guest::Fuzz &f) {
+    FurnitureScene scene = furniture_scene(f);
+    f.arguments(scene.x, scene.z, scene.layer, scene.map, f.below(4) == 0 ? 1u : 0u);
+});
+GUEST_FUZZ(0x004e424c, 400, [](guest::Fuzz &f) {
+    FurnitureScene scene = furniture_scene(f);
+    f.arguments(f.below(8) != 0 ? f.object<s32>() : gptr<s32>(0u), f.below(8) != 0 ? f.object<s32>() : gptr<s32>(0u), scene.x,
+                scene.z, scene.layer, scene.map);
+});
