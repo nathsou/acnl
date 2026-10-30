@@ -37,10 +37,12 @@ struct SlotTable {
     u8 values[SLOT_COUNT];
     gptr<void> objects[SLOT_COUNT];
     SlotRecord records[SLOT_COUNT];
+    SlotRecord snapshots[SLOT_COUNT];  // copies of the records, made by snapshot_slot_records
 };
 GUEST_OFFSET(SlotTable, values, 0x29200);
 GUEST_OFFSET(SlotTable, objects, 0x29204);
 GUEST_OFFSET(SlotTable, records, 0x29214);
+GUEST_OFFSET(SlotTable, snapshots, 0x292ac);
 
 inline guest::global<SlotTable, 0x00a84790> slot_table;
 
@@ -138,6 +140,22 @@ gptr<SlotRecord> refresh_slot_record(u32 slot) {
 }
 GUEST_EXPORT(0x005c330c, refresh_slot_record);
 GUEST_FUZZ(0x005c330c, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu})); });
+
+// Copies the (refreshed) record of every slot to its snapshot.
+void snapshot_slot_records() {
+    for (u32 slot = 0; slot < SLOT_COUNT; slot++) {
+        slot_table->snapshots[slot] = *refresh_slot_record(slot);
+    }
+}
+GUEST_EXPORT(0x005c4da4, snapshot_slot_records);
+GUEST_FUZZ(0x005c4da4, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// Copies the snapshot of one slot over the snapshot of another (the slot numbers count modulo 4).
+void copy_slot_snapshot(u32 from, u32 to) {
+    slot_table->snapshots[to & SLOT_MASK] = slot_table->snapshots[from & SLOT_MASK];
+}
+GUEST_EXPORT(0x005c5b3c, copy_slot_snapshot);
+GUEST_FUZZ(0x005c5b3c, 50, [](guest::Fuzz &f) { f.arguments(f.below(8), f.below(8)); });
 
 // The object of a slot (a number of 4 or more stands for the main object's slot), or null: when it has none, when its
 // record's mode is not the current one (unless flag 5 of the object is set), and, unless `include_idle`, when its
