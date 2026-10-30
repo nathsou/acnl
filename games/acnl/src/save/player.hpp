@@ -5,6 +5,7 @@
 #include "core/date.hpp"
 #include "core/encrypted_int.hpp"
 #include "save/counter_table.hpp"
+#include "item/item_slots.hpp"
 #include "save/personal_id.hpp"
 #include "save/pockets.hpp"
 
@@ -22,7 +23,9 @@ struct SavePlayer {
     static constexpr u32 LISTED_ITEM_COUNT = 3;
     static constexpr u8 FLAGS_5700_BIT_4 = 1 << 4;  // meaning not known yet
 
-    u8 unknown_0000[0x55a6];
+    u8 unknown_0000[0xa];
+    ItemSlots worn;   // the eight worn items: slot i holds items of one wear class
+    u8 unknown_002a[0x55a6 - 0xa - sizeof(ItemSlots)];
     PersonalId identity;
     u8 stamp_55d2[2];  // two bytes of a value computed by f_0035072c (meaning not known yet)
     u8 month_55d4;     // a month (items with availability rule 0x7d are on offer in it)
@@ -59,6 +62,7 @@ struct SavePlayer {
 
     void deposit(u32 bells);
 };
+GUEST_OFFSET(SavePlayer, worn, 0xa);
 GUEST_OFFSET(SavePlayer, identity, 0x55a6);
 GUEST_OFFSET(SavePlayer, identity.town, 0x55bc);
 GUEST_OFFSET(SavePlayer, stamp_55d2, 0x55d2);

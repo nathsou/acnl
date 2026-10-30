@@ -101,6 +101,13 @@ GUEST_FUZZ(0x001e5e88, 100, [](guest::Fuzz &f) {
     f.arguments(f.below(PERIOD_ROW_WORDS));
 });
 
+// A word of the row for the period (ten words each) in the table at 0x0095213c.
+u32 period_row_value(u32 period, u32 index) {
+    return gptr<u32>(PERIOD_TABLE_ADDRESS)[period * PERIOD_ROW_WORDS + index];
+}
+GUEST_EXPORT(0x001e5e70, period_row_value);
+GUEST_FUZZ(0x001e5e70, 100, [](guest::Fuzz &f) { f.arguments(f.below(24), f.below(PERIOD_ROW_WORDS)); });
+
 // Whether the game day the time falls in is not the one the clock reports as the current day.
 bool is_not_current_game_day(const TimeStamp &time) {
     GameTime game_time;

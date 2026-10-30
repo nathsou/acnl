@@ -73,6 +73,8 @@ VtableObject &set_base_vtable(VtableObject &object) {
 }
 GUEST_EXPORT(0x004ee514, set_base_vtable);
 GUEST_FUZZ(0x004ee514, 50, [](guest::Fuzz &f) { f.arguments(f.object<VtableObject>()); });
+GUEST_EXPORT(0x004edd84, set_base_vtable);  // (a jump to it)
+GUEST_FUZZ(0x004edd84, 50, [](guest::Fuzz &f) { f.arguments(f.object<VtableObject>()); });
 GUEST_EXPORT(0x004f0dd0, set_base_vtable);
 GUEST_FUZZ(0x004f0dd0, 50, [](guest::Fuzz &f) { f.arguments(f.object<VtableObject>()); });
 

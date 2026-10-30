@@ -204,6 +204,7 @@ struct ItemData {
     u8 class_and_flags_19;  // the high nibble is a class below 6; see ItemData::class_19
     u8 byte_1a;
     u8 flags_1b;  // bit 1: see Item::has_data_flag_1b_bit1
+    static constexpr u8 FLAGS_1C_BIT_5 = 1 << 5;  // meaning not known yet
     u8 flags_1c;  // bit 3: see ItemData::flag_1c_bit3
     u8 flags_1d;
 

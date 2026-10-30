@@ -12,6 +12,7 @@ inline constexpr guest::Function<0x00763818, gptr<u8>(gptr<SlotObject> object)> 
 // Two global flag bytes that say the players cannot act (meaning not known yet).
 inline guest::global<u8, 0x00aadad4> control_flags_a;
 inline guest::global<u8, 0x00aaef14> control_flags_b;
+inline guest::global<u8, 0x00aadad5> pending_flags;  // bit 1 / bit 2: a value for the main object is expected
 constexpr u8 CONTROL_A_BIT_3 = 1 << 3, CONTROL_A_BIT_4 = 1 << 4, CONTROL_B_BIT_5 = 1 << 5;
 
 // The bits of the action mask of main_object_matches_action_mask, and the classes (the high nibble of byte 5 of the
@@ -427,3 +428,122 @@ bool main_object_state_class_2_to_5_when_flag_3() {
 }
 GUEST_EXPORT(0x005c5cd0, main_object_state_class_2_to_5_when_flag_3);
 GUEST_FUZZ(0x005c5cd0, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+namespace {
+
+constexpr u8 STATE_BD = 0xbd;
+constexpr u8 STATE_10 = 0x10;
+constexpr u8 PENDING_BIT_1 = 1 << 1;
+constexpr u8 PENDING_BIT_2 = 1 << 2;
+constexpr u8 ENTRY_BYTE_9_BIT_6 = 1 << 6;
+constexpr u8 FLAGS_8C7_BITS_0_AND_5 = SlotObject::FLAGS_8C7_BIT_0 | SlotObject::FLAGS_8C7_BIT_5;
+constexpr u16 ITEM_4F = 0x4f;  // the value of half_5e2 the check looks for (meaning not known yet)
+constexpr u32 ENTRY_FLAGS_BYTE = 9;
+
+}  // namespace
+
+// The two words at 0x47c and 0x480 of the slot's object (idle ones excluded as `include_idle` says); both zero without one.
+bool slot_object_words_47c_480(u32 &first, u32 &second, u32 id, u32 include_idle) {
+    gptr<SlotObject> object = look_up_object(id, include_idle);
+    if (!object) {
+        second = 0;
+        first = 0;
+        return false;
+    }
+    first = object->word_47c;
+    second = object->word_480;
+    return true;
+}
+GUEST_EXPORT(0x005c08dc, slot_object_words_47c_480);
+GUEST_FUZZ(0x005c08dc, 100, [](guest::Fuzz &f) {
+    f.arguments(f.object<u32>(), f.object<u32>(), some_id(f), f.below(2));
+});
+
+// True without a main object; otherwise whether the halfword at 0x5e2 is 0x4f while the one at 0x224 is not.
+bool main_object_missing_or_half_5e2_became_4f() {
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+    if (!object) {
+        return true;
+    }
+    return object->half_5e2 != object->half_224 && object->half_5e2 == ITEM_4F;
+}
+GUEST_EXPORT(0x005c0c44, main_object_missing_or_half_5e2_became_4f);
+GUEST_FUZZ(0x005c0c44, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// The float at 0x914 of the main object while its byte 0x91f is not zero, else 0.
+float main_object_value_914() {
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+    if (object && object->flag_91f != 0) {
+        return object->value_914;
+    }
+    return 0.0f;
+}
+GUEST_EXPORT(0x005c3d84, main_object_value_914);
+GUEST_FUZZ(0x005c3d84, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the main object (idle ones count) has neither flag 0 nor flag 5 of byte 0x8c7 and its state's entry has flag 6
+// in its byte 9.
+bool main_object_state_entry_has_flag_9_bit_6() {
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, INCLUDE_IDLE);
+    if (!object || (object->flags_8c7 & FLAGS_8C7_BITS_0_AND_5) != 0) {
+        return false;
+    }
+    gptr<u8> entry = entry_for_state(object);
+    return entry && (entry[ENTRY_FLAGS_BYTE] & ENTRY_BYTE_9_BIT_6) != 0;
+}
+GUEST_EXPORT(0x005c4034, main_object_state_entry_has_flag_9_bit_6);
+GUEST_FUZZ(0x005c4034, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the slot's object (idle ones count) is in state 0xbd, or in state 0x10 with flag 6 of byte 0x8c5.
+bool slot_object_in_state_bd_or_10_with_flag(u32 id) {
+    gptr<SlotObject> object = look_up_object(id, INCLUDE_IDLE);
+    if (object && object->state_1a9 == STATE_BD) {
+        return true;
+    }
+    object = look_up_object(id, INCLUDE_IDLE);
+    if (!object) {
+        return false;
+    }
+    return object->state_1a9 == STATE_10 && (object->flags_8c5 & SlotObject::FLAGS_8C5_BIT_6) != 0;
+}
+GUEST_EXPORT(0x005c458c, slot_object_in_state_bd_or_10_with_flag);
+GUEST_FUZZ(0x005c458c, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
+
+namespace {
+
+// Consumes the pending bit; when it was set and the value is not zero, stores the value in the main object.
+bool take_pending_flag(u8 bit, u32 value) {
+    bool pending = (*pending_flags & bit) != 0;
+    *pending_flags = u8(*pending_flags & ~bit);
+    return pending && value != 0;
+}
+
+}  // namespace
+
+void store_pending_value_5be(u32 value) {
+    if (take_pending_flag(PENDING_BIT_2, value)) {
+        gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+        if (object) {
+            object->half_5be = u16(value);
+        }
+    }
+}
+GUEST_EXPORT(0x005c4340, store_pending_value_5be);
+GUEST_FUZZ(0x005c4340, 100, [](guest::Fuzz &f) {
+    *pending_flags = u8(f.below(2) != 0 ? (*pending_flags | PENDING_BIT_2) : (*pending_flags & ~PENDING_BIT_2));
+    f.arguments(f.pick<u32>({0, 1, 0x1234, f.number()}));
+});
+
+void store_pending_value_5bc(u32 value) {
+    if (take_pending_flag(PENDING_BIT_1, value)) {
+        gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_IDLE);
+        if (object) {
+            object->half_5bc = u16(value);
+        }
+    }
+}
+GUEST_EXPORT(0x005c73bc, store_pending_value_5bc);
+GUEST_FUZZ(0x005c73bc, 100, [](guest::Fuzz &f) {
+    *pending_flags = u8(f.below(2) != 0 ? (*pending_flags | PENDING_BIT_1) : (*pending_flags & ~PENDING_BIT_1));
+    f.arguments(f.pick<u32>({0, 1, 0x1234, f.number()}));
+});

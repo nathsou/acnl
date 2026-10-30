@@ -1,4 +1,5 @@
 // Small actions on the players' items: adding to the catalog of seen items, taking off the shoes (worn slot 7).
+#include "core/fuzz_helpers.hpp"
 #include "item/item_slots.hpp"
 #include "save/player.hpp"
 
@@ -65,6 +66,23 @@ bool owner_has_seen_item(PlayerSlotOwner &owner, const Item &item) {
 }
 GUEST_EXPORT(0x00762324, owner_has_seen_item);
 
+// Whether the worn item of the first slot (an item of wear class 1 or the first item) or of the second (wear class 2) has
+// bit 5 of its data's byte 0x1c.
+bool SavePlayer_wears_item_with_data_flag_1c_bit_5(SavePlayer &player) {
+    const Item &first = player.worn.slots[0];
+    const Item &second = player.worn.slots[1];
+    const Item &first_checked = first.is_first_item() || first.wear_class() == WearClass::WEAR_CLASS_1 ? first : *empty_item;
+    const Item &second_checked = second.wear_class() == WearClass::WEAR_CLASS_2 ? second : *empty_item;
+    for (const Item *item : {&first_checked, &second_checked}) {
+        gptr<ItemData> data = item->data();
+        if (data && (data->flags_1c & ItemData::FLAGS_1C_BIT_5) != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+GUEST_EXPORT(0x007128b4, SavePlayer_wears_item_with_data_flag_1c_bit_5);
+
 // Takes off the shoes when their wear class index (ItemData byte 0x0f) is the one given.
 template <u32 WEAR_INDEX>
 void take_off_shoes_with_index(u32 player_slot) {
@@ -110,6 +128,12 @@ GUEST_FUZZ(0x00762370, 100, [](guest::Fuzz &f) {
     auto owner = f.object<PlayerSlotOwner>();
     owner->player_slot = u8(f.pick<u32>({0, 1, 2, 3, 4, 7}));
     f.arguments(owner);
+});
+GUEST_FUZZ(0x007128b4, 300, [](guest::Fuzz &f) {
+    auto player = f.object<SavePlayer>();
+    player->worn.slots[0] = *fuzz::assorted_item(f);
+    player->worn.slots[1] = *fuzz::assorted_item(f);
+    f.arguments(player);
 });
 GUEST_FUZZ(0x007621d0, 100, [](guest::Fuzz &f) {
     auto owner = f.object<PlayerSlotOwner>();

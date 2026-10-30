@@ -5,6 +5,7 @@
 #include "core/word_pair.hpp"
 #include "hobj/house_object.hpp"
 #include "item/item.hpp"
+#include "item/item_slots.hpp"
 
 using guest::gptr;
 
@@ -29,7 +30,6 @@ constexpr u32 STATE_NORMAL = 3;
 constexpr u32 STATE_SPECIAL = 0xd;
 constexpr u32 NOTIFY_SLOT = 0x18 / 4;
 constexpr u32 RECORD_COUNT = 4;
-constexpr u32 PRESET_COUNT = 4;
 constexpr s32 COIN_TOSS = 2;
 constexpr u8 NOT_PENDING = 0;
 
@@ -51,10 +51,6 @@ struct ModeObject {
 GUEST_OFFSET(ModeObject, mode_35, 0x35);
 GUEST_OFFSET(ModeObject, flag_37, 0x37);
 GUEST_OFFSET(ModeObject, state_3c, 0x3c);
-
-struct ItemSlots {
-    Item items[PRESET_COUNT];
-};
 
 struct PendingItem {
     u8 flag;
@@ -84,7 +80,7 @@ GUEST_OFFSET(ItemHolder, item_37c, 0x37c);
 void set_preset(ItemSlots &slots, u32 index, u16 id) {
     Item item;
     construct_item(item, id);
-    copy_item(slots.items[index], item);
+    copy_item(slots.slots[index], item);
 }
 
 }  // namespace
@@ -112,7 +108,7 @@ GUEST_EXPORT(0x0020bbf8, pick_unused_slot);
 GUEST_FUZZ(0x0020bbf8, 200, [](guest::Fuzz &f) {
     auto picker = f.object<SlotPicker>();
     for (u8 &byte : picker->used_bits) {
-        byte = f.pick<u8>({0, 0xff, 0x0f, 0xf0, u8(f.number())});
+        byte = f.pick<u8>({0, 0xff, 0x0f, 0xf0, u8(f.number())});  // all, none and halves of the bits
     }
     f.arguments(picker);
 });
@@ -130,12 +126,23 @@ u32 change_mode(ModeObject &object, s32 new_mode) {
     return guest::call_address<u32>(*gptr<u32>(object.vtable + NOTIFY_SLOT * 4), guest::addr_of(object));
 }
 GUEST_EXPORT(0x0020ad0c, change_mode);
-GUEST_FUZZ(0x0020ad0c, 100, [](guest::Fuzz &f) {
+static void fuzz_change_mode(guest::Fuzz &f) {
     auto object = f.object<ModeObject>();
     object->vtable = fuzz::harmless_vtable(f, NOTIFY_SLOT + 1).addr();
     object->mode_35 = f.pick<s8>({0, 1, 2, -1});
-    f.arguments(object, f.pick<s32>({0, 1, 2, -1, 0x101}));
-});
+    f.arguments(object, f.pick<s32>({0, 1, 2, -1, 0x101}));  // (0x101 does not fit a byte)
+}
+GUEST_FUZZ(0x0020ad0c, 100, fuzz_change_mode);
+
+// Jumps to change_mode.
+GUEST_EXPORT(0x0024fc44, change_mode);
+GUEST_EXPORT(0x002503ac, change_mode);
+GUEST_EXPORT(0x002d595c, change_mode);
+GUEST_EXPORT(0x002d5bc8, change_mode);
+GUEST_FUZZ(0x0024fc44, 100, fuzz_change_mode);
+GUEST_FUZZ(0x002503ac, 100, fuzz_change_mode);
+GUEST_FUZZ(0x002d595c, 100, fuzz_change_mode);
+GUEST_FUZZ(0x002d5bc8, 100, fuzz_change_mode);
 
 // Sets the flag at 0x37 (when the table entry for the global byte has bit 0x20, unless the byte is 0x5e) and
 // switches the state at 0x3c between 3 and 0xd.
@@ -159,25 +166,25 @@ GUEST_FUZZ(0x0020ad4c, 100, [](guest::Fuzz &f) {
 void store_random_item_a(ItemSlots &slots) {
     s32 choice = random_below(COIN_TOSS);
     if (choice == 0) {
-        set_preset(slots, 0, 0x2598);
+        set_preset(slots, 0, 0x2598);  // item number
     } else if (choice == 1) {
-        set_preset(slots, 3, 0x26fe);
+        set_preset(slots, 3, 0x26fe);  // item number
     }
 }
 GUEST_EXPORT(0x0020d6a8, store_random_item_a);
 GUEST_FUZZ(0x0020d6a8, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemSlots>()); });
 
 void store_item_set_a(ItemSlots &slots) {
-    set_preset(slots, 0, 0x25da);
-    set_preset(slots, 1, 0x26cc);
-    set_preset(slots, 3, 0x2767);
+    set_preset(slots, 0, 0x25da);  // item number
+    set_preset(slots, 1, 0x26cc);  // item number
+    set_preset(slots, 3, 0x2767);  // item number
 }
 GUEST_EXPORT(0x0020d77c, store_item_set_a);
 GUEST_FUZZ(0x0020d77c, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemSlots>()); });
 
 void store_item_set_b(ItemSlots &slots) {
-    set_preset(slots, 0, 0x2598);
-    set_preset(slots, 3, 0x26fe);
+    set_preset(slots, 0, 0x2598);  // item number
+    set_preset(slots, 3, 0x26fe);  // item number
 }
 GUEST_EXPORT(0x0020d7f4, store_item_set_b);
 GUEST_FUZZ(0x0020d7f4, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemSlots>()); });
@@ -206,7 +213,7 @@ GUEST_EXPORT(0x00216420, set_pending_item);
 GUEST_FUZZ(0x00216420, 100, [](guest::Fuzz &f) {
     pending_item->busy = f.pick<u8>({0, 0, 1});
     auto item = f.object<Item>();
-    item->id = f.pick<u16>({Item::EMPTY, 0x2000, 0x2001});
+    item->id = f.pick<u16>({Item::EMPTY, Item::FIRST_ITEM, Item::FIRST_ITEM + 1});
     f.arguments(item);
 });
 
