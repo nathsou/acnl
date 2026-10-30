@@ -142,6 +142,7 @@ struct Item {
     u32 variant_size() const;                   // see item_class_checks.cpp
     u32 variant_index_in_size() const;          // see item_class_checks.cpp
     bool passes_sanitize() const;               // a copy of the item is not changed by sanitize
+    bool equals_ignoring_marks(const Item &other) const;  // the same number and the same flags but the two top bits
     bool has_variant_below_largest_size() const;  // a valid value_06 with a variation count whose size class is not 8
     bool is_regular_item() const;               // see item_class_checks.cpp
     u32 event_index_of_rule() const;            // see item_class_checks.cpp

@@ -24,6 +24,12 @@ void clear_item_flags_bit_14(Item &item) {
 GUEST_EXPORT(0x006bbbbc, clear_item_flags_bit_14);
 GUEST_FUZZ(0x006bbbbc, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });
 
+void set_item_flags_bit_15(Item &item) {
+    item.flags = u16(item.flags | (1u << 15));  // the top bit of the flags
+}
+GUEST_EXPORT(0x002ff800, set_item_flags_bit_15);
+GUEST_FUZZ(0x002ff800, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });
+
 void set_item_flags_bit_0(Item &item) {
     item.flags = u16(item.flags | FLAGS_BIT_0);
 }

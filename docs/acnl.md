@@ -60,6 +60,11 @@ Everything here is verified against the original by shadow checks and fuzzing; e
 | Item data | `item/*.cpp` | categories, prices, wear classes, kind-2 items, availability rules (`item_is_available`: which items a shop may offer in which month/season) |
 | Choosing items | `item/item_set_filters.cpp`, `item_set_picking.cpp` | filtering an `ItemBitSet` by price or attribute, picking at random / from a seed / distinct |
 | Calendar | `core/time_stamp.hpp`, `calendar_math.cpp`, `time_stamp*.cpp`, `game_clock.cpp` | `TimeStamp` (date + clock), day arithmetic, the 6:00 game-day start, seasons, the reference clock, shop opening hours and ordinance hours (`shop_hours.cpp`), `GameTime` (nanoseconds from 2012-01-01) |
+| Weather | `core/weather.cpp` | the weather pattern of a game day (0-0x33: stored in the save for today and tomorrow, generated from the date for other days, or a three-day cycle in some modes), the hourly weather type of a pattern, snow and rain events and the phase (before, during, after) of today's event |
+| The world map | `core/grid_map.cpp`, `map/*.cpp`, `core/block_rect.cpp` | blocks of 16x16 cells, items on the ground (`GridCellSmall::place_item`, `place_item_at_world`), terrain bytes, world position to block/cell/tile, solid objects (`item_blocks_world_position`) |
+| Whose place is this | `core/scene_list.cpp`, `core/mode_players.cpp` | the owner and room of a mode (a place in the game), the player a mode belongs to |
+| Event schedules | `core/date_schedule.cpp` | day and time-of-day patterns of events and whether a time stamp fits them |
+| What a player's object is doing | `player/slot_object*.cpp`, `core/actor_actions.cpp` | state checks of the player objects, `ActorObject::begin_action` and the action starters |
 | Players / villagers | `player/*.cpp`, `npc/villager_lookup.cpp` | player of a slot, villager by id, the mayor's date |
 
 ## Next

@@ -1,7 +1,12 @@
 // The weather: every game day has a weather pattern (0-0x33) that says which of the weather types (0-10) it is at every
 // hour. The pattern of a day comes from the save data for today and tomorrow and from a generator for other days
 // (weather_pattern_of_day), or from a three-day cycle (weather_pattern_cycled) in the modes whose flag 0x20000... see below.
+#include <algorithm>
+#include <cstring>
+
+#include "arm.hpp"
 #include "core/fuzz_helpers.hpp"
+#include "core/random.hpp"
 #include "core/time_stamp.hpp"
 #include "guest/guest.hpp"
 #include "save/save_data.hpp"
@@ -12,6 +17,7 @@ s32 days_from_2000(s32 year, s32 month, s32 day);
 s64 days_between(const TimeStamp &later, const TimeStamp &earlier, bool adjust);
 bool day_has_changed();
 u32 period_table_value(u32 index);
+u32 advance_random(Random &generator);
 
 namespace {
 
@@ -21,7 +27,7 @@ inline constexpr guest::Function<0x00305f2c, u8()> read_global_object_byte;
 inline constexpr guest::Function<0x001e5e70, u32(u32 period, u32 index)> period_row_value;
 inline constexpr guest::Function<0x002fb328, gptr<SaveData>()> get_save_data;
 inline constexpr guest::Function<0x0076eb40, u32(gptr<u8> user)> slot_byte_0a;
-inline constexpr guest::Function<0x00318568, u32(const TimeStamp &day)> generated_weather_pattern;
+inline constexpr guest::Function<0x0058dc80, u32(u32 kind, u32 w0, u32 w1, u32 w2, u32 unknown_stack)> check_words12;
 
 constexpr u32 FLAG_OTHER_SOURCE = 0x20000;   // modes in which the weather comes from the cycle (meaning not known yet)
 constexpr u32 FLAG_SLOT_SOURCE_A = 0x80000;  // modes in which it is a byte of the current record's slot
@@ -90,6 +96,133 @@ TimeStamp reference_copy() {
 
 }  // namespace
 
+
+namespace {
+
+constexpr u32 YEAR_SEED_SHIFT = 9, MONTH_SEED_SHIFT = 5, SEED_SHIFT = 16;
+constexpr s32 DAY_START_HOUR_BACK = -6;     // the weather day starts at 6 o'clock
+constexpr u32 EVENT_KIND_A = 0x1b, EVENT_KIND_B = 0x1e, EVENT_KIND_C = 4;
+constexpr u32 PATTERN_FOR_EVENT_A = 0x32, PATTERN_FOR_EVENT_B = 0x33;
+constexpr u32 PATTERN_FOR_EVENT_C_LUCKY = 0x1c, PATTERN_FOR_EVENT_C = 4;
+constexpr float PERCENT = 100.0f;
+constexpr s32 EVENT_C_LUCKY_BELOW = 0x32;
+constexpr u8 DAY_BYTE_ENABLED_BIT_3 = 1 << 3;
+constexpr u8 FLAGS_621DD_BIT_0 = 1;
+constexpr u32 SEASON_GROUP_COUNT = 0x13;
+constexpr u32 DEFAULT_SEASON_GROUP = 0x12;
+constexpr u32 MONTH_KEY_SHIFT = 8;
+constexpr u32 FLAG_EVENTS_ENABLED_ADDRESS = 0x0095bf80;  // see the stored time of the save data
+constexpr u32 CHECK_FLAG = 1;
+
+constexpr u32 EVENT_OBJECT_COUNT = 0x38;
+constexpr u32 EVENT_IS_ON_SLOT = 1;                    // the virtual function that says whether the event is on at a date
+constexpr u8 EVENT_KIND_LIMIT_WHEN_STRICT = 0x23;     // `strict` leaves out the events of these kinds and above
+constexpr u8 EVENT_SKIPPED_KINDS[] = {1, 6, 3, 0xe, 0x25};  // kinds that are not counted as events of the day (meaning not known yet)
+
+struct EventObject {
+    gptr<u32> vtable;
+    u8 unknown_04[0x1b - 4];
+    u8 kind;
+};
+GUEST_OFFSET(EventObject, kind, 0x1b);
+
+inline guest::global<gptr<EventObject>[EVENT_OBJECT_COUNT], 0x009524ec> event_objects;
+
+// A season group: its id and the last day (month in the high byte) it covers.
+struct SeasonLimit {
+    u8 group;
+    u8 unknown_01;
+    s16 last_day;
+};
+GUEST_SIZE(SeasonLimit, 4);
+
+inline guest::global<u8, FLAG_EVENTS_ENABLED_ADDRESS> events_enabled;
+inline guest::global<SeasonLimit[SEASON_GROUP_COUNT], 0x00895068> season_limits;
+inline guest::global<gptr<u8>[SEASON_GROUP_COUNT], 0x0095e06c> group_weights;  // the weights of the 0x34 patterns for each group
+
+}  // namespace
+
+
+// Whether one of the day's events is on at the date (the day start of the time given as three words): asked of every event
+// object but the ones of a few kinds; with `strict` also leaving out the events of kind 0x23 and above. False while the
+// global object byte is 3.
+bool day_has_special_event(u32 word_0, u32 word_1, u32 word_2, bool strict) {
+    if (read_global_object_byte() == OBJECT_BYTE_NO_STORED_WEATHER) {
+        return false;
+    }
+    u32 words[3] = {word_0, word_1, word_2};
+    TimeStamp day;
+    std::memcpy(&day, words, sizeof(day));
+    day.move_to_day_start();
+    for (gptr<EventObject> event : *event_objects) {
+        u8 kind = event->kind;
+        if (strict && kind >= EVENT_KIND_LIMIT_WHEN_STRICT) {
+            continue;
+        }
+        if (std::find(std::begin(EVENT_SKIPPED_KINDS), std::end(EVENT_SKIPPED_KINDS), kind) != std::end(EVENT_SKIPPED_KINDS)) {
+            continue;
+        }
+        if (guest::call_address<u32>(event->vtable[EVENT_IS_ON_SLOT], event, u32(day.year), u32(s32(day.month)), u32(s32(day.day))) != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+GUEST_EXPORT(0x0058efe8, day_has_special_event);
+
+// The pattern a game day gets when it is neither today nor tomorrow: from a generator seeded with the date (and the town
+// flags), by the event kinds of the day first (patterns 0x32 and 0x33 and the like) and then by the weights of the season
+// group the date is in.
+u32 generated_weather_pattern(const TimeStamp &day) {
+    TimeStamp date = day;
+    date.advance(0, DAY_START_HOUR_BACK, 0, 0);
+    u32 flags = (*get_save_data()).flags_621b8;
+    Random seed;
+    seed.state = flags + (((u32(date.year) << YEAR_SEED_SHIFT) + (u32(s32(date.month)) << MONTH_SEED_SHIFT) + u32(s32(date.day))) << SEED_SHIFT);
+    advance_random(seed);
+    advance_random(seed);
+    u32 words[3];
+    std::memcpy(words, &day, sizeof(words));
+    if (check_words12(EVENT_KIND_A, words[0], words[1], words[2], CHECK_FLAG) != 0) {
+        return PATTERN_FOR_EVENT_A;
+    }
+    if (check_words12(EVENT_KIND_B, words[0], words[1], words[2], CHECK_FLAG) != 0) {
+        return PATTERN_FOR_EVENT_B;
+    }
+    if (*events_enabled != 0) {
+        gptr<SaveData> save = get_save_data();
+        if ((save->byte_621d0 & DAY_BYTE_ENABLED_BIT_3) != 0 || (save->flags_621dd & FLAGS_621DD_BIT_0) != 0) {
+            return PATTERN_FOR_EVENT_C;
+        }
+    }
+    if (check_words12(EVENT_KIND_C, words[0], words[1], words[2], CHECK_FLAG) != 0) {
+        s32 roll = arm::to_s32(seed.next_float() * PERCENT);
+        return roll < EVENT_C_LUCKY_BELOW ? PATTERN_FOR_EVENT_C_LUCKY : PATTERN_FOR_EVENT_C;
+    }
+    if (day_has_special_event(words[0], words[1], words[2], CHECK_FLAG != 0)) {
+        return PATTERN_FOR_EVENT_C;
+    }
+    s16 key = s16((u32(u8(date.month)) << MONTH_KEY_SHIFT) | u32(u8(date.day)));
+    u32 group = DEFAULT_SEASON_GROUP;
+    for (u32 index = 0; index < SEASON_GROUP_COUNT; index++) {
+        if ((*season_limits)[index].last_day >= key) {
+            group = (*season_limits)[index].group;
+            break;
+        }
+    }
+    gptr<u8> weights = (*group_weights)[group];
+    u32 roll = u32(arm::to_s32(seed.next_float() * PERCENT));
+    u32 total = 0;
+    for (u32 pattern = 0; pattern < PATTERN_COUNT; pattern++) {
+        total += weights[pattern];
+        if (roll < total) {
+            return pattern;
+        }
+    }
+    return 0;
+}
+GUEST_EXPORT(0x00318568, generated_weather_pattern);
+
 // The weather pattern of the day from the cycle of three (counted in days from 2000, the day starting at 6 o'clock); in
 // the modes with the flag 0x80000 or 0x100000 it is a byte of the current record's slot.
 u32 weather_pattern_cycled(const TimeStamp &time) {
@@ -114,9 +247,7 @@ u32 weather_pattern_of_day(const TimeStamp &time) {
         today.move_to_day_start();
         s32 distance = s32(days_between(day, today, true));
         if (distance != 0 && distance != 1) {
-            guest::StackObject<TimeStamp> guest_time;  // (the generator is still guest code)
-            *guest_time = time;
-            return generated_weather_pattern(*guest_time);
+            return generated_weather_pattern(time);
         }
         return distance == 0 ? get_save_data()->weather_pattern_today : get_save_data()->weather_pattern_tomorrow;
     }
@@ -264,6 +395,74 @@ bool snow_is_falling_today() {
 GUEST_EXPORT(0x0062fa38, snow_is_falling_today);
 
 s64 nanoseconds_between(const TimeStamp &later, const TimeStamp &earlier, bool adjust);
+
+namespace {
+
+constexpr u8 SPECIAL_MONTH = 8;           // the month in which special event hours are drawn (without `any_month`)
+constexpr u32 EVENT_HOUR_FIRST = 9;       // the hours drawn are 9 to 14
+constexpr u32 EVENT_HOUR_COUNT = 6;
+constexpr float HALF_CHANCE_SCALE = 2.0f;
+constexpr float HOUR_SCALE = 6.0f;
+constexpr u32 SEED_MONTH_SHIFT = 6, SEED_DAY_SHIFT = 6, SEED_YEAR_SHIFT_B = 12;
+constexpr u32 FLAG_EVENT_HOURS_FROM_SEED = 0x40000;  // modes in which an event hour is drawn from the date
+constexpr u32 FLAG_FIXED_EVENT_HOUR = 0x80000;
+constexpr s32 FIXED_EVENT_HOUR = 0xc;
+constexpr u32 MAX_EVENT_PATTERN = 4;
+constexpr s32 NO_EVENT_HOUR = -1;
+
+}  // namespace
+
+// The hour (9-14) of an event drawn from a generator seeded with the date, or -1 on days without one (half of them, and
+// all outside August unless `any_month`).
+s32 seeded_event_hour(const TimeStamp &date, bool any_month) {
+    u32 town_flags = 0;
+    if (!any_month) {
+        if (u8(date.month) != SPECIAL_MONTH) {
+            return NO_EVENT_HOUR;
+        }
+        if ((*get_save_data()).flags_621b8 != 0) {
+            town_flags = (*get_save_data()).flags_621b8;
+        }
+    }
+    Random seed;
+    u32 date_value = (((u32(date.year) << SEED_MONTH_SHIFT) + u32(s32(date.month))) << SEED_DAY_SHIFT) + u32(s32(date.day));
+    seed.state = town_flags + (date_value << SEED_YEAR_SHIFT_B);
+    advance_random(seed);
+    advance_random(seed);
+    if (arm::to_s32(seed.next_float() * HALF_CHANCE_SCALE) != 0) {
+        return NO_EVENT_HOUR;
+    }
+    return arm::to_s32(seed.next_float() * HOUR_SCALE) + s32(EVENT_HOUR_FIRST);
+}
+GUEST_EXPORT(0x0063061c, seeded_event_hour);
+GUEST_FUZZ(0x0063061c, 300, [](guest::Fuzz &f) {
+    auto date = f.object<TimeStamp>();
+    date->year = s32(2012 + f.below(40));
+    date->month = s8(f.pick<u32>({8, 8, 1 + f.below(12)}));
+    date->day = s8(1 + f.below(28));
+    f.arguments(date, f.below(2));
+});
+
+// The hour of today's special event: in the modes with flag 0x20000 from the cycle pattern (patterns up to 4: drawn from
+// the date, or 12), else the hour stored in the save data when it is for today; -1 for none.
+s32 special_event_hour_today() {
+    if (mode_has(FLAG_OTHER_SOURCE)) {
+        if (weather_pattern_cycled(*reference_time) > MAX_EVENT_PATTERN) {
+            return NO_EVENT_HOUR;
+        }
+        if (mode_has(FLAG_EVENT_HOURS_FROM_SEED)) {
+            return s8(seeded_event_hour(*reference_time, true));
+        }
+        return mode_has(FLAG_FIXED_EVENT_HOUR) ? FIXED_EVENT_HOUR : NO_EVENT_HOUR;
+    }
+    gptr<SaveData> save = get_save_data();
+    if (save->event_hour_today < 0 || day_has_changed()) {
+        return NO_EVENT_HOUR;
+    }
+    return get_save_data()->event_hour_today;
+}
+GUEST_EXPORT(0x006301e8, special_event_hour_today);
+GUEST_FUZZ(0x006301e8, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The pattern of the game day of the reference time.
 u32 weather_pattern_today_by_mode() {
@@ -432,6 +631,13 @@ s64 some_nanoseconds(guest::Fuzz &f) {
 
 }  // namespace
 
+GUEST_FUZZ(0x0058efe8, 200, [](guest::Fuzz &f) {
+    auto time = some_time(f);
+    u32 words[3];
+    std::memcpy(words, time.get(), sizeof(words));
+    f.arguments(words[0], words[1], words[2], f.below(2));
+});
+GUEST_FUZZ(0x00318568, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
 GUEST_FUZZ(0x0062ff8c, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
 GUEST_FUZZ(0x0062fed4, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
 GUEST_FUZZ(0x0062f04c, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });

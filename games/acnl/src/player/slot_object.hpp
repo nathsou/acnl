@@ -14,6 +14,7 @@ struct SlotObject {
     static constexpr u8 FLAGS_8C5_BIT_6 = 1 << 6;
     static constexpr u8 FLAGS_8C7_BIT_5 = 1 << 5;
     static constexpr u8 FLAGS_8C7_BIT_0 = 1 << 0;
+    static constexpr u8 FLAGS_17A_BIT_4 = 1 << 4;  // cleared by a turn step
     static constexpr u8 FLAGS_17B_BIT_2 = 1 << 2;
     static constexpr u8 FLAGS_17C_BIT_1 = 1 << 1;  // meaning not known yet
     static constexpr u8 FLAGS_17C_BIT_2 = 1 << 2;
@@ -28,7 +29,8 @@ struct SlotObject {
     u8 flags_171;
     u8 unknown_172[0x177 - 0x172];
     u8 flags_177;
-    u8 unknown_178[0x17b - 0x178];
+    u8 unknown_178[2];
+    u8 flags_17a;
     u8 flags_17b;
     u8 flags_17c;
     u8 unknown_17d[0x1a9 - 0x17d];
@@ -40,7 +42,9 @@ struct SlotObject {
     u8 unknown_226[0x47c - 0x226];
     u32 word_47c;
     u32 word_480;
-    u8 unknown_484[0x5bc - 0x484];
+    u8 unknown_484[0x5b6 - 0x484];
+    u16 turn_steps_5b6;  // the number of steps a turn still takes (counts down)
+    u8 unknown_5b8[0x5bc - 0x5b8];
     u16 half_5bc;
     u16 half_5be;
     u8 unknown_5c0[0x5e2 - 0x5c0];
@@ -61,6 +65,7 @@ GUEST_OFFSET(SlotObject, angles, 0x2c);
 GUEST_OFFSET(SlotObject, flags_66, 0x66);
 GUEST_OFFSET(SlotObject, flags_171, 0x171);
 GUEST_OFFSET(SlotObject, flags_177, 0x177);
+GUEST_OFFSET(SlotObject, flags_17a, 0x17a);
 GUEST_OFFSET(SlotObject, flags_17b, 0x17b);
 GUEST_OFFSET(SlotObject, flags_17c, 0x17c);
 GUEST_OFFSET(SlotObject, state_1a9, 0x1a9);
@@ -68,6 +73,7 @@ GUEST_OFFSET(SlotObject, byte_1ab, 0x1ab);
 GUEST_OFFSET(SlotObject, half_224, 0x224);
 GUEST_OFFSET(SlotObject, word_47c, 0x47c);
 GUEST_OFFSET(SlotObject, word_480, 0x480);
+GUEST_OFFSET(SlotObject, turn_steps_5b6, 0x5b6);
 GUEST_OFFSET(SlotObject, half_5bc, 0x5bc);
 GUEST_OFFSET(SlotObject, half_5be, 0x5be);
 GUEST_OFFSET(SlotObject, half_5e2, 0x5e2);

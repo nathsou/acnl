@@ -75,3 +75,10 @@ u32 try_request(u32 request, u32 argument) {
 }
 GUEST_EXPORT(0x006d1ffc, try_request);
 GUEST_FUZZ(0x006d1ffc, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({5, 6, 0x62, 0x63, 0x64, 0x7b, 0x7c, 0x80, 0x88, 0x40}), 0u); });
+
+// Whether a request can start now: the state is ready for one and nothing blocks it.
+bool request_can_start() {
+    return state_94fd0c->request_state == REQUEST_READY && request_block->blocked == 0;
+}
+GUEST_EXPORT(0x006d1d40, request_can_start);
+GUEST_FUZZ(0x006d1d40, 50, [](guest::Fuzz &f) { f.arguments(); });

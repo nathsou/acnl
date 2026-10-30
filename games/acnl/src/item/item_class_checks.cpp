@@ -625,3 +625,19 @@ bool item_data_byte_19_is(const Item &item, u32 wanted) {
 }
 GUEST_EXPORT(0x00111f71, item_data_byte_19_is);
 GUEST_FUZZ(0x00111f71, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f), f.below(8)); });
+
+// Whether the two items have the same number (the flag in the id left out) and the same flags apart from their two top bits.
+bool Item::equals_ignoring_marks(const Item &other) const {
+    constexpr u16 FLAG_MARKS = 0xc000;  // the two top bits of the flags
+    return (flags & ~FLAG_MARKS) == (other.flags & ~FLAG_MARKS) && (id & NUMBER_MASK) == (other.id & NUMBER_MASK);
+}
+GUEST_EXPORT(0x0076aa04, Item::equals_ignoring_marks);
+GUEST_FUZZ(0x0076aa04, 300, [](guest::Fuzz &f) {
+    auto a = fuzz::assorted_item(f);
+    auto b = fuzz::assorted_item(f);
+    if (f.below(2) != 0) {
+        b->id = u16(a->id ^ (f.below(2) != 0 ? Item::ID_FLAG : 0));  // the flag in the id does not count
+        b->flags = u16(a->flags ^ (f.below(3) << 14));              // nor do the top bits of the flags
+    }
+    f.arguments(a, b);
+});

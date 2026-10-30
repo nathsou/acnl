@@ -1,4 +1,5 @@
 // Questions about what the objects of the player slots are doing (the byte at 0x1a9 of the object is its state).
+#include "arm.hpp"
 #include "player/slot_object.hpp"
 
 using guest::gptr;
@@ -431,6 +432,7 @@ GUEST_FUZZ(0x005c5cd0, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 namespace {
 
+constexpr u32 OBJECT_CLEARANCE = 0x1000;
 constexpr u8 STATE_BD = 0xbd;
 constexpr u8 STATE_10 = 0x10;
 constexpr u8 PENDING_BIT_1 = 1 << 1;
@@ -546,4 +548,30 @@ GUEST_EXPORT(0x005c73bc, store_pending_value_5bc);
 GUEST_FUZZ(0x005c73bc, 100, [](guest::Fuzz &f) {
     *pending_flags = u8(f.below(2) != 0 ? (*pending_flags | PENDING_BIT_1) : (*pending_flags & ~PENDING_BIT_1));
     f.arguments(f.pick<u32>({0, 1, 0x1234, f.number()}));
+});
+
+// One step of turning towards an angle: clears flag 4 of byte 0x17a; with no steps set (0x5b6) the object faces the angle at
+// once and true is returned; otherwise it turns by the remaining difference divided by the steps, counts a step down and
+// returns false.
+bool turn_towards_angle(SlotObject &object, u32 target) {
+    object.flags_17a = u8(object.flags_17a & ~SlotObject::FLAGS_17A_BIT_4);
+    u16 steps = object.turn_steps_5b6;
+    if (steps == 0) {
+        object.angles[1] = u16(target);
+        return true;
+    }
+    s16 difference = s16(u16(target) - object.angles[1]);
+    object.angles[1] = u16(object.angles[1] + arm::to_s32(float(difference) / float(steps)));
+    if (object.turn_steps_5b6 != 0) {
+        object.turn_steps_5b6 = u16(object.turn_steps_5b6 - 1);
+    }
+    return false;
+}
+GUEST_EXPORT(0x00651a68, turn_towards_angle);
+GUEST_FUZZ(0x00651a68, 300, [](guest::Fuzz &f) {
+    f.allocate(OBJECT_CLEARANCE);  // (keeps the object clear of the stack the original works on)
+    auto object = f.allocate(sizeof(SlotObject)).cast<SlotObject>();
+    object->turn_steps_5b6 = f.pick<u16>({0, 1, 2, 5, 30});
+    object->angles[1] = u16(f.number());
+    f.arguments(object, f.pick<u32>({0, 0x4000, u16(f.number()), u16(object->angles[1] + f.below(100))}));
 });

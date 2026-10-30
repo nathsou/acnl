@@ -81,7 +81,9 @@ struct SaveData {
     u8 byte_621d1;  // the low nibble counts for 2 each
     u8 unknown_621d2;
     u8 flags_621d3;
-    u8 unknown_621d4[0x62232 - 0x621d4];
+    u8 unknown_621d4[0x621dd - 0x621d4];
+    u8 flags_621dd;
+    u8 unknown_621de[0x62232 - 0x621de];
     u8 stored_time_62232[8];  // a GameTime (not aligned); when set and flags_621b8 is not zero it stands in for the start of the game day
     Item reference_item;  // the item some prices are compared against (what it represents is not known yet)
     u8 unknown_6223e[0x62338 - 0x6223e];
@@ -100,7 +102,8 @@ struct SaveData {
     u32 value_6e2a8;
     u32 value_6e2ac;
     u8 unknown_6e2b0[0x6fe82 - 0x6e2b0];
-    u8 record_flags_6fe82[0x6feb1 - 0x6fe82];  // four records of 12 bytes: the first byte of each is a flag byte
+    u8 record_flags_6fe82[0x6feb0 - 0x6fe82];  // four records of 12 bytes: the first byte of each is a flag byte
+    s8 event_hour_today;          // the hour of today's special event (a day with a firework-like event), -1 for none
     u8 weather_pattern_today;     // the weather pattern (0-0x33) stored for the game day the reference time is in
     u8 weather_pattern_tomorrow;  // and for the next day
     u8 unknown_6feb3[0x70f1c - 0x6feb3];
@@ -114,6 +117,7 @@ GUEST_OFFSET(SaveData, index_42a06, 0x42a06);
 GUEST_OFFSET(SaveData, state_6e2a6, 0x6e2a6);
 GUEST_OFFSET(SaveData, value_6e2a8, 0x6e2a8);
 GUEST_OFFSET(SaveData, record_flags_6fe82, 0x6fe82);
+GUEST_OFFSET(SaveData, event_hour_today, 0x6feb0);
 GUEST_OFFSET(SaveData, weather_pattern_today, 0x6feb1);
 GUEST_OFFSET(SaveData, index_42a07, 0x42a07);
 GUEST_OFFSET(SaveData, entries_4bf70, 0x4bf70);
@@ -123,6 +127,7 @@ GUEST_OFFSET(SaveData, flags_621b8, 0x621b8);
 GUEST_OFFSET(SaveData, flags_621ce, 0x621ce);
 GUEST_OFFSET(SaveData, flags_621cf, 0x621cf);
 GUEST_OFFSET(SaveData, byte_621d0, 0x621d0);
+GUEST_OFFSET(SaveData, flags_621dd, 0x621dd);
 GUEST_OFFSET(SaveData, flags_621d3, 0x621d3);
 GUEST_OFFSET(SaveData, stored_time_62232, 0x62232);
 GUEST_OFFSET(SaveData, reference_item, 0x6223a);
