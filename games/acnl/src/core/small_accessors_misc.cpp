@@ -406,3 +406,134 @@ GUEST_FUZZ(0x0026fac4, 100, [](guest::Fuzz &f) {
     owner->large_flag = f.pick<u8>({0, 1, 5});
     f.arguments(owner, f.below(6));
 });
+
+namespace {
+
+constexpr u32 PLAYER_RECORD_COUNT = 0x10;
+constexpr u32 PLAYER_RECORD_SIZE = 0xf2;
+constexpr u32 PLAYER_RECORDS_OFFSET = 0x8ee;
+constexpr u32 RECORD_1AC_COUNT = 0xf;
+constexpr u32 RECORD_1AC_SIZE = 0x1ac;
+constexpr u32 RECORD_280_COUNT = 4;
+constexpr u32 RECORD_280_OFFSET = 0x1810;
+constexpr u32 FLAG_WORD_MASK = 7;
+
+struct LinkedNode {
+    u8 unknown_00[4];
+    gptr<LinkedNode> previous;
+    gptr<LinkedNode> next;
+};
+GUEST_OFFSET(LinkedNode, previous, 4);
+GUEST_OFFSET(LinkedNode, next, 8);
+struct LinkedEnds {
+    u8 unknown_00[4];
+    gptr<LinkedNode> first;
+    gptr<LinkedNode> last;
+};
+GUEST_OFFSET(LinkedEnds, first, 4);
+GUEST_OFFSET(LinkedEnds, last, 8);
+
+struct FlagWordHolder {
+    u8 unknown_00[0x18];
+    u32 word;
+};
+GUEST_OFFSET(FlagWordHolder, word, 0x18);
+inline guest::global<FlagWordHolder, 0x00974ad8> flag_word_holder;
+
+}  // namespace
+
+// The address of the record of a villager's players (0xf2 bytes each, sixteen, from 0x8ee); null for numbers past the last
+// (Thumb entry).
+gptr<u8> villager_player_record_address(gptr<u8> base, u32 index) {
+    return index < PLAYER_RECORD_COUNT ? base + index * PLAYER_RECORD_SIZE + PLAYER_RECORDS_OFFSET : gptr<u8>(nullptr);
+}
+GUEST_EXPORT(0x001198d1, villager_player_record_address);
+GUEST_FUZZ(0x001198d1, 100, [](guest::Fuzz &f) {
+    f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(PLAYER_RECORD_COUNT + 3), 0xffffffffu}));
+});
+
+// The address of the record (0x1ac bytes each, fifteen of them); null for numbers past the last (Thumb entry).
+gptr<u8> record_1ac_address(gptr<u8> base, u32 index) {
+    return index < RECORD_1AC_COUNT ? base + index * RECORD_1AC_SIZE : gptr<u8>(nullptr);
+}
+GUEST_EXPORT(0x00108421, record_1ac_address);
+GUEST_FUZZ(0x00108421, 100, [](guest::Fuzz &f) {
+    f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(RECORD_1AC_COUNT + 3), 0xffffffffu}));
+});
+
+// The address of the record (0x280 bytes each, four of them, from 0x1810); null for numbers past the last (Thumb entry).
+gptr<u8> record_280_address(gptr<u8> base, u32 index) {
+    return index < RECORD_280_COUNT ? base + index * ENTRY_STRIDE_280 + RECORD_280_OFFSET : gptr<u8>(nullptr);
+}
+GUEST_EXPORT(0x0011a051, record_280_address);
+GUEST_FUZZ(0x0011a051, 100, [](guest::Fuzz &f) {
+    f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(RECORD_280_COUNT + 3), 0xffffffffu}));
+});
+
+// Whether the three low bits of the word at 0x18 of the object at 0x00974ad8 are clear.
+bool flag_word_low_bits_clear() {
+    return (flag_word_holder->word & FLAG_WORD_MASK) == 0;
+}
+GUEST_EXPORT(0x00124284, flag_word_low_bits_clear);
+GUEST_FUZZ(0x00124284, 50, [](guest::Fuzz &f) { f.arguments(); });
+
+// Whether the node is in the list that starts at the ends' first node (following the next links).
+bool list_contains_node(LinkedEnds &ends, gptr<LinkedNode> node) {
+    if (node == nullptr) {
+        return false;
+    }
+    for (gptr<LinkedNode> current = ends.first; current != nullptr; current = current->next) {
+        if (current == node) {
+            return true;
+        }
+    }
+    return false;
+}
+GUEST_EXPORT(0x00138920, list_contains_node);
+GUEST_FUZZ(0x00138920, 100, [](guest::Fuzz &f) {
+    auto ends = f.object<LinkedEnds>();
+    auto first = f.object<LinkedNode>();
+    auto second = f.object<LinkedNode>();
+    first->next = second;
+    second->next = gptr<LinkedNode>(0u);
+    ends->first = first;
+    f.arguments(ends, f.pick<gptr<LinkedNode>>({first, second, f.object<LinkedNode>(), gptr<LinkedNode>(0u)}));
+});
+
+// Takes the node out of the list the ends describe (the first and last nodes of the list are replaced when it was one of them).
+void unlink_from_ends(LinkedEnds &ends, LinkedNode &node) {
+    gptr<LinkedNode> self = guest::addr_of(node);
+    gptr<LinkedNode> previous = node.previous;
+    gptr<LinkedNode> next = node.next;
+    if (previous == nullptr && next == nullptr) {
+        if (ends.first == self && ends.last == self) {
+            ends.first = nullptr;
+            ends.last = nullptr;
+        }
+        return;
+    }
+    if (previous != nullptr) {
+        previous->next = next;
+    } else if (ends.first == self) {
+        ends.first = next;
+    }
+    if (next != nullptr) {
+        next->previous = previous;
+    } else if (ends.last == self) {
+        ends.last = previous;
+    }
+    node.previous = nullptr;
+    node.next = nullptr;
+}
+GUEST_EXPORT(0x0013f000, unlink_from_ends);
+GUEST_FUZZ(0x0013f000, 200, [](guest::Fuzz &f) {
+    auto ends = f.object<LinkedEnds>();
+    auto before = f.object<LinkedNode>();
+    auto node = f.object<LinkedNode>();
+    auto after = f.object<LinkedNode>();
+    node->previous = f.below(3) != 0 ? before : gptr<LinkedNode>(0u);
+    node->next = f.below(3) != 0 ? after : gptr<LinkedNode>(0u);
+    ends->first = f.below(2) != 0 ? node.cast<LinkedNode>() : before;
+    ends->last = f.below(2) != 0 ? node.cast<LinkedNode>() : after;
+    f.arguments(ends, node);
+});

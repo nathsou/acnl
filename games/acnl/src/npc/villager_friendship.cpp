@@ -32,14 +32,20 @@ gptr<SaveVillager> some_saved_villager(guest::Fuzz &f) {
 
 }  // namespace
 
-u32 VillagerPlayerRecord::friendship_tier() const {
+// The friendship tier a friendship value has: the number of thresholds (from the highest down) above it (Thumb entry).
+u32 friendship_tier_of_value(u32 value) {
     gptr<const u8> thresholds(TIERS_ADDRESS);
-    u32 value = friendship();
     u32 tier = 0;
-    while (tier < FRIENDSHIP_TIERS && thresholds[tier] > value) {
+    while (tier < VillagerPlayerRecord::FRIENDSHIP_TIERS && thresholds[tier] > value) {
         tier++;
     }
     return tier;
+}
+GUEST_EXPORT(0x001141a5, friendship_tier_of_value);
+GUEST_FUZZ(0x001141a5, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0x40, 0x80, 0xff, f.below(256)})); });
+
+u32 VillagerPlayerRecord::friendship_tier() const {
+    return friendship_tier_of_value(friendship());
 }
 
 // Whether any of the four players has a record of this villager with a close friendship.

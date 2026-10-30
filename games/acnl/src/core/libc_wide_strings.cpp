@@ -117,3 +117,19 @@ GUEST_FUZZ(0x0011b4f7, 200, [](guest::Fuzz &f) {
     set->count = f.below(34);
     f.arguments(set, f.pick<u32>({f.below(34), 0xffffffffu}));
 });
+
+// Compares at most `count` characters of two 16-bit strings like compare_wide_strings (Thumb entry).
+s32 compare_wide_strings_up_to(gptr<const u16> first, gptr<const u16> second, u32 count) {
+    for (u32 i = 0; i < count; i++) {
+        if (first[i] == 0 || first[i] != second[i]) {
+            return s32(first[i]) - s32(second[i]);
+        }
+    }
+    return 0;
+}
+GUEST_EXPORT(0x00101869, compare_wide_strings_up_to);
+GUEST_FUZZ(0x00101869, 300, [](guest::Fuzz &f) {
+    auto first = fuzz_wide_string(f);
+    auto second = f.below(3) == 0 ? first : fuzz_wide_string(f);
+    f.arguments(first, second, f.below(FUZZ_MAX_LENGTH + 2));
+});
