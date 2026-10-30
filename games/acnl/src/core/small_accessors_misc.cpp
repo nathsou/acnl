@@ -317,3 +317,92 @@ GUEST_FUZZ(0x0065393c, 100, [](guest::Fuzz &f) {
     f.allocate(FUZZ_PAD);
     f.arguments(f.allocate(sizeof(PositionStore)).cast<PositionStore>());
 });
+
+namespace {
+
+constexpr u32 SET_BYTES_COUNT = 14;  // 0x6c bits
+constexpr u32 CLEAR_BIT_COUNT = 0x6c;
+constexpr u32 BYTE_28_BIT_COUNT = 6;
+constexpr u32 SMALL_BIT_COUNT_6 = 6;
+constexpr u32 LARGE_RECORD_WORDS = 0xe5;
+constexpr u32 SMALL_RECORD_WORDS = 0xdb;
+constexpr u32 LARGE_RECORDS_OFFSET = 0x4410;
+constexpr u32 SMALL_RECORDS_OFFSET = 0x890;
+constexpr u32 SELF_RELATIVE_ENTRY_OFFSET = 0x28;
+constexpr u32 SELF_RELATIVE_ENTRY_SHIFT = 4;
+
+struct Flags09 {
+    u8 unknown_00[9];
+    u8 flags;
+};
+GUEST_OFFSET(Flags09, flags, 9);
+
+struct BitBytes1A {
+    u8 unknown_00[0x1a];
+    u8 bytes[SET_BYTES_COUNT];
+};
+GUEST_OFFSET(BitBytes1A, bytes, 0x1a);
+
+struct Byte28Owner {
+    u8 unknown_00[0x28];
+    u8 bits;
+};
+GUEST_OFFSET(Byte28Owner, bits, 0x28);
+
+struct RecordSizeOwner {
+    u8 unknown_0000[0x8431];
+    u8 large_flag;
+};
+GUEST_OFFSET(RecordSizeOwner, large_flag, 0x8431);
+
+}  // namespace
+
+// Whether the bit (0-5) of the flag byte at 9 is set (false for other numbers).
+bool flags_09_bit_is_set(Flags09 &object, u32 bit) {
+    return bit < SMALL_BIT_COUNT_6 && (object.flags & (1u << bit)) != 0;
+}
+GUEST_EXPORT(0x0075f1c4, flags_09_bit_is_set);
+GUEST_FUZZ(0x0075f1c4, 100, [](guest::Fuzz &f) {
+    f.allocate(FUZZ_PAD);
+    auto object = f.allocate(sizeof(Flags09)).cast<Flags09>();
+    object->flags = u8(f.number());
+    f.arguments(object, f.pick<u32>({f.below(SMALL_BIT_COUNT_6 + 3), 0xffffffffu}));
+});
+
+// Clears a bit (0-0x6b) of the bytes from 0x1a of the object; other numbers do nothing.
+void clear_bit_from_1a(BitBytes1A &object, u32 bit) {
+    if (bit < CLEAR_BIT_COUNT) {
+        object.bytes[bit / 8] = u8(object.bytes[bit / 8] & ~(1u << (bit % 8)));
+    }
+}
+GUEST_EXPORT(0x0020be80, clear_bit_from_1a);
+GUEST_FUZZ(0x0020be80, 100, [](guest::Fuzz &f) {
+    f.allocate(FUZZ_PAD);
+    f.arguments(f.allocate(sizeof(BitBytes1A)).cast<BitBytes1A>(), f.pick<u32>({f.below(CLEAR_BIT_COUNT + 3), 0xffffffffu}));
+});
+
+// Sets the bit (0-5) of the byte at 0x28.
+void set_bit_28(Byte28Owner &owner, u32 bit) {
+    if (bit < BYTE_28_BIT_COUNT) {
+        owner.bits = u8(owner.bits | (1u << bit));
+    }
+}
+GUEST_EXPORT(0x0020bea4, set_bit_28);
+GUEST_FUZZ(0x0020bea4, 100, [](guest::Fuzz &f) {
+    f.allocate(FUZZ_PAD);
+    f.arguments(f.allocate(sizeof(Byte28Owner)).cast<Byte28Owner>(), f.pick<u32>({f.below(BYTE_28_BIT_COUNT + 3), 0xffffffffu}));
+});
+
+// The address of the record (words of 4 bytes: 0xe5 of them from 0x4410 when the byte at 0x8431 is set, 0xdb from 0x890 otherwise).
+gptr<u8> record_by_size_flag(gptr<RecordSizeOwner> owner, u32 index) {
+    bool large = owner->large_flag != 0;
+    u32 words = large ? LARGE_RECORD_WORDS : SMALL_RECORD_WORDS;
+    return owner.cast<u8>() + index * words * sizeof(u32) + (large ? LARGE_RECORDS_OFFSET : SMALL_RECORDS_OFFSET);
+}
+GUEST_EXPORT(0x0026fac4, record_by_size_flag);
+GUEST_FUZZ(0x0026fac4, 100, [](guest::Fuzz &f) {
+    f.allocate(FUZZ_PAD);
+    auto owner = f.allocate(sizeof(RecordSizeOwner)).cast<RecordSizeOwner>();
+    owner->large_flag = f.pick<u8>({0, 1, 5});
+    f.arguments(owner, f.below(6));
+});

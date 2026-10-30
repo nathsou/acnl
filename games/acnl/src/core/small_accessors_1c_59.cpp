@@ -142,12 +142,15 @@ void insert_node_after(ChainNode &head, ChainNode &node) {
     }
 }
 GUEST_EXPORT(0x0053d268, insert_node_after);
-GUEST_FUZZ(0x0053d268, 200, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x00138560, insert_node_after);
+static void fuzz_insert_node(guest::Fuzz &f) {
     auto head = f.object<ChainNode>();
     auto first = f.object<ChainNode>();
     head->next = f.below(3) != 0 ? first : gptr<ChainNode>(0u);
     f.arguments(head, f.object<ChainNode>());
-});
+}
+GUEST_FUZZ(0x0053d268, 200, fuzz_insert_node);
+GUEST_FUZZ(0x00138560, 200, fuzz_insert_node);
 
 // Replaces the two top bits of the word at 8 with the value (0-3).
 void set_top_bits_8(TopBitsOwner &owner, u32 value) {
