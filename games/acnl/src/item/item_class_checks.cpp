@@ -310,3 +310,193 @@ void item_for_category_48_or_number_9d(Item &out, const Item &item) {
 }
 GUEST_EXPORT(0x0076b8c4, item_for_category_48_or_number_9d);
 GUEST_FUZZ(0x0076b8c4, 300, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), fuzz::assorted_item(f, {CATEGORY_48})); });
+
+namespace {
+
+// The flag bits behind the tags 0-7: (the byte of ItemData, the bit).
+struct TagBit {
+    u32 byte_offset;
+    u32 bit;
+};
+constexpr u32 FLAGS_1C = 0x1c, FLAGS_1D = 0x1d;
+constexpr TagBit TAG_BITS[] = {{FLAGS_1C, 1}, {FLAGS_1D, 7}, {FLAGS_1C, 0}, {FLAGS_1D, 6},
+                               {FLAGS_1D, 5}, {FLAGS_1D, 3}, {FLAGS_1D, 4}, {FLAGS_1D, 2}};
+
+}  // namespace
+
+u32 Item::data_tag(u32 index) const {
+    gptr<ItemData> d = data();
+    if (!d || index >= sizeof(TAG_BITS) / sizeof(TAG_BITS[0])) {
+        return 0;
+    }
+    return (d.cast<u8>()[TAG_BITS[index].byte_offset] >> TAG_BITS[index].bit) & 1;
+}
+GUEST_EXPORT(0x001892f8, Item::data_tag);
+GUEST_FUZZ(0x001892f8, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f), f.below(10)); });
+
+// ---- more questions about the category and the variation of an item
+
+namespace {
+
+constexpr u8 CATEGORY_80 = 0x80, CATEGORY_29 = 0x29, CATEGORY_8D = 0x8d, CATEGORY_15 = 0x15;
+constexpr u32 TABLE_80_COUNT = 5;
+constexpr u32 TABLE_80_NUMBERS = 0x0088e658;  // u16 item numbers
+constexpr u32 TABLE_80_VALUES = 0x0088e61c;   // the value for each
+constexpr u32 TABLE_80_DEFAULT = 0x1d;
+constexpr u8 WEAR_INDICES_GROUP_B[] = {7, 0xd, 0x11, 0x14};
+constexpr u8 FLAGS_1C_BIT_4 = 1 << 4;
+constexpr u32 CATEGORY_FLAGS_SECOND_BYTE = 1;
+constexpr u32 CATEGORY_FLAG_BIT_5 = 5;
+
+// The variation of an item with a valid value_06 is a nibble of its flags (bits 10-13): 1-7 stand for size 1, 8-9 for
+// size 2 and 10-13 for size 4; the index inside the size is the nibble minus where the size starts.
+constexpr u32 VARIANT_LAST = 13;
+constexpr u32 SIZE_1_LAST = 7;
+constexpr u32 SIZE_2_LAST = 9;
+constexpr u32 SIZE_2_FIRST = 8;
+constexpr u32 SIZE_4_FIRST = 10;
+constexpr u32 SIZE_1 = 1, SIZE_2 = 2, SIZE_4 = 4;
+
+// The nibble, or 0 when it does not name a variation.
+u32 variant_nibble(const Item &item) {
+    if (!item.has_valid_value_06()) {
+        return 0;
+    }
+    u32 nibble = (item.flags >> FLAG_NIBBLE_SHIFT) & FLAG_NIBBLE_MASK;
+    return nibble > VARIANT_LAST ? 0 : nibble;
+}
+
+}  // namespace
+
+bool Item::has_category_in_set_c() const {
+    return contains(SPECIAL_B_CATEGORIES, category());
+}
+GUEST_EXPORT(0x0076a684, Item::has_category_in_set_c);
+GUEST_FUZZ(0x0076a684, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {0x06, 0x07, 0x2f, 0x31, 0x54, 0x55, 0x56, 0x57, 0x93, 0x94})); });
+
+bool Item::is_category_48_with_wear_index_in_group_a() const {
+    return category() == CATEGORY_48 && contains(WEAR_INDICES_GROUP_A, wear_index(*this));
+}
+GUEST_EXPORT(0x0076ae94, Item::is_category_48_with_wear_index_in_group_a);
+GUEST_FUZZ(0x0076ae94, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_48})); });
+
+u32 Item::table_value_for_category_80() const {
+    if (category() != CATEGORY_80) {
+        return TABLE_80_DEFAULT;
+    }
+    for (u32 i = 0; i < TABLE_80_COUNT; i++) {
+        if (number() == gptr<u16>(TABLE_80_NUMBERS)[i]) {
+            return gptr<u8>(TABLE_80_VALUES)[i];
+        }
+    }
+    return TABLE_80_DEFAULT;
+}
+GUEST_EXPORT(0x0076af00, Item::table_value_for_category_80);
+GUEST_FUZZ(0x0076af00, 300, [](guest::Fuzz &f) {
+    auto item = fuzz::assorted_item(f, {CATEGORY_80});
+    if (f.below(2) == 0) {
+        item->id = gptr<u16>(TABLE_80_NUMBERS)[f.below(TABLE_80_COUNT)];
+    }
+    f.arguments(item);
+});
+
+u32 Item::count_if_category_29() const {
+    return category() == CATEGORY_29 ? flags_value() + 1u : 0;
+}
+GUEST_EXPORT(0x0076b274, Item::count_if_category_29);
+GUEST_FUZZ(0x0076b274, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_29})); });
+
+// False only for the items with flag 4 of ItemData::flags_1c that are neither flagged by flag_1c_bit3 nor have a valid
+// value_06 with a variation count.
+bool Item::is_not_catalog_flagged_or_exempt() const {
+    gptr<ItemData> d = data();
+    if (!d || d->flag_1c_bit3()) {
+        return true;
+    }
+    if (has_valid_value_06() && flags_value() != 0) {
+        return true;
+    }
+    return (d->flags_1c & FLAGS_1C_BIT_4) == 0;
+}
+GUEST_EXPORT(0x0076c318, Item::is_not_catalog_flagged_or_exempt);
+GUEST_FUZZ(0x0076c318, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+u32 Item::value_if_category_8d() const {
+    return category() == CATEGORY_8D ? flags_value() : 0;
+}
+GUEST_EXPORT(0x0076c408, Item::value_if_category_8d);
+GUEST_FUZZ(0x0076c408, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_8D})); });
+
+bool Item::has_wear_index_in_group_b() const {
+    return contains(WEAR_INDICES_GROUP_B, wear_index(*this));
+}
+GUEST_EXPORT(0x0076c5e4, Item::has_wear_index_in_group_b);
+GUEST_FUZZ(0x0076c5e4, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+bool Item::is_category_15() const {
+    return category() == CATEGORY_15;
+}
+GUEST_EXPORT(0x0076c6a4, Item::is_category_15);
+GUEST_FUZZ(0x0076c6a4, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_15})); });
+
+bool Item::has_category_flag_bit_1_5() const {
+    gptr<u8> entry = category_flags();
+    return entry && ((entry[CATEGORY_FLAGS_SECOND_BYTE] >> CATEGORY_FLAG_BIT_5) & 1) != 0;
+}
+GUEST_EXPORT(0x0076c590, Item::has_category_flag_bit_1_5);
+GUEST_FUZZ(0x0076c590, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+// The size (1, 2 or 4) the variation nibble stands for, 0 without a variation.
+u32 Item::variant_size() const {
+    u32 nibble = variant_nibble(*this);
+    if (nibble == 0) {
+        return 0;
+    }
+    if (nibble <= SIZE_1_LAST) {
+        return SIZE_1;
+    }
+    return nibble <= SIZE_2_LAST ? SIZE_2 : SIZE_4;
+}
+GUEST_EXPORT(0x0076b5dc, Item::variant_size);
+GUEST_FUZZ(0x0076b5dc, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+// The variation's index inside its size.
+u32 Item::variant_index_in_size() const {
+    u32 nibble = variant_nibble(*this);
+    if (nibble == 0) {
+        return 0;
+    }
+    if (nibble <= SIZE_1_LAST) {
+        return nibble;
+    }
+    return nibble <= SIZE_2_LAST ? nibble - SIZE_2_FIRST : nibble - SIZE_4_FIRST;
+}
+GUEST_EXPORT(0x0076bf68, Item::variant_index_in_size);
+GUEST_FUZZ(0x0076bf68, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+bool Item::passes_sanitize() const {
+    Item copy = *this;
+    return copy.sanitize();
+}
+GUEST_EXPORT(0x0076ad70, Item::passes_sanitize);
+GUEST_FUZZ(0x0076ad70, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+// Whether any of the eight items of the row has the same number as the item (Thumb entry).
+bool row_has_same_number(gptr<const Item> row, const Item &item) {
+    constexpr u32 ROW_SIZE = 8;
+    for (u32 i = 0; i < ROW_SIZE; i++) {
+        if (row[i].same_number_as(item)) {
+            return true;
+        }
+    }
+    return false;
+}
+GUEST_EXPORT(0x0011b469, row_has_same_number);
+GUEST_FUZZ(0x0011b469, 200, [](guest::Fuzz &f) {
+    auto row = f.allocate(8 * sizeof(Item)).cast<Item>();
+    auto item = fuzz::assorted_item(f);
+    for (u32 i = 0; i < 8; i++) {
+        row[i] = f.below(3) == 0 ? *item : *fuzz::assorted_item(f);
+    }
+    f.arguments(row, item);
+});

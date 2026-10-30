@@ -130,6 +130,19 @@ struct Item {
     bool has_wear_index_in_group_a() const;     // the wear class index is 0x1b, 0x1c, 0x1d or 0x1f
     bool is_wear_class_3_outside_groups() const;  // wear class 3, and no wear index of group a or 0x1e
     u32 section_in_category_27() const;         // 0-2 for the items of category 0x27 by position, 2 for all others
+    bool has_category_in_set_c() const;         // the category is one of 6, 7, 0x2f, 0x31, 0x54-0x57, 0x93, 0x94
+    bool is_category_48_with_wear_index_in_group_a() const;
+    u32 table_value_for_category_80() const;    // for the items of category 0x80 listed in a table, else 0x1d
+    u32 count_if_category_29() const;           // the flags' count (stored minus one, plus one) for category 0x29, else 0
+    bool is_not_catalog_flagged_or_exempt() const;  // see item_class_checks.cpp
+    u32 value_if_category_8d() const;           // flags_value() for the items of category 0x8d, else 0
+    bool has_wear_index_in_group_b() const;     // the wear class index is 7, 0xd, 0x11 or 0x14
+    bool is_category_15() const;
+    bool has_category_flag_bit_1_5() const;     // bit 5 of the second byte of the category's flags
+    u32 variant_size() const;                   // see item_class_checks.cpp
+    u32 variant_index_in_size() const;          // see item_class_checks.cpp
+    bool passes_sanitize() const;               // a copy of the item is not changed by sanitize
+    u32 data_tag(u32 index) const;              // 0 or 1: the item's tag number `index` (0-7) from ItemData flags_1c/1d
     u32 data_byte_0b() const;                   // ItemData byte 0x0b when it is below 0xaa, else 0 (0 without data)
     bool has_valid_value_06_and_flags_value() const;  // valid value_06 and a non-zero flags_value()
     bool has_data_byte_17_low_nibble_2() const; // the low nibble of ItemData::byte_17 is 2 (and below 5)

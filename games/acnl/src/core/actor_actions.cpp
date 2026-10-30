@@ -3,7 +3,7 @@
 // yet.
 #include <bit>
 
-#include "core/actor_object.hpp"
+#include "core/actor_actions.hpp"
 
 namespace {
 
