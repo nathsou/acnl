@@ -2,6 +2,7 @@
 #include <cstring>
 
 #include "core/clock_state.hpp"
+#include "core/day_start.hpp"
 #include "save/save_data.hpp"
 
 namespace {

@@ -1,6 +1,7 @@
 // Per-slot values kept right after the four remote players (0x00a84790), and checks that look up the object of the
 // main slot.
 #include "guest/guest.hpp"
+#include "player/slot_object.hpp"
 #include "save/player.hpp"
 #include "save/save_data.hpp"
 
@@ -17,15 +18,29 @@ constexpr u32 INVALID_VALUE = 8;
 constexpr u8 STATE_NONE = 0xb;
 constexpr u8 STATE_C1 = 0xc1;
 constexpr u32 MAIN_OBJECT_ID = 4;
-constexpr u32 NOT_LOOKED_UP = 0;
+constexpr u32 EXCLUDE_UNMARKED = 0;  // look_up_object's second argument: objects whose state is zero are not returned
+
+// A slot's record, refreshed from two entry templates (see refresh_slot_record).
+struct SlotRecord {
+    static constexpr u32 HEAD_SIZE = 13;
+    static constexpr u32 TAIL_SIZE = 24;
+
+    u8 head[HEAD_SIZE];  // the first byte is the mode the slot's object belongs to
+    u8 unknown_0d;
+    u8 tail[TAIL_SIZE];
+};
+GUEST_OFFSET(SlotRecord, tail, 0x0e);
+GUEST_SIZE(SlotRecord, 38);
 
 struct SlotTable {
     SavePlayer players[SaveData::PLAYER_COUNT];
     u8 values[SLOT_COUNT];
     gptr<void> objects[SLOT_COUNT];
+    SlotRecord records[SLOT_COUNT];
 };
 GUEST_OFFSET(SlotTable, values, 0x29200);
 GUEST_OFFSET(SlotTable, objects, 0x29204);
+GUEST_OFFSET(SlotTable, records, 0x29214);
 
 inline guest::global<SlotTable, 0x00a84790> slot_table;
 
@@ -35,11 +50,6 @@ struct StateObject {
 };
 GUEST_OFFSET(StateObject, state_870, 0x870);
 
-struct MarkerObject {
-    u8 unknown_000[0x1a9];
-    u8 marker_1a9;
-};
-GUEST_OFFSET(MarkerObject, marker_1a9, 0x1a9);
 
 struct FlagsGlobal {
     u8 unknown_00;
@@ -61,7 +71,13 @@ constexpr u32 MODE_2_TABLE[] = {4, 4, 6, 8, 7, 5};
 constexpr u32 MODE_2_DEFAULT = 4;
 
 inline constexpr guest::Function<0x0027ab40, bool(u32 slot)> is_local_slot;
-inline constexpr guest::Function<0x005c33d0, gptr<void>(u32 id, u32 unknown)> look_up_object;
+inline constexpr guest::Function<0x006268f8, gptr<u8>(u32 id)> entry_template_address;
+inline constexpr guest::Function<0x002f74c8, u8()> read_global_byte_2;
+
+// For each slot, the ids of the entry templates its record's head and tail are copied from.
+inline guest::global<u8[SLOT_COUNT], 0x00881b8c> head_template_ids;
+inline guest::global<u8[SLOT_COUNT], 0x00881b90> tail_template_ids;
+inline guest::global<SlotRecord, 0x00aad9a4> default_slot_record;  // for slots that are not below 4
 
 // The value of the slot, 8 when it is not below 8.
 u32 checked_slot_value(u32 slot) {
@@ -99,9 +115,56 @@ bool slot_value_is_local(u32 slot) {
 GUEST_EXPORT(0x005c2dfc, slot_value_is_local);
 GUEST_FUZZ(0x005c2dfc, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu})); });
 
+// The record of a slot (the default one for slots past the four), after copying its head and tail from their entry
+// templates when those exist.
+gptr<SlotRecord> refresh_slot_record(u32 slot) {
+    if (slot >= SLOT_COUNT) {
+        return guest::addr_of(*default_slot_record);
+    }
+    gptr<SlotRecord> record = guest::addr_of(slot_table->records[slot]);
+    gptr<u8> head = entry_template_address(head_template_ids[slot]);
+    if (head) {
+        for (u32 i = 0; i < SlotRecord::HEAD_SIZE; i++) {
+            record->head[i] = head[i];
+        }
+    }
+    gptr<u8> tail = entry_template_address(tail_template_ids[slot]);
+    if (tail) {
+        for (u32 i = 0; i < SlotRecord::TAIL_SIZE; i++) {
+            record->tail[i] = tail[i];
+        }
+    }
+    return record;
+}
+GUEST_EXPORT(0x005c330c, refresh_slot_record);
+GUEST_FUZZ(0x005c330c, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu})); });
+
+// The object of a slot (a number of 4 or more stands for the main object's slot), or null: when it has none, when its
+// record's mode is not the current one (unless flag 5 of the object is set), and, unless `include_idle`, when its
+// state is zero.
+gptr<SlotObject> look_up_object(u32 id, u32 include_idle) {
+    u32 slot = id < SLOT_COUNT ? id & SLOT_MASK : query_current_main_object();
+    if (slot >= SLOT_COUNT) {
+        return gptr<SlotObject>(0u);
+    }
+    gptr<SlotObject> object = slot_table->objects[slot].cast<SlotObject>();
+    if (!object) {
+        return gptr<SlotObject>(0u);
+    }
+    if ((object->flags_171 & SlotObject::FLAGS_171_BIT_5) == 0 && refresh_slot_record(slot)->head[0] != read_global_byte_2()) {
+        return gptr<SlotObject>(0u);
+    }
+    if (include_idle == 0 && object->state_1a9 == 0) {
+        return gptr<SlotObject>(0u);
+    }
+    return object;
+}
+GUEST_EXPORT(0x005c33d0, look_up_object);
+GUEST_FUZZ(0x005c33d0, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu}), f.below(2)); });
+
 // The address of the looked up object's state byte, unless the object is missing or in the "none" state.
 gptr<u8> object_state_address(u32 id) {
-    gptr<StateObject> object = look_up_object(id, NOT_LOOKED_UP).cast<StateObject>();
+    gptr<StateObject> object = look_up_object(id, EXCLUDE_UNMARKED).cast<StateObject>();
     if (!object) {
         return gptr<u8>(0u);
     }
@@ -115,8 +178,8 @@ GUEST_FUZZ(0x005c2cbc, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 
 
 // Whether the main object (id 4) carries the marker 0xc1.
 bool main_object_has_marker_c1() {
-    gptr<MarkerObject> object = look_up_object(MAIN_OBJECT_ID, NOT_LOOKED_UP).cast<MarkerObject>();
-    return object && object->marker_1a9 == STATE_C1;
+    gptr<SlotObject> object = look_up_object(MAIN_OBJECT_ID, EXCLUDE_UNMARKED);
+    return object && object->state_1a9 == STATE_C1;
 }
 GUEST_EXPORT(0x005c2dcc, main_object_has_marker_c1);
 GUEST_FUZZ(0x005c2dcc, 50, [](guest::Fuzz &f) { f.arguments(); });

@@ -156,6 +156,58 @@ void remember_number_b(const Item &item, u32 index) {
 GUEST_EXPORT(0x0028511c, remember_number_b);
 GUEST_FUZZ(0x0028511c, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.pick<u32>({0, 5, 0xa4, 0xa5, 0xffffffffu})); });
 
+namespace {
+
+// The numbers both tables start with for the modes that have one: (mode, number of table a, number of table b).
+struct ModeNumbers {
+    u32 mode;
+    u16 number_a;
+    u16 number_b;
+};
+constexpr ModeNumbers FIXED_MODE_NUMBERS[] = {
+    {0x2b, 0x23c9, 0x2462}, {0x39, 0x23ca, 0x2463}, {0x3a, 0x23cb, 0x2464}, {0x3b, 0x23cc, 0x2465}, {0x3d, 0x23cd, 0x2466},
+};
+constexpr u32 LEVEL_DEPENDENT_MODE = 0x3e;  // takes the first number of a pair while level_allows_flag is true
+constexpr u16 LEVEL_MODE_NUMBER_A[] = {0x23ce, 0x23cf};
+constexpr u16 LEVEL_MODE_NUMBER_B[] = {0x2467, 0x2468};
+constexpr u32 LEVEL_HOLDER_OFFSET = 0x6acf6;  // in the save data
+constexpr u16 PAIR_NUMBER_FIRST = 0x23d0;     // the two numbers written to 0x00950804 and 0x00950806
+constexpr u16 PAIR_NUMBER_SECOND = 0x2469;
+
+inline constexpr guest::Function<0x002fb328, gptr<u8>()> get_save_data;
+inline constexpr guest::Function<0x0030290c, bool(gptr<u8> holder)> level_allows_flag;
+inline guest::global<u16, 0x00950804> remembered_pair_first;
+inline guest::global<u16, 0x00950806> remembered_pair_second;
+
+}  // namespace
+
+// Fills both tables of remembered numbers: the empty number for every mode, except the modes 0x2b, 0x39, 0x3a, 0x3b and
+// 0x3d, which have fixed numbers, and mode 0x3e, whose numbers depend on the level (see level_allows_flag). Also sets
+// the pair of numbers at 0x00950804.
+void set_default_remembered_numbers() {
+    for (u32 mode = 0; mode < NUMBER_COUNT; mode++) {
+        u16 number_a = Item::EMPTY;
+        u16 number_b = Item::EMPTY;
+        for (const ModeNumbers &fixed : FIXED_MODE_NUMBERS) {
+            if (fixed.mode == mode) {
+                number_a = fixed.number_a;
+                number_b = fixed.number_b;
+            }
+        }
+        if (mode == LEVEL_DEPENDENT_MODE) {
+            bool allowed = level_allows_flag(get_save_data() + LEVEL_HOLDER_OFFSET);
+            number_a = LEVEL_MODE_NUMBER_A[allowed];
+            number_b = LEVEL_MODE_NUMBER_B[allowed];
+        }
+        numbers_998214->values[mode] = number_a;
+        numbers_998360->values[mode] = number_b;
+    }
+    remembered_pair_first = PAIR_NUMBER_FIRST;
+    remembered_pair_second = PAIR_NUMBER_SECOND;
+}
+GUEST_EXPORT(0x00284f90, set_default_remembered_numbers);
+GUEST_FUZZ(0x00284f90, 20, [](guest::Fuzz &f) { f.arguments(); });
+
 // Builds the item whose number was remembered at the index (the empty item past the table).
 Item &recall_item(Item &out, u32 index) {
     if (index >= NUMBER_COUNT) {
