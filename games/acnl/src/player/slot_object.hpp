@@ -14,7 +14,8 @@ struct SlotObject {
     static constexpr u8 FLAGS_8C5_BIT_6 = 1 << 6;
     static constexpr u8 FLAGS_8C7_BIT_5 = 1 << 5;
     static constexpr u8 FLAGS_8C7_BIT_0 = 1 << 0;
-    static constexpr u8 FLAGS_17A_BIT_4 = 1 << 4;  // cleared by a turn step
+    static constexpr u8 FLAGS_17A_BIT_2 = 1 << 2;  // set while a movement target is being approached
+    static constexpr u8 FLAGS_17A_BIT_4 = 1 << 4;  // set while a turn target is being approached (cleared by a turn step)
     static constexpr u8 FLAGS_17B_BIT_2 = 1 << 2;
     static constexpr u8 FLAGS_17C_BIT_1 = 1 << 1;  // meaning not known yet
     static constexpr u8 FLAGS_17C_BIT_2 = 1 << 2;
@@ -23,7 +24,9 @@ struct SlotObject {
     Float3 position;
     u8 unknown_20[0x2c - 0x20];
     u16 angles[3];  // the rotation about the three axes (as 16-bit angles); the second is the facing
-    u8 unknown_32[0x66 - 0x32];
+    u8 unknown_32[0x40 - 0x32];
+    float value_40;
+    u8 unknown_44[0x66 - 0x44];
     u8 flags_66;
     u8 unknown_067[0x171 - 0x67];
     u8 flags_171;
@@ -59,9 +62,15 @@ struct SlotObject {
     float value_914;
     u8 unknown_918[0x91f - 0x918];
     u8 flag_91f;
+    u8 unknown_920[0x950 - 0x920];
+    float target_950[2];
+    u8 unknown_958[4];
+    s16 target_angle_95c;
+    s16 target_angle_95e;
 };
 GUEST_OFFSET(SlotObject, position, 0x14);
 GUEST_OFFSET(SlotObject, angles, 0x2c);
+GUEST_OFFSET(SlotObject, value_40, 0x40);
 GUEST_OFFSET(SlotObject, flags_66, 0x66);
 GUEST_OFFSET(SlotObject, flags_171, 0x171);
 GUEST_OFFSET(SlotObject, flags_177, 0x177);
@@ -80,6 +89,8 @@ GUEST_OFFSET(SlotObject, half_5e2, 0x5e2);
 GUEST_OFFSET(SlotObject, word_884, 0x884);
 GUEST_OFFSET(SlotObject, value_914, 0x914);
 GUEST_OFFSET(SlotObject, flag_91f, 0x91f);
+GUEST_OFFSET(SlotObject, target_950, 0x950);
+GUEST_OFFSET(SlotObject, target_angle_95c, 0x95c);
 GUEST_OFFSET(SlotObject, flags_8c5, 0x8c5);
 GUEST_OFFSET(SlotObject, flags_8c7, 0x8c7);
 

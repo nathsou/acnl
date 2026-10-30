@@ -77,9 +77,12 @@ gptr<u8> record_302_address(gptr<u8> base, u32 index) {
     return base + RECORDS_OFFSET + (index < RECORD_COUNT ? index * RECORD_SIZE : 0);
 }
 GUEST_EXPORT(0x0030512c, record_302_address);
-GUEST_FUZZ(0x0030512c, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x00317efc, record_302_address);
+static void fuzz_record_302(guest::Fuzz &f) {
     f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(RECORD_COUNT + 3), 0xffffffffu}));
-});
+}
+GUEST_FUZZ(0x0030512c, 100, fuzz_record_302);
+GUEST_FUZZ(0x00317efc, 100, fuzz_record_302);
 
 // Clears the words of the list and puts the cursor back at the start.
 void reset_word_list(WordList &list) {
@@ -269,4 +272,141 @@ GUEST_EXPORT(0x00577410, store_bytes_7a2);
 GUEST_FUZZ(0x00577410, 100, [](guest::Fuzz &f) {
     f.allocate(FUZZ_PAD);
     f.arguments(f.allocate(sizeof(Bytes7a2)).cast<Bytes7a2>(), f.number(), f.below(2));
+});
+
+namespace {
+
+constexpr u32 RECORD_4648_COUNT = 4;
+constexpr u32 RECORD_4648_SIZE = 581 * 8;
+constexpr u8 KIND_RECORD_E = 0xe, KIND_RECORD_F = 0xf, KIND_RECORD_10 = 0x10, KIND_RECORD_11 = 0x11;
+constexpr u8 RECORD_B_MIN_E = 2, RECORD_B_MIN_10 = 3;
+constexpr u8 IDENTITY_KINDS[] = {1, 3, 6};
+constexpr u32 RECORD_IDENTITY_OFFSET = 0x34;
+constexpr u32 TERRAIN_BLOCKING = 3;
+constexpr u32 NIBBLE_MASK = 0xf;
+constexpr u32 NIBBLE_ONE = 1;
+
+struct KindRecord {
+    u8 unknown_00[0x1e];
+    u8 kind;
+    u8 level;
+};
+GUEST_OFFSET(KindRecord, kind, 0x1e);
+
+struct IdentityKindRecord {
+    u8 unknown_00[0x64];
+    u8 kind;
+};
+GUEST_OFFSET(IdentityKindRecord, kind, 0x64);
+
+struct Byte2e {
+    u8 unknown_00[0x2e];
+    u8 value;
+};
+GUEST_OFFSET(Byte2e, value, 0x2e);
+
+struct VillagerSlotRecord {
+    u8 unknown_00[0x1a];
+    s8 slot;
+    u8 unknown_1b[3];
+    u8 state;
+};
+GUEST_OFFSET(VillagerSlotRecord, slot, 0x1a);
+GUEST_OFFSET(VillagerSlotRecord, state, 0x1e);
+constexpr u32 VILLAGER_SLOT_RECORDS_OFFSET = 0x17380;
+
+inline constexpr guest::Function<0x00315788, u32(s32 x, s32 z, u32 map_number)> terrain_at_world;
+inline constexpr guest::Function<0x005ce154, u32(u32 index)> byte_95da1d;
+
+}  // namespace
+
+// The address of the record (4648 bytes each, four of them); the base for numbers past the last.
+gptr<u8> record_4648_address(gptr<u8> base, u32 index) {
+    return index < RECORD_4648_COUNT ? base + index * RECORD_4648_SIZE : base;
+}
+GUEST_EXPORT(0x00317ee0, record_4648_address);
+GUEST_FUZZ(0x00317ee0, 100, [](guest::Fuzz &f) {
+    f.arguments(f.allocate(8).cast<u8>(), f.pick<u32>({f.below(RECORD_4648_COUNT + 3), 0xffffffffu}));
+});
+
+// Whether the record's level (at 0x1f) is high enough for its kind (0xe and 0xf: 2, 0x10 and 0x11: 3); true for the other kinds.
+bool record_level_is_enough(KindRecord &record) {
+    if (record.kind == KIND_RECORD_E || record.kind == KIND_RECORD_F) {
+        return record.level >= RECORD_B_MIN_E;
+    }
+    if (record.kind == KIND_RECORD_10 || record.kind == KIND_RECORD_11) {
+        return record.level >= RECORD_B_MIN_10;
+    }
+    return true;
+}
+GUEST_EXPORT(0x003098b0, record_level_is_enough);
+GUEST_FUZZ(0x003098b0, 200, [](guest::Fuzz &f) {
+    auto record = f.object<KindRecord>();
+    record->kind = f.pick<u8>({0xd, 0xe, 0xf, 0x10, 0x11, 0x12, u8(f.number())});
+    record->level = f.pick<u8>({0, 1, 2, 3, 4});
+    f.arguments(record);
+});
+
+// The identity part (at 0x34) of a record of kind 1, 3 or 6; null for other kinds.
+gptr<u8> record_identity_of_kind(IdentityKindRecord &record) {
+    for (u8 kind : IDENTITY_KINDS) {
+        if (record.kind == kind) {
+            return guest::addr_of(record).cast<u8>() + RECORD_IDENTITY_OFFSET;
+        }
+    }
+    return nullptr;
+}
+GUEST_EXPORT(0x00311c50, record_identity_of_kind);
+GUEST_FUZZ(0x00311c50, 100, [](guest::Fuzz &f) {
+    auto record = f.object<IdentityKindRecord>();
+    record->kind = f.pick<u8>({0, 1, 2, 3, 4, 6, 7});
+    f.arguments(record);
+});
+
+// 1 for the values 4 to 7 of the byte at 0x2e, 0 for all others.
+u32 byte_2e_is_4_to_7(Byte2e &object) {
+    return object.value >= 4 && object.value <= 7 ? 1 : 0;  // (4 is the first and 7 the last value)
+}
+GUEST_EXPORT(0x0030e228, byte_2e_is_4_to_7);
+GUEST_FUZZ(0x0030e228, 100, [](guest::Fuzz &f) {
+    auto object = f.object<Byte2e>();
+    object->value = f.pick<u8>({0, 3, 4, 5, 7, 8, 9, u8(f.number())});
+    f.arguments(object);
+});
+
+// Whether the value is one of 0xb-0x11, 0x14, 0x1b and 0x1c.
+bool value_in_set_2fcf7c(u32 value) {
+    return (value >= 0xb && value <= 0x11) || value == 0x14 || value == 0x1b || value == 0x1c;  // (what they stand for is not known yet)
+}
+GUEST_EXPORT(0x002fcf7c, value_in_set_2fcf7c);
+GUEST_FUZZ(0x002fcf7c, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0xa, 0xb, 0xc, 0x10, 0x11, 0x12, 0x14, 0x15, 0x1b, 0x1c, 0x1d, f.number()})); });
+
+// The terrain flag byte of the world position (x, z) unless the position one or two steps back (z - 1, z - 2) has the terrain 3.
+u32 terrain_byte_unless_blocked(s32 x, s32 z, u32 map_number) {
+    u32 near = terrain_at_world(x, z - 1, map_number);
+    u32 far = terrain_at_world(x, z - 2, map_number);
+    if (near == TERRAIN_BLOCKING || far == TERRAIN_BLOCKING) {
+        return 0;
+    }
+    return byte_95da1d(terrain_at_world(x, z, map_number));
+}
+GUEST_EXPORT(0x002ff160, terrain_byte_unless_blocked);
+GUEST_FUZZ(0x002ff160, 200, [](guest::Fuzz &f) { f.arguments(s32(f.below(FUZZ_PAD / 8)), s32(f.below(FUZZ_PAD / 8)), f.below(2)); });
+
+// The slot index (at 0x1a) of the villager record the state byte (low nibble: 0 always, 1 when allowed) lets through; -1 otherwise.
+s32 villager_slot_index(gptr<u8> base, bool allow_state_1) {
+    VillagerSlotRecord &record = *(base + VILLAGER_SLOT_RECORDS_OFFSET).cast<VillagerSlotRecord>();
+    u32 state = record.state & NIBBLE_MASK;
+    if (state == 0 || (allow_state_1 && state == NIBBLE_ONE)) {
+        return record.slot;
+    }
+    return -1;
+}
+GUEST_EXPORT(0x00309865, villager_slot_index);
+GUEST_FUZZ(0x00309865, 100, [](guest::Fuzz &f) {
+    auto save = f.allocate(VILLAGER_SLOT_RECORDS_OFFSET + 0x100).cast<u8>();
+    auto record = (save + VILLAGER_SLOT_RECORDS_OFFSET).cast<VillagerSlotRecord>();
+    record->state = f.pick<u8>({0, 1, 2, 0x10, 0x11, u8(f.number())});
+    record->slot = s8(f.number());
+    f.arguments(save, f.below(2));
 });

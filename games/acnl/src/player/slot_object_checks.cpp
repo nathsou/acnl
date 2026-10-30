@@ -575,3 +575,43 @@ GUEST_FUZZ(0x00651a68, 300, [](guest::Fuzz &f) {
     object->angles[1] = u16(f.number());
     f.arguments(object, f.pick<u32>({0, 0x4000, u16(f.number()), u16(object->angles[1] + f.below(100))}));
 });
+
+// Sets the movement target (two floats) and flag 2 of byte 0x17a; when the first float is the one at 0x40 of the object,
+// flag 2 is cleared again and true is returned.
+bool set_movement_target(SlotObject &object, float first, float second) {
+    object.target_950[0] = first;
+    object.target_950[1] = second;
+    object.flags_17a = u8(object.flags_17a | SlotObject::FLAGS_17A_BIT_2);
+    if (object.target_950[0] == object.value_40) {
+        object.flags_17a = u8(object.flags_17a & ~SlotObject::FLAGS_17A_BIT_2);
+        return true;
+    }
+    return false;
+}
+GUEST_EXPORT(0x006513d8, set_movement_target);
+GUEST_FUZZ(0x006513d8, 200, [](guest::Fuzz &f) {
+    f.allocate(OBJECT_CLEARANCE);
+    auto object = f.allocate(sizeof(SlotObject)).cast<SlotObject>();
+    object->value_40 = f.pick<float>({0.0f, 1.5f, f.real()});
+    f.arguments(object, f.pick<float>({0.0f, 1.5f, object->value_40, f.real()}), f.real());
+});
+
+// Sets the turn target (two angles: the first is the one that counts) and flag 4 of byte 0x17a; when the first angle is the
+// one the object faces already, flag 4 is cleared again and true is returned.
+bool set_turn_target(SlotObject &object, u32 first, u32 second) {
+    object.target_angle_95c = s16(first);
+    object.target_angle_95e = s16(second);
+    object.flags_17a = u8(object.flags_17a | SlotObject::FLAGS_17A_BIT_4);
+    if (object.target_angle_95c == s16(object.angles[1])) {
+        object.flags_17a = u8(object.flags_17a & ~SlotObject::FLAGS_17A_BIT_4);
+        return true;
+    }
+    return false;
+}
+GUEST_EXPORT(0x00654124, set_turn_target);
+GUEST_FUZZ(0x00654124, 200, [](guest::Fuzz &f) {
+    f.allocate(OBJECT_CLEARANCE);
+    auto object = f.allocate(sizeof(SlotObject)).cast<SlotObject>();
+    object->angles[1] = u16(f.number());
+    f.arguments(object, f.pick<u32>({object->angles[1], u16(f.number())}), f.number());
+});
