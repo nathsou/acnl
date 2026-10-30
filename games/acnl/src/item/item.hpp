@@ -160,7 +160,7 @@ struct ItemData {
     u8 byte_1a;
     u8 flags_1b;  // bit 1: see Item::has_data_flag_1b_bit1
     u8 flags_1c;  // bit 3: see ItemData::flag_1c_bit3
-    u8 unknown_1d;
+    u8 flags_1d;
 
     u32 base_price() const { return u32(price_unit) * u32(s32(price_multiplier)); }
     // True without the category flag table; otherwise bit 3 of flags_1c when bit 7 of the category's second flag byte
@@ -186,6 +186,7 @@ GUEST_OFFSET(ItemData, class_and_flags_19, 0x19);
 GUEST_OFFSET(ItemData, byte_1a, 0x1a);
 GUEST_OFFSET(ItemData, flags_1b, 0x1b);
 GUEST_OFFSET(ItemData, flags_1c, 0x1c);
+GUEST_OFFSET(ItemData, flags_1d, 0x1d);
 GUEST_SIZE(ItemData, 30);
 
 // The loaded item data table (from the RomFS)

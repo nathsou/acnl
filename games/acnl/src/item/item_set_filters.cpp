@@ -14,6 +14,8 @@ constexpr u8 FIELD_1A_MASK = 3;
 constexpr u8 FIELD_1A_LIMIT = 3;
 constexpr u8 FIELD_16_MASK = 0xf;
 constexpr u8 FIELD_16_LIMIT = 10;
+constexpr u8 FIELD_17_MASK = 0xf;
+constexpr u8 FIELD_17_LIMIT = 5;
 constexpr u32 FIELD_18_SHIFT = 4;
 constexpr u8 FIELD_18_LIMIT = 0xf;
 constexpr u32 FIELD_15_SHIFT = 4;
@@ -121,6 +123,14 @@ bool keep_items_with_field_16(ItemBitSet &set, u32 wanted) {
 }
 GUEST_EXPORT(0x006f22dc, keep_items_with_field_16);
 GUEST_FUZZ(0x006f22dc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(12)); });
+
+bool keep_items_with_field_17(ItemBitSet &set, u32 wanted) {
+    return filter_set(set, [wanted](gptr<ItemData> entry) {
+        return below_limit_or_zero(entry->byte_17 & FIELD_17_MASK, FIELD_17_LIMIT) != wanted;
+    });
+}
+GUEST_EXPORT(0x0031ab80, keep_items_with_field_17);
+GUEST_FUZZ(0x0031ab80, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(7)); });
 
 // Keeps the items of one category.
 bool keep_items_of_category(ItemBitSet &set, u32 wanted) {

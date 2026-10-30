@@ -130,6 +130,84 @@ GUEST_FUZZ(0x0056d19c, 50, [](guest::Fuzz &f) {
     f.arguments(time);
 });
 
+namespace {
+
+constexpr s32 FIRST_YEAR = 2012;       // the clock does not go back before this year ...
+constexpr s32 LAST_YEAR = 2050;        // ... or on past this one (it is wrapped by 39 years)
+// A time kept next to the reference time that stands in for it when the clock would be set before FIRST_YEAR.
+inline guest::global<TimeStamp, 0x00ad56c8> time_before_range_replacement;
+
+}  // namespace
+
+// Moves the game clock to the other time plus `span` nanoseconds. A year before FIRST_YEAR is replaced by the time
+// kept beside the reference time; a year past LAST_YEAR is wrapped back and the clock marked as adjusting.
+void set_clock_from_span(const s64 &span) {
+    clock_state->since_other_18 = span;
+    clock_state->now_nanoseconds = s64(u64(clock_state->other_nanoseconds) + u64(span));
+    *reference_time = TimeStamp::from_nanoseconds_since_origin(clock_state->now_nanoseconds);
+    if (reference_time->year < FIRST_YEAR) {
+        *reference_time = *time_before_range_replacement;
+        clock_state->now_nanoseconds = reference_time->nanoseconds_since_origin();
+    } else if (reference_time->year > LAST_YEAR) {
+        reference_time->wrap_year();
+        clock_state->now_nanoseconds = reference_time->nanoseconds_since_origin();
+        clock_state->flags_02 |= ClockState::FLAG_ADJUSTING;
+    }
+    set_reference_time(*reference_time);
+}
+GUEST_EXPORT(0x0056d230, set_clock_from_span);
+// (the span the clock already has, so that the run goes on undisturbed)
+GUEST_FUZZ(0x0056d230, 20, [](guest::Fuzz &f) {
+    auto span = f.object<s64>();
+    *span = clock_state->since_other_18;
+    f.arguments(span);
+});
+
+namespace {
+
+// What changed in the reference time between two ticks.
+struct TickFlags {
+    u8 hour_changed;    // the hour, day, month or year differs
+    u8 second_changed;  // anything down to the second differs
+    u8 jumped;          // the time is not exactly one second after the previous tick's
+};
+GUEST_SIZE(TickFlags, 3);
+
+inline guest::global<TimeStamp, 0x0098a0f4> previous_tick_time;
+inline guest::global<TickFlags, 0x0094e4ab> tick_flags;
+
+bool same_down_to_hour(const TimeStamp &a, const TimeStamp &b) {
+    return a.hour == b.hour && a.day == b.day && a.month == b.month && a.year == b.year;
+}
+
+bool same_down_to_second(const TimeStamp &a, const TimeStamp &b) {
+    return a.second == b.second && a.minute == b.minute && same_down_to_hour(a, b);
+}
+
+}  // namespace
+
+// Compares the reference time with the one seen on the previous tick, sets the flags and remembers the new time.
+// Nothing is flagged on the first tick (no previous time yet).
+void update_tick_flags() {
+    TimeStamp previous = *previous_tick_time;
+    *previous_tick_time = *reference_time;
+    if (previous.year == 0) {
+        return;
+    }
+    tick_flags->hour_changed = !same_down_to_hour(previous, *previous_tick_time);
+    bool hour_same = tick_flags->hour_changed == 0;
+    tick_flags->second_changed = !hour_same || previous.second != previous_tick_time->second ||
+                                 previous.minute != previous_tick_time->minute;
+    if (tick_flags->second_changed == 0) {
+        tick_flags->jumped = 0;
+        return;
+    }
+    previous.add_seconds(1);
+    tick_flags->jumped = !same_down_to_second(previous, *previous_tick_time);
+}
+GUEST_EXPORT(0x00589534, update_tick_flags);
+GUEST_FUZZ(0x00589534, 20, [](guest::Fuzz &f) { f.arguments(); });
+
 TimeStamp GameTime::to_time_stamp() const {
     if (nanoseconds == NONE || nanoseconds == 0) {
         return TimeStamp::earliest();

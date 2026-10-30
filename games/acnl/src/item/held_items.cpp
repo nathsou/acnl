@@ -58,3 +58,38 @@ GUEST_FUZZ(0x0027ac38, 400, [](guest::Fuzz &f) {
     }
     f.arguments(held, item);
 });
+
+// An object that may have two holders of items in hand.
+struct HeldItemsOwner {
+    gptr<HeldItems> primary;
+    gptr<HeldItems> secondary;
+
+    void hold(const Item &item);
+};
+
+// Hands the item to the primary holder, which takes it in; without one, the secondary holder just gets it as its
+// first item. Nothing happens when there is neither.
+void HeldItemsOwner::hold(const Item &item) {
+    if (primary != nullptr) {
+        primary->take(item);
+        return;
+    }
+    if (secondary != nullptr) {
+        secondary->first = item;
+    }
+}
+GUEST_EXPORT(0x001ad250, HeldItemsOwner::hold);
+GUEST_FUZZ(0x001ad250, 200, [](guest::Fuzz &f) {
+    auto owner = f.object<HeldItemsOwner>();
+    owner->primary = f.below(3) != 0 ? f.object<HeldItems>() : gptr<HeldItems>(0u);
+    owner->secondary = f.below(3) != 0 ? f.object<HeldItems>() : gptr<HeldItems>(0u);
+    for (auto holder : {owner->primary, owner->secondary}) {
+        if (holder != nullptr) {
+            holder->first.id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
+            holder->second.id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
+        }
+    }
+    auto item = f.object<Item>();
+    item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
+    f.arguments(owner, item);
+});

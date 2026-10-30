@@ -21,6 +21,7 @@ struct VillagerPlayerRecord {
     static constexpr u8 FLAGS_BC_BIT3 = 0x08;
     static constexpr u8 FLAGS_BC_BIT5 = 0x20;
     static constexpr u8 FLAGS_BC_BIT7 = 0x80;
+    static constexpr u8 FLAGS_BD_BIT6 = 0x40;
     static constexpr u8 FLAGS_BE_MASK = 0x06;  // two flags
 
     PersonalId identity;
@@ -30,7 +31,7 @@ struct VillagerPlayerRecord {
     u8 byte_ba;
     u8 flags_bb;
     u8 flags_bc;
-    u8 unknown_bd;
+    u8 flags_bd;
     u8 flags_be;
     u8 unknown_bf[0xf2 - 0xbf];
 };
@@ -38,6 +39,7 @@ GUEST_OFFSET(VillagerPlayerRecord, flags_b8, 0xb8);
 GUEST_OFFSET(VillagerPlayerRecord, byte_b9, 0xb9);
 GUEST_OFFSET(VillagerPlayerRecord, flags_bb, 0xbb);
 GUEST_OFFSET(VillagerPlayerRecord, flags_bc, 0xbc);
+GUEST_OFFSET(VillagerPlayerRecord, flags_bd, 0xbd);
 GUEST_OFFSET(VillagerPlayerRecord, flags_be, 0xbe);
 GUEST_SIZE(VillagerPlayerRecord, 0xf2);
 
@@ -50,7 +52,10 @@ struct SaveVillager {
     static constexpr u32 SLOT_FLAGS_SHIFT = 3;    // bits 3-6: one unknown flag per slot
     static constexpr u32 SLOT_FLAGS_MASK = 0xf;
 
-    u8 unknown_0000[0x8c6];
+    u8 unknown_0000[0x2c];
+    u16 id;           // ids from 0x18f on are not villagers
+    u8 personality;   // below 8 (meaning not known yet)
+    u8 unknown_002f[0x8c6 - 0x2f];
     Item items_8c6[SLOTS];
     Item items_8d6[SLOTS];
     Item item_8e6;
@@ -94,6 +99,8 @@ struct SaveVillager {
     bool has_slot_flag(u32 slot) const;  // the unknown flag of a slot (bits 3-6); false for slots out of range
     bool check_11a440(gptr<void> object, u32 unused_r2, gptr<const Value12> value) const;
 };
+GUEST_OFFSET(SaveVillager, id, 0x2c);
+GUEST_OFFSET(SaveVillager, personality, 0x2e);
 GUEST_OFFSET(SaveVillager, items_8c6, 0x8c6);
 GUEST_OFFSET(SaveVillager, items_8d6, 0x8d6);
 GUEST_OFFSET(SaveVillager, item_8e6, 0x8e6);
