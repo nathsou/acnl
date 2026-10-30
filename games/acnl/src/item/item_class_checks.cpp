@@ -255,9 +255,11 @@ GUEST_FUZZ(0x0076a028, 300, [](guest::Fuzz &f) {
     f.arguments(item);
 });
 GUEST_FUZZ(0x0076a280, 400, [](guest::Fuzz &f) {
-    auto item = fuzz::assorted_item(f, {0x06, 0x07, 0x2f, 0x31, 0x54, 0x55, 0x56, 0x57, 0x93, 0x94});
+    // categories around the checked special ones
+    auto item = fuzz::assorted_item(f, {0x06, 0x07, 0x2f, 0x31, 0x54, 0x55, 0x56, 0x57, 0x93, 0x94});  // categories near the special ones
     if (f.below(4) == 0) {
-        item->id = u16(SPECIAL_B_BLOCK + f.below(0x70));
+        // inside the block of special B numbers (0x70 of them)
+        item->id = u16(SPECIAL_B_BLOCK + f.below(0x70));  // inside the block of special B numbers
     }
     f.arguments(item);
 });
@@ -500,3 +502,126 @@ GUEST_FUZZ(0x0011b469, 200, [](guest::Fuzz &f) {
     }
     f.arguments(row, item);
 });
+
+// ---- the item's special event, regular items and the item data checks
+
+namespace {
+
+inline constexpr guest::Function<0x0076bb34, u32(const Item &item)> item_size_class;
+inline constexpr guest::Function<0x0030b654, bool(const Item &item)> item_has_valid_data;
+inline constexpr guest::Function<0x0030b674, u32(const Item &item)> item_data_byte_19_value;
+
+constexpr u32 LARGEST_SIZE_CLASS = 8;
+
+// The categories regular items cannot have.
+constexpr u8 NOT_REGULAR_CATEGORIES[] = {0x24, 0x27, 0x28, 0x39, 0x3a, 0x49, 0x6d, 0x8a, 0x7b, 0x95};
+constexpr u32 CATEGORY_FLAG_BIT_4_IN_SECOND_BYTE = 4;
+constexpr u32 CATEGORY_FLAG_BIT_1_IN_SECOND_BYTE = 1;
+
+// The availability rules that start a special event, in the order of the event index (1-0x14).
+struct RuleEvent {
+    u8 rule;
+    u8 index;
+};
+constexpr RuleEvent RULE_EVENTS[] = {
+    {0x3f, 1},  // rule, event
+    {0x7d, 2},  // rule, event
+    {0x72, 3},  // rule, event
+    {0x79, 4},  // rule, event
+    {0x7a, 5},  // rule, event
+    {0x7b, 6},  // rule, event
+    {0x7c, 7},  // rule, event
+    {0x75, 8},  // rule, event
+    {0x76, 9},  // rule, event
+    {0x77, 10},  // rule, event
+    {0x78, 11},  // rule, event
+    {0xaa, 12},  // rule, event
+    {0x7f, 13},  // rule, event
+    {0x80, 14},  // rule, event
+    {0x81, 15},  // rule, event
+    {0x82, 16},  // rule, event
+    {0x83, 17},  // rule, event
+    {0x73, 18},  // rule, event
+    {0x85, 20},  // rule, event
+};
+constexpr u8 RULE_WITH_ITEM_CHECK = 0x84;  // its event (19) needs one of two items
+constexpr u16 RULE_84_ITEMS[] = {0x2098, 0x209c};
+constexpr u32 RULE_84_EVENT = 19;
+
+constexpr u8 CATEGORIES_SET_D[] = {5, 6, 0xc, 0xd, 0x19, 0x24, 0x27, 0x2c, 0x2e, 0x33, 0x3c, 0x40, 0x54, 0x55, 0x58, 0x59};
+constexpr u32 NOT_BYTE_19_VALUE = 0xd;  // the value item_data_byte_19_value gives when the data is not valid
+
+}  // namespace
+
+bool Item::has_variant_below_largest_size() const {
+    return has_valid_value_06() && flags_value() != 0 && item_size_class(*this) != LARGEST_SIZE_CLASS;
+}
+GUEST_EXPORT(0x0076bd2c, Item::has_variant_below_largest_size);
+GUEST_FUZZ(0x0076bd2c, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
+
+// An item with data whose category flags have bit 4 and bit 1 set, whose category is not one of a few, that has no variation
+// of the largest size and is not in id set a.
+bool Item::is_regular_item() const {
+    u8 item_category = category();
+    if (!is_item()) {
+        return false;
+    }
+    gptr<u8> entry = category_flags();
+    if (!entry || ((entry[1] >> CATEGORY_FLAG_BIT_4_IN_SECOND_BYTE) & 1) == 0) {
+        return false;
+    }
+    if (((entry[1] >> CATEGORY_FLAG_BIT_1_IN_SECOND_BYTE) & 1) == 0 || contains(NOT_REGULAR_CATEGORIES, item_category)) {
+        return false;
+    }
+    if (has_valid_value_06() && flags_value() != 0 && item_size_class(*this) == LARGEST_SIZE_CLASS) {
+        return false;
+    }
+    return !is_in_id_set_a();
+}
+GUEST_EXPORT(0x007691d0, Item::is_regular_item);
+GUEST_FUZZ(0x007691d0, 400, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {0x24, 0x27, 0x39, 0x49, 0x20, 0x30})); });
+
+// The index (1-20) of the special event the item's availability rule starts, 0 for items without data and other rules.
+u32 Item::event_index_of_rule() const {
+    gptr<ItemData> d = data();
+    if (!is_item() || !d || d->availability_rule >= ItemData::RULE_LIMIT) {
+        return 0;
+    }
+    for (const RuleEvent &event : RULE_EVENTS) {
+        if (event.rule == d->availability_rule) {
+            return event.index;
+        }
+    }
+    if (d->availability_rule == RULE_WITH_ITEM_CHECK && (has_number(RULE_84_ITEMS[0]) || has_number(RULE_84_ITEMS[1]))) {
+        return RULE_84_EVENT;
+    }
+    return 0;
+}
+GUEST_EXPORT(0x006fb66c, Item::event_index_of_rule);
+GUEST_FUZZ(0x006fb66c, 400, [](guest::Fuzz &f) {
+    auto item = fuzz::assorted_item(f);
+    if (f.below(4) == 0) {
+        // the two items rule 0x84 accepts, and one next to them
+        item->id = f.pick<u16>({0x2098, 0x209c, 0x2099});  // the two items of rule 0x84 and one next to them
+    }
+    f.arguments(item);
+});
+
+// Items that are not empty, have valid data and a category of a fixed set (Thumb entry).
+bool Item::has_category_in_set_d() const {
+    return !is_empty() && item_has_valid_data(*this) && contains(CATEGORIES_SET_D, category());
+}
+GUEST_EXPORT(0x0011268d, Item::has_category_in_set_d);
+GUEST_FUZZ(0x0011268d, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {5, 6, 0x19, 0x2e, 0x58, 0x59})); });
+
+// Whether the item has valid data whose byte 0x19 value is the wanted one (the value 13 of invalid data never matches;
+// Thumb entry).
+bool item_data_byte_19_is(const Item &item, u32 wanted) {
+    if (!item_has_valid_data(item)) {
+        return false;
+    }
+    u32 value = item_data_byte_19_value(item);
+    return value != NOT_BYTE_19_VALUE && value == wanted;
+}
+GUEST_EXPORT(0x00111f71, item_data_byte_19_is);
+GUEST_FUZZ(0x00111f71, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f), f.below(8)); });

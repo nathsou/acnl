@@ -15,6 +15,7 @@ inline constexpr guest::Function<0x00724424, const Item &(Pockets &pockets, s32 
 inline constexpr guest::Function<0x002fb94c, gptr<SavePlayer>()> get_current_player_unargued;
 
 constexpr u32 NOTIFY_REQUEST = 0x7b;
+constexpr u32 FUZZ_OBJECT_SIZE = 0x100;
 
 }  // namespace
 
@@ -36,9 +37,9 @@ u32 request_and_notify(u32 object, u32 argument) {
 }
 GUEST_EXPORT(0x006d1e74, request_and_notify);
 GUEST_FUZZ(0x006d1e74, 200, [](guest::Fuzz &f) {
-    auto object = f.allocate(0x100);
-    f.bytes(object, 0x100);
-    memset(object.get(), 0, 0x100);
+    auto object = f.allocate(FUZZ_OBJECT_SIZE);
+    f.bytes(object, FUZZ_OBJECT_SIZE);
+    memset(object.get(), 0, FUZZ_OBJECT_SIZE);
     f.arguments(object.addr(), u32(9));
 });
 
@@ -87,7 +88,25 @@ const Item &item_in_pocket_slot_19() {
 GUEST_EXPORT(0x0075aa60, item_in_pocket_slot_19);
 GUEST_FUZZ(0x0075aa60, 100, [](guest::Fuzz &f) {
     if (f.below(4) == 0) {
-        state_94fd0c->pocket_slot_19 = f.pick<u8>({0, 5, 0xf, 0x10, 0xff});
+        state_94fd0c->pocket_slot_19 = f.pick<u8>({0, 5, 0xf, Pockets::SLOTS, 0xff});  // slots, the first non-slot and a byte past it
+    }
+    f.arguments();
+});
+
+// The lock byte of the pocket slot of byte 0x19 of the global state for the current player (0 when that is not a slot or
+// there is no current player).
+u8 lock_of_pocket_slot_19() {
+    gptr<SavePlayer> player = get_current_player_unargued();
+    u8 slot = state_94fd0c->pocket_slot_19;
+    if (slot >= Pockets::SLOTS || !player) {
+        return 0;
+    }
+    return player->pockets.lock_of(slot);
+}
+GUEST_EXPORT(0x0075aaf4, lock_of_pocket_slot_19);
+GUEST_FUZZ(0x0075aaf4, 100, [](guest::Fuzz &f) {
+    if (f.below(4) == 0) {
+        state_94fd0c->pocket_slot_19 = f.pick<u8>({0, 5, 0xf, Pockets::SLOTS, 0xff});  // slots, the first non-slot and a byte past it
     }
     f.arguments();
 });

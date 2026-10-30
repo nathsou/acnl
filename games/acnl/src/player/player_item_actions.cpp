@@ -51,6 +51,20 @@ gptr<Item> worn_shoes_of_owner(PlayerSlotOwner &owner) {
 }
 GUEST_EXPORT(0x00762370, worn_shoes_of_owner);
 
+// Whether the owner's player has no room in the pockets (false without a player).
+bool owner_pockets_are_full(PlayerSlotOwner &owner) {
+    gptr<SavePlayer> player = player_of_slot_index(owner.player_slot);
+    return player != nullptr && player->pockets.find_empty_slot() < 0;
+}
+GUEST_EXPORT(0x007621d0, owner_pockets_are_full);
+
+// Whether the item is in the catalog of items the owner's player has had in the pockets (false without a player).
+bool owner_has_seen_item(PlayerSlotOwner &owner, const Item &item) {
+    gptr<SavePlayer> player = player_of_slot_index(owner.player_slot);
+    return player != nullptr && player->pockets.items_seen.contains(item);
+}
+GUEST_EXPORT(0x00762324, owner_has_seen_item);
+
 // Takes off the shoes when their wear class index (ItemData byte 0x0f) is the one given.
 template <u32 WEAR_INDEX>
 void take_off_shoes_with_index(u32 player_slot) {
@@ -97,6 +111,12 @@ GUEST_FUZZ(0x00762370, 100, [](guest::Fuzz &f) {
     owner->player_slot = u8(f.pick<u32>({0, 1, 2, 3, 4, 7}));
     f.arguments(owner);
 });
+GUEST_FUZZ(0x007621d0, 100, [](guest::Fuzz &f) {
+    auto owner = f.object<PlayerSlotOwner>();
+    owner->player_slot = u8(f.pick<u32>({0, 1, 2, 3, 4, 7}));
+    f.arguments(owner);
+});
+GUEST_FUZZ(0x00762324, 150, fuzz_register);
 GUEST_FUZZ(0x006576f8, 100, fuzz_player_slot);
 GUEST_FUZZ(0x0065e058, 100, fuzz_player_slot);
 GUEST_FUZZ(0x00695880, 100, [](guest::Fuzz &f) { f.arguments(); });

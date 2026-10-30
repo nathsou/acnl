@@ -142,6 +142,10 @@ struct Item {
     u32 variant_size() const;                   // see item_class_checks.cpp
     u32 variant_index_in_size() const;          // see item_class_checks.cpp
     bool passes_sanitize() const;               // a copy of the item is not changed by sanitize
+    bool has_variant_below_largest_size() const;  // a valid value_06 with a variation count whose size class is not 8
+    bool is_regular_item() const;               // see item_class_checks.cpp
+    u32 event_index_of_rule() const;            // see item_class_checks.cpp
+    bool has_category_in_set_d() const;         // see item_class_checks.cpp
     u32 data_tag(u32 index) const;              // 0 or 1: the item's tag number `index` (0-7) from ItemData flags_1c/1d
     u32 data_byte_0b() const;                   // ItemData byte 0x0b when it is below 0xaa, else 0 (0 without data)
     bool has_valid_value_06_and_flags_value() const;  // valid value_06 and a non-zero flags_value()
