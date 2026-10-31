@@ -42,7 +42,7 @@ fn proof_key(original: &Function, d: &Decompiled) -> (u32, u64) {
     // (the call model depends on the signatures of the callees, when they have one)
     let sig = crate::signatures::callee_key(original);
     let none = 0xcbf2_9ce4_8422_2325;
-    let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION ^ if sig == none { 0 } else { sig };
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION ^ if sig == none { 0 } else { sig } ^ crate::results::key(original.address);
     let text = format!("{}\n{:?}\n{:?}", crate::print::function(&d.function), d.save_slots, d.saved);
     for b in text.bytes() {
         h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);

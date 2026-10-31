@@ -188,11 +188,6 @@ fn any_cond<'c>(ctx: &'c Context, conds: &[Bool<'c>]) -> Bool<'c> {
     }
 }
 
-pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidate: &Function, slots: &[u32],
-                             saved: &[(String, u32)]) -> Verdict {
-    equivalent_with_loops_free(ctx, original, candidate, slots, saved, &Relations::default())
-}
-
 // What else relates the two programs at the loop headers (for a decompiled function against its C++).
 #[derive(Default)]
 pub struct Relations {
@@ -636,7 +631,9 @@ pub fn verify(ctx: &Context, original: &Function, d: &crate::decompile::Decompil
     let mut body = ghosts;
     body.extend(std::mem::take(&mut o.body));
     o.body = body;
-    equivalent_with_loops(ctx, &o, &d.function, &d.save_slots, &d.saved)
+    // the results no caller reads are not compared (results.rs)
+    let rel = Relations { unobserved: crate::results::unobserved(original.address), ..Default::default() };
+    equivalent_with_loops_free(ctx, &o, &d.function, &d.save_slots, &d.saved, &rel)
 }
 
 // The C++ of a decompiled function, read back (cpp.rs), against the decompiled function `d` of `original` (itself
@@ -740,5 +737,5 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
             OBSERVED.contains(&k.as_str()) && k != "pc" && (!declared.contains(v) || (!written.contains(k) && !assigned.contains(v)))
         })
         .collect();
-    equivalent_with_loops_free(ctx, &df, cpp, &slots, &[], &Relations { free, lr_slot, restored, unobserved: HashSet::new(), mirrored })
+    equivalent_with_loops_free(ctx, &df, cpp, &slots, &[], &Relations { free, lr_slot, restored, unobserved: crate::results::unobserved(original.address), mirrored })
 }

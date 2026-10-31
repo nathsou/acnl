@@ -978,6 +978,7 @@ pub fn emit(f: &Function) -> R<String> {
         .filter(|(v, _)| assigned.contains(v) && !restored.contains(v))
         .filter_map(|(v, fl)| match fl {
             CpuField::R(13) if !stack => None, // the CPU's sp is moved directly
+            CpuField::R(1) | CpuField::S(0 | 1) if !crate::results::observed(f.address, &crate::sym::cpu_key(fl)) => None,
             CpuField::R(n @ (1 | 4..=11 | 13)) => Some((format!("guest::cpu()->r[{}]", n), v.clone())),
             CpuField::S(n @ (0 | 1)) => Some((format!("guest::cpu()->s[{}]", n), v.clone())),
             _ => None,
@@ -991,7 +992,7 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0"), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -1001,7 +1002,7 @@ pub fn emit(f: &Function) -> R<String> {
     e.values = crate::values::split(f, &splittable, &|s, p| e.effects(s, p));
     exit_blocks(&f.body, &[], &mut e.exits);
     jump_targets(&f.body, &e.exits, &mut e.targets);
-    let returns = assigned.contains("r0");
+    let returns = assigned.contains("r0") && crate::results::observed(f.address, "r0");
     // the body first (it decides the callees)
     e.stmts(&f.body, 1, returns, &[])?;
     let body = std::mem::take(&mut e.out);

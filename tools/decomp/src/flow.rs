@@ -209,11 +209,12 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                         .iter()
                         .filter(|v| {
                             let fl = &field_of[*v];
+                            // (results only when a caller reads them, results.rs)
                             let observed = if preserve {
                                 OBSERVED.contains(&fl.as_str())
                             } else {
                                 matches!(fl.as_str(), "r0" | "r1" | "s0" | "s1")
-                            };
+                            } && crate::results::observed(f.address, fl);
                             // tail calls pass arguments, and the callee returns through lr
                             let argument = match &sig {
                                 Some(regs) => regs.contains(fl) || fl == "r13",

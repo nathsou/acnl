@@ -11,6 +11,7 @@ mod print;
 mod saves;
 mod signatures;
 mod propagate;
+mod results;
 mod simplify;
 mod structs;
 mod structure;
@@ -20,7 +21,7 @@ mod types;
 mod values;
 mod view;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 
 const GENERATED: &str = "build/acnl/generated";
@@ -657,6 +658,107 @@ fn structs_all(outdir: &str, header: &str, threads: usize) {
     println!("{} structs for {} arguments of {} functions ({} functions read)", r.structs.len(), typed, r.params.len(), all.len());
 }
 
+// The results callers observe (results.rs), to a fixed point over the program, written to OUT ("address results..."
+// per line; a function absent from it has all its results observed).
+fn results_all(out: &str, threads: usize) {
+    let funcs: Vec<(u32, String)> = generated_functions();
+    let mut all_observed: HashSet<u32> = HashSet::new();
+    // reachable through a pointer (callers unknown), or called by code not analysed here: everything observed
+    let pointed = fs::read_to_string(format!("{}/pointed.txt", GENERATED)).expect("the recompiler's pointed.txt");
+    all_observed.extend(pointed.lines().filter_map(|l| u32::from_str_radix(l.trim(), 16).ok()).map(|a| a & !1));
+    let call = regex_lite_calls();
+    let mut parsed: Vec<(u32, ast::Function)> = Vec::new();
+    for (a, text) in &funcs {
+        match parse::function(text) {
+            Ok(f) => parsed.push((*a & !1, f)),
+            Err(_) => all_observed.extend(call(text)),
+        }
+    }
+    // the rewrites call guest functions through the C++ ABI (results read as they like)
+    let mut stack = vec![std::path::PathBuf::from("games/acnl/src")];
+    while let Some(d) = stack.pop() {
+        for e in fs::read_dir(&d).into_iter().flatten().flatten() {
+            let p = e.path();
+            if p.is_dir() {
+                if p.file_name().map_or(false, |n| n != "decompiled") {
+                    stack.push(p);
+                }
+            } else if let Ok(text) = fs::read_to_string(&p) {
+                for (i, _) in text.match_indices("Function<0x") {
+                    let hex: String = text[i + 11..].chars().take_while(|c| c.is_ascii_hexdigit()).collect();
+                    if let Ok(a) = u32::from_str_radix(&hex, 16) {
+                        all_observed.insert(a & !1);
+                    }
+                }
+            }
+        }
+    }
+    let every: HashSet<String> = results::RESULTS.iter().map(|k| k.to_string()).collect();
+    let parsed = std::sync::Arc::new(parsed);
+    let mut table: HashMap<u32, HashSet<String>> =
+        parsed.iter().filter(|(a, _)| !all_observed.contains(a)).map(|(a, _)| (*a, HashSet::new())).collect();
+    for round in 1.. {
+        results::reset(table.clone());
+        let handles: Vec<_> = (0..threads)
+            .map(|t| {
+                let parsed = parsed.clone();
+                std::thread::spawn(move || {
+                    let mut out: HashMap<u32, HashSet<String>> = HashMap::new();
+                    for (a, f) in parsed.iter().skip(t).step_by(threads) {
+                        let mine: HashSet<String> = results::RESULTS.iter().filter(|k| results::observed(*a, k)).map(|k| k.to_string()).collect();
+                        results::contributions(f, &mine, &mut out);
+                    }
+                    out
+                })
+            })
+            .collect();
+        let mut next: HashMap<u32, HashSet<String>> = table.keys().map(|a| (*a, HashSet::new())).collect();
+        for h in handles {
+            for (callee, set) in h.join().unwrap() {
+                if let Some(s) = next.get_mut(&callee) {
+                    s.extend(set);
+                }
+            }
+        }
+        let changed = next != table;
+        table = next;
+        let none = table.values().filter(|s| s.is_empty()).count();
+        let partial = table.values().filter(|s| !s.is_empty() && s.len() < every.len()).count();
+        println!("round {}: {} functions with all callers known, {} observe nothing, {} some", round, table.len(), none, partial);
+        if !changed {
+            break;
+        }
+    }
+    let mut lines: Vec<String> = table
+        .iter()
+        .map(|(a, s)| {
+            let mut ks: Vec<&str> = results::RESULTS.iter().copied().filter(|k| s.contains(*k)).collect();
+            ks.sort();
+            format!("{:08x} {}", a, ks.join(" "))
+        })
+        .collect();
+    lines.sort();
+    fs::write(out, lines.join("\n") + "\n").unwrap();
+}
+
+// the targets of the guest calls in a generated function's text (f_XXXXXXXX(c / t_XXXXXXXX(c)
+fn regex_lite_calls() -> impl Fn(&str) -> Vec<u32> {
+    |text: &str| {
+        let mut out = Vec::new();
+        for (i, _) in text.match_indices("(c, ") {
+            if i >= 10 {
+                let w = &text[i - 10..i];
+                if (w.starts_with("f_") || w.starts_with("t_")) && w[2..].chars().all(|c| c.is_ascii_hexdigit()) {
+                    if let Ok(a) = u32::from_str_radix(&w[2..], 16) {
+                        out.push(a & !1);
+                    }
+                }
+            }
+        }
+        out
+    }
+}
+
 // Functions whose entry is also a label inside another function (entry -> that function): pieces of it, such as
 // jump table targets and shared epilogues, that the recompiler's discovery also made functions. They run in the
 // frame of the function they belong to (an epilogue pops its saved registers and pc), so they do not return to the lr
@@ -827,6 +929,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
         Some("parse-all") => parse_all(),
+        Some("results") => results_all(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp_results.txt"), args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("structs") => structs_all(
             args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/types"),
             args.get(3).map(|s| s.as_str()).unwrap_or("games/acnl/src/recovered/structs.hpp"),

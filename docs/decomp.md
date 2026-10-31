@@ -72,6 +72,12 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   convention: compiled code never reads saved registers through a pointer). With it, removing the saves proves in
   a fraction of a second. `DECOMP_FRAME=0` uses one memory with an assumption per access through a pointer instead,
   checked not to rule out any way out of the function (much slower).
+- Results no caller reads are not compared (`decomp results`, results.rs): for a function no pointer reaches (the
+  recompiler's `pointed.txt`: its address appears nowhere as a value), every caller is a direct call or branch of the
+  program, and r0, r1, s0 or s1 is observed only when some caller reads it after the call or passes it on (a tail
+  call, a register it does not keep), to a fixed point. Functions called by code that does not parse, or by the
+  rewrites, have all their results observed. The emitter then writes `void` functions and no write-back of an unread
+  r1. This rests on the whole program as recompiled: code that calls such a function some other way is not covered.
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
 
 ## Signatures (`decomp signatures OUT [N] [THREADS]`)
