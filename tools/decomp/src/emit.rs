@@ -125,6 +125,7 @@ struct Emitter {
     live: crate::flow::Liveness,       // what is read later, by statement path (flow.rs numbering)
     labels: HashSet<String>,           // the labels written so far (a goto to one is a loop's back edge)
     values: crate::values::Values,     // each variable split into its values (values.rs)
+    globals: std::cell::RefCell<BTreeMap<(u64, Ty), String>>, // accesses at a constant address: their guest::global
     cur: Vec<usize>,                   // the path of the statement being written (which value a variable is there)
     exits: HashMap<String, Exit>,      // short blocks that end the function, written in place of a goto to them
     targets: HashSet<String>,          // labels something other than such a goto still jumps to
@@ -258,7 +259,7 @@ impl Emitter {
     // the callee keeps them, so they are what the caller sees)
     fn tail_write_back(&mut self, indent: usize, path: &[usize]) {
         for (field, v) in self.tail_writes() {
-            let text = format!("{} = {};", field, self.values.read(path, &v));
+            let text = format!("{} = {};", field, self.var_text(path, &v));
             self.line(indent, &text);
         }
     }
@@ -324,7 +325,7 @@ impl Emitter {
             self.line(indent, "guest::cpu()->r[13] = r13;");
         }
         for (v, k) in self.floats_for(target) {
-            let text = format!("guest::cpu()->s[{}] = {};", k, self.values.read(path, &v));
+            let text = format!("guest::cpu()->s[{}] = {};", k, self.var_text(path, &v));
             self.line(indent, &text);
         }
     }
@@ -393,7 +394,7 @@ impl Emitter {
                 format!("{:?}{}", v, if *t == Ty::F32 { "f" } else { "" })
             }
             Expr::Var(n) if n.starts_with("arg") => format!("{}.addr()", n),
-            Expr::Var(n) => self.values.read(&self.cur, n),
+            Expr::Var(n) => self.var_text(&self.cur, n),
             // the thread's TLS address (IPC buffers): the CPU's, it never changes
             Expr::Cpu(CpuField::Tls) => "guest::cpu()->tls".into(),
             Expr::Cpu(f) => return Err(format!("reads {}", cpu(f))),
@@ -415,7 +416,10 @@ impl Emitter {
             Expr::Cond(c, a, b) => format!("({} ? {} : {})", self.expr(c, 0)?, self.expr(a, 0)?, self.expr(b, 0)?),
             Expr::Load(t, a) => match self.field_access(*t, a) {
                 Some(f) => f,
-                None => format!("*gptr<{}>({})", t.c_name(), self.expr(a, 0)?),
+                None => match self.constant_address(a) {
+                    Some(addr) if !t.float() => format!("*{}", self.global(addr, *t)),
+                    _ => format!("*gptr<{}>({})", t.c_name(), self.expr(a, 0)?),
+                },
             },
             Expr::Call(n, args) => {
                 let a: R<Vec<String>> = args.iter().map(|x| self.expr(x, 0)).collect();
@@ -460,6 +464,28 @@ impl Emitter {
         }
     }
 
+    // the address an access goes to when it is a constant (written as such, or held in a variable)
+    fn constant_address(&self, a: &Expr) -> Option<u64> {
+        match a {
+            Expr::Num(k, _) => Some(*k & 0xffff_ffff),
+            Expr::Var(v) => self.values.constant(&self.cur, v).map(|(k, _)| k & 0xffff_ffff),
+            _ => None,
+        }
+    }
+
+    // the guest::global for an access of type t at addr (named after the address, and after the type when the
+    // function accesses the address with several types)
+    fn global(&self, addr: u64, t: Ty) -> String {
+        let mut g = self.globals.borrow_mut();
+        if let Some(n) = g.get(&(addr, t)) {
+            return n.clone();
+        }
+        let taken = g.keys().any(|(a, _)| *a == addr);
+        let name = if taken { format!("global_{:08x}_{}", addr, t.c_name()) } else { format!("global_{:08x}", addr) };
+        g.insert((addr, t), name.clone());
+        name
+    }
+
     // whether r0 is read after the call at `path` before being written (the call's result is used)
     fn result_read(&self, path: &[usize]) -> bool {
         if !self.has_r0 {
@@ -470,9 +496,17 @@ impl Emitter {
         self.live.live_out.get(&next).map_or(true, |live| live.contains("r0"))
     }
 
+    // a variable as read at `path`: its value's name there, or the constant it holds
+    fn var_text(&self, path: &[usize], v: &str) -> String {
+        match self.values.constant(path, v) {
+            Some((k, t)) => num(k, t),
+            None => self.values.read(path, v),
+        }
+    }
+
     // a call argument as written: the value a kept register has at the call, or the CPU's
     fn arg_text(&self, path: &[usize], a: &str) -> String {
-        if a.starts_with("guest::") { a.to_string() } else { self.values.read(path, a) }
+        if a.starts_with("guest::") { a.to_string() } else { self.var_text(path, a) }
     }
 
     fn stmts(&mut self, list: &[Stmt], indent: usize, returns: bool, prefix: &[usize]) -> R<()> {
@@ -543,9 +577,14 @@ impl Emitter {
                         i += 1;
                         continue;
                     }
-                    let text = match self.field_access(*t, a) {
-                        Some(f) => format!("{} = {}({});", f, t.c_name(), value),
-                        None => format!("*gptr<{}>({}) = {}({});", t.c_name(), self.expr(a, 0)?, t.c_name(), value),
+                    let global = match self.constant_address(a) {
+                        Some(addr) if !t.float() => Some(self.global(addr, *t)),
+                        _ => None,
+                    };
+                    let text = match (self.field_access(*t, a), global) {
+                        (Some(f), _) => format!("{} = {}({});", f, t.c_name(), value),
+                        (None, Some(g)) => format!("*{} = {}({});", g, t.c_name(), value),
+                        (None, None) => format!("*gptr<{}>({}) = {}({});", t.c_name(), self.expr(a, 0)?, t.c_name(), value),
                     };
                     self.line(indent, &text);
                 }
@@ -633,13 +672,13 @@ impl Emitter {
                 }
                 Stmt::Return => {
                     for (field, v) in self.write_back.clone() {
-                        let text = format!("{} = {};", field, self.values.read(&path, &v));
+                        let text = format!("{} = {};", field, self.var_text(&path, &v));
                         self.line(indent, &text);
                     }
                     let r = if !returns {
                         "return;".to_string()
                     } else if self.has_r0 {
-                        format!("return {};", self.values.read(&path, "r0"))
+                        format!("return {};", self.var_text(&path, "r0"))
                     } else {
                         "return guest::cpu()->r[0];".to_string()
                     };
@@ -679,7 +718,7 @@ impl Emitter {
                 Stmt::Svc(n) => {
                     // as SO() / SI() around rt_svc: the registers the kernel reads, and those it may change
                     for (v, k) in self.svc_regs.clone() {
-                        let text = format!("guest::cpu()->r[{}] = {};", k, self.values.read(&path, &v));
+                        let text = format!("guest::cpu()->r[{}] = {};", k, self.var_text(&path, &v));
                         self.line(indent, &text);
                     }
                     if self.stack && self.has_sp {
@@ -949,7 +988,7 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0"), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0"), out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -1004,6 +1043,9 @@ pub fn emit(f: &Function) -> R<String> {
         }
         out.push('\n');
         e.struct_name.insert(*k, name);
+    }
+    for ((addr, t), n) in e.globals.borrow().iter() {
+        out.push_str(&format!("inline guest::global<{}, 0x{:08x}> {};  // (from the original)\n", t.c_name(), addr, n));
     }
     for (t, n) in &e.callees {
         let arity = e.needs.get(t).map_or(4, |n| if n.full { 4 } else { n.arity });

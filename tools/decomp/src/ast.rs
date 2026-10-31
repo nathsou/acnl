@@ -1,7 +1,7 @@
 // The C subset of the recompiler's output, which is also the language the decompiled functions are built in: one
 // interpreter (sym.rs) gives both their meaning, so the proof compares like with like.
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Ty {
     U8,
     U16,

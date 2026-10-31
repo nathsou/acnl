@@ -277,6 +277,17 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
     let ocuts: HashSet<usize> = names.iter().map(|n| olabels[n]).collect();
     let ccuts: HashSet<usize> = names.iter().map(|n| clabels[n]).collect();
     let (olive, clive) = (flow::liveness(original), flow::liveness(candidate));
+    // what the original reads from a loop header on: a register it restores from its saved copy before returning is
+    // only needed for what it computes (not for the caller), the others for both
+    let olive_used = flow::liveness_with(original, false);
+    let needed_at = |l: &str| -> HashSet<String> {
+        let mut n: HashSet<String> = olive.at_label.get(l).cloned().unwrap_or_default();
+        n.retain(|v| !rel.restored.contains(v));
+        if let Some(used) = olive_used.at_label.get(l) {
+            n.extend(used.iter().filter(|v| rel.restored.contains(*v)).cloned());
+        }
+        n
+    };
     // sp at each loop header, below the entry sp (measured where the header is first reached, proved after)
     let mut deltas: HashMap<String, u64> = HashMap::new();
     let budget: u64 = match TIMEOUT_OVERRIDE.with(|t| t.get()) {
@@ -365,7 +376,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
             // copy is not otherwise related: the original's is dead)
             // one value for the three: the one the saved copy holds when the original restores the register (that
             // invariant set it), else the original's variable's (which the other invariants set)
-            let needed = start.as_ref().and_then(|l| olive.at_label.get(l)).cloned().unwrap_or_default();
+            let needed = start.as_ref().map(|l| needed_at(l)).unwrap_or_default();
             for (v, k) in rel.mirrored.iter().filter(|(v, _)| needed.contains(v)) {
                 let (Some((t, var)), Some(cpu)) = (oinit.vars.get(v).cloned(), cinit.cpu.get(k).cloned()) else { continue };
                 if t.bits() != 32 {
@@ -503,7 +514,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
                 }
             }
             // the mirrored registers at the header (those the original reads from there on)
-            let needed = olive.at_label.get(n).cloned().unwrap_or_default();
+            let needed = needed_at(n);
             for (v, k) in rel.mirrored.iter().filter(|(v, _)| needed.contains(v)) {
                 let a: Option<Vec<(Bool, BV)>> = oa.iter().map(|x| x.2.vars.get(v).map(|y| (x.1.clone(), y.1.clone()))).collect();
                 let b: Vec<(Bool, BV)> = ca.iter().map(|x| (x.1.clone(), x.2.cpu[k].clone())).collect();

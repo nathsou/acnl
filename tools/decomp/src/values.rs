@@ -23,6 +23,7 @@ pub struct Values {
     names: HashMap<(Path, String), String>, // (statement, variable) -> its value's name there (uses and definitions)
     pub fresh: Vec<(String, String)>,       // (new name, variable it splits), in order of first definition
     copies: HashSet<Path>,                  // copies left out: their value is the source's wherever it is read
+    constants: HashMap<(Path, String), (u64, Ty)>, // reads of a value defined once, by a constant: the constant
 }
 
 impl Values {
@@ -38,6 +39,7 @@ struct Node {
     defs: Vec<String>,
     jump: Jump,
     copy: Option<String>, // the variable a plain copy (x = y) reads
+    constant: Option<(u64, Ty)>, // the constant a definition x = K writes
 }
 
 enum Jump {
@@ -59,17 +61,30 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
            fresh: &mut usize) {
     for (i, s) in list.iter().enumerate() {
         let p: Path = [prefix, &[i]].concat();
-        let node = |uses: Vec<String>, defs: Vec<String>, jump: Jump| Node { path: Some(p.clone()), uses, defs, jump, copy: None };
+        let node = |uses: Vec<String>, defs: Vec<String>, jump: Jump| Node { path: Some(p.clone()), uses, defs, jump, copy: None, constant: None };
         let copy_of = |e: &Expr| if let Expr::Var(y) = e { Some(y.clone()) } else { None };
+        let constant_of = |e: &Expr| if let Expr::Num(v, t) = e { Some((*v, *t)) } else { None };
+        // what the C++ does not write: the saved copies of registers and their restoring (calling-convention
+        // bookkeeping: the C++ leaves those registers alone), the arguments' copies
+        let bookkeeping = match s {
+            Stmt::Decl(_, n, _) => n.starts_with("saved_") || n.starts_with("arg"),
+            Stmt::Assign(_, Expr::Var(v)) => v.starts_with("saved_"),
+            _ => false,
+        };
+        if bookkeeping {
+            continue;
+        }
         match s {
             Stmt::Decl(_, x, e) => {
                 let mut n = node(e.as_ref().map(vars_of).unwrap_or_default(), vec![x.clone()], Jump::Next);
                 n.copy = e.as_ref().and_then(copy_of);
+                n.constant = e.as_ref().and_then(constant_of);
                 out.push(n);
             }
             Stmt::Assign(x, e) => {
                 let mut n = node(vars_of(e), vec![x.clone()], Jump::Next);
                 n.copy = copy_of(e);
+                n.constant = constant_of(e);
                 out.push(n);
             }
             Stmt::Store(_, a, v) => out.push(node([vars_of(a), vars_of(v)].concat(), vec![], Jump::Next)),
@@ -79,22 +94,22 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
                 let (el, end) = (format!("__e{}", fresh), format!("__n{}", fresh));
                 out.push(node(vars_of(c), vec![], Jump::Either(el.clone())));
                 flatten(a, &[p.clone(), vec![0]].concat(), effects, out, fresh);
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, jump: Jump::To(end.clone()) });
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, jump: Jump::Label(el) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::To(end.clone()) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(el) });
                 flatten(b, &[p.clone(), vec![1]].concat(), effects, out, fresh);
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, jump: Jump::Label(end) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(end) });
             }
             Stmt::While { top, test, body, check, cond } => {
                 if let Some(t) = test {
-                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, jump: Jump::To(t.clone()) });
+                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::To(t.clone()) });
                 }
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, jump: Jump::Label(top.clone()) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(top.clone()) });
                 flatten(body, &[p.clone(), vec![0]].concat(), effects, out, fresh);
                 if let Some(t) = test {
-                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, jump: Jump::Label(t.clone()) });
+                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(t.clone()) });
                 }
                 flatten(check, &[p.clone(), vec![1]].concat(), effects, out, fresh);
-                out.push(Node { path: Some(loop_condition(&p)), uses: vars_of(cond), defs: vec![], copy: None, jump: Jump::Either(top.clone()) });
+                out.push(Node { path: Some(loop_condition(&p)), uses: vars_of(cond), defs: vec![], copy: None, constant: None, jump: Jump::Either(top.clone()) });
             }
             Stmt::Goto(l) => out.push(node(vec![], vec![], Jump::To(l.clone()))),
             Stmt::Label(l) => out.push(node(vec![], vec![], Jump::Label(l.clone()))),
@@ -135,7 +150,7 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         v.sort();
         v
     };
-    nodes.push(Node { path: None, uses: vec![], defs: entry.clone(), copy: None, jump: Jump::Next });
+    nodes.push(Node { path: None, uses: vec![], defs: entry.clone(), copy: None, constant: None, jump: Jump::Next });
     flatten(&f.body, &[], effects, &mut nodes, &mut fresh);
     let n = nodes.len();
     let labels: HashMap<String, usize> =
@@ -293,6 +308,21 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
     }
     let mut alias: HashMap<usize, (String, usize)> = HashMap::new(); // value -> (variable, value) it stands for
     let mut copies: HashSet<Path> = HashSet::new();
+    // constants: a value defined once, by a constant, is that constant wherever it is read (not for a value a header
+    // relates); its definition is left out
+    let mut constant: HashMap<usize, (u64, Ty)> = HashMap::new();
+    for i in 0..n {
+        let (Some(k), Some(p), [d]) = (&nodes[i].constant, &nodes[i].path, nodes[i].defs.as_slice()) else { continue };
+        if !vars.contains(d) {
+            continue;
+        }
+        let w = find(&mut parent, def_id[&(i, d.clone())]);
+        if keep.contains(&w) || defs_of.get(&w).map_or(0, |v| v.len()) != 1 {
+            continue;
+        }
+        constant.insert(w, *k);
+        copies.insert(p.clone());
+    }
     for i in 0..n {
         let (Some(src), Some(p), [d]) = (&nodes[i].copy, &nodes[i].path, nodes[i].defs.as_slice()) else { continue };
         if !vars.contains(src) || !vars.contains(d) || src == d {
@@ -307,6 +337,14 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
             continue;
         }
         let s0 = find(&mut parent, *ids.iter().next().unwrap());
+        // a copy of a constant is that constant
+        if let Some(k) = constant.get(&s0).copied() {
+            if ids.len() == 1 {
+                constant.insert(w, k);
+                copies.insert(p.clone());
+            }
+            continue;
+        }
         let (y, yv) = alias.get(&s0).cloned().unwrap_or((src.clone(), s0));
         // on every path from the copy to a read of it, the source is not written (a forward "must" analysis:
         // 0 not reached, 1 unchanged, 2 written on some path); passing the copy again starts over
@@ -315,8 +353,18 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         for &t in &succ[i] {
             state[t] = 1;
         }
+        // (a write of y to another value is to another C++ variable, unless both keep y's name)
+        let clobbers = |m: usize, parent: &mut Vec<usize>| -> bool {
+            match def_id.get(&(m, y.clone())) {
+                Some(&id) => {
+                    let r = find(parent, id);
+                    r == yv || (keep.contains(&yv) && keep.contains(&r))
+                }
+                None => false,
+            }
+        };
         while let Some(m) = work.pop() {
-            let out = if m == i { 1 } else if nodes[m].defs.contains(&y) { 2 } else { state[m] };
+            let out = if m == i { 1 } else if clobbers(m, &mut parent) { 2 } else { state[m] };
             for &t in &succ[m] {
                 let merged = state[t].max(out);
                 if merged != state[t] {
@@ -337,7 +385,7 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
     let mut values = Values::default();
     for id in 0..def_var.len() {
         let root = find(&mut parent, id);
-        if value_name.contains_key(&root) || alias.contains_key(&root) {
+        if value_name.contains_key(&root) || alias.contains_key(&root) || constant.contains_key(&root) {
             continue;
         }
         let var = &def_var[id];
@@ -362,16 +410,22 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         let Some(p) = &x.path else { continue };
         for d in x.defs.iter().filter(|d| vars.contains(*d)) {
             let root = find(&mut parent, def_id[&(i, d.clone())]);
-            values.names.insert((p.clone(), d.clone()), value_name[&root].clone());
+            if let Some(name) = value_name.get(&root) {
+                values.names.insert((p.clone(), d.clone()), name.clone());
+            }
         }
         for u in x.uses.iter().filter(|u| vars.contains(*u)) {
             if let Some(&id) = inn[i].get(u).and_then(|s| s.iter().next()) {
                 let root = find(&mut parent, id);
+                if let Some(k) = constant.get(&root) {
+                    values.constants.insert((p.clone(), u.clone()), *k);
+                    continue;
+                }
                 // (a statement that reads and writes a variable: the read is of the value before)
                 if !x.defs.contains(u) || values.names.get(&(p.clone(), u.clone())).is_none() {
-                    values.names.insert((p.clone(), u.clone()), value_name[&root].clone());
+                    values.names.insert((p.clone(), u.clone()), value_name.get(&root).cloned().unwrap_or_else(|| u.clone()));
                 } else {
-                    values.names.insert((p.clone(), format!("{}<", u)), value_name[&root].clone());
+                    values.names.insert((p.clone(), format!("{}<", u)), value_name.get(&root).cloned().unwrap_or_else(|| u.clone()));
                 }
             }
         }
@@ -380,6 +434,11 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
 }
 
 impl Values {
+    // the constant `var` holds when statement `path` reads it (a value defined once, by a constant)
+    pub fn constant(&self, path: &[usize], var: &str) -> Option<(u64, Ty)> {
+        self.constants.get(&(path.to_vec(), var.to_string())).copied()
+    }
+
     // whether the statement at `path` is a copy left out
     pub fn left_out(&self, path: &[usize]) -> bool {
         self.copies.contains(path)

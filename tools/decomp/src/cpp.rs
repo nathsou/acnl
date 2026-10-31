@@ -206,6 +206,7 @@ pub struct LayoutAssumption {
 struct Scope {
     structs: HashMap<String, Vec<Field>>, // packed structs of the file
     callees: HashMap<String, Callee>,
+    globals: HashMap<String, (u32, CType)>, // guest::global<T, address>: a pointer to a T at that address
 }
 
 // ---- places and values
@@ -517,6 +518,10 @@ impl<'a> Parser<'a> {
                         CType::Ptr(_) | CType::Val(_) => V::Pl(Place::Var(n)),
                         other => return Err(format!("variable of type {:?}", other)),
                     });
+                }
+                if let Some((address, t)) = self.scope.globals.get(&n).cloned() {
+                    // only as *name: the T at the address
+                    return Ok(V::R(Expr::Num(address as u64, Ty::U32), CType::Ptr(Box::new(t))));
                 }
                 if self.is("(") {
                     if self.scope.callees.contains_key(&n) || n == "guest" {
@@ -1276,6 +1281,25 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 }
                 scope.structs.insert(name, fields);
                 i = j;
+            }
+            Tok::Id(n) if n == "inline" && matches!(t.get(i + 1), Some(Tok::Id(g)) if g == "guest") => {
+                // inline guest::global<T, 0xADDR> name;
+                let mut p = Parser { t: &t, half: None, i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                p.expect_id("guest")?;
+                p.expect("::")?;
+                p.expect_id("global")?;
+                p.expect("<")?;
+                let ty = p.try_type()?.ok_or("global's type")?;
+                if !matches!(ty, CType::Val(v) if !v.float()) {
+                    return Err(format!("a global of type {:?}", ty));
+                }
+                p.expect(",")?;
+                let address = p.number()? as u32;
+                p.close_angle()?;
+                let name = p.ident()?;
+                p.expect(";")?;
+                i = p.i;
+                scope.globals.insert(name, (address, ty));
             }
             Tok::Id(n) if n == "inline" => {
                 // inline constexpr guest::Function<0xADDR, R(A...)> name;
