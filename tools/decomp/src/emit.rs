@@ -125,7 +125,76 @@ struct Emitter {
     svc_regs: Vec<(String, u32)>,      // r0-r7 kept in variables: handed to a system call and read back after it
     live: crate::flow::Liveness,       // what is read later, by statement path (flow.rs numbering)
     labels: HashSet<String>,           // the labels written so far (a goto to one is a loop's back edge)
+    exits: HashMap<String, Exit>,      // short blocks that end the function, written in place of a goto to them
+    targets: HashSet<String>,          // labels something other than such a goto still jumps to
     out: String,
+}
+
+// A label's block when it is short, straight and ends the function (a return or a tail call): a goto to it is
+// written as a copy of it, an early return. The copy runs the same statements, so the proof is unchanged.
+#[derive(Clone)]
+struct Exit {
+    list: Vec<Stmt>, // the list holding it, from its first statement (path numbering continues from `first`)
+    prefix: Vec<usize>,
+    first: usize,
+}
+
+const EXIT_BLOCK_STATEMENTS: usize = 8;
+
+fn exit_blocks(list: &[Stmt], prefix: &[usize], out: &mut HashMap<String, Exit>) {
+    for (i, s) in list.iter().enumerate() {
+        let path: Vec<usize> = [prefix, &[i]].concat();
+        match s {
+            Stmt::Label(l) => {
+                let rest = &list[i + 1..];
+                let end = rest.iter().position(|x| matches!(x, Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
+                if let Some(k) = end {
+                    let straight = rest[..k].iter().all(|x| {
+                        !matches!(
+                            x,
+                            Stmt::Label(_) | Stmt::If(..) | Stmt::While { .. } | Stmt::Switch(..) | Stmt::Goto(_)
+                                | Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::Unsupported(_)
+                        )
+                    });
+                    if straight && k < EXIT_BLOCK_STATEMENTS {
+                        out.insert(l.clone(), Exit { list: rest[..=k].to_vec(), prefix: prefix.to_vec(), first: i + 1 });
+                    }
+                }
+            }
+            Stmt::If(_, a, b) => {
+                exit_blocks(a, &[path.clone(), vec![0]].concat(), out);
+                exit_blocks(b, &[path.clone(), vec![1]].concat(), out);
+            }
+            Stmt::While { body, check, .. } => {
+                exit_blocks(body, &[path.clone(), vec![0]].concat(), out);
+                exit_blocks(check, &[path.clone(), vec![1]].concat(), out);
+            }
+            _ => {}
+        }
+    }
+}
+
+// the labels jumped to other than by a goto to an exit block (switch cases, loops, other gotos)
+fn jump_targets(list: &[Stmt], exits: &HashMap<String, Exit>, out: &mut HashSet<String>) {
+    for s in list {
+        match s {
+            Stmt::Goto(l) if !exits.contains_key(l) => {
+                out.insert(l.clone());
+            }
+            Stmt::Switch(_, cases) => out.extend(cases.iter().map(|(_, l)| l.clone())),
+            Stmt::If(_, a, b) => {
+                jump_targets(a, exits, out);
+                jump_targets(b, exits, out);
+            }
+            Stmt::While { top, test, body, check, .. } => {
+                out.insert(top.clone());
+                out.extend(test.iter().cloned());
+                jump_targets(body, exits, out);
+                jump_targets(check, exits, out);
+            }
+            _ => {}
+        }
+    }
 }
 
 fn num(v: u64, t: Ty) -> String {
@@ -338,15 +407,20 @@ impl Emitter {
     }
 
     fn stmts(&mut self, list: &[Stmt], indent: usize, returns: bool, prefix: &[usize]) -> R<()> {
+        self.stmts_from(list, 0, indent, returns, prefix)
+    }
+
+    // the statements of `list`, numbered from `first` in the paths
+    fn stmts_from(&mut self, list: &[Stmt], first: usize, indent: usize, returns: bool, prefix: &[usize]) -> R<()> {
         let mut i = 0;
         let mut reachable = true;
         while i < list.len() {
             let s = &list[i];
             let mut path = prefix.to_vec();
-            path.push(i);
-            // after a return, a tail call or a goto, nothing runs before the next label
-            if let Stmt::Label(_) = s {
-                reachable = true;
+            path.push(first + i);
+            // after a return, a tail call or a goto, nothing runs before the next label something jumps to
+            if let Stmt::Label(l) = s {
+                reachable = reachable || self.targets.contains(l);
             }
             if !reachable {
                 i += 1;
@@ -448,6 +522,10 @@ impl Emitter {
                         }
                     }
                 }
+                Stmt::Goto(l) if self.exits.contains_key(l) => {
+                    let x = self.exits[l].clone();
+                    self.stmts_from(&x.list, x.first, indent, returns, &x.prefix)?;
+                }
                 Stmt::Goto(l) => {
                     if self.labels.contains(l) {
                         self.line(indent, "guest::preempt();"); // a back edge
@@ -456,7 +534,9 @@ impl Emitter {
                 }
                 Stmt::Label(l) => {
                     self.labels.insert(l.clone());
-                    self.out.push_str(&format!("{}:;\n", l));
+                    if self.targets.contains(l) {
+                        self.out.push_str(&format!("{}:;\n", l));
+                    }
                 }
                 Stmt::GuestCall(t, tail) => {
                     self.before_call(indent, Some(*t));
@@ -783,7 +863,9 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), exits: HashMap::new(), targets: HashSet::new(), out: String::new() };
+    exit_blocks(&f.body, &[], &mut e.exits);
+    jump_targets(&f.body, &e.exits, &mut e.targets);
     let returns = assigned.contains("r0");
     // the body first (it decides the callees)
     e.stmts(&f.body, 1, returns, &[])?;

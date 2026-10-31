@@ -206,6 +206,9 @@ pub struct Relations {
     pub restored: Vec<String>,
     // observed registers not compared at the exits
     pub unobserved: HashSet<String>,
+    // (original variable, candidate CPU field): a register the original keeps in a variable and the candidate leaves
+    // in the CPU (it keeps no variable for it): the two hold the same value
+    pub mirrored: Vec<(String, String)>,
 }
 
 // The same, with the CPU fields in `free` left unrelated at the loop headers (a weaker invariant: still sound, as
@@ -358,6 +361,22 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
                     oinit.vars.insert(name, (t, v));
                 }
             }
+            // invariant: the candidate leaves in the CPU what the original keeps in its variable (the candidate's CPU
+            // copy is not otherwise related: the original's is dead)
+            // one value for the three: the one the saved copy holds when the original restores the register (that
+            // invariant set it), else the original's variable's (which the other invariants set)
+            for (v, k) in &rel.mirrored {
+                let (Some((t, var)), Some(cpu)) = (oinit.vars.get(v).cloned(), cinit.cpu.get(k).cloned()) else { continue };
+                if t.bits() != 32 {
+                    continue;
+                }
+                let value = if rel.restored.contains(k) { cpu } else { var };
+                oinit.vars.insert(v.clone(), (t, value.clone()));
+                if let Some((ct, _)) = cinit.vars.get(v).cloned() {
+                    cinit.vars.insert(v.clone(), (ct, value.clone()));
+                }
+                cinit.cpu.insert(k.clone(), value);
+            }
             // invariant: the return address slot holds LR (both programs)
             if let (Some(off), Some((_, lr))) = (lr_slot, cinit.vars.get(crate::cpp::LR).cloned()) {
                 let a = esp.bvsub(&s.bv(off as u64, 32));
@@ -479,6 +498,16 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
                         if rv[0].1.get_size() == av[0].1.get_size() {
                             diffs.push((format!("{} = {} at {}", r, a, n), Bool::and(ctx, &[reach, &merge_bv(&rv)._eq(&merge_bv(&av)).not()])));
                         }
+                    }
+                }
+            }
+            // the mirrored registers at the header
+            for (v, k) in &rel.mirrored {
+                let a: Option<Vec<(Bool, BV)>> = oa.iter().map(|x| x.2.vars.get(v).map(|y| (x.1.clone(), y.1.clone()))).collect();
+                let b: Vec<(Bool, BV)> = ca.iter().map(|x| (x.1.clone(), x.2.cpu[k].clone())).collect();
+                if let Some(a) = a {
+                    if a[0].1.get_size() == 32 {
+                        diffs.push((format!("{} = cpu {} at {}", v, k, n), Bool::and(ctx, &[&oreach, &merge_bv(&a)._eq(&merge_bv(&b)).not()])));
                     }
                 }
             }
@@ -627,5 +656,69 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     // with the pushes kept, both return through the saved lr; the save area is the pushed slots
     let (slots, lr_slot) = if d.save_slots.is_empty() { crate::saves::pushed_slots(original) } else { (vec![], None) };
     let restored = d.saved.iter().map(|(r, _)| r.clone()).collect();
-    equivalent_with_loops_free(ctx, &df, cpp, &slots, &[], &Relations { free, lr_slot, restored, unobserved: HashSet::new() })
+    // the registers the C++ leaves in the CPU (it declares no variable for them)
+    let mut declared: HashSet<String> = cpp.locals.iter().map(|(_, n, _)| n.clone()).collect();
+    fn decls(list: &[Stmt], out: &mut HashSet<String>) {
+        for s in list {
+            match s {
+                Stmt::Decl(_, n, _) => {
+                    out.insert(n.clone());
+                }
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    decls(a, out);
+                    decls(b, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    decls(&cpp.body, &mut declared);
+    // the CPU fields the C++ writes (a call writes the scratch registers)
+    fn cpu_writes(list: &[Stmt], out: &mut HashSet<String>) {
+        for s in list {
+            match s {
+                Stmt::SetCpu(f, _) => {
+                    out.insert(crate::sym::cpu_key(f));
+                }
+                Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::SyncOut => {
+                    out.extend(["r0", "r1", "r2", "r3", "r12", "r14"].iter().map(|k| k.to_string()));
+                    out.extend((0..16).map(|k| format!("s{}", k)));
+                }
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    cpu_writes(a, out);
+                    cpu_writes(b, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut written = HashSet::new();
+    cpu_writes(&cpp.body, &mut written);
+    fn assigns(list: &[Stmt], out: &mut HashSet<String>) {
+        for s in list {
+            match s {
+                Stmt::Assign(n, _) => {
+                    out.insert(n.clone());
+                }
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    assigns(a, out);
+                    assigns(b, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut assigned = HashSet::new();
+    assigns(&cpp.body, &mut assigned);
+    // a register a caller observes that the C++ leaves in the CPU: it keeps no variable for it, or neither writes the
+    // CPU's copy nor its variable (both keep the entry value)
+    let mirrored = df
+        .synced
+        .iter()
+        .map(|(v, f)| (v.clone(), crate::sym::cpu_key(f)))
+        .filter(|(v, k)| {
+            OBSERVED.contains(&k.as_str()) && k != "pc" && (!declared.contains(v) || (!written.contains(k) && !assigned.contains(v)))
+        })
+        .collect();
+    equivalent_with_loops_free(ctx, &df, cpp, &slots, &[], &Relations { free, lr_slot, restored, unobserved: HashSet::new(), mirrored })
 }

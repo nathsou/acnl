@@ -325,6 +325,21 @@ L_7014:
         round_trip("f_00007000", &["r0", "r4", "r13", "r14"], SHRINK_WRAPPED, ("r0 + r4", "r0 - r4"));
     }
 
+    // a loop in a function that writes neither r0 nor r1 (a caller still observes them: the C++ leaves them in the CPU)
+    const LOOP_KEEPING_ARGUMENTS: &str = "L_8000:
+  { u32 a = 0; (void)a; u32 b = 0x0u; u32 res = b; r2 = res; }
+L_8004:
+  { u32 ea = r0 + 0x4u; WR8(ea, r2); }
+  { u32 a = r2; u32 b = 0x1u; u32 res = a + b; r2 = res; }
+  { u32 a = r2; u32 b = r1; u32 res = a - b; zf = res == 0; (void)res; }
+  if (!zf) { if (__builtin_expect(rt_preempt_flag, 0)) { SO(); c->pc = 0x8004u; rt_preempt(c); SI(); } goto L_8004; }
+  tpc = r14; c->pc = tpc; SO(); return;";
+
+    #[test]
+    fn round_trip_loop_keeping_arguments() {
+        round_trip("f_00008000", &["r0", "r1", "r2", "r14"], LOOP_KEEPING_ARGUMENTS, ("r2 + 1u", "r2 + 2u"));
+    }
+
     #[test]
     fn round_trip_renamed_loop() {
         // the loop's draft with every variable and label renamed proves too
