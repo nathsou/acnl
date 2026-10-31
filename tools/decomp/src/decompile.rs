@@ -25,6 +25,22 @@ pub fn decompile_and_prove(ctx: &z3::Context, original: &Function) -> (Decompile
     (second, v2)
 }
 
+// The same, retrying once with a longer solver timeout (DECOMP_RETRY_MS) when the first try timed out.
+pub fn decompile_and_prove_retrying(ctx: &z3::Context, original: &Function) -> (Decompiled, crate::check::Verdict) {
+    let (d, v) = decompile_and_prove(ctx, original);
+    let timed_out = matches!(&v, crate::check::Verdict::Unknown(w) if w.contains("timeout") || w.contains("canceled") || w.contains("budget"));
+    let retry: Option<u32> = std::env::var("DECOMP_RETRY_MS").ok().and_then(|x| x.parse().ok());
+    match (timed_out, retry) {
+        (true, Some(ms)) => {
+            crate::check::TIMEOUT_OVERRIDE.with(|t| t.set(Some(ms)));
+            let r = decompile_and_prove(ctx, original);
+            crate::check::TIMEOUT_OVERRIDE.with(|t| t.set(None));
+            r
+        }
+        _ => (d, v),
+    }
+}
+
 // The same, calling `after(pass, function, save slots)` after every pass (to find a pass that breaks equivalence).
 pub fn decompile_traced(original: &Function, after: &mut dyn FnMut(&str, &Function, &[u32])) -> Decompiled {
     decompile_with(original, std::env::var("DECOMP_NOSAVES").is_err(), after)

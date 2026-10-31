@@ -88,6 +88,10 @@ struct Emitter {
     stack: bool, // the function uses its stack frame: r13 is the guest's sp, kept in step with the CPU at calls
     reload: Vec<(String, String)>, // after a call: variable <- CPU field (what SI() reads back)
     has_sp: bool,                  // the function keeps r13 in a variable
+    float_args: Vec<(String, u32)>, // float registers to hand over before a call (variable, s index)
+    call_args: String,              // r0-r3 as a call passes them (the CPU's for registers the function does not keep)
+    has_r0: bool,                   // the function keeps r0 in a variable (else results stay in the CPU)
+    pc: Option<String>,             // the target of the next indirect call (the AST sets c->pc first)
     fields: BTreeMap<usize, BTreeMap<u64, Ty>>,
     struct_name: HashMap<usize, String>,
     callees: BTreeMap<u32, String>, // target -> local guest::Function name
@@ -148,6 +152,16 @@ fn op_text(op: BinOp) -> &'static str {
 }
 
 impl Emitter {
+    // what SO() hands over to a callee besides r0-r3: the stack pointer and the float arguments
+    fn before_call(&mut self, indent: usize) {
+        if self.stack && self.has_sp {
+            self.line(indent, "guest::cpu()->r[13] = r13;");
+        }
+        for (v, k) in self.float_args.clone() {
+            self.line(indent, &format!("guest::cpu()->s[{}] = {};", k, v));
+        }
+    }
+
     fn field_access(&self, t: Ty, a: &Expr) -> Option<String> {
         let (k, off) = match a {
             Expr::Var(v) if v.starts_with("arg") => (v[3..].parse::<usize>().ok()?, 0),
@@ -227,9 +241,11 @@ impl Emitter {
                 // calling-convention bookkeeping
                 Stmt::Decl(_, n, _) if n.starts_with("saved_") || n.starts_with("arg") => {}
                 Stmt::Assign(_, Expr::Var(v)) if v.starts_with("saved_") => {}
-                Stmt::SetCpu(CpuField::Pc, _) => {}
+                Stmt::SetCpu(CpuField::Pc, e) => {
+                    // (a return's c->pc = lr is bookkeeping; an indirect call's target is used below)
+                    self.pc = self.expr(e, 0).ok();
+                }
                 Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) => {}
-                Stmt::Assign(n, _) if n == "r14" || n == "tpc" => {}
                 Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b))
                     if !self.stack && n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => {}
                 Stmt::Decl(_, _, None) => {}
@@ -286,23 +302,23 @@ impl Emitter {
                 Stmt::Goto(l) => self.line(indent, &format!("goto {};", l)),
                 Stmt::Label(l) => self.out.push_str(&format!("{}:;\n", l)),
                 Stmt::GuestCall(t, tail) => {
-                    if self.stack && self.has_sp {
-                        // the callee's frame goes below this one
-                        self.line(indent, "guest::cpu()->r[13] = r13;");
-                    }
+                    self.before_call(indent);
                     let name = self.callees.entry(*t).or_insert_with(|| format!("call_{:08x}", t & !1)).clone();
-                    let call = format!("{}(r0, r1, r2, r3)", name);
+                    let call = format!("{}({})", name, self.call_args);
                     if *tail {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};\n{}return;", call, "    ".repeat(indent)) });
                     } else {
-                        self.line(indent, &format!("r0 = {};", call));
+                        self.line(indent, &if self.has_r0 { format!("r0 = {};", call) } else { format!("{};", call) });
                         // the registers the callee may have changed, as the original reads them back
                         for (v, field) in self.reload.clone() {
                             self.line(indent, &format!("{} = {};", v, field));
                         }
                     }
                 }
-                Stmt::Return => self.line(indent, if returns { "return r0;" } else { "return;" }),
+                Stmt::Return => {
+                    let r = if !returns { "return;" } else if self.has_r0 { "return r0;" } else { "return guest::cpu()->r[0];" };
+                    self.line(indent, r);
+                }
                 Stmt::Switch(e, cases) => {
                     let text = format!("switch ({}) {{", self.expr(e, 0)?);
                     self.line(indent, &text);
@@ -312,7 +328,22 @@ impl Emitter {
                     self.line(indent + 1, "default: break;");
                     self.line(indent, "}");
                 }
-                Stmt::Dispatch(_) => return Err("indirect call".into()),
+                Stmt::Dispatch(tail) => {
+                    let Some(target) = self.pc.take() else { return Err("indirect call without a target".into()) };
+                    self.before_call(indent);
+                    let call = format!("guest::call_address<u32>({}, {})", target, self.call_args);
+                    if *tail {
+                        self.line(indent, &if returns { format!("return {};", call) } else { format!("{};", call) });
+                        if !returns {
+                            self.line(indent, "return;");
+                        }
+                    } else {
+                        self.line(indent, &if self.has_r0 { format!("r0 = {};", call) } else { format!("{};", call) });
+                        for (v, field) in self.reload.clone() {
+                            self.line(indent, &format!("{} = {};", v, field));
+                        }
+                    }
+                }
                 Stmt::Svc(_) => return Err("system call".into()),
                 Stmt::Unsupported(w) => return Err(w.clone()),
             }
@@ -432,8 +463,14 @@ pub fn emit(f: &Function) -> R<String> {
     }
     let has_calls = calls(&f.body);
     let declared: HashSet<&str> = f.locals.iter().map(|(_, n, _)| n.as_str()).collect();
-    let params: Vec<&str> =
-        ARGS.iter().copied().filter(|r| lv.at_entry.contains(*r) || (has_calls && !declared.contains(r))).collect();
+    let _ = has_calls;
+    let params: Vec<&str> = ARGS.iter().copied().filter(|r| lv.at_entry.contains(*r) && declared.contains(r)).collect();
+    let call_args: String = ARGS
+        .iter()
+        .enumerate()
+        .map(|(k, r)| if declared.contains(r) { r.to_string() } else { format!("guest::cpu()->r[{}]", k) })
+        .collect::<Vec<_>>()
+        .join(", ");
     let floats: Vec<String> = (0..16).map(|i| format!("S{}", i)).filter(|s| lv.at_entry.contains(s)).collect();
     if lv.at_entry.iter().any(|v| v.starts_with('S') && !floats.contains(v)) {
         return Err("reads float registers above s15".into());
@@ -446,13 +483,22 @@ pub fn emit(f: &Function) -> R<String> {
         .synced
         .iter()
         .filter_map(|(v, fl)| match fl {
-            CpuField::R(n @ (1 | 2 | 3 | 12)) => Some((v.clone(), format!("guest::cpu()->r[{}]", n))),
+            CpuField::R(n @ (1 | 2 | 3 | 12 | 14)) => Some((v.clone(), format!("guest::cpu()->r[{}]", n))),
             CpuField::S(n) if *n < 16 => Some((v.clone(), format!("guest::cpu()->s[{}]", n))),
             _ => None,
         })
         .collect();
     let has_sp = f.locals.iter().any(|(_, n, _)| n == "r13");
-    let mut e = Emitter { stack, reload, has_sp, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), out: String::new() };
+    let float_args: Vec<(String, u32)> = f
+        .synced
+        .iter()
+        .filter_map(|(v, fl)| match fl {
+            CpuField::S(k) if *k < 16 => Some((v.clone(), *k)),
+            _ => None,
+        })
+        .collect();
+    let has_r0 = declared.contains("r0");
+    let mut e = Emitter { stack, reload, has_sp, float_args, call_args, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), out: String::new() };
     let mut assigned = HashSet::new();
     crate::view::assigned_vars(&f.body, &mut assigned);
     let returns = assigned.contains("r0");
@@ -522,7 +568,7 @@ pub fn emit(f: &Function) -> R<String> {
         locals.push(format!("{} {} = 0;", t.c_name(), n));
     }
     for (t, n, _) in &f.locals {
-        if vars.contains_key(n) || n == "tpc" || !used.contains(n) {
+        if vars.contains_key(n) || !used.contains(n) {
             continue;
         }
         let init = if params.contains(&n.as_str()) {
@@ -547,11 +593,6 @@ pub fn emit(f: &Function) -> R<String> {
             }
         };
         locals.push(format!("{} {} = {};", t.c_name(), n, init));
-    }
-    for p in &params {
-        if !declared.contains(p) {
-            locals.push(format!("u32 {} = {}_in;", p, p));
-        }
     }
     for k in &copies {
         if !e.struct_name.contains_key(k) {

@@ -4,6 +4,11 @@ use crate::sym::{Exit, State, Sym};
 use z3::ast::{Ast, Bool, BV};
 use z3::{Context, SatResult, Solver};
 
+thread_local! {
+    // a longer timeout for a retry (set by decompile_and_prove)
+    pub static TIMEOUT_OVERRIDE: std::cell::Cell<Option<u32>> = std::cell::Cell::new(None);
+}
+
 // a solver that gives up (unknown) after the timeout instead of running forever
 fn new_solver(ctx: &Context) -> Solver<'_> {
     // arrays, uninterpreted functions and bit-vectors: Z3's solver for that logic is faster than the default
@@ -14,7 +19,9 @@ fn new_solver(ctx: &Context) -> Solver<'_> {
         Solver::new_for_logic(ctx, logic.as_str()).unwrap_or_else(|| Solver::new(ctx))
     };
     let mut p = z3::Params::new(ctx);
-    let ms = std::env::var("DECOMP_TIMEOUT_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(20_000u32);
+    let ms = TIMEOUT_OVERRIDE.with(|t| t.get()).unwrap_or_else(|| {
+        std::env::var("DECOMP_TIMEOUT_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(20_000u32)
+    });
     p.set_u32("timeout", ms);
     solver.set_params(&p);
     solver
@@ -194,14 +201,44 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
     if names.is_empty() {
         return Verdict::Unknown("the candidate has no loop where the original has one".into());
     }
+    let (otypes, ctypes) = (var_types(original), var_types(candidate));
+    // argument registers neither program writes: at the loop headers they still equal their copies argN
+    fn written(list: &[Stmt], out: &mut HashSet<String>) {
+        for s in list {
+            match s {
+                Stmt::Decl(_, n, _) | Stmt::Assign(n, _) => {
+                    out.insert(n.clone());
+                }
+                Stmt::SyncIn => {
+                    for r in ["r0", "r1", "r2", "r3"] {
+                        out.insert(r.into());
+                    }
+                }
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    written(a, out);
+                    written(b, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut w = HashSet::new();
+    written(&original.body, &mut w);
+    written(&candidate.body, &mut w);
+    let unwritten_args: Vec<(String, String)> = (0..4)
+        .map(|k| (format!("r{}", k), format!("arg{}", k)))
+        .filter(|(r, a)| !w.contains(r) && ctypes.contains_key(a) && otypes.contains_key(a) && otypes.contains_key(r))
+        .collect();
     let ocuts: HashSet<usize> = names.iter().map(|n| olabels[n]).collect();
     let ccuts: HashSet<usize> = names.iter().map(|n| clabels[n]).collect();
     let (olive, clive) = (flow::liveness(original), flow::liveness(candidate));
-    let (otypes, ctypes) = (var_types(original), var_types(candidate));
     // sp at each loop header, below the entry sp (measured where the header is first reached, proved after)
     let mut deltas: HashMap<String, u64> = HashMap::new();
-    let deadline = std::time::Instant::now()
-        + std::time::Duration::from_secs(std::env::var("DECOMP_BUDGET_S").ok().and_then(|v| v.parse().ok()).unwrap_or(60));
+    let budget: u64 = match TIMEOUT_OVERRIDE.with(|t| t.get()) {
+        Some(ms) => (ms as u64 * 4).div_ceil(1000), // a retry: room for a few slow queries
+        None => std::env::var("DECOMP_BUDGET_S").ok().and_then(|v| v.parse().ok()).unwrap_or(60),
+    };
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(budget);
     let mut todo: Vec<Option<String>> = vec![None];
     let mut done: HashSet<Option<String>> = HashSet::new();
     while let Some(start) = todo.pop() {
@@ -241,6 +278,18 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                 oinit.vars.insert(v.clone(), (*t, BV::new_const(ctx, name, t.bits())));
             }
             let _ = &olive;
+            // invariant: an argument register nothing writes still holds the argument
+            for (r, a) in &unwritten_args {
+                if let (Some((_, av)), Some((rt, _))) = (cinit.vars.get(a).cloned(), oinit.vars.get(r).cloned()) {
+                    oinit.vars.insert(r.clone(), (rt, av.clone()));
+                    if cinit.vars.contains_key(r) {
+                        cinit.vars.insert(r.clone(), (rt, av.clone()));
+                    }
+                    if let Some((at, _)) = oinit.vars.get(a).cloned() {
+                        oinit.vars.insert(a.clone(), (at, av));
+                    }
+                }
+            }
             // invariant: the original's save area holds the registers the candidate keeps in saved_*
             for (reg, off) in saved {
                 if let Some((_, v)) = cinit.vars.get(&format!("saved_{}", reg)) {
@@ -345,6 +394,18 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                         }
                         None => return Verdict::Unknown(format!("sp offset at {} is not constant", n)),
                     },
+                }
+            }
+            // the argument invariant at the header (both programs)
+            for (r, a) in &unwritten_args {
+                for (arr, reach) in [(&oa, &oreach), (&ca, &creach)] {
+                    let rv: Option<Vec<(Bool, BV)>> = arr.iter().map(|x| x.2.vars.get(r).map(|y| (x.1.clone(), y.1.clone()))).collect();
+                    let av: Option<Vec<(Bool, BV)>> = arr.iter().map(|x| x.2.vars.get(a).map(|y| (x.1.clone(), y.1.clone()))).collect();
+                    if let (Some(rv), Some(av)) = (rv, av) {
+                        if rv[0].1.get_size() == av[0].1.get_size() {
+                            diffs.push((format!("{} = {} at {}", r, a, n), Bool::and(ctx, &[reach, &merge_bv(&rv)._eq(&merge_bv(&av)).not()])));
+                        }
+                    }
                 }
             }
             // the save area invariant at the header

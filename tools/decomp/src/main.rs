@@ -122,7 +122,7 @@ fn decompile_one(addr: u32) {
     };
     let cfg = z3::Config::new();
     let ctx = z3::Context::new(&cfg);
-    let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
+    let (dd, v) = decompile::decompile_and_prove_retrying(&ctx, &orig);
     let d = dd.function.clone();
     if std::env::var("DECOMP_RAW").is_ok() {
         println!("{}", print::function(&d));
@@ -207,7 +207,7 @@ fn check_all(limit: usize, threads: usize) {
                         }
                     };
                     let t0 = std::time::Instant::now();
-                    let (_dd, verdict) = decompile::decompile_and_prove(&ctx, &orig);
+                    let (_dd, verdict) = decompile::decompile_and_prove_retrying(&ctx, &orig);
                     let t1 = t0.elapsed().as_secs_f32();
                     let v = match verdict {
                         check::Verdict::Proved => "proved".to_string(),
@@ -332,7 +332,7 @@ fn dump(out: &str, limit: usize, threads: usize) {
                         index.push((addr, "unparsed".to_string()));
                         continue;
                     };
-                    let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
+                    let (dd, v) = decompile::decompile_and_prove_retrying(&ctx, &orig);
                     let verdict = match v {
                         check::Verdict::Proved => "proved".to_string(),
                         check::Verdict::Differs(w) => format!("not proved (differs: {})", w),
@@ -360,7 +360,7 @@ fn emit_drafts(addrs: &[String]) {
     for a in addrs {
         let addr = u32::from_str_radix(a.trim_start_matches("0x"), 16).unwrap();
         let Some(orig) = find(addr) else { continue };
-        let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
+        let (dd, v) = decompile::decompile_and_prove_retrying(&ctx, &orig);
         if !matches!(v, check::Verdict::Proved) {
             println!("// {:x}: not proved, no draft", addr);
             continue;
@@ -395,11 +395,11 @@ fn emit_batch(list: &str, out: &str, threads: usize) {
                     let r = match parse::function(&text) {
                         Err(e) => Err(format!("unparsed: {}", e)),
                         Ok(orig) => {
-                            let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
-                            if matches!(v, check::Verdict::Proved) {
-                                emit::emit(&dd.function)
-                            } else {
-                                Err("not proved".into())
+                            let (dd, v) = decompile::decompile_and_prove_retrying(&ctx, &orig);
+                            match v {
+                                check::Verdict::Proved => emit::emit(&dd.function),
+                                check::Verdict::Differs(w) => Err(format!("not proved: differs {}", w)),
+                                check::Verdict::Unknown(w) => Err(format!("not proved: {}", w)),
                             }
                         }
                     };
@@ -421,7 +421,7 @@ fn emit_batch(list: &str, out: &str, threads: usize) {
                 text.push('\n');
                 n += 1;
             }
-            Err(e) => *why.entry(e.chars().take(50).collect()).or_default() += 1,
+            Err(e) => *why.entry(e.chars().take(70).collect()).or_default() += 1,
         }
     }
     std::fs::write(out, text).unwrap();

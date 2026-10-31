@@ -9,6 +9,10 @@ types and comments, without trusting the decompiler: every output it prints has 
     tools/decomp/target/release/decomp check-all [N] [THREADS]    # decompile and prove every function (or the first N)
     tools/decomp/target/release/decomp selftest 304014            # a mutated decompilation must be rejected
     tools/decomp/target/release/decomp parse-all                  # parser coverage
+    tools/decomp/target/release/decomp emit 304014                # a C++ draft of a proved decompilation
+    tools/decomp/target/release/decomp emit-batch LIST OUT.cpp    # drafts of the functions listed in LIST
+    tools/decomp/target/release/decomp dump build/acnl/decomp     # the view of every function, with its verdict
+    tools/decomp/target/release/decomp bisect 304014              # proves after every pass (finds a broken pass)
 
 It reads `build/acnl/generated/code_*.c` (run from the repository root after a build). Z3 comes from Homebrew
 (`tools/decomp/.cargo/config.toml` points the z3 crate at it).
@@ -47,3 +51,14 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
 - When the register saves are removed, no other memory access of the function reaches the save area; the checker
   verifies that this assumption does not rule out any way out of the function (no vacuous proofs).
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
+
+## C++ drafts
+
+`emit.rs` writes a proved decompilation as C++ that compiles in this repository (a namespace per function, packed
+structs of the argument objects with `GUEST_OFFSET` checks, callees as `guest::Function`, `GUEST_EXPORT` and a
+generated `GUEST_FUZZ`), for the harness to check and a person to name. A draft stands for the proved AST statement
+for statement: registers start from the guest CPU as in the generated prologue, are read back from it after calls as
+`SI()` does, the argument registers a function does not keep are passed from the CPU, float arguments are handed over
+before calls, and a function using its stack frame keeps sp in step with the CPU. What it cannot write that way yet is
+refused with the reason. The printing of the AST as C++ is not proved: the harness (shadow checks and the generated
+fuzzers) checks it. Drafts are generated from the game and stay in build/.
