@@ -12,6 +12,7 @@ mod saves;
 mod signatures;
 mod propagate;
 mod simplify;
+mod structs;
 mod structure;
 mod sym;
 mod typedb;
@@ -611,6 +612,47 @@ fn signatures_all(out: &str, n: usize, threads: usize) {
     println!("{} of {} functions have a proved signature ({})", all.len(), shared.0.len(), out);
 }
 
+// Recovers the structs functions receive (structs.rs) from every function's decompilation (not proved: the facts are
+// hints; each draft that uses a struct is checked and proved as usual). Writes the type database with them added to
+// the existing one (DECOMP_TYPES, default build/tools/ghidra) into OUTDIR, and their header to HEADER.
+fn structs_all(outdir: &str, header: &str, threads: usize) {
+    let funcs: Vec<(u32, String)> = generated_functions();
+    let chunks: Vec<Vec<(u32, String)>> = (0..threads).map(|t| funcs.iter().skip(t).step_by(threads).cloned().collect()).collect();
+    let handles: Vec<_> = chunks
+        .into_iter()
+        .map(|chunk| {
+            std::thread::spawn(move || {
+                let mut out = Vec::new();
+                for (addr, text) in chunk {
+                    let Ok(orig) = parse::function(&text) else { continue };
+                    let d = decompile::decompile_with(&orig, true, &mut |_, _, _| {});
+                    out.push((addr & !1, structs::facts(&d.function)));
+                }
+                out
+            })
+        })
+        .collect();
+    let all: HashMap<u32, structs::Facts> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
+    let db = view::types();
+    let skip = |a: u32, k: usize| db.map_or(false, |db| db.param(a, k).map_or(false, |st| db.header(&st).is_some()));
+    let r = structs::unify(&all, &skip);
+    let src = std::env::var("DECOMP_TYPES").unwrap_or("build/tools/ghidra".into());
+    let read = |f: &str, empty: &str| -> serde_json::Value {
+        serde_json::from_str(&fs::read_to_string(format!("{}/{}", src, f)).unwrap_or_else(|_| empty.to_string())).unwrap()
+    };
+    let (mut types, mut params) = (read("types.json", "{\"structs\": {}}"), read("param_types.json", "{}"));
+    structs::add_to_db(&r, &mut types, &mut params);
+    fs::create_dir_all(outdir).unwrap();
+    fs::write(format!("{}/types.json", outdir), serde_json::to_string(&types).unwrap()).unwrap();
+    fs::write(format!("{}/param_types.json", outdir), serde_json::to_string(&params).unwrap()).unwrap();
+    for f in ["names.txt", "sigs.json"] {
+        let _ = fs::copy(format!("{}/{}", src, f), format!("{}/{}", outdir, f));
+    }
+    fs::write(header, structs::header(&r)).unwrap();
+    let typed: usize = r.params.values().map(|m| m.len()).sum();
+    println!("{} structs for {} arguments of {} functions ({} functions read)", r.structs.len(), typed, r.params.len(), all.len());
+}
+
 // Functions whose entry is also a label inside another function (entry -> that function): pieces of it, such as
 // jump table targets and shared epilogues, that the recompiler's discovery also made functions. They run in the
 // frame of the function they belong to (an epilogue pops its saved registers and pc), so they do not return to the lr
@@ -781,6 +823,11 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
         Some("parse-all") => parse_all(),
+        Some("structs") => structs_all(
+            args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/types"),
+            args.get(3).map(|s| s.as_str()).unwrap_or("games/acnl/src/recovered/structs.hpp"),
+            args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8),
+        ),
         Some("decompile") => {
             for a in &args[2..] {
                 decompile_one(u32::from_str_radix(a.trim_start_matches("0x"), 16).unwrap());

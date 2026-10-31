@@ -16,7 +16,7 @@ fn callee_saved(r: &str) -> bool {
 }
 
 // the fields of the objects the arguments point to: argument -> offset -> type of the access
-fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) -> R<()> {
+pub(crate) fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) -> R<()> {
     fn expr(e: &Expr, out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) {
         match e {
             Expr::Load(t, a) => {
@@ -469,6 +469,7 @@ impl Emitter {
         match a {
             Expr::Num(k, _) => Some(*k & 0xffff_ffff),
             Expr::Var(v) => self.values.constant(&self.cur, v).map(|(k, _)| k & 0xffff_ffff),
+            Expr::Bin(BinOp::Add, x, y) => Some((self.constant_address(x)? + self.constant_address(y)?) & 0xffff_ffff),
             _ => None,
         }
     }
@@ -896,6 +897,8 @@ fn uses_call_clobbers(f: &Function) -> Option<String> {
 }
 
 pub fn emit(f: &Function) -> R<String> {
+    // accesses through an argument register that still holds the argument read as its fields
+    let f = &crate::values::arguments_in_addresses(f);
     let addr = f.address | f.thumb as u32;
     let stack = reads_stack(&f.body);
     if let Some(v) = uses_call_clobbers(f) {

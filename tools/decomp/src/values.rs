@@ -24,6 +24,7 @@ pub struct Values {
     pub fresh: Vec<(String, String)>,       // (new name, variable it splits), in order of first definition
     copies: HashSet<Path>,                  // copies left out: their value is the source's wherever it is read
     constants: HashMap<(Path, String), (u64, Ty)>, // reads of a value defined once, by a constant: the constant
+    entries: HashMap<(Path, String), String>, // reads of a variable's entry value (copies seen through): that variable
 }
 
 impl Values {
@@ -308,6 +309,9 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
     }
     let mut alias: HashMap<usize, (String, usize)> = HashMap::new(); // value -> (variable, value) it stands for
     let mut copies: HashSet<Path> = HashSet::new();
+    // the entry definitions, and the copies of an entry value (value -> the variable whose entry value it is)
+    let entry_def: HashMap<String, usize> = entry.iter().filter_map(|v| def_id.get(&(0, v.clone())).map(|&id| (v.clone(), id))).collect();
+    let mut entry_copy: HashMap<usize, String> = HashMap::new();
     // constants: a value defined once, by a constant, is that constant wherever it is read (not for a value a header
     // relates); its definition is left out
     let mut constant: HashMap<usize, (u64, Ty)> = HashMap::new();
@@ -375,6 +379,13 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         }
         let still = reads_of.get(&w).map_or(true, |rs| rs.iter().all(|&u| state[u] == 1));
         if still {
+            // the copy reads exactly the source's entry value (or a copy of it)
+            let only_entry = ids.len() == 1 && entry_def.get(src) == ids.iter().next();
+            if only_entry {
+                entry_copy.insert(w, src.clone());
+            } else if let (1, Some(e)) = (ids.len(), entry_copy.get(&s0).cloned()) {
+                entry_copy.insert(w, e);
+            }
             alias.insert(w, (y, yv));
             copies.insert(p.clone());
         }
@@ -421,6 +432,13 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
                     values.constants.insert((p.clone(), u.clone()), *k);
                     continue;
                 }
+                // the entry value: exactly the entry definition reaches, or a copy of the entry value does
+                let ids = &inn[i][u];
+                if ids.len() == 1 && entry_def.get(u) == ids.iter().next() {
+                    values.entries.insert((p.clone(), u.clone()), u.clone());
+                } else if let (1, Some(e)) = (ids.len(), entry_copy.get(&root)) {
+                    values.entries.insert((p.clone(), u.clone()), e.clone());
+                }
                 // (a statement that reads and writes a variable: the read is of the value before)
                 if !x.defs.contains(u) || values.names.get(&(p.clone(), u.clone())).is_none() {
                     values.names.insert((p.clone(), u.clone()), value_name.get(&root).cloned().unwrap_or_else(|| u.clone()));
@@ -437,6 +455,11 @@ impl Values {
     // the constant `var` holds when statement `path` reads it (a value defined once, by a constant)
     pub fn constant(&self, path: &[usize], var: &str) -> Option<(u64, Ty)> {
         self.constants.get(&(path.to_vec(), var.to_string())).copied()
+    }
+
+    // the variable whose entry value `var` holds when statement `path` reads it (copies seen through)
+    pub fn entry_value(&self, path: &[usize], var: &str) -> Option<&String> {
+        self.entries.get(&(path.to_vec(), var.to_string()))
     }
 
     // whether the statement at `path` is a copy left out
@@ -471,6 +494,121 @@ pub fn each_expr(list: &[Stmt], f: &mut dyn FnMut(&Expr)) {
                 each_expr(body, f);
                 each_expr(check, f);
                 f(cond);
+            }
+            _ => {}
+        }
+    }
+}
+
+// The function with each access through an argument register that still holds its entry value written through the
+// argument's copy instead (argK, when the function has one): `r0 + 4` -> `arg0 + 4`, so that it reads as a field of
+// the object the argument points to. A call is taken to change r0-r3 (whatever its signature), so only reads that
+// certainly see the entry value change.
+pub fn arguments_in_addresses(f: &Function) -> Function {
+    let mut g = f.clone();
+    let copies: HashSet<String> = {
+        let mut out = HashSet::new();
+        each_decl(&f.body, &mut |n| {
+            if n.starts_with("arg") {
+                out.insert(n.to_string());
+            }
+        });
+        out
+    };
+    if copies.is_empty() {
+        return g;
+    }
+    // with loops, only the registers the function never writes (at a loop header the proof relates the argument's copy
+    // to the register only then)
+    let (_, _, headers) = crate::sym::Sym::graph(f);
+    let mut written: HashSet<String> = HashSet::new();
+    crate::view::assigned_vars(&f.body, &mut written);
+    let copies: HashSet<String> = copies
+        .into_iter()
+        .filter(|a| headers.is_empty() || !written.contains(&format!("r{}", &a[3..])))
+        .collect();
+    let regs: Vec<String> = ["r0", "r1", "r2", "r3"].iter().map(|r| r.to_string()).collect();
+    let vars: HashSet<String> = f.synced.iter().map(|(v, _)| v.clone()).filter(|v| v != "r13" && v != "r14").collect();
+    let values = split(f, &vars, &|s, _| match s {
+        Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) => (regs.clone(), regs.clone()),
+        Stmt::Return => (vec!["r0".to_string()], vec![]),
+        _ => (vec![], vec![]),
+    });
+    fn subst(a: &mut Expr, p: &[usize], values: &Values, copies: &HashSet<String>) {
+        let fix = |e: &mut Expr| {
+            if let Expr::Var(v) = e {
+                if let Some(entry) = values.entry_value(p, v) {
+                    if let Some(k) = entry.strip_prefix('r') {
+                        let arg = format!("arg{}", k);
+                        if copies.contains(&arg) && entry == v {
+                            *e = Expr::Var(arg);
+                        }
+                    }
+                }
+            }
+        };
+        match a {
+            Expr::Var(_) => fix(a),
+            Expr::Bin(BinOp::Add, b, o) if matches!(**o, Expr::Num(..)) => fix(b),
+            _ => {}
+        }
+    }
+    fn loads(e: &mut Expr, p: &[usize], values: &Values, copies: &HashSet<String>) {
+        match e {
+            Expr::Load(_, a) => {
+                loads(a, p, values, copies);
+                subst(a, p, values, copies);
+            }
+            Expr::Un(_, a) | Expr::Cast(_, a) => loads(a, p, values, copies),
+            Expr::Bin(_, a, b) => {
+                loads(a, p, values, copies);
+                loads(b, p, values, copies);
+            }
+            Expr::Cond(c, a, b) => {
+                loads(c, p, values, copies);
+                loads(a, p, values, copies);
+                loads(b, p, values, copies);
+            }
+            Expr::Call(_, args) => args.iter_mut().for_each(|x| loads(x, p, values, copies)),
+            _ => {}
+        }
+    }
+    fn walk(list: &mut [Stmt], prefix: &[usize], values: &Values, copies: &HashSet<String>) {
+        for (i, s) in list.iter_mut().enumerate() {
+            let p: Path = [prefix, &[i]].concat();
+            match s {
+                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => loads(e, &p, values, copies),
+                Stmt::Store(_, a, v) => {
+                    loads(a, &p, values, copies);
+                    loads(v, &p, values, copies);
+                    subst(a, &p, values, copies);
+                }
+                Stmt::If(c, a, b) => {
+                    loads(c, &p, values, copies);
+                    walk(a, &[p.clone(), vec![0]].concat(), values, copies);
+                    walk(b, &[p.clone(), vec![1]].concat(), values, copies);
+                }
+                Stmt::While { body, check, cond, .. } => {
+                    walk(body, &[p.clone(), vec![0]].concat(), values, copies);
+                    walk(check, &[p.clone(), vec![1]].concat(), values, copies);
+                    loads(cond, &loop_condition(&p), values, copies);
+                }
+                _ => {}
+            }
+        }
+    }
+    walk(&mut g.body, &[], &values, &copies);
+    g
+}
+
+// the names every declaration of the statements declares
+fn each_decl(list: &[Stmt], f: &mut dyn FnMut(&str)) {
+    for s in list {
+        match s {
+            Stmt::Decl(_, n, _) => f(n),
+            Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                each_decl(a, f);
+                each_decl(b, f);
             }
             _ => {}
         }
