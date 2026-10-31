@@ -133,6 +133,13 @@ what the decompiled function keeps in its variable, at every header (assumed the
 A short block that ends the function (straight code ending in a return or a tail call) is written in place of each goto
 to it, an early return; labels nothing jumps to are left out.
 
+Each register and temporary is split into its values (`values.rs`: definitions joined by the uses they reach), so a
+register that holds an address, then a count, then a call's result becomes three variables (`r0`, `r0_1`, `r0_2`),
+each of which can be named on its own. The value a register has at the entry, and the values live at a loop header,
+keep the register's name (the proof relates variables by name at headers). A copy is left out when its source is not
+written on any path to its reads. With callee signatures, liveness counts only a callee's arguments (and the results
+read after it) as read by a call, so calls pass only their arguments and parameters that were only forwarded go.
+
 Only the subset the emitter writes is accepted (with any names); `char` and `bool` fields are refused (their values in
 guest memory are not what C++ assumes), and so is a file that defines a function named like a runtime helper. Renamed
 variables, structs, fields, labels and functions prove as before: the proof relates variables at loop headers by name,
