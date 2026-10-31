@@ -203,6 +203,8 @@ impl Emitter {
         Some(match base.as_str() {
             "float" => (format!("std::bit_cast<u32>({})", place), place, "std::bit_cast<float>(u32(".into()),
             "ptr" => (format!("{}.addr()", place), place, "gptr<void>(u32(".into()),
+            // (one conversion when the field already has the access's type; "x((" keeps the closing count)
+            _ if base_c(&base) == t.c_name() => (format!("{}({})", t.c_name(), place), place, format!("{}((", t.c_name())),
             _ => (format!("{}({})", t.c_name(), place), place, format!("{}({}(", base_c(&base), t.c_name())),
         })
     }

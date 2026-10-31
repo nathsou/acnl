@@ -93,3 +93,76 @@ pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn F
     after("flow::remove_dead_code", &f, &save_slots);
     Decompiled { function: f, save_slots, saved }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::check::Verdict;
+    use crate::decompile::decompile_and_prove;
+    use crate::parse;
+
+    // a function in the recompiler's format (written for the tests, not taken from the game)
+    fn function(name: &str, regs: &[&str], body: &str) -> String {
+        let decl = regs.iter().map(|r| format!("{} = c->r[{}]", r, &r[1..])).collect::<Vec<_>>().join(", ");
+        let so = regs.iter().map(|r| format!("c->r[{}] = {};", &r[1..], r)).collect::<Vec<_>>().join(" ");
+        let si = regs.iter().map(|r| format!("{} = c->r[{}];", r, &r[1..])).collect::<Vec<_>>().join(" ");
+        format!(
+            "void {}(CPU *c, u32 entry) {{\n  u32 {};\n  u32 nf = c->nf, zf = c->zf, cf = c->cf, vf = c->vf;\n  u32 tpc = 0; u8 *const M = MEMBASE; (void)M; (void)tpc;\n#define SO() do {{ {} c->nf = nf; c->zf = zf; c->cf = cf; c->vf = vf; }} while (0)\n#define SI() do {{ {} nf = c->nf; zf = c->zf; cf = c->cf; vf = c->vf; }} while (0)\n{}\n#undef SO\n#undef SI\n}}",
+            name, decl, so, si, body
+        )
+    }
+
+    fn prove(text: &str) -> Verdict {
+        let f = parse::function(text).expect("parses");
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        decompile_and_prove(&ctx, &f).1
+    }
+
+    const PREDICATED: &str = "L_1000:
+  { u32 a = r1; u32 b = 0x0u; u32 res = a - b; zf = res == 0; (void)res; }
+  if (zf) { { u32 a = 0; (void)a; u32 b = 0x1u; u32 res = b; r0 = res; } }
+  if (!zf) { { u32 a = 0; (void)a; u32 b = 0x2u; u32 res = b; r0 = res; } }
+  { u32 ea = r2 + 0x4u; WR8(ea, r0); }
+  tpc = r14; c->pc = tpc; SO(); return;";
+
+    const LOOP: &str = "L_2000:
+  { u32 a = 0; (void)a; u32 b = 0x0u; u32 res = b; r0 = res; }
+L_2004:
+  { u32 a = r0; u32 b = r1; u32 res = a + b; r0 = res; }
+  { u32 a = r1; u32 b = 0x1u; u32 res = a - b; zf = res == 0; r1 = res; }
+  if (!zf) { if (__builtin_expect(rt_preempt_flag, 0)) { SO(); c->pc = 0x2004u; rt_preempt(c); SI(); } goto L_2004; }
+  tpc = r14; c->pc = tpc; SO(); return;";
+
+    const CALL: &str = "L_3000:
+  { u32 a = r0; u32 b = 0x10u; u32 res = a + b; r1 = res; }
+  r14 = 0x300cu; SO(); f_00004000(c, 0); SI(); if (__builtin_expect(c->pc != 0x300cu, 0)) return;
+L_300c:
+  { u32 a = r0; u32 b = 0x1u; u32 res = a + b; r0 = res; }
+  tpc = r14; c->pc = tpc; SO(); return;";
+
+    #[test]
+    fn proves_predicated_code() {
+        assert!(matches!(prove(&function("f_00001000", &["r0", "r1", "r2", "r14"], PREDICATED)), Verdict::Proved));
+    }
+
+    #[test]
+    fn proves_a_loop() {
+        assert!(matches!(prove(&function("f_00002000", &["r0", "r1", "r14"], LOOP)), Verdict::Proved));
+    }
+
+    #[test]
+    fn proves_a_call_with_an_argument() {
+        assert!(matches!(prove(&function("f_00003000", &["r0", "r1", "r14"], CALL)), Verdict::Proved));
+    }
+
+    #[test]
+    fn rejects_a_changed_function() {
+        // the decompilation of one function checked against another (a different constant)
+        let a = parse::function(&function("f_00001000", &["r0", "r1", "r2", "r14"], PREDICATED)).unwrap();
+        let b = parse::function(&function("f_00001000", &["r0", "r1", "r2", "r14"], &PREDICATED.replace("0x2u", "0x3u"))).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let d = crate::decompile::decompile(&b);
+        assert!(matches!(crate::check::verify(&ctx, &a, &d), Verdict::Differs(_)));
+    }
+}
