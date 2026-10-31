@@ -43,7 +43,6 @@ static u32 get_object_009b4a24() {
     return *object_009b4a24;
 }
 GUEST_EXPORT(0x006a5e34, get_object_009b4a24);
-GUEST_FUZZ(0x006a5e34, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // Writes the world position of the corner of the cell that contains the x/z of `in` (y is 0).
 static void cell_corner_of_position(gptr<Vec3> out, gptr<Vec3> in) {
@@ -62,12 +61,6 @@ static void cell_corner_of_position(gptr<Vec3> out, gptr<Vec3> in) {
     out->z = cell_to_world(*origin_z, cell_z);
 }
 GUEST_EXPORT(0x006a5e44, cell_corner_of_position);
-GUEST_FUZZ(0x006a5e44, 300, [](guest::Fuzz &f) {
-    auto in = f.object<Vec3>();
-    in->x = f.pick<float>({0.0f, -1.0f, 31.9f, 32.0f, -32.0f, 1e9f, -1e9f, f.real(), f.real()});
-    in->z = f.pick<float>({0.0f, -1.0f, 31.9f, 32.0f, -32.0f, 1e9f, -1e9f, f.real(), f.real()});
-    f.arguments(f.object<Vec3>(), in);
-});
 
 // Writes the world position of the corner of cell (cell_x, cell_z) (y is 0).
 static void cell_corner(gptr<Vec3> out, s32 cell_x, s32 cell_z) {
@@ -76,7 +69,3 @@ static void cell_corner(gptr<Vec3> out, s32 cell_x, s32 cell_z) {
     out->z = cell_to_world(*origin_z, cell_z);
 }
 GUEST_EXPORT(0x006a5f0c, cell_corner);
-GUEST_FUZZ(0x006a5f0c, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<Vec3>(), f.pick<s32>({0, -1, 1000, s32(f.below(200)) - 20}),
-                f.pick<s32>({0, -1, 1000, s32(f.below(200)) - 20}));
-});

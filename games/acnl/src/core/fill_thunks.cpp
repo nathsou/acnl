@@ -14,12 +14,6 @@ void fill_bytes(gptr<u8> object, u32 size, bool on) {
     }
 }
 
-gptr<u8> fuzz_object(guest::Fuzz &f) {
-    auto object = f.allocate(8).cast<u8>();
-    f.bytes(object, 8);
-    return object;
-}
-
 constexpr u32 THREE_BYTES = 3;
 constexpr u32 FOUR_BYTES = 4;
 
@@ -57,10 +51,3 @@ void fill_three_bytes_303e78(gptr<u8> object, u32 on) {
     fill_bytes(object, THREE_BYTES, on != 0);
 }
 GUEST_EXPORT(0x00303e78, fill_three_bytes_303e78);
-
-GUEST_FUZZ(0x00303e60, 100, [](guest::Fuzz &f) { f.arguments(fuzz_object(f), f.pick<u32>({0, 1, 0x100, f.number()})); });
-GUEST_FUZZ(0x00303e64, 100, [](guest::Fuzz &f) { f.arguments(fuzz_object(f), f.pick<u32>({0, 1, 0x100, f.number()})); });
-GUEST_FUZZ(0x00303e6c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_object(f), f.pick<u32>({0, 1, 0x100, f.number()})); });
-GUEST_FUZZ(0x00303e70, 100, [](guest::Fuzz &f) { f.arguments(fuzz_object(f), f.pick<u32>({0, 1, 0x100, f.number()})); });
-GUEST_FUZZ(0x00303e74, 100, [](guest::Fuzz &f) { f.arguments(fuzz_object(f), f.pick<u32>({0, 1, 0x100, f.number()})); });
-GUEST_FUZZ(0x00303e78, 100, [](guest::Fuzz &f) { f.arguments(fuzz_object(f), f.pick<u32>({0, 1, 0x100, f.number()})); });

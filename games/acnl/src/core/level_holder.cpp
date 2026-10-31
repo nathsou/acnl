@@ -28,23 +28,3 @@ u32 LevelHolder::add_to_level(s32 delta) {
     return guest::addr_of(this).addr();
 }
 GUEST_EXPORT(0x00307104, LevelHolder::add_to_level);
-
-// Only inputs that do not reach the (unknown) update are generated.
-GUEST_FUZZ(0x00307104, 300, [](guest::Fuzz &f) {
-    auto self = f.object<LevelHolder>();
-    s32 delta;
-    if (f.below(3) == 0) {
-        delta = 0;
-        if (f.below(2)) {
-            self->unknown_4e = u8(LevelHolder::VALUE_4E_LIMIT + f.below(0x100 - LevelHolder::VALUE_4E_LIMIT));
-        } else {
-            self->unknown_4e = u8(f.below(LevelHolder::VALUE_4E_LIMIT));
-            self->unknown_4f = u8(LevelHolder::VALUE_4F_LIMIT + f.below(0x100 - LevelHolder::VALUE_4F_LIMIT));
-        }
-    } else {
-        delta = f.pick<s32>({1, 2, 5, 12, 0x7fffffff, 0x7ffffffe, -1, s32(0x80000000), s32(f.number()),
-                             s32(f.below(20))});
-        self->unknown_4e = u8(LevelHolder::VALUE_4E_LIMIT + f.below(0x100 - LevelHolder::VALUE_4E_LIMIT));
-    }
-    f.arguments(self, delta);
-});

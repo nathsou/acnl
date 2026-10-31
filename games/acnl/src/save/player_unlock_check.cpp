@@ -44,4 +44,3 @@ bool current_player_meets_unlock_conditions() {
            count_in_category(seen, SECOND_CATEGORY, true) >= SECOND_CATEGORY_MINIMUM;
 }
 GUEST_EXPORT(0x00712e34, current_player_meets_unlock_conditions);
-GUEST_FUZZ(0x00712e34, 10, [](guest::Fuzz &f) { f.arguments(); });

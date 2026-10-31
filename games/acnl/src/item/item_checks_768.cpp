@@ -132,66 +132,8 @@ u16 Item::flags_value() const {
 }
 GUEST_EXPORT(0x00768800, Item::flags_value);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
 // Items with data (when it is loaded), empty slots, and the ids of the two sets, with assorted flags.
-gptr<Item> some_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    switch (f.below(6)) {
-    case 0:
-        item->id = Item::EMPTY;
-        break;
-    case 1:
-        item->id = ID_SET_A[f.below(sizeof(ID_SET_A) / sizeof(ID_SET_A[0]))];
-        break;
-    case 2:
-        item->id = ID_SET_B[f.below(sizeof(ID_SET_B) / sizeof(ID_SET_B[0]))];
-        break;
-    default:
-        item->id = item_data_table->entries ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-        break;
-    }
-    if (f.below(4) == 0) {
-        item->id |= Item::ID_FLAG;
-    }
-    item->flags = u16(f.below(3) == 0 ? f.number() : f.below(16));
-    return item;
-}
-
-// Numbers around the members of sets c and d.
-gptr<Item> item_near_set_c_or_d(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    u16 member = f.below(4) == 0 ? ID_SET_D_EXTRA[f.below(sizeof(ID_SET_D_EXTRA) / sizeof(ID_SET_D_EXTRA[0]))]
-                                 : u16(ID_SET_C_FIRST + ID_SET_C_STEP * f.below(ID_SET_C_COUNT));
-    item->id = u16(member + f.pick<s32>({0, 0, 0, 1, -1}));
-    if (f.below(4) == 0) {
-        item->id |= Item::ID_FLAG;
-    }
-    item->flags = u16(f.below(3) == 0 ? f.number() : f.below(16));
-    return item;
-}
 
 }  // namespace
-
-GUEST_FUZZ(0x002ff6a4, 300, [](guest::Fuzz &f) { f.arguments(item_near_set_c_or_d(f)); });
-GUEST_FUZZ(0x0076a36c, 300, [](guest::Fuzz &f) { f.arguments(item_near_set_c_or_d(f)); });
-GUEST_FUZZ(0x002ff0b8, 300, [](guest::Fuzz &f) { f.arguments(item_near_set_c_or_d(f)); });
-GUEST_FUZZ(0x007486dc, 300, [](guest::Fuzz &f) {
-    gptr<ItemData> d = item_data_table->entries;
-    f.arguments(d ? d + f.below(Item::ITEM_COUNT) : f.object<ItemData>());
-});
-GUEST_FUZZ(0x0074870c, 300, [](guest::Fuzz &f) {
-    gptr<ItemData> d = item_data_table->entries;
-    f.arguments(d ? d + f.below(Item::ITEM_COUNT) : f.object<ItemData>());
-});
-GUEST_FUZZ(0x006bb8c0, 300, [](guest::Fuzz &f) { f.arguments(some_item(f), f.number() & 0xffff); });
-GUEST_FUZZ(0x007684a4, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x007684ec, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00768524, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x007685c4, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00768628, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x007686e8, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00768738, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00768800, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });

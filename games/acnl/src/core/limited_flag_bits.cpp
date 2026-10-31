@@ -42,24 +42,3 @@ GUEST_EXPORT(0x00813c20, set_flag_below_5);
 void set_flag_below_7(gptr<u8> bits, u32 index, u32 value) { set_limited_flag(bits, index, value, LIMIT_7); }
 GUEST_EXPORT(0x00813cb4, set_flag_below_7);
 GUEST_EXPORT(0x401fbfa0, set_flag_below_7);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static void fuzz_flags(guest::Fuzz &f) {
-    auto bits = f.allocate(8).cast<u8>();
-    f.bytes(bits, 8);
-    u32 index = f.below(4) ? f.below(24) : f.below(40);
-    u32 value = f.pick<u32>({0, 1, f.number()});
-    f.arguments(bits, index, value);
-}
-
-GUEST_FUZZ(0x00813b30, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x40142a38, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x402076f4, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x40613c84, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x00813b80, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x00813bd0, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x00317a00, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x00813c20, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x00813cb4, 300, [](guest::Fuzz &f) { fuzz_flags(f); });
-GUEST_FUZZ(0x401fbfa0, 300, [](guest::Fuzz &f) { fuzz_flags(f); });

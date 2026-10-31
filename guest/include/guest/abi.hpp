@@ -7,8 +7,7 @@
 //
 // From then on every call the game makes to 0x00104a20 runs count_lives: its arguments are read from the guest
 // registers and stack following the ARM procedure call standard, and its result goes back to r0 (or s0).
-// The recompiled original stays in the binary as the reference the shadow checker compares against
-// (see shadow.hpp).
+// The recompiled original stays in the binary (GUEST_OVERLAY=0 or GUEST_DISABLE run it instead).
 //
 // Calling a function that is still recompiled code:
 //
@@ -169,7 +168,7 @@ inline void write_location(CPU *c, Location l, u32 sp, u64 v) {
     }
 }
 
-// how a function returns its result, for the shadow checker
+// how a function returns its result
 enum class Ret : u8 { Void, R0, R0R1, S0, D0 };
 template <typename R>
 constexpr Ret ret_of() {
@@ -300,9 +299,6 @@ struct Export {
     Ret ret;
     void (*overlay)(CPU *);
     GuestFn original;
-    // shadow checker counters
-    u64 calls = 0, checked = 0, fuzzed = 0, mismatches = 0, unchecked = 0, unchecked_syscall = 0, unchecked_memory = 0;
-    u64 crashed_inputs = 0;  // fuzz inputs dropped because they crashed the original or the rewrite
     Export(u32 address, const char *name, Ret ret, void (*overlay)(CPU *), GuestFn original);
 };
 void enter(Export &e, CPU *c, u32 entry);
@@ -341,7 +337,7 @@ template <u32 Address, typename R, typename... A>
 struct Function<Address, R(A...)> {
     static constexpr u32 address = Address;
     R operator()(A... args) const {
-        // (no static-local initializer: a failed lookup may longjmp out of here during fuzzing)
+        // (no static-local initializer: kept as a plain atomic, set on the first call)
         static std::atomic<const GuestEntry *> cached{nullptr};
         const GuestEntry *e = cached.load(std::memory_order_relaxed);
         if (!e) {
@@ -424,58 +420,7 @@ private:
     gptr<T> ptr_;
 };
 
-// ---- differential fuzzing (GUEST_FUZZ=1, with GUEST_SHADOW): rewrites that gameplay rarely reaches are run
-// against their originals on generated inputs.
-//
-//     GUEST_FUZZ(0x00613c8c, 500, [](guest::Fuzz &f) {
-//         auto value = f.object<EncryptedInt>();   // scratch memory, random bytes
-//         f.arguments(value, f.number(), f.pick<u32>({99'999, 999'999'999}));
-//     });
-//
-// The generator writes the arguments (and any memory they point to); the call is checked like a shadow check,
-// including the scratch memory.
-namespace detail {
-struct Export;
-}
-
-class Fuzz {
-public:
-    explicit Fuzz(CPU *c, u64 seed);
-    u32 number();                                    // any 32 bits
-    u32 below(u32 limit) { return number() % limit; }
-    float real();                                    // in [-1000, 1000)
-    template <typename T> T pick(std::initializer_list<T> choices) { return choices.begin()[below(choices.size())]; }
-    void bytes(gptr<void> p, u32 size);              // random contents
-    template <typename T> gptr<T> object() {         // random bytes in scratch memory (on the guest stack)
-        gptr<T> p = allocate(sizeof(T)).template cast<T>();
-        bytes(p, sizeof(T));
-        return p;
-    }
-    gptr<void> allocate(u32 size);
-    template <typename... A> void arguments(A... args) {
-        detail::ArgAllocator layout;
-        (layout.next<A>(), ...);
-        c_->r[13] = (c_->r[13] - layout.stack_size()) & ~7u;
-        detail::ArgAllocator al;
-        (detail::write_location(c_, al.next<A>(), c_->r[13], detail::to_bits<A>(args)), ...);
-    }
-
-private:
-    CPU *c_;
-    u64 state_;
-};
-
-namespace detail {
-struct FuzzRegistration {
-    FuzzRegistration(Export &e, int iterations, void (*generate)(Fuzz &));
-};
-}  // namespace detail
-
 }  // namespace guest
-
-#define GUEST_FUZZ(address, iterations, ...)                                                                 \
-    static guest::detail::FuzzRegistration guest_fuzz_##address(guest_export_##address, iterations,        \
-                                                                 +[](guest::Fuzz &f) { (__VA_ARGS__)(f); })
 
 // Replaces the guest function at `address` with the C++ function `fn`: a free function (`count_lives`, or a template
 // specialization such as `lda<absolute>`) or a member function (`Player::update`, called with r0 as `this`).

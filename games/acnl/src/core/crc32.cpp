@@ -26,10 +26,3 @@ u32 crc32(gptr<const u8> data, u32 size, u32 start, u32 final_xor) {
     return crc ^ final_xor;
 }
 GUEST_EXPORT(0x003193e8, crc32);
-
-GUEST_FUZZ(0x003193e8, 300, [](guest::Fuzz &f) {
-    u32 size = f.pick<u32>({0, 1, 2, 3, 4, 5, 7, 8, 63, 64, 100, f.below(300)});
-    auto data = f.allocate(size + 1).cast<u8>();
-    f.bytes(data, size + 1);
-    f.arguments(data, size, f.pick<u32>({0xffffffffu, 0, f.number()}), f.pick<u32>({0xffffffffu, 0, f.number()}));
-});

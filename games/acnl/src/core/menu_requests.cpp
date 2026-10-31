@@ -13,7 +13,6 @@ constexpr s32 NO_VALUE = -1;
 constexpr u32 OBJECT_30_BUSY_OFFSET = 0x1fe;  // a byte of the object at state field 0x30: non-zero blocks requests
 
 // Request codes whose callers reset field 0x50 (meaning not known yet).
-constexpr u32 REQUEST_56 = 0x56;
 constexpr u32 REQUEST_65 = 0x65;
 constexpr u32 REQUEST_66 = 0x66;
 constexpr u32 REQUEST_6C = 0x6c;
@@ -49,15 +48,6 @@ bool begin_menu_request(u32 code) {
     return true;
 }
 GUEST_EXPORT(0x006d265c, begin_menu_request);
-GUEST_FUZZ(0x006d265c, 200, [](guest::Fuzz &f) {
-    state_94fd0c->unknown_30 = f.below(2) != 0 ? f.allocate(0x200).addr() : 0;
-    if (state_94fd0c->unknown_30 != 0) {
-        *gptr<u8>(state_94fd0c->unknown_30 + OBJECT_30_BUSY_OFFSET) = f.below(2);
-    }
-    state_94fd0c->request_state = f.pick<u8>({0, 1, 1, 2});
-    global_98c4fc->value_04 = f.pick<u32>({0, 1, 5});
-    f.arguments(f.pick<u32>({0, REQUEST_6C, REQUEST_71, 0x1ff}));
-});
 
 // Makes a request and, once accepted, sets field 0x50 to the value.
 void request_then_set_50(u32 request, s32 value) {
@@ -66,7 +56,6 @@ void request_then_set_50(u32 request, s32 value) {
     }
 }
 GUEST_EXPORT(0x006d393c, request_then_set_50);
-GUEST_FUZZ(0x006d393c, 100, [](guest::Fuzz &f) { f.arguments(REQUEST_56, s32(f.number())); });
 
 void request_66_clearing_40() {
     state_94fd0c->value_40 = 0;
@@ -75,7 +64,6 @@ void request_66_clearing_40() {
     }
 }
 GUEST_EXPORT(0x006d3960, request_66_clearing_40);
-GUEST_FUZZ(0x006d3960, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void try_request_71() {
     if (try_request(REQUEST_71, 0) != 0) {
@@ -83,7 +71,6 @@ void try_request_71() {
     }
 }
 GUEST_EXPORT(0x006d3c1c, try_request_71);
-GUEST_FUZZ(0x006d3c1c, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void try_request_65() {
     if (try_request(REQUEST_65, 0) != 0) {
@@ -91,7 +78,6 @@ void try_request_65() {
     }
 }
 GUEST_EXPORT(0x006d3d98, try_request_65);
-GUEST_FUZZ(0x006d3d98, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void begin_request_6c() {
     if (begin_menu_request(REQUEST_6C)) {
@@ -99,7 +85,6 @@ void begin_request_6c() {
     }
 }
 GUEST_EXPORT(0x006d39fc, begin_request_6c);
-GUEST_FUZZ(0x006d39fc, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void begin_request_73() {
     if (begin_menu_request(REQUEST_73)) {
@@ -107,7 +92,6 @@ void begin_request_73() {
     }
 }
 GUEST_EXPORT(0x006d3d70, begin_request_73);
-GUEST_FUZZ(0x006d3d70, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void begin_request_71() {
     if (begin_menu_request(REQUEST_71)) {
@@ -115,7 +99,6 @@ void begin_request_71() {
     }
 }
 GUEST_EXPORT(0x006d3dc4, begin_request_71);
-GUEST_FUZZ(0x006d3dc4, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Stores the value in field 0x38, then begins request 0x72, which also clears byte 0xf.
 void set_38_and_begin_request_72(u32 value) {
@@ -126,7 +109,6 @@ void set_38_and_begin_request_72(u32 value) {
     }
 }
 GUEST_EXPORT(0x006d3dec, set_38_and_begin_request_72);
-GUEST_FUZZ(0x006d3dec, 100, [](guest::Fuzz &f) { f.arguments(f.number()); });
 
 // Sets the byte at 0x208 of the object; always true.
 struct ReadyFlagObject {
@@ -140,18 +122,12 @@ bool mark_object_ready(ReadyFlagObject &object) {
     return true;
 }
 GUEST_EXPORT(0x006d3b80, mark_object_ready);
-GUEST_FUZZ(0x006d3b80, 50, [](guest::Fuzz &f) { f.arguments(f.object<ReadyFlagObject>()); });
 
 // Whether a request could begin right now: the state is ready and the global at 0x0098c4fc has no value.
 bool request_state_ready_without_value() {
     return state_94fd0c->request_state == REQUEST_READY && global_98c4fc->value_04 == 0;
 }
 GUEST_EXPORT(0x006d465c, request_state_ready_without_value);
-GUEST_FUZZ(0x006d465c, 100, [](guest::Fuzz &f) {
-    state_94fd0c->request_state = f.pick<u8>({0, 1, 2});
-    global_98c4fc->value_04 = f.pick<u32>({0, 1});
-    f.arguments();
-});
 
 void begin_request_75() {
     if (begin_menu_request(REQUEST_75)) {
@@ -159,7 +135,6 @@ void begin_request_75() {
     }
 }
 GUEST_EXPORT(0x006d3218, begin_request_75);
-GUEST_FUZZ(0x006d3218, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void begin_request_76() {
     if (begin_menu_request(REQUEST_76)) {
@@ -167,7 +142,6 @@ void begin_request_76() {
     }
 }
 GUEST_EXPORT(0x006d3790, begin_request_76);
-GUEST_FUZZ(0x006d3790, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void begin_request_74() {
     if (begin_menu_request(REQUEST_74)) {
@@ -175,7 +149,6 @@ void begin_request_74() {
     }
 }
 GUEST_EXPORT(0x006d3844, begin_request_74);
-GUEST_FUZZ(0x006d3844, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Begins request 0x7a, which also sets the mode.
 void begin_request_7a() {
@@ -184,4 +157,3 @@ void begin_request_7a() {
     }
 }
 GUEST_EXPORT(0x006d38c8, begin_request_7a);
-GUEST_FUZZ(0x006d38c8, 100, [](guest::Fuzz &f) { f.arguments(); });

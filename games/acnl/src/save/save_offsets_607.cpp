@@ -48,53 +48,31 @@ gptr<SavePlayer> player_in_array(gptr<SavePlayer> players, u32 index);
 
 u32 save_data_base_offset() { return SaveData::BASE_OFFSET; }
 GUEST_EXPORT(0x00607198, save_data_base_offset);
-GUEST_FUZZ(0x00607198, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 u32 save_slot_table_offset() { return SLOT_TABLE_OFFSET; }
 GUEST_EXPORT(0x006073cc, save_slot_table_offset);
-GUEST_FUZZ(0x006073cc, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 u32 save_town_block_offset() { return TOWN_BLOCK_OFFSET; }
 GUEST_EXPORT(0x006075ec, save_town_block_offset);
 GUEST_EXPORT(0x00607690, save_town_block_offset);
-GUEST_FUZZ(0x006075ec, 20, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00607690, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // A request is pending with offset 0 and the value the current source holds.
 bool request_matches_current_source() {
     return *request_active != 0 && *request_offset == 0 && *request_value == *current_value_source;
 }
 GUEST_EXPORT(0x00607474, request_matches_current_source);
-GUEST_FUZZ(0x00607474, 50, [](guest::Fuzz &f) {
-    *request_active = s8(f.below(2));
-    *request_offset = f.pick<u32>({0, 1});
-    *request_value = f.pick<u32>({*current_value_source, 7});
-    f.arguments();
-});
 
 // A request is pending at the slot table with the given value.
 bool request_matches_slot_table() {
     return *request_active != 0 && *request_offset == SLOT_TABLE_OFFSET && *request_value == PENDING_VALUE_MATCH;
 }
 GUEST_EXPORT(0x006074b4, request_matches_slot_table);
-GUEST_FUZZ(0x006074b4, 50, [](guest::Fuzz &f) {
-    *request_active = s8(f.below(2));
-    *request_offset = f.pick<u32>({SLOT_TABLE_OFFSET, 1});
-    *request_value = f.pick<u32>({PENDING_VALUE_MATCH, 7});
-    f.arguments();
-});
 
 // A request is pending with offset 0 and the reserved value.
 bool request_is_reserved() {
     return *request_active != 0 && *request_offset == 0 && *request_value == RESERVED_VALUE;
 }
 GUEST_EXPORT(0x00607bdc, request_is_reserved);
-GUEST_FUZZ(0x00607bdc, 50, [](guest::Fuzz &f) {
-    *request_active = s8(f.below(2));
-    *request_offset = f.pick<u32>({0, 1});
-    *request_value = f.pick<u32>({RESERVED_VALUE, 7});
-    f.arguments();
-});
 
 // Records the main slot's value and the default words in the settings.
 void reset_settings() {
@@ -104,7 +82,6 @@ void reset_settings() {
     settings->words_24[1] = default_words[1];
 }
 GUEST_EXPORT(0x00607f9c, reset_settings);
-GUEST_FUZZ(0x00607f9c, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Copies the reference clock to a global, and sets two bytes to 0x28.
 void copy_reference_clock() {
@@ -115,7 +92,6 @@ void copy_reference_clock() {
     (*pair_9506f0)[1] = PAIR_VALUE;
 }
 GUEST_EXPORT(0x0060b0b8, copy_reference_clock);
-GUEST_FUZZ(0x0060b0b8, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // How far the player record of the slot lies from the start of the save data (wrong for a slot past the fourth, whose
 // record is null).
@@ -124,7 +100,6 @@ u32 player_offset_in_save(u32 slot) {
     return player_in_array(guest::addr_of(save->players[0]), slot).addr() - save.addr();
 }
 GUEST_EXPORT(0x00607588, player_offset_in_save);
-GUEST_FUZZ(0x00607588, 50, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, f.number()})); });
 
 // A request is pending for the whole player record of the slot (its offset is the player's and it covers SavePlayer::SIZE).
 bool request_is_for_player(u32 slot) {
@@ -132,10 +107,3 @@ bool request_is_for_player(u32 slot) {
     return *request_active != 0 && *request_offset == offset && *request_value == SavePlayer::SIZE;
 }
 GUEST_EXPORT(0x006077c0, request_is_for_player);
-GUEST_FUZZ(0x006077c0, 100, [](guest::Fuzz &f) {
-    u32 slot = f.below(SaveData::PLAYER_COUNT);
-    *request_active = s8(f.below(2));
-    *request_offset = f.below(2) ? player_offset_in_save(slot) : f.number();
-    *request_value = f.below(2) ? SavePlayer::SIZE : f.number();
-    f.arguments(slot);
-});

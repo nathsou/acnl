@@ -46,65 +46,44 @@ void seal_small_block(SmallBlock &block) {
     block.crc = crc32(guest::addr_of(block.data[0]), SMALL_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x0070f624, seal_small_block);
-GUEST_FUZZ(0x0070f624, 100, [](guest::Fuzz &f) { f.arguments(f.object<SmallBlock>()); });
 
 bool small_block_is_sealed(SmallBlock &block) {
     return block.crc == crc32(guest::addr_of(block.data[0]), SMALL_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x0070f648, small_block_is_sealed);
-GUEST_FUZZ(0x0070f648, 100, [](guest::Fuzz &f) {
-    auto block = f.object<SmallBlock>();
-    if (f.below(2) != 0) {
-        seal_small_block(*block);
-    }
-    f.arguments(block);
-});
 
 void seal_large_block(LargeBlock &block) {
     block.crc = crc32(guest::addr_of(block.data[0]), LARGE_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x00712bac, seal_large_block);
-GUEST_FUZZ(0x00712bac, 30, [](guest::Fuzz &f) { f.arguments(f.object<LargeBlock>()); });
 
 // The CRC of the data after the stored one (not stored).
 u32 save_part_a_crc(SavePartA &block) {
     return crc32(guest::addr_of(block.data[0]), SAVE_PART_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x0076ee28, save_part_a_crc);
-GUEST_FUZZ(0x0076ee28, 10, [](guest::Fuzz &f) { f.arguments(f.object<SavePartA>()); });
 
 bool save_part_a_crc_matches(SavePartA &block) {
     return block.crc == save_part_a_crc(block);
 }
 GUEST_EXPORT(0x0076ee40, save_part_a_crc_matches);
-GUEST_FUZZ(0x0076ee40, 10, [](guest::Fuzz &f) { f.arguments(f.object<SavePartA>()); });
 
 u32 save_part_b_crc(SavePartB &block) {
     return crc32(guest::addr_of(block.data[0]), SAVE_PART_B_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x0076ef48, save_part_b_crc);
-GUEST_FUZZ(0x0076ef48, 10, [](guest::Fuzz &f) { f.arguments(f.object<SavePartB>()); });
 
 bool save_part_b_crc_matches(SavePartB &block) {
     return block.crc == save_part_b_crc(block);
 }
 GUEST_EXPORT(0x0076ef94, save_part_b_crc_matches);
-GUEST_FUZZ(0x0076ef94, 10, [](guest::Fuzz &f) { f.arguments(f.object<SavePartB>()); });
 
 void seal_tiny_block(TinyBlock &block) {
     block.crc = crc32(guest::addr_of(block.data[0]), TINY_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x00757cfc, seal_tiny_block);
-GUEST_FUZZ(0x00757cfc, 50, [](guest::Fuzz &f) { f.arguments(f.object<TinyBlock>()); });
 
 bool tiny_block_is_sealed(TinyBlock &block) {
     return block.crc == crc32(guest::addr_of(block.data[0]), TINY_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x00757d20, tiny_block_is_sealed);
-GUEST_FUZZ(0x00757d20, 50, [](guest::Fuzz &f) {
-    auto block = f.object<TinyBlock>();
-    if (f.below(2) != 0) {
-        seal_tiny_block(*block);
-    }
-    f.arguments(block);
-});

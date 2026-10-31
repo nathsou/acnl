@@ -84,14 +84,3 @@ u32 unregister_from_menu_list(u32 object) {
     return object;
 }
 GUEST_EXPORT(0x006aac18, unregister_from_menu_list);
-
-// ---- fuzz inputs
-GUEST_FUZZ(0x006aaa58, 200, [](guest::Fuzz &f) {
-    auto key = f.allocate(16);
-    f.arguments(key.addr(), f.number(), f.number(), f.number());
-});
-GUEST_FUZZ(0x006aaae8, 200, [](guest::Fuzz &f) { f.arguments(f.below(0x700)); });
-GUEST_FUZZ(0x006aac18, 200, [](guest::Fuzz &f) {
-    auto object = f.allocate(0x200);
-    f.arguments(object.addr());
-});

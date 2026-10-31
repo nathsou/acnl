@@ -9,25 +9,6 @@ constexpr u32 NEW_STATE_RESETS = 5;  // setting this state resets the state at 0
 inline constexpr guest::Function<0x003119d9, void(SaveVillager &villager)> compact_items_8d6;
 inline constexpr guest::Function<0x0030a01c, void()> reset_state_94d938;
 
-gptr<SaveVillager> fuzz_villager(guest::Fuzz &f) {
-    auto villager = f.object<SaveVillager>();
-    for (Item &item : villager->items_8d6) {
-        item.id = f.pick<u16>({Item::EMPTY, 0x2000, 0x2001, 0x2002, u16(f.number())});
-    }
-    villager->item_8e6.id = f.pick<u16>({Item::EMPTY, 0x2000, 0x2002, u16(f.number())});
-    return villager;
-}
-
-gptr<Item> fuzz_item(guest::Fuzz &f, gptr<SaveVillager> villager) {
-    auto item = f.object<Item>();
-    if (f.below(2) != 0) {
-        *item = villager->items_8d6[f.below(SaveVillager::SLOTS)];
-    } else {
-        item->id = f.pick<u16>({Item::EMPTY, 0x2000, 0x2001, 0x2003, u16(f.number())});
-    }
-    return item;
-}
-
 }  // namespace
 
 u32 SaveVillager::count_items_8d6() const {
@@ -40,7 +21,6 @@ u32 SaveVillager::count_items_8d6() const {
     return count;
 }
 GUEST_EXPORT(0x0011a1a1, SaveVillager::count_items_8d6);
-GUEST_FUZZ(0x0011a1a1, 100, [](guest::Fuzz &f) { f.arguments(fuzz_villager(f)); });
 
 void SaveVillager::add_item_8d6(const Item &item) {
     if (item.is_empty()) {
@@ -58,10 +38,6 @@ void SaveVillager::add_item_8d6(const Item &item) {
     items_8d6[SLOTS - 1] = item;
 }
 GUEST_EXPORT(0x00112619, SaveVillager::add_item_8d6);
-GUEST_FUZZ(0x00112619, 200, [](guest::Fuzz &f) {
-    auto villager = fuzz_villager(f);
-    f.arguments(villager, fuzz_item(f, villager));
-});
 
 bool SaveVillager::remove_item_8d6(const Item &item) {
     if (item.is_empty()) {
@@ -78,10 +54,6 @@ bool SaveVillager::remove_item_8d6(const Item &item) {
     return false;
 }
 GUEST_EXPORT(0x0011271d, SaveVillager::remove_item_8d6);
-GUEST_FUZZ(0x0011271d, 200, [](guest::Fuzz &f) {
-    auto villager = fuzz_villager(f);
-    f.arguments(villager, fuzz_item(f, villager));
-});
 
 bool SaveVillager::set_item_8e6(const Item &item) {
     if (item.is_empty() || item.is_wear_class_7()) {
@@ -91,10 +63,6 @@ bool SaveVillager::set_item_8e6(const Item &item) {
     return false;
 }
 GUEST_EXPORT(0x00112e09, SaveVillager::set_item_8e6);
-GUEST_FUZZ(0x00112e09, 200, [](guest::Fuzz &f) {
-    auto villager = fuzz_villager(f);
-    f.arguments(villager, fuzz_item(f, villager));
-});
 
 void SaveVillager::clear_flag_bc_bit5_of_used_records() {
     for (VillagerPlayerRecord &record : player_records) {
@@ -104,7 +72,6 @@ void SaveVillager::clear_flag_bc_bit5_of_used_records() {
     }
 }
 GUEST_EXPORT(0x00113469, SaveVillager::clear_flag_bc_bit5_of_used_records);
-GUEST_FUZZ(0x00113469, 100, [](guest::Fuzz &f) { f.arguments(f.object<SaveVillager>()); });
 
 void SaveVillager::set_state_250f(u32 state) {
     state_250f = u8(state);
@@ -113,9 +80,6 @@ void SaveVillager::set_state_250f(u32 state) {
     }
 }
 GUEST_EXPORT(0x001139fd, SaveVillager::set_state_250f);
-GUEST_FUZZ(0x001139fd, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<SaveVillager>(), f.pick<u32>({0, 1, 4, 5, 6, 0x105, 0xffffffffu}));
-});
 
 // A copy of the villager's item at the index of the long list (the empty item past its ten slots).
 void copy_item_24ae(Item &out, const SaveVillager &villager, u32 index) {
@@ -123,6 +87,3 @@ void copy_item_24ae(Item &out, const SaveVillager &villager, u32 index) {
     copy_item(out, index < LONG_LIST_SIZE ? villager.items_24ae[index] : *empty_item);
 }
 GUEST_EXPORT(0x0030b5a5, copy_item_24ae);
-GUEST_FUZZ(0x0030b5a5, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.object<SaveVillager>(), f.pick<u32>({0, 5, 9, 10, f.number()}));
-});

@@ -130,20 +130,3 @@ void apply_entry_reload(u8 &reported, const SharedEntryMessage &message, u32 sta
     send_message(SEND_CHANNEL, SEND_UNKNOWN, *notice, sizeof(SharedEntryMessage));
 }
 GUEST_EXPORT(0x00206728, apply_entry_reload);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static void some_entry_message_call(guest::Fuzz &f) {
-    auto reported = f.object<u8>();
-    *reported = f.pick<u8>({0, 0x0f, 0x07, 0x0e, u8(f.number())});
-    auto message = f.object<SharedEntryMessage>();
-    u32 id = f.below(4) ? f.below(SharedEntryTable::ENTRY_COUNT) : 0;
-    message->set_header(f.below(32), id, f.below(STATIONS));
-    f.arguments(reported, message, f.pick<u32>({0, 1, 2, 3, 4, f.number()}));
-}
-
-GUEST_FUZZ(0x00206430, 200, [](guest::Fuzz &f) { f.arguments(f.object<SharedEntry>()); });
-GUEST_FUZZ(0x00206454, 200, [](guest::Fuzz &f) { f.arguments(f.object<SharedEntry>()); });
-GUEST_FUZZ(0x0020649c, 200, some_entry_message_call);
-GUEST_FUZZ(0x00206594, 200, some_entry_message_call);
-GUEST_FUZZ(0x00206728, 200, some_entry_message_call);

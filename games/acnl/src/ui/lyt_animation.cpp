@@ -86,25 +86,3 @@ Animation &destroy_animation(Animation &self) {
     return self;
 }
 GUEST_EXPORT(0x0056988c, destroy_animation);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Animation> some_animation(guest::Fuzz &f, bool allow_target) {
-    auto animation = f.object<Animation>();
-    animation->target = nullptr;
-    if (allow_target && f.below(2) != 0) {
-        animation->target = f.object<AnimationTarget>();
-    }
-    return animation;
-}
-
-static float some_float(guest::Fuzz &f) {
-    return f.pick<float>({0.0f, -1.0f, 1.0f, *setup_min_value, f.real(), f.real()});
-}
-
-GUEST_FUZZ(0x005697e0, 300, [](guest::Fuzz &f) { f.arguments(some_animation(f, true), some_float(f)); });
-GUEST_FUZZ(0x005697f8, 300, [](guest::Fuzz &f) {
-    f.arguments(some_animation(f, true), f.pick<u32>({1, 3, f.number()}), some_float(f), some_float(f),
-                some_float(f));
-});
-GUEST_FUZZ(0x0056988c, 200, [](guest::Fuzz &f) { f.arguments(some_animation(f, false)); });

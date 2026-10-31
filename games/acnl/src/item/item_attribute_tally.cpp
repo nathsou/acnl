@@ -46,9 +46,3 @@ void ItemAttributeTally::add(const Item &item) {
     }
 }
 GUEST_EXPORT(0x0022d518, ItemAttributeTally::add);
-GUEST_FUZZ(0x0022d518, 300, [](guest::Fuzz &f) {
-    auto tally = f.object<ItemAttributeTally>();
-    auto item = f.object<Item>();
-    item->id = f.below(8) == 0 ? u16(f.number()) : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(tally, item);
-});

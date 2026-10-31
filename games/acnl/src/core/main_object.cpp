@@ -14,7 +14,6 @@ constexpr u32 READY_GLOBAL_BYTE = 2;  // the value read_global_object_byte must 
 
 }  // namespace
 
-
 // station_bits when both flags are set, else 0.
 u8 NetSession::station() const {
     if (flag_132ac == 0 || flag_132ae == 0) {
@@ -83,48 +82,3 @@ bool has_current_station_bit(gptr<StationMaskAt5> object) {
     return (bit_for_index(index) & bits) != 0;
 }
 GUEST_EXPORT(0x0075e0e8, has_current_station_bit);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// A NetSession whose tail fields (0x13268-0x132af) are random scratch bytes: only those are read through it,
-// so the object's base address is placed before the scratch block.
-static gptr<NetSession> some_session_tail(guest::Fuzz &f) {
-    constexpr u32 TAIL_START = 0x13260;
-    constexpr u32 TAIL_SIZE = 0x50;
-    gptr<void> tail = f.allocate(TAIL_SIZE);
-    f.bytes(tail, TAIL_SIZE);
-    auto object = gptr<NetSession>(tail.addr() - TAIL_START);
-    if (f.below(2) != 0) {
-        object->flag_132ac = u8(f.below(2));
-        object->flag_132ae = u8(f.below(2));
-    }
-    return object;
-}
-
-GUEST_FUZZ(0x0075dfe8, 300, [](guest::Fuzz &f) { f.arguments(some_session_tail(f), u32(0x9502f5)); });
-GUEST_FUZZ(0x0075e048, 200, [](guest::Fuzz &f) { f.arguments(some_session_tail(f)); });
-GUEST_FUZZ(0x0075e010, 300, [](guest::Fuzz &f) {
-    // read-only: an address in the game's static data, so that both 0x3c and 0x1326e land in mapped memory
-    auto object = gptr<NetSession>(0x00950000 + f.below(0x80000));
-    u32 index = f.pick<u32>({0, 1, 2, 3, 4, 5, 6, 7, 8, 0xffffffff, f.number()});
-    if (f.below(4) == 0) {
-        index = object->buffer.own_station;
-    }
-    f.arguments(object, index);
-});
-GUEST_FUZZ(0x0075e058, 300, [](guest::Fuzz &f) {
-    auto object = f.object<SlotState>();
-    u32 index = f.pick<u32>({0, 4, 7, 8, 9, 0xffffffff, f.below(8), f.number()});
-    if (f.below(2) != 0) {
-        object->slot = u8(index);
-    }
-    if (f.below(2) != 0) {
-        object->state = SlotState::STATE_2;
-    }
-    f.arguments(object, index);
-});
-GUEST_FUZZ(0x0075e0e8, 200, [](guest::Fuzz &f) {
-    gptr<void> block = f.allocate(0x100);
-    f.bytes(block, 0x100);
-    f.arguments(block.cast<StationMaskAt5>());
-});

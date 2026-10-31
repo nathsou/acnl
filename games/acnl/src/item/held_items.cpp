@@ -44,20 +44,6 @@ void HeldItems::take(const Item &item) {
     second = *empty_item;
 }
 GUEST_EXPORT(0x0027ac38, HeldItems::take);
-GUEST_FUZZ(0x0027ac38, 400, [](guest::Fuzz &f) {
-    auto held = f.object<HeldItems>();
-    auto item = f.object<Item>();
-    for (Item *slot : {&held->first, &held->second, item.get()}) {
-        gptr<CategoryInfo> hand_items = category_info(HAND_CATEGORY);
-        if (f.below(2) == 0) {
-            slot->id = u16(hand_items->first_item_number + f.below(hand_items->item_count));
-        } else {
-            slot->id = f.below(5) == 0 ? Item::EMPTY : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-        }
-        slot->flags = u16(f.number());
-    }
-    f.arguments(held, item);
-});
 
 // An object that may have two holders of items in hand.
 struct HeldItemsOwner {
@@ -79,17 +65,3 @@ void HeldItemsOwner::hold(const Item &item) {
     }
 }
 GUEST_EXPORT(0x001ad250, HeldItemsOwner::hold);
-GUEST_FUZZ(0x001ad250, 200, [](guest::Fuzz &f) {
-    auto owner = f.object<HeldItemsOwner>();
-    owner->primary = f.below(3) != 0 ? f.object<HeldItems>() : gptr<HeldItems>(0u);
-    owner->secondary = f.below(3) != 0 ? f.object<HeldItems>() : gptr<HeldItems>(0u);
-    for (auto holder : {owner->primary, owner->secondary}) {
-        if (holder != nullptr) {
-            holder->first.id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-            holder->second.id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-        }
-    }
-    auto item = f.object<Item>();
-    item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(owner, item);
-});

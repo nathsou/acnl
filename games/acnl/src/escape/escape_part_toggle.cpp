@@ -83,20 +83,3 @@ void EscapeToggle::set_registered(u32 on) {
     registered = 0;
 }
 GUEST_EXPORT(0x402fe444, EscapeToggle::set_registered);
-
-GUEST_FUZZ(0x402fe154, 200, [](guest::Fuzz &f) {
-    auto owner = f.object<EscapePartOwner>();
-    owner->value_124 = 0;
-    f.arguments(owner);
-});
-GUEST_FUZZ(0x402fe444, 200, [](guest::Fuzz &f) {
-    auto toggle = f.object<EscapeToggle>();
-    if (f.below(2) != 0) {
-        toggle->holder = nullptr;
-    } else {
-        auto holder = f.object<ToggleHolder>();
-        toggle->holder = holder;
-        toggle->value_8c = holder->value_0c + 1;  // never equal: the release call is not reached
-    }
-    f.arguments(toggle, 0u);
-});

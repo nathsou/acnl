@@ -1,5 +1,6 @@
 // Small actions on the players' items: adding to the catalog of seen items, taking off the shoes (worn slot 7).
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
+#include "item/item.hpp"
 #include "item/item_slots.hpp"
 #include "save/player.hpp"
 
@@ -107,40 +108,3 @@ bool current_player_flag_5712_bit7() {
     return (player->flags_5712 >> 7) != 0;
 }
 GUEST_EXPORT(0x00695880, current_player_flag_5712_bit7);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static void fuzz_register(guest::Fuzz &f) {
-    auto owner = f.object<PlayerSlotOwner>();
-    owner->player_slot = u8(f.pick<u32>({0, 1, 2, 3, 4, f.number()}));
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({Item::EMPTY, Item::FIRST_ITEM, Item::FIRST_ITEM + f.below(Item::ITEM_COUNT), f.number()}));
-    f.arguments(owner, item);
-}
-GUEST_FUZZ(0x0065037c, 100, fuzz_register);
-GUEST_FUZZ(0x00653854, 100, fuzz_register);
-GUEST_FUZZ(0x00657824, 100, fuzz_register);
-
-static void fuzz_player_slot(guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, f.number()}));
-}
-GUEST_FUZZ(0x00762370, 100, [](guest::Fuzz &f) {
-    auto owner = f.object<PlayerSlotOwner>();
-    owner->player_slot = u8(f.pick<u32>({0, 1, 2, 3, 4, 7}));
-    f.arguments(owner);
-});
-GUEST_FUZZ(0x007128b4, 300, [](guest::Fuzz &f) {
-    auto player = f.object<SavePlayer>();
-    player->worn.slots[0] = *fuzz::assorted_item(f);
-    player->worn.slots[1] = *fuzz::assorted_item(f);
-    f.arguments(player);
-});
-GUEST_FUZZ(0x007621d0, 100, [](guest::Fuzz &f) {
-    auto owner = f.object<PlayerSlotOwner>();
-    owner->player_slot = u8(f.pick<u32>({0, 1, 2, 3, 4, 7}));
-    f.arguments(owner);
-});
-GUEST_FUZZ(0x00762324, 150, fuzz_register);
-GUEST_FUZZ(0x006576f8, 100, fuzz_player_slot);
-GUEST_FUZZ(0x0065e058, 100, fuzz_player_slot);
-GUEST_FUZZ(0x00695880, 100, [](guest::Fuzz &f) { f.arguments(); });

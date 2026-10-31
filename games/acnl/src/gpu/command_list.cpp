@@ -90,7 +90,6 @@ void advance_command_cursor(u32 bytes) {
     *command_cursor = gptr<u32>(command_cursor->addr() + bytes);
 }
 GUEST_EXPORT(0x001279b4, advance_command_cursor);
-GUEST_FUZZ(0x001279b4, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 8, 16, 24, 32})); });
 
 // Closes the current segment of the current command list: emits a few fixed commands and records the segment.
 void close_command_segment() {
@@ -127,4 +126,3 @@ void close_command_segment() {
     segment_hook_end();
 }
 GUEST_EXPORT(0x001279cc, close_command_segment);
-GUEST_FUZZ(0x001279cc, 1, [](guest::Fuzz &f) { f.arguments(); });

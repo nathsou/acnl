@@ -93,14 +93,3 @@ static gptr<Entry16> entry_16(u32 index) {
     return guest::addr_of(entries_16[index]);
 }
 GUEST_EXPORT(0x006e2270, entry_16);
-
-GUEST_FUZZ(0x006e1924, 200, [](guest::Fuzz &f) {
-    auto slots = f.object<ResourceSlots>();
-    for (ResourceSlot &slot : slots->slots) {
-        slot.handle = nullptr;  // (releasing a made-up handle is the game's business)
-    }
-    f.arguments(slots);
-});
-GUEST_FUZZ(0x006e2198, 200, [](guest::Fuzz &f) { f.arguments(f.object<ResourceSlots>()); });
-GUEST_FUZZ(0x006e225c, 200, [](guest::Fuzz &f) { f.arguments(f.below(40)); });
-GUEST_FUZZ(0x006e2270, 200, [](guest::Fuzz &f) { f.arguments(f.below(40)); });

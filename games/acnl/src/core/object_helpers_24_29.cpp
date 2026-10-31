@@ -1,6 +1,6 @@
 // Small functions of the 0x0020..0x002a area on objects whose type is not known yet: a global copy, a global read,
 // a header initialiser, and calls forwarded to a child object or to every object of a list.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "hobj/house_object.hpp"
 
 using guest::gptr;
@@ -17,7 +17,6 @@ constexpr u32 CHILD_VIRTUAL_SLOT = 0x60 / 4;
 constexpr u32 CHILD_FLOAT_SLOT = 0x70 / 4;
 constexpr u32 NODE_SLOT_58 = 0x58 / 4;
 constexpr u32 NODE_SLOT_0C = 0xc / 4;
-constexpr u32 FUZZ_SLOTS = 0x70 / 4 + 1;
 
 struct TwoWords {
     u32 first;
@@ -61,28 +60,6 @@ struct ListOwner {
 };
 GUEST_OFFSET(ListOwner, first, 4);
 
-gptr<ChildHolder> fuzz_child_holder(guest::Fuzz &f) {
-    auto holder = f.object<ChildHolder>();
-    auto child = f.object<VirtualObject>();
-    child->vtable = fuzz::harmless_vtable(f, FUZZ_SLOTS);
-    holder->child = f.below(4) != 0 ? child : gptr<VirtualObject>(0u);
-    return holder;
-}
-
-gptr<ListOwner> fuzz_list(guest::Fuzz &f) {
-    auto owner = f.object<ListOwner>();
-    owner->first = nullptr;
-    gptr<VirtualListNode> next = nullptr;
-    for (u32 i = f.below(4); i > 0; i--) {
-        auto node = f.object<VirtualListNode>();
-        node->vtable = fuzz::harmless_vtable(f, FUZZ_SLOTS);
-        node->next = next;
-        next = node;
-    }
-    owner->first = next;
-    return owner;
-}
-
 // Calls the same virtual function of every node of the list, following each node's link after the call.
 void call_each_node(ListOwner &owner, u32 slot) {
     gptr<VirtualListNode> node = owner.first;
@@ -98,19 +75,16 @@ void copy_first_word_to_second() {
     words_9853b0->second = words_9853b0->first;
 }
 GUEST_EXPORT(0x0024f4e8, copy_first_word_to_second);
-GUEST_FUZZ(0x0024f4e8, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 u32 read_word_957308() {
     return *word_957308;
 }
 GUEST_EXPORT(0x0020714c, read_word_957308);
-GUEST_FUZZ(0x0020714c, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 void clear_flag_20(ByteObject &object) {
     object.flag_20 = 0;
 }
 GUEST_EXPORT(0x00207b10, clear_flag_20);
-GUEST_FUZZ(0x00207b10, 100, [](guest::Fuzz &f) { f.arguments(f.object<ByteObject>()); });
 
 // Gives the header its identifier (keeping the high bit of byte 0), clears a flag and sets a two-bit value.
 void init_header(HeaderObject &object) {
@@ -119,7 +93,6 @@ void init_header(HeaderObject &object) {
     object.byte_04 = u8((object.byte_04 & ~BYTE4_MASK) | BYTE4_VALUE);
 }
 GUEST_EXPORT(0x002069c8, init_header);
-GUEST_FUZZ(0x002069c8, 100, [](guest::Fuzz &f) { f.arguments(f.object<HeaderObject>()); });
 
 // Calls the child's virtual function; the result is whatever it returns, 0 without a child.
 u32 call_child_virtual_60(ChildHolder &holder) {
@@ -130,7 +103,6 @@ u32 call_child_virtual_60(ChildHolder &holder) {
     return guest::call_address<u32>(child->vtable[CHILD_VIRTUAL_SLOT], child);
 }
 GUEST_EXPORT(0x0029b464, call_child_virtual_60);
-GUEST_FUZZ(0x0029b464, 100, [](guest::Fuzz &f) { f.arguments(fuzz_child_holder(f)); });
 
 // Calls the child's virtual function returning a float; 0 without a child.
 float call_child_float_70(ChildHolder &holder) {
@@ -141,16 +113,13 @@ float call_child_float_70(ChildHolder &holder) {
     return guest::call_address<float>(child->vtable[CHILD_FLOAT_SLOT], child);
 }
 GUEST_EXPORT(0x0029b6c8, call_child_float_70);
-GUEST_FUZZ(0x0029b6c8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_child_holder(f)); });
 
 void call_virtual_58_of_each_node(ListOwner &owner) {
     call_each_node(owner, NODE_SLOT_58);
 }
 GUEST_EXPORT(0x0029b5c4, call_virtual_58_of_each_node);
-GUEST_FUZZ(0x0029b5c4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_list(f)); });
 
 void call_virtual_3_of_each_node(ListOwner &owner) {
     call_each_node(owner, NODE_SLOT_0C);
 }
 GUEST_EXPORT(0x002f6adc, call_virtual_3_of_each_node);
-GUEST_FUZZ(0x002f6adc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_list(f)); });

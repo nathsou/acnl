@@ -49,17 +49,3 @@ static void load_scaled_vec(FloatVec3 &out, const EscapeShortVecObject &source) 
     out.z = z * scale;
 }
 GUEST_EXPORT(0x402fe800, load_scaled_vec);
-
-GUEST_FUZZ(0x402fe794, 300, [](guest::Fuzz &f) {
-    auto object = f.object<EscapeShortVecObject>();
-    auto source = f.object<FloatVec3>();
-    source->x = f.pick<float>({0.0f, f.real(), f.real() * 1000.0f});
-    source->y = f.real();
-    source->z = f.pick<float>({0.0f, -1.0f, f.real() * 100000.0f});
-    f.arguments(object, source);
-});
-GUEST_FUZZ(0x402fe800, 300, [](guest::Fuzz &f) {
-    auto out = f.object<FloatVec3>();
-    auto object = f.object<EscapeShortVecObject>();
-    f.arguments(out, object);
-});

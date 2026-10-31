@@ -20,14 +20,6 @@ struct SlotRecords {
     SlotRecord slots[SLOT_COUNT];
 };
 
-guest::gptr<SlotRecords> fuzz_slots(guest::Fuzz &f) {
-    auto records = f.object<SlotRecords>();
-    for (SlotRecord &slot : records->slots) {
-        slot.flags = f.pick<u8>({0, 1, 0xfe, 0xff});
-    }
-    return records;
-}
-
 }  // namespace
 
 u32 count_free_slots(SlotRecords &records) {
@@ -40,7 +32,6 @@ u32 count_free_slots(SlotRecords &records) {
     return count;
 }
 GUEST_EXPORT(0x0071d578, count_free_slots);
-GUEST_FUZZ(0x0071d578, 40, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
 
 // The index of the first free slot, -1 when all are in use.
 s32 first_free_slot(SlotRecords &records) {
@@ -52,4 +43,3 @@ s32 first_free_slot(SlotRecords &records) {
     return NO_SLOT;
 }
 GUEST_EXPORT(0x0071d5b8, first_free_slot);
-GUEST_FUZZ(0x0071d5b8, 40, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });

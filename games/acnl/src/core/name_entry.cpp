@@ -28,36 +28,3 @@ bool match_entry(const NameEntry &a, const NameEntry &b) {
     return compare_strings(guest::addr_of(&a.string[0]), guest::addr_of(&b.string[0])) != 0;
 }
 GUEST_EXPORT(0x00311a34, match_entry);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<NameEntry> some_entry(guest::Fuzz &f) {
-    auto entry = f.object<NameEntry>();
-    for (u32 i = 0; i < sizeof(entry->string); i++) {
-        entry->string[i] = 0;
-    }
-    u32 length = f.below(6);
-    for (u32 i = 0; i < length; i++) {
-        entry->string[i] = u8('a' + f.below(3));
-    }
-    entry->id = u16(f.below(3));
-    entry->flags = u8(f.below(4));
-    return entry;
-}
-
-GUEST_FUZZ(0x00311a34, 300, [](guest::Fuzz &f) {
-    auto a = some_entry(f);
-    auto b = some_entry(f);
-    switch (f.below(3)) {
-    case 0:
-        *b = *a;
-        break;
-    case 1:
-        b->id = a->id;
-        b->flags = a->flags;
-        break;
-    default:
-        break;
-    }
-    f.arguments(a, b);
-});

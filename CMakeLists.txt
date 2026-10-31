@@ -4,18 +4,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Configured by tools/build.py: the game, the 3dsrecomp checkout (runtime) and the prepared recompiled code.
-set(GAME hbsmb CACHE STRING "games/<GAME>")
+set(GAME acnl CACHE STRING "games/<GAME>")
 set(RECOMP_DIR ${CMAKE_SOURCE_DIR}/../3dsrecomp CACHE PATH "3dsrecomp checkout")
 set(GAMECODE_DIR ${CMAKE_SOURCE_DIR}/build/${GAME}/gamecode CACHE PATH "recompiled code with the rewritten originals renamed")
 set(GAME_TID "*" CACHE STRING "title id (shader lists in RECOMP_DIR/games/<tid>)")
 
-# The recompiled code. rt_svc and rt_preempt go through the shadow checker, which must know when a run cannot be
-# replayed.
+# The recompiled code.
 file(GLOB GEN_SRC CONFIGURE_DEPENDS ${GAMECODE_DIR}/*.c)
 add_library(gamecode STATIC ${GEN_SRC})
 target_include_directories(gamecode PRIVATE ${RECOMP_DIR}/runtime ${GAMECODE_DIR})
 target_compile_options(gamecode PRIVATE -O2 -w -ffp-contract=off -fno-strict-aliasing -std=gnu11)
-target_compile_definitions(gamecode PRIVATE rt_svc=guest_shadow_svc rt_preempt=guest_shadow_preempt)
 
 # The rewritten code: same floating-point and overflow semantics as the console.
 file(GLOB_RECURSE GAME_SRC CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/games/${GAME}/src/*.cpp)

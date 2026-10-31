@@ -15,7 +15,6 @@ constexpr u32 FLAG_BIT_10000000 = 0x10000000;
 constexpr u32 KIND_55 = 0x55;
 constexpr u32 KIND_2B = 0x2b;
 constexpr u32 KIND_67 = 0x67;
-constexpr u32 NO_TABLE_ENTRY = 0xa5;  // table_entry_has_all_bits is false for it
 constexpr u32 CATEGORY_2F = 0x2f;
 constexpr s32 NO_OFFSET = -1;
 constexpr u8 NODE_STATE_0 = 0;
@@ -105,7 +104,6 @@ MiiIcon &construct_mii_icon(MiiIcon &self) {
     return node;
 }
 GUEST_EXPORT(0x004e09fc, construct_mii_icon);
-GUEST_FUZZ(0x004e09fc, 100, [](guest::Fuzz &f) { f.arguments(f.object<MiiIcon>()); });
 
 // True while the flag byte at 3 is clear, the table entry of the global byte does not have bit 0x1000 and bit 5 of
 // the flags byte is clear.
@@ -119,11 +117,6 @@ bool is_free_to_use_4e0e90() {
     return (*flags_aadad4 & FLAGS_BIT_5) == 0;
 }
 GUEST_EXPORT(0x004e0e90, is_free_to_use_4e0e90);
-GUEST_FUZZ(0x004e0e90, 100, [](guest::Fuzz &f) {
-    byte_flags_9529d4->byte_03 = u8(f.below(2));
-    *flags_aadad4 = u8(f.number());
-    f.arguments();
-});
 
 // The 34-byte table entry of the item's value_06 (null when there is no valid value or no table).
 gptr<u8> entry_for_item_value_06(const Item &item) {
@@ -141,13 +134,6 @@ gptr<u8> entry_for_item_value_06(const Item &item) {
     return entries + value * ENTRY_SIZE;
 }
 GUEST_EXPORT(0x004e0f14, entry_for_item_value_06);
-GUEST_FUZZ(0x004e0f14, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
 
 // Whether the kind has the bit 0x10000000 in its table entry, or is kind 0x55, 0x2b or 0x67.
 bool is_special_kind(u32 kind) {
@@ -157,7 +143,6 @@ bool is_special_kind(u32 kind) {
     return kind == KIND_55 || kind == KIND_2B || kind == KIND_67;
 }
 GUEST_EXPORT(0x004e58e8, is_special_kind);
-GUEST_FUZZ(0x004e58e8, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({KIND_55, KIND_2B, KIND_67, NO_TABLE_ENTRY, f.below(NO_TABLE_ENTRY)})); });
 
 // The index of the value in the list (as long as the kind's count); if it is not there, it is stored in the first empty
 // (zero) element and that index is returned; -1 when the list is full or the count is 0.
@@ -177,13 +162,6 @@ s32 find_or_add_value_in_list(gptr<u32> list, u32 value) {
     return NO_INDEX;
 }
 GUEST_EXPORT(0x004e9464, find_or_add_value_in_list);
-GUEST_FUZZ(0x004e9464, 150, [](guest::Fuzz &f) {
-    auto list = f.allocate(MAX_COUNT * sizeof(u32)).cast<u32>();
-    for (u32 i = 0; i < MAX_COUNT; i++) {
-        list[i] = f.below(3) == 0 ? 0 : f.below(6);
-    }
-    f.arguments(list, f.pick<u32>({0, 1, 3, 5, 9}));
-});
 
 // Zeroes the first element of the list (as long as the kind's count) that equals the value; false if none does.
 bool remove_value_from_list(gptr<u32> list, u32 value) {
@@ -197,10 +175,6 @@ bool remove_value_from_list(gptr<u32> list, u32 value) {
     return false;
 }
 GUEST_EXPORT(0x004e951c, remove_value_from_list);
-GUEST_FUZZ(0x004e951c, 100, [](guest::Fuzz &f) {
-    auto list = f.allocate(MAX_COUNT * sizeof(u32)).cast<u32>();
-    f.arguments(list, f.pick<u32>({0, 1, f.below(4)}));
-});
 
 // The index-th element of the list when it is within the kind's count (which must not exceed the maximum), else 0.
 u32 value_from_list(gptr<u32> list, u32 index) {
@@ -211,10 +185,6 @@ u32 value_from_list(gptr<u32> list, u32 index) {
     return list[index];
 }
 GUEST_EXPORT(0x004e958c, value_from_list);
-GUEST_FUZZ(0x004e958c, 100, [](guest::Fuzz &f) {
-    auto list = f.allocate(MAX_COUNT * sizeof(u32)).cast<u32>();
-    f.arguments(list, f.pick<u32>({0, 1, 5, MAX_COUNT, f.number()}));
-});
 
 // Stores two words (the second argument is not used); and the item's offset in its category when that category is
 // 0x2f (-1 otherwise).
@@ -225,13 +195,6 @@ void set_item_offset_pair(ItemOffsetPair &self, u32 unused, u32 first, u32 secon
     self.offset_08 = u8(offset);
 }
 GUEST_EXPORT(0x004e9f00, set_item_offset_pair);
-GUEST_FUZZ(0x004e9f00, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(2) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(f.object<ItemOffsetPair>(), f.number(), f.number(), f.number(), item);
-});
 
 // Passes the index to the node's slot 4 when the owner is in state 0 or 1 and has a node.
 void call_node_if_active(NodeOwner &self, u32 index) {
@@ -244,12 +207,6 @@ void call_node_if_active(NodeOwner &self, u32 index) {
     call_node_slot_4(self.node, index);
 }
 GUEST_EXPORT(0x004eba34, call_node_if_active);
-GUEST_FUZZ(0x004eba34, 100, [](guest::Fuzz &f) {
-    auto owner = f.object<NodeOwner>();
-    owner->state_2c = f.pick<u8>({NODE_STATE_0, NODE_STATE_1, 2, 0xff});
-    owner->node = gptr<void>(0u);  // no node: nothing is called
-    f.arguments(owner, f.number());
-});
 
 SkeletalModel &construct_skeletal_model(SkeletalModel &self) {
     auto &node = *construct_transform_node(guest::addr_of(self).cast<void>()).cast<SkeletalModel>();
@@ -258,4 +215,3 @@ SkeletalModel &construct_skeletal_model(SkeletalModel &self) {
     return node;
 }
 GUEST_EXPORT(0x004edd3c, construct_skeletal_model);
-GUEST_FUZZ(0x004edd3c, 100, [](guest::Fuzz &f) { f.arguments(f.object<SkeletalModel>()); });

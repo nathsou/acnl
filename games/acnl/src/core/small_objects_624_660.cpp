@@ -111,9 +111,6 @@ void set_first_table_entry(ByteTables &tables, u32 index, u32 value) {
     }
 }
 GUEST_EXPORT(0x00625ba4, set_first_table_entry);
-GUEST_FUZZ(0x00625ba4, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<ByteTables>(), f.pick<u32>({0, 3, 4, f.number()}), f.pick<u32>({0, 0xa5, 0xa6, f.number()}));
-});
 
 // The same for the second table (values above 4 are ignored).
 void set_second_table_entry(ByteTables &tables, u32 index, u32 value) {
@@ -125,9 +122,6 @@ void set_second_table_entry(ByteTables &tables, u32 index, u32 value) {
     }
 }
 GUEST_EXPORT(0x00625be0, set_second_table_entry);
-GUEST_FUZZ(0x00625be0, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<ByteTables>(), f.pick<u32>({0, 3, 4, f.number()}), f.pick<u32>({0, 4, 5, f.number()}));
-});
 
 // Whether the session's state is 0xa, or 7 while it has a station.
 bool session_state_is_special() {
@@ -138,10 +132,6 @@ bool session_state_is_special() {
     return state == STATE_A;
 }
 GUEST_EXPORT(0x00626208, session_state_is_special);
-GUEST_FUZZ(0x00626208, 100, [](guest::Fuzz &f) {
-    (*net_session)->state_22c = f.pick<u8>({STATE_7, STATE_A, 0, 1});
-    f.arguments();
-});
 
 // Whether the session's bits at 0x234 include the bit of its station.
 bool session_station_bit_set() {
@@ -149,11 +139,6 @@ bool session_station_bit_set() {
     return (bit_for_index(session->station_bits) & session->bits_234) != 0;
 }
 GUEST_EXPORT(0x006267dc, session_station_bit_set);
-GUEST_FUZZ(0x006267dc, 100, [](guest::Fuzz &f) {
-    (*net_session)->bits_234 = u8(f.number());
-    (*net_session)->station_bits = u8(f.below(5));
-    f.arguments();
-});
 
 void construct_constants_holder(ConstantsHolder &self) {
     store_constants_7795ac(guest::addr_of(self).cast<void>());
@@ -162,27 +147,18 @@ void construct_constants_holder(ConstantsHolder &self) {
     }
 }
 GUEST_EXPORT(0x00628ce4, construct_constants_holder);
-GUEST_FUZZ(0x00628ce4, 50, [](guest::Fuzz &f) { f.arguments(f.object<ConstantsHolder>()); });
 
 // Whether the registry is disabled.
 bool registry_is_disabled() {
     return read_global_object_byte() == 3;
 }
 GUEST_EXPORT(0x0064c5e0, registry_is_disabled);
-GUEST_FUZZ(0x0064c5e0, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the item's data byte 0x0f is 8.
 bool item_data_byte_0f_is_8(const Item &item) {
     return item_data_byte_0f(item) == ITEM_BYTE_0F_VALUE;
 }
 GUEST_EXPORT(0x0064ce10, item_data_byte_0f_is_8);
-GUEST_FUZZ(0x0064ce10, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
 
 // The angle between the camera's two points; 0 without a camera holder.
 u32 camera_angle() {
@@ -196,18 +172,6 @@ u32 camera_angle() {
     return u16(angle_between_points(from, to));
 }
 GUEST_EXPORT(0x0065473c, camera_angle);
-GUEST_FUZZ(0x0065473c, 100, [](guest::Fuzz &f) {
-    auto holder = f.object<CameraHolder>();
-    holder->camera = f.allocate(CAMERA_SECOND_POINT + sizeof(Float3)).cast<u8>();
-    for (u32 offset : {CAMERA_FIRST_POINT, CAMERA_SECOND_POINT}) {
-        Float3 &point = *(holder->camera + offset).cast<Float3>();
-        for (u32 i = 0; i < 3; i++) {
-            point.v[i] = f.real();
-        }
-    }
-    *camera_holder = f.below(5) != 0 ? holder : gptr<CameraHolder>(0u);
-    f.arguments();
-});
 
 void set_cell_target_5(CellWalker &self, s32 x, s32 z) { set_cell_target(self, FIFTH_MODE, x, z); }
 void set_cell_target_0(CellWalker &self, s32 x, s32 z) { set_cell_target(self, FIRST_MODE, x, z); }
@@ -217,29 +181,11 @@ GUEST_EXPORT(0x00659630, set_cell_target_5);
 GUEST_EXPORT(0x0065ddb8, set_cell_target_0);
 GUEST_EXPORT(0x0065ddfc, set_cell_target_1);
 GUEST_EXPORT(0x006606e0, set_cell_target_3);
-GUEST_FUZZ(0x00659630, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
-});
-GUEST_FUZZ(0x0065ddb8, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
-});
-GUEST_FUZZ(0x0065ddfc, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
-});
-GUEST_FUZZ(0x006606e0, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
-});
 
 void set_cell_target_7(CellWalker &self, s32 x, s32 z) { set_cell_target(self, SEVENTH_MODE, x, z); }
 void set_cell_target_6(CellWalker &self, s32 x, s32 z) { set_cell_target(self, SIXTH_MODE, x, z); }
 GUEST_EXPORT(0x0066a18c, set_cell_target_7);
 GUEST_EXPORT(0x0066a284, set_cell_target_6);
-GUEST_FUZZ(0x0066a18c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
-});
-GUEST_FUZZ(0x0066a284, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
-});
 
 // Copies the two global items out.
 void copy_global_items(Item &first, Item &second) {
@@ -247,14 +193,12 @@ void copy_global_items(Item &first, Item &second) {
     copy_item(second, *item_94f320);
 }
 GUEST_EXPORT(0x00692ad4, copy_global_items);
-GUEST_FUZZ(0x00692ad4, 50, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.object<Item>()); });
 
 // Empties both global items.
 void clear_global_items() {
     copy_item(*item_94f31c, copy_item(*item_94f320, *empty_item));
 }
 GUEST_EXPORT(0x00693778, clear_global_items);
-GUEST_FUZZ(0x00693778, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Empties the row of 128 items and clears the word after it.
 void clear_global_item_row() {
@@ -264,7 +208,6 @@ void clear_global_item_row() {
     *row_end_value = 0;
 }
 GUEST_EXPORT(0x00693570, clear_global_item_row);
-GUEST_FUZZ(0x00693570, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the global byte's table entry has the flag 0x8000 but neither is kind 0x49 nor has the flag 0x2000.
 bool global_kind_has_flag_8000_only() {
@@ -277,7 +220,6 @@ bool global_kind_has_flag_8000_only() {
     return table_entry_has_all_bits(FLAG_2000, read_global_byte_2()) == 0;
 }
 GUEST_EXPORT(0x0068c3d8, global_kind_has_flag_8000_only);
-GUEST_FUZZ(0x0068c3d8, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // True when the main object has no value, the current player exists, flag 6 of byte 0x5712 is clear and flag 5 of
 // byte 0x5713 is set.
@@ -292,10 +234,6 @@ bool current_player_flag_5713_bit_5() {
     return (player->flags_5713 & PLAYER_FLAG_5) != 0;
 }
 GUEST_EXPORT(0x006986d4, current_player_flag_5713_bit_5);
-GUEST_FUZZ(0x006986d4, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 void set_cell_target_2(CellWalker &self, s32 x, s32 z) { set_cell_target(self, WALK_MODE_2, x, z); }
 GUEST_EXPORT(0x00660724, set_cell_target_2);
-GUEST_FUZZ(0x00660724, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CellWalker>(), f.pick<s32>({0, 5, 19, 20}), f.pick<s32>({0, 5, 19, 20}));
-});

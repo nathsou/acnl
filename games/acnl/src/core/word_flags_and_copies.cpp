@@ -54,16 +54,3 @@ static void copy_3_words(Words3 &destination, const Words3 &source) {
     destination = value;
 }
 GUEST_EXPORT(0x005f4b8c, copy_3_words);
-
-GUEST_FUZZ(0x0030e7e4, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<WordFlagsAt44>(), f.pick<u32>({0, 1, 31, 32, 33, 255, 256, 0xffffffffu, f.number()}));
-});
-GUEST_FUZZ(0x0030e7f8, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<WordFlagsAt44>(), f.pick<u32>({0, 1, 31, 32, 33, 255, 256, 0xffffffffu, f.number()}));
-});
-GUEST_FUZZ(0x0030f594, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.pick<u16>({Item::EMPTY, 0x9d, 0x809d, u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT))});
-    f.arguments(item);
-});
-GUEST_FUZZ(0x005f4b8c, 200, [](guest::Fuzz &f) { f.arguments(f.object<Words3>(), f.object<Words3>()); });

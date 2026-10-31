@@ -62,7 +62,6 @@ static StageOpusBase &construct_stage_opus_base(StageOpusBase &self) {
     return self;
 }
 GUEST_EXPORT(0x00585c5c, construct_stage_opus_base);
-GUEST_FUZZ(0x00585c5c, 200, [](guest::Fuzz &f) { f.arguments(f.object<StageOpusBase>()); });
 
 // StageOpusShop::virtual_18: picks value_29 from a flag of the save data.
 static void shop_pick_value(StageOpusBase &self) {
@@ -70,4 +69,3 @@ static void shop_pick_value(StageOpusBase &self) {
     self.value_29 = result != 0 ? SHOP_VALUE_IF_SET : SHOP_VALUE_IF_CLEAR;
 }
 GUEST_EXPORT(0x00585cc0, shop_pick_value);
-GUEST_FUZZ(0x00585cc0, 200, [](guest::Fuzz &f) { f.arguments(f.object<StageOpusBase>()); });

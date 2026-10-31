@@ -8,7 +8,6 @@ using guest::gptr;
 
 namespace {
 
-
 inline guest::global<u32[PacketBuffer::TEMPLATE_COUNT], 0x0087b640> template_offsets;
 inline guest::global<u32[PacketBuffer::TEMPLATE_COUNT], 0x0087b190> template_sizes;
 inline guest::global<u32[PacketBuffer::TEMPLATE_COUNT], 0x0087baac> template_handlers;  // 0: none
@@ -220,34 +219,3 @@ void SlotRecords::rebuild_all(gptr<u16> source) {
 }
 GUEST_EXPORT(0x006251b8, SlotRecords::rebuild_all);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-gptr<void> zeroed(guest::Fuzz &f, u32 size) {
-    gptr<void> p = f.allocate(size);
-    std::memset(p.get(), 0, size);
-    return p;
-}
-
-constexpr u32 FUZZ_AREA = 0x40;
-
-}  // namespace
-
-GUEST_FUZZ(0x0062512c, 200, [](guest::Fuzz &f) {
-    u32 id = f.pick<u32>({0x90, 0x95, f.below(PacketBuffer::TEMPLATE_COUNT), f.below(0x98), f.number()});
-    f.arguments(id, zeroed(f, FUZZ_AREA), f.pick<u32>({0, 1, f.number()}));
-});
-GUEST_FUZZ(0x0062514c, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00625190, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x006251a0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<EntryLengths>(), f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffff, f.number()}));
-});
-GUEST_FUZZ(0x006251b8, 200, [](guest::Fuzz &f) {
-    auto records = f.object<SlotRecords>();
-    records->block = zeroed(f, FUZZ_AREA).cast<u8>();
-    for (u32 i = 0; i < SlotRecords::SLOTS; i++) {
-        records->lengths[i] = f.below(0x19);
-    }
-    f.arguments(records, zeroed(f, FUZZ_AREA).cast<u16>());
-});

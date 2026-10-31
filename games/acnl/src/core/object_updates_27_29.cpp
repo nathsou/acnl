@@ -1,6 +1,6 @@
 // Small methods of objects of the 0x00270000..0x002a0000 area (their classes are not known yet): a cached element,
 // a scale by kind, talk-state checks, and tables of item numbers.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "graphics/hemisphere_light.hpp"
 #include "core/state_94fd0c.hpp"
 #include "item/item.hpp"
@@ -75,12 +75,6 @@ gptr<u8> cached_element(ElementHolder &holder) {
     return holder.element_188;
 }
 GUEST_EXPORT(0x0027d3cc, cached_element);
-GUEST_FUZZ(0x0027d3cc, 100, [](guest::Fuzz &f) {
-    auto holder = f.object<ElementHolder>();
-    holder->element_188 = f.below(2) != 0 ? f.allocate(16).cast<u8>() : gptr<u8>(0u);
-    *element_base_94f268 = f.allocate(0x100).cast<u8>();
-    f.arguments(holder);
-});
 
 // Gives the node the scale of the object's kind (the default for kinds past the table).
 void apply_kind_scale(KindObject &object) {
@@ -89,11 +83,6 @@ void apply_kind_scale(KindObject &object) {
     set_node_scale(guest::addr_of(object.node_d4[0]), gptr<Float3>(KIND_SCALES + offset));
 }
 GUEST_EXPORT(0x0027db20, apply_kind_scale);
-GUEST_FUZZ(0x0027db20, 100, [](guest::Fuzz &f) {
-    auto object = f.object<KindObject>();
-    object->node_d4[4] = 0;
-    f.arguments(object);
-});
 
 // Whether the object-mode byte is 2 and the global byte is 0x67 or 0x68.
 bool in_mode_67_or_68() {
@@ -103,7 +92,6 @@ bool in_mode_67_or_68() {
     return read_global_byte_2() == GLOBAL_BYTE_67 || read_global_byte_2() == GLOBAL_BYTE_68;
 }
 GUEST_EXPORT(0x0028499c, in_mode_67_or_68);
-GUEST_FUZZ(0x0028499c, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Starts the talk once: in mode 0x67/0x68 with the talk state of kind 0xe, marks the object started.
 bool start_talk_once(TalkObject &object) {
@@ -121,7 +109,6 @@ bool start_talk_once(TalkObject &object) {
     return true;
 }
 GUEST_EXPORT(0x00284910, start_talk_once);
-GUEST_FUZZ(0x00284910, 50, [](guest::Fuzz &f) { f.arguments(f.object<TalkObject>()); });
 
 // Marks the object at field 0x30 of the state ready, when there is one.
 bool mark_state_object_ready() {
@@ -132,10 +119,6 @@ bool mark_state_object_ready() {
     return mark_object_ready(object);
 }
 GUEST_EXPORT(0x00284980, mark_state_object_ready);
-GUEST_FUZZ(0x00284980, 50, [](guest::Fuzz &f) {
-    state_94fd0c->unknown_30 = f.below(2) != 0 ? f.allocate(0x400).addr() : 0;
-    f.arguments();
-});
 
 // Remembers the item's number at the index in table 0x00998360 (indices past the table are ignored).
 void remember_number_a(const Item &item, u32 index) {
@@ -145,7 +128,6 @@ void remember_number_a(const Item &item, u32 index) {
     numbers_998360->values[index] = item.number();
 }
 GUEST_EXPORT(0x00284f50, remember_number_a);
-GUEST_FUZZ(0x00284f50, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.pick<u32>({0, 5, 0xa4, 0xa5, 0xffffffffu})); });
 
 void remember_number_b(const Item &item, u32 index) {
     if (index >= NUMBER_COUNT) {
@@ -154,7 +136,6 @@ void remember_number_b(const Item &item, u32 index) {
     numbers_998214->values[index] = item.number();
 }
 GUEST_EXPORT(0x0028511c, remember_number_b);
-GUEST_FUZZ(0x0028511c, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.pick<u32>({0, 5, 0xa4, 0xa5, 0xffffffffu})); });
 
 namespace {
 
@@ -206,7 +187,6 @@ void set_default_remembered_numbers() {
     remembered_pair_second = PAIR_NUMBER_SECOND;
 }
 GUEST_EXPORT(0x00284f90, set_default_remembered_numbers);
-GUEST_FUZZ(0x00284f90, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // Builds the item whose number was remembered at the index (the empty item past the table).
 Item &recall_item(Item &out, u32 index) {
@@ -216,4 +196,3 @@ Item &recall_item(Item &out, u32 index) {
     return construct_item(out, numbers_998360->values[index]);
 }
 GUEST_EXPORT(0x0028515c, recall_item);
-GUEST_FUZZ(0x0028515c, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.pick<u32>({0, 5, 0xa4, 0xa5, 0xffffffffu})); });

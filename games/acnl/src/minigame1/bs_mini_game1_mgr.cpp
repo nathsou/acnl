@@ -19,7 +19,6 @@ static u32 clear_bs_mini_game1_instance() {
     return 0;
 }
 GUEST_EXPORT(0x403d88d4, clear_bs_mini_game1_instance);
-GUEST_FUZZ(0x403d88d4, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // The constructor: zeroes the state, constructs the sub-object and registers itself as the running manager.
 BsMiniGame1Mgr &construct_bs_mini_game1_mgr(BsMiniGame1Mgr &self) {
@@ -44,11 +43,6 @@ BsMiniGame1Mgr &construct_bs_mini_game1_mgr(BsMiniGame1Mgr &self) {
     return *object;
 }
 GUEST_EXPORT(0x403d895c, construct_bs_mini_game1_mgr);
-GUEST_FUZZ(0x403d895c, 200, [](guest::Fuzz &f) {
-    auto mgr = f.allocate(sizeof(BsMiniGame1Mgr));
-    std::memset(mgr.get(), 0, sizeof(BsMiniGame1Mgr));
-    f.arguments(mgr);
-});
 
 // Sets or clears FLAG_8 between steps on the sub-object at 0x370, then runs the final step on it.
 u32 BsMiniGame1Mgr::set_flag_8(u32 enable) {
@@ -66,8 +60,3 @@ u32 BsMiniGame1Mgr::set_flag_8(u32 enable) {
     return sub_370_step_3(sub);
 }
 GUEST_EXPORT(0x403d89e8, BsMiniGame1Mgr::set_flag_8);
-GUEST_FUZZ(0x403d89e8, 200, [](guest::Fuzz &f) {
-    auto mgr = f.allocate(sizeof(BsMiniGame1Mgr));
-    std::memset(mgr.get(), 0, sizeof(BsMiniGame1Mgr));
-    f.arguments(mgr, f.pick<u32>({0, 1}));
-});

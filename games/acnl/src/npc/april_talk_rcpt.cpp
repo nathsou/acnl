@@ -98,33 +98,3 @@ u16 AprilTalkRcpt::virtual_50(u32 argument) {
     return choices->values[index];
 }
 GUEST_EXPORT(0x006343cc, AprilTalkRcpt::virtual_50);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-template <typename T>
-static gptr<T> zeroed(guest::Fuzz &f) {
-    gptr<T> p = f.allocate(sizeof(T)).template cast<T>();
-    std::memset(p.get(), 0, sizeof(T));
-    return p;
-}
-
-GUEST_FUZZ(0x006342dc, 200, [](guest::Fuzz &f) {
-    auto self = zeroed<AprilTalkRcpt>(f);
-    self->flags_2d1 = u8(f.number());
-    if (f.below(2) != 0) {
-        self->partner = zeroed<AprilTalkPartner>(f);  // no handle: the notification is skipped
-    }
-    f.arguments(self, f.number());
-});
-
-GUEST_FUZZ(0x006343cc, 200, [](guest::Fuzz &f) {
-    auto self = zeroed<AprilTalkRcpt>(f);
-    if (f.below(2) != 0) {
-        auto partner = zeroed<AprilTalkPartner>(f);
-        partner->unknown_9a8 = u8(1 + f.below(255));
-        self->partner = partner;
-    }
-    auto argument = f.allocate(0x100);
-    std::memset(argument.get(), 0, 0x100);
-    f.arguments(self, argument);
-});

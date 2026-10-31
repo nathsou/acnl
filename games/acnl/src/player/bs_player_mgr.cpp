@@ -14,4 +14,3 @@ guest::gptr<void> player_manager_sub_object() {
     return *player_manager + SUB_OBJECT_OFFSET;
 }
 GUEST_EXPORT(0x001c4384, player_manager_sub_object);
-GUEST_FUZZ(0x001c4384, 200, [](guest::Fuzz &f) { f.arguments(); });

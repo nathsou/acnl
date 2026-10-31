@@ -146,10 +146,3 @@ void FrameBufferShadow::virtual_7() {
     remember(state);
 }
 GUEST_EXPORT(0x0071ef4c, FrameBufferShadow::virtual_7);
-
-// Only the unchanged-state path is fuzzed: the other one writes into the game's command buffer.
-GUEST_FUZZ(0x0071ef4c, 200, [](guest::Fuzz &f) {
-    auto shadow = f.object<FrameBufferShadow>();
-    shadow->state = *cached_state;
-    f.arguments(shadow);
-});

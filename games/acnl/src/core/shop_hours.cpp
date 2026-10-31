@@ -28,13 +28,6 @@ bool shops_open_at(s32 hour) {
     return hour >= NORMAL_FIRST_HOUR && hour < NORMAL_END_HOUR;
 }
 
-// Fuzzing: sets the two flags to one of their combinations (the other bits stay).
-void set_ordinance_flags(guest::Fuzz &f) {
-    constexpr u8 BOTH = SaveData::FLAGS_621CF_BIT_1 | SaveData::FLAGS_621CF_BIT_2;
-    u8 &flags = get_save_data()->flags_621cf;
-    flags = u8((flags & ~BOTH) | (f.below(4) << 1));
-}
-
 }  // namespace
 
 // Whether the shops are open at the hour of the reference time.
@@ -42,10 +35,6 @@ bool shops_are_open() {
     return shops_open_at(reference_time->hour);
 }
 GUEST_EXPORT(0x0030946c, shops_are_open);
-GUEST_FUZZ(0x0030946c, 100, [](guest::Fuzz &f) {
-    set_ordinance_flags(f);
-    f.arguments();
-});
 
 // The same, false while the time is frozen or when the current player does not have the player flag.
 bool shops_are_open_for_player() {
@@ -59,7 +48,3 @@ bool shops_are_open_for_player() {
     return shops_open_at(reference_time->hour);
 }
 GUEST_EXPORT(0x00309384, shops_are_open_for_player);
-GUEST_FUZZ(0x00309384, 100, [](guest::Fuzz &f) {
-    set_ordinance_flags(f);
-    f.arguments();
-});

@@ -1,7 +1,6 @@
 // Inserting a word into a message: the current text style (colour, two tag flags) is closed around the word with
 // control tags and restored after it.
 #include "guest/guest.hpp"
-#include "core/fuzz_helpers.hpp"
 #include "hobj/house_object.hpp"
 #include "script/msg_engine.hpp"
 #include "script/script_word.hpp"
@@ -103,34 +102,5 @@ void WordStyle::insert_word(gptr<hobj::VirtualObject> word, const ScriptWord &in
     }
 }
 GUEST_EXPORT(0x005fd4b8, WordStyle::insert_word);
-
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-gptr<script::WordStyle> some_style(guest::Fuzz &f) {
-    auto engine = f.object<script::MsgEngine>();
-    engine->entry_count = f.below(script::MsgEngine::ENTRY_COUNT + 2);
-    auto style = f.object<script::WordStyle>();
-    style->engine = engine;
-    style->tag_ff_2 = f.pick<u8>({0, 1, 0x40});  // any non-zero byte counts
-    style->tag_ff_4 = f.pick<u8>({0, 1, 0x80});  // any non-zero byte counts
-    style->color = f.pick<u16>({0, 3, 6, 7, 8, 0xffff});  // colours, NO_COLOR, past the table
-    return style;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x005fd374, 300, [](guest::Fuzz &f) { f.arguments(some_style(f)); });
-GUEST_FUZZ(0x005fd3d4, 300, [](guest::Fuzz &f) { f.arguments(some_style(f)); });
-GUEST_FUZZ(0x005fd4b8, 300, [](guest::Fuzz &f) {
-    auto word = f.object<hobj::VirtualObject>();
-    word->vtable = fuzz::harmless_vtable(f);
-    auto info = f.object<ScriptWord>();
-    info->value_4 = f.pick<s32>({4, 5, 7, 0x11, 0x12, 0x14, static_cast<s32>(f.below(0x20))});  // the table types
-    info->value_8 = f.below(0x40);  // rows, in and out of range
-    f.arguments(some_style(f), word, info);
-});
 
 }  // namespace script

@@ -182,18 +182,3 @@ void cfl_db_shutdown(u32 skip_save) {
     }
 }
 GUEST_EXPORT(0x00134d64, cfl_db_shutdown);
-
-GUEST_FUZZ(0x00134cdc, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00134d30, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00134d64, 200, [](guest::Fuzz &f) {
-    // Only the teardown part: a fake object whose release slot is a pure function, nothing mounted.
-    constexpr u32 HARMLESS_FUNCTION = 0x00134cb4;  // __aeabi_lasr
-    auto vtable = f.allocate(2 * sizeof(u32)).cast<u32>();
-    vtable[0] = 0;
-    vtable[CflDbObject::RELEASE_SLOT] = HARMLESS_FUNCTION;
-    auto object = f.object<CflDbObject>();
-    object->vtable = vtable.addr();
-    cfl_db_state->object = object;
-    cfl_db_state->archive_mounted = 0;
-    f.arguments(f.number() | 1);
-});

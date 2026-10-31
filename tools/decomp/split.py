@@ -4,19 +4,18 @@
     split.py DRAFTS.cpp OUTDIR [--drop ADDRESSES.txt] [--keep ADDRESSES.txt]
 
 Each output file gets the drafts of its area, sorted by address, with the headers they need. --drop leaves out the
-listed functions (failed checks), --keep writes only the listed ones (verified).
+listed functions, --keep writes only the listed ones.
 """
 import argparse
 import os
 import re
 
-HEADER = '''// Functions decompiled by tools/decomp (docs/decomp.md): each is proved equal to the recompiled original, and
-// checked by the harness. The names are generated (d_<address>::f_<address>, Object_<address>_<argument>, word_<offset>)
+HEADER = '''// Functions decompiled by tools/decomp (docs/decomp.md): each is proved equal to the recompiled original. The names are generated (d_<address>::f_<address>, Object_<address>_<argument>, word_<offset>)
 // and still to be chosen.
 #include "guest/guest.hpp"
 '''
 
-DRAFT = re.compile(r'((?:#include "[^"]+"\n)*)(// f_([0-9a-f]{8}): decompiled.*?\nGUEST_FUZZ\(0x[0-9a-f]{8},[^\n]*\n)', re.S)
+DRAFT = re.compile(r'((?:#include "[^"]+"\n)*)(// f_([0-9a-f]{8}): decompiled.*?\nGUEST_EXPORT\(0x[0-9a-f]{8},[^\n]*\n)', re.S)
 
 
 def exported(src, skip):

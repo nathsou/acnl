@@ -31,11 +31,3 @@ u32 indexed_item_type(const Item &item) {
     return type < TYPE_COUNT ? type : 0;
 }
 GUEST_EXPORT(0x002fccdc, indexed_item_type);
-
-GUEST_FUZZ(0x002fccdc, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    u16 number = f.below(4) != 0 ? u16(f.below(LAST_INDEXED_NUMBER + 1))
-                                 : f.pick<u16>({0, LAST_INDEXED_NUMBER, LAST_INDEXED_NUMBER + 1, Item::EMPTY, 0x2000});
-    item->id = u16(number | (f.below(2) != 0 ? Item::ID_FLAG : 0));
-    f.arguments(item);
-});

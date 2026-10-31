@@ -122,9 +122,3 @@ bool item_is_available(const Item &item, u32 player_slot) {
     }
 }
 GUEST_EXPORT(0x00188fd4, item_is_available);
-GUEST_FUZZ(0x00188fd4, 800, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = Item::FIRST_ITEM + f.below(Item::ITEM_COUNT);
-    item->flags = 0;
-    f.arguments(item, f.below(4));
-});

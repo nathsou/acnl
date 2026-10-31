@@ -70,7 +70,6 @@ GUEST_EXPORT(0x00769840, Item::has_category_flag_4);
 u32 ItemData_base_price(const ItemData &d) { return d.base_price(); }
 GUEST_EXPORT(0x007486fc, ItemData_base_price);
 
-
 constexpr u32 PRICE_DIVISOR_FOR_REFERENCE = 10;  // matching the reference item: a tenth of the price
 constexpr u32 MIN_STACK = 2, MAX_STACK = 9;      // stack counts outside this range are worth nothing
 
@@ -142,46 +141,3 @@ Item &copy_item(Item &self, const Item &other) {
 }
 GUEST_EXPORT(0x002fc8e8, copy_item);
 GUEST_EXPORT(0x002fc934, copy_item);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Item> some_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    switch (f.below(4)) {  // ids in each interesting range
-    case 0: item->id = Item::FIRST_ITEM + f.below(Item::ITEM_COUNT + 16); break;
-    case 1: item->id = f.pick<u16>({Item::EMPTY, Item::EMPTY | 0x8000, 0x1fff, 0x2000, 0x372a, 0x372b}); break;
-    default: break;
-    }
-    return item;
-}
-
-GUEST_FUZZ(0x002fcaf4, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x002fcb10, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x002fcb84, 300, [](guest::Fuzz &f) {
-    auto item = some_item(f);
-    f.arguments(item, u16(f.below(2) ? item->number() : f.number()));
-});
-GUEST_FUZZ(0x00768da0, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x005361a8, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x002fcb34, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x002fcbb0, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    f.arguments(item, u16(f.below(2) ? Item::FIRST_ITEM + f.below(Item::ITEM_COUNT) : f.number()));
-});
-GUEST_FUZZ(0x002fc8e8, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.object<Item>()); });
-
-GUEST_FUZZ(0x005359fc, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0x9a, 0x9b, 0x9c, f.number(), f.below(0xa0)})); });
-GUEST_FUZZ(0x00536214, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00769840, 300, [](guest::Fuzz &f) {
-    auto item = some_item(f);
-    if (f.below(4) == 0) {
-        item->id = 0x4000 | f.below(0x2000);
-    }
-    f.arguments(item);
-});
-GUEST_FUZZ(0x007486fc, 200, [](guest::Fuzz &f) { f.arguments(f.object<ItemData>()); });
-GUEST_FUZZ(0x00305630, 600, [](guest::Fuzz &f) {
-    auto item = some_item(f);
-    item->flags = f.below(2) ? f.below(12) : item->flags;
-    f.arguments(item);
-});

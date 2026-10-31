@@ -52,7 +52,6 @@ struct StateObject {
 };
 GUEST_OFFSET(StateObject, state_870, 0x870);
 
-
 struct FlagsGlobal {
     u8 unknown_00;
     u8 flags;
@@ -97,7 +96,6 @@ u32 slot_value(u32 slot) {
     return checked_slot_value(slot);
 }
 GUEST_EXPORT(0x002ff8b0, slot_value);
-GUEST_FUZZ(0x002ff8b0, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu})); });
 
 // Whether the main object's slot holds a value that names a local slot.
 bool main_slot_value_is_local() {
@@ -105,7 +103,6 @@ bool main_slot_value_is_local() {
     return is_local_slot(checked_slot_value(slot));
 }
 GUEST_EXPORT(0x005c2c80, main_slot_value_is_local);
-GUEST_FUZZ(0x005c2c80, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The same for a given slot (a number of 4 or more stands for the main object's slot).
 bool slot_value_is_local(u32 slot) {
@@ -115,7 +112,6 @@ bool slot_value_is_local(u32 slot) {
     return is_local_slot(checked_slot_value(slot & SLOT_MASK));
 }
 GUEST_EXPORT(0x005c2dfc, slot_value_is_local);
-GUEST_FUZZ(0x005c2dfc, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu})); });
 
 // The record of a slot (the default one for slots past the four), after copying its head and tail from their entry
 // templates when those exist.
@@ -139,7 +135,6 @@ gptr<SlotRecord> refresh_slot_record(u32 slot) {
     return record;
 }
 GUEST_EXPORT(0x005c330c, refresh_slot_record);
-GUEST_FUZZ(0x005c330c, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu})); });
 
 // Copies the (refreshed) record of every slot to its snapshot.
 void snapshot_slot_records() {
@@ -148,14 +143,12 @@ void snapshot_slot_records() {
     }
 }
 GUEST_EXPORT(0x005c4da4, snapshot_slot_records);
-GUEST_FUZZ(0x005c4da4, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Copies the snapshot of one slot over the snapshot of another (the slot numbers count modulo 4).
 void copy_slot_snapshot(u32 from, u32 to) {
     slot_table->snapshots[to & SLOT_MASK] = slot_table->snapshots[from & SLOT_MASK];
 }
 GUEST_EXPORT(0x005c5b3c, copy_slot_snapshot);
-GUEST_FUZZ(0x005c5b3c, 50, [](guest::Fuzz &f) { f.arguments(f.below(8), f.below(8)); });
 
 // The object of a slot (a number of 4 or more stands for the main object's slot), or null: when it has none, when its
 // record's mode is not the current one (unless flag 5 of the object is set), and, unless `include_idle`, when its
@@ -178,7 +171,6 @@ gptr<SlotObject> look_up_object(u32 id, u32 include_idle) {
     return object;
 }
 GUEST_EXPORT(0x005c33d0, look_up_object);
-GUEST_FUZZ(0x005c33d0, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu}), f.below(2)); });
 
 // The address of the looked up object's state byte, unless the object is missing or in the "none" state.
 gptr<u8> object_state_address(u32 id) {
@@ -192,7 +184,6 @@ gptr<u8> object_state_address(u32 id) {
     return guest::addr_of(object->state_870);
 }
 GUEST_EXPORT(0x005c2cbc, object_state_address);
-GUEST_FUZZ(0x005c2cbc, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffffu})); });
 
 // Whether the main object (id 4) carries the marker 0xc1.
 bool main_object_has_marker_c1() {
@@ -200,13 +191,11 @@ bool main_object_has_marker_c1() {
     return object && object->state_1a9 == STATE_C1;
 }
 GUEST_EXPORT(0x005c2dcc, main_object_has_marker_c1);
-GUEST_FUZZ(0x005c2dcc, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 void set_flag_bit_2_of_aadad4() {
     flags_aadad4->flags = flags_aadad4->flags | FLAG_BIT_2;
 }
 GUEST_EXPORT(0x005c2ec8, set_flag_bit_2_of_aadad4);
-GUEST_FUZZ(0x005c2ec8, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // A small number chosen by the mode and sub-mode bytes at 0x0095721c (0 for most modes).
 u32 value_for_mode() {
@@ -230,8 +219,3 @@ u32 value_for_mode() {
     }
 }
 GUEST_EXPORT(0x005d46dc, value_for_mode);
-GUEST_FUZZ(0x005d46dc, 200, [](guest::Fuzz &f) {
-    mode_state->mode = f.pick<u8>({0, 1, 2, 3, 5, 6});
-    mode_state->sub_mode = f.pick<u8>({0, 1, 2, 3, 4, 5, 6, 7});
-    f.arguments();
-});

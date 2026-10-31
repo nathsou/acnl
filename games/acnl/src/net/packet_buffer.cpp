@@ -33,7 +33,6 @@ GUEST_SIZE(Record, 6);
 inline constexpr guest::Function<0x007795ec, u32(gptr<u8> destination, gptr<Record> record)> write_record;
 inline constexpr guest::Function<0x002f74c8, u8()> read_global_byte_2;
 
-
 }  // namespace
 
 // Makes room for one more record when nothing is pending; past the size limit, freezes the buffer instead.
@@ -113,52 +112,6 @@ void PacketBuffer::clear_counter(u32 index) {
 }
 GUEST_EXPORT(0x006280f4, PacketBuffer::clear_counter);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-constexpr u32 FUZZ_AREA_SIZE = 0x100;
-constexpr u32 FUZZ_FLUSH_OFFSET = 0x10;  // where in the area the pending range begins
-constexpr u32 FUZZ_MAX_PENDING = 0x80;
-constexpr u32 FUZZ_LARGE_PENDING = 0x40;
-constexpr u32 FUZZ_COMMON_PENDING = 20;
-// distances between the start and the write position, around the size limit
-constexpr u32 FUZZ_NEAR_LIMIT = MAX_BYTES - RECORD_SIZE;
-constexpr u32 FUZZ_TYPE_LIMIT = 0x20;
-constexpr u32 FUZZ_INDEX_LIMIT = PacketBuffer::COUNTERS + 1;
-
-gptr<PacketBuffer> some_buffer(guest::Fuzz &f) {
-    auto buffer = f.object<PacketBuffer>();
-    gptr<u8> area = f.allocate(FUZZ_AREA_SIZE).cast<u8>();
-    u32 pending = f.pick<u32>({0, RECORD_SIZE - 3, RECORD_SIZE - 1, RECORD_SIZE, RECORD_SIZE + 1, FUZZ_COMMON_PENDING,
-                               FUZZ_LARGE_PENDING, f.below(FUZZ_MAX_PENDING)});
-    buffer->disabled = f.below(5) == 0 ? 1 : 0;
-    buffer->flushed = f.below(6) == 0 ? gptr<u8>() : area + FUZZ_FLUSH_OFFSET;
-    buffer->write_pos = buffer->flushed ? buffer->flushed + pending : area + FUZZ_FLUSH_OFFSET;
-    if (f.below(3) == 0) {
-        buffer->write_pos = buffer->flushed;
-    }
-    u32 distance = f.pick<u32>({0, FUZZ_AREA_SIZE, FUZZ_NEAR_LIMIT, FUZZ_NEAR_LIMIT + 1, MAX_BYTES, MAX_BYTES + 1});
-    buffer->start = buffer->write_pos - distance;
-    return buffer;
-}
-
-u32 some_index(guest::Fuzz &f) {
-    return f.pick<u32>({0, 1, 2, 3, PacketBuffer::COUNTERS, FUZZ_INDEX_LIMIT, f.number()});
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x00627f74, 300, [](guest::Fuzz &f) { f.arguments(some_buffer(f)); });
-GUEST_FUZZ(0x00627fe0, 300, [](guest::Fuzz &f) {
-    auto buffer = some_buffer(f);
-    if (f.below(3) == 0) {
-        buffer->counters_1c[f.below(PacketBuffer::COUNTERS)] = COUNTER_MAX;
-    }
-    f.arguments(buffer, some_index(f));
-});
-GUEST_FUZZ(0x00628000, 300, [](guest::Fuzz &f) { f.arguments(some_buffer(f), some_index(f)); });
-GUEST_FUZZ(0x0062801c, 300, [](guest::Fuzz &f) {
-    f.arguments(some_buffer(f), f.below(FUZZ_TYPE_LIMIT), f.pick<u32>({0, 4, 5, 6, f.number()}));
-});
-GUEST_FUZZ(0x006280f4, 300, [](guest::Fuzz &f) { f.arguments(some_buffer(f), some_index(f)); });

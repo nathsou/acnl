@@ -1,6 +1,6 @@
 // What an item is worth to the shops: the price after the town's price flag, whether the item can be sold at all and
 // a reduced price in small units.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 #include "save/save_data.hpp"
 
@@ -85,10 +85,3 @@ u32 Item::reduced_price() const {
     return u32(value < REDUCED_PRICE_MINIMUM ? REDUCED_PRICE_MINIMUM : value);
 }
 GUEST_EXPORT(0x00768ffc, Item::reduced_price);
-
-GUEST_FUZZ(0x007699fc, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x007690dc, 400, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00768ffc, 400, [](guest::Fuzz &f) {
-    f.arguments(fuzz::assorted_item(f, {CATEGORY_BELLS, CATEGORY_PRICED_BY_REFERENCE_33, CATEGORY_PRICED_BY_REFERENCE_34,
-                                        CATEGORY_STACK_75, CATEGORY_STACK_76}));
-});

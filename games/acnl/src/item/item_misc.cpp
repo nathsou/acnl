@@ -48,7 +48,6 @@ static Item &construct_empty_item(Item &self) {
     return self;
 }
 GUEST_EXPORT(0x002fc20c, construct_empty_item);
-GUEST_FUZZ(0x002fc20c, 200, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });
 
 // Reads a value from global state depending on the result of an unknown query.
 static u32 read_state_value() {
@@ -61,7 +60,6 @@ static u32 read_state_value() {
     return *byte_953f68;
 }
 GUEST_EXPORT(0x002fc224, read_state_value);
-GUEST_FUZZ(0x002fc224, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // A random integer in [0, max) from the second generator (truncated product with a float in [0, 1)).
 static s32 second_random_below(s32 max) {
@@ -69,9 +67,6 @@ static s32 second_random_below(s32 max) {
     return arm::to_s32(r * float(max));
 }
 GUEST_EXPORT(0x002fc25c, second_random_below);
-GUEST_FUZZ(0x002fc25c, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<s32>({0, 1, 2, 3, 5, 100, -1, -100, s32(f.below(100000))}));
-});
 
 // Calls an unknown function with the same arguments, and returns the first one.
 static u32 call_24a5ec_returning_first(u32 a, u32 b, u32 c, u32 d) {
@@ -79,12 +74,6 @@ static u32 call_24a5ec_returning_first(u32 a, u32 b, u32 c, u32 d) {
     return a;
 }
 GUEST_EXPORT(0x002fc288, call_24a5ec_returning_first);
-GUEST_FUZZ(0x002fc288, 200, [](guest::Fuzz &f) {
-    constexpr u32 OBJECT_SIZE = 0x100;
-    auto object = f.allocate(OBJECT_SIZE);
-    memset(object.get(), 0, OBJECT_SIZE);
-    f.arguments(object.addr(), f.pick<u32>({1, 0x61}), 0u, 0x614u);
-});
 
 // Stores a non-empty item in the slot of its category; other categories are ignored.
 void CategorySlots::store(const Item &item) {
@@ -99,13 +88,3 @@ void CategorySlots::store(const Item &item) {
     copy_item(slots[SLOT_OF_CATEGORY[index]], item);
 }
 GUEST_EXPORT(0x002fc814, CategorySlots::store);
-GUEST_FUZZ(0x002fc814, 300, [](guest::Fuzz &f) {
-    auto slots = f.object<CategorySlots>();
-    auto item = f.object<Item>();
-    if (f.below(5) == 0) {
-        item->id = Item::EMPTY;
-    } else {
-        item->id = Item::FIRST_ITEM + f.below(Item::ITEM_COUNT);
-    }
-    f.arguments(slots, item);
-});

@@ -106,7 +106,6 @@ FlowRecept &construct_flow_recept(FlowRecept &self, u32 value) {
     return self;
 }
 GUEST_EXPORT(0x005dd230, construct_flow_recept);
-GUEST_FUZZ(0x005dd230, 100, [](guest::Fuzz &f) { f.arguments(f.object<FlowRecept>(), f.number()); });
 
 MailRecept &construct_mail_recept(MailRecept &self) {
     self.values_04[0] = 0;
@@ -125,7 +124,6 @@ MailRecept &construct_mail_recept(MailRecept &self) {
     return self;
 }
 GUEST_EXPORT(0x005dd490, construct_mail_recept);
-GUEST_FUZZ(0x005dd490, 100, [](guest::Fuzz &f) { f.arguments(f.object<MailRecept>()); });
 
 TalkRecept &construct_talk_recept(TalkRecept &self) {
     self.vtable = TalkRecept::VTABLE;
@@ -138,7 +136,6 @@ TalkRecept &construct_talk_recept(TalkRecept &self) {
     return self;
 }
 GUEST_EXPORT(0x005dd69c, construct_talk_recept);
-GUEST_FUZZ(0x005dd69c, 100, [](guest::Fuzz &f) { f.arguments(f.object<TalkRecept>()); });
 
 SearcherObject &construct_searcher(SearcherObject &self) {
     construct_msg_engine(guest::addr_of(self).cast<void>());
@@ -153,4 +150,3 @@ SearcherObject &construct_searcher(SearcherObject &self) {
     return self;
 }
 GUEST_EXPORT(0x005fd310, construct_searcher);
-GUEST_FUZZ(0x005fd310, 100, [](guest::Fuzz &f) { f.arguments(f.object<SearcherObject>()); });

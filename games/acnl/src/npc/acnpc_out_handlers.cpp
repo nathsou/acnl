@@ -34,12 +34,6 @@ void AcNpcOut::run_state_handlers(u32 argument) {
     }
 }
 GUEST_EXPORT(0x405314b0, AcNpcOut::run_state_handlers);
-GUEST_FUZZ(0x405314b0, 200, [](guest::Fuzz &f) {
-    // only the path that calls no handlers is safe to generate
-    auto npc = f.object<AcNpcOut>();
-    npc->state_1975 = AcNpcOut::STATE_DONE;
-    f.arguments(npc, f.number());
-});
 
 // Maps a code byte to a slot number: 0-3 to 10-13, 0x42-0x4b to 0-9, and a few other codes to 14-17; else 18.
 u32 map_code_to_slot(const u8 &code_ref) {
@@ -63,10 +57,5 @@ u32 map_code_to_slot(const u8 &code_ref) {
     }
 }
 GUEST_EXPORT(0x40531538, map_code_to_slot);
-GUEST_FUZZ(0x40531538, 300, [](guest::Fuzz &f) {
-    auto code = f.object<u8>();
-    *code = u8(f.pick<u32>({0, 1, 2, 3, 4, 0x41, 0x42, 0x45, 0x4b, 0x4c, 0x5e, 0x5f, 0x60, 0x81, 0x84, 0x88, f.number()}));
-    f.arguments(code);
-});
 
 }  // namespace

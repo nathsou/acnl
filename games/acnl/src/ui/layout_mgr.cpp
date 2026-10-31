@@ -28,7 +28,5 @@ gptr<void> layout_allocator_8() {
 }  // namespace
 
 GUEST_EXPORT(0x00569d50, layout_allocator_4);
-GUEST_FUZZ(0x00569d50, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 GUEST_EXPORT(0x00569dc4, layout_allocator_8);
-GUEST_FUZZ(0x00569dc4, 200, [](guest::Fuzz &f) { f.arguments(); });

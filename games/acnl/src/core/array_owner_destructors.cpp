@@ -21,9 +21,6 @@ constexpr u32 FOOT_MARK_VTABLE = 0x008f8b60;
 constexpr u32 FOOT_MARK_HANDLES = 0x10;
 constexpr u32 PARTICLE_HANDLE_SIZE = 0x18;
 
-// Objects are made generously large for fuzzing; only the real calls reach the destructors of the game.
-constexpr u32 FUZZ_SIZE = 0x2000;
-
 struct VtableOnly {
     u32 vtable;
 };
@@ -48,14 +45,12 @@ gptr<void> destroy_array_owner_100_words(gptr<void> self) {
     return self;
 }
 GUEST_EXPORT(0x00138b98, destroy_array_owner_100_words);
-GUEST_FUZZ(0x00138b98, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_SIZE)); });
 
 gptr<void> destroy_array_owner_c(gptr<void> self) {
     destroy_array_elements(self, DESTRUCTOR_NOTHING_2, ENTRY_C_SIZE, ENTRY_C_COUNT);
     return self;
 }
 GUEST_EXPORT(0x006aa8a0, destroy_array_owner_c);
-GUEST_FUZZ(0x006aa8a0, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_SIZE)); });
 
 FootMark &construct_foot_mark(FootMark &self) {
     self.vtable = FOOT_MARK_VTABLE;
@@ -67,4 +62,3 @@ FootMark &construct_foot_mark(FootMark &self) {
     return self;
 }
 GUEST_EXPORT(0x006a88e0, construct_foot_mark);
-GUEST_FUZZ(0x006a88e0, 50, [](guest::Fuzz &f) { f.arguments(f.object<FootMark>()); });

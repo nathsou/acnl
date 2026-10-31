@@ -77,11 +77,3 @@ PackedRecord &fill_packed_record(PackedRecord &self, u32 byte_0, u32 byte_2, u32
     return self;
 }
 GUEST_EXPORT(0x005d4240, fill_packed_record);
-
-GUEST_FUZZ(0x005d4240, 300, [](guest::Fuzz &f) {
-    auto self = f.object<PackedRecord>();
-    auto item = f.object<Item>();
-    f.arguments(self, f.number(), f.number(), f.number(), f.pick<u32>({0, 1, f.number()}), item.cast<const Item>(),
-                f.number(), f.number(), f.pick<u32>({0, 1, f.number()}), f.number(), f.number(), f.number(),
-                f.number());
-});

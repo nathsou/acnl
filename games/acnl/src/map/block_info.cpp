@@ -132,22 +132,3 @@ bool block_kind_is_word_58(s32 block_x, s32 block_z, u32 map_number) {
     return info_of(block_x, block_z, map_number).kind == (*gptr<u32>(KIND_WORD_58_ADDRESS) & BYTE_MASK);
 }
 GUEST_EXPORT(0x006cf5bc, block_kind_is_word_58);
-
-namespace {
-
-void fuzz_block(guest::Fuzz &f) {
-    f.arguments(s32(f.below(8)) - 1, s32(f.below(8)) - 1, f.below(4));
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x006cf25c, 200, fuzz_block);
-GUEST_FUZZ(0x002ffc18, 200, fuzz_block);
-GUEST_FUZZ(0x006cf3f0, 200, fuzz_block);
-GUEST_FUZZ(0x006cf4b4, 200, fuzz_block);
-GUEST_FUZZ(0x006cf44c, 200, fuzz_block);
-GUEST_FUZZ(0x005cf3bc, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<BlockInfo>(), s32(f.below(8)) - 1, s32(f.below(8)) - 1, f.below(4));
-});
-GUEST_FUZZ(0x006cf578, 200, fuzz_block);
-GUEST_FUZZ(0x006cf5bc, 200, fuzz_block);

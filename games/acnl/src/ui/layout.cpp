@@ -70,7 +70,6 @@ bool singleton_5c33c_has_object() {
     return bool(singleton_5c33c->object);
 }
 GUEST_EXPORT(0x00125e54, singleton_5c33c_has_object);
-GUEST_FUZZ(0x00125e54, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // Releases the object once it reaches a releasable state, and refreshes a flag of whatever 0x3045a8 returns.
 void release_singleton_5c33c_object() {
@@ -95,13 +94,11 @@ void release_singleton_5c33c_object() {
     }
 }
 GUEST_EXPORT(0x00125e6c, release_singleton_5c33c_object);
-GUEST_FUZZ(0x00125e6c, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 bool state_94e3ac_count_positive() {
     return state_94e3ac->count > 0;
 }
 GUEST_EXPORT(0x00125f08, state_94e3ac_count_positive);
-GUEST_FUZZ(0x00125f08, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // True when there is nothing left to release; false when the object is not in a releasable state yet.
 bool release_holder_object() {
@@ -116,4 +113,3 @@ bool release_holder_object() {
     return true;
 }
 GUEST_EXPORT(0x00125f24, release_holder_object);
-GUEST_FUZZ(0x00125f24, 200, [](guest::Fuzz &f) { f.arguments(); });

@@ -64,23 +64,3 @@ void SoundObjectPlayer::stop() {
     playing = 0;
 }
 GUEST_EXPORT(0x0025030c, SoundObjectPlayer::stop);
-
-GUEST_FUZZ(0x0025038c, 300, [](guest::Fuzz &f) {
-    auto object = f.object<SoundObjectWithHandle>();
-    auto handle = f.object<SoundHandle>();
-    handle->id = f.pick<s32>({-1, 0, 1, 5, static_cast<s32>(f.number())});
-    object->handle = f.below(3) == 0 ? gptr<SoundHandle>() : handle;
-    f.arguments(object, f.pick<s32>({-1, 0, 1, 5, handle->id, static_cast<s32>(f.number())}));
-});
-GUEST_FUZZ(0x0025030c, 100, [](guest::Fuzz &f) {
-    auto player = f.allocate(sizeof(SoundObjectPlayer)).cast<SoundObjectPlayer>();
-    std::memset(player.get(), 0, sizeof(SoundObjectPlayer));
-    player->playing = f.pick<u8>({0, 0, 1});
-    f.arguments(player);
-});
-GUEST_FUZZ(0x002504e0, 100, [](guest::Fuzz &f) {
-    auto object = f.allocate(sizeof(SoundObjectWithHandle)).cast<SoundObjectWithHandle>();
-    std::memset(object.get(), 0, sizeof(SoundObjectWithHandle));
-    object->playing = f.pick<u8>({0, 0, 1});
-    f.arguments(object);
-});

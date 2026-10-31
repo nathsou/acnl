@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Shows a function for rewriting: annotated disassembly, callers, callees, strings.
 
-    tools/fn.py hbsmb 0x00101234       (or a name from symbols.txt / a rewrite)
-    tools/fn.py hbsmb main --no-asm    (only the summary)
+    tools/fn.py acnl 0x00304014        (or the name of a rewrite)
+    tools/fn.py acnl 0x00304014 --no-asm    (only the summary)
 """
 import argparse
 import os

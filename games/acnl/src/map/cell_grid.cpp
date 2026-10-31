@@ -40,14 +40,3 @@ gptr<GridCell> CellGrid::cell_at(s32 x, s32 z) {
     return cells + index;
 }
 GUEST_EXPORT(0x00317148, CellGrid::cell_at);
-
-GUEST_FUZZ(0x00317148, 300, [](guest::Fuzz &f) {
-    auto grid = f.allocate(sizeof(CellGrid)).cast<CellGrid>();
-    auto words = grid.cast<u32>();
-    for (u32 i = 0; i < sizeof(CellGrid) / 4; i++) {
-        words[i] = f.below(32);  // small values everywhere: nothing usable as a wild pointer
-    }
-    grid->cells = f.below(4) ? f.allocate(sizeof(GridCell)).cast<GridCell>() : nullptr;
-    f.arguments(grid, s32(f.pick<u32>({0, 1, 4, f.below(40), u32(-1)})),
-                s32(f.pick<u32>({0, 2, 3, f.below(40), u32(-1)})));
-});

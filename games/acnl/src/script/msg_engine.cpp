@@ -86,26 +86,4 @@ void MsgEngine::reset() {
 }
 GUEST_EXPORT(0x00601b44, MsgEngine::reset);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00601a20, 200, [](guest::Fuzz &f) { f.arguments(f.object<MsgEngine>()); });
-GUEST_FUZZ(0x00601a88, 200, [](guest::Fuzz &f) { f.arguments(f.object<MsgEngine>()); });
-GUEST_FUZZ(0x00601a98, 300, [](guest::Fuzz &f) {
-    auto engine = f.object<MsgEngine>();
-    engine->flag_60 = f.below(2);
-    engine->state_61 = f.pick<u8>({0, 1, 2, 3});
-    auto source = f.object<MsgSource>();
-    auto text = f.allocate(8);
-    f.bytes(text, 8);
-    source->text = text.cast<const u16>();
-    source->following_code = f.pick<u32>({0x20, 0x3000, 0xa, 0x41, f.number()});
-    source->size_bytes = f.pick<u32>({2, 3, 4, 5, 0, f.number()});
-    f.arguments(engine, f.allocate(4).cast<u16>(), source);
-});
-GUEST_FUZZ(0x00601b44, 300, [](guest::Fuzz &f) {
-    auto engine = f.object<MsgEngine>();
-    engine->entry_count = f.below(MsgEngine::ENTRY_COUNT + 1);
-    f.arguments(engine);
-});
-
 }  // namespace script

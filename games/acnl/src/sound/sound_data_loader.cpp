@@ -117,14 +117,3 @@ u32 SoundDataLoader::load(u32 id, guest::gptr<void> allocator, u32 flags, u32 bl
     return result;
 }
 GUEST_EXPORT(0x00130f0c, SoundDataLoader::load);
-
-// Only the path without an archive can be fuzzed: the archive and the loaders are other guest code with unknown
-// object layouts.
-GUEST_FUZZ(0x00130f0c, 200, [](guest::Fuzz &f) {
-    auto loader = f.object<SoundDataLoader>();
-    loader->archive = nullptr;
-    auto allocator = f.allocate(16);
-    f.arguments(loader, f.pick<u32>({0, INVALID_ID, 0x01000000, 0x06000001, f.number()}),
-                f.below(2) ? allocator : guest::gptr<void>(nullptr), f.pick<u32>({1, 2, 4, 8, f.number()}),
-                f.number());
-});

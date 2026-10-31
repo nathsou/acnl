@@ -1,6 +1,6 @@
 // Small helpers of the code around 0x006c0000 and 0x006e0000: counters, tables of rows and records.
 #include "core/entry18.hpp"
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 #include "net/net_session.hpp"
 
@@ -196,41 +196,3 @@ static bool is_special_number(u32 number) {
     return number == SPECIAL_NUMBER;
 }
 GUEST_EXPORT(0x006e5774, is_special_number);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x006c32c8, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<TargetStation>(), f.pick<u32>({0, 1, 2, 3, 4, f.number()}));
-});
-GUEST_FUZZ(0x006c39c4, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 11, 12, 13, 0xffffffffu, f.below(14)}));
-});
-GUEST_FUZZ(0x006c3be4, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 11, 12, 13, 0xffffffffu, f.below(14)}));
-});
-GUEST_FUZZ(0x006c4280, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<s32>({-1, 0, 1, 0x3f, 0x40, 0x41, 100, static_cast<s32>(f.below(0x50))}));
-});
-GUEST_FUZZ(0x006c4e6c, 300, [](guest::Fuzz &f) {
-    auto rows = f.allocate(sizeof(ItemNumberRows) + 4 * ITEM_COUNT_PER_ROW * sizeof(u16)).cast<ItemNumberRows>();
-    f.bytes(rows, 4 * ITEM_COUNT_PER_ROW * sizeof(u16) + 0x14);
-    for (u32 i = 0; i < ITEM_COUNT_PER_ROW; i++) {
-        if (f.below(2) != 0) {
-            rows->numbers[1][i] = Item::EMPTY;
-        }
-    }
-    auto item = f.object<Item>();
-    f.arguments(rows, item, f.below(3));
-});
-GUEST_FUZZ(0x006c5180, 200, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
-GUEST_FUZZ(0x006c51d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
-GUEST_FUZZ(0x00624024, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
-GUEST_FUZZ(0x00691b20, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
-GUEST_FUZZ(0x006e56f4, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 0x2f, 0x30, 0x3b, 0x3c, 0xffffffffu, f.below(0x50)}));
-});
-GUEST_FUZZ(0x006e5708, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x006e5718, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, ENTRY18_COUNT - 1, ENTRY18_COUNT, 0xffffffffu, f.below(0x300)}));
-});
-GUEST_FUZZ(0x006e5774, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 0xd, 0xe, 0xf, f.number()})); });

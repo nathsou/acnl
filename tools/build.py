@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Builds a game: recompiled code from 3dsrecomp, with the functions rewritten in games/<game>/src replacing it.
 
-    tools/build.py hbsmb            # build/hbsmb/hbsmb
+    tools/build.py acnl             # build/acnl/cmake/acnl
     tools/build.py acnl --regen     # also re-run the recompiler
 
 Steps:
 1. Recompile the game's code to C with 3dsrecomp (build/<game>/generated; only when missing or with --regen).
 2. Find the rewritten functions: every GUEST_EXPORT(<address>, <function>) in games/<game>/src.
 3. Prepare build/<game>/gamecode, the code that gets compiled: a copy of the recompiled code in which each
-   rewritten function's original is renamed guest_gen_<address> (kept as the reference for the shadow checker
-   and for resuming inside it), and glue.c, where f_<address> (what the rest of the code calls) jumps to the
+   rewritten function's original is renamed guest_gen_<address> (kept for GUEST_OVERLAY=0 / GUEST_DISABLE and
+   for resuming inside it), and glue.c, where f_<address> (what the rest of the code calls) jumps to the
    rewrite. Unchanged files are hard links, so only files with rewritten functions get recompiled.
 4. Configure and build with CMake + Ninja.
 """

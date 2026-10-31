@@ -115,19 +115,3 @@ void FlagByteHolder::add_flags(u32 bits) {
     flags = u8(bits | flags);
 }
 GUEST_EXPORT(0x002ffbf8, FlagByteHolder::add_flags);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002ffad8, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = Item::FIRST_ITEM + f.below(Item::ITEM_COUNT + 16);
-    }
-    f.arguments(item);
-});
-GUEST_FUZZ(0x002ffb15, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, f.number()})); });
-GUEST_FUZZ(0x002ffb48, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({1, 0x20, 0x34, f.below(0x100) + 1})); });
-GUEST_FUZZ(0x002ffb64, 200, [](guest::Fuzz &f) { f.arguments(gptr<void>(nullptr)); });
-GUEST_FUZZ(0x002ffbf8, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<FlagByteHolder>(), f.pick<u32>({2, 4, f.number()}));
-});

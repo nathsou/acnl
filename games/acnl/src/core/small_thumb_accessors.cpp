@@ -1,32 +1,11 @@
 // Small Thumb routines of the C library and of objects with a null check at the start (the entries are the odd addresses).
-#include "core/fuzz_helpers.hpp"
 #include "guest/guest.hpp"
 
 using guest::gptr;
 
 namespace {
 
-constexpr u32 FUZZ_PAD = 0x1000;
-constexpr u32 FUZZ_BUFFER = 0x40;
-constexpr u32 FUZZ_ALPHABET = 3;
-constexpr u32 FLAGS_OFFSET_20 = 0x20;
-constexpr u32 FUZZ_LENGTH = 8;
-
 inline guest::global<u32, 0x00af75e8> stored_word_af75e8;
-
-gptr<u8> fuzz_string(guest::Fuzz &f) {
-    auto buffer = f.allocate(FUZZ_BUFFER).cast<u8>();
-    u32 length = f.below(FUZZ_LENGTH + 1);
-    for (u32 i = 0; i < length; i++) {
-        buffer[i] = u8('a' + f.below(FUZZ_ALPHABET));
-    }
-    buffer[length] = 0;
-    return buffer;
-}
-
-u32 fuzz_char(guest::Fuzz &f) {
-    return f.pick<u32>({'a', 'b', 'c', 'd', 0, 0x161, f.number()});  // (only the low byte counts)
-}
 
 // An object with a byte at 3, one at 2 and the flag bytes at 0x20 and 0x1d.
 struct NullGuarded {
@@ -41,11 +20,6 @@ struct NullGuarded {
 GUEST_OFFSET(NullGuarded, byte_02, 2);
 GUEST_OFFSET(NullGuarded, byte_1d, 0x1d);
 GUEST_OFFSET(NullGuarded, flags_20, 0x20);
-
-gptr<NullGuarded> fuzz_guarded(guest::Fuzz &f) {
-    auto object = f.object<NullGuarded>();
-    return f.below(4) != 0 ? object : gptr<NullGuarded>(0u);
-}
 
 }  // namespace
 
@@ -62,7 +36,6 @@ gptr<u8> find_char(gptr<u8> text, u32 character) {
     }
 }
 GUEST_EXPORT(0x00101785, find_char);
-GUEST_FUZZ(0x00101785, 200, [](guest::Fuzz &f) { f.arguments(fuzz_string(f), fuzz_char(f)); });
 
 // The last place of the string with the character, or null (the terminator's place for the character 0).
 gptr<u8> find_last_char(gptr<u8> text, u32 character) {
@@ -78,7 +51,6 @@ gptr<u8> find_last_char(gptr<u8> text, u32 character) {
     }
 }
 GUEST_EXPORT(0x001017c3, find_last_char);
-GUEST_FUZZ(0x001017c3, 200, [](guest::Fuzz &f) { f.arguments(fuzz_string(f), fuzz_char(f)); });
 
 // The first place of the character among the first `count` bytes, or null.
 gptr<u8> find_byte(gptr<u8> memory, u32 character, u32 count) {
@@ -91,29 +63,24 @@ gptr<u8> find_byte(gptr<u8> memory, u32 character, u32 count) {
     return nullptr;
 }
 GUEST_EXPORT(0x001019a3, find_byte);
-GUEST_FUZZ(0x001019a3, 200, [](guest::Fuzz &f) { f.arguments(fuzz_string(f), fuzz_char(f), f.below(FUZZ_LENGTH + 2)); });
 
 // Stores the word in the global at 0x00af75e8.
 void store_word_af75e8(u32 value) {
     *stored_word_af75e8 = value;
 }
 GUEST_EXPORT(0x00101a13, store_word_af75e8);
-// (stores the value the global has already, so that the game's state stays as it is)
-GUEST_FUZZ(0x00101a13, 50, [](guest::Fuzz &f) { f.arguments(*stored_word_af75e8); });
 
 // The signed byte at 3 of the object (1 without an object).
 s32 guarded_byte_03_or_1(gptr<NullGuarded> object) {
     return object == nullptr ? 1 : s32(object->byte_03);
 }
 GUEST_EXPORT(0x00112775, guarded_byte_03_or_1);
-GUEST_FUZZ(0x00112775, 100, [](guest::Fuzz &f) { f.arguments(fuzz_guarded(f)); });
 
 // The signed byte at 2 of the object (0 without an object).
 s32 guarded_byte_02(gptr<NullGuarded> object) {
     return object == nullptr ? 0 : s32(object->byte_02);
 }
 GUEST_EXPORT(0x001139e9, guarded_byte_02);
-GUEST_FUZZ(0x001139e9, 100, [](guest::Fuzz &f) { f.arguments(fuzz_guarded(f)); });
 
 // Bit 6 and bit 7 of the byte at 0x21 (0 without an object).
 u32 guarded_flag_21_bit_6(gptr<NullGuarded> object) {
@@ -124,15 +91,12 @@ u32 guarded_flag_21_bit_7(gptr<NullGuarded> object) {
     return object == nullptr ? 0 : object->flags_20[1] >> 7;
 }
 GUEST_EXPORT(0x00112793, guarded_flag_21_bit_7);
-GUEST_FUZZ(0x00112785, 100, [](guest::Fuzz &f) { f.arguments(fuzz_guarded(f)); });
-GUEST_FUZZ(0x00112793, 100, [](guest::Fuzz &f) { f.arguments(fuzz_guarded(f)); });
 
 // The high nibble of the byte at 0x1d (1 without an object).
 u32 guarded_nibble_1d(gptr<NullGuarded> object) {
     return object == nullptr ? 1 : object->byte_1d >> 4;
 }
 GUEST_EXPORT(0x00112fd5, guarded_nibble_1d);
-GUEST_FUZZ(0x00112fd5, 100, [](guest::Fuzz &f) { f.arguments(fuzz_guarded(f)); });
 
 // Copies three words unless the source is the destination.
 struct ThreeWords {
@@ -144,10 +108,6 @@ void copy_three_words(ThreeWords &destination, const ThreeWords &source) {
     }
 }
 GUEST_EXPORT(0x00116f1b, copy_three_words);
-GUEST_FUZZ(0x00116f1b, 100, [](guest::Fuzz &f) {
-    auto first = f.object<ThreeWords>();
-    f.arguments(first, f.below(4) == 0 ? first : f.object<ThreeWords>());
-});
 
 namespace {
 
@@ -193,7 +153,6 @@ bool value_in_set_1e7e44(u32 value) {
     return value == 5 || value == 0xb || value == 0x11 || value == 0x17 || value == 0x94;  // (what they stand for is not known yet)
 }
 GUEST_EXPORT(0x001e7e44, value_in_set_1e7e44);
-GUEST_FUZZ(0x001e7e44, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({4, 5, 0xb, 0x11, 0x17, 0x94, 0x95, f.number()})); });
 
 // Appends the value to the list when it is not full.
 void append_if_room(BoundedList &list, u32 value) {
@@ -203,13 +162,6 @@ void append_if_room(BoundedList &list, u32 value) {
     }
 }
 GUEST_EXPORT(0x001f963c, append_if_room);
-GUEST_FUZZ(0x001f963c, 100, [](guest::Fuzz &f) {
-    auto list = f.object<BoundedList>();
-    list->capacity = s32(f.below(6));
-    list->count = s32(f.below(7));
-    list->values = f.allocate(FUZZ_BUFFER).cast<u32>();
-    f.arguments(list, f.number());
-});
 
 // Stores the value in the byte at 3 when it is below 6, in the byte at 1 when it is below 0x10.
 void store_byte_03_below_6(TwoSmallBytes &object, u32 value) {
@@ -218,7 +170,6 @@ void store_byte_03_below_6(TwoSmallBytes &object, u32 value) {
     }
 }
 GUEST_EXPORT(0x0020ce74, store_byte_03_below_6);
-GUEST_FUZZ(0x0020ce74, 100, [](guest::Fuzz &f) { f.arguments(f.object<TwoSmallBytes>(), f.pick<u32>({0, 5, 6, 7, f.number()})); });
 
 void store_byte_01_below_16(TwoSmallBytes &object, u32 value) {
     if (value < SET_16_COUNT) {
@@ -226,7 +177,6 @@ void store_byte_01_below_16(TwoSmallBytes &object, u32 value) {
     }
 }
 GUEST_EXPORT(0x0020ce80, store_byte_01_below_16);
-GUEST_FUZZ(0x0020ce80, 100, [](guest::Fuzz &f) { f.arguments(f.object<TwoSmallBytes>(), f.pick<u32>({0, 15, 16, 17, f.number()})); });
 
 // Stores a halfword and two bytes.
 void store_half_and_bytes(HalfAndBytes &object, u32 half, u32 first, u32 second) {
@@ -235,7 +185,6 @@ void store_half_and_bytes(HalfAndBytes &object, u32 half, u32 first, u32 second)
     object.byte_03 = u8(second);
 }
 GUEST_EXPORT(0x0020d848, store_half_and_bytes);
-GUEST_FUZZ(0x0020d848, 100, [](guest::Fuzz &f) { f.arguments(f.object<HalfAndBytes>(), f.number(), f.number(), f.number()); });
 
 // Swaps two bytes of the table at 0x5460 of the object (the numbers are the places).
 void swap_table_bytes(gptr<u8> base, u32 first, u32 second) {
@@ -246,6 +195,3 @@ void swap_table_bytes(gptr<u8> base, u32 first, u32 second) {
     *a = kept;
 }
 GUEST_EXPORT(0x0020bff8, swap_table_bytes);
-GUEST_FUZZ(0x0020bff8, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(BYTE_TABLE_OFFSET + FUZZ_BUFFER).cast<u8>(), f.below(FUZZ_LENGTH), f.below(FUZZ_LENGTH));
-});

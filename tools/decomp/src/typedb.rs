@@ -3,6 +3,11 @@
 use serde_json::Value;
 use std::collections::HashMap;
 
+pub enum PathStep {
+    Field(String),
+    Index(u64),
+}
+
 pub struct TypeDb {
     structs: HashMap<String, Value>,   // C++ name -> {"gname", "size", "fields": [{"name", "offset", "type"}]}
     by_gname: HashMap<String, String>, // Ghidra name -> C++ name
@@ -151,6 +156,36 @@ impl TypeDb {
             return Some(self.size(e)? * t.get("n")?.as_u64()?);
         }
         None
+    }
+
+    // The other way round: the offset and base type of a field path ("position", ".v", "[1]" ...) in a struct.
+    pub fn resolve(&self, name: &str, path: &[PathStep]) -> Option<(u64, String)> {
+        let mut t = serde_json::json!({ "struct": name });
+        let mut offset = 0u64;
+        for step in path {
+            match step {
+                PathStep::Field(f) => {
+                    let sname = t.get("struct")?.as_str()?.to_string();
+                    let s = self.structs.get(&sname)?;
+                    let field = s.get("fields")?.as_array()?.iter().find(|x| x.get("name").and_then(|n| n.as_str()) == Some(f))?;
+                    offset += field.get("offset")?.as_u64()?;
+                    t = field.get("type")?.clone();
+                }
+                PathStep::Index(i) => {
+                    let e = t.get("array")?.clone();
+                    offset += self.size(&e)? * *i;
+                    t = e;
+                }
+            }
+        }
+        let base = if let Some(b) = t.as_str() {
+            b.to_string()
+        } else if t.get("ptr").is_some() {
+            "ptr".into()
+        } else {
+            return None;
+        };
+        Some((offset, base))
     }
 
     // the base type of the field `field_path` finds ("float", "byte", ...)

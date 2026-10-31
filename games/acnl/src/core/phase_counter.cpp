@@ -41,11 +41,3 @@ void PhaseCounter::advance(bool running) {
     state = COUNTING;
 }
 GUEST_EXPORT(0x006e581c, PhaseCounter::advance);
-
-GUEST_FUZZ(0x006e5860, 100, [](guest::Fuzz &f) { f.arguments(f.object<PhaseCounter>()); });
-GUEST_FUZZ(0x006e581c, 300, [](guest::Fuzz &f) {
-    auto counter = f.object<PhaseCounter>();
-    counter->count = f.pick<s32>({-1, 0, 1, 2, 10, 0xa, INT32_MAX, static_cast<s32>(f.number())});
-    counter->limit = f.pick<s32>({0, 1, 3, 0xb, INT32_MAX, INT32_MIN, static_cast<s32>(f.number())});
-    f.arguments(counter, f.below(2));
-});

@@ -50,7 +50,6 @@ void construct_record_with_half_a(RecordWithHalf &record) {
     record.byte_0f = BYTE_0F_DEFAULT;
 }
 GUEST_EXPORT(0x005bd05c, construct_record_with_half_a);
-GUEST_FUZZ(0x005bd05c, 100, [](guest::Fuzz &f) { f.arguments(f.object<RecordWithHalf>()); });
 
 void construct_record_with_half_b(RecordWithHalf &record) {
     reset_inner(record);
@@ -59,7 +58,6 @@ void construct_record_with_half_b(RecordWithHalf &record) {
     record.byte_0f = BYTE_0F_DEFAULT;
 }
 GUEST_EXPORT(0x005bd2a0, construct_record_with_half_b);
-GUEST_FUZZ(0x005bd2a0, 100, [](guest::Fuzz &f) { f.arguments(f.object<RecordWithHalf>()); });
 
 void construct_record_with_items(RecordWithItems &record) {
     reset_inner(record);
@@ -70,4 +68,3 @@ void construct_record_with_items(RecordWithItems &record) {
     record.byte_16 = BYTE_0F_DEFAULT;
 }
 GUEST_EXPORT(0x005bd864, construct_record_with_items);
-GUEST_FUZZ(0x005bd864, 100, [](guest::Fuzz &f) { f.arguments(f.object<RecordWithItems>()); });

@@ -1,5 +1,5 @@
 // Finding the item of a category that has the same variation value as a given one.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 
 namespace {
@@ -60,7 +60,3 @@ void variation_partner(Item &out, const Item &item) {
     }
 }
 GUEST_EXPORT(0x0076b630, variation_partner);
-GUEST_FUZZ(0x0076b630, 300, [](guest::Fuzz &f) {
-    constexpr u8 CATEGORIES[] = {CATEGORY_54, CATEGORY_55, CATEGORY_58, CATEGORY_59, 0x33};
-    f.arguments(f.object<Item>(), fuzz::item_in_category(f, CATEGORIES[f.below(sizeof(CATEGORIES))]));
-});

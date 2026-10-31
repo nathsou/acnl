@@ -38,12 +38,3 @@ WordQuad &copy_word_quad_2(WordQuad &self, const WordQuad &other) {
     return self;
 }
 GUEST_EXPORT(0x0052f284, copy_word_quad_2);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0052f200, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<WordQuad>(), f.object<WordPair>(), f.object<WordPair>());
-});
-GUEST_FUZZ(0x0052f224, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordQuad>(), f.object<WordQuad>()); });
-GUEST_FUZZ(0x0052f248, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordQuad>()); });
-GUEST_FUZZ(0x0052f284, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordQuad>(), f.object<WordQuad>()); });

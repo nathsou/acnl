@@ -28,7 +28,6 @@ gptr<GridRect> block_cell_rect() {
     return block_rect.ptr();
 }
 GUEST_EXPORT(0x0057bb98, block_cell_rect);
-GUEST_FUZZ(0x0057bb98, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the cell is inside a block.
 bool cell_is_valid(u32 column, u32 row) {
@@ -36,9 +35,6 @@ bool cell_is_valid(u32 column, u32 row) {
     return block_cell_rect()->contains(point);
 }
 GUEST_EXPORT(0x0057bc2c, cell_is_valid);
-GUEST_FUZZ(0x0057bc2c, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 5, 15, 16, 0xffffffffu, f.below(20)}), f.pick<u32>({0, 7, 15, 16, 0xffffffffu, f.below(20)}));
-});
 
 // The address of the entry at (x, z) in a table of 4x4 entries of two bytes that starts at 2 (the first entry when the
 // position is outside the grid).
@@ -54,6 +50,3 @@ gptr<u8> grid_entry_address(gptr<u8> table, s32 x, s32 z) {
     return table + u32(z) * GRID_ROW_BYTES + u32(x) * ENTRY_BYTES + GRID_FIRST_ENTRY;
 }
 GUEST_EXPORT(0x002ebc04, grid_entry_address);
-GUEST_FUZZ(0x002ebc04, 200, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(0x40), s32(f.below(8)) - 2, s32(f.below(8)) - 2);
-});

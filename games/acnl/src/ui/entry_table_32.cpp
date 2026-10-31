@@ -56,11 +56,3 @@ static void init_entry_table(gptr<TableEntry> table) {
     }
 }
 GUEST_EXPORT(0x00624d24, init_entry_table);
-
-GUEST_FUZZ(0x00624c68, 200, [](guest::Fuzz &f) { f.arguments(f.object<ByteFlagPair>()); });
-GUEST_FUZZ(0x40172304, 200, [](guest::Fuzz &f) { f.arguments(f.object<ByteFlagPair>()); });
-GUEST_FUZZ(0x00624c90, 200, [](guest::Fuzz &f) { f.arguments(f.object<ByteFlagPair>()); });
-GUEST_FUZZ(0x00624c78, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffff, f.number()}));
-});
-GUEST_FUZZ(0x00624d24, 200, [](guest::Fuzz &f) { f.arguments(f.allocate(TABLE_ENTRIES * 4).cast<TableEntry>()); });

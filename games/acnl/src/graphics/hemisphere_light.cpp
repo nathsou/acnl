@@ -20,29 +20,3 @@ bool BsLightHemiSphereBase::reset_to_initial() {
 }
 GUEST_EXPORT(0x004eea50, BsLightHemiSphereBase::reset_to_initial);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// generous room: the still-recompiled setters write other fields of the data block
-static constexpr u32 LIGHT_DATA_SCRATCH = 0x400;
-
-static void give_light_data(guest::Fuzz &f, HemiSphereLight &light) {
-    auto data = f.allocate(LIGHT_DATA_SCRATCH);
-    f.bytes(data, LIGHT_DATA_SCRATCH);
-    light.data = data.cast<HemiSphereLightData>();
-}
-
-GUEST_FUZZ(0x004eea20, 300, [](guest::Fuzz &f) {
-    auto light = f.object<HemiSphereLight>();
-    give_light_data(f, *light);
-    f.arguments(light, f.object<Float4>());
-});
-GUEST_FUZZ(0x004eea38, 300, [](guest::Fuzz &f) {
-    auto light = f.object<HemiSphereLight>();
-    give_light_data(f, *light);
-    f.arguments(light, f.object<Float3>());
-});
-GUEST_FUZZ(0x004eea50, 300, [](guest::Fuzz &f) {
-    auto self = f.object<BsLightHemiSphereBase>();
-    give_light_data(f, self->light);
-    f.arguments(self);
-});

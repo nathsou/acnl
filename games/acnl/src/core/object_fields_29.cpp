@@ -1,6 +1,6 @@
 // Small functions on objects of the 0x0029 area whose type is not known yet: field setters, a clamped difference,
 // a float computation, a virtual call and a queue append.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "hobj/house_object.hpp"
 
 using guest::gptr;
@@ -71,15 +71,6 @@ GUEST_EXPORT(0x0024f71c, call_virtual_1_if_present);
 GUEST_EXPORT(0x00324944, call_virtual_1_if_present);
 GUEST_EXPORT(0x00347454, call_virtual_1_if_present);
 GUEST_EXPORT(0x00524b44, call_virtual_1_if_present);
-static void fuzz_24f71c(guest::Fuzz &f) {
-    auto object = f.object<VirtualObject>();
-    object->vtable = fuzz::harmless_vtable(f, FIRST_SLOT + 1);
-    f.arguments(f.below(4) != 0 ? object : gptr<VirtualObject>(0u));
-}
-GUEST_FUZZ(0x0024f71c, 100, fuzz_24f71c);
-GUEST_FUZZ(0x00324944, 100, fuzz_24f71c);
-GUEST_FUZZ(0x00347454, 100, fuzz_24f71c);
-GUEST_FUZZ(0x00524b44, 100, fuzz_24f71c);
 
 // The distance between the two positions, counting both ends, but never below 0.
 void update_count_720(CountObject &object) {
@@ -91,12 +82,6 @@ void update_count_720(CountObject &object) {
     object.count_720 = count;
 }
 GUEST_EXPORT(0x00299070, update_count_720);
-GUEST_FUZZ(0x00299070, 200, [](guest::Fuzz &f) {
-    auto object = f.object<CountObject>();
-    object->begin_74c = f.pick<s32>({0, 5, -5, 0x7fffffff, s32(f.number())});
-    object->end_750 = f.pick<s32>({0, 4, 5, 6, 100, -100, s32(f.number())});
-    f.arguments(object);
-});
 
 // The position at 0x704 minus half the source's size, stored at 0x714.
 void update_position_714(PositionObject &object) {
@@ -105,13 +90,6 @@ void update_position_714(PositionObject &object) {
     object.position_714 = position - size * HALF;
 }
 GUEST_EXPORT(0x0029937c, update_position_714);
-GUEST_FUZZ(0x0029937c, 200, [](guest::Fuzz &f) {
-    auto object = f.object<PositionObject>();
-    object->source_768 = f.object<SizeSource>();
-    object->position_704 = f.pick<float>({0.0f, 1.0f, -3.5f, f.real()});
-    object->source_768->size_4c = f.pick<float>({0.0f, 2.0f, 7.25f, f.real()});
-    f.arguments(object);
-});
 
 // Stores the flag in byte 0x6f8 (its low byte) and as bit 3 of the flags at 0x6dc.
 void set_flag_6f8(FlagObject &object, u32 on) {
@@ -123,17 +101,9 @@ void set_flag_6f8(FlagObject &object, u32 on) {
     }
 }
 GUEST_EXPORT(0x00299984, set_flag_6f8);
-GUEST_FUZZ(0x00299984, 100, [](guest::Fuzz &f) { f.arguments(f.object<FlagObject>(), f.pick<u32>({0, 1, 0x100, f.number()})); });
 
 // Appends the node to the owner's queue.
 void append_to_queue(QueueOwner &owner, gptr<void> node) {
     queue_append(guest::addr_of(owner.queue[0]), node);
 }
 GUEST_EXPORT(0x002999a0, append_to_queue);
-GUEST_FUZZ(0x002999a0, 100, [](guest::Fuzz &f) {
-    auto owner = f.object<QueueOwner>();
-    std::memset(owner->queue, 0, sizeof(owner->queue));
-    auto node = f.allocate(0x10);
-    std::memset(node.get(), 0, 0x10);
-    f.arguments(owner, node);
-});

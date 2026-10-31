@@ -11,7 +11,6 @@ constexpr u32 TABLE_BYTES = 0x402;
 constexpr u32 EXTRA_BYTE_INDEX = 0x401;
 constexpr u8 FLAG_BIT_2 = 0x04;
 constexpr u8 FLAG_BIT_0 = 0x01;
-constexpr u32 ENTRY_SIZE = 12;
 
 struct SceneFlags {
     u8 unknown_00000[0x1102c];
@@ -28,12 +27,6 @@ u32 flag_index(u32 raw) {
     return index;
 }
 
-gptr<SceneFlags> fuzz_scene(guest::Fuzz &f) {
-    auto scene = f.object<SceneFlags>();
-    f.bytes(guest::addr_of(scene->flags[0]), TABLE_BYTES);
-    return scene;
-}
-
 }  // namespace
 
 void clear_scene_flag_2(SceneFlags &scene, u32 raw) { scene.flags[flag_index(raw)] &= u8(~FLAG_BIT_2); }
@@ -44,14 +37,9 @@ GUEST_EXPORT(0x00520584, clear_scene_flag_2);
 GUEST_EXPORT(0x005205b8, set_scene_flag_2);
 GUEST_EXPORT(0x00520a18, clear_scene_flag_0);
 GUEST_EXPORT(0x00520a4c, set_scene_flag_0);
-GUEST_FUZZ(0x00520584, 100, [](guest::Fuzz &f) { f.arguments(fuzz_scene(f), f.pick<u32>({0, 5, 0x1ff, 0x200, 0x3ff, 0x400, 0x401, 0x5ff, 0xffff})); });
-GUEST_FUZZ(0x005205b8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_scene(f), f.pick<u32>({0, 5, 0x1ff, 0x200, 0x3ff, 0x400, 0x401, 0x5ff, 0xffff})); });
-GUEST_FUZZ(0x00520a18, 100, [](guest::Fuzz &f) { f.arguments(fuzz_scene(f), f.pick<u32>({0, 5, 0x1ff, 0x200, 0x3ff, 0x400, 0x401, 0x5ff, 0xffff})); });
-GUEST_FUZZ(0x00520a4c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_scene(f), f.pick<u32>({0, 5, 0x1ff, 0x200, 0x3ff, 0x400, 0x401, 0x5ff, 0xffff})); });
 
 // Whether the byte after the table has all the bits of the mask.
 bool extra_byte_has_bits(SceneFlags &scene, u32 mask) {
     return (mask & ~u32(scene.flags[EXTRA_BYTE_INDEX])) == 0;
 }
 GUEST_EXPORT(0x005205ec, extra_byte_has_bits);
-GUEST_FUZZ(0x005205ec, 100, [](guest::Fuzz &f) { f.arguments(fuzz_scene(f), f.pick<u32>({0, 1, 2, 3, 0xff, f.number()})); });

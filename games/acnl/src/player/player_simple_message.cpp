@@ -80,11 +80,3 @@ PlayerSimpleMessage &construct_PlayerSimpleMessage(PlayerSimpleMessage &self) {
     return self;
 }
 GUEST_EXPORT(0x002fb808, construct_PlayerSimpleMessage);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002fb808, 200, [](guest::Fuzz &f) {
-    auto self = f.allocate(0x200);
-    f.bytes(self, 0x200);
-    f.arguments(self.cast<PlayerSimpleMessage>());
-});

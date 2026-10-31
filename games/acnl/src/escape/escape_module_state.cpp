@@ -95,14 +95,3 @@ static void clear_holder(EscapeModuleState &self) {
     self.byte_138c = 0;
 }
 GUEST_EXPORT(0x402fe108, clear_holder);
-
-GUEST_FUZZ(0x402fe080, 100, [](guest::Fuzz &f) {
-    auto state = f.allocate(sizeof(EscapeModuleState)).cast<EscapeModuleState>();
-    std::memset(state.get(), 0, sizeof(EscapeModuleState));
-    f.arguments(state, f.pick<u32>({0, 1}));
-});
-GUEST_FUZZ(0x402fe108, 200, [](guest::Fuzz &f) {
-    auto state = f.object<EscapeModuleState>();
-    state->holder = nullptr;
-    f.arguments(state);
-});

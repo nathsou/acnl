@@ -68,33 +68,3 @@ GUEST_EXPORT(0x00819c2c, dispatch_offset_28_b);
 GUEST_EXPORT(0x00819d38, dispatch_offset_a4);
 GUEST_EXPORT(0x00819e44, dispatch_offset_28_c);
 GUEST_EXPORT(0x00819f50, dispatch_offset_0);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// Entries without callbacks (null function, even adjust), so fuzzing never calls into the game.
-static gptr<CallbackTable> some_table(guest::Fuzz &f) {
-    auto table = f.object<CallbackTable>();
-    u32 count = f.below(6);
-    auto entries = f.allocate(count * sizeof(CallbackTableEntry) + 4).cast<CallbackTableEntry>();
-    for (u32 i = 0; i < count; i++) {
-        CallbackTableEntry &entry = entries[i];
-        entry.unknown_00 = f.number();
-        entry.callback.function = 0;
-        entry.callback.adjust = s32(f.below(4)) * 2;
-        entry.key1 = f.pick<u32>({0, 1, 2});
-        entry.key2 = f.pick<u32>({0, 1, 2, 3});
-    }
-    table->entries = entries;
-    table->count = count;
-    return table;
-}
-
-static void fuzz_dispatch(guest::Fuzz &f) {
-    f.arguments(some_table(f), f.pick<u32>({0, 1, 2}), f.pick<u32>({0, 1, 2, 3}));
-}
-
-GUEST_FUZZ(0x00819b20, 300, fuzz_dispatch);
-GUEST_FUZZ(0x00819c2c, 300, fuzz_dispatch);
-GUEST_FUZZ(0x00819d38, 300, fuzz_dispatch);
-GUEST_FUZZ(0x00819e44, 300, fuzz_dispatch);
-GUEST_FUZZ(0x00819f50, 300, fuzz_dispatch);

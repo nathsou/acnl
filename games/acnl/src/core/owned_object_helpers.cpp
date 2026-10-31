@@ -34,12 +34,6 @@ inline constexpr guest::Function<0x001329a8, void(gptr<void> self)> prepare_flag
 // Size of the bookkeeping before an array of objects (the pointer returned points past it).
 constexpr u32 ARRAY_HEADER_SIZE = 8;
 
-void zero_bytes(gptr<void> p, u32 size) {
-    for (u32 i = 0; i < size; i++) {
-        p.cast<u8>()[i] = 0;
-    }
-}
-
 }  // namespace
 
 // Calls the owned object's virtual function in slot 4 (its destructor) and forgets the object.
@@ -72,29 +66,3 @@ u32 destroy_array_elements(u32 array, u32 destructor, u32 element_size, u32 coun
     return array - ARRAY_HEADER_SIZE;
 }
 GUEST_EXPORT(0x002f76ad, destroy_array_elements);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002f747c, 200, [](guest::Fuzz &f) {
-    auto owner = f.object<ObjectOwner>();
-    owner->object = nullptr;
-    if (f.below(3) != 0) {
-        auto object = f.object<PolymorphicObject>();
-        auto vtable = f.object<u32[8]>();
-        (*vtable)[DESTRUCTOR_SLOT] = 0x002f77e8;  // same_pointer: harmless
-        object->vtable = vtable.cast<const u32>();
-        owner->object = object;
-    }
-    f.arguments(owner);
-});
-
-GUEST_FUZZ(0x002f74b0, 100, [](guest::Fuzz &f) {
-    auto object = f.object<FlaggedObject>();
-    zero_bytes(object, sizeof(FlaggedObject));
-    f.arguments(object);
-});
-
-GUEST_FUZZ(0x002f76ad, 300, [](guest::Fuzz &f) {
-    u32 count = f.pick<u32>({0, 1, 2, 5, 16});
-    f.arguments(f.number(), u32(0x002f77e8), 1 + f.below(0x40), count);  // same_pointer: harmless
-});

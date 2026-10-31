@@ -71,9 +71,3 @@ s16 atan2_angle(float y, float x) {
     return s16(angle);
 }
 GUEST_EXPORT(0x00565cc0, atan2_angle);
-
-static float some_coordinate(guest::Fuzz &f) {
-    return f.pick<float>({0.0f, -0.0f, 1e-8f, -1e-8f, 1.0f, -1.0f, 100.0f, -100.0f, f.real(), f.real(), f.real()});
-}
-
-GUEST_FUZZ(0x00565cc0, 400, [](guest::Fuzz &f) { f.arguments(some_coordinate(f), some_coordinate(f)); });

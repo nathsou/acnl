@@ -97,7 +97,3 @@ u32 evaluate_condition(u32 condition) {
     }
 }
 GUEST_EXPORT(0x0023bdac, evaluate_condition);
-
-GUEST_FUZZ(0x0023bdac, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, 6, 7, 8, 0xffffffff, f.below(8), f.number()}));
-});

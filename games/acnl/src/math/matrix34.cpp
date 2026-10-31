@@ -126,23 +126,3 @@ void Matrix34::set_rotation_z_then_y_x(u16 x_angle, u16 y_angle, u16 z_angle) {
     rotate_x(x_angle);
 }
 GUEST_EXPORT(0x005677bc, Matrix34::set_rotation_z_then_y_x);
-
-static gptr<Matrix34> some_matrix(guest::Fuzz &f) {
-    auto matrix = f.object<Matrix34>();
-    for (float &value : matrix->m) {
-        value = f.real();
-    }
-    return matrix;
-}
-
-static u32 some_angle(guest::Fuzz &f) {
-    return f.pick<u32>({0, 0x10000, 1, 0x4000, 0x8000, 0xffff, f.number(), f.number() & 0xffff});
-}
-
-GUEST_FUZZ(0x00567510, 300, [](guest::Fuzz &f) { f.arguments(some_matrix(f), some_angle(f)); });
-GUEST_FUZZ(0x0056747c, 300, [](guest::Fuzz &f) { f.arguments(some_matrix(f), some_angle(f)); });
-GUEST_FUZZ(0x00567614, 300, [](guest::Fuzz &f) { f.arguments(some_matrix(f), some_angle(f)); });
-GUEST_FUZZ(0x00567580, 300, [](guest::Fuzz &f) { f.arguments(some_matrix(f), some_angle(f)); });
-GUEST_FUZZ(0x005676b8, 300, [](guest::Fuzz &f) { f.arguments(some_matrix(f), some_angle(f)); });
-GUEST_FUZZ(0x00567684, 300, [](guest::Fuzz &f) { f.arguments(some_matrix(f), some_angle(f), some_angle(f), some_angle(f)); });
-GUEST_FUZZ(0x005677bc, 300, [](guest::Fuzz &f) { f.arguments(some_matrix(f), some_angle(f), some_angle(f), some_angle(f)); });

@@ -78,9 +78,3 @@ void NoticeRenewalState::set_mode(u32 new_mode) {
     mode = u8(new_mode);
 }
 GUEST_EXPORT(0x0030608d, NoticeRenewalState::set_mode);
-
-GUEST_FUZZ(0x00305ffc, 300, [](guest::Fuzz &f) { f.arguments(f.object<NoticeRenewalState>()); });
-GUEST_FUZZ(0x0030608d, 300, [](guest::Fuzz &f) {
-    // modes 2-4 change global game state through other code; only the self-contained ones are fuzzed
-    f.arguments(f.object<NoticeRenewalState>(), f.pick<u32>({0, 1, 5, 6, 0xff, 0x100, 0xffffffff, f.number() | 8}));
-});

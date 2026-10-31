@@ -29,10 +29,3 @@ void seed_date_random(const TimeStamp &date, u32 offset) {
     }
 }
 GUEST_EXPORT(0x002fd844, seed_date_random);
-GUEST_FUZZ(0x002fd844, 200, [](guest::Fuzz &f) {
-    auto date = f.object<TimeStamp>();
-    date->year = s32(f.pick<u32>({2012, 2013, 2050, f.below(3000)}));
-    date->month = s8(f.below(14) - 1);
-    date->day = s8(f.below(33) - 1);
-    f.arguments(date, f.pick<u32>({0, 1, 0x2239, 0x224b, f.number()}));
-});

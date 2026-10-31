@@ -76,21 +76,18 @@ gptr<u32> fill_ones(gptr<u32> destination) {
     return destination;
 }
 GUEST_EXPORT(0x005c0204, fill_ones);
-GUEST_FUZZ(0x005c0204, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(8).cast<u32>()); });
 
 // Reset of the pair holder at 0x22c of the session.
 void reset_session_pair_holder() {
     reset_pair_holder(guest::addr_of((*net_session)->state_22c).cast<void>());
 }
 GUEST_EXPORT(0x006258d4, reset_session_pair_holder);
-GUEST_FUZZ(0x006258d4, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // 0 unless all report one; then the global signed byte.
 s32 value_when_all_report_one() {
     return all_report_one() ? 0 : *value_952640;
 }
 GUEST_EXPORT(0x006a5b68, value_when_all_report_one);
-GUEST_FUZZ(0x006a5b68, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Turns the point towards the other when they are not at the same place.
 void face_target(FloatPoint &point, TargetPoint &target) {
@@ -101,15 +98,6 @@ void face_target(FloatPoint &point, TargetPoint &target) {
     }
 }
 GUEST_EXPORT(0x0060e9fc, face_target);
-GUEST_FUZZ(0x0060e9fc, 100, [](guest::Fuzz &f) {
-    auto point = f.object<FloatPoint>();
-    auto target = f.object<TargetPoint>();
-    point->x_04 = f.real();
-    point->z_0c = f.real();
-    target->x_14 = f.below(3) == 0 ? point->x_04 : f.real();
-    target->z_1c = f.below(3) == 0 ? point->z_0c : f.real();
-    f.arguments(point, target);
-});
 
 // Notes a category-0x2a item in the flags and the item's offset in its category (0 when it does not fit a byte).
 void note_item_offset(ItemProperties &object, const Item &item) {
@@ -120,13 +108,6 @@ void note_item_offset(ItemProperties &object, const Item &item) {
     object.offset_26f = offset > OFFSET_LIMIT ? 0 : u8(offset);
 }
 GUEST_EXPORT(0x005cbea4, note_item_offset);
-GUEST_FUZZ(0x005cbea4, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(2) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(f.object<ItemProperties>(), item);
-});
 
 // The flags' low three bits 3 become 1; and unless the item at 0x274 is of kind 2 bits 3-4 become 1 (bit 3).
 void normalize_flags_270(ItemProperties &object) {
@@ -138,12 +119,6 @@ void normalize_flags_270(ItemProperties &object) {
     }
 }
 GUEST_EXPORT(0x005cc024, normalize_flags_270);
-GUEST_FUZZ(0x005cc024, 100, [](guest::Fuzz &f) {
-    auto object = f.object<ItemProperties>();
-    object->flags_270 = u8(f.number());
-    object->item_274.id = f.below(2) != 0 ? Item::EMPTY : u16(0x4000 + f.below(8));
-    f.arguments(object);
-});
 
 // Whether the save-data flag listed for the index is set (false for indices from 0x67 on).
 bool save_flag_for_index(u32 index) {
@@ -153,4 +128,3 @@ bool save_flag_for_index(u32 index) {
     return section_has_flag(guest::addr_of(get_save_data()->small_values_4be80[0]).cast<void>(), (*flag_indices)[index]);
 }
 GUEST_EXPORT(0x005ca1fc, save_flag_for_index);
-GUEST_FUZZ(0x005ca1fc, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 5, 0x66, 0x67, f.number()})); });

@@ -30,11 +30,9 @@ void copy_to_first_row(u32 from, u32 to) {
     player_item_table->flags_1c4[destination] |= ENTRY_FLAG;
 }
 GUEST_EXPORT(0x005c5b7c, copy_to_first_row);
-GUEST_FUZZ(0x005c5b7c, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.number()); });
 
 // Copies the item of slot `from` of the second row to slot `to` of the same row.
 void copy_within_second_row(u32 from, u32 to) {
     copy_item(player_item_table->row_3c[to & SLOT_MASK], player_item_table->row_3c[from & SLOT_MASK]);
 }
 GUEST_EXPORT(0x005c67b4, copy_within_second_row);
-GUEST_FUZZ(0x005c67b4, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.number()); });

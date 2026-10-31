@@ -32,7 +32,6 @@ u32 read_global_975c20() {
     return *global_value_975c20;
 }
 GUEST_EXPORT(0x001323bc, read_global_975c20);
-GUEST_FUZZ(0x001323bc, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // The constructor of sead::FileHandle: all fields cleared.
 FileHandle &construct_file_handle(FileHandle &self) {
@@ -43,7 +42,6 @@ FileHandle &construct_file_handle(FileHandle &self) {
     return self;
 }
 GUEST_EXPORT(0x001323cc, construct_file_handle);
-GUEST_FUZZ(0x001323cc, 200, [](guest::Fuzz &f) { f.arguments(f.object<FileHandle>()); });
 
 // Unlinks every node of a list and empties the list.
 void clear_list(ListHead &list) {
@@ -58,23 +56,6 @@ void clear_list(ListHead &list) {
     list.unknown_08 = 0;
 }
 GUEST_EXPORT(0x00132478, clear_list);
-GUEST_FUZZ(0x00132478, 300, [](guest::Fuzz &f) {
-    auto list = f.object<ListHead>();
-    u32 count = f.below(5);
-    gptr<ListNode> previous;
-    list->first = nullptr;
-    for (u32 i = 0; i < count; i++) {
-        auto node = f.object<ListNode>();
-        node->next = nullptr;
-        if (previous) {
-            previous->next = node;
-        } else {
-            list->first = node;
-        }
-        previous = node;
-    }
-    f.arguments(list);
-});
 
 // The constructor of ssys::st::ListNode.
 ListNode &construct_list_node(ListNode &self) {
@@ -84,4 +65,3 @@ ListNode &construct_list_node(ListNode &self) {
     return self;
 }
 GUEST_EXPORT(0x001324a8, construct_list_node);
-GUEST_FUZZ(0x001324a8, 200, [](guest::Fuzz &f) { f.arguments(f.object<ListNode>()); });

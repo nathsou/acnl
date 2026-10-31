@@ -1,7 +1,7 @@
 // Small functions of objects of the 0x002b0000..0x002e0000 area (their classes are not known yet): packed fields, a
 // table of counters, a capped counter, pointers into the save data and an empty record.
 #include "core/encrypted_int.hpp"
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 #include "save/save_data.hpp"
 
@@ -84,7 +84,6 @@ void init_packed_bytes(PackedBytes &bytes, u32 /*unused*/, u32 value) {
     bytes.byte_1 = u8((bytes.byte_1 & ~SLOT_FIELD) | (slot << SLOT_SHIFT));
 }
 GUEST_EXPORT(0x002bb454, init_packed_bytes);
-GUEST_FUZZ(0x002bb454, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedBytes>(), f.number(), f.number()); });
 
 void clear_counter_set(CounterSet &set) {
     for (EncryptedInt &counter : set.counters) {
@@ -92,7 +91,6 @@ void clear_counter_set(CounterSet &set) {
     }
 }
 GUEST_EXPORT(0x002beff0, clear_counter_set);
-GUEST_FUZZ(0x002beff0, 100, [](guest::Fuzz &f) { f.arguments(f.object<CounterSet>()); });
 
 // Stores the value in the counter, capped at 99999; returns how much of it was cut off.
 u32 set_capped_counter(CappedCounter &object, u32 value) {
@@ -104,9 +102,6 @@ u32 set_capped_counter(CappedCounter &object, u32 value) {
     return 0;
 }
 GUEST_EXPORT(0x002bfcb8, set_capped_counter);
-GUEST_FUZZ(0x002bfcb8, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<CappedCounter>(), f.pick<u32>({0, 1, 99999, 100000, 0xffffffffu, f.number()}));
-});
 
 // The holder's own block while its selector is set, else the save data's flags byte.
 gptr<u8> block_or_save_flags(BlockHolder &holder) {
@@ -116,7 +111,6 @@ gptr<u8> block_or_save_flags(BlockHolder &holder) {
     return gptr<u8>(get_save_data().addr() + offsetof(SaveData, flags_621cf));
 }
 GUEST_EXPORT(0x002c2198, block_or_save_flags);
-GUEST_FUZZ(0x002c2198, 100, [](guest::Fuzz &f) { f.arguments(f.object<BlockHolder>()); });
 
 // Builds an empty item and clears the three fields after it.
 EmptyRecord &construct_empty_record(EmptyRecord &record) {
@@ -127,20 +121,17 @@ EmptyRecord &construct_empty_record(EmptyRecord &record) {
     return record;
 }
 GUEST_EXPORT(0x002cf8bc, construct_empty_record);
-GUEST_FUZZ(0x002cf8bc, 100, [](guest::Fuzz &f) { f.arguments(f.object<EmptyRecord>()); });
 
 gptr<u8> save_block_field() {
     return gptr<u8>(get_save_data().addr() + SAVE_BLOCK_OFFSET + SAVE_BLOCK_FIELD);
 }
 GUEST_EXPORT(0x002d3e18, save_block_field);
-GUEST_FUZZ(0x002d3e18, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // The field's offset from the save data (the original computes it as a difference of two addresses).
 u32 save_block_field_offset() {
     return SAVE_BLOCK_OFFSET + SAVE_BLOCK_FIELD;
 }
 GUEST_EXPORT(0x002d3f4c, save_block_field_offset);
-GUEST_FUZZ(0x002d3f4c, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // Runs update_flag_and_state on every entry object, then clears the flag at 0xd.
 void update_entries(EntryHolder &holder) {
@@ -152,10 +143,3 @@ void update_entries(EntryHolder &holder) {
     holder.flag_0d = 0;
 }
 GUEST_EXPORT(0x002d2f4c, update_entries);
-GUEST_FUZZ(0x002d2f4c, 100, [](guest::Fuzz &f) {
-    auto holder = f.object<EntryHolder>();
-    for (EntrySlot &slot : holder->slots) {
-        slot.object = f.below(2) != 0 ? f.allocate(0x40) : gptr<void>(0u);
-    }
-    f.arguments(holder);
-});

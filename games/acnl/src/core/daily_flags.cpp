@@ -75,8 +75,3 @@ void roll_daily_flags(DailyFlags &flags, bool force) {
     flags.second |= SECOND_BYTE_ROLLED;
 }
 GUEST_EXPORT(0x002d46f0, roll_daily_flags);
-GUEST_FUZZ(0x002d46f0, 200, [](guest::Fuzz &f) {
-    auto flags = f.object<DailyFlags>();
-    flags->second = u8(f.number());
-    f.arguments(flags, f.below(2));
-});

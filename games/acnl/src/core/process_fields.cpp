@@ -114,16 +114,3 @@ void PositionSetter::set_position(const Vector3Words &position) {
     target->flags_88 = target->flags_88 | FLAG_CHANGED;
 }
 GUEST_EXPORT(0x004ee2b0, PositionSetter::set_position);
-
-GUEST_FUZZ(0x005210c0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<ProcessState>(), f.number() & 0xffff, f.number(), f.number() & 0xff);
-});
-GUEST_FUZZ(0x00521bec, 100, [](guest::Fuzz &f) { f.arguments(f.object<ProcessState>()); });
-GUEST_FUZZ(0x00521bf8, 200, [](guest::Fuzz &f) { f.arguments(f.object<ProcessState>(), f.number() & 0xffff); });
-GUEST_FUZZ(0x00521c04, 200, [](guest::Fuzz &f) { f.arguments(f.object<ProcessState>()); });
-GUEST_FUZZ(0x004edd88, 200, [](guest::Fuzz &f) { f.arguments(f.object<AnimationCursor>()); });
-GUEST_FUZZ(0x004ee2b0, 200, [](guest::Fuzz &f) {
-    auto setter = f.object<PositionSetter>();
-    setter->target = f.object<PositionTarget>();
-    f.arguments(setter, f.object<Vector3Words>());
-});

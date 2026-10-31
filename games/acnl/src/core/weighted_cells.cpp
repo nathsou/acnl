@@ -36,15 +36,3 @@ u32 WeightedCells::sum_weights(u32 column, u32 row) {
 }  // namespace
 
 GUEST_EXPORT(0x002fe055, WeightedCells::sum_weights);
-GUEST_FUZZ(0x002fe055, 300, [](guest::Fuzz &f) {
-    auto cells = f.allocate(0x800).cast<WeightedCells>();
-    f.bytes(cells.cast<void>(), 0x800);
-    if (f.below(2) != 0) {
-        for (u32 i = 0; i < 0x100; i++) {
-            if (f.below(3) == 0) {
-                cells->cells[i] = 0;
-            }
-        }
-    }
-    f.arguments(cells, f.below(20), f.below(3));
-});

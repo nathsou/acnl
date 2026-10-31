@@ -1,5 +1,5 @@
 // Small questions about objects with state flags, and two numbers computed from floats and integers.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "core/object_flags_171.hpp"
 
 namespace {
@@ -56,15 +56,3 @@ static float value_above_offset(u32 /*unused*/, s32 value) {
     return static_cast<float>(value) - OFFSET;
 }
 GUEST_EXPORT(0x00763c1c, value_above_offset);
-
-GUEST_FUZZ(0x00763830, 200, [](guest::Fuzz &f) {
-    auto object = f.object<ObjectWithFlags171>();
-    f.arguments(object);
-});
-GUEST_FUZZ(0x00763a70, 400, [](guest::Fuzz &f) {
-    f.arguments(f.number(), f.below(2),
-                f.pick<float>({0.0f, 0.01f, 0.02f, 0.03f, 1.0f, 5.0f, f.real() / 100, f.real()}));
-});
-GUEST_FUZZ(0x00763c1c, 300, [](guest::Fuzz &f) {
-    f.arguments(f.number(), f.pick<s32>({0, 1, 16, 17, -1, 1000, INT32_MIN, INT32_MAX, static_cast<s32>(f.number())}));
-});

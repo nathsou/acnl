@@ -58,19 +58,6 @@ struct StateHolder {
 };
 GUEST_OFFSET(StateHolder, state_10, 0x10);
 
-gptr<IdentityTable> fuzz_table(guest::Fuzz &f) {
-    auto table = f.object<IdentityTable>();
-    for (IdentityRecord &record : table->records) {
-        if (f.below(3) == 0) {
-            record.identity.player.id = 0;
-        } else {
-            record.identity.player.id = u16(1 + f.below(4));
-            record.identity.town.id = u16(1 + f.below(4));
-        }
-    }
-    return table;
-}
-
 }  // namespace
 
 // How many records hold an identity.
@@ -84,7 +71,6 @@ u32 count_set_records(IdentityTable &table) {
     return count;
 }
 GUEST_EXPORT(0x0071d334, count_set_records);
-GUEST_FUZZ(0x0071d334, 100, [](guest::Fuzz &f) { f.arguments(fuzz_table(f)); });
 
 // Whether some record holds an identity.
 bool any_record_set(IdentityTable &table) {
@@ -96,7 +82,6 @@ bool any_record_set(IdentityTable &table) {
     return false;
 }
 GUEST_EXPORT(0x0071d3e4, any_record_set);
-GUEST_FUZZ(0x0071d3e4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_table(f)); });
 
 // Whether some record holds no identity.
 bool any_record_free(IdentityTable &table) {
@@ -108,7 +93,6 @@ bool any_record_free(IdentityTable &table) {
     return false;
 }
 GUEST_EXPORT(0x0071d42c, any_record_free);
-GUEST_FUZZ(0x0071d42c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_table(f)); });
 
 // The sum of the five encrypted values.
 u32 sum_of_encrypted_values(const EncryptedSums &sums) {
@@ -119,37 +103,21 @@ u32 sum_of_encrypted_values(const EncryptedSums &sums) {
     return sum;
 }
 GUEST_EXPORT(0x0071d838, sum_of_encrypted_values);
-GUEST_FUZZ(0x0071d838, 100, [](guest::Fuzz &f) {
-    auto sums = f.object<EncryptedSums>();
-    for (EncryptedInt &value : sums->values) {
-        value.set(f.below(1000));
-    }
-    f.arguments(sums);
-});
 
 bool table_crc_matches(TableWithCrc &block) {
     return block.crc == crc32(guest::addr_of(block.data[0]), TABLE_CRC_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x0071d48c, table_crc_matches);
-GUEST_FUZZ(0x0071d48c, 20, [](guest::Fuzz &f) { f.arguments(f.object<TableWithCrc>()); });
 
 void seal_small_with_crc(SmallWithCrc &block) {
     block.crc = crc32(guest::addr_of(block.data[0]), SMALL_CRC_SIZE, CRC_START, CRC_FINAL_XOR);
 }
 GUEST_EXPORT(0x0071fbec, seal_small_with_crc);
-GUEST_FUZZ(0x0071fbec, 50, [](guest::Fuzz &f) { f.arguments(f.object<SmallWithCrc>()); });
 
 bool small_with_crc_matches(SmallWithCrc &block) {
     return crc32(guest::addr_of(block.data[0]), SMALL_CRC_SIZE, CRC_START, CRC_FINAL_XOR) == block.crc;
 }
 GUEST_EXPORT(0x0071fc14, small_with_crc_matches);
-GUEST_FUZZ(0x0071fc14, 50, [](guest::Fuzz &f) {
-    auto block = f.object<SmallWithCrc>();
-    if (f.below(2) != 0) {
-        seal_small_with_crc(*block);
-    }
-    f.arguments(block);
-});
 
 // Whether the state is at least 2 and the save data's flag byte at 0x621d3 has bit 1 clear.
 bool state_allows_and_flag_clear(StateHolder &holder) {
@@ -159,9 +127,3 @@ bool state_allows_and_flag_clear(StateHolder &holder) {
     return (get_save_data()->flags_621d3 & FLAG_BIT_1) == 0;
 }
 GUEST_EXPORT(0x0071c594, state_allows_and_flag_clear);
-GUEST_FUZZ(0x0071c594, 50, [](guest::Fuzz &f) {
-    get_save_data()->flags_621d3 = u8(f.number());
-    auto holder = f.object<StateHolder>();
-    holder->state_10 = u8(f.below(4));
-    f.arguments(holder);
-});

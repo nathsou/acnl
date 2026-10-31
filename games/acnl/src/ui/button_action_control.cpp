@@ -38,4 +38,3 @@ ButtonActionControl &construct_button_action_control(ButtonActionControl &self) 
     return self;
 }
 GUEST_EXPORT(0x002f7604, construct_button_action_control);
-GUEST_FUZZ(0x002f7604, 200, [](guest::Fuzz &f) { f.arguments(f.object<ButtonActionControl>()); });

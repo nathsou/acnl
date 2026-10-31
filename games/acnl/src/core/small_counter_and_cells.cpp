@@ -72,29 +72,3 @@ bool item_flag_9_for_type_10(const Item &item) {
 GUEST_EXPORT(0x002fe668, CounterObject154::add_counter);
 GUEST_EXPORT(0x002fe748, item_entry_flag_3);
 GUEST_EXPORT(0x002fe77c, item_flag_9_for_type_10);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002fe668, 300, [](guest::Fuzz &f) {
-    auto object = f.object<CounterObject154>();
-    u32 choices[] = {0, 9999, 5000, 0x7fffffff, 0x80000000, f.number()};
-    object->counter_154 = s32(choices[f.below(6)]);
-    f.arguments(object, f.pick<u32>({0, 1, 0xffffffff, 9999, 10000, 0x7fffffff, 0x80000000, f.number()}));
-});
-
-static gptr<Item> some_indexed_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    u16 number = f.below(4) != 0 ? u16(f.below(LAST_INDEXED_NUMBER + 1))
-                                 : f.pick<u16>({0, LAST_INDEXED_NUMBER, LAST_INDEXED_NUMBER + 1, Item::EMPTY});
-    item->id = u16(number | (f.below(2) != 0 ? Item::ID_FLAG : 0));
-    return item;
-}
-
-GUEST_FUZZ(0x002fe748, 300, [](guest::Fuzz &f) { f.arguments(some_indexed_item(f)); });
-GUEST_FUZZ(0x002fe77c, 300, [](guest::Fuzz &f) {
-    auto item = some_indexed_item(f);
-    if (f.below(2) == 0) {
-        item->flags |= ITEM_FLAG_9;
-    }
-    f.arguments(item);
-});

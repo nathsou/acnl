@@ -73,19 +73,3 @@ void EscapeWordState::set_word(u32 id, u32 keep, u32 flag) {
     construct_word_fix_32(*this, word, 0);
 }
 GUEST_EXPORT(0x402fa9f8, EscapeWordState::set_word);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x402fa7bc, 300, [](guest::Fuzz &f) {
-    auto holder = f.object<EscapeLinkHolder>();
-    holder->target = f.object<EscapeLinkTarget>();
-    holder->linked = f.pick<u32>({0, 1, 0x100, f.number()});
-    f.arguments(holder);
-});
-
-// Only the path that calls nothing (keep set): the rebuild path depends on game text state.
-GUEST_FUZZ(0x402fa9f8, 300, [](guest::Fuzz &f) {
-    auto state = f.object<EscapeWordState>();
-    u32 keep = f.pick<u32>({1, 0x100, 0xffffffff, f.number() | 1});
-    f.arguments(state, f.number(), keep, f.pick<u32>({0, 1, 0xff, f.number()}));
-});

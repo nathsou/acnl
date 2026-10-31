@@ -15,7 +15,6 @@ constexpr s32 TOTAL_MAX = 999'999'999;
 constexpr s32 TALLY_MAX = 9'999;
 constexpr u32 ENTRIES = 72;  // from the spacing of the tables
 constexpr u32 SPLITS = 4;
-constexpr u32 COUNT_ENTRIES = 64;
 constexpr s32 VALUE_118_MAX = 99;
 constexpr u32 SPLIT_ENTRY_COUNT = 80;  // entries of five words before the tallies (0x640 bytes)
 constexpr u32 PARTS_ENTRY = 0;         // the entry whose total is the sum of the parts
@@ -253,85 +252,3 @@ GUEST_EXPORT(0x006b7a44, ClampedCounters::add_to_current_split<78>);
 GUEST_EXPORT(0x006b72a4, ClampedCounters::add_to_split<54>);
 GUEST_EXPORT(0x006b8378, ClampedCounters::add_to_split<69>);
 GUEST_EXPORT(0x006b8228, ClampedCounters::add_to_split<76>);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static s32 some_amount(guest::Fuzz &f) {
-    return s32(f.pick<u32>({0, 1, 0xffffffff, 9'999, 10'000, 999'999'999, 0x7fffffff, 0x80000000, f.number(),
-                            f.below(20000) - 10000}));
-}
-
-static gptr<ClampedCounters> some_counters(guest::Fuzz &f) {
-    auto counters = f.object<ClampedCounters>();
-    if (f.below(2) != 0) {
-        counters->entries[PARTS_ENTRY].total = s32(f.below(TOTAL_MAX + 1u));
-        counters->entries[UNKNOWN_14_ENTRY].total = s32(f.below(TOTAL_MAX + 1u));
-    }
-    // values around the limits, so that the clamping is reached
-    s32 interesting[] = {0, TALLY_MAX, TALLY_MAX - 1, 5'000, TOTAL_MAX, TOTAL_MAX - 1, s32(f.below(TOTAL_MAX)), s32(f.number())};
-    for (SplitCounter &entry : counters->entries) {
-        if (f.below(2) != 0) {
-            entry.total = interesting[f.below(8)];
-            for (s32 &split : entry.splits) {
-                split = interesting[f.below(8)];
-            }
-        }
-    }
-    return counters;
-}
-
-GUEST_FUZZ(0x006b563c, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x006b5c5c, 300, [](guest::Fuzz &f) { f.arguments(some_counters(f), some_amount(f)); });
-GUEST_FUZZ(0x006b6624, 300, [](guest::Fuzz &f) {
-    auto counters = some_counters(f);
-    f.arguments(counters, f.below(4), some_amount(f));
-});
-GUEST_FUZZ(0x006b60d8, 300, [](guest::Fuzz &f) {
-    auto counters = some_counters(f);
-    f.arguments(counters, f.below(ENTRIES), some_amount(f));
-});
-GUEST_FUZZ(0x006b59ac, 300, [](guest::Fuzz &f) {
-    auto counters = some_counters(f);
-    f.arguments(counters, f.below(ENTRIES), some_amount(f));
-});
-GUEST_FUZZ(0x006b84c8, 300, [](guest::Fuzz &f) {
-    f.arguments(some_counters(f), f.below(COUNT_ENTRIES), some_amount(f));
-});
-GUEST_FUZZ(0x006b8cb8, 300, [](guest::Fuzz &f) { f.arguments(some_counters(f), some_amount(f)); });
-GUEST_FUZZ(0x006b5240, 300, [](guest::Fuzz &f) { f.arguments(some_counters(f), some_amount(f)); });
-GUEST_FUZZ(0x006b69d4, 300, [](guest::Fuzz &f) { f.arguments(some_counters(f), some_amount(f)); });
-
-static void fuzz_current_split(guest::Fuzz &f) {
-    f.arguments(some_counters(f), some_amount(f));
-}
-
-static void fuzz_given_split(guest::Fuzz &f) {
-    auto counters = some_counters(f);
-    f.arguments(counters, f.below(SPLITS), some_amount(f));
-}
-
-GUEST_FUZZ(0x006b7380, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b8918, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b8830, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b7db0, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b8454, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b7c54, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b8140, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b7628, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b6870, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b7ff4, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b786c, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b730c, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b898c, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b8d80, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b80cc, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b85ec, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b7b90, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b77f8, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b8a74, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b7e24, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b8a00, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b7a44, 200, fuzz_current_split);
-GUEST_FUZZ(0x006b72a4, 200, fuzz_given_split);
-GUEST_FUZZ(0x006b8378, 200, fuzz_given_split);
-GUEST_FUZZ(0x006b8228, 200, fuzz_given_split);

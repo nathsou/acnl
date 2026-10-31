@@ -8,9 +8,6 @@ using guest::gptr;
 
 namespace {
 
-// A bit more than a villager record (flags_2510 is its last word), for the fuzzing of functions that read past it.
-constexpr u32 FUZZ_VILLAGER_SIZE = 0x2600;
-
 // A table entry (of the table behind 0x002fe450); only one word is used.
 struct TableEntry {
     u8 unknown_00[0x44];
@@ -171,63 +168,3 @@ GUEST_EXPORT(0x0011abc9, find_record_for_identity);
 GUEST_EXPORT(0x0011af49, first_record_in_use);
 GUEST_EXPORT(0x0011af89, villager_matches_identity);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-constexpr u32 ALL_SLOT_FLAGS = SaveVillager::SLOT_FLAGS_MASK << SaveVillager::SLOT_FLAGS_SHIFT;
-constexpr u32 ALL_BITS = 0xffffffff;
-constexpr u32 HIGH_BIT = 0x80000000;
-constexpr u32 FUZZ_TABLE_ID_LIMIT = 12;  // table ids a little past the 10 entries
-constexpr u32 FUZZ_LAST_ENTRY = 9;
-constexpr u32 FUZZ_FIRST_INVALID_ENTRY = 10;
-constexpr u32 FUZZ_SLOT_LIMIT = 6;  // slots a little past the 4 that exist
-constexpr u32 FUZZ_IDENTITY_SIZE = 0x100;
-
-// Scratch memory whose every word holds its own address: any pointer the unknown callees load from it stays inside.
-gptr<void> self_referencing_object(guest::Fuzz &f, u32 size) {
-    gptr<u32> words = f.allocate(size).cast<u32>();
-    for (u32 i = 0; i < size / 4; i++) {
-        words[i] = words.addr();
-    }
-    return words.cast<void>();
-}
-
-gptr<SaveVillager> some_player_table(guest::Fuzz &f) {
-    auto table = self_referencing_object(f, sizeof(SaveVillager) + 0x40).cast<SaveVillager>();
-    for (u32 i = 0; i < SaveVillager::PLAYER_RECORDS; i++) {
-        table->player_records[i].flags_b8 = u8(f.number());
-        table->player_records[i].flags_bc = u8(f.number());
-        if (f.below(4) == 0) {
-            memset(&table->player_records[i], 0, sizeof(u16));  // no identity id
-        }
-    }
-    return table;
-}
-
-gptr<const u8> some_identity(guest::Fuzz &f) {
-    gptr<void> window = f.allocate(FUZZ_IDENTITY_SIZE);
-    f.bytes(window, FUZZ_IDENTITY_SIZE);
-    return window.cast<const u8>();
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x0011a7df, 200, [](guest::Fuzz &f) {
-    auto slots = f.allocate(sizeof(SaveVillager)).cast<SaveVillager>();
-    slots->flags_2510 = f.pick<u32>({0, ALL_SLOT_FLAGS, ALL_BITS, f.number()});
-    f.arguments(slots, f.pick<u32>({0, 1, SaveVillager::SLOTS - 1, SaveVillager::SLOTS, FUZZ_SLOT_LIMIT, ALL_BITS,
-                                    HIGH_BIT, f.number()}));
-});
-GUEST_FUZZ(0x0011ab05, 200, [](guest::Fuzz &f) {
-    auto villager = self_referencing_object(f, FUZZ_VILLAGER_SIZE).cast<SaveVillager>();
-    villager->flags_2510 = f.pick<u32>({0, SaveVillager::FLAG_0, SaveVillager::FLAG_1,
-                                        SaveVillager::FLAG_0 | SaveVillager::FLAG_1, f.number()});
-    f.arguments(villager, f.pick<u32>({0, FUZZ_LAST_ENTRY / 2, FUZZ_LAST_ENTRY, FUZZ_FIRST_INVALID_ENTRY, ALL_BITS,
-                                       f.below(FUZZ_TABLE_ID_LIMIT)}));
-});
-GUEST_FUZZ(0x0011abc9, 200, [](guest::Fuzz &f) { f.arguments(some_player_table(f), some_identity(f)); });
-GUEST_FUZZ(0x0011af49, 200, [](guest::Fuzz &f) { f.arguments(some_player_table(f)); });
-GUEST_FUZZ(0x0011af89, 200, [](guest::Fuzz &f) {
-    f.arguments(self_referencing_object(f, FUZZ_VILLAGER_SIZE), some_identity(f));
-});

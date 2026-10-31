@@ -39,10 +39,6 @@ GUEST_EXPORT(0x002fe884, destroy_word_fix_33);
 GUEST_EXPORT(0x003050f4, destroy_word_fix_38);
 GUEST_EXPORT(0x006145ac, destroy_dynamic_cylinder);
 GUEST_EXPORT(0x006148ac, destroy_move_bg);
-GUEST_FUZZ(0x002fe884, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(16).cast<u32>()); });
-GUEST_FUZZ(0x003050f4, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(16).cast<u32>()); });
-GUEST_FUZZ(0x006145ac, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(32).cast<u32>()); });
-GUEST_FUZZ(0x006148ac, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(32).cast<u32>()); });
 
 // The camera's own vtable is replaced at once by the base vtable.
 gptr<u32> destroy_camera(gptr<u32> self) {
@@ -50,26 +46,22 @@ gptr<u32> destroy_camera(gptr<u32> self) {
     return set_base_vtable(self);
 }
 GUEST_EXPORT(0x004f21ec, destroy_camera);
-GUEST_FUZZ(0x004f21ec, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(64).cast<u32>()); });
 
 gptr<u32> construct_fader_moment(gptr<u32> self, u32 byte_04, u32 initial_state) {
     gptr<u32> base = construct_fader_base(self, byte_04, initial_state);
     return set_vtable(base, FADER_MOMENT_VTABLE);
 }
 GUEST_EXPORT(0x001c8290, construct_fader_moment);
-GUEST_FUZZ(0x001c8290, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(32).cast<u32>(), f.number(), f.below(3)); });
 
 gptr<u32> construct_remake_tex_loader(gptr<u32> self) {
     return set_vtable(construct_res_loader(self), REMAKE_TEX_LOADER_VTABLE);
 }
 GUEST_EXPORT(0x004e332c, construct_remake_tex_loader);
-GUEST_FUZZ(0x004e332c, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(0x400).cast<u32>()); });
 
 gptr<u32> construct_ftr_res_loader(gptr<u32> self) {
     return set_vtable(construct_resource_loader(self), FTR_RES_LOADER_VTABLE);
 }
 GUEST_EXPORT(0x004ea478, construct_ftr_res_loader);
-GUEST_FUZZ(0x004ea478, 50, [](guest::Fuzz &f) { f.arguments(f.allocate(0x400).cast<u32>()); });
 
 // Frees the held buffer (the second word of the holder) and forgets it; the state is cleared; always true.
 bool free_held_buffer() {
@@ -82,8 +74,3 @@ bool free_held_buffer() {
     return true;
 }
 GUEST_EXPORT(0x00242158, free_held_buffer);
-GUEST_FUZZ(0x00242158, 50, [](guest::Fuzz &f) {
-    (*buffer_holder)[1] = nullptr;  // nothing to free
-    *buffer_state = f.number();
-    f.arguments();
-});

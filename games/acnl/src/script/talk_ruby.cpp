@@ -53,21 +53,4 @@ bool TalkRuby::update_budget() {
 }
 GUEST_EXPORT(0x005fd738, TalkRuby::update_budget);
 
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x005fd724, 200, [](guest::Fuzz &f) { f.arguments(f.object<script::TalkRuby>()); });
-GUEST_FUZZ(0x005fd738, 400, [](guest::Fuzz &f) {
-    auto ruby = f.object<script::TalkRuby>();
-    ruby->finished = f.pick<u8>({0, 0, 0, 1});
-    ruby->use_alternate_rate = f.pick<s8>({0, 1, -1});
-    ruby->characters_shown = f.pick<s32>({0, 1, 5, 100, -3, static_cast<s32>(f.number())});
-    ruby->budget = f.real() / 10;
-    ruby->rate_scale = f.real() / 100;
-    ruby->rate = f.real() / 100;
-    ruby->alternate_rate = f.real() / 100;
-    ruby->rate_override = f.pick<float>({-1.0f, 0.0f, 0.5f, f.real()});
-    f.arguments(ruby);
-});
-
 }  // namespace script

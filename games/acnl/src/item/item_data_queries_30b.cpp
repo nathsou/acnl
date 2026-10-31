@@ -11,14 +11,6 @@ constexpr u32 BYTE_19_OFFSET = 0x19;  // a byte of the ItemData entry (meaning n
 constexpr u8 BYTE_19_MASK = 0x0f;
 constexpr u8 BYTE_19_LIMIT = 0x0e;    // masked values at or above read as 0
 
-gptr<Item> fuzz_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = Item::FIRST_ITEM + f.below(Item::ITEM_COUNT);
-    }
-    return item;
-}
-
 }  // namespace
 
 // Whether the item has a data entry that passes the data check.
@@ -30,7 +22,6 @@ static bool item_has_valid_data(const Item &item) {
     return item_data_check(data) != 0;
 }
 GUEST_EXPORT(0x0030b654, item_has_valid_data);
-GUEST_FUZZ(0x0030b654, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
 
 // A value from the item data entry's byte 0x19 (low 4 bits, 0 when too large); 13 without valid data.
 static u32 item_data_byte_19_value(const Item &item) {
@@ -48,4 +39,3 @@ static u32 item_data_byte_19_value(const Item &item) {
     return value;
 }
 GUEST_EXPORT(0x0030b674, item_data_byte_19_value);
-GUEST_FUZZ(0x0030b674, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });

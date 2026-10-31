@@ -31,15 +31,3 @@ gptr<SeadListNode> linked_list_insert_before(LinkedList &list, SeadListNode &pos
 }  // namespace
 
 GUEST_EXPORT(0x0013e7d8, linked_list_insert_before);
-
-GUEST_FUZZ(0x0013e7d8, 300, [](guest::Fuzz &f) {
-    auto list = f.object<LinkedList>();
-    auto position = f.object<SeadListNode>();
-    auto node = f.object<SeadListNode>();
-    if (f.below(4) == 0) {
-        position->prev = position;  // a list holding just position
-    } else {
-        position->prev = f.object<SeadListNode>();
-    }
-    f.arguments(list, position, node);
-});

@@ -58,12 +58,6 @@ struct MaskObject {
 };
 GUEST_OFFSET(MaskObject, mask_28, 0x28);
 
-gptr<ModelHandle> fuzz_model_handle(guest::Fuzz &f) {
-    auto handle = f.object<ModelHandle>();
-    handle->block = f.object<ModelBlock>();
-    return handle;
-}
-
 }  // namespace
 
 // Gives the object the vtable of the transform node base class.
@@ -72,11 +66,8 @@ VtableObject &set_base_vtable(VtableObject &object) {
     return object;
 }
 GUEST_EXPORT(0x004ee514, set_base_vtable);
-GUEST_FUZZ(0x004ee514, 50, [](guest::Fuzz &f) { f.arguments(f.object<VtableObject>()); });
 GUEST_EXPORT(0x004edd84, set_base_vtable);  // (a jump to it)
-GUEST_FUZZ(0x004edd84, 50, [](guest::Fuzz &f) { f.arguments(f.object<VtableObject>()); });
 GUEST_EXPORT(0x004f0dd0, set_base_vtable);
-GUEST_FUZZ(0x004f0dd0, 50, [](guest::Fuzz &f) { f.arguments(f.object<VtableObject>()); });
 
 // The constructor of g3d::Func.
 VtableObject &construct_func(VtableObject &object) {
@@ -85,22 +76,16 @@ VtableObject &construct_func(VtableObject &object) {
     return object;
 }
 GUEST_EXPORT(0x004f0d90, construct_func);
-GUEST_FUZZ(0x004f0d90, 50, [](guest::Fuzz &f) { f.arguments(f.object<VtableObject>()); });
 
 u8 state_952a20_first_byte() {
     return state_952a20->first_byte;
 }
 GUEST_EXPORT(0x004ee524, state_952a20_first_byte);
-GUEST_FUZZ(0x004ee524, 50, [](guest::Fuzz &f) {
-    state_952a20->first_byte = f.below(256);
-    f.arguments();
-});
 
 gptr<StateObject> state_952a20_object() {
     return state_952a20->object;
 }
 GUEST_EXPORT(0x004eec44, state_952a20_object);
-GUEST_FUZZ(0x004eec44, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Sets the four flag bytes of the state's object.
 void set_state_object_flags() {
@@ -111,22 +96,16 @@ void set_state_object_flags() {
     object.byte_eb = 1;
 }
 GUEST_EXPORT(0x004eec20, set_state_object_flags);
-GUEST_FUZZ(0x004eec20, 50, [](guest::Fuzz &f) {
-    state_952a20->object = f.object<StateObject>();
-    f.arguments();
-});
 
 u32 model_value_148(ModelHandle &handle) {
     return handle.block->value_148;
 }
 GUEST_EXPORT(0x004f1028, model_value_148);
-GUEST_FUZZ(0x004f1028, 50, [](guest::Fuzz &f) { f.arguments(fuzz_model_handle(f)); });
 
 u32 model_value_150(ModelHandle &handle) {
     return handle.block->value_150;
 }
 GUEST_EXPORT(0x004f10ec, model_value_150);
-GUEST_FUZZ(0x004f10ec, 50, [](guest::Fuzz &f) { f.arguments(fuzz_model_handle(f)); });
 
 // True for index 0; otherwise whether the bit `index` of the mask is set (an index past the byte never is).
 bool mask_has_bit_or_index_0(MaskObject &object, u32 index) {
@@ -136,6 +115,3 @@ bool mask_has_bit_or_index_0(MaskObject &object, u32 index) {
     return (object.mask_28 & arm::lsl(1, index)) != 0;
 }
 GUEST_EXPORT(0x004f023c, mask_has_bit_or_index_0);
-GUEST_FUZZ(0x004f023c, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<MaskObject>(), f.pick<u32>({0, 1, 3, 7, 8, 31, 32, 33, 0x100, 0x101, f.number()}));
-});

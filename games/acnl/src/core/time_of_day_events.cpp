@@ -57,7 +57,6 @@ bool is_new_year_countdown_time() {
     return false;
 }
 GUEST_EXPORT(0x0051d07c, is_new_year_countdown_time);
-GUEST_FUZZ(0x0051d07c, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Stores in the save data whether it is night (from 22:00 to 6:59) for a player with the events flag; 0 otherwise.
 void update_night_flag() {
@@ -65,4 +64,3 @@ void update_night_flag() {
     *gptr<u32>(get_save_data().addr() + SAVE_NIGHT_FLAG_OFFSET) = night ? 1 : 0;
 }
 GUEST_EXPORT(0x001cd934, update_night_flag);
-GUEST_FUZZ(0x001cd934, 100, [](guest::Fuzz &f) { f.arguments(); });

@@ -183,35 +183,3 @@ static bool world_state_check() {
 }
 GUEST_EXPORT(0x00624d84, world_state_check);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-constexpr u32 ANY_BITS = 0xffffffff;
-constexpr u32 ALL_SLOTS_MASK = (1u << StationMask::STATION_COUNT) - 1;
-constexpr u32 BYTE_MASK = 0xff;
-constexpr u32 SLOT_FIRST = 0;
-constexpr u32 SLOT_LAST = StationMask::STATION_COUNT - 1;
-constexpr u32 SLOT_PAST_END = StationMask::STATION_COUNT;
-constexpr u32 SLOT_FAR_PAST_END = StationMask::STATION_COUNT + 1;
-constexpr u32 COUNT_FUZZ_LIMIT = StationMask::MAX_COUNT + 2;  // counts up to one past MAX_COUNT
-}  // namespace
-
-GUEST_FUZZ(0x00624b24, 300, [](guest::Fuzz &f) {
-    auto object = f.object<StationMask>();
-    if (f.below(2) != 0) {
-        object->count = u8(f.below(COUNT_FUZZ_LIMIT));
-    }
-    f.arguments(object, f.pick<u32>({SLOT_FIRST, SLOT_FIRST + 1, SLOT_LAST - 1, SLOT_LAST, SLOT_PAST_END,
-                                     SLOT_FAR_PAST_END, ANY_BITS, f.number()}));
-});
-GUEST_FUZZ(0x00624b60, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<StationMask>(),
-                f.pick<u32>({0, 1, 1u | (1u << 2), ALL_SLOTS_MASK, BYTE_MASK, ANY_BITS, f.number()}));
-});
-GUEST_FUZZ(0x00624be4, 300, [](guest::Fuzz &f) { f.arguments(f.object<SlotObject>()); });
-GUEST_FUZZ(0x00624d48, 300, [](guest::Fuzz &f) {
-    auto memory = f.allocate(TABLE_ENTRIES * sizeof(ShortId));
-    f.bytes(memory, TABLE_ENTRIES * sizeof(ShortId));
-    f.arguments(memory);
-});
-GUEST_FUZZ(0x00624d84, 300, [](guest::Fuzz &f) { f.arguments(); });

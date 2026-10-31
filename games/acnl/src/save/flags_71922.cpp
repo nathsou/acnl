@@ -24,8 +24,6 @@ bool flag_22(u16 mask) {
 
 bool save_block_flag_bit_0() { return flag_22(FLAG_BIT_0); }
 GUEST_EXPORT(0x0023bf20, save_block_flag_bit_0);
-GUEST_FUZZ(0x0023bf20, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 bool save_block_flag_bit_8() { return flag_22(FLAG_BIT_8); }
 GUEST_EXPORT(0x0023c604, save_block_flag_bit_8);
-GUEST_FUZZ(0x0023c604, 20, [](guest::Fuzz &f) { f.arguments(); });

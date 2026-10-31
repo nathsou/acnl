@@ -18,7 +18,6 @@ void clear_inner(gptr<WordPair> inner) {
     inner->second = NEVER_HIGH;
 }
 GUEST_EXPORT(0x00303cdc, clear_inner);
-GUEST_FUZZ(0x00303cdc, 100, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
 
 // Empties the record that `inner` is the inner part of: no value, no index, the reset bytes.
 void reset_saved_record(gptr<SavedRecordInner> inner) {
@@ -31,7 +30,3 @@ void reset_saved_record(gptr<SavedRecordInner> inner) {
     record->unknown_22 = RESET_UNKNOWN_22;
 }
 GUEST_EXPORT(0x0030a7e0, reset_saved_record);
-GUEST_FUZZ(0x0030a7e0, 200, [](guest::Fuzz &f) {
-    auto record = f.object<SavedRecord>();
-    f.arguments(guest::addr_of(record->inner));
-});

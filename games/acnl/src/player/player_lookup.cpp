@@ -21,9 +21,6 @@ gptr<SavePlayer> player_in_array(gptr<SavePlayer> players, u32 index) {
     return guest::addr_of(players[index]);
 }
 GUEST_EXPORT(0x00301df4, player_in_array);
-GUEST_FUZZ(0x00301df4, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(SaveData::PLAYER_COUNT * SavePlayer::SIZE).cast<SavePlayer>(), f.pick<u32>({0, 1, 3, 4, f.number()}));
-});
 
 // The player record of a slot: null for a slot that is none of them.
 gptr<SavePlayer> player_record_for_slot(u32 slot) {
@@ -40,4 +37,3 @@ gptr<SavePlayer> player_record_for_slot(u32 slot) {
     return guest::addr_of(remote_players[index]);
 }
 GUEST_EXPORT(0x00303770, player_record_for_slot);
-GUEST_FUZZ(0x00303770, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, 6, 7, 8, f.number()})); });

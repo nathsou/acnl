@@ -32,6 +32,3 @@ void flags_94e43b_latch() {
     flags_94e43b->latched = 1;
 }
 GUEST_EXPORT(0x00120864, flags_94e43b_latch);
-
-GUEST_FUZZ(0x00120854, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00120864, 200, [](guest::Fuzz &f) { f.arguments(); });

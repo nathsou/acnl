@@ -59,43 +59,26 @@ void StyledMessageSettings::reset() {
     style.byte_0f = MessageStyleRecord::DEFAULT_VALUE;
 }
 GUEST_EXPORT(0x005b20d0, StyledMessageSettings::reset);
-GUEST_FUZZ(0x005b20d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<StyledMessageSettings>()); });
-
-namespace {
-
-// A table of two records for the setters' fuzz inputs.
-gptr<MessageStyleRecord> fuzz_table(guest::Fuzz &f) {
-    return f.object<MessageStyleRecord[2]>().cast<MessageStyleRecord>();
-}
-u32 fuzz_index(guest::Fuzz &f) {
-    return f.pick<u32>({0, 1});
-}
-
-}  // namespace
 
 void set_style_byte_04(gptr<MessageStyleRecord> styles, u32 index, u32 value) {
     styles[index].byte_04 = u8(value);
 }
 GUEST_EXPORT(0x005b2130, set_style_byte_04);
-GUEST_FUZZ(0x005b2130, 100, [](guest::Fuzz &f) { f.arguments(fuzz_table(f), fuzz_index(f), f.number()); });
 
 void set_style_byte_00(gptr<MessageStyleRecord> styles, u32 index, u32 value) {
     styles[index].byte_00 = u8(value);
 }
 GUEST_EXPORT(0x005b2140, set_style_byte_00);
-GUEST_FUZZ(0x005b2140, 100, [](guest::Fuzz &f) { f.arguments(fuzz_table(f), fuzz_index(f), f.number()); });
 
 void set_style_byte_0d(gptr<MessageStyleRecord> styles, u32 index, u32 value) {
     styles[index].byte_0d = u8(value);
 }
 GUEST_EXPORT(0x005b214c, set_style_byte_0d);
-GUEST_FUZZ(0x005b214c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_table(f), fuzz_index(f), f.number()); });
 
 void set_style_byte_09(gptr<MessageStyleRecord> styles, u32 index, u32 value) {
     styles[index].byte_09 = u8(value);
 }
 GUEST_EXPORT(0x005b215c, set_style_byte_09);
-GUEST_FUZZ(0x005b215c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_table(f), fuzz_index(f), f.number()); });
 
 // Sets the four bytes at 0x12 (the last two arrive on the stack).
 void set_style_bytes_12(gptr<MessageStyleRecord> styles, u32 index, u32 byte_12, u32 byte_13, u32 byte_14,
@@ -107,6 +90,3 @@ void set_style_bytes_12(gptr<MessageStyleRecord> styles, u32 index, u32 byte_12,
     style.byte_15 = u8(byte_15);
 }
 GUEST_EXPORT(0x005b216c, set_style_bytes_12);
-GUEST_FUZZ(0x005b216c, 100, [](guest::Fuzz &f) {
-    f.arguments(fuzz_table(f), fuzz_index(f), f.number(), f.number(), f.number(), f.number());
-});

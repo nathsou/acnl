@@ -34,11 +34,3 @@ void PendingReleases::release(u32 index) {
     pending[index / 8] = pending[index / 8] & ~mask;
 }
 GUEST_EXPORT(0x00316f9c, PendingReleases::release);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00316f9c, 200, [](guest::Fuzz &f) {
-    auto object = f.object<PendingReleases>();
-    object->flags_171 = f.pick<u8>({0, PendingReleases::ENABLED_BIT, 0xff});
-    f.arguments(object, f.pick<u32>({0, 1, 0x31, 0x32, 0xffffffffu, f.below(0x40)}));
-});

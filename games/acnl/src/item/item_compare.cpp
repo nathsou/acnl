@@ -49,30 +49,3 @@ bool Item::same_number_as(const Item &other) const {
     return number() == other.number();
 }
 GUEST_EXPORT(0x002fe574, Item::same_number_as);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Item> some_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    switch (f.below(5)) {
-    case 0: item->id = Item::EMPTY; break;
-    case 1: item->id = Item::FIRST_ITEM + f.below(Item::ITEM_COUNT); break;
-    case 2: item->id = BELL_BAG_100 + f.below(BELL_BAG_99000 - BELL_BAG_100 + 1); break;
-    case 3: item->id = (Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) | Item::ID_FLAG; break;
-    default: break;
-    }
-    return item;
-}
-
-GUEST_FUZZ(0x002fe4e0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.below(16), f.object<Item>());
-});
-GUEST_FUZZ(0x002fe53c, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x002fe574, 300, [](guest::Fuzz &f) {
-    auto a = some_item(f);
-    auto b = some_item(f);
-    if (f.below(2) == 0) {
-        b->id = a->id ^ (f.below(2) ? Item::ID_FLAG : 0);
-    }
-    f.arguments(a, b);
-});

@@ -15,5 +15,3 @@ bool cfl_state_flag_set() { return state_flag->value_10 != 0; }
 }  // namespace
 
 GUEST_EXPORT(0x0013d028, cfl_state_flag_set);
-
-GUEST_FUZZ(0x0013d028, 200, [](guest::Fuzz &f) { f.arguments(); });

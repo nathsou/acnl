@@ -42,10 +42,6 @@ constexpr u8 STATE_74 = 0x74, STATE_76 = 0x76;
 constexpr u8 STATE_NOT_TALK_A = 0x3a, STATE_NOT_TALK_B = 0x89;
 constexpr u8 STATE_WITH_FLAG_171 = 0xea;
 
-u32 some_id(guest::Fuzz &f) {
-    return f.pick<u32>({0, 1, 2, 3, 4, 7, 0xffffffffu});
-}
-
 template <u8 STATE>
 bool slot_object_in_state(u32 id) {
     gptr<SlotObject> object = look_up_object(id, EXCLUDE_IDLE);
@@ -59,18 +55,12 @@ GUEST_EXPORT(0x005c0fdc, slot_object_in_state<STATE_15>);
 GUEST_EXPORT(0x005c1060, slot_object_in_state<STATE_16>);
 GUEST_EXPORT(0x005c209c, slot_object_in_state<STATE_2F>);
 GUEST_EXPORT(0x005c2950, slot_object_in_state<STATE_2B>);
-GUEST_FUZZ(0x005c0f74, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
-GUEST_FUZZ(0x005c0fdc, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
-GUEST_FUZZ(0x005c1060, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
-GUEST_FUZZ(0x005c209c, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
-GUEST_FUZZ(0x005c2950, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // Whether the main object is in state 0x36.
 bool main_object_in_state_36() {
     return slot_object_in_state<STATE_36>(MAIN_OBJECT_ID);
 }
 GUEST_EXPORT(0x005c28f0, main_object_in_state_36);
-GUEST_FUZZ(0x005c28f0, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the slot's object is in one of the states 0x0f to 0x12.
 bool slot_object_in_states_0f_to_12(u32 id) {
@@ -78,7 +68,6 @@ bool slot_object_in_states_0f_to_12(u32 id) {
     return object && object->state_1a9 >= STATE_RANGE_A_FIRST && object->state_1a9 <= STATE_RANGE_A_LAST;
 }
 GUEST_EXPORT(0x005c0fa0, slot_object_in_states_0f_to_12);
-GUEST_FUZZ(0x005c0fa0, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // Whether the slot's object is in state 0x17 or 0x18.
 bool slot_object_in_states_17_to_18(u32 id) {
@@ -86,14 +75,12 @@ bool slot_object_in_states_17_to_18(u32 id) {
     return object && object->state_1a9 >= STATE_RANGE_B_FIRST && object->state_1a9 <= STATE_RANGE_B_LAST;
 }
 GUEST_EXPORT(0x005c1034, slot_object_in_states_17_to_18);
-GUEST_FUZZ(0x005c1034, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // Whether the slot has an object that is doing something.
 bool slot_object_is_active(u32 id) {
     return look_up_object(id, EXCLUDE_IDLE) != nullptr;
 }
 GUEST_EXPORT(0x005c28cc, slot_object_is_active);
-GUEST_FUZZ(0x005c28cc, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // How many of the four slots have an object that is doing something.
 u32 count_active_slot_objects() {
@@ -106,7 +93,6 @@ u32 count_active_slot_objects() {
     return count;
 }
 GUEST_EXPORT(0x005c1d80, count_active_slot_objects);
-GUEST_FUZZ(0x005c1d80, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the slot's object has flag 5 of byte 0x171 and is in state 0xea (idle objects count).
 bool slot_object_has_flag_171_and_state_ea(u32 id) {
@@ -114,7 +100,6 @@ bool slot_object_has_flag_171_and_state_ea(u32 id) {
     return object && (object->flags_171 & SlotObject::FLAGS_171_BIT_5) != 0 && object->state_1a9 == STATE_WITH_FLAG_171;
 }
 GUEST_EXPORT(0x005c5eb8, slot_object_has_flag_171_and_state_ea);
-GUEST_FUZZ(0x005c5eb8, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // While talking (the state of kind 0xe matches), whether the main object (idle ones count) exists and is in neither
 // of the states 0x3a and 0x89.
@@ -129,7 +114,6 @@ bool main_object_in_talk_other_state() {
     return object->state_1a9 != STATE_NOT_TALK_A && object->state_1a9 != STATE_NOT_TALK_B;
 }
 GUEST_EXPORT(0x005c1348, main_object_in_talk_other_state);
-GUEST_FUZZ(0x005c1348, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the main object (idle ones count) is in state 0x74 and has flag 2 of byte 0x17c.
 bool main_object_in_state_74_with_flag() {
@@ -137,7 +121,6 @@ bool main_object_in_state_74_with_flag() {
     return object && object->state_1a9 == STATE_74 && (object->flags_17c & SlotObject::FLAGS_17C_BIT_2) != 0;
 }
 GUEST_EXPORT(0x005c7f50, main_object_in_state_74_with_flag);
-GUEST_FUZZ(0x005c7f50, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the main object (idle ones count) is in state 0x76 and has flag 1 of byte 0x17c.
 bool main_object_in_state_76_with_flag() {
@@ -145,7 +128,6 @@ bool main_object_in_state_76_with_flag() {
     return object && object->state_1a9 == STATE_76 && (object->flags_17c & SlotObject::FLAGS_17C_BIT_1) != 0;
 }
 GUEST_EXPORT(0x005c7f8c, main_object_in_state_76_with_flag);
-GUEST_FUZZ(0x005c7f8c, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The object, when it has flag 1 of byte 0x66 but not flag 5.
 gptr<SlotObject> slot_object_if_flags_66_bit_1_without_bit_5(u32 id, u32 include_idle) {
@@ -156,7 +138,6 @@ gptr<SlotObject> slot_object_if_flags_66_bit_1_without_bit_5(u32 id, u32 include
     return gptr<SlotObject>(0u);
 }
 GUEST_EXPORT(0x005c3d4c, slot_object_if_flags_66_bit_1_without_bit_5);
-GUEST_FUZZ(0x005c3d4c, 100, [](guest::Fuzz &f) { f.arguments(some_id(f), f.below(2)); });
 
 // Copies the position of the slot's object and its facing to the outputs and reports whether the slot has one.
 bool get_slot_object_position(Float3 &position, u16 &facing, u32 id, u32 include_idle) {
@@ -169,9 +150,6 @@ bool get_slot_object_position(Float3 &position, u16 &facing, u32 id, u32 include
     return true;
 }
 GUEST_EXPORT(0x005c7cdc, get_slot_object_position);
-GUEST_FUZZ(0x005c7cdc, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<Float3>(), f.object<u16>(), some_id(f), f.below(2));
-});
 
 // The main object's position (of the object even when idle) and its three angles to the outputs, either of which may be
 // null; the angles are zero without an object that is doing something. Returns byte 0x1ab of that object, 6 without one.
@@ -191,9 +169,6 @@ u32 main_object_position_and_angles(gptr<Float3> position, gptr<u16> angles) {
     return active ? active->byte_1ab : NO_BYTE_1AB;
 }
 GUEST_EXPORT(0x005c7048, main_object_position_and_angles);
-GUEST_FUZZ(0x005c7048, 100, [](guest::Fuzz &f) {
-    f.arguments(f.below(4) == 0 ? gptr<Float3>(0u) : f.object<Float3>(), f.below(4) == 0 ? gptr<u16>(0u) : f.allocate(6).cast<u16>());
-});
 
 namespace {
 
@@ -214,22 +189,18 @@ gptr<u8> slot_object_part_1b4(u32 id) {
 }
 GUEST_EXPORT(0x005c0f5c, slot_object_part_1b4);
 GUEST_EXPORT(0x005c1330, slot_object_part_1b4);
-GUEST_FUZZ(0x005c0f5c, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
-GUEST_FUZZ(0x005c1330, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // The same for the part at 0x424 (`include_idle` as for look_up_object).
 gptr<u8> slot_object_part_424(u32 id, u32 include_idle) {
     return address_in_object(look_up_object(id, include_idle), PART_424_OFFSET);
 }
 GUEST_EXPORT(0x005c1838, slot_object_part_424);
-GUEST_FUZZ(0x005c1838, 100, [](guest::Fuzz &f) { f.arguments(some_id(f), f.below(2)); });
 
 // The same for the part at 0x5ec (idle objects count).
 gptr<u8> slot_object_part_5ec(u32 id) {
     return address_in_object(look_up_object(id, INCLUDE_IDLE), PART_5EC_OFFSET);
 }
 GUEST_EXPORT(0x005c06cc, slot_object_part_5ec);
-GUEST_FUZZ(0x005c06cc, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // Whether the slot's object (idle ones count) has flag 5 of byte 0x8c5.
 bool slot_object_has_flag_8c5_bit_5(u32 id) {
@@ -237,7 +208,6 @@ bool slot_object_has_flag_8c5_bit_5(u32 id) {
     return object && (object->flags_8c5 & SlotObject::FLAGS_8C5_BIT_5) != 0;
 }
 GUEST_EXPORT(0x005c1940, slot_object_has_flag_8c5_bit_5);
-GUEST_FUZZ(0x005c1940, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // Whether the main object has flag 3 of byte 0x177; true when there is no main object.
 bool main_object_has_flag_177_bit_3_or_is_missing() {
@@ -245,7 +215,6 @@ bool main_object_has_flag_177_bit_3_or_is_missing() {
     return !object || (object->flags_177 & SlotObject::FLAGS_177_BIT_3) != 0;
 }
 GUEST_EXPORT(0x005c6850, main_object_has_flag_177_bit_3_or_is_missing);
-GUEST_FUZZ(0x005c6850, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 namespace {
 
@@ -313,9 +282,6 @@ bool main_object_matches_action_mask(u32 mask, u32 strict) {
     return (mask & MASK_STATE_70) != 0 && object->state_1a9 == STATE_70 && object->word_884 == 0;
 }
 GUEST_EXPORT(0x005c507c, main_object_matches_action_mask);
-GUEST_FUZZ(0x005c507c, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 2, 4, 8, 0x20, 0x2f, f.below(64)}), f.below(2));
-});
 
 namespace {
 
@@ -347,7 +313,6 @@ bool main_object_state_class_is_2() {
     return object && object_state_class(object) == CLASS_2;
 }
 GUEST_EXPORT(0x005c5cf4, main_object_state_class_is_2);
-GUEST_FUZZ(0x005c5cf4, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the main object does something of classes 1 to 5 (or is in state 0x70 with a zero word at 0x884), unless a
 // talk state is on or the global flags forbid acting.
@@ -370,7 +335,6 @@ bool main_object_state_class_1_to_5() {
     return state_class >= CLASS_1 && state_class <= CLASS_5;
 }
 GUEST_EXPORT(0x005c2808, main_object_state_class_1_to_5);
-GUEST_FUZZ(0x005c2808, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the slot's object does something of classes 2 to 5. The global flags only count for the main object's slot.
 bool slot_object_state_class_2_to_5(u32 id) {
@@ -387,38 +351,32 @@ bool slot_object_state_class_2_to_5(u32 id) {
     return state_class >= CLASS_2 && state_class <= CLASS_5;
 }
 GUEST_EXPORT(0x005c6238, slot_object_state_class_2_to_5);
-GUEST_FUZZ(0x005c6238, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 // The action mask checks the callers use with fixed masks (see main_object_matches_action_mask).
 bool main_object_matches_masks_class_2_and_state_70() {
     return main_object_matches_action_mask(MASK_CLASS_2 | MASK_STATE_70, 0);
 }
 GUEST_EXPORT(0x005c3470, main_object_matches_masks_class_2_and_state_70);
-GUEST_FUZZ(0x005c3470, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 bool main_object_matches_masks_class_2_and_5_strict() {
     return main_object_matches_action_mask(MASK_CLASS_2 | MASK_CLASS_5, 1);
 }
 GUEST_EXPORT(0x005c3e78, main_object_matches_masks_class_2_and_5_strict);
-GUEST_FUZZ(0x005c3e78, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 bool main_object_matches_class_4_strict() {
     return main_object_matches_action_mask(MASK_CLASS_4, 1);
 }
 GUEST_EXPORT(0x005c5064, main_object_matches_class_4_strict);
-GUEST_FUZZ(0x005c5064, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 bool main_object_matches_class_3_strict() {
     return main_object_matches_action_mask(MASK_CLASS_3, 1);
 }
 GUEST_EXPORT(0x005c5284, main_object_matches_class_3_strict);
-GUEST_FUZZ(0x005c5284, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 bool main_object_matches_class_5_strict() {
     return main_object_matches_action_mask(MASK_CLASS_5, 1);
 }
 GUEST_EXPORT(0x005c5d7c, main_object_matches_class_5_strict);
-GUEST_FUZZ(0x005c5d7c, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // While flag 3 of the first global flag byte is set: whether the main object does something of classes 2 to 5.
 bool main_object_state_class_2_to_5_when_flag_3() {
@@ -428,11 +386,9 @@ bool main_object_state_class_2_to_5_when_flag_3() {
     return slot_object_state_class_2_to_5(MAIN_OBJECT_ID);
 }
 GUEST_EXPORT(0x005c5cd0, main_object_state_class_2_to_5_when_flag_3);
-GUEST_FUZZ(0x005c5cd0, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 namespace {
 
-constexpr u32 OBJECT_CLEARANCE = 0x1000;
 constexpr u8 STATE_BD = 0xbd;
 constexpr u8 STATE_10 = 0x10;
 constexpr u8 PENDING_BIT_1 = 1 << 1;
@@ -457,9 +413,6 @@ bool slot_object_words_47c_480(u32 &first, u32 &second, u32 id, u32 include_idle
     return true;
 }
 GUEST_EXPORT(0x005c08dc, slot_object_words_47c_480);
-GUEST_FUZZ(0x005c08dc, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<u32>(), f.object<u32>(), some_id(f), f.below(2));
-});
 
 // True without a main object; otherwise whether the halfword at 0x5e2 is 0x4f while the one at 0x224 is not.
 bool main_object_missing_or_half_5e2_became_4f() {
@@ -470,7 +423,6 @@ bool main_object_missing_or_half_5e2_became_4f() {
     return object->half_5e2 != object->half_224 && object->half_5e2 == ITEM_4F;
 }
 GUEST_EXPORT(0x005c0c44, main_object_missing_or_half_5e2_became_4f);
-GUEST_FUZZ(0x005c0c44, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The float at 0x914 of the main object while its byte 0x91f is not zero, else 0.
 float main_object_value_914() {
@@ -481,7 +433,6 @@ float main_object_value_914() {
     return 0.0f;
 }
 GUEST_EXPORT(0x005c3d84, main_object_value_914);
-GUEST_FUZZ(0x005c3d84, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the main object (idle ones count) has neither flag 0 nor flag 5 of byte 0x8c7 and its state's entry has flag 6
 // in its byte 9.
@@ -494,7 +445,6 @@ bool main_object_state_entry_has_flag_9_bit_6() {
     return entry && (entry[ENTRY_FLAGS_BYTE] & ENTRY_BYTE_9_BIT_6) != 0;
 }
 GUEST_EXPORT(0x005c4034, main_object_state_entry_has_flag_9_bit_6);
-GUEST_FUZZ(0x005c4034, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the slot's object (idle ones count) is in state 0xbd, or in state 0x10 with flag 6 of byte 0x8c5.
 bool slot_object_in_state_bd_or_10_with_flag(u32 id) {
@@ -509,7 +459,6 @@ bool slot_object_in_state_bd_or_10_with_flag(u32 id) {
     return object->state_1a9 == STATE_10 && (object->flags_8c5 & SlotObject::FLAGS_8C5_BIT_6) != 0;
 }
 GUEST_EXPORT(0x005c458c, slot_object_in_state_bd_or_10_with_flag);
-GUEST_FUZZ(0x005c458c, 100, [](guest::Fuzz &f) { f.arguments(some_id(f)); });
 
 namespace {
 
@@ -531,10 +480,6 @@ void store_pending_value_5be(u32 value) {
     }
 }
 GUEST_EXPORT(0x005c4340, store_pending_value_5be);
-GUEST_FUZZ(0x005c4340, 100, [](guest::Fuzz &f) {
-    *pending_flags = u8(f.below(2) != 0 ? (*pending_flags | PENDING_BIT_2) : (*pending_flags & ~PENDING_BIT_2));
-    f.arguments(f.pick<u32>({0, 1, 0x1234, f.number()}));
-});
 
 void store_pending_value_5bc(u32 value) {
     if (take_pending_flag(PENDING_BIT_1, value)) {
@@ -545,10 +490,6 @@ void store_pending_value_5bc(u32 value) {
     }
 }
 GUEST_EXPORT(0x005c73bc, store_pending_value_5bc);
-GUEST_FUZZ(0x005c73bc, 100, [](guest::Fuzz &f) {
-    *pending_flags = u8(f.below(2) != 0 ? (*pending_flags | PENDING_BIT_1) : (*pending_flags & ~PENDING_BIT_1));
-    f.arguments(f.pick<u32>({0, 1, 0x1234, f.number()}));
-});
 
 // One step of turning towards an angle: clears flag 4 of byte 0x17a; with no steps set (0x5b6) the object faces the angle at
 // once and true is returned; otherwise it turns by the remaining difference divided by the steps, counts a step down and
@@ -568,13 +509,6 @@ bool turn_towards_angle(SlotObject &object, u32 target) {
     return false;
 }
 GUEST_EXPORT(0x00651a68, turn_towards_angle);
-GUEST_FUZZ(0x00651a68, 300, [](guest::Fuzz &f) {
-    f.allocate(OBJECT_CLEARANCE);  // (keeps the object clear of the stack the original works on)
-    auto object = f.allocate(sizeof(SlotObject)).cast<SlotObject>();
-    object->turn_steps_5b6 = f.pick<u16>({0, 1, 2, 5, 30});
-    object->angles[1] = u16(f.number());
-    f.arguments(object, f.pick<u32>({0, 0x4000, u16(f.number()), u16(object->angles[1] + f.below(100))}));
-});
 
 // Sets the movement target (two floats) and flag 2 of byte 0x17a; when the first float is the one at 0x40 of the object,
 // flag 2 is cleared again and true is returned.
@@ -589,12 +523,6 @@ bool set_movement_target(SlotObject &object, float first, float second) {
     return false;
 }
 GUEST_EXPORT(0x006513d8, set_movement_target);
-GUEST_FUZZ(0x006513d8, 200, [](guest::Fuzz &f) {
-    f.allocate(OBJECT_CLEARANCE);
-    auto object = f.allocate(sizeof(SlotObject)).cast<SlotObject>();
-    object->value_40 = f.pick<float>({0.0f, 1.5f, f.real()});
-    f.arguments(object, f.pick<float>({0.0f, 1.5f, object->value_40, f.real()}), f.real());
-});
 
 // Sets the turn target (two angles: the first is the one that counts) and flag 4 of byte 0x17a; when the first angle is the
 // one the object faces already, flag 4 is cleared again and true is returned.
@@ -609,9 +537,3 @@ bool set_turn_target(SlotObject &object, u32 first, u32 second) {
     return false;
 }
 GUEST_EXPORT(0x00654124, set_turn_target);
-GUEST_FUZZ(0x00654124, 200, [](guest::Fuzz &f) {
-    f.allocate(OBJECT_CLEARANCE);
-    auto object = f.allocate(sizeof(SlotObject)).cast<SlotObject>();
-    object->angles[1] = u16(f.number());
-    f.arguments(object, f.pick<u32>({object->angles[1], u16(f.number())}), f.number());
-});

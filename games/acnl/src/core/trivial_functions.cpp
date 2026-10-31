@@ -3,7 +3,6 @@
 // known yet (many are the virtual getters of small classes: the returned numbers are probably type identifiers).
 #include <bit>
 
-#include "core/fuzz_helpers.hpp"
 #include "guest/guest.hpp"
 #include "hobj/house_object.hpp"
 
@@ -177,64 +176,7 @@ void store_two_words(gptr<u8> object, u32 first, u32 second) {
     words[1] = second;
 }
 
-constexpr u32 FUZZ_RUNS = 10;
-constexpr u32 FUZZ_OBJECT_SIZE = 16;
-constexpr u32 FUZZ_FIELD_SLACK = 16;
-constexpr u32 MAX_FUZZ_OBJECT = 0x2000;
-
-void fuzz_store_object(guest::Fuzz &f, u32 size) {
-    auto object = f.allocate(size).cast<u8>();
-    f.bytes(object, size);
-    f.arguments(object, f.number());
-}
-
-void fuzz_store_object_two(guest::Fuzz &f, u32 size) {
-    auto object = f.allocate(size).cast<u8>();
-    f.bytes(object, size);
-    f.arguments(object, f.number(), f.number());
-}
-
 // An object whose byte at `offset` takes values around the limit of a table lookup.
-void fuzz_table_object(guest::Fuzz &f, u32 offset, u32 limit) {
-    auto object = f.allocate(offset + FUZZ_FIELD_SLACK).cast<u8>();
-    f.bytes(object, offset + FUZZ_FIELD_SLACK);
-    object[offset] = f.pick<u8>({0, 1, u8(limit - 1), u8(limit), u8(limit + 1), 0xff});
-    f.arguments(object);
-}
-
-// An object whose field at `offset` points to an object with a harmless vtable of `slots` entries (offset 0 means the
-// object itself is such an object).
-void fuzz_virtual(guest::Fuzz &f, u32 offset, u32 slots) {
-    auto target = f.object<hobj::VirtualObject>();
-    target->vtable = fuzz::harmless_vtable(f, slots);
-    if (offset == 0) {
-        f.arguments(target, f.number(), f.number());
-        return;
-    }
-    auto object = f.allocate(offset + FUZZ_FIELD_SLACK).cast<u8>();
-    f.bytes(object, offset + FUZZ_FIELD_SLACK);
-    *gptr<u32>(object.addr() + offset) = target.addr();
-    f.arguments(object, f.number(), f.number());
-}
-
-void fuzz_virtual_no_arguments(guest::Fuzz &f, u32 offset, u32 slots) {
-    auto target = f.object<hobj::VirtualObject>();
-    target->vtable = fuzz::harmless_vtable(f, slots);
-    if (offset == 0) {
-        f.arguments(target);
-        return;
-    }
-    auto object = f.allocate(offset + FUZZ_FIELD_SLACK).cast<u8>();
-    f.bytes(object, offset + FUZZ_FIELD_SLACK);
-    *gptr<u32>(object.addr() + offset) = target.addr();
-    f.arguments(object);
-}
-
-void fuzz_field_object(guest::Fuzz &f, u32 size) {
-    auto object = f.allocate(size).cast<u8>();
-    f.bytes(object, size);
-    f.arguments(object);
-}
 
 }  // namespace
 
@@ -242,138 +184,86 @@ void fuzz_field_object(guest::Fuzz &f, u32 size) {
 void do_nothing() {}
 
 GUEST_EXPORT(0x0011d038, read_u32<0x00974f5c>);
-GUEST_FUZZ(0x0011d038, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0011d0e0, read_u32<0x1ff80040>);
-GUEST_FUZZ(0x0011d0e0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974f50_11d2c4(u32 value) { write_global_byte(gptr<u8>(0x00974f50), value); }
 GUEST_EXPORT(0x0011d2c4, set_byte_974f50_11d2c4);
-GUEST_FUZZ(0x0011d2c4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0011e170, read_s8<0x00974ad8>);
-GUEST_FUZZ(0x0011e170, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0011eb18, read_u8<0x0094e3a8>);
-GUEST_FUZZ(0x0011eb18, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0011f290, return_constant<0x7387a8>);
-GUEST_FUZZ(0x0011f290, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_97d8a1_to_1() { write_global_byte(gptr<u8>(0x0097d8a1), 0x1); }
 GUEST_EXPORT(0x0011fcdc, set_byte_97d8a1_to_1);
-GUEST_FUZZ(0x0011fcdc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0011fd10, read_u32<0x00974af0>);
-GUEST_FUZZ(0x0011fd10, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_11fd40(u32 value) { *guest::global<u32, 0x00974af0>() = value; }
 GUEST_EXPORT(0x0011fd40, store_global_word_11fd40);
-GUEST_FUZZ(0x0011fd40, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0011fd50, read_s8<0x00974ab2>);
-GUEST_FUZZ(0x0011fd50, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_11fe38(u32 value) { *guest::global<u32, 0x00974aec>() = value; }
 GUEST_EXPORT(0x0011fe38, store_global_word_11fe38);
-GUEST_FUZZ(0x0011fe38, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void store_global_word_11fe94(u32 value) { *guest::global<u32, 0x0097d7f4>() = value; }
 GUEST_EXPORT(0x0011fe94, store_global_word_11fe94);
-GUEST_FUZZ(0x0011fe94, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void store_global_word_11fea4(u32 value) { *guest::global<u32, 0x00974afc>() = value; }
 GUEST_EXPORT(0x0011fea4, store_global_word_11fea4);
-GUEST_FUZZ(0x0011fea4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974af4_to_1() { write_global_byte(gptr<u8>(0x00974af4), 0x1); }
 GUEST_EXPORT(0x0011feb4, set_byte_974af4_to_1);
-GUEST_FUZZ(0x0011feb4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0011fec8, return_constant<0xadfa5c>);
-GUEST_FUZZ(0x0011fec8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974af5_11fed4(u32 value) { write_global_byte(gptr<u8>(0x00974af5), value); }
 GUEST_EXPORT(0x0011fed4, set_byte_974af5_11fed4);
-GUEST_FUZZ(0x0011fed4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void store_global_word_12009c(u32 value) { *guest::global<u32, 0x00974af8>() = value; }
 GUEST_EXPORT(0x0012009c, store_global_word_12009c);
-GUEST_FUZZ(0x0012009c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0012033c, return_constant<0x11400>);
-GUEST_FUZZ(0x0012033c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00120894, return_constant<0x180000>);
-GUEST_FUZZ(0x00120894, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001209ec, return_constant<0x1a3200>);
-GUEST_FUZZ(0x001209ec, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001242c8, read_s8<0x00974ae1>);
-GUEST_FUZZ(0x001242c8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ae5_1247d0(u32 value) { write_global_byte(gptr<u8>(0x00974ae5), value); }
 GUEST_EXPORT(0x001247d0, set_byte_974ae5_1247d0);
-GUEST_FUZZ(0x001247d0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974ae1_to_1() { write_global_byte(gptr<u8>(0x00974ae1), 0x1); }
 GUEST_EXPORT(0x001247e0, set_byte_974ae1_to_1);
-GUEST_FUZZ(0x001247e0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974add_124c78(u32 value) { write_global_byte(gptr<u8>(0x00974add), value); }
 GUEST_EXPORT(0x00124c78, set_byte_974add_124c78);
-GUEST_FUZZ(0x00124c78, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x00124c88, read_u8<0x00974ade>);
-GUEST_FUZZ(0x00124c88, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ade_124c98(u32 value) { write_global_byte(gptr<u8>(0x00974ade), value); }
 GUEST_EXPORT(0x00124c98, set_byte_974ade_124c98);
-GUEST_FUZZ(0x00124c98, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x00124f70, read_s8<0x00974ad9>);
-GUEST_FUZZ(0x00124f70, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ad9_to_1() { write_global_byte(gptr<u8>(0x00974ad9), 0x1); }
 GUEST_EXPORT(0x00124f80, set_byte_974ad9_to_1);
-GUEST_FUZZ(0x00124f80, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00128e74, return_constant<0x100000>);
-GUEST_FUZZ(0x00128e74, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_97e038_129040(u32 value) { write_global_byte(gptr<u8>(0x0097e038), value); }
 GUEST_EXPORT(0x00129040, set_byte_97e038_129040);
-GUEST_FUZZ(0x00129040, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0012a130, read_s8<0x0097d8a1>);
-GUEST_FUZZ(0x0012a130, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012a15c, read_u8<0x00974ae2>);
-GUEST_FUZZ(0x0012a15c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_12a16c(u32 value) { *guest::global<u32, 0x00974ae8>() = value; }
 GUEST_EXPORT(0x0012a16c, store_global_word_12a16c);
-GUEST_FUZZ(0x0012a16c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974ae2_12a17c(u32 value) { write_global_byte(gptr<u8>(0x00974ae2), value); }
 GUEST_EXPORT(0x0012a17c, set_byte_974ae2_12a17c);
-GUEST_FUZZ(0x0012a17c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0012a18c, read_u8<0x00974ae4>);
-GUEST_FUZZ(0x0012a18c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ae4_12a19c(u32 value) { write_global_byte(gptr<u8>(0x00974ae4), value); }
 GUEST_EXPORT(0x0012a19c, set_byte_974ae4_12a19c);
-GUEST_FUZZ(0x0012a19c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974ae0_to_1() { write_global_byte(gptr<u8>(0x00974ae0), 0x1); }
 GUEST_EXPORT(0x0012a1ac, set_byte_974ae0_to_1);
-GUEST_FUZZ(0x0012a1ac, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012a1c0, read_s8<0x00974ae0>);
-GUEST_FUZZ(0x0012a1c0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ae0_to_0() { write_global_byte(gptr<u8>(0x00974ae0), 0x0); }
 GUEST_EXPORT(0x0012a1d0, set_byte_974ae0_to_0);
-GUEST_FUZZ(0x0012a1d0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ae3_12a1e4(u32 value) { write_global_byte(gptr<u8>(0x00974ae3), value); }
 GUEST_EXPORT(0x0012a1e4, set_byte_974ae3_12a1e4);
-GUEST_FUZZ(0x0012a1e4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974adf_to_1() { write_global_byte(gptr<u8>(0x00974adf), 0x1); }
 GUEST_EXPORT(0x0012a1f4, set_byte_974adf_to_1);
-GUEST_FUZZ(0x0012a1f4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012a208, read_s8<0x00974adf>);
-GUEST_FUZZ(0x0012a208, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974adf_to_0() { write_global_byte(gptr<u8>(0x00974adf), 0x0); }
 GUEST_EXPORT(0x0012a218, set_byte_974adf_to_0);
-GUEST_FUZZ(0x0012a218, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012a22c, read_u32<0x00974aec>);
-GUEST_FUZZ(0x0012a22c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ad9_to_0() { write_global_byte(gptr<u8>(0x00974ad9), 0x0); }
 GUEST_EXPORT(0x0012a43c, set_byte_974ad9_to_0);
-GUEST_FUZZ(0x0012a43c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012a9d8, read_u8<0x00974adb>);
-GUEST_FUZZ(0x0012a9d8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974adc_12a9e8(u32 value) { write_global_byte(gptr<u8>(0x00974adc), value); }
 GUEST_EXPORT(0x0012a9e8, set_byte_974adc_12a9e8);
-GUEST_FUZZ(0x0012a9e8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974adb_12a9f8(u32 value) { write_global_byte(gptr<u8>(0x00974adb), value); }
 GUEST_EXPORT(0x0012a9f8, set_byte_974adb_12a9f8);
-GUEST_FUZZ(0x0012a9f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974adb_to_0() { write_global_byte(gptr<u8>(0x00974adb), 0x0); }
 GUEST_EXPORT(0x0012ab40, set_byte_974adb_to_0);
-GUEST_FUZZ(0x0012ab40, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012ae4c, read_u8<0x00974ada>);
-GUEST_FUZZ(0x0012ae4c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_974ada_12ae5c(u32 value) { write_global_byte(gptr<u8>(0x00974ada), value); }
 GUEST_EXPORT(0x0012ae5c, set_byte_974ada_12ae5c);
-GUEST_FUZZ(0x0012ae5c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_974ada_to_0() { write_global_byte(gptr<u8>(0x00974ada), 0x0); }
 GUEST_EXPORT(0x0012ae6c, set_byte_974ada_to_0);
-GUEST_FUZZ(0x0012ae6c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_12c528(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
@@ -381,7 +271,6 @@ void store_constants_12c528(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
 }
 GUEST_EXPORT(0x0012c528, store_constants_12c528);
-GUEST_FUZZ(0x0012c528, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 void store_constants_12ca54(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -390,22 +279,13 @@ void store_constants_12ca54(gptr<u8> object) {
 }
 GUEST_EXPORT(0x0012ca54, store_constants_12ca54);
 GUEST_EXPORT(0x004c9250, store_constants_12ca54);
-GUEST_FUZZ(0x0012ca54, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x004c9250, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0012d198, do_nothing);
-GUEST_FUZZ(0x0012d198, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012da60, store_word_constant<pack(0x0, 0x1)>);
-GUEST_FUZZ(0x0012da60, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0012f330, read_u32<0x00974f78>);
-GUEST_FUZZ(0x0012f330, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012f374, read_s8<0x0097d875>);
-GUEST_FUZZ(0x0012f374, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0012fb3c, read_s8<0x0097d8a0>);
-GUEST_FUZZ(0x0012fb3c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00130c60, store_word<0x00901a80>);
-GUEST_FUZZ(0x00130c60, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x001325f8, do_nothing);
-GUEST_FUZZ(0x001325f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_13366c(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -425,248 +305,141 @@ GUEST_EXPORT(0x007e3928, store_constants_13366c);
 GUEST_EXPORT(0x007e3b3c, store_constants_13366c);
 GUEST_EXPORT(0x007e3b50, store_constants_13366c);
 GUEST_EXPORT(0x007e3bd0, store_constants_13366c);
-GUEST_FUZZ(0x0013366c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x0072c87c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e3888, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e389c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e38b0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e38c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e38d8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e38ec, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e3900, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e3914, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e3928, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e3b3c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e3b50, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x007e3bd0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_global_word_135510(u32 value) { *guest::global<u32, 0x00974f20>() = value; }
 GUEST_EXPORT(0x00135510, store_global_word_135510);
-GUEST_FUZZ(0x00135510, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x00136454, read_s8<0x0097d8a2>);
-GUEST_FUZZ(0x00136454, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00136464, read_u32<0x0097d8bc>);
-GUEST_FUZZ(0x00136464, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00136474, return_constant<0x97d8b4>);
-GUEST_FUZZ(0x00136474, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_two_words_at_10_136e4c(gptr<u8> object, u32 first, u32 second) { store_two_words<0x10>(object, first, second); }
 GUEST_EXPORT(0x00136e4c, store_two_words_at_10_136e4c);
-GUEST_FUZZ(0x00136e4c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x10 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00137eb4, store_word_constant<pack(0x0, 0x0)>);
-GUEST_FUZZ(0x00137eb4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x001389f8, do_nothing);
-GUEST_FUZZ(0x001389f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001389fc, do_nothing);
-GUEST_FUZZ(0x001389fc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_nonzero_138c88(gptr<u8> object) { return read_field_u32<0x4>(object) != 0; }
 GUEST_EXPORT(0x00138c88, field_nonzero_138c88);
-GUEST_FUZZ(0x00138c88, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_1391b4(gptr<u8> object) { return read_field_u32<0x0>(object) != 0; }
 GUEST_EXPORT(0x001391b4, field_nonzero_1391b4);
-GUEST_FUZZ(0x001391b4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 u32 call_virtual_1_139668(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 1); }
 GUEST_EXPORT(0x00139668, call_virtual_1_139668);
-GUEST_FUZZ(0x00139668, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 2); });
 GUEST_EXPORT(0x00139d24, do_nothing);
-GUEST_FUZZ(0x00139d24, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_13a62c(u32 value) { *guest::global<u32, 0x00974f7c>() = value; }
 GUEST_EXPORT(0x0013a62c, store_global_word_13a62c);
-GUEST_FUZZ(0x0013a62c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0013c0e4, do_nothing);
-GUEST_FUZZ(0x0013c0e4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0013c3b4, adjusted_this<0x4>);
-GUEST_FUZZ(0x0013c3b4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0013c8bc, adjusted_this<0x4>);
-GUEST_FUZZ(0x0013c8bc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0013c9b4, do_nothing);
-GUEST_FUZZ(0x0013c9b4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0013d138, read_u32<0x00975284>);
-GUEST_FUZZ(0x0013d138, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0013e154, read_u32<0x00974f58>);
-GUEST_FUZZ(0x0013e154, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0013ef14, do_nothing);
-GUEST_FUZZ(0x0013ef14, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0013efa0, store_word<0x00905568>);
-GUEST_FUZZ(0x0013efa0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x0013f748, adjusted_this<0x10>);
-GUEST_FUZZ(0x0013f748, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x10 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0013f754, adjusted_this<0x10>);
-GUEST_FUZZ(0x0013f754, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x10 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0013ff84, read_u32<0x00974f54>);
-GUEST_FUZZ(0x0013ff84, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001416b0, return_constant<0x97e098>);
-GUEST_FUZZ(0x001416b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00143070, read_s8<0x0097d80c>);
-GUEST_FUZZ(0x00143070, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001433c8, do_nothing);
-GUEST_FUZZ(0x001433c8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00143530, adjusted_this<0xc>);
-GUEST_FUZZ(0x00143530, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x001445ac, read_u32<0x0097dff0>);
-GUEST_FUZZ(0x001445ac, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001445bc, read_u32<0x0097dfec>);
-GUEST_FUZZ(0x001445bc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001547c4, return_constant<0x8b9e18>);
-GUEST_FUZZ(0x001547c4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00154ffc, read_u8<0x0097518d>);
-GUEST_FUZZ(0x00154ffc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0015500c, read_u8<0x00975274>);
-GUEST_FUZZ(0x0015500c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00155094, read_u8<0x0097518f>);
-GUEST_FUZZ(0x00155094, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 masked_byte_1550a4(gptr<u8> object) { return masked_byte(object, 0x0, 0x80, 7); }
 GUEST_EXPORT(0x001550a4, masked_byte_1550a4);
-GUEST_FUZZ(0x001550a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_155230(gptr<u8> object) { return masked_byte(object, 0x0, 0x20, 5); }
 GUEST_EXPORT(0x00155230, masked_byte_155230);
-GUEST_FUZZ(0x00155230, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void set_byte_97e988_to_0() { write_global_byte(gptr<u8>(0x0097e988), 0x0); }
 GUEST_EXPORT(0x00159158, set_byte_97e988_to_0);
-GUEST_FUZZ(0x00159158, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0015f67c, read_u8<0x0097e988>);
-GUEST_FUZZ(0x0015f67c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0016894c, return_constant<0xae4e20>);
-GUEST_FUZZ(0x0016894c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_18f4b8(gptr<u8> object) {
     store_field_u32<0x98>(object, 0x0);
     store_field_u8<0x94>(object, 0x0);
     store_field_u32<0x14>(object, 0x0);
 }
 GUEST_EXPORT(0x0018f4b8, store_constants_18f4b8);
-GUEST_FUZZ(0x0018f4b8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x98 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0018fc84, read_u32<0x0094f58c>);
-GUEST_FUZZ(0x0018fc84, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001a4f78, return_float_constant<0x42000000>);
-GUEST_FUZZ(0x001a4f78, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001ad5b8, read_s8<0x009535d4>);
-GUEST_FUZZ(0x001ad5b8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001b1a38, store_byte_constant<pack(0x2, 0x3)>);
-GUEST_FUZZ(0x001b1a38, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2 + FUZZ_FIELD_SLACK); });
 void store_constants_1b1b2c(gptr<u8> object) {
     store_field_u8<0x0>(object, 0x0);
     store_field_u8<0x1>(object, 0x0);
     store_field_u8<0x2>(object, 0x0);
 }
 GUEST_EXPORT(0x001b1b2c, store_constants_1b1b2c);
-GUEST_FUZZ(0x001b1b2c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x001b4b7c, do_nothing);
-GUEST_FUZZ(0x001b4b7c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u32_argument_at_0_1b5d6c(gptr<u8> object, u32 value) { store_field_u32<0x0>(object, value); }
 GUEST_EXPORT(0x001b5d6c, store_u32_argument_at_0_1b5d6c);
-GUEST_FUZZ(0x001b5d6c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x001b5e18, member_address<0x2>);
-GUEST_FUZZ(0x001b5e18, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x001b601c, member_address<0xb74>);
-GUEST_FUZZ(0x001b601c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 void set_byte_951484_to_1() { write_global_byte(gptr<u8>(0x00951484), 0x1); }
 GUEST_EXPORT(0x001b8350, set_byte_951484_to_1);
-GUEST_FUZZ(0x001b8350, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_951480_to_2() { write_global_byte(gptr<u8>(0x00951480), 0x2); }
 GUEST_EXPORT(0x001b8468, set_byte_951480_to_2);
-GUEST_FUZZ(0x001b8468, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_951484_to_0() { write_global_byte(gptr<u8>(0x00951484), 0x0); }
 GUEST_EXPORT(0x001b847c, set_byte_951484_to_0);
-GUEST_FUZZ(0x001b847c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001b85ac, do_nothing);
-GUEST_FUZZ(0x001b85ac, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001b85b0, read_s8<0x00951484>);
-GUEST_FUZZ(0x001b85b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001b9250, do_nothing);
-GUEST_FUZZ(0x001b9250, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001b95f4, do_nothing);
-GUEST_FUZZ(0x001b95f4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001b98c0, read_u32<0x00951490>);
-GUEST_FUZZ(0x001b98c0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001b98d0, read_u32<0x0095148c>);
-GUEST_FUZZ(0x001b98d0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_1bb1c4(u32 value) { *guest::global<u32, 0x00953fa0>() = value; }
 GUEST_EXPORT(0x001bb1c4, store_global_word_1bb1c4);
-GUEST_FUZZ(0x001bb1c4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x001bb348, return_constant<0xaaf6a4>);
-GUEST_FUZZ(0x001bb348, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001bb40c, return_constant<0x953fa4>);
-GUEST_FUZZ(0x001bb40c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001bfb3c, return_constant<0x0>);
-GUEST_FUZZ(0x001bfb3c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001bfba8, return_constant<0x0>);
-GUEST_FUZZ(0x001bfba8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001c203c, do_nothing);
-GUEST_FUZZ(0x001c203c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void clear_byte_bits_1cdddc(gptr<u8> object) { change_byte_bits(object, 0xe, 0x30, false); }
 GUEST_EXPORT(0x001cdddc, clear_byte_bits_1cdddc);
-GUEST_FUZZ(0x001cdddc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xe + FUZZ_FIELD_SLACK); });
 void store_constants_1de8fc(gptr<u8> object) {
     store_field_u16<0x0>(object, 0x0);
     store_field_u8<0x2>(object, 0x0);
 }
 GUEST_EXPORT(0x001de8fc, store_constants_1de8fc);
-GUEST_FUZZ(0x001de8fc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2 + FUZZ_FIELD_SLACK); });
 void set_byte_bits_1def70(gptr<u8> object) { change_byte_bits(object, 0x25, 0x4, true); }
 GUEST_EXPORT(0x001def70, set_byte_bits_1def70);
-GUEST_FUZZ(0x001def70, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 void set_byte_bits_1def80(gptr<u8> object) { change_byte_bits(object, 0x25, 0x1, true); }
 GUEST_EXPORT(0x001def80, set_byte_bits_1def80);
-GUEST_FUZZ(0x001def80, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 void set_byte_bits_1df000(gptr<u8> object) { change_byte_bits(object, 0x25, 0x2, true); }
 GUEST_EXPORT(0x001df000, set_byte_bits_1df000);
-GUEST_FUZZ(0x001df000, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x001df140, store_byte_constant<pack(0x14, 0x8)>);
-GUEST_FUZZ(0x001df140, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 void clear_half_bits_1e0210(gptr<u8> object) { change_half_bits(object, 0x22, 0xf000, false); }
 GUEST_EXPORT(0x001e0210, clear_half_bits_1e0210);
-GUEST_FUZZ(0x001e0210, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x22 + FUZZ_FIELD_SLACK); });
 void set_half_bits_1e02a4(gptr<u8> object) { change_half_bits(object, 0x22, 0x100, true); }
 GUEST_EXPORT(0x001e02a4, set_half_bits_1e02a4);
-GUEST_FUZZ(0x001e02a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x22 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x001e587c, store_word<0x008ebdf8>);
-GUEST_FUZZ(0x001e587c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 float read_float_1e5e60() { return *guest::global<float, 0x009520dc>(); }
 GUEST_EXPORT(0x001e5e60, read_float_1e5e60);
-GUEST_FUZZ(0x001e5e60, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 float read_float_1e600c() { return *guest::global<float, 0x009520f8>(); }
 GUEST_EXPORT(0x001e600c, read_float_1e600c);
-GUEST_FUZZ(0x001e600c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 float read_float_1e6d08() { return *guest::global<float, 0x009520fc>(); }
 GUEST_EXPORT(0x001e6d08, read_float_1e6d08);
-GUEST_FUZZ(0x001e6d08, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 float read_float_1e74a0() { return *guest::global<float, 0x009520f4>(); }
 GUEST_EXPORT(0x001e74a0, read_float_1e74a0);
-GUEST_FUZZ(0x001e74a0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001e7de0, read_u8<0x009520c0>);
-GUEST_FUZZ(0x001e7de0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 float read_float_1e7e00() { return *guest::global<float, 0x009520d8>(); }
 GUEST_EXPORT(0x001e7e00, read_float_1e7e00);
-GUEST_FUZZ(0x001e7e00, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001e7e10, read_s8<0x009520c3>);
-GUEST_FUZZ(0x001e7e10, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_9520c3_to_0() { write_global_byte(gptr<u8>(0x009520c3), 0x0); }
 GUEST_EXPORT(0x001e7e20, set_byte_9520c3_to_0);
-GUEST_FUZZ(0x001e7e20, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 float read_float_1e7e34() { return *guest::global<float, 0x009520d4>(); }
 GUEST_EXPORT(0x001e7e34, read_float_1e7e34);
-GUEST_FUZZ(0x001e7e34, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001e8288, read_s8<0x009520c1>);
-GUEST_FUZZ(0x001e8288, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001e8350, read_s8<0x009520be>);
-GUEST_FUZZ(0x001e8350, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001e84a8, read_s8<0x009520bd>);
-GUEST_FUZZ(0x001e84a8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 float read_float_1e84e0() { return *guest::global<float, 0x009520e0>(); }
 GUEST_EXPORT(0x001e84e0, read_float_1e84e0);
-GUEST_FUZZ(0x001e84e0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001f9684, read_u32<0x0094f350>);
-GUEST_FUZZ(0x001f9684, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x001ff460, store_word<0x008ed34c>);
-GUEST_FUZZ(0x001ff460, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x00200b98, do_nothing);
-GUEST_FUZZ(0x00200b98, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00203abc, return_constant<0x2>);
-GUEST_FUZZ(0x00203abc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00203ac4, return_constant<0x3>);
-GUEST_FUZZ(0x00203ac4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00203acc, return_constant<0x1>);
-GUEST_FUZZ(0x00203acc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00203ad4, return_constant<0x0>);
-GUEST_FUZZ(0x00203ad4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_20d06c(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -675,157 +448,91 @@ void store_constants_20d06c(gptr<u8> object) {
 }
 GUEST_EXPORT(0x0020d06c, store_constants_20d06c);
 GUEST_EXPORT(0x00454734, store_constants_20d06c);
-GUEST_FUZZ(0x0020d06c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x00454734, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 void clear_byte_bits_20d904(gptr<u8> object) { change_byte_bits(object, 0x8, 0x1, false); }
 GUEST_EXPORT(0x0020d904, clear_byte_bits_20d904);
-GUEST_FUZZ(0x0020d904, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void set_byte_bits_20d914(gptr<u8> object) { change_byte_bits(object, 0x8, 0x1, true); }
 GUEST_EXPORT(0x0020d914, set_byte_bits_20d914);
-GUEST_FUZZ(0x0020d914, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0022aa34, read_u32<0x00950860>);
-GUEST_FUZZ(0x0022aa34, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00230e94, do_nothing);
-GUEST_FUZZ(0x00230e94, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u32_argument_at_208_23a8ac(gptr<u8> object, u32 value) { store_field_u32<0x208>(object, value); }
 GUEST_EXPORT(0x0023a8ac, store_u32_argument_at_208_23a8ac);
-GUEST_FUZZ(0x0023a8ac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x208 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0023c624, read_s8<0x00953b14>);
-GUEST_FUZZ(0x0023c624, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_953b14_23c64c(u32 value) { write_global_byte(gptr<u8>(0x00953b14), value); }
 GUEST_EXPORT(0x0023c64c, set_byte_953b14_23c64c);
-GUEST_FUZZ(0x0023c64c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void set_byte_953b15_to_0() { write_global_byte(gptr<u8>(0x00953b15), 0x0); }
 GUEST_EXPORT(0x0023c6f8, set_byte_953b15_to_0);
-GUEST_FUZZ(0x0023c6f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_24bc90(gptr<u8> object) {
     store_field_u32<0x4c>(object, 0x0);
     store_field_u16<0x4a>(object, 0x0);
     store_field_u8<0x51>(object, 0x0);
 }
 GUEST_EXPORT(0x0024bc90, store_constants_24bc90);
-GUEST_FUZZ(0x0024bc90, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x51 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0024da38, member_address<0x1224>);
-GUEST_FUZZ(0x0024da38, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0024ebc0, read_u32<0x009529c8>);
-GUEST_FUZZ(0x0024ebc0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0025192c, return_float_constant<0x44098000>);
-GUEST_FUZZ(0x0025192c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00252860, return_float_constant<0x3f000000>);
-GUEST_FUZZ(0x00252860, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00255494, return_float_constant<0x41a00000>);
-GUEST_FUZZ(0x00255494, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002554bc, return_float_constant<0x40400000>);
-GUEST_FUZZ(0x002554bc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0025595c, return_constant<0xe38>);
-GUEST_FUZZ(0x0025595c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 gptr<u8> element_address_255968(gptr<u8> base, u32 index) { return gptr<u8>(base.addr() + index * 0x6 + 0xe4); }
 GUEST_EXPORT(0x00255968, element_address_255968);
-GUEST_FUZZ(0x00255968, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE), f.pick<u32>({0, 1, 2, 7, f.number()})); });
 GUEST_EXPORT(0x00256654, read_u32<0x0094f574>);
-GUEST_FUZZ(0x00256654, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0026647c, read_u32<0x0095082c>);
-GUEST_FUZZ(0x0026647c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00276cd0, store_byte_constant<pack(0x98, 0x1)>);
-GUEST_FUZZ(0x00276cd0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x98 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0027c2b0, store_word<0x008ef9b4>);
-GUEST_FUZZ(0x0027c2b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 void store_u32_argument_at_0_27dc80(gptr<u8> object, u32 value) { store_field_u32<0x0>(object, value); }
 GUEST_EXPORT(0x0027dc80, store_u32_argument_at_0_27dc80);
-GUEST_FUZZ(0x0027dc80, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00281cc8, read_u32<0x0095386c>);
-GUEST_FUZZ(0x00281cc8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00284b48, read_u32<0x00950808>);
-GUEST_FUZZ(0x00284b48, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0029619c, read_u32<0x00950850>);
-GUEST_FUZZ(0x0029619c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0029b888, do_nothing);
-GUEST_FUZZ(0x0029b888, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0029b8a4, store_word<0x008f0ad0>);
-GUEST_FUZZ(0x0029b8a4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 void store_u32_argument_at_0_29c95c(gptr<u8> object, u32 value) { store_field_u32<0x0>(object, value); }
 GUEST_EXPORT(0x0029c95c, store_u32_argument_at_0_29c95c);
-GUEST_FUZZ(0x0029c95c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void set_byte_94f521_to_1() { write_global_byte(gptr<u8>(0x0094f521), 0x1); }
 GUEST_EXPORT(0x002ab188, set_byte_94f521_to_1);
-GUEST_FUZZ(0x002ab188, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002abfd0, return_float_constant<0x42f00000>);
-GUEST_FUZZ(0x002abfd0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002ac5d0, return_constant<0x708>);
-GUEST_FUZZ(0x002ac5d0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_2adee8(u32 value) { *guest::global<u32, 0x0095005c>() = value; }
 GUEST_EXPORT(0x002adee8, store_global_word_2adee8);
-GUEST_FUZZ(0x002adee8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x002b5fc4, read_u32<0x0095009c>);
-GUEST_FUZZ(0x002b5fc4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void clear_byte_bits_2bb490(gptr<u8> object) { change_byte_bits(object, 0x1, 0xf, false); }
 GUEST_EXPORT(0x002bb490, clear_byte_bits_2bb490);
-GUEST_FUZZ(0x002bb490, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1 + FUZZ_FIELD_SLACK); });
 void store_constants_2bb4a0(gptr<u8> object) {
     store_field_u8<0x0>(object, 0x0);
     store_field_u8<0x1>(object, 0x0);
 }
 GUEST_EXPORT(0x002bb4a0, store_constants_2bb4a0);
-GUEST_FUZZ(0x002bb4a0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002c2538, store_byte_constant<pack(0x30, 0x0)>);
-GUEST_FUZZ(0x002c2538, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x30 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002c255c, store_byte_constant<pack(0x34, 0x0)>);
-GUEST_FUZZ(0x002c255c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x34 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002c90ec, read_u32<0x009503ec>);
-GUEST_FUZZ(0x002c90ec, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002caa8c, read_u32<0x009507ec>);
-GUEST_FUZZ(0x002caa8c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002cac54, member_address<0x1658>);
-GUEST_FUZZ(0x002cac54, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002cac60, member_address<0x1568>);
-GUEST_FUZZ(0x002cac60, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002cac6c, member_address<0x1388>);
-GUEST_FUZZ(0x002cac6c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002cac78, member_address<0x1478>);
-GUEST_FUZZ(0x002cac78, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002d6654, read_u32<0x0094f554>);
-GUEST_FUZZ(0x002d6654, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002e0bd4, store_word<0x008f3624>);
-GUEST_FUZZ(0x002e0bd4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x002e18bc, store_word<0x008f364c>);
-GUEST_FUZZ(0x002e18bc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x002e850c, do_nothing);
-GUEST_FUZZ(0x002e850c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f6e8c, do_nothing);
-GUEST_FUZZ(0x002f6e8c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f74a8, read_field_s8<0x10>);
-GUEST_FUZZ(0x002f74a8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x10 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002f7708, do_nothing);
-GUEST_FUZZ(0x002f7708, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f777c, do_nothing);
-GUEST_FUZZ(0x002f777c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f7a04, return_constant<0xaf75e8>);
-GUEST_FUZZ(0x002f7a04, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f89cc, return_constant<0x0>);
-GUEST_FUZZ(0x002f89cc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f91d4, return_constant<0xaf74c8>);
-GUEST_FUZZ(0x002f91d4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f99a8, return_constant<0xffffffff>);
-GUEST_FUZZ(0x002f99a8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f99b0, return_constant<0xffffffff>);
-GUEST_FUZZ(0x002f99b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002f9e18, do_nothing);
-GUEST_FUZZ(0x002f9e18, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u32_argument_at_0_2fae18(gptr<u8> object, u32 value) { store_field_u32<0x0>(object, value); }
 GUEST_EXPORT(0x002fae18, store_u32_argument_at_0_2fae18);
-GUEST_FUZZ(0x002fae18, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002fb378, return_constant<0xad56b0>);
-GUEST_FUZZ(0x002fb378, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002fc188, return_constant<0xa84270>);
-GUEST_FUZZ(0x002fc188, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002fc8fc, do_nothing);
-GUEST_FUZZ(0x002fc8fc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x002fe56c, member_address<0x8>);
-GUEST_FUZZ(0x002fe56c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x002fe7f0, do_nothing);
-GUEST_FUZZ(0x002fe7f0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003007fc, do_nothing);
-GUEST_FUZZ(0x003007fc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_300800(gptr<u8> object) {
     store_field_u16<0x0>(object, 0x0);
     store_field_u8<0x2>(object, 0x0);
@@ -834,172 +541,109 @@ void store_constants_300800(gptr<u8> object) {
 GUEST_EXPORT(0x00300800, store_constants_300800);
 GUEST_EXPORT(0x001b65e8, store_constants_300800);
 GUEST_EXPORT(0x002bf040, store_constants_300800);
-GUEST_FUZZ(0x00300800, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x001b65e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x002bf040, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00300880, read_field_u16<0xc>);
-GUEST_FUZZ(0x00300880, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00301e64, read_field_u16<0x2c>);
-GUEST_FUZZ(0x00301e64, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2c + FUZZ_FIELD_SLACK); });
 void store_constants_301e94(gptr<u8> object) {
     store_field_u16<0x0>(object, 0x0);
     store_field_u8<0x2>(object, 0x0);
     store_field_u8<0x3>(object, 0x0);
 }
 GUEST_EXPORT(0x00301e94, store_constants_301e94);
-GUEST_FUZZ(0x00301e94, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x003026c4, member_address<0xc>);
-GUEST_FUZZ(0x003026c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 u32 table_value_for_field_14_303738(gptr<u8> object) {
     u32 index = read_field_u8<0x14>(object);
     return index < 0x5 ? *gptr<u8>(0x0088f71a + index) : 0;
 }
 GUEST_EXPORT(0x00303738, table_value_for_field_14_303738);
-GUEST_FUZZ(0x00303738, 100, [](guest::Fuzz &f) { fuzz_table_object(f, 0x14, 0x5); });
 u32 table_value_for_field_14_303754(gptr<u8> object) {
     u32 index = read_field_u8<0x14>(object);
     return index < 0x5 ? *gptr<u8>(0x0088f71f + index) : 0;
 }
 GUEST_EXPORT(0x00303754, table_value_for_field_14_303754);
-GUEST_FUZZ(0x00303754, 100, [](guest::Fuzz &f) { fuzz_table_object(f, 0x14, 0x5); });
 u32 table_value_for_field_14_303a5c(gptr<u8> object) {
     u32 index = read_field_u8<0x14>(object);
     return index < 0x5 ? *gptr<u8>(0x0088f738 + index) : 0;
 }
 GUEST_EXPORT(0x00303a5c, table_value_for_field_14_303a5c);
-GUEST_FUZZ(0x00303a5c, 100, [](guest::Fuzz &f) { fuzz_table_object(f, 0x14, 0x5); });
 u32 table_value_for_field_14_303a78(gptr<u8> object) {
     u32 index = read_field_u8<0x14>(object);
     return index < 0x5 ? *gptr<u8>(0x0088f73d + index) : 0;
 }
 GUEST_EXPORT(0x00303a78, table_value_for_field_14_303a78);
-GUEST_FUZZ(0x00303a78, 100, [](guest::Fuzz &f) { fuzz_table_object(f, 0x14, 0x5); });
 u32 table_value_for_field_14_303a94(gptr<u8> object) {
     u32 index = read_field_u8<0x14>(object);
     return index < 0x5 ? *gptr<u8>(0x0088f747 + index) : 0;
 }
 GUEST_EXPORT(0x00303a94, table_value_for_field_14_303a94);
-GUEST_FUZZ(0x00303a94, 100, [](guest::Fuzz &f) { fuzz_table_object(f, 0x14, 0x5); });
 u32 table_value_for_field_14_303ab0(gptr<u8> object) {
     u32 index = read_field_u8<0x14>(object);
     return index < 0x5 ? *gptr<u8>(0x0088f74c + index) : 0;
 }
 GUEST_EXPORT(0x00303ab0, table_value_for_field_14_303ab0);
-GUEST_FUZZ(0x00303ab0, 100, [](guest::Fuzz &f) { fuzz_table_object(f, 0x14, 0x5); });
 GUEST_EXPORT(0x00303b04, return_constant<0x952c22>);
-GUEST_FUZZ(0x00303b04, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u16_argument_at_0_303f48(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x00303f48, store_u16_argument_at_0_303f48);
-GUEST_FUZZ(0x00303f48, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x003040fc, do_nothing);
-GUEST_FUZZ(0x003040fc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 call_virtual_d_3041bc(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 13); }
 GUEST_EXPORT(0x003041bc, call_virtual_d_3041bc);
-GUEST_FUZZ(0x003041bc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 14); });
 GUEST_EXPORT(0x0030459c, return_constant<0x95bed0>);
-GUEST_FUZZ(0x0030459c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_differs_1e_u8_0x1_305158(gptr<u8> object) { return read_field_u8<0x1e>(object) != 0x1; }
 GUEST_EXPORT(0x00305158, field_differs_1e_u8_0x1_305158);
-GUEST_FUZZ(0x00305158, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1e + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_30740c(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x0030740c, store_u16_argument_at_0_30740c);
-GUEST_FUZZ(0x0030740c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00307c50, do_nothing);
-GUEST_FUZZ(0x00307c50, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00308340, return_constant<0xac1948>);
-GUEST_FUZZ(0x00308340, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0030834c, member_address<0x24>);
-GUEST_FUZZ(0x0030834c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x003084c8, do_nothing);
-GUEST_FUZZ(0x003084c8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003084cc, do_nothing);
-GUEST_FUZZ(0x003084cc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0030893c, member_address<0x50>);
-GUEST_FUZZ(0x0030893c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 void store_constants_308960(gptr<u8> object) {
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x00308960, store_constants_308960);
 GUEST_EXPORT(0x004130a4, store_constants_308960);
-GUEST_FUZZ(0x00308960, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x004130a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x003091e0, return_constant<0xaaef18>);
-GUEST_FUZZ(0x003091e0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003091ec, read_field_u32<0x234>);
-GUEST_FUZZ(0x003091ec, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x234 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0030ce60, return_constant<0x957214>);
-GUEST_FUZZ(0x0030ce60, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0030f4f8, do_nothing);
-GUEST_FUZZ(0x0030f4f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0031143c, do_nothing);
-GUEST_FUZZ(0x0031143c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00311c48, member_address<0x274>);
-GUEST_FUZZ(0x00311c48, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00312000, member_address<0x30>);
-GUEST_FUZZ(0x00312000, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00312078, read_field_u32<0x14>);
-GUEST_FUZZ(0x00312078, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00312a40, member_address<0x24f2>);
-GUEST_FUZZ(0x00312a40, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00314b38, member_address<0x8>);
-GUEST_FUZZ(0x00314b38, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00314bc0, do_nothing);
-GUEST_FUZZ(0x00314bc0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00314c68, return_constant<0x88e622>);
-GUEST_FUZZ(0x00314c68, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u32_argument_at_0_314ce4(gptr<u8> object, u32 value) { store_field_u32<0x0>(object, value); }
 GUEST_EXPORT(0x00314ce4, store_u32_argument_at_0_314ce4);
-GUEST_FUZZ(0x00314ce4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0031669c, store_word_constant<pack(0x0, 0x0)>);
-GUEST_FUZZ(0x0031669c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00316ffc, read_field_u32<0x14>);
-GUEST_FUZZ(0x00316ffc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00317ea8, do_nothing);
-GUEST_FUZZ(0x00317ea8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00317edc, do_nothing);
-GUEST_FUZZ(0x00317edc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0031af74, read_field_s8<0x16>);
-GUEST_FUZZ(0x0031af74, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x16 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x003249a8, read_s8<0x0094ed6c>);
-GUEST_FUZZ(0x003249a8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00324dcc, read_u32<0x0094f560>);
-GUEST_FUZZ(0x00324dcc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0032ced4, read_s8<0x009525cc>);
-GUEST_FUZZ(0x0032ced4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_9525cc_32cee4(u32 value) { write_global_byte(gptr<u8>(0x009525cc), value); }
 GUEST_EXPORT(0x0032cee4, set_byte_9525cc_32cee4);
-GUEST_FUZZ(0x0032cee4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0032faa4, store_word<0x008f5978>);
-GUEST_FUZZ(0x0032faa4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x00334c10, store_word<0x008f6138>);
-GUEST_FUZZ(0x00334c10, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x00334de8, store_word<0x008f6160>);
-GUEST_FUZZ(0x00334de8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x00335ebc, read_u32<0x0094f588>);
-GUEST_FUZZ(0x00335ebc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0033d7c8, store_word<0x008f67cc>);
-GUEST_FUZZ(0x0033d7c8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x00344d74, store_word<0x008fab5c>);
-GUEST_FUZZ(0x00344d74, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x00348550, read_u32<0x00974f10>);
-GUEST_FUZZ(0x00348550, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0034b124, read_u8<0x00981eb0>);
-GUEST_FUZZ(0x0034b124, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0034c308, read_s8<0x00974f60>);
-GUEST_FUZZ(0x0034c308, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_34ee0c(u32 value) { *guest::global<u32, 0x0097d808>() = value; }
 GUEST_EXPORT(0x0034ee0c, store_global_word_34ee0c);
-GUEST_FUZZ(0x0034ee0c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 u32 table_word_350640(u32 index) { return table_word(index, 0x7, 0x0097d820); }
 GUEST_EXPORT(0x00350640, table_word_350640);
-GUEST_FUZZ(0x00350640, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0x6, 0x7, 0xffffffffu})); });
 u32 table_word_350658(u32 index) { return table_word(index, 0xbb, 0x00974bb0); }
 GUEST_EXPORT(0x00350658, table_word_350658);
-GUEST_FUZZ(0x00350658, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0xba, 0xbb, 0xffffffffu})); });
 u32 table_word_3506a8(u32 index) { return table_word(index, 0xc, 0x00974e9c); }
 GUEST_EXPORT(0x003506a8, table_word_3506a8);
-GUEST_FUZZ(0x003506a8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0xb, 0xc, 0xffffffffu})); });
 void store_constants_350b70(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1007,26 +651,16 @@ void store_constants_350b70(gptr<u8> object) {
     store_field_u8<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x00350b70, store_constants_350b70);
-GUEST_FUZZ(0x00350b70, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x003521e8, return_constant<0xaf4fc0>);
-GUEST_FUZZ(0x003521e8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00353238, return_constant<0xaf4fc8>);
-GUEST_FUZZ(0x00353238, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00353f28, return_constant<0xaf4fb8>);
-GUEST_FUZZ(0x00353f28, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00354ad0, store_word<0x008fb098>);
-GUEST_FUZZ(0x00354ad0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x0035638c, store_byte_constant<pack(0x211, 0x0)>);
-GUEST_FUZZ(0x0035638c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x211 + FUZZ_FIELD_SLACK); });
 void store_two_words_at_48_3567e8(gptr<u8> object, u32 first, u32 second) { store_two_words<0x48>(object, first, second); }
 GUEST_EXPORT(0x003567e8, store_two_words_at_48_3567e8);
-GUEST_FUZZ(0x003567e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x48 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0035a664, return_constant<0x0>);
-GUEST_FUZZ(0x0035a664, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0036ac78, read_u32<0x0096b98c>);
-GUEST_FUZZ(0x0036ac78, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0037705c, do_nothing);
-GUEST_FUZZ(0x0037705c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_37a0a4(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1034,33 +668,22 @@ void store_constants_37a0a4(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x0037a0a4, store_constants_37a0a4);
-GUEST_FUZZ(0x0037a0a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 void set_byte_96b8f1_3823b0(u32 value) { write_global_byte(gptr<u8>(0x0096b8f1), value); }
 GUEST_EXPORT(0x003823b0, set_byte_96b8f1_3823b0);
-GUEST_FUZZ(0x003823b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x00386da0, store_word<0x008fc370>);
-GUEST_FUZZ(0x00386da0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x0038fc30, do_nothing);
-GUEST_FUZZ(0x0038fc30, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003b5168, do_nothing);
-GUEST_FUZZ(0x003b5168, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003bd7f0, store_word<0x008fdfdc>);
-GUEST_FUZZ(0x003bd7f0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x003cda80, do_nothing);
-GUEST_FUZZ(0x003cda80, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003cf7b8, read_u32<0x0096ba38>);
-GUEST_FUZZ(0x003cf7b8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003d32c4, store_byte_constant<pack(0x8, 0x0)>);
-GUEST_FUZZ(0x003d32c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_3d41f8(gptr<u8> object) {
     store_field_u8<0x210>(object, 0x1);
     store_field_u8<0x213>(object, 0x1);
 }
 GUEST_EXPORT(0x003d41f8, store_constants_3d41f8);
-GUEST_FUZZ(0x003d41f8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x213 + FUZZ_FIELD_SLACK); });
 void store_two_words_at_18_3d6460(gptr<u8> object, u32 first, u32 second) { store_two_words<0x18>(object, first, second); }
 GUEST_EXPORT(0x003d6460, store_two_words_at_18_3d6460);
-GUEST_FUZZ(0x003d6460, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x18 + FUZZ_FIELD_SLACK); });
 void store_constants_3dc16c(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1070,217 +693,131 @@ GUEST_EXPORT(0x002c3af0, store_constants_3dc16c);
 GUEST_EXPORT(0x0044cd2c, store_constants_3dc16c);
 GUEST_EXPORT(0x00528d50, store_constants_3dc16c);
 GUEST_EXPORT(0x406fb614, store_constants_3dc16c);
-GUEST_FUZZ(0x003dc16c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x002c3af0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x0044cd2c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x00528d50, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x406fb614, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_3df8f4(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x003df8f4, store_constants_3df8f4);
-GUEST_FUZZ(0x003df8f4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x003e1c80, return_constant<0xc8a18a00>);
-GUEST_FUZZ(0x003e1c80, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003e1e3c, read_u8<0x1ff81067>);
-GUEST_FUZZ(0x003e1e3c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003e6594, read_s8<0x00974a41>);
-GUEST_FUZZ(0x003e6594, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003e65a4, read_s8<0x00974a40>);
-GUEST_FUZZ(0x003e65a4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003e6acc, return_constant<0x974a42>);
-GUEST_FUZZ(0x003e6acc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x003e79a0, store_byte_constant<pack(0x558, 0x0)>);
-GUEST_FUZZ(0x003e79a0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x558 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00406a54, store_byte_constant<pack(0x4f4, 0x0)>);
-GUEST_FUZZ(0x00406a54, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4f4 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_412a5c(gptr<u8> object) { return masked_byte(object, 0x25, 0x1, 0); }
 GUEST_EXPORT(0x00412a5c, masked_byte_412a5c);
-GUEST_FUZZ(0x00412a5c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 bool field_equals_23_u8_0x2_412a68(gptr<u8> object) { return read_field_u8<0x23>(object) == 0x2; }
 GUEST_EXPORT(0x00412a68, field_equals_23_u8_0x2_412a68);
-GUEST_FUZZ(0x00412a68, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x23 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_4132b0(gptr<u8> object) { return masked_byte(object, 0x25, 0x2, 1); }
 GUEST_EXPORT(0x004132b0, masked_byte_4132b0);
-GUEST_FUZZ(0x004132b0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0041375c, return_constant<0x0>);
-GUEST_FUZZ(0x0041375c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00413774, return_constant<0x3>);
-GUEST_FUZZ(0x00413774, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0041377c, return_constant<0x4>);
-GUEST_FUZZ(0x0041377c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00413784, return_constant<0x6>);
-GUEST_FUZZ(0x00413784, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00413794, return_constant<0x9>);
-GUEST_FUZZ(0x00413794, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_two_words_at_78_415b94(gptr<u8> object, u32 first, u32 second) { store_two_words<0x78>(object, first, second); }
 GUEST_EXPORT(0x00415b94, store_two_words_at_78_415b94);
-GUEST_FUZZ(0x00415b94, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x78 + FUZZ_FIELD_SLACK); });
 void store_constants_415bd0(gptr<u8> object) {
     store_field_u32<0x78>(object, 0x0);
     store_field_u32<0x7c>(object, 0x0);
 }
 GUEST_EXPORT(0x00415bd0, store_constants_415bd0);
-GUEST_FUZZ(0x00415bd0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x7c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00416034, read_s8<0x00974a4d>);
-GUEST_FUZZ(0x00416034, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00416044, read_s8<0x00974a4c>);
-GUEST_FUZZ(0x00416044, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0041643c, store_word<0x008ff874>);
-GUEST_FUZZ(0x0041643c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x00416454, do_nothing);
-GUEST_FUZZ(0x00416454, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_4165c0(gptr<u8> object) {
     store_field_u8<0x4>(object, 0x0);
     store_field_u8<0x5>(object, 0x0);
 }
 GUEST_EXPORT(0x004165c0, store_constants_4165c0);
-GUEST_FUZZ(0x004165c0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x5 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00417da8, store_word<0x008ffab0>);
-GUEST_FUZZ(0x00417da8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x004229a4, store_word_constant<pack(0x40, 0x0)>);
-GUEST_FUZZ(0x004229a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x40 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0042352c, store_word_constant<pack(0x2c, 0x0)>);
-GUEST_FUZZ(0x0042352c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2c + FUZZ_FIELD_SLACK); });
 void store_two_words_at_8_4262bc(gptr<u8> object, u32 first, u32 second) { store_two_words<0x8>(object, first, second); }
 GUEST_EXPORT(0x004262bc, store_two_words_at_8_4262bc);
-GUEST_FUZZ(0x004262bc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00426348, store_byte_constant<pack(0x10, 0x1)>);
-GUEST_FUZZ(0x00426348, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x10 + FUZZ_FIELD_SLACK); });
 void set_byte_97d3a9_to_d() { write_global_byte(gptr<u8>(0x0097d3a9), 0xd); }
 GUEST_EXPORT(0x0042640c, set_byte_97d3a9_to_d);
-GUEST_FUZZ(0x0042640c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_426650(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u16<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x00426650, store_constants_426650);
-GUEST_FUZZ(0x00426650, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004267a0, read_s8<0x00974a01>);
-GUEST_FUZZ(0x004267a0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004267b0, read_s8<0x00974a00>);
-GUEST_FUZZ(0x004267b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_426830(gptr<u8> object) {
     store_field_u32<0x4>(object, 0x0);
     store_field_u16<0x8>(object, 0x0);
     store_field_u16<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x00426830, store_constants_426830);
-GUEST_FUZZ(0x00426830, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 void store_constants_426c94(gptr<u8> object) {
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x00426c94, store_constants_426c94);
-GUEST_FUZZ(0x00426c94, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00427de8, do_nothing);
-GUEST_FUZZ(0x00427de8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00427ec8, return_constant<0x486>);
-GUEST_FUZZ(0x00427ec8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00428120, return_constant<0x3d1>);
-GUEST_FUZZ(0x00428120, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004285b8, do_nothing);
-GUEST_FUZZ(0x004285b8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00430ae0, read_s8<0x00974a5d>);
-GUEST_FUZZ(0x00430ae0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00430af0, read_s8<0x00974a5c>);
-GUEST_FUZZ(0x00430af0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00438a20, store_word<0x009008a4>);
-GUEST_FUZZ(0x00438a20, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x004394a4, store_word<0x00900908>);
-GUEST_FUZZ(0x004394a4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x004394bc, do_nothing);
-GUEST_FUZZ(0x004394bc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0043d424, store_word_constant<pack(0xa8, 0x0)>);
-GUEST_FUZZ(0x0043d424, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xa8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0043f034, store_byte_constant<pack(0x4c, 0x0)>);
-GUEST_FUZZ(0x0043f034, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00444724, store_byte_constant<pack(0x150, 0x1)>);
-GUEST_FUZZ(0x00444724, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x150 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00448ee0, store_word_constant<pack(0x6c, 0x0)>);
-GUEST_FUZZ(0x00448ee0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x6c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00448eec, store_word_constant<pack(0xa0, 0x0)>);
-GUEST_FUZZ(0x00448eec, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xa0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0044923c, store_word_constant<pack(0x3c, 0x0)>);
-GUEST_FUZZ(0x0044923c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00449264, store_word_constant<pack(0x40, 0x0)>);
-GUEST_FUZZ(0x00449264, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x40 + FUZZ_FIELD_SLACK); });
 u32 call_virtual_6_44aae8(gptr<u8> object) { return call_virtual_slot(gptr<hobj::VirtualObject>(read_field_u32<0x44>(object)), 6); }
 GUEST_EXPORT(0x0044aae8, call_virtual_6_44aae8);
-GUEST_FUZZ(0x0044aae8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x44, 7); });
 GUEST_EXPORT(0x0044b148, read_field_s8<0x100>);
-GUEST_FUZZ(0x0044b148, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x100 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0044bad0, member_address<0x101>);
-GUEST_FUZZ(0x0044bad0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 u32 call_virtual_c_44bb44(gptr<u8> object) { return call_virtual_slot(gptr<hobj::VirtualObject>(read_field_u32<0x30>(object)), 12); }
 GUEST_EXPORT(0x0044bb44, call_virtual_c_44bb44);
-GUEST_FUZZ(0x0044bb44, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x30, 13); });
 GUEST_EXPORT(0x0044bd08, return_constant<0x4475c4>);
-GUEST_FUZZ(0x0044bd08, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0044beb8, store_word_constant<pack(0x5c, 0x0)>);
-GUEST_FUZZ(0x0044beb8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x5c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0044c1ac, store_word_constant<pack(0x60, 0x0)>);
-GUEST_FUZZ(0x0044c1ac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x60 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0044d884, read_s8<0x00974a69>);
-GUEST_FUZZ(0x0044d884, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0044d894, read_s8<0x00974a68>);
-GUEST_FUZZ(0x0044d894, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0044fa00, store_byte_constant<pack(0x9, 0x0)>);
-GUEST_FUZZ(0x0044fa00, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x9 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0044fa4c, store_byte_constant<pack(0x8, 0x0)>);
-GUEST_FUZZ(0x0044fa4c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_44ffd0(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x0044ffd0, store_constants_44ffd0);
-GUEST_FUZZ(0x0044ffd0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00453c20, store_byte_constant<pack(0x0, 0x1)>);
-GUEST_FUZZ(0x00453c20, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00458458, store_word<0x00900e44>);
-GUEST_FUZZ(0x00458458, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 void store_two_words_at_18_45ee40(gptr<u8> object, u32 first, u32 second) { store_two_words<0x18>(object, first, second); }
 GUEST_EXPORT(0x0045ee40, store_two_words_at_18_45ee40);
-GUEST_FUZZ(0x0045ee40, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x18 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0045f468, do_nothing);
-GUEST_FUZZ(0x0045f468, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00460e4c, return_constant<0xaea618>);
-GUEST_FUZZ(0x00460e4c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00460f00, read_u32<0x00aeb9a4>);
-GUEST_FUZZ(0x00460f00, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004625ec, return_constant<0xaf504c>);
-GUEST_FUZZ(0x004625ec, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00462dc4, read_s8<0x00974f84>);
-GUEST_FUZZ(0x00462dc4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0046a2c4, do_nothing);
-GUEST_FUZZ(0x0046a2c4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_46a7bc(gptr<u8> object) {
     store_field_u16<0x6>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x0046a7bc, store_constants_46a7bc);
-GUEST_FUZZ(0x0046a7bc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0046fcec, return_constant<0x2370>);
-GUEST_FUZZ(0x0046fcec, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00470034, do_nothing);
-GUEST_FUZZ(0x00470034, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0047f328, read_s8<0x00974b00>);
-GUEST_FUZZ(0x0047f328, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0047f558, read_u8<0x00974ae3>);
-GUEST_FUZZ(0x0047f558, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0047f67c, read_s8<0x00974ae5>);
-GUEST_FUZZ(0x0047f67c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00480204, read_u8<0x00974add>);
-GUEST_FUZZ(0x00480204, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00486cec, return_constant<0xffffffd9>);
-GUEST_FUZZ(0x00486cec, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00486cfc, return_constant<0xffffffe4>);
-GUEST_FUZZ(0x00486cfc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u32_argument_at_0_48b270(gptr<u8> object, u32 value) { store_field_u32<0x0>(object, value); }
 GUEST_EXPORT(0x0048b270, store_u32_argument_at_0_48b270);
-GUEST_FUZZ(0x0048b270, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void store_constants_48b4a4(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1288,11 +825,8 @@ void store_constants_48b4a4(gptr<u8> object) {
     store_field_u8<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x0048b4a4, store_constants_48b4a4);
-GUEST_FUZZ(0x0048b4a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0049a0e4, store_word_constant<pack(0x8, 0x0)>);
-GUEST_FUZZ(0x0049a0e4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004af188, return_constant<0x0>);
-GUEST_FUZZ(0x004af188, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_4b4b2c(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1300,70 +834,53 @@ void store_constants_4b4b2c(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x004b4b2c, store_constants_4b4b2c);
-GUEST_FUZZ(0x004b4b2c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004b5394, store_byte_constant<pack(0x2df, 0x1)>);
-GUEST_FUZZ(0x004b5394, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2df + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004b57fc, do_nothing);
-GUEST_FUZZ(0x004b57fc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_4b9b54(u32 value) { *guest::global<u32, 0x00975138>() = value; }
 GUEST_EXPORT(0x004b9b54, store_global_word_4b9b54);
-GUEST_FUZZ(0x004b9b54, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void store_constants_4be570(gptr<u8> object) {
     store_field_u8<0x0>(object, 0x0);
     store_field_u8<0x1>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x004be570, store_constants_4be570);
-GUEST_FUZZ(0x004be570, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004bf99c, read_s8<0x00975175>);
-GUEST_FUZZ(0x004bf99c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004bfcc0, store_word<0x00901e34>);
-GUEST_FUZZ(0x004bfcc0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x004c46ec, store_byte_constant<pack(0x98, 0x1)>);
-GUEST_FUZZ(0x004c46ec, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x98 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_4c48cc(gptr<u8> object) { return read_field_u32<0x8>(object) != 0; }
 GUEST_EXPORT(0x004c48cc, field_nonzero_4c48cc);
-GUEST_FUZZ(0x004c48cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_4c490c(gptr<u8> object) { return read_field_u32<0xc>(object) != 0; }
 GUEST_EXPORT(0x004c490c, field_nonzero_4c490c);
-GUEST_FUZZ(0x004c490c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004c5340, do_nothing);
-GUEST_FUZZ(0x004c5340, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_4c6548(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x004c6548, store_constants_4c6548);
-GUEST_FUZZ(0x004c6548, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_4c9174(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x004c9174, store_constants_4c9174);
-GUEST_FUZZ(0x004c9174, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_4c92e8(gptr<u8> object) {
     store_field_u32<0x38>(object, 0x0);
     store_field_u32<0x3c>(object, 0x0);
     store_field_u32<0x40>(object, 0x0);
 }
 GUEST_EXPORT(0x004c92e8, store_constants_4c92e8);
-GUEST_FUZZ(0x004c92e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x40 + FUZZ_FIELD_SLACK); });
 void store_constants_4c92fc(gptr<u8> object) {
     store_field_u32<0x38>(object, 0x0);
     store_field_u32<0x3c>(object, 0x0);
     store_field_u32<0x40>(object, 0x0);
 }
 GUEST_EXPORT(0x004c92fc, store_constants_4c92fc);
-GUEST_FUZZ(0x004c92fc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x40 + FUZZ_FIELD_SLACK); });
 void store_constants_4c9408(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x004c9408, store_constants_4c9408);
-GUEST_FUZZ(0x004c9408, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004c9534, store_word<0x00902250>);
-GUEST_FUZZ(0x004c9534, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 void store_constants_4ce0e4(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1371,148 +888,91 @@ void store_constants_4ce0e4(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x004ce0e4, store_constants_4ce0e4);
-GUEST_FUZZ(0x004ce0e4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 void store_two_words_at_88_4d28f4(gptr<u8> object, u32 first, u32 second) { store_two_words<0x88>(object, first, second); }
 GUEST_EXPORT(0x004d28f4, store_two_words_at_88_4d28f4);
-GUEST_FUZZ(0x004d28f4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x88 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004d7dfc, read_u32<0x00974a7c>);
-GUEST_FUZZ(0x004d7dfc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_4d7efc(gptr<u8> object) {
     store_field_u32<0x678>(object, 0x0);
     store_field_u32<0x67c>(object, 0x0);
 }
 GUEST_EXPORT(0x004d7efc, store_constants_4d7efc);
-GUEST_FUZZ(0x004d7efc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x67c + FUZZ_FIELD_SLACK); });
 void store_two_words_at_4_4d8100(gptr<u8> object, u32 first, u32 second) { store_two_words<0x4>(object, first, second); }
 GUEST_EXPORT(0x004d8100, store_two_words_at_4_4d8100);
-GUEST_FUZZ(0x004d8100, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004d8cd4, store_byte_constant<pack(0x12, 0x0)>);
-GUEST_FUZZ(0x004d8cd4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x12 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x004df7f0, store_word<0x00902814>);
-GUEST_FUZZ(0x004df7f0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x004df800, return_constant<0x9ab040>);
-GUEST_FUZZ(0x004df800, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004e0cb0, return_constant<0x9c7ad4>);
-GUEST_FUZZ(0x004e0cb0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004e10c8, return_constant<0x9529d8>);
-GUEST_FUZZ(0x004e10c8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004e24e4, read_s8<0x009529d5>);
-GUEST_FUZZ(0x004e24e4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004e24f4, read_s8<0x009529d6>);
-GUEST_FUZZ(0x004e24f4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004ea048, return_constant<0x9c7a14>);
-GUEST_FUZZ(0x004ea048, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004eb394, return_constant<0x952a98>);
-GUEST_FUZZ(0x004eb394, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004eedbc, return_constant<0x9c9f00>);
-GUEST_FUZZ(0x004eedbc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004f771c, do_nothing);
-GUEST_FUZZ(0x004f771c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x004feee4, do_nothing);
-GUEST_FUZZ(0x004feee4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0050c988, store_word<0x009035b4>);
-GUEST_FUZZ(0x0050c988, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x0050c9a0, do_nothing);
-GUEST_FUZZ(0x0050c9a0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0050d4dc, read_u32<0x009535e8>);
-GUEST_FUZZ(0x0050d4dc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0051cc90, read_s8<0x00a8339c>);
-GUEST_FUZZ(0x0051cc90, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_a8339c_51ccb0(u32 value) { write_global_byte(gptr<u8>(0x00a8339c), value); }
 GUEST_EXPORT(0x0051ccb0, set_byte_a8339c_51ccb0);
-GUEST_FUZZ(0x0051ccb0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0051d1f8, read_u32<0x00a83388>);
-GUEST_FUZZ(0x0051d1f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0051d3d4, read_u32<0x00a83384>);
-GUEST_FUZZ(0x0051d3d4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_a833a0_51db9c(u32 value) { write_global_byte(gptr<u8>(0x00a833a0), value); }
 GUEST_EXPORT(0x0051db9c, set_byte_a833a0_51db9c);
-GUEST_FUZZ(0x0051db9c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0051dd30, read_u32<0x00a83390>);
-GUEST_FUZZ(0x0051dd30, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_51dd40(u32 value) { *guest::global<u32, 0x00a83390>() = value; }
 GUEST_EXPORT(0x0051dd40, store_global_word_51dd40);
-GUEST_FUZZ(0x0051dd40, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x0051f55c, store_byte_constant<pack(0x0, 0x0)>);
-GUEST_FUZZ(0x0051f55c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0051fe30, read_u32<0x0097528c>);
-GUEST_FUZZ(0x0051fe30, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_520f54(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x00520f54, store_constants_520f54);
-GUEST_FUZZ(0x00520f54, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00521a04, return_constant<0x2>);
-GUEST_FUZZ(0x00521a04, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00521a10, return_constant<0x2>);
-GUEST_FUZZ(0x00521a10, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00521a1c, return_constant<0x2>);
-GUEST_FUZZ(0x00521a1c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00521a30, return_constant<0x2>);
-GUEST_FUZZ(0x00521a30, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00521a3c, do_nothing);
-GUEST_FUZZ(0x00521a3c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u32_argument_at_8_521a40(gptr<u8> object, u32 value) { store_field_u32<0x8>(object, value); }
 GUEST_EXPORT(0x00521a40, store_u32_argument_at_8_521a40);
-GUEST_FUZZ(0x00521a40, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00521ae0, do_nothing);
-GUEST_FUZZ(0x00521ae0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00523d48, return_constant<0x1>);
-GUEST_FUZZ(0x00523d48, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0052ce08, read_u8<0x009516b8>);
-GUEST_FUZZ(0x0052ce08, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0052f280, do_nothing);
-GUEST_FUZZ(0x0052f280, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00536054, return_constant<0xa183dc>);
-GUEST_FUZZ(0x00536054, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_global_word_537ca8(u32 value) { *guest::global<u32, 0x0097d408>() = value; }
 GUEST_EXPORT(0x00537ca8, store_global_word_537ca8);
-GUEST_FUZZ(0x00537ca8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 void store_constants_53b1f0(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u8<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x0053b1f0, store_constants_53b1f0);
-GUEST_FUZZ(0x0053b1f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0053f6a8, store_word<0x00903eb0>);
-GUEST_FUZZ(0x0053f6a8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 void store_two_words_at_134_5404cc(gptr<u8> object, u32 first, u32 second) { store_two_words<0x134>(object, first, second); }
 GUEST_EXPORT(0x005404cc, store_two_words_at_134_5404cc);
-GUEST_FUZZ(0x005404cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x134 + FUZZ_FIELD_SLACK); });
 void store_two_words_at_12c_5404d8(gptr<u8> object, u32 first, u32 second) { store_two_words<0x12c>(object, first, second); }
 GUEST_EXPORT(0x005404d8, store_two_words_at_12c_5404d8);
-GUEST_FUZZ(0x005404d8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x12c + FUZZ_FIELD_SLACK); });
 u32 call_virtual_6_545b00(gptr<u8> object, u32 first, u32 second) { return call_virtual_slot_with_two(gptr<hobj::VirtualObject>(read_field_u32<0x8>(object)), 6, first, second); }
 GUEST_EXPORT(0x00545b00, call_virtual_6_545b00);
-GUEST_FUZZ(0x00545b00, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual(f, 0x8, 7); });
 void store_two_words_at_4_545b10(gptr<u8> object, u32 first, u32 second) { store_two_words<0x4>(object, first, second); }
 GUEST_EXPORT(0x00545b10, store_two_words_at_4_545b10);
-GUEST_FUZZ(0x00545b10, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0054c31c, member_address<0x160>);
-GUEST_FUZZ(0x0054c31c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0054c324, member_address<0x2a0>);
-GUEST_FUZZ(0x0054c324, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0054c344, member_address<0x1b0>);
-GUEST_FUZZ(0x0054c344, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0054c34c, member_address<0x2f0>);
-GUEST_FUZZ(0x0054c34c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0054c370, member_address<0x200>);
-GUEST_FUZZ(0x0054c370, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0054c378, member_address<0x340>);
-GUEST_FUZZ(0x0054c378, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0054d6fc, do_nothing);
-GUEST_FUZZ(0x0054d6fc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_55c610(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u8<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x0055c610, store_constants_55c610);
-GUEST_FUZZ(0x0055c610, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00566524, do_nothing);
-GUEST_FUZZ(0x00566524, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_56a48c(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1520,305 +980,192 @@ void store_constants_56a48c(gptr<u8> object) {
     store_field_u8<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x0056a48c, store_constants_56a48c);
-GUEST_FUZZ(0x0056a48c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 void store_global_word_56aa88(u32 value) { *guest::global<u32, 0x00975c38>() = value; }
 GUEST_EXPORT(0x0056aa88, store_global_word_56aa88);
-GUEST_FUZZ(0x0056aa88, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 bool field_equals_e8_u8_0x3_56acfc(gptr<u8> object) { return read_field_u8<0xe8>(object) == 0x3; }
 GUEST_EXPORT(0x0056acfc, field_equals_e8_u8_0x3_56acfc);
-GUEST_FUZZ(0x0056acfc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xe8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0056be14, return_constant<0xad56bc>);
-GUEST_FUZZ(0x0056be14, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_5757c4(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x005757c4, store_constants_5757c4);
-GUEST_FUZZ(0x005757c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00577998, do_nothing);
-GUEST_FUZZ(0x00577998, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005791b8, do_nothing);
-GUEST_FUZZ(0x005791b8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_two_words_at_4_57bc20(gptr<u8> object, u32 first, u32 second) { store_two_words<0x4>(object, first, second); }
 GUEST_EXPORT(0x0057bc20, store_two_words_at_4_57bc20);
-GUEST_FUZZ(0x0057bc20, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x4 + FUZZ_FIELD_SLACK); });
 u32 call_virtual_4_57f1a8(gptr<u8> object) { return call_virtual_slot(gptr<hobj::VirtualObject>(read_field_u32<0x574>(object)), 4); }
 GUEST_EXPORT(0x0057f1a8, call_virtual_4_57f1a8);
-GUEST_FUZZ(0x0057f1a8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x574, 5); });
 GUEST_EXPORT(0x00582db8, store_byte_constant<pack(0xa8, 0x0)>);
-GUEST_FUZZ(0x00582db8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xa8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00582dc4, store_byte_constant<pack(0xa8, 0x0)>);
-GUEST_FUZZ(0x00582dc4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xa8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00584074, return_constant<0x989bd8>);
-GUEST_FUZZ(0x00584074, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005840ac, read_s8<0x0094e487>);
-GUEST_FUZZ(0x005840ac, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00584134, return_constant<0x98a030>);
-GUEST_FUZZ(0x00584134, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00584140, read_s8<0x0094e486>);
-GUEST_FUZZ(0x00584140, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00585474, read_s8<0x0094e485>);
-GUEST_FUZZ(0x00585474, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0058660c, return_constant<0x98a018>);
-GUEST_FUZZ(0x0058660c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_94e487_to_1() { write_global_byte(gptr<u8>(0x0094e487), 0x1); }
 GUEST_EXPORT(0x00588224, set_byte_94e487_to_1);
-GUEST_FUZZ(0x00588224, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005894ec, read_s8<0x0094e4ad>);
-GUEST_FUZZ(0x005894ec, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00589524, read_s8<0x0094e4ac>);
-GUEST_FUZZ(0x00589524, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005896c4, read_s8<0x0094e4a9>);
-GUEST_FUZZ(0x005896c4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0058aae8, store_byte_constant<pack(0x14, 0x3)>);
-GUEST_FUZZ(0x0058aae8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0058c19c, return_constant<0x989bc0>);
-GUEST_FUZZ(0x0058c19c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_94e488_to_0() { write_global_byte(gptr<u8>(0x0094e488), 0x0); }
 GUEST_EXPORT(0x0058ca3c, set_byte_94e488_to_0);
-GUEST_FUZZ(0x0058ca3c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0058d590, read_s8<0x0094e43e>);
-GUEST_FUZZ(0x0058d590, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_94e440_to_1() { write_global_byte(gptr<u8>(0x0094e440), 0x1); }
 GUEST_EXPORT(0x0058d7e8, set_byte_94e440_to_1);
-GUEST_FUZZ(0x0058d7e8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_94e441_to_1() { write_global_byte(gptr<u8>(0x0094e441), 0x1); }
 GUEST_EXPORT(0x0058d7fc, set_byte_94e441_to_1);
-GUEST_FUZZ(0x0058d7fc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_9524d8_to_1() { write_global_byte(gptr<u8>(0x009524d8), 0x1); }
 GUEST_EXPORT(0x0058ecec, set_byte_9524d8_to_1);
-GUEST_FUZZ(0x0058ecec, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0058ed24, read_s8<0x009524d5>);
-GUEST_FUZZ(0x0058ed24, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_9524d5_to_1() { write_global_byte(gptr<u8>(0x009524d5), 0x1); }
 GUEST_EXPORT(0x0058ef0c, set_byte_9524d5_to_1);
-GUEST_FUZZ(0x0058ef0c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00594d8c, read_u32<0x009526e4>);
-GUEST_FUZZ(0x00594d8c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_594e34(gptr<u8> object) {
     store_field_u8<0x0>(object, 0x0);
     store_field_u8<0x1>(object, 0x0);
 }
 GUEST_EXPORT(0x00594e34, store_constants_594e34);
-GUEST_FUZZ(0x00594e34, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005a2db4, return_constant<0x9b5088>);
-GUEST_FUZZ(0x005a2db4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_5a4c20(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x005a4c20, store_constants_5a4c20);
-GUEST_FUZZ(0x005a4c20, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_5a4fc0(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x005a4fc0, store_constants_5a4fc0);
-GUEST_FUZZ(0x005a4fc0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005aa1b0, return_constant<0x97e09c>);
-GUEST_FUZZ(0x005aa1b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_two_words_at_28_5aa62c(gptr<u8> object, u32 first, u32 second) { store_two_words<0x28>(object, first, second); }
 GUEST_EXPORT(0x005aa62c, store_two_words_at_28_5aa62c);
-GUEST_FUZZ(0x005aa62c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x28 + FUZZ_FIELD_SLACK); });
 void store_constants_5aa904(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x005aa904, store_constants_5aa904);
-GUEST_FUZZ(0x005aa904, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005aad70, store_byte_constant<pack(0x0, 0x0)>);
-GUEST_FUZZ(0x005aad70, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005ab488, read_s8<0x0097e0da>);
-GUEST_FUZZ(0x005ab488, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005af9c4, store_byte_constant<pack(0x4, 0x0)>);
-GUEST_FUZZ(0x005af9c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005b0600, store_word_constant<pack(0x0, 0x0)>);
-GUEST_FUZZ(0x005b0600, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005b3ec4, read_u32<0x00957328>);
-GUEST_FUZZ(0x005b3ec4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 table_word_5b4508(u32 index) { return table_word(index, 0xa5, 0x008896e8); }
 GUEST_EXPORT(0x005b4508, table_word_5b4508);
-GUEST_FUZZ(0x005b4508, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0xa4, 0xa5, 0xffffffffu})); });
 GUEST_EXPORT(0x005b48a4, read_u8<0x00957326>);
-GUEST_FUZZ(0x005b48a4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_957326_5b492c(u32 value) { write_global_byte(gptr<u8>(0x00957326), value); }
 GUEST_EXPORT(0x005b492c, set_byte_957326_5b492c);
-GUEST_FUZZ(0x005b492c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x005b4a18, read_s8<0x00957324>);
-GUEST_FUZZ(0x005b4a18, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005b4b08, read_s8<0x00957325>);
-GUEST_FUZZ(0x005b4b08, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 table_word_5b69f8(u32 index) { return table_word(index, 0xa5, 0x00889308); }
 GUEST_EXPORT(0x005b69f8, table_word_5b69f8);
-GUEST_FUZZ(0x005b69f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0xa4, 0xa5, 0xffffffffu})); });
 GUEST_EXPORT(0x005c0f50, return_constant<0xa82000>);
-GUEST_FUZZ(0x005c0f50, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005c1808, return_constant<0xaaf1a0>);
-GUEST_FUZZ(0x005c1808, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005c1e68, return_constant<0xaaf4b8>);
-GUEST_FUZZ(0x005c1e68, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005c4df0, read_u8<0x00aaf150>);
-GUEST_FUZZ(0x005c4df0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_aaf150_5c5318(u32 value) { write_global_byte(gptr<u8>(0x00aaf150), value); }
 GUEST_EXPORT(0x005c5318, set_byte_aaf150_5c5318);
-GUEST_FUZZ(0x005c5318, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.number()); });
 GUEST_EXPORT(0x005c5cc4, return_constant<0xaaf2a8>);
-GUEST_FUZZ(0x005c5cc4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 table_word_5c973c(u32 index) { return table_word(index, 0xfc, 0x0095b6e8); }
 GUEST_EXPORT(0x005c973c, table_word_5c973c);
-GUEST_FUZZ(0x005c973c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0xfb, 0xfc, 0xffffffffu})); });
 GUEST_EXPORT(0x005ca9c0, return_constant<0x5033c>);
-GUEST_FUZZ(0x005ca9c0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005cacb8, read_u32<0x0095262c>);
-GUEST_FUZZ(0x005cacb8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005cacc8, return_constant<0x52c30>);
-GUEST_FUZZ(0x005cacc8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005cad0c, read_u32<0x0095bf74>);
-GUEST_FUZZ(0x005cad0c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005cc070, store_byte_constant<pack(0x30, 0x6)>);
-GUEST_FUZZ(0x005cc070, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x30 + FUZZ_FIELD_SLACK); });
 void set_byte_bits_5cc4a4(gptr<u8> object) { change_byte_bits(object, 0x270, 0x40, true); }
 GUEST_EXPORT(0x005cc4a4, set_byte_bits_5cc4a4);
-GUEST_FUZZ(0x005cc4a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x270 + FUZZ_FIELD_SLACK); });
 void clear_byte_bits_5cc4d4(gptr<u8> object) { change_byte_bits(object, 0x270, 0x40, false); }
 GUEST_EXPORT(0x005cc4d4, clear_byte_bits_5cc4d4);
-GUEST_FUZZ(0x005cc4d4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x270 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005cda3c, member_address<0xf0>);
-GUEST_FUZZ(0x005cda3c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 void set_byte_94e3a9_to_1() { write_global_byte(gptr<u8>(0x0094e3a9), 0x1); }
 GUEST_EXPORT(0x005ce354, set_byte_94e3a9_to_1);
-GUEST_FUZZ(0x005ce354, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005cec08, read_s8<0x0094e3ae>);
-GUEST_FUZZ(0x005cec08, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005cec18, read_s8<0x0094e3b0>);
-GUEST_FUZZ(0x005cec18, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005cec28, read_s8<0x0094e3af>);
-GUEST_FUZZ(0x005cec28, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005ced94, read_s8<0x0094e3b1>);
-GUEST_FUZZ(0x005ced94, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005ceda4, read_s8<0x0094e3ac>);
-GUEST_FUZZ(0x005ceda4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 table_word_5d1cd8(u32 index) { return table_word(index, 0x54, 0x00857738); }
 GUEST_EXPORT(0x005d1cd8, table_word_5d1cd8);
-GUEST_FUZZ(0x005d1cd8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0x53, 0x54, 0xffffffffu})); });
 u32 table_word_5d1cf0(u32 index) { return table_word(index, 0x54, 0x008575e8); }
 GUEST_EXPORT(0x005d1cf0, table_word_5d1cf0);
-GUEST_FUZZ(0x005d1cf0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0x53, 0x54, 0xffffffffu})); });
 GUEST_EXPORT(0x005d477c, return_constant<0x4>);
-GUEST_FUZZ(0x005d477c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005d8698, do_nothing);
-GUEST_FUZZ(0x005d8698, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005d979c, do_nothing);
-GUEST_FUZZ(0x005d979c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x005dd284, store_word<0x00908cf0>);
-GUEST_FUZZ(0x005dd284, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x005dd50c, store_word<0x00908d30>);
-GUEST_FUZZ(0x005dd50c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x005e4988, store_byte_constant<pack(0x4, 0x0)>);
-GUEST_FUZZ(0x005e4988, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005e9150, store_word_constant<pack(0xc, 0x0)>);
-GUEST_FUZZ(0x005e9150, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005e9830, store_word<0x0090aa8c>);
-GUEST_FUZZ(0x005e9830, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE)); });
 GUEST_EXPORT(0x005e9d4c, store_word_constant<pack(0x0, 0x0)>);
-GUEST_FUZZ(0x005e9d4c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x005e9e58, store_word_constant<pack(0x0, 0x0)>);
-GUEST_FUZZ(0x005e9e58, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 u32 call_virtual_7_5ea640(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 7); }
 GUEST_EXPORT(0x005ea640, call_virtual_7_5ea640);
-GUEST_FUZZ(0x005ea640, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 8); });
 u32 call_virtual_e_5f11d4(gptr<u8> object) { return call_virtual_slot(gptr<hobj::VirtualObject>(read_field_u32<0x4>(object)), 14); }
 GUEST_EXPORT(0x005f11d4, call_virtual_e_5f11d4);
-GUEST_FUZZ(0x005f11d4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x4, 15); });
 u32 call_virtual_18_5f11e4(gptr<u8> object, u32 first, u32 second) { return call_virtual_slot_with_two(gptr<hobj::VirtualObject>(read_field_u32<0x4>(object)), 24, first, second); }
 GUEST_EXPORT(0x005f11e4, call_virtual_18_5f11e4);
-GUEST_FUZZ(0x005f11e4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual(f, 0x4, 25); });
 u32 call_virtual_28_5f12e4(gptr<u8> object, u32 first, u32 second) { return call_virtual_slot_with_two(gptr<hobj::VirtualObject>(read_field_u32<0x4>(object)), 40, first, second); }
 GUEST_EXPORT(0x005f12e4, call_virtual_28_5f12e4);
-GUEST_FUZZ(0x005f12e4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual(f, 0x4, 41); });
 u32 call_virtual_24_5f12f4(gptr<u8> object, u32 first, u32 second) { return call_virtual_slot_with_two(gptr<hobj::VirtualObject>(read_field_u32<0x4>(object)), 36, first, second); }
 GUEST_EXPORT(0x005f12f4, call_virtual_24_5f12f4);
-GUEST_FUZZ(0x005f12f4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual(f, 0x4, 37); });
 u32 call_virtual_2c_5f1304(gptr<u8> object, u32 first, u32 second) { return call_virtual_slot_with_two(gptr<hobj::VirtualObject>(read_field_u32<0x4>(object)), 44, first, second); }
 GUEST_EXPORT(0x005f1304, call_virtual_2c_5f1304);
-GUEST_FUZZ(0x005f1304, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual(f, 0x4, 45); });
 u32 call_virtual_11_5f1314(gptr<u8> object) { return call_virtual_slot(gptr<hobj::VirtualObject>(read_field_u32<0x4>(object)), 17); }
 GUEST_EXPORT(0x005f1314, call_virtual_11_5f1314);
-GUEST_FUZZ(0x005f1314, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x4, 18); });
 u32 call_virtual_26_5f1324(gptr<u8> object, u32 first, u32 second) { return call_virtual_slot_with_two(gptr<hobj::VirtualObject>(read_field_u32<0x4>(object)), 38, first, second); }
 GUEST_EXPORT(0x005f1324, call_virtual_26_5f1324);
-GUEST_FUZZ(0x005f1324, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual(f, 0x4, 39); });
 void store_constants_5fdf4c(gptr<u8> object) {
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x005fdf4c, store_constants_5fdf4c);
-GUEST_FUZZ(0x005fdf4c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_two_words_at_4_5fdf5c(gptr<u8> object, u32 first, u32 second) { store_two_words<0x4>(object, first, second); }
 GUEST_EXPORT(0x005fdf5c, store_two_words_at_4_5fdf5c);
-GUEST_FUZZ(0x005fdf5c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object_two(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0060044c, do_nothing);
-GUEST_FUZZ(0x0060044c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00604efc, read_field_u32<0x660>);
-GUEST_FUZZ(0x00604efc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x660 + FUZZ_FIELD_SLACK); });
 void copy_pair_854a14_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x00854a14)); }
 GUEST_EXPORT(0x00607674, copy_pair_854a14_to_9506e0);
-GUEST_FUZZ(0x00607674, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_85498c_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x0085498c)); }
 GUEST_EXPORT(0x00607ba4, copy_pair_85498c_to_9506e0);
-GUEST_FUZZ(0x00607ba4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_854994_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x00854994)); }
 GUEST_EXPORT(0x00607bc0, copy_pair_854994_to_9506e0);
-GUEST_FUZZ(0x00607bc0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_85499c_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x0085499c)); }
 GUEST_EXPORT(0x00607da0, copy_pair_85499c_to_9506e0);
-GUEST_FUZZ(0x00607da0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549a4_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549a4)); }
 GUEST_EXPORT(0x00607dbc, copy_pair_8549a4_to_9506e0);
-GUEST_FUZZ(0x00607dbc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549ac_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549ac)); }
 GUEST_EXPORT(0x00607f80, copy_pair_8549ac_to_9506e0);
-GUEST_FUZZ(0x00607f80, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549cc_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549cc)); }
 GUEST_EXPORT(0x006081e4, copy_pair_8549cc_to_9506e0);
-GUEST_FUZZ(0x006081e4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549d4_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549d4)); }
 GUEST_EXPORT(0x00608200, copy_pair_8549d4_to_9506e0);
-GUEST_FUZZ(0x00608200, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549bc_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549bc)); }
 GUEST_EXPORT(0x0060831c, copy_pair_8549bc_to_9506e0);
-GUEST_FUZZ(0x0060831c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549c4_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549c4)); }
 GUEST_EXPORT(0x00608338, copy_pair_8549c4_to_9506e0);
-GUEST_FUZZ(0x00608338, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549f4_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549f4)); }
 GUEST_EXPORT(0x0060846c, copy_pair_8549f4_to_9506e0);
-GUEST_FUZZ(0x0060846c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549fc_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549fc)); }
 GUEST_EXPORT(0x00608488, copy_pair_8549fc_to_9506e0);
-GUEST_FUZZ(0x00608488, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549e4_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549e4)); }
 GUEST_EXPORT(0x006084a4, copy_pair_8549e4_to_9506e0);
-GUEST_FUZZ(0x006084a4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549ec_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549ec)); }
 GUEST_EXPORT(0x006084c0, copy_pair_8549ec_to_9506e0);
-GUEST_FUZZ(0x006084c0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void copy_pair_8549dc_to_9506e0() { copy_two_words(gptr<u32>(0x009506e0), gptr<const u32>(0x008549dc)); }
 GUEST_EXPORT(0x006086dc, copy_pair_8549dc_to_9506e0);
-GUEST_FUZZ(0x006086dc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00613758, member_address<0x6480>);
-GUEST_FUZZ(0x00613758, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x006138ac, do_nothing);
-GUEST_FUZZ(0x006138ac, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00614760, return_constant<0x1d7c>);
-GUEST_FUZZ(0x00614760, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_6148cc(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x006148cc, store_constants_6148cc);
-GUEST_FUZZ(0x006148cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_615508(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -1826,34 +1173,26 @@ void store_constants_615508(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x00615508, store_constants_615508);
-GUEST_FUZZ(0x00615508, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x006158b4, read_u32<0x009525ec>);
-GUEST_FUZZ(0x006158b4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_6170f4(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u8<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x006170f4, store_constants_6170f4);
 GUEST_EXPORT(0x004ccb6c, store_constants_6170f4);
-GUEST_FUZZ(0x006170f4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x004ccb6c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00617104, store_byte_constant<pack(0x4, 0x0)>);
-GUEST_FUZZ(0x00617104, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_61f7cc(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x0061f7cc, store_constants_61f7cc);
-GUEST_FUZZ(0x0061f7cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_623184(gptr<u8> object) {
     store_field_u8<0x5>(object, 0x0);
     store_field_u8<0x6>(object, 0x0);
 }
 GUEST_EXPORT(0x00623184, store_constants_623184);
-GUEST_FUZZ(0x00623184, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x6 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00624990, store_byte_constant<pack(0x4, 0x0)>);
-GUEST_FUZZ(0x00624990, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_6255b8(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
     store_field_u32<0x10>(object, 0x0);
@@ -1861,43 +1200,35 @@ void store_constants_6255b8(gptr<u8> object) {
     store_field_u32<0x18>(object, 0x0);
 }
 GUEST_EXPORT(0x006255b8, store_constants_6255b8);
-GUEST_FUZZ(0x006255b8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x18 + FUZZ_FIELD_SLACK); });
 void store_constants_625664(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u32<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x00625664, store_constants_625664);
-GUEST_FUZZ(0x00625664, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_625ed4(gptr<u8> object) {
     store_field_u32<0x4>(object, 0x0);
     store_field_u8<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x00625ed4, store_constants_625ed4);
-GUEST_FUZZ(0x00625ed4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_625f58(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u8<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x00625f58, store_constants_625f58);
-GUEST_FUZZ(0x00625f58, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00626070, store_word_constant<pack(0x4, 0x0)>);
-GUEST_FUZZ(0x00626070, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_6260f0(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x006260f0, store_constants_6260f0);
-GUEST_FUZZ(0x006260f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x006265c4, store_word_constant<pack(0x4, 0x0)>);
-GUEST_FUZZ(0x006265c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_626644(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x00626644, store_constants_626644);
-GUEST_FUZZ(0x00626644, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_6297f0(gptr<u8> object) {
     store_field_u8<0x8>(object, 0x0);
     store_field_u8<0x9>(object, 0x0);
@@ -1905,7 +1236,6 @@ void store_constants_6297f0(gptr<u8> object) {
     store_field_u8<0xb>(object, 0x0);
 }
 GUEST_EXPORT(0x006297f0, store_constants_6297f0);
-GUEST_FUZZ(0x006297f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xb + FUZZ_FIELD_SLACK); });
 void store_constants_62bce0(gptr<u8> object) {
     store_field_u8<0x3eb>(object, 0x0);
     store_field_u32<0x0>(object, 0x0);
@@ -1913,655 +1243,409 @@ void store_constants_62bce0(gptr<u8> object) {
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x0062bce0, store_constants_62bce0);
-GUEST_FUZZ(0x0062bce0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3ec + FUZZ_FIELD_SLACK); });
 float read_float_657738() { return *guest::global<float, 0x0088694c>(); }
 GUEST_EXPORT(0x00657738, read_float_657738);
-GUEST_FUZZ(0x00657738, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0067a46c, return_float_constant<0x40c00000>);
-GUEST_FUZZ(0x0067a46c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0067a478, return_float_constant<0x41000000>);
-GUEST_FUZZ(0x0067a478, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0068fa40, read_u32<0x0094f2dc>);
-GUEST_FUZZ(0x0068fa40, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00691538, return_constant<0x98af24>);
-GUEST_FUZZ(0x00691538, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00692154, return_constant<0x98af78>);
-GUEST_FUZZ(0x00692154, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006924f8, return_constant<0x94f328>);
-GUEST_FUZZ(0x006924f8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006947d0, read_u32<0x0094f708>);
-GUEST_FUZZ(0x006947d0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006a6bc8, return_constant<0x9b4acc>);
-GUEST_FUZZ(0x006a6bc8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006a6c6c, return_constant<0x9526ee>);
-GUEST_FUZZ(0x006a6c6c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006a6eb0, read_u32<0x009526f8>);
-GUEST_FUZZ(0x006a6eb0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u32_argument_at_34_6ac8e0(gptr<u8> object, u32 value) { store_field_u32<0x34>(object, value); }
 GUEST_EXPORT(0x006ac8e0, store_u32_argument_at_34_6ac8e0);
-GUEST_FUZZ(0x006ac8e0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x34 + FUZZ_FIELD_SLACK); });
 void clear_half_bits_6b9914(gptr<u8> object) { change_half_bits(object, 0x2, 0x1, false); }
 GUEST_EXPORT(0x006b9914, clear_half_bits_6b9914);
-GUEST_FUZZ(0x006b9914, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2 + FUZZ_FIELD_SLACK); });
 void clear_half_bits_6b9924(gptr<u8> object) { change_half_bits(object, 0x2, 0xc000, false); }
 GUEST_EXPORT(0x006b9924, clear_half_bits_6b9924);
-GUEST_FUZZ(0x006b9924, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x006baf8c, return_constant<0x0>);
-GUEST_FUZZ(0x006baf8c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006c91b8, return_constant<0x9b3a2c>);
-GUEST_FUZZ(0x006c91b8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006c91c4, return_constant<0x9b3a2c>);
-GUEST_FUZZ(0x006c91c4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006c9208, read_u16<0x00952ad8>);
-GUEST_FUZZ(0x006c9208, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006c94b8, read_s8<0x009571a0>);
-GUEST_FUZZ(0x006c94b8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006c9c74, read_u32<0x009571d4>);
-GUEST_FUZZ(0x006c9c74, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006cb960, return_constant<0x17>);
-GUEST_FUZZ(0x006cb960, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006d0848, read_u32<0x0094edd0>);
-GUEST_FUZZ(0x006d0848, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006da9d4, return_constant<0x216a>);
-GUEST_FUZZ(0x006da9d4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006e0890, read_u8<0x009507f0>);
-GUEST_FUZZ(0x006e0890, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006e0fbc, read_u32<0x0095081c>);
-GUEST_FUZZ(0x006e0fbc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_half_bits_6e44ac(gptr<u8> object) { change_half_bits(object, 0x64, 0x4, true); }
 GUEST_EXPORT(0x006e44ac, set_half_bits_6e44ac);
-GUEST_FUZZ(0x006e44ac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x64 + FUZZ_FIELD_SLACK); });
 void clear_half_bits_6e4508(gptr<u8> object) { change_half_bits(object, 0x64, 0x4, false); }
 GUEST_EXPORT(0x006e4508, clear_half_bits_6e4508);
-GUEST_FUZZ(0x006e4508, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x64 + FUZZ_FIELD_SLACK); });
 void clear_half_bits_6e4520(gptr<u8> object) { change_half_bits(object, 0x64, 0x3, false); }
 GUEST_EXPORT(0x006e4520, clear_half_bits_6e4520);
-GUEST_FUZZ(0x006e4520, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x64 + FUZZ_FIELD_SLACK); });
 void clear_half_bits_6e4548(gptr<u8> object) { change_half_bits(object, 0x64, 0x8, false); }
 GUEST_EXPORT(0x006e4548, clear_half_bits_6e4548);
-GUEST_FUZZ(0x006e4548, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x64 + FUZZ_FIELD_SLACK); });
 void set_half_bits_6e4558(gptr<u8> object) { change_half_bits(object, 0x64, 0x8, true); }
 GUEST_EXPORT(0x006e4558, set_half_bits_6e4558);
-GUEST_FUZZ(0x006e4558, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x64 + FUZZ_FIELD_SLACK); });
 void clear_byte_bits_6efbd8(gptr<u8> object) { change_byte_bits(object, 0x8, 0x1, false); }
 GUEST_EXPORT(0x006efbd8, clear_byte_bits_6efbd8);
-GUEST_FUZZ(0x006efbd8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x006f0024, store_word_constant<pack(0x0, 0x1)>);
-GUEST_FUZZ(0x006f0024, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x006f7e8c, do_nothing);
-GUEST_FUZZ(0x006f7e8c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006f8f0c, return_float_constant<0x42000000>);
-GUEST_FUZZ(0x006f8f0c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006f9574, return_float_constant<0x42e00000>);
-GUEST_FUZZ(0x006f9574, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006f9de8, return_float_constant<0xbf800000>);
-GUEST_FUZZ(0x006f9de8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x006faafc, return_float_constant<0x00000000>);
-GUEST_FUZZ(0x006faafc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_equals_4_u32_0x3_70b2bc(gptr<u8> object) { return read_field_u32<0x4>(object) == 0x3; }
 GUEST_EXPORT(0x0070b2bc, field_equals_4_u32_0x3_70b2bc);
-GUEST_FUZZ(0x0070b2bc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_equals_2_u8_0x3_70b2e8(gptr<u8> object) { return read_field_u8<0x2>(object) == 0x3; }
 GUEST_EXPORT(0x0070b2e8, field_equals_2_u8_0x3_70b2e8);
-GUEST_FUZZ(0x0070b2e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2 + FUZZ_FIELD_SLACK); });
 bool field_equals_2_u8_0x4_70b3a4(gptr<u8> object) { return read_field_u8<0x2>(object) == 0x4; }
 GUEST_EXPORT(0x0070b3a4, field_equals_2_u8_0x4_70b3a4);
-GUEST_FUZZ(0x0070b3a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2 + FUZZ_FIELD_SLACK); });
 bool field_equals_69_u8_0x8_70b8e8(gptr<u8> object) { return read_field_u8<0x69>(object) == 0x8; }
 GUEST_EXPORT(0x0070b8e8, field_equals_69_u8_0x8_70b8e8);
-GUEST_FUZZ(0x0070b8e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x69 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0070c198, member_address<0xb74>);
-GUEST_FUZZ(0x0070c198, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 bool field_differs_c_u32_0x3_70e410(gptr<u8> object) { return read_field_u32<0xc>(object) != 0x3; }
 GUEST_EXPORT(0x0070e410, field_differs_c_u32_0x3_70e410);
-GUEST_FUZZ(0x0070e410, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 u32 masked_byte_70e4f4(gptr<u8> object) { return masked_byte(object, 0xe, 0xf, 0); }
 GUEST_EXPORT(0x0070e4f4, masked_byte_70e4f4);
-GUEST_FUZZ(0x0070e4f4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xe + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0070eca0, return_constant<0x0>);
-GUEST_FUZZ(0x0070eca0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 masked_byte_70ee90(gptr<u8> object) { return masked_byte(object, 0x25, 0x4, 2); }
 GUEST_EXPORT(0x0070ee90, masked_byte_70ee90);
-GUEST_FUZZ(0x0070ee90, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_70eea0(gptr<u8> object) { return masked_byte(object, 0x25, 0x1, 0); }
 GUEST_EXPORT(0x0070eea0, masked_byte_70eea0);
-GUEST_FUZZ(0x0070eea0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_70eeac(gptr<u8> object) { return masked_byte(object, 0x25, 0x2, 1); }
 GUEST_EXPORT(0x0070eeac, masked_byte_70eeac);
-GUEST_FUZZ(0x0070eeac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_712600(gptr<u8> object) { return read_field_u32<0xd0>(object) != 0; }
 GUEST_EXPORT(0x00712600, field_nonzero_712600);
-GUEST_FUZZ(0x00712600, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xd0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x007137bc, return_constant<0x8572bc>);
-GUEST_FUZZ(0x007137bc, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x007137d4, read_field_s8<0x3d4>);
-GUEST_FUZZ(0x007137d4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3d4 + FUZZ_FIELD_SLACK); });
 bool field_differs_218_u32_0x6_713a5c(gptr<u8> object) { return read_field_u32<0x218>(object) != 0x6; }
 GUEST_EXPORT(0x00713a5c, field_differs_218_u32_0x6_713a5c);
-GUEST_FUZZ(0x00713a5c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x218 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00716760, do_nothing);
-GUEST_FUZZ(0x00716760, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00718658, return_constant<0x985df0>);
-GUEST_FUZZ(0x00718658, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_equals_3_u8_0x0_71b878(gptr<u8> object) { return read_field_u8<0x3>(object) == 0x0; }
 GUEST_EXPORT(0x0071b878, field_equals_3_u8_0x0_71b878);
-GUEST_FUZZ(0x0071b878, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3 + FUZZ_FIELD_SLACK); });
 bool field_equals_369_u8_0x5_71d07c(gptr<u8> object) { return read_field_u8<0x369>(object) == 0x5; }
 GUEST_EXPORT(0x0071d07c, field_equals_369_u8_0x5_71d07c);
-GUEST_FUZZ(0x0071d07c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x369 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072031c, member_address<0x2f2>);
-GUEST_FUZZ(0x0072031c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x007203e8, read_field_u8<0x1e>);
-GUEST_FUZZ(0x007203e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1e + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x007203f0, member_address<0x2f6>);
-GUEST_FUZZ(0x007203f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00720df4, return_constant<0x1000b1a>);
-GUEST_FUZZ(0x00720df4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00721398, return_constant<0x1000b20>);
-GUEST_FUZZ(0x00721398, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00721424, return_constant<0x0>);
-GUEST_FUZZ(0x00721424, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00721bd8, return_constant<0x0>);
-GUEST_FUZZ(0x00721bd8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00722360, return_constant<0x0>);
-GUEST_FUZZ(0x00722360, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00722ac8, return_constant<0x0>);
-GUEST_FUZZ(0x00722ac8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00723250, return_constant<0x0>);
-GUEST_FUZZ(0x00723250, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 gptr<u8> element_address_7232ac(gptr<u8> base, u32 index) { return gptr<u8>(base.addr() + index * 0x30 + 0x8); }
 GUEST_EXPORT(0x007232ac, element_address_7232ac);
-GUEST_FUZZ(0x007232ac, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE), f.pick<u32>({0, 1, 2, 7, f.number()})); });
 u32 masked_byte_723af8(gptr<u8> object) { return masked_byte(object, 0x79, 0x1, 0); }
 GUEST_EXPORT(0x00723af8, masked_byte_723af8);
-GUEST_FUZZ(0x00723af8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x79 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x007254c8, read_field_u8<0x4>);
-GUEST_FUZZ(0x007254c8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00725504, return_constant<0x100>);
-GUEST_FUZZ(0x00725504, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00725748, return_constant<0x0>);
-GUEST_FUZZ(0x00725748, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_nonzero_7284d8(gptr<u8> object) { return read_field_u32<0x4>(object) != 0; }
 GUEST_EXPORT(0x007284d8, field_nonzero_7284d8);
-GUEST_FUZZ(0x007284d8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e520, read_field_s8<0x449>);
-GUEST_FUZZ(0x0072e520, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x449 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e540, read_field_s8<0x44a>);
-GUEST_FUZZ(0x0072e540, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x44a + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e54c, read_field_s8<0x438>);
-GUEST_FUZZ(0x0072e54c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x438 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e558, read_field_s8<0x440>);
-GUEST_FUZZ(0x0072e558, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x440 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e564, read_field_u16<0x474>);
-GUEST_FUZZ(0x0072e564, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x474 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e570, read_field_s8<0x430>);
-GUEST_FUZZ(0x0072e570, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x430 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e57c, member_address<0x452>);
-GUEST_FUZZ(0x0072e57c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e588, member_address<0x47c>);
-GUEST_FUZZ(0x0072e588, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e594, read_field_s8<0x448>);
-GUEST_FUZZ(0x0072e594, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x448 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e5a0, read_field_s8<0x472>);
-GUEST_FUZZ(0x0072e5a0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x472 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e5ac, read_field_s8<0x450>);
-GUEST_FUZZ(0x0072e5ac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x450 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e89c, read_field_s8<0x491>);
-GUEST_FUZZ(0x0072e89c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x491 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e8a8, read_field_s8<0x478>);
-GUEST_FUZZ(0x0072e8a8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x478 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e8b4, read_field_s8<0x488>);
-GUEST_FUZZ(0x0072e8b4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x488 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e8f0, read_field_s8<0x430>);
-GUEST_FUZZ(0x0072e8f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x430 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e8fc, member_address<0x432>);
-GUEST_FUZZ(0x0072e8fc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e908, read_field_s8<0x480>);
-GUEST_FUZZ(0x0072e908, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x480 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0072e914, read_field_s8<0x490>);
-GUEST_FUZZ(0x0072e914, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x490 + FUZZ_FIELD_SLACK); });
 u32 call_virtual_1a_72f038(gptr<u8> object) { return call_virtual_slot(gptr<hobj::VirtualObject>(read_field_u32<0x14>(object)), 26); }
 GUEST_EXPORT(0x0072f038, call_virtual_1a_72f038);
-GUEST_FUZZ(0x0072f038, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x14, 27); });
 u32 call_virtual_c_72f26c(gptr<u8> object, u32 first, u32 second) { return call_virtual_slot_with_two(gptr<hobj::VirtualObject>(read_field_u32<0x14>(object)), 12, first, second); }
 GUEST_EXPORT(0x0072f26c, call_virtual_c_72f26c);
-GUEST_FUZZ(0x0072f26c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual(f, 0x14, 13); });
 u32 call_virtual_15_72f300(gptr<u8> object) { return call_virtual_slot(gptr<hobj::VirtualObject>(read_field_u32<0x14>(object)), 21); }
 GUEST_EXPORT(0x0072f300, call_virtual_15_72f300);
-GUEST_FUZZ(0x0072f300, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x14, 22); });
 bool field_nonzero_730b28(gptr<u8> object) { return read_field_u32<0x30>(object) != 0; }
 GUEST_EXPORT(0x00730b28, field_nonzero_730b28);
-GUEST_FUZZ(0x00730b28, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x30 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_730b64(gptr<u8> object) { return read_field_u32<0x0>(object) != 0; }
 GUEST_EXPORT(0x00730b64, field_nonzero_730b64);
-GUEST_FUZZ(0x00730b64, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_733a94(gptr<u8> object) { return read_field_u32<0x64>(object) != 0; }
 GUEST_EXPORT(0x00733a94, field_nonzero_733a94);
-GUEST_FUZZ(0x00733a94, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x64 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073bc50, return_constant<0x0>);
-GUEST_FUZZ(0x0073bc50, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0073e7c8, adjusted_this<0x4>);
-GUEST_FUZZ(0x0073e7c8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f484, adjusted_this<0x34>);
-GUEST_FUZZ(0x0073f484, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x34 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f490, adjusted_this<0x3c>);
-GUEST_FUZZ(0x0073f490, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f49c, adjusted_this<0x24>);
-GUEST_FUZZ(0x0073f49c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x24 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f4a8, adjusted_this<0x4>);
-GUEST_FUZZ(0x0073f4a8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f4b4, adjusted_this<0x2c>);
-GUEST_FUZZ(0x0073f4b4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f4c0, adjusted_this<0x1c>);
-GUEST_FUZZ(0x0073f4c0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f4cc, adjusted_this<0x14>);
-GUEST_FUZZ(0x0073f4cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f734, adjusted_this<0x10>);
-GUEST_FUZZ(0x0073f734, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x10 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0073f740, adjusted_this<0x10>);
-GUEST_FUZZ(0x0073f740, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x10 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00740698, adjusted_this<0x10>);
-GUEST_FUZZ(0x00740698, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x10 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x007420c4, adjusted_this<0xc>);
-GUEST_FUZZ(0x007420c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x007424e8, adjusted_this<0xc>);
-GUEST_FUZZ(0x007424e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00743fe0, do_nothing);
-GUEST_FUZZ(0x00743fe0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00744200, return_constant<0x8b38f8>);
-GUEST_FUZZ(0x00744200, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x00745210, return_constant<0x0>);
-GUEST_FUZZ(0x00745210, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_nonzero_74723c(gptr<u8> object) { return read_field_u32<0x34>(object) != 0; }
 GUEST_EXPORT(0x0074723c, field_nonzero_74723c);
-GUEST_FUZZ(0x0074723c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x34 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00747b44, read_field_u32<0x8>);
-GUEST_FUZZ(0x00747b44, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 bool field_equals_c_u32_0x0_747fc4(gptr<u8> object) { return read_field_u32<0xc>(object) == 0x0; }
 GUEST_EXPORT(0x00747fc4, field_equals_c_u32_0x0_747fc4);
-GUEST_FUZZ(0x00747fc4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 u32 call_virtual_1a_749468(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 26); }
 GUEST_EXPORT(0x00749468, call_virtual_1a_749468);
-GUEST_FUZZ(0x00749468, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 27); });
 bool field_nonzero_749ba4(gptr<u8> object) { return read_field_u32<0x0>(object) != 0; }
 GUEST_EXPORT(0x00749ba4, field_nonzero_749ba4);
-GUEST_FUZZ(0x00749ba4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00750090, read_field_s8<0x7a3>);
-GUEST_FUZZ(0x00750090, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x7a3 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00751058, member_address<0x5e4>);
-GUEST_FUZZ(0x00751058, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00751d90, member_address<0x800>);
-GUEST_FUZZ(0x00751d90, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00752914, read_field_u16<0x0>);
-GUEST_FUZZ(0x00752914, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_754978(gptr<u8> object) { return read_field_u32<0x0>(object) != 0; }
 GUEST_EXPORT(0x00754978, field_nonzero_754978);
-GUEST_FUZZ(0x00754978, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 gptr<u8> element_address_757a58(gptr<u8> base, u32 index) { return gptr<u8>(base.addr() + index * 0x30 + 0xc); }
 GUEST_EXPORT(0x00757a58, element_address_757a58);
-GUEST_FUZZ(0x00757a58, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_OBJECT_SIZE), f.pick<u32>({0, 1, 2, 7, f.number()})); });
 GUEST_EXPORT(0x00757bf0, return_constant<0x89a60>);
-GUEST_FUZZ(0x00757bf0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_equals_30_u8_0x6_7580a4(gptr<u8> object) { return read_field_u8<0x30>(object) == 0x6; }
 GUEST_EXPORT(0x007580a4, field_equals_30_u8_0x6_7580a4);
-GUEST_FUZZ(0x007580a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x30 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_758dd4(gptr<u8> object) { return masked_byte(object, 0x270, 0x7, 0); }
 GUEST_EXPORT(0x00758dd4, masked_byte_758dd4);
-GUEST_FUZZ(0x00758dd4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x270 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x00758e70, return_constant<0x0>);
-GUEST_FUZZ(0x00758e70, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 call_virtual_4_759b0c(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 4); }
 GUEST_EXPORT(0x00759b0c, call_virtual_4_759b0c);
-GUEST_FUZZ(0x00759b0c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 5); });
 u32 call_virtual_6_759b18(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 6); }
 GUEST_EXPORT(0x00759b18, call_virtual_6_759b18);
-GUEST_FUZZ(0x00759b18, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 7); });
 u32 call_virtual_5_759b24(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 5); }
 GUEST_EXPORT(0x00759b24, call_virtual_5_759b24);
-GUEST_FUZZ(0x00759b24, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 6); });
 u32 call_virtual_3_759b48(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 3); }
 GUEST_EXPORT(0x00759b48, call_virtual_3_759b48);
-GUEST_FUZZ(0x00759b48, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 4); });
 GUEST_EXPORT(0x0075ab30, read_s8<0x0094fd26>);
-GUEST_FUZZ(0x0075ab30, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0075ab5c, return_constant<0x0>);
-GUEST_FUZZ(0x0075ab5c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_equals_4_u32_0xa_75b93c(gptr<u8> object) { return read_field_u32<0x4>(object) == 0xa; }
 GUEST_EXPORT(0x0075b93c, field_equals_4_u32_0xa_75b93c);
-GUEST_FUZZ(0x0075b93c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_75cc4c(gptr<u8> object) { return read_field_u32<0x4>(object) != 0; }
 GUEST_EXPORT(0x0075cc4c, field_nonzero_75cc4c);
-GUEST_FUZZ(0x0075cc4c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_nonzero_75cd4c(gptr<u8> object) { return read_field_u32<0x18>(object) != 0; }
 GUEST_EXPORT(0x0075cd4c, field_nonzero_75cd4c);
 GUEST_EXPORT(0x403471d4, field_nonzero_75cd4c);
 GUEST_EXPORT(0x40347320, field_nonzero_75cd4c);
-GUEST_FUZZ(0x0075cd4c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x18 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x403471d4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x18 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x40347320, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x18 + FUZZ_FIELD_SLACK); });
 bool field_equals_4_u8_0x0_75cd5c(gptr<u8> object) { return read_field_u8<0x4>(object) == 0x0; }
 GUEST_EXPORT(0x0075cd5c, field_equals_4_u8_0x0_75cd5c);
 GUEST_EXPORT(0x0075aff4, field_equals_4_u8_0x0_75cd5c);
 GUEST_EXPORT(0x0075b008, field_equals_4_u8_0x0_75cd5c);
-GUEST_FUZZ(0x0075cd5c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x0075aff4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x0075b008, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_equals_4_u8_0x8_75cd70(gptr<u8> object) { return read_field_u8<0x4>(object) == 0x8; }
 GUEST_EXPORT(0x0075cd70, field_equals_4_u8_0x8_75cd70);
-GUEST_FUZZ(0x0075cd70, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_equals_4_u8_0x3_75cd98(gptr<u8> object) { return read_field_u8<0x4>(object) == 0x3; }
 GUEST_EXPORT(0x0075cd98, field_equals_4_u8_0x3_75cd98);
-GUEST_FUZZ(0x0075cd98, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_equals_4_u8_0x7_75cdc8(gptr<u8> object) { return read_field_u8<0x4>(object) == 0x7; }
 GUEST_EXPORT(0x0075cdc8, field_equals_4_u8_0x7_75cdc8);
-GUEST_FUZZ(0x0075cdc8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 bool field_equals_21_u8_0x0_75ce84(gptr<u8> object) { return read_field_u8<0x21>(object) == 0x0; }
 GUEST_EXPORT(0x0075ce84, field_equals_21_u8_0x0_75ce84);
-GUEST_FUZZ(0x0075ce84, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x21 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_75d81c(gptr<u8> object) { return masked_byte(object, 0x9, 0x3, 0); }
 GUEST_EXPORT(0x0075d81c, masked_byte_75d81c);
-GUEST_FUZZ(0x0075d81c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x9 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_75d888(gptr<u8> object) { return masked_byte(object, 0x9, 0x40, 6); }
 GUEST_EXPORT(0x0075d888, masked_byte_75d888);
-GUEST_FUZZ(0x0075d888, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x9 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0075dad0, read_field_u16<0x0>);
-GUEST_FUZZ(0x0075dad0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0075dbbc, read_field_u8<0x0>);
-GUEST_FUZZ(0x0075dbbc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0075e644, member_address<0x38e0>);
-GUEST_FUZZ(0x0075e644, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 u32 split_word_at_310_767404(gptr<u8> object) { return split_word(object, 0x310); }
 GUEST_EXPORT(0x00767404, split_word_at_310_767404);
-GUEST_FUZZ(0x00767404, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x310 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_5a4_767430(gptr<u8> object) { return split_word(object, 0x5a4); }
 GUEST_EXPORT(0x00767430, split_word_at_5a4_767430);
-GUEST_FUZZ(0x00767430, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x5a4 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_540_767468(gptr<u8> object) { return split_word(object, 0x540); }
 GUEST_EXPORT(0x00767468, split_word_at_540_767468);
-GUEST_FUZZ(0x00767468, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x540 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_360_7674a4(gptr<u8> object) { return split_word(object, 0x360); }
 GUEST_EXPORT(0x007674a4, split_word_at_360_7674a4);
-GUEST_FUZZ(0x007674a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x360 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_20c_7674f4(gptr<u8> object) { return split_word(object, 0x20c); }
 GUEST_EXPORT(0x007674f4, split_word_at_20c_7674f4);
-GUEST_FUZZ(0x007674f4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x20c + FUZZ_FIELD_SLACK); });
 u32 split_word_at_1e4_767530(gptr<u8> object) { return split_word(object, 0x1e4); }
 GUEST_EXPORT(0x00767530, split_word_at_1e4_767530);
-GUEST_FUZZ(0x00767530, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1e4 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_57c_76755c(gptr<u8> object) { return split_word(object, 0x57c); }
 GUEST_EXPORT(0x0076755c, split_word_at_57c_76755c);
-GUEST_FUZZ(0x0076755c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x57c + FUZZ_FIELD_SLACK); });
 u32 split_word_at_34c_767574(gptr<u8> object) { return split_word(object, 0x34c); }
 GUEST_EXPORT(0x00767574, split_word_at_34c_767574);
-GUEST_FUZZ(0x00767574, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x34c + FUZZ_FIELD_SLACK); });
 u32 split_word_at_4c8_76758c(gptr<u8> object) { return split_word(object, 0x4c8); }
 GUEST_EXPORT(0x0076758c, split_word_at_4c8_76758c);
-GUEST_FUZZ(0x0076758c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4c8 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_3b0_7675ec(gptr<u8> object) { return split_word(object, 0x3b0); }
 GUEST_EXPORT(0x007675ec, split_word_at_3b0_7675ec);
-GUEST_FUZZ(0x007675ec, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3b0 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_374_767610(gptr<u8> object) { return split_word(object, 0x374); }
 GUEST_EXPORT(0x00767610, split_word_at_374_767610);
-GUEST_FUZZ(0x00767610, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x374 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_1d0_767634(gptr<u8> object) { return split_word(object, 0x1d0); }
 GUEST_EXPORT(0x00767634, split_word_at_1d0_767634);
-GUEST_FUZZ(0x00767634, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1d0 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_2d4_767660(gptr<u8> object) { return split_word(object, 0x2d4); }
 GUEST_EXPORT(0x00767660, split_word_at_2d4_767660);
-GUEST_FUZZ(0x00767660, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2d4 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_1f8_7676c0(gptr<u8> object) { return split_word(object, 0x1f8); }
 GUEST_EXPORT(0x007676c0, split_word_at_1f8_7676c0);
-GUEST_FUZZ(0x007676c0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1f8 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_4dc_7676d8(gptr<u8> object) { return split_word(object, 0x4dc); }
 GUEST_EXPORT(0x007676d8, split_word_at_4dc_7676d8);
-GUEST_FUZZ(0x007676d8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4dc + FUZZ_FIELD_SLACK); });
 u32 split_word_at_2fc_7676f0(gptr<u8> object) { return split_word(object, 0x2fc); }
 GUEST_EXPORT(0x007676f0, split_word_at_2fc_7676f0);
-GUEST_FUZZ(0x007676f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2fc + FUZZ_FIELD_SLACK); });
 u32 split_word_at_220_767708(gptr<u8> object) { return split_word(object, 0x220); }
 GUEST_EXPORT(0x00767708, split_word_at_220_767708);
-GUEST_FUZZ(0x00767708, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x220 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_3c4_767744(gptr<u8> object) { return split_word(object, 0x3c4); }
 GUEST_EXPORT(0x00767744, split_word_at_3c4_767744);
-GUEST_FUZZ(0x00767744, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x3c4 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_4f0_76775c(gptr<u8> object) { return split_word(object, 0x4f0); }
 GUEST_EXPORT(0x0076775c, split_word_at_4f0_76775c);
-GUEST_FUZZ(0x0076775c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4f0 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_388_767788(gptr<u8> object) { return split_word(object, 0x388); }
 GUEST_EXPORT(0x00767788, split_word_at_388_767788);
-GUEST_FUZZ(0x00767788, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x388 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_590_7677ac(gptr<u8> object) { return split_word(object, 0x590); }
 GUEST_EXPORT(0x007677ac, split_word_at_590_7677ac);
-GUEST_FUZZ(0x007677ac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x590 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_39c_7677c4(gptr<u8> object) { return split_word(object, 0x39c); }
 GUEST_EXPORT(0x007677c4, split_word_at_39c_7677c4);
-GUEST_FUZZ(0x007677c4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x39c + FUZZ_FIELD_SLACK); });
 u32 split_word_at_2e8_7677e8(gptr<u8> object) { return split_word(object, 0x2e8); }
 GUEST_EXPORT(0x007677e8, split_word_at_2e8_7677e8);
-GUEST_FUZZ(0x007677e8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2e8 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_1a8_76780c(gptr<u8> object) { return split_word(object, 0x1a8); }
 GUEST_EXPORT(0x0076780c, split_word_at_1a8_76780c);
-GUEST_FUZZ(0x0076780c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1a8 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_554_767848(gptr<u8> object) { return split_word(object, 0x554); }
 GUEST_EXPORT(0x00767848, split_word_at_554_767848);
-GUEST_FUZZ(0x00767848, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x554 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_298_767878(gptr<u8> object) { return split_word(object, 0x298); }
 GUEST_EXPORT(0x00767878, split_word_at_298_767878);
-GUEST_FUZZ(0x00767878, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x298 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_1bc_7678a8(gptr<u8> object) { return split_word(object, 0x1bc); }
 GUEST_EXPORT(0x007678a8, split_word_at_1bc_7678a8);
-GUEST_FUZZ(0x007678a8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1bc + FUZZ_FIELD_SLACK); });
 u32 split_word_at_324_7678cc(gptr<u8> object) { return split_word(object, 0x324); }
 GUEST_EXPORT(0x007678cc, split_word_at_324_7678cc);
-GUEST_FUZZ(0x007678cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x324 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_338_767908(gptr<u8> object) { return split_word(object, 0x338); }
 GUEST_EXPORT(0x00767908, split_word_at_338_767908);
-GUEST_FUZZ(0x00767908, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x338 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_248_767920(gptr<u8> object) { return split_word(object, 0x248); }
 GUEST_EXPORT(0x00767920, split_word_at_248_767920);
-GUEST_FUZZ(0x00767920, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x248 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_504_767968(gptr<u8> object) { return split_word(object, 0x504); }
 GUEST_EXPORT(0x00767968, split_word_at_504_767968);
-GUEST_FUZZ(0x00767968, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x504 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_2ac_767980(gptr<u8> object) { return split_word(object, 0x2ac); }
 GUEST_EXPORT(0x00767980, split_word_at_2ac_767980);
-GUEST_FUZZ(0x00767980, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2ac + FUZZ_FIELD_SLACK); });
 u32 split_word_at_4a0_767998(gptr<u8> object) { return split_word(object, 0x4a0); }
 GUEST_EXPORT(0x00767998, split_word_at_4a0_767998);
-GUEST_FUZZ(0x00767998, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4a0 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_568_7679b0(gptr<u8> object) { return split_word(object, 0x568); }
 GUEST_EXPORT(0x007679b0, split_word_at_568_7679b0);
-GUEST_FUZZ(0x007679b0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x568 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_518_7679c8(gptr<u8> object) { return split_word(object, 0x518); }
 GUEST_EXPORT(0x007679c8, split_word_at_518_7679c8);
-GUEST_FUZZ(0x007679c8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x518 + FUZZ_FIELD_SLACK); });
 u32 split_word_at_52c_7679e0(gptr<u8> object) { return split_word(object, 0x52c); }
 GUEST_EXPORT(0x007679e0, split_word_at_52c_7679e0);
-GUEST_FUZZ(0x007679e0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x52c + FUZZ_FIELD_SLACK); });
 u32 split_word_at_25c_7679f8(gptr<u8> object) { return split_word(object, 0x25c); }
 GUEST_EXPORT(0x007679f8, split_word_at_25c_7679f8);
-GUEST_FUZZ(0x007679f8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x25c + FUZZ_FIELD_SLACK); });
 u32 split_word_at_5e0_767a10(gptr<u8> object) { return split_word(object, 0x5e0); }
 GUEST_EXPORT(0x00767a10, split_word_at_5e0_767a10);
-GUEST_FUZZ(0x00767a10, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x5e0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x0076b880, return_constant<0x0>);
-GUEST_FUZZ(0x0076b880, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x0076f550, member_address<0x14>);
-GUEST_FUZZ(0x0076f550, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 void store_constants_779548(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u16<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x00779548, store_constants_779548);
-GUEST_FUZZ(0x00779548, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_77955c(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u8<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x0077955c, store_constants_77955c);
-GUEST_FUZZ(0x0077955c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_77956c(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u16<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x0077956c, store_constants_77956c);
-GUEST_FUZZ(0x0077956c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_779598(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u16<0x4>(object, 0x0);
     store_field_u8<0x6>(object, 0x0);
 }
 GUEST_EXPORT(0x00779598, store_constants_779598);
-GUEST_FUZZ(0x00779598, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x6 + FUZZ_FIELD_SLACK); });
 void store_constants_7795ac(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x007795ac, store_constants_7795ac);
-GUEST_FUZZ(0x007795ac, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 void store_constants_7795bc(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u8<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x007795bc, store_constants_7795bc);
-GUEST_FUZZ(0x007795bc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_constants_4000abb0(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u16<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x4000abb0, store_constants_4000abb0);
-GUEST_FUZZ(0x4000abb0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40036794, store_byte_constant<pack(0x94, 0x0)>);
-GUEST_FUZZ(0x40036794, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x94 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x400367a0, store_byte_constant<pack(0x94, 0x1)>);
-GUEST_FUZZ(0x400367a0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x94 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x400377c4, return_constant<0x0>);
-GUEST_FUZZ(0x400377c4, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x40090b34, read_field_u32<0x234>);
-GUEST_FUZZ(0x40090b34, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x234 + FUZZ_FIELD_SLACK); });
 void store_constants_401271cc(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u8<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x401271cc, store_constants_401271cc);
-GUEST_FUZZ(0x401271cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_401429fc(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x401429fc, store_u16_argument_at_0_401429fc);
-GUEST_FUZZ(0x401429fc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x401ffb7c, read_field_s8<0x45d>);
-GUEST_FUZZ(0x401ffb7c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x45d + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_40282d58(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x40282d58, store_u16_argument_at_0_40282d58);
-GUEST_FUZZ(0x40282d58, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40282d60, do_nothing);
-GUEST_FUZZ(0x40282d60, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x40282e08, read_field_s8<0x1c>);
-GUEST_FUZZ(0x40282e08, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402a22d4, store_byte_constant<pack(0x78, 0x1)>);
-GUEST_FUZZ(0x402a22d4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x78 + FUZZ_FIELD_SLACK); });
 bool field_equals_170_u32_0x0_402ad054(gptr<u8> object) { return read_field_u32<0x170>(object) == 0x0; }
 GUEST_EXPORT(0x402ad054, field_equals_170_u32_0x0_402ad054);
-GUEST_FUZZ(0x402ad054, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x170 + FUZZ_FIELD_SLACK); });
 bool field_equals_26c_u32_0x8_402ad178(gptr<u8> object) { return read_field_u32<0x26c>(object) == 0x8; }
 GUEST_EXPORT(0x402ad178, field_equals_26c_u32_0x8_402ad178);
-GUEST_FUZZ(0x402ad178, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x26c + FUZZ_FIELD_SLACK); });
 bool field_equals_170_u32_0x11_402ae268(gptr<u8> object) { return read_field_u32<0x170>(object) == 0x11; }
 GUEST_EXPORT(0x402ae268, field_equals_170_u32_0x11_402ae268);
-GUEST_FUZZ(0x402ae268, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x170 + FUZZ_FIELD_SLACK); });
 bool field_equals_170_u32_0x3_402ae27c(gptr<u8> object) { return read_field_u32<0x170>(object) == 0x3; }
 GUEST_EXPORT(0x402ae27c, field_equals_170_u32_0x3_402ae27c);
-GUEST_FUZZ(0x402ae27c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x170 + FUZZ_FIELD_SLACK); });
 bool field_equals_1e0_u32_0x0_402ae290(gptr<u8> object) { return read_field_u32<0x1e0>(object) == 0x0; }
 GUEST_EXPORT(0x402ae290, field_equals_1e0_u32_0x0_402ae290);
-GUEST_FUZZ(0x402ae290, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1e0 + FUZZ_FIELD_SLACK); });
 bool field_equals_2c0_u32_0x5_402ae420(gptr<u8> object) { return read_field_u32<0x2c0>(object) == 0x5; }
 GUEST_EXPORT(0x402ae420, field_equals_2c0_u32_0x5_402ae420);
-GUEST_FUZZ(0x402ae420, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2c0 + FUZZ_FIELD_SLACK); });
 bool field_equals_170_u32_0x0_402ae434(gptr<u8> object) { return read_field_u32<0x170>(object) == 0x0; }
 GUEST_EXPORT(0x402ae434, field_equals_170_u32_0x0_402ae434);
-GUEST_FUZZ(0x402ae434, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x170 + FUZZ_FIELD_SLACK); });
 bool field_equals_170_u32_0x0_402ae5dc(gptr<u8> object) { return read_field_u32<0x170>(object) == 0x0; }
 GUEST_EXPORT(0x402ae5dc, field_equals_170_u32_0x0_402ae5dc);
-GUEST_FUZZ(0x402ae5dc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x170 + FUZZ_FIELD_SLACK); });
 bool field_equals_2c0_u32_0x0_402ae5f0(gptr<u8> object) { return read_field_u32<0x2c0>(object) == 0x0; }
 GUEST_EXPORT(0x402ae5f0, field_equals_2c0_u32_0x0_402ae5f0);
-GUEST_FUZZ(0x402ae5f0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2c0 + FUZZ_FIELD_SLACK); });
 bool field_equals_14_u8_0x4_402b9c34(gptr<u8> object) { return read_field_u8<0x14>(object) == 0x4; }
 GUEST_EXPORT(0x402b9c34, field_equals_14_u8_0x4_402b9c34);
-GUEST_FUZZ(0x402b9c34, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 void store_constants_402d88f8(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x402d88f8, store_constants_402d88f8);
-GUEST_FUZZ(0x402d88f8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402d94d8, return_constant<0x1>);
-GUEST_FUZZ(0x402d94d8, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_equals_14_u8_0x0_402d95d8(gptr<u8> object) { return read_field_u8<0x14>(object) == 0x0; }
 GUEST_EXPORT(0x402d95d8, field_equals_14_u8_0x0_402d95d8);
-GUEST_FUZZ(0x402d95d8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402d9760, return_constant<0x0>);
-GUEST_FUZZ(0x402d9760, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x402d9798, read_field_s8<0xa1a>);
-GUEST_FUZZ(0x402d9798, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xa1a + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402dd978, store_word_constant<pack(0x1c, 0x0)>);
-GUEST_FUZZ(0x402dd978, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402ddd9c, return_constant<0x0>);
-GUEST_FUZZ(0x402ddd9c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 bool field_equals_170_u32_0x3_402de3f8(gptr<u8> object) { return read_field_u32<0x170>(object) == 0x3; }
 GUEST_EXPORT(0x402de3f8, field_equals_170_u32_0x3_402de3f8);
-GUEST_FUZZ(0x402de3f8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x170 + FUZZ_FIELD_SLACK); });
 void store_constants_402defd4(gptr<u8> object) {
     store_field_u8<0x1bc>(object, 0x0);
     store_field_u8<0x1bd>(object, 0x0);
     store_field_u8<0x1be>(object, 0x0);
 }
 GUEST_EXPORT(0x402defd4, store_constants_402defd4);
-GUEST_FUZZ(0x402defd4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x1be + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402dfab0, member_address<0x1afcc>);
-GUEST_FUZZ(0x402dfab0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 bool field_equals_2a4_u32_0x4_402e0cd0(gptr<u8> object) { return read_field_u32<0x2a4>(object) == 0x4; }
 GUEST_EXPORT(0x402e0cd0, field_equals_2a4_u32_0x4_402e0cd0);
-GUEST_FUZZ(0x402e0cd0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2a4 + FUZZ_FIELD_SLACK); });
 bool field_equals_26c_u32_0x0_402e16dc(gptr<u8> object) { return read_field_u32<0x26c>(object) == 0x0; }
 GUEST_EXPORT(0x402e16dc, field_equals_26c_u32_0x0_402e16dc);
-GUEST_FUZZ(0x402e16dc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x26c + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402e19d8, store_word_constant<pack(0xa4, 0x1)>);
-GUEST_FUZZ(0x402e19d8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xa4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402e1cf4, read_field_s8<0x2a1>);
-GUEST_FUZZ(0x402e1cf4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x2a1 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402e2230, store_word_constant<pack(0xc4, 0x0)>);
-GUEST_FUZZ(0x402e2230, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402f908c, store_byte_constant<pack(0x28, 0x1)>);
-GUEST_FUZZ(0x402f908c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x28 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x402fb9b0, return_constant<0xffffffff>);
-GUEST_FUZZ(0x402fb9b0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_constants_40304884(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u16<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x40304884, store_constants_40304884);
-GUEST_FUZZ(0x40304884, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40304bac, do_nothing);
-GUEST_FUZZ(0x40304bac, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x40304c58, member_address<0x9a8>);
-GUEST_FUZZ(0x40304c58, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x403050fc, read_field_u8<0x0>);
-GUEST_FUZZ(0x403050fc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40308200, member_address<0x1b6e8>);
-GUEST_FUZZ(0x40308200, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x4030820c, member_address<0x1b35c>);
-GUEST_FUZZ(0x4030820c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40312348, return_constant<0xf>);
-GUEST_FUZZ(0x40312348, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x40319218, do_nothing);
-GUEST_FUZZ(0x40319218, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 u32 call_virtual_3_40319538(gptr<hobj::VirtualObject> object) { return call_virtual_slot(object, 3); }
 GUEST_EXPORT(0x40319538, call_virtual_3_40319538);
-GUEST_FUZZ(0x40319538, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_virtual_no_arguments(f, 0x0, 4); });
 void store_constants_4032e448(gptr<u8> object) {
     store_field_u8<0x60>(object, 0x0);
     store_field_u8<0x61>(object, 0x0);
@@ -2569,26 +1653,19 @@ void store_constants_4032e448(gptr<u8> object) {
     store_field_u32<0x5c>(object, 0x0);
 }
 GUEST_EXPORT(0x4032e448, store_constants_4032e448);
-GUEST_FUZZ(0x4032e448, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x62 + FUZZ_FIELD_SLACK); });
 void store_u8_argument_at_6ba_4033ba34(gptr<u8> object, u32 value) { store_field_u8<0x6ba>(object, value); }
 GUEST_EXPORT(0x4033ba34, store_u8_argument_at_6ba_4033ba34);
-GUEST_FUZZ(0x4033ba34, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x6ba + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40346998, member_address<0x4>);
-GUEST_FUZZ(0x40346998, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x403469a0, do_nothing);
-GUEST_FUZZ(0x403469a0, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x403469a4, member_address<0x4>);
-GUEST_FUZZ(0x403469a4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, FUZZ_FIELD_SLACK); });
 void store_constants_403e4e10(gptr<u8> object) {
     store_field_u32<0x5c>(object, 0x0);
     store_field_u8<0x40>(object, 0x0);
     store_field_u8<0x41>(object, 0x0);
 }
 GUEST_EXPORT(0x403e4e10, store_constants_403e4e10);
-GUEST_FUZZ(0x403e4e10, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x5c + FUZZ_FIELD_SLACK); });
 bool field_differs_ac_u32_0x2_403e7c24(gptr<u8> object) { return read_field_u32<0xac>(object) != 0x2; }
 GUEST_EXPORT(0x403e7c24, field_differs_ac_u32_0x2_403e7c24);
-GUEST_FUZZ(0x403e7c24, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xac + FUZZ_FIELD_SLACK); });
 void store_constants_403edb24(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
@@ -2596,93 +1673,61 @@ void store_constants_403edb24(gptr<u8> object) {
     store_field_u32<0xc>(object, 0x0);
 }
 GUEST_EXPORT(0x403edb24, store_constants_403edb24);
-GUEST_FUZZ(0x403edb24, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xc + FUZZ_FIELD_SLACK); });
 void store_constants_40534ffc(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u8<0x4>(object, 0x0);
 }
 GUEST_EXPORT(0x40534ffc, store_constants_40534ffc);
-GUEST_FUZZ(0x40534ffc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x4 + FUZZ_FIELD_SLACK); });
 u32 masked_byte_4053aea4(gptr<u8> object) { return masked_byte(object, 0x7c, 0x2, 1); }
 GUEST_EXPORT(0x4053aea4, masked_byte_4053aea4);
-GUEST_FUZZ(0x4053aea4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x7c + FUZZ_FIELD_SLACK); });
 u32 masked_byte_4053aeb4(gptr<u8> object) { return masked_byte(object, 0x7c, 0x4, 2); }
 GUEST_EXPORT(0x4053aeb4, masked_byte_4053aeb4);
-GUEST_FUZZ(0x4053aeb4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x7c + FUZZ_FIELD_SLACK); });
 u32 masked_byte_4053b900(gptr<u8> object) { return masked_byte(object, 0x7c, 0x1, 0); }
 GUEST_EXPORT(0x4053b900, masked_byte_4053b900);
-GUEST_FUZZ(0x4053b900, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x7c + FUZZ_FIELD_SLACK); });
 void store_constants_40571934(gptr<u8> object) {
     store_field_u32<0x0>(object, 0x0);
     store_field_u32<0x4>(object, 0x0);
     store_field_u8<0x8>(object, 0x0);
 }
 GUEST_EXPORT(0x40571934, store_constants_40571934);
-GUEST_FUZZ(0x40571934, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x8 + FUZZ_FIELD_SLACK); });
 void store_u8_argument_at_15_40610e80(gptr<u8> object, u32 value) { store_field_u8<0x15>(object, value); }
 GUEST_EXPORT(0x40610e80, store_u8_argument_at_15_40610e80);
-GUEST_FUZZ(0x40610e80, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x15 + FUZZ_FIELD_SLACK); });
 void store_u8_argument_at_14_40610e88(gptr<u8> object, u32 value) { store_field_u8<0x14>(object, value); }
 GUEST_EXPORT(0x40610e88, store_u8_argument_at_14_40610e88);
-GUEST_FUZZ(0x40610e88, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x14 + FUZZ_FIELD_SLACK); });
 void store_u8_argument_at_16_40610e90(gptr<u8> object, u32 value) { store_field_u8<0x16>(object, value); }
 GUEST_EXPORT(0x40610e90, store_u8_argument_at_16_40610e90);
-GUEST_FUZZ(0x40610e90, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x16 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40613c6c, do_nothing);
-GUEST_FUZZ(0x40613c6c, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 GUEST_EXPORT(0x40616a90, do_nothing);
-GUEST_FUZZ(0x40616a90, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void set_byte_bits_40645f5c(gptr<u8> object) { change_byte_bits(object, 0x0, 0x10, true); }
 GUEST_EXPORT(0x40645f5c, set_byte_bits_40645f5c);
-GUEST_FUZZ(0x40645f5c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void clear_byte_bits_40645f6c(gptr<u8> object) { change_byte_bits(object, 0x0, 0x80, false); }
 GUEST_EXPORT(0x40645f6c, clear_byte_bits_40645f6c);
 GUEST_EXPORT(0x001e0880, clear_byte_bits_40645f6c);
 GUEST_EXPORT(0x401a1d6c, clear_byte_bits_40645f6c);
 GUEST_EXPORT(0x406462cc, clear_byte_bits_40645f6c);
-GUEST_FUZZ(0x40645f6c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x001e0880, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x401a1d6c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
-GUEST_FUZZ(0x406462cc, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void store_u8_argument_at_0_40649200(gptr<u8> object, u32 value) { store_field_u8<0x0>(object, value); }
 GUEST_EXPORT(0x40649200, store_u8_argument_at_0_40649200);
-GUEST_FUZZ(0x40649200, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_40649228(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x40649228, store_u16_argument_at_0_40649228);
-GUEST_FUZZ(0x40649228, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void set_byte_bits_40649b38(gptr<u8> object) { change_byte_bits(object, 0x9f, 0x1, true); }
 GUEST_EXPORT(0x40649b38, set_byte_bits_40649b38);
-GUEST_FUZZ(0x40649b38, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x9f + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40650c3c, read_field_u32<0x234>);
-GUEST_FUZZ(0x40650c3c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x234 + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_40683dd4(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x40683dd4, store_u16_argument_at_0_40683dd4);
-GUEST_FUZZ(0x40683dd4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40683fe4, read_field_u32<0x234>);
-GUEST_FUZZ(0x40683fe4, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x234 + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_40683ff8(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x40683ff8, store_u16_argument_at_0_40683ff8);
-GUEST_FUZZ(0x40683ff8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_40692644(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x40692644, store_u16_argument_at_0_40692644);
-GUEST_FUZZ(0x40692644, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x40692788, do_nothing);
-GUEST_FUZZ(0x40692788, FUZZ_RUNS, [](guest::Fuzz &f) { f.arguments(); });
 void store_u16_argument_at_0_406e3870(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x406e3870, store_u16_argument_at_0_406e3870);
-GUEST_FUZZ(0x406e3870, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x406e38c8, read_field_u32<0x234>);
-GUEST_FUZZ(0x406e38c8, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x234 + FUZZ_FIELD_SLACK); });
 void store_u16_argument_at_0_406fb538(gptr<u8> object, u32 value) { store_field_u16<0x0>(object, value); }
 GUEST_EXPORT(0x406fb538, store_u16_argument_at_0_406fb538);
-GUEST_FUZZ(0x406fb538, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x406fb600, read_field_u32<0x234>);
-GUEST_FUZZ(0x406fb600, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0x234 + FUZZ_FIELD_SLACK); });
 GUEST_EXPORT(0x407257d0, store_byte_constant<pack(0xf5, 0x1)>);
-GUEST_FUZZ(0x407257d0, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_field_object(f, 0xf5 + FUZZ_FIELD_SLACK); });
 void store_u8_argument_at_0_40780624(gptr<u8> object, u32 value) { store_field_u8<0x0>(object, value); }
 GUEST_EXPORT(0x40780624, store_u8_argument_at_0_40780624);
-GUEST_FUZZ(0x40780624, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x0 + FUZZ_FIELD_SLACK); });
 void store_u8_argument_at_2_4078062c(gptr<u8> object, u32 value) { store_field_u8<0x2>(object, value); }
 GUEST_EXPORT(0x4078062c, store_u8_argument_at_2_4078062c);
-GUEST_FUZZ(0x4078062c, FUZZ_RUNS, [](guest::Fuzz &f) { fuzz_store_object(f, 0x2 + FUZZ_FIELD_SLACK); });

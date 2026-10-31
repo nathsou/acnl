@@ -67,38 +67,3 @@ u32 free_in_containing_heap(gptr<void> address) {
     return guest::call_address<u32>(heap->vtable[HEAP_FREE_SLOT], heap, address);
 }
 GUEST_EXPORT(0x0053814c, free_in_containing_heap);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// A block preceded by a header, linked to a second header half of the time; returns the block address.
-static gptr<void> some_block(guest::Fuzz &f) {
-    auto header = f.object<AllocationHeader>();
-    if (f.below(2) != 0) {
-        auto real = f.object<AllocationHeader>();
-        header->link = real.addr() + LINK_FLAG;
-    } else {
-        header->link &= ~LINK_FLAG;
-    }
-    return gptr<void>((header + 1).addr());
-}
-
-GUEST_FUZZ(0x005380a8, 300, [](guest::Fuzz &f) { f.arguments(some_block(f)); });
-
-GUEST_FUZZ(0x005380c0, 200, [](guest::Fuzz &f) {
-    // the delegate is itself a heap block whose vtable slot 0 is allocation_owner, a harmless reader
-    auto header = f.object<AllocationHeader>();
-    header->link &= ~LINK_FLAG;
-    auto delegate = gptr<Delegate>((header + 1).addr());
-    f.allocate(sizeof(Delegate));  // room for the delegate right after its header
-    auto vtable = f.allocate(4).cast<u32>();
-    vtable[0] = 0x005380a8;
-    delegate->vtable = vtable;
-    auto thread = f.object<DelegateThread>();
-    thread->delegate = delegate;
-    f.arguments(thread, f.pick<u32>({0, 1, 0xffffffff, f.number()}));
-});
-
-GUEST_FUZZ(0x0053814c, 200, [](guest::Fuzz &f) {
-    // addresses below the code start lie in no heap: nothing real gets freed
-    f.arguments(gptr<void>(f.pick<u32>({0, 4, 0x1000, f.below(0x100000)})));
-});

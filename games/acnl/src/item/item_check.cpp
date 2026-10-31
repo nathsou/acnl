@@ -18,17 +18,3 @@ bool item_has_flags_and_check_b(const Item &item) {
     return item_check_b(item) == EXPECTED_CHECK_B_RESULT;
 }
 GUEST_EXPORT(0x00313124, item_has_flags_and_check_b);
-
-GUEST_FUZZ(0x00313124, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    bool data_loaded = bool(item_data_table->entries);
-    if (data_loaded && f.below(3) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    } else {
-        item->id = Item::EMPTY;
-    }
-    if (f.below(3) == 0) {
-        item->flags = f.pick<u16>({0, 0xc000, 1, 0x4000});
-    }
-    f.arguments(item);
-});

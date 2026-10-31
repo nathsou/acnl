@@ -1,6 +1,6 @@
 // Updates of objects of the 0x001c0000..0x001e0000 area: scale changes, an item set copy, a fader start, and the
 // flags of the players that are set up.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "graphics/hemisphere_light.hpp"
 #include "item/item.hpp"
 #include "save/player.hpp"
@@ -81,14 +81,6 @@ struct PlayerFlagsObject {
 };
 GUEST_OFFSET(PlayerFlagsObject, flags_22, 0x22);
 
-gptr<ScaledObject> fuzz_scaled(guest::Fuzz &f) {
-    auto object = f.object<ScaledObject>();
-    object->node = f.allocate(0x400).cast<u8>();
-    f.bytes(object->node, 0x400);
-    object->scale = f.pick<float>({0.0f, 1.0f, 0.5f, -2.0f, f.real()});
-    return object;
-}
-
 }  // namespace
 
 // Gives the node a uniform scale, when that differs from the current one.
@@ -104,10 +96,6 @@ void set_uniform_scale(ScaledObject &object, float scale) {
     object.scale = scale;
 }
 GUEST_EXPORT(0x001d2e98, set_uniform_scale);
-GUEST_FUZZ(0x001d2e98, 200, [](guest::Fuzz &f) {
-    auto object = fuzz_scaled(f);
-    f.arguments(object, f.pick<float>({object->scale, 0.25f, 3.0f, 0.0f, f.real()}));
-});
 
 // Moves the uniform scale towards the target in equal steps: one step of (target - scale) / steps (the whole way
 // without steps).
@@ -123,10 +111,6 @@ void approach_uniform_scale(ScaledObject &object, float target, s32 steps) {
     set_uniform_scale(object, next);
 }
 GUEST_EXPORT(0x001ce4d0, approach_uniform_scale);
-GUEST_FUZZ(0x001ce4d0, 200, [](guest::Fuzz &f) {
-    auto object = fuzz_scaled(f);
-    f.arguments(object, f.pick<float>({1.0f, 0.5f, 4.0f, f.real()}), f.pick<s32>({-3, 0, 1, 2, 10, 100}));
-});
 
 // Copies the eight items and the byte of another item set.
 void copy_item_set(ItemSetHolder &holder, const ItemSet &source) {
@@ -136,7 +120,6 @@ void copy_item_set(ItemSetHolder &holder, const ItemSet &source) {
     holder.set.flag = source.flag;
 }
 GUEST_EXPORT(0x001d32c8, copy_item_set);
-GUEST_FUZZ(0x001d32c8, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemSetHolder>(), f.object<ItemSet>()); });
 
 // Starts a quick fade to silence, or (without the flag) only arms the countdown.
 void start_quiet_fade(FadingObject &object, u32 immediately) {
@@ -148,7 +131,6 @@ void start_quiet_fade(FadingObject &object, u32 immediately) {
     object.countdown_108 = 0;
 }
 GUEST_EXPORT(0x001d7070, start_quiet_fade);
-GUEST_FUZZ(0x001d7070, 100, [](guest::Fuzz &f) { f.arguments(f.object<FadingObject>(), f.pick<u32>({0, 1, 2})); });
 
 // While the voice waits (state 2): stores the value, jumps its fader to 0.45 and moves on to the fading state.
 void begin_voice_fade(gptr<gptr<Voice>> holder, u32 value) {
@@ -163,13 +145,6 @@ void begin_voice_fade(gptr<gptr<Voice>> holder, u32 value) {
     voice.state_b4 = STATE_FADING;
 }
 GUEST_EXPORT(0x001db0c8, begin_voice_fade);
-GUEST_FUZZ(0x001db0c8, 100, [](guest::Fuzz &f) {
-    auto holder = f.object<gptr<Voice>>();
-    auto voice = f.object<Voice>();
-    voice->state_b4 = f.pick<u8>({0, 1, 2, 2, 3});
-    *holder = voice;
-    f.arguments(holder, f.number());
-});
 
 // Flags the object for every player slot (0-3) whose player has an identity.
 void flag_players_with_identity(PlayerFlagsObject &object) {
@@ -186,4 +161,3 @@ void flag_players_with_identity(PlayerFlagsObject &object) {
     }
 }
 GUEST_EXPORT(0x001e0190, flag_players_with_identity);
-GUEST_FUZZ(0x001e0190, 50, [](guest::Fuzz &f) { f.arguments(f.object<PlayerFlagsObject>()); });

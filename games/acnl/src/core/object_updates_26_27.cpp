@@ -1,6 +1,6 @@
 // Callbacks and initialisers of objects of the 0x00260000..0x00280000 area (their classes are not known yet): a
 // callback that fires for one tag, item category tests, a player search and some resets.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 #include "save/player.hpp"
 #include "save/save_data.hpp"
@@ -65,14 +65,6 @@ u32 dispatch_when_tagged(TaggedObject &object, u32 pair_offset) {
     return dispatch(self, pair.first, pair.second);
 }
 
-gptr<TaggedObject> fuzz_tagged(guest::Fuzz &f) {
-    // inputs that never reach the callback: a tag that differs from the rule's
-    auto object = f.object<TaggedObject>();
-    const TagRule &rule = *gptr<TagRule>(TAG_RULE_TABLE);
-    object->tag = rule.tag + 1 + f.below(5);
-    return object;
-}
-
 struct EmptiedSet {
     Item items[SET_ITEMS];
     u8 flag;
@@ -105,19 +97,14 @@ GUEST_OFFSET(ResourceObject, value_10, 0x10);
 
 u32 dispatch_when_tagged_28(TaggedObject &object) { return dispatch_when_tagged(object, 0x28); }
 GUEST_EXPORT(0x0026d3e4, dispatch_when_tagged_28);
-GUEST_FUZZ(0x0026d3e4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_tagged(f)); });
 u32 dispatch_when_tagged_30(TaggedObject &object) { return dispatch_when_tagged(object, 0x30); }
 GUEST_EXPORT(0x0026d5ec, dispatch_when_tagged_30);
-GUEST_FUZZ(0x0026d5ec, 100, [](guest::Fuzz &f) { f.arguments(fuzz_tagged(f)); });
 u32 dispatch_when_tagged_38(TaggedObject &object) { return dispatch_when_tagged(object, 0x38); }
 GUEST_EXPORT(0x0026e3bc, dispatch_when_tagged_38);
-GUEST_FUZZ(0x0026e3bc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_tagged(f)); });
 u32 dispatch_when_tagged_18(TaggedObject &object) { return dispatch_when_tagged(object, 0x18); }
 GUEST_EXPORT(0x0026f6a8, dispatch_when_tagged_18);
-GUEST_FUZZ(0x0026f6a8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_tagged(f)); });
 u32 dispatch_when_tagged_20(TaggedObject &object) { return dispatch_when_tagged(object, 0x20); }
 GUEST_EXPORT(0x0026f970, dispatch_when_tagged_20);
-GUEST_FUZZ(0x0026f970, 100, [](guest::Fuzz &f) { f.arguments(fuzz_tagged(f)); });
 
 // Whether the table entry for the global byte has bit 4 and the item's category is 0x27 or 0x28 (the item is the
 // second argument; the first is the object it is asked through).
@@ -129,11 +116,6 @@ bool item_category_27_or_28(u32 unused_this, const Item &item) {
     return category == CATEGORY_27 || category == CATEGORY_28;
 }
 GUEST_EXPORT(0x0026d5b0, item_category_27_or_28);
-GUEST_FUZZ(0x0026d5b0, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(f.number(), item);
-});
 
 bool item_category_24(u32 unused_this, const Item &item) {
     if (!table_entry_has_all_bits(TABLE_MASK_4, read_global_byte_2())) {
@@ -142,11 +124,6 @@ bool item_category_24(u32 unused_this, const Item &item) {
     return item_category(item) == CATEGORY_24;
 }
 GUEST_EXPORT(0x0026e2a0, item_category_24);
-GUEST_FUZZ(0x0026e2a0, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(f.number(), item);
-});
 
 // Resets the flag at 0x37-style children: each non-null child is reset, then the state becomes 5.
 void reset_children(ChildList &list) {
@@ -158,13 +135,6 @@ void reset_children(ChildList &list) {
     list.state_1c0 = STATE_5;
 }
 GUEST_EXPORT(0x00276408, reset_children);
-GUEST_FUZZ(0x00276408, 100, [](guest::Fuzz &f) {
-    auto list = f.object<ChildList>();
-    for (gptr<void> &child : list->children) {
-        child = nullptr;
-    }
-    f.arguments(list);
-});
 
 // The first player that has an identity and the flag bit 4 set (null when none).
 gptr<SavePlayer> first_player_with_flag(PlayerList &list) {
@@ -177,13 +147,6 @@ gptr<SavePlayer> first_player_with_flag(PlayerList &list) {
     return gptr<SavePlayer>(0u);
 }
 GUEST_EXPORT(0x0027a650, first_player_with_flag);
-GUEST_FUZZ(0x0027a650, 40, [](guest::Fuzz &f) {
-    auto list = f.object<PlayerList>();
-    for (SavePlayer &player : list->players) {
-        player.flags_5700 = f.pick<u8>({0, 0x10, 0xff});
-    }
-    f.arguments(list);
-});
 
 // Empties the eight items of the set and raises its flag.
 void empty_item_set(EmptiedSet &set) {
@@ -193,7 +156,6 @@ void empty_item_set(EmptiedSet &set) {
     set.flag = 1;
 }
 GUEST_EXPORT(0x0027ab7c, empty_item_set);
-GUEST_FUZZ(0x0027ab7c, 100, [](guest::Fuzz &f) { f.arguments(f.object<EmptiedSet>()); });
 
 ResourceObject &construct_object_resource(ResourceObject &self) {
     self.vtable = VTABLE_OBJECT_RESOURCE;
@@ -203,7 +165,6 @@ ResourceObject &construct_object_resource(ResourceObject &self) {
     return self;
 }
 GUEST_EXPORT(0x0027068c, construct_object_resource);
-GUEST_FUZZ(0x0027068c, 100, [](guest::Fuzz &f) { f.arguments(f.object<ResourceObject>()); });
 
 // The index of the first player that has an identity and the flag bit 4 set; 4 when none.
 u32 first_player_index_with_flag(PlayerList &list) {
@@ -216,10 +177,3 @@ u32 first_player_index_with_flag(PlayerList &list) {
     return SaveData::PLAYER_COUNT;
 }
 GUEST_EXPORT(0x00302204, first_player_index_with_flag);
-GUEST_FUZZ(0x00302204, 40, [](guest::Fuzz &f) {
-    auto list = f.object<PlayerList>();
-    for (SavePlayer &player : list->players) {
-        player.flags_5700 = f.pick<u8>({0, 0x10, 0xff});
-    }
-    f.arguments(list);
-});

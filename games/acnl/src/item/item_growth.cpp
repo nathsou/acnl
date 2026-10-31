@@ -37,9 +37,3 @@ bool grow_one_step(Item &item) {
     return (item.flags & STAGE_MASK) >= FINAL_STAGE;
 }
 GUEST_EXPORT(0x006baba4, grow_one_step);
-GUEST_FUZZ(0x006baba4, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({GROWING_NUMBER_A, GROWING_NUMBER_B, 0xb34d, 0x334f, f.number()}));
-    item->flags = u16(f.below(10) | f.below(10) << PROGRESS_SHIFT | (f.below(2) ? 0 : f.number() & 0xff00));
-    f.arguments(item);
-});

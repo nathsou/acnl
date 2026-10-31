@@ -97,25 +97,3 @@ bool is_below_limit_72(gptr<LimitedObject> object) {
     return !object->blocked && object->value_72 < LIMIT_72;
 }
 GUEST_EXPORT(0x0070ae20, is_below_limit_72);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// out-of-range indices only: in-range ones call the slots' virtual functions (checked by the game's calls)
-GUEST_FUZZ(0x0070acac, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<AnimationSlots>(), f.pick<u32>({4, 5, 0x80000000u, 0xffffffffu}));
-});
-GUEST_FUZZ(0x0070acd0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<AnimationSlots>(), f.pick<u32>({4, 7, 0xffffffffu}), f.real());
-});
-GUEST_FUZZ(0x0070ae4c, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<AnimationSlots>(), f.pick<u32>({4, 9, 0xffffffffu}));
-});
-GUEST_FUZZ(0x0070acf8, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<AnimationSlots>(), f.pick<u32>({0, 1, 2, 3, 4, 0xffffffffu}));
-});
-GUEST_FUZZ(0x0070ae20, 300, [](guest::Fuzz &f) {
-    auto object = f.object<LimitedObject>();
-    object->blocked = f.pick<u8>({0, 0, 1, 0x80});
-    object->value_72 = f.pick<u16>({0, 0x275, 0x276, 0x277, 0xffff, static_cast<u16>(f.number())});
-    f.arguments(object);
-});

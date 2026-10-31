@@ -13,7 +13,6 @@ inline constexpr guest::Function<0x00318960, u32(gptr<void> inner)> inner_kind;
 inline constexpr guest::Function<0x00303cdc, void(gptr<void> inner)> clear_inner;
 inline constexpr guest::Function<0x0027a48c, void(gptr<void> record)> reset_record_extra;
 
-
 constexpr u32 RECORD_A_KIND = 8;
 constexpr u32 RECORD_B_KIND = 7;
 
@@ -36,14 +35,12 @@ bool record_matches(SavedRecord &record, u32 kind, u32 expected_index) {
 
 // Reads the item number: the id without its flag bit.
 GUEST_EXPORT(0x0030b6b8, Item::number);
-GUEST_FUZZ(0x0030b6b8, 200, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });
 
 // Whether the main object reports nothing (its query returns 0).
 static bool main_object_idle() {
     return (*net_session)->station() == 0;
 }
 GUEST_EXPORT(0x0030b6c4, main_object_idle);
-GUEST_FUZZ(0x0030b6c4, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // Finds the value stored in one of the two saved records that matches the id; NONE_VALUE when neither does.
 static u32 lookup_record_value(gptr<SaveVillager> villagers, u32 id) {
@@ -62,12 +59,6 @@ static u32 lookup_record_value(gptr<SaveVillager> villagers, u32 id) {
     return SavedRecordInner::NONE_VALUE;
 }
 GUEST_EXPORT(0x0030b829, lookup_record_value);
-GUEST_FUZZ(0x0030b829, 200, [](guest::Fuzz &f) {
-    // the villagers' array of a scratch copy of the whole save data (the records follow it)
-    auto data = f.allocate(sizeof(SaveData)).cast<SaveData>();
-    f.bytes(data, sizeof(SaveData));
-    f.arguments(guest::addr_of(data->villagers[0]), f.below(24));
-});
 
 // Puts a record back to its "none" state.
 static void reset_record(SavedRecord &self) {
@@ -82,8 +73,3 @@ static void reset_record(SavedRecord &self) {
     self.unknown_24 = 0;
 }
 GUEST_EXPORT(0x0030b8bc, reset_record);
-GUEST_FUZZ(0x0030b8bc, 200, [](guest::Fuzz &f) {
-    auto p = f.allocate(0x200);
-    f.bytes(p, 0x200);
-    f.arguments(p.cast<SavedRecord>());
-});

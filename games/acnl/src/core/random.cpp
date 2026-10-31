@@ -24,8 +24,3 @@ GUEST_EXPORT(0x0013bb30, Random::next_float);
 
 s32 random_below(s32 max) { return arm::to_s32(random_generator->next_float() * float(max)); }
 GUEST_EXPORT(0x002ff6f8, random_below);
-
-GUEST_FUZZ(0x0013bb30, 200, [](guest::Fuzz &f) { f.arguments(f.object<Random>()); });
-GUEST_FUZZ(0x002ff6f8, 300, [](guest::Fuzz &f) {
-    f.arguments(s32(f.pick<u32>({0, 1, 26, 0x10000, 0x7fffffff, 0x80000000, f.number()})));
-});

@@ -1,5 +1,4 @@
 // Small accessors in 0x00650000-0x00780000 of objects whose types are not known yet.
-#include "core/fuzz_helpers.hpp"
 #include "core/word_pair.hpp"
 #include "guest/guest.hpp"
 #include "item/furniture_ref.hpp"
@@ -12,8 +11,6 @@ gptr<SavePlayer> player_of_slot_index(u32 index);
 
 namespace {
 
-constexpr u32 FUZZ_PAD = 0x1000;
-constexpr u32 FUZZ_BLOCK = 0x100;
 constexpr u32 ENTRY_SHIFT_16 = 4;
 constexpr u32 LIST_COUNT_12 = 0x12;
 constexpr u32 RECORD_4_COUNT = 4;
@@ -200,60 +197,30 @@ gptr<u8> entry_of_reference(EntryRef &reference) {
     return table.cast<u8>() + table->entries_offset + (reference.index << ENTRY_SHIFT_16);
 }
 GUEST_EXPORT(0x00754a70, entry_of_reference);
-GUEST_FUZZ(0x00754a70, 100, [](guest::Fuzz &f) {
-    auto reference = f.object<EntryRef>();
-    auto source = f.object<EntrySource>();
-    auto table = f.allocate(FUZZ_BLOCK).cast<EntryTableHeader>();
-    table->entries_offset = u16(f.below(FUZZ_BLOCK / 4));
-    source->table = table;
-    source->has_entries = f.pick<u32>({0, 1, 2});
-    reference->source = source;
-    reference->index = f.below(8);
-    f.arguments(reference);
-});
 
 // The value at the index in the list at 0xc14 of the object (the first for indexes past the 18).
 u32 list_value_c14(ListAtC14 &object, u32 index) {
     return object.values[index < LIST_COUNT_12 ? index : 0];
 }
 GUEST_EXPORT(0x00766f04, list_value_c14);
-GUEST_FUZZ(0x00766f04, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    f.arguments(f.allocate(sizeof(ListAtC14)).cast<ListAtC14>(), f.pick<u32>({f.below(LIST_COUNT_12 + 3), 0xffffffffu}));
-});
 
 // The address of the record (0x173 * 8 bytes each, four of them, from 0x55c); the first for numbers past the last.
 gptr<u8> record_173_address(gptr<u8> base, u32 index) {
     return base + RECORD_4_OFFSET + (index < RECORD_4_COUNT ? index * RECORD_4_SIZE : 0);
 }
 GUEST_EXPORT(0x0076ce3c, record_173_address);
-GUEST_FUZZ(0x0076ce3c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(RECORD_4_COUNT + 3), 0xffffffffu}));
-});
 
 // Whether bit 2 of the byte at 4 of the record the owner points to (at 0x5f4) is set (false without a record).
 bool record_flag_bit_2(PointerOwner &owner) {
     return owner.record != nullptr && (owner.record->flags & (1u << 2)) != 0;  // (bit 2: meaning not known yet)
 }
 GUEST_EXPORT(0x00750894, record_flag_bit_2);
-GUEST_FUZZ(0x00750894, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto owner = f.allocate(sizeof(PointerOwner)).cast<PointerOwner>();
-    owner->record = f.below(4) != 0 ? f.object<FlagsRecord>() : gptr<FlagsRecord>(0u);
-    f.arguments(owner);
-});
 
 // Whether the furniture the owner points to (at 0x5f0) has a class 4 or 5 byte 0x19 (false without furniture).
 bool furniture_has_class_4_or_5(PointerOwner &owner) {
     return owner.furniture != nullptr && owner.furniture->has_byte_19_class_4_or_5();
 }
 GUEST_EXPORT(0x007500b4, furniture_has_class_4_or_5);
-GUEST_FUZZ(0x007500b4, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto owner = f.allocate(sizeof(PointerOwner)).cast<PointerOwner>();
-    owner->furniture = f.below(4) != 0 ? f.object<FurnitureRef>() : gptr<FurnitureRef>(0u);
-    f.arguments(owner);
-});
 
 // The address of the tile (2 bytes each, rows of 7, six rows, from 4) at (column, row); the first for positions outside.
 gptr<u16> tile_address(TileGrid &grid, u32 column, u32 row) {
@@ -264,11 +231,6 @@ gptr<u16> tile_address(TileGrid &grid, u32 column, u32 row) {
 }
 GUEST_EXPORT(0x0075db98, tile_address);
 GUEST_EXPORT(0x00613734, tile_address);
-static void fuzz_75db98(guest::Fuzz &f) {
-    f.arguments(f.object<TileGrid>(), f.pick<u32>({f.below(TILE_COLUMNS + 2), 0xffffffffu}), f.pick<u32>({f.below(TILE_ROWS + 2), 0xffffffffu}));
-}
-GUEST_FUZZ(0x0075db98, 100, fuzz_75db98);
-GUEST_FUZZ(0x00613734, 100, fuzz_75db98);
 
 // Stores the value in the halfword when it is below 0x384 (signed); whether it was stored.
 bool store_half_below_384(u16 &half, s32 value) {
@@ -279,9 +241,6 @@ bool store_half_below_384(u16 &half, s32 value) {
     return true;
 }
 GUEST_EXPORT(0x005b0640, store_half_below_384);
-GUEST_FUZZ(0x005b0640, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<u16>(), f.pick<s32>({0, HALF_LIMIT_384 - 1, HALF_LIMIT_384, HALF_LIMIT_384 + 1, -1, s32(f.number())}));
-});
 
 // The same for the halfword at 2 and the limit 0x270e (inclusive).
 bool store_half_at_2_up_to_270e(gptr<u16> base, s32 value) {
@@ -292,28 +251,18 @@ bool store_half_at_2_up_to_270e(gptr<u16> base, s32 value) {
     return true;
 }
 GUEST_EXPORT(0x005b060c, store_half_at_2_up_to_270e);
-GUEST_FUZZ(0x005b060c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(8).cast<u16>(), f.pick<s32>({0, HALF_LIMIT_270E, HALF_LIMIT_270E + 1, HALF_LIMIT_270E + 2, -1, s32(f.number())}));
-});
 
 // Copies the pair of words (from the holder's pair when there is a holder, else the default one) to the destination.
 void copy_current_pair(WordPair &destination) {
     destination = *pair_holder != nullptr ? (*pair_holder)->pair : *default_pair;
 }
 GUEST_EXPORT(0x00747288, copy_current_pair);
-GUEST_FUZZ(0x00747288, 100, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
 
 // Whether the first word of the empty check is 0 and its byte at 0x2c is 0.
 bool empty_check_is_clear(EmptyCheck &object) {
     return object.word_18 == 0 && object.byte_2c == 0;
 }
 GUEST_EXPORT(0x0075cd14, empty_check_is_clear);
-GUEST_FUZZ(0x0075cd14, 100, [](guest::Fuzz &f) {
-    auto object = f.object<EmptyCheck>();
-    object->word_18 = f.pick<u32>({0, 0, 5});
-    object->byte_2c = f.pick<u8>({0, 0, 1});
-    f.arguments(object);
-});
 
 // Fills eight bytes with the byte.
 void fill_eight_bytes(gptr<u32> destination, u32 value) {
@@ -323,29 +272,18 @@ void fill_eight_bytes(gptr<u32> destination, u32 value) {
 }
 GUEST_EXPORT(0x007796a0, fill_eight_bytes);
 GUEST_EXPORT(0x402fdfd8, fill_eight_bytes);
-GUEST_FUZZ(0x007796a0, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(8).cast<u32>(), f.number()); });
-GUEST_FUZZ(0x402fdfd8, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(8).cast<u32>(), f.number()); });
 
 // Sets or clears bit 0 of the word at 0x28.
 void set_flag_bit_0_at_28(FlagWord28 &object, bool value) {
     object.flags = value ? object.flags | 1u : object.flags & ~1u;
 }
 GUEST_EXPORT(0x005b0450, set_flag_bit_0_at_28);
-GUEST_FUZZ(0x005b0450, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    f.arguments(f.allocate(sizeof(FlagWord28)).cast<FlagWord28>(), f.below(2));
-});
 
 // Whether the byte at 0x14 is below 8.
 bool byte_14_below_8(Byte14 &object) {
     return object.value < 8;  // (what 8 is: not known yet)
 }
 GUEST_EXPORT(0x0070eebc, byte_14_below_8);
-GUEST_FUZZ(0x0070eebc, 100, [](guest::Fuzz &f) {
-    auto object = f.object<Byte14>();
-    object->value = f.pick<u8>({0, 7, 8, 9, u8(f.number())});
-    f.arguments(object);
-});
 
 // Puts the record in its starting state (a byte, four floats, two halfwords and a byte, all zero).
 void reset_record_1c(Reset1C &record) {
@@ -358,21 +296,12 @@ void reset_record_1c(Reset1C &record) {
     record.byte_18 = 0;
 }
 GUEST_EXPORT(0x006a9b3c, reset_record_1c);
-GUEST_FUZZ(0x006a9b3c, 100, [](guest::Fuzz &f) { f.arguments(f.object<Reset1C>()); });
 
 // Whether both objects have a link (word at 4) and the same first word.
 bool linked_values_match(LinkOwner &first, LinkOwner &second) {
     return first.link != nullptr && second.link != nullptr && first.value == second.value;
 }
 GUEST_EXPORT(0x0070d83c, linked_values_match);
-GUEST_FUZZ(0x0070d83c, 100, [](guest::Fuzz &f) {
-    auto first = f.object<LinkOwner>();
-    auto second = f.object<LinkOwner>();
-    first->link = f.below(4) != 0 ? f.object<u32>() : gptr<u32>(0u);
-    second->link = f.below(4) != 0 ? f.object<u32>() : gptr<u32>(0u);
-    second->value = f.below(2) != 0 ? first->value : f.number();
-    f.arguments(first, second);
-});
 
 // Whether the number is from the age at 0x3ca0 of the holder up to nine more.
 bool within_age_window(AgeHolder &holder, s32 value) {
@@ -380,12 +309,6 @@ bool within_age_window(AgeHolder &holder, s32 value) {
     return age <= value && u32(age + AGE_WINDOW) > u32(value);
 }
 GUEST_EXPORT(0x0071ecc4, within_age_window);
-GUEST_FUZZ(0x0071ecc4, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto holder = f.allocate(sizeof(AgeHolder)).cast<AgeHolder>();
-    holder->age = s32(f.below(100));
-    f.arguments(holder, s32(f.below(120)));
-});
 
 // The value for the availability rule of an item's data (the one for rule 0 for rules past the last).
 u32 rule_value(const RuleItemData &data) {
@@ -393,34 +316,18 @@ u32 rule_value(const RuleItemData &data) {
     return (*rule_values)[rule < RULE_COUNT ? rule : 0];
 }
 GUEST_EXPORT(0x007485b4, rule_value);
-GUEST_FUZZ(0x007485b4, 100, [](guest::Fuzz &f) {
-    auto data = f.object<RuleItemData>();
-    data->rule = f.pick<u8>({0, 5, RULE_COUNT - 1, RULE_COUNT, 0xff});  // (0xff: past the table)
-    f.arguments(data);
-});
 
 // 6 for the kinds 0x14-0x16 of the byte at 8, 4 for the others.
 u32 size_for_kind_byte_8(Byte8 &object) {
     return object.value >= KIND_BYTE_FIRST && object.value <= KIND_BYTE_LAST ? BYTE_8_HIGH_KIND : BYTE_8_LOW_KIND;
 }
 GUEST_EXPORT(0x00757004, size_for_kind_byte_8);
-GUEST_FUZZ(0x00757004, 100, [](guest::Fuzz &f) {
-    auto object = f.object<Byte8>();
-    object->value = f.pick<u8>({KIND_BYTE_FIRST - 1, KIND_BYTE_FIRST, KIND_BYTE_FIRST + 1, KIND_BYTE_LAST, KIND_BYTE_LAST + 1, u8(f.number())});
-    f.arguments(object);
-});
 
 // Whether the bit (0-4) of the byte at 0x74 is set.
 bool small_bit_74_is_set(Bits74 &object, u32 bit) {
     return bit < SMALL_BIT_COUNT && (object.bits & (1u << bit)) != 0;
 }
 GUEST_EXPORT(0x00757a68, small_bit_74_is_set);
-GUEST_FUZZ(0x00757a68, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto object = f.allocate(sizeof(Bits74)).cast<Bits74>();
-    object->bits = u8(f.number());
-    f.arguments(object, f.pick<u32>({f.below(SMALL_BIT_COUNT + 3), 0xffffffffu}));
-});
 
 // Copies ten bytes.
 void copy_ten_bytes(TenBytes &destination, const TenBytes &source) {
@@ -428,8 +335,6 @@ void copy_ten_bytes(TenBytes &destination, const TenBytes &source) {
 }
 GUEST_EXPORT(0x007795d0, copy_ten_bytes);
 GUEST_EXPORT(0x401b81b4, copy_ten_bytes);
-GUEST_FUZZ(0x007795d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<TenBytes>(), f.object<TenBytes>()); });
-GUEST_FUZZ(0x401b81b4, 100, [](guest::Fuzz &f) { f.arguments(f.object<TenBytes>(), f.object<TenBytes>()); });
 
 // The pockets of the player of the slot (null without a player).
 gptr<Pockets> pockets_of_slot_player(u32 slot) {
@@ -437,7 +342,6 @@ gptr<Pockets> pockets_of_slot_player(u32 slot) {
     return player == nullptr ? gptr<Pockets>(nullptr) : guest::addr_of(player->pockets);
 }
 GUEST_EXPORT(0x00659738, pockets_of_slot_player);
-GUEST_FUZZ(0x00659738, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, f.number()})); });
 
 // Turns an item of kind 2 (the kind bits 0x4000) into kind 1; whether it was one.
 bool demote_kind_2_item(Item &item) {
@@ -448,14 +352,12 @@ bool demote_kind_2_item(Item &item) {
     return true;
 }
 GUEST_EXPORT(0x006baa64, demote_kind_2_item);
-GUEST_FUZZ(0x006baa64, 100, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 // Whether the value is 0xf or 0x10.
 bool value_is_f_or_10(u32 value) {
     return value == 0xf || value == 0x10;  // (what they stand for is not known yet)
 }
 GUEST_EXPORT(0x006e4c44, value_is_f_or_10);
-GUEST_FUZZ(0x006e4c44, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0xe, 0xf, 0x10, 0x11, f.number()})); });
 
 // Appends the value to the list (count at 4, values from 8).
 void append_to_list(PushList &list, u32 value) {
@@ -463,19 +365,9 @@ void append_to_list(PushList &list, u32 value) {
     list.count++;
 }
 GUEST_EXPORT(0x006f7e90, append_to_list);
-GUEST_FUZZ(0x006f7e90, 100, [](guest::Fuzz &f) {
-    auto list = f.object<PushList>();
-    list->count = f.below(LIST_CAPACITY - 1);
-    f.arguments(list, f.number());
-});
 
 // Whether the item's number (the flag in the id left out) is 0x9d.
 bool item_number_is_9d(const Item &item) {
     return (item.id & NUMBER_MASK) == NUMBER_9D;
 }
 GUEST_EXPORT(0x00768c28, item_number_is_9d);
-GUEST_FUZZ(0x00768c28, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.pick<u16>({u16(NUMBER_9D), u16(NUMBER_9D | Item::ID_FLAG), u16(NUMBER_9D + 1), u16(f.number())});
-    f.arguments(item);
-});

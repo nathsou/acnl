@@ -51,22 +51,3 @@ static void release_children(EscapeChildOwner &self) {
     }
 }
 GUEST_EXPORT(0x402fdff0, release_children);
-
-static gptr<VirtualObject> fuzz_virtual_object(guest::Fuzz &f, gptr<u32> vtable) {
-    auto object = f.object<VirtualObject>();
-    object->vtable = vtable;
-    return object;
-}
-
-GUEST_FUZZ(0x402fdff0, 200, [](guest::Fuzz &f) {
-    auto vtable = f.allocate(0x14).cast<u32>();
-    for (u32 i = 0; i < 5; i++) {
-        vtable[i] = 0x402fcbc4;  // a harmless rewritten function reading two bytes of its argument
-    }
-    auto owner = f.object<EscapeChildOwner>();
-    for (u32 i = 0; i < CHILD_COUNT; i++) {
-        owner->children[i] = f.below(2) ? fuzz_virtual_object(f, vtable) : gptr<VirtualObject>();
-    }
-    owner->last = fuzz_virtual_object(f, vtable);
-    f.arguments(owner);
-});

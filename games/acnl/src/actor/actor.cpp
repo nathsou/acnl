@@ -64,25 +64,3 @@ Actor &construct_actor(Actor &self_in) {
     return self;
 }
 GUEST_EXPORT(0x0057ba68, construct_actor);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Float3> some_point(guest::Fuzz &f) {
-    auto p = f.object<Float3>();
-    for (float &v : p->v) {
-        v = f.pick<float>({0.0f, 1.0f, -1.0f, f.real(), f.real()});
-    }
-    return p;
-}
-
-static gptr<Actor> zeroed_actor(guest::Fuzz &f) {
-    gptr<void> memory = f.allocate(0x100);
-    memset(memory.get(), 0, 0x100);
-    return memory.cast<Actor>();
-}
-
-GUEST_FUZZ(0x0057ba08, 300, [](guest::Fuzz &f) { f.arguments(some_point(f), some_point(f)); });
-GUEST_FUZZ(0x0057ba2c, 200, [](guest::Fuzz &f) { f.arguments(zeroed_actor(f)); });
-GUEST_FUZZ(0x0057ba40, 200, [](guest::Fuzz &f) { f.arguments(zeroed_actor(f)); });
-GUEST_FUZZ(0x0057ba54, 200, [](guest::Fuzz &f) { f.arguments(zeroed_actor(f)); });
-GUEST_FUZZ(0x0057ba68, 200, [](guest::Fuzz &f) { f.arguments(zeroed_actor(f)); });

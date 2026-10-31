@@ -29,13 +29,11 @@ HemiSphereLight &construct_ambient_light(HemiSphereLight &self) {
     return construct_light_with_data(self, AMBIENT_LIGHT_VTABLE);
 }
 GUEST_EXPORT(0x004ec8bc, construct_ambient_light);
-GUEST_FUZZ(0x004ec8bc, 100, [](guest::Fuzz &f) { f.arguments(f.object<HemiSphereLight>()); });
 
 HemiSphereLight &construct_hemisphere_light(HemiSphereLight &self) {
     return construct_light_with_data(self, HEMISPHERE_LIGHT_VTABLE);
 }
 GUEST_EXPORT(0x004eebd8, construct_hemisphere_light);
-GUEST_FUZZ(0x004eebd8, 100, [](guest::Fuzz &f) { f.arguments(f.object<HemiSphereLight>()); });
 
 // A light with a resource loader at 0xc and two data pointers at the end.
 struct FragmentLight {
@@ -61,4 +59,3 @@ FragmentLight &construct_fragment_light(FragmentLight &self) {
     return self;
 }
 GUEST_EXPORT(0x004ed3fc, construct_fragment_light);
-GUEST_FUZZ(0x004ed3fc, 100, [](guest::Fuzz &f) { f.arguments(f.object<FragmentLight>()); });

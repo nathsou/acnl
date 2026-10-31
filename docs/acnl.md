@@ -21,37 +21,20 @@ rewrite recompiles only the generated files that contain the originals (seconds)
 - **Field users** (`tools/offsets.py`): which functions compute a given struct offset; the pockets (player
   + 0x6bd0): code computing that offset appears in 324 functions; the wallet (+0x6f08) in 14.
 
-## The first rewritten functions (24, all verified)
+## Structures known so far
 
-| Area | Functions | Source |
-|---|---|---|
-| Random numbers: the global LCG and `random_below` | 2 | `core/random.*` |
-| Scrambled amounts (`EncryptedInt`, the save editors' "EncryptedInt32"): get, set, add with a cap, subtract | 4 | `core/encrypted_int.*` |
-| Items: empty/range/number tests, index, data entry, category and its tables, price, constructor, copies | 14 | `item/item.*` |
-| Pockets: find an empty slot, total bells (wallet + bags), paying | 3 | `save/pockets.*` |
-| The bank: deposit | 1 | `save/player.*` |
+`SavePlayer` (bank at 0x6b8c, an unnamed counter at 0x6b9c, pockets at 0x6bd0, wallet at 0x6f08), `Pockets` (16
+items, 16 lock flags, wallet at +0x338), `Item` (id + flags; kinds by id range; 0x7FFE empty), `ItemData` (30 bytes,
+category at +0xa), bell bags 0x20AC-0x2117 (100 to 99,000 bells).
 
-Each has 400-2,000 shadow checks in the intro (when play reaches it) and 100-400 fuzzed inputs; mutation tests
-confirmed that the fuzzing covers the hard paths (corrupted rotations in `EncryptedInt::get`; the bag-melting path
-of `Pockets::pay`, hit by 110 of 300 inputs).
-
-Structures known so far: `SavePlayer` (bank at 0x6b8c, an unnamed counter at 0x6b9c, pockets at 0x6bd0, wallet at
-0x6f08), `Pockets` (16 items, 16 lock flags, wallet at +0x338), `Item` (id + flags; kinds by id range; 0x7FFE
-empty), `ItemData` (30 bytes, category at +0xa), bell bags 0x20AC-0x2117 (100 to 99,000 bells).
-
-## Differences from the pilot
-
-- The shadow checker protects the linear heap too (some objects, such as other `Random` instances, live there);
-  host threads write there all the time, so a fault from another thread is handled even between runs.
-- ARM C++ ABI details the glue now covers: references (`const Item &` arguments, `Item &` results, which is how
-  constructors return `this`), pointers to member functions (`guest::call_member`, used by the item constructor's
-  per-kind initializers).
-- Rewrites that read data the game did not write itself (save files) must reproduce ARM's behaviour exactly:
-  `arm::rotate_left` is RVCT's 64-bit shift as the game uses it, valid for any amount.
+ARM C++ ABI details the glue covers: references (`const Item &` arguments, `Item &` results, which is how
+constructors return `this`), pointers to member functions (`guest::call_member`). Rewrites that read data the game
+did not write itself (save files) must reproduce ARM's behaviour exactly: `arm::rotate_left` is RVCT's 64-bit shift as
+the game uses it, valid for any amount.
 
 ## Game logic in readable form (the parts mods want)
 
-Everything here is verified against the original by shadow checks and fuzzing; entry points for mods:
+Entry points for mods (hand-written, checked against the original by running both):
 
 | Topic | Where | What it gives |
 |---|---|---|
@@ -71,9 +54,6 @@ Everything here is verified against the original by shadow checks and fuzzing; e
 
 ## Next
 
-- `current_player` (0x2fb94c, 458 callers) and the global objects behind it: entry points for mods.
-- The money counters on the HUD (0x1ad494 switches between the wallet, wallet + bags, the 0x6b9c counter and
-  the counter at 0x8d1c).
-- Per-player counters (0x24b448 with 0x7159b0): bells earned, items bought and so on.
-- A longer test script (reaching the town, Nook's, the post office) so that more rewrites get real-play checks,
-  not only fuzzing.
+The decompiler takes over from here (docs/decomp.md). Topics worth naming first, since their names spread:
+`current_player` (0x2fb94c, 458 callers) and the global objects behind it; the money counters on the HUD (0x1ad494);
+the per-player counters (0x24b448 with 0x7159b0: bells earned, items bought and so on).

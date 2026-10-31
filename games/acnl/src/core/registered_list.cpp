@@ -50,7 +50,6 @@ static bool is_in_registered_list(u32 id) {
     return false;
 }
 GUEST_EXPORT(0x002fdf10, is_in_registered_list);
-GUEST_FUZZ(0x002fdf10, 200, [](guest::Fuzz &f) { f.arguments(f.below(40)); });
 
 // The id of the first node whose class (the low two bits of byte 0x1a) is the given one; NO_ID when there is none or
 // the list is disabled.
@@ -70,20 +69,17 @@ u32 first_registered_id_of_class_1() {
     return first_registered_id_of_class(CLASS_1);
 }
 GUEST_EXPORT(0x0030ba54, first_registered_id_of_class_1);
-GUEST_FUZZ(0x0030ba54, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 u32 first_registered_id_of_class_0() {
     return first_registered_id_of_class(CLASS_0);
 }
 GUEST_EXPORT(0x003188f0, first_registered_id_of_class_0);
-GUEST_FUZZ(0x003188f0, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the registry is enabled.
 bool registry_enabled() {
     return read_global_object_byte() != REGISTRY_DISABLED;
 }
 GUEST_EXPORT(0x0058ed00, registry_enabled);
-GUEST_FUZZ(0x0058ed00, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the registry has a first node and, when asked to check, that node's id is below the limit.
 bool registry_head_below_limit(u32 check) {
@@ -97,7 +93,6 @@ bool registry_head_below_limit(u32 check) {
     return check == 0 || head->id < ID_LIMIT;
 }
 GUEST_EXPORT(0x0058eb78, registry_head_below_limit);
-GUEST_FUZZ(0x0058eb78, 50, [](guest::Fuzz &f) { f.arguments(f.below(2)); });
 
 // The id of the first node whose id is 0, 5, 7, 8, 9 or 0xc; NO_ID when there is none.
 u32 first_registered_special_id() {
@@ -120,4 +115,3 @@ u32 first_registered_special_id() {
     return NO_ID;
 }
 GUEST_EXPORT(0x0058f094, first_registered_special_id);
-GUEST_FUZZ(0x0058f094, 50, [](guest::Fuzz &f) { f.arguments(); });

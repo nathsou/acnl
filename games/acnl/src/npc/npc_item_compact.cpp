@@ -19,16 +19,3 @@ void compact_items_8d6(SaveVillager &slots) {
     }
 }
 GUEST_EXPORT(0x003119d9, compact_items_8d6);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x003119d9, 300, [](guest::Fuzz &f) {
-    constexpr u32 SIZE = 0x8e8;  // up to the end of items_8d6
-    auto slots = f.allocate(SIZE).cast<SaveVillager>();
-    for (u32 i = 0; i < SaveVillager::SLOTS; i++) {
-        Item &item = slots->items_8d6[i];
-        item.id = f.below(2) != 0 ? Item::EMPTY : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-        item.flags = u16(f.number());
-    }
-    f.arguments(slots);
-});

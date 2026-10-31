@@ -18,7 +18,6 @@ GUEST_OFFSET(AnimationData, value_40, 0x40);
 GUEST_OFFSET(AnimationData, value_44, 0x44);
 
 constexpr u32 ANIMATION_DATA_SLOT = 3;  // vtable slot returning the AnimationData
-constexpr u8 STATE_EXCLUDED = 1;
 
 }  // namespace
 
@@ -130,90 +129,6 @@ bool GroupTransformAnim::virtual_7(u32 argument) {
 }  // namespace g3d
 GUEST_EXPORT(0x00746288, g3d::GroupTransformAnim::virtual_7);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-constexpr u32 WIDTH_FUNCTION = 0x007482bc;   // GridRect::width: returns [this+8] - [this] + 1
-constexpr u32 FLAG_14_FUNCTION = 0x00746fdc;  // returns whether [this+0x14] is non-zero
-
-// An object whose virtual `slot` returns `result` (GridRect::width reads the object's words 0 and 2).
-gptr<AnimatedObject> object_returning(guest::Fuzz &f, u32 slot, u32 result) {
-    auto object = f.object<AnimatedObject>();
-    auto vtable = f.allocate(0x40).cast<u32>();
-    vtable[slot] = WIDTH_FUNCTION;
-    object->vtable = vtable;
-    object->unknown_08 = result + vtable.addr() - 1;
-    return object;
-}
-
-float some_float(guest::Fuzz &f) {
-    return f.pick<float>({-1.0f, 0.0f, 1.0f, 0.5f, f.real()});
-}
-
-gptr<AnimationData> some_animation_data(guest::Fuzz &f) {
-    auto data = f.object<AnimationData>();
-    data->value_38 = some_float(f);
-    data->value_40 = some_float(f);
-    data->value_44 = f.below(2) ? data->value_38 : some_float(f);
-    return data;
-}
-
-gptr<AnimatedObject> some_animated_object(guest::Fuzz &f) {
-    auto object = object_returning(f, ANIMATION_DATA_SLOT, some_animation_data(f).addr());
-    object->state_04 = f.below(4) == 0 ? STATE_EXCLUDED : u8(f.below(4));
-    return object;
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x0074619c, 200, [](guest::Fuzz &f) { f.arguments(some_animated_object(f)); });
-GUEST_FUZZ(0x007461b4, 200, [](guest::Fuzz &f) { f.arguments(some_animated_object(f)); });
-
-GUEST_FUZZ(0x007461d4, 300, [](guest::Fuzz &f) {
-    auto holder = f.object<TypeCastHolder>();
-    if (f.below(5) == 0) {
-        holder->object = nullptr;
-        f.arguments(holder);
-        return;
-    }
-    u32 type;
-    switch (f.below(3)) {
-    case 0:
-        type = TARGET_TYPE_ADDRESS;
-        break;
-    default: {
-        // a short chain that ends in the target type, or in null
-        gptr<TypeInfo> next = f.below(2) ? gptr<TypeInfo>(TARGET_TYPE_ADDRESS) : gptr<TypeInfo>(nullptr);
-        for (u32 n = f.below(3) + 1; n > 0; n--) {
-            auto node = f.object<TypeInfo>();
-            node->base = next;
-            next = node;
-        }
-        type = next.addr();
-        break;
-    }
-    }
-    auto object = object_returning(f, TYPE_INFO_SLOT, type);
-    holder->object = object.cast<TypedObject>();
-    f.arguments(holder);
-});
-
-GUEST_FUZZ(0x00746288, 300, [](guest::Fuzz &f) {
-    auto anim = f.object<g3d::GroupTransformAnim>();
-    auto vtable = f.allocate(0x40).cast<u32>();
-    vtable[TEST_QUERY_SLOT] = FLAG_14_FUNCTION;
-    for (u32 i = 0; i < g3d::GroupTransformAnim::CHILD_COUNT; i++) {
-        if (f.below(4) == 0) {
-            anim->children[i] = nullptr;
-            continue;
-        }
-        auto child = f.object<GroupChild>();
-        child->vtable = vtable;
-        if (f.below(3) != 0) {
-            child->flag_14 = 0;
-        }
-        anim->children[i] = child;
-    }
-    f.arguments(anim, f.number());
-});

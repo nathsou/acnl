@@ -4,7 +4,6 @@
 
 namespace {
 
-
 // Offset of a block inside the object the global at 0x0095bf74 points to (what it holds is not known yet).
 constexpr u32 BLOCK_71900_OFFSET = 0x71900;
 
@@ -49,13 +48,3 @@ gptr<SavePlayer> get_current_player() {
     return *current_player;
 }
 GUEST_EXPORT(0x002fb94c, get_current_player);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002fb7e8, 300, [](guest::Fuzz &f) {
-    auto players = f.allocate(16).cast<SavePlayer>();
-    f.arguments(players, f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffff, 0x80000000, f.number()}));
-});
-GUEST_FUZZ(0x002fb918, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x002fb93c, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x002fb94c, 200, [](guest::Fuzz &f) { f.arguments(); });

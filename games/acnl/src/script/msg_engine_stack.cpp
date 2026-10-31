@@ -153,72 +153,8 @@ MsgEngine &construct_seq_engine(MsgEngine &self) {
 }
 GUEST_EXPORT(0x00601bc0, construct_seq_engine);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-// A vtable whose first 8 slots all point at EncryptedInt::get (a harmless read-only function).
-guest::gptr<u32> harmless_vtable(guest::Fuzz &f) {
-    auto vtable = f.allocate(8 * 4).cast<u32>();
-    for (u32 i = 0; i < 8; i++) {
-        vtable[i] = 0x00303660;
-    }
-    return vtable;
-}
-
-guest::gptr<MsgEngine> some_engine(guest::Fuzz &f) {
-    auto engine = f.object<MsgEngine>();
-    engine->entry_count = f.below(MsgEngine::ENTRY_COUNT + 1);
-    engine->vtable = harmless_vtable(f).addr();
-    return engine;
-}
-
-guest::gptr<u32> some_word(guest::Fuzz &f) {
-    auto word = f.object<u32>();
-    if (f.below(3) == 0) {
-        *word = 0;
-    }
-    return word;
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x0060177c, 300, [](guest::Fuzz &f) {
-    f.arguments(some_engine(f), some_word(f), some_word(f));
-});
-GUEST_FUZZ(0x006017d0, 300, [](guest::Fuzz &f) {
-    auto engine = some_engine(f);
-    auto object = f.object<EncryptedInt>();
-    object->scrambled = harmless_vtable(f).addr();
-    if (f.below(4) != 0) {
-        object->checksum = EncryptedInt::checksum_of(object->scrambled);
-    }
-    object->rotation %= EncryptedInt::ROTATIONS;
-    f.arguments(engine, object.cast<hobj::VirtualObject>());
-});
-GUEST_FUZZ(0x0060184c, 200, [](guest::Fuzz &f) {
-    auto engine = some_engine(f);
-    auto end = f.object<u32>();
-    switch (f.below(3)) {
-    case 0:
-        engine->unknown_04 = 0;
-        break;
-    case 1:
-        *end = engine->unknown_04 | 1;
-        engine->unknown_04 |= 1;
-        break;
-    default:
-        // virtual 4 (EncryptedInt::get on the engine) fails its checksum and returns 0
-        engine->unknown_04 = (engine->unknown_04 & 0x00ffffff) |
-                             (u32(u8(EncryptedInt::checksum_of(engine->vtable) + 1)) << 24);
-        *end = engine->unknown_04 + 2;
-        break;
-    }
-    f.arguments(engine, end);
-});
-GUEST_FUZZ(0x006019b0, 300, [](guest::Fuzz &f) {
-    f.arguments(some_engine(f), some_word(f), some_word(f));
-});
-GUEST_FUZZ(0x00601bc0, 200, [](guest::Fuzz &f) { f.arguments(f.object<MsgEngine>()); });
 
 }  // namespace script

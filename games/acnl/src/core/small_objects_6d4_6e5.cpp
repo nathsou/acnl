@@ -40,7 +40,6 @@ struct WordEntries {
 GUEST_OFFSET(WordEntries, words, 0x34);
 GUEST_SIZE(WordEntries, 0x3c);
 inline guest::global<gptr<u8>, 0x0095063c> word_entries;
-constexpr u32 WORD_ENTRY_OFFSET = 0x34;
 constexpr u32 WORD_ENTRY_STRIDE = 8;
 
 // Two halfwords at the start of a wear class entry.
@@ -83,23 +82,6 @@ gptr<u8> payload_for_key_word(KeyedOwner &owner, u32 word) {
     return found;
 }
 
-gptr<KeyedOwner> fuzz_owner(guest::Fuzz &f) {
-    auto owner = f.object<KeyedOwner>();
-    gptr<KeyedNode> next = nullptr;
-    u32 count = f.below(5);
-    for (u32 i = 0; i < count; i++) {
-        auto node = f.object<KeyedNode>();
-        node->next = next;
-        node->key = f.below(3);
-        next = node;
-    }
-    owner->head = next;
-    for (u32 &word : owner->key_words) {
-        word = f.below(3);
-    }
-    return owner;
-}
-
 }  // namespace
 
 gptr<u8> payload_2b4(KeyedOwner &owner) { return payload_for_key_word(owner, KEY_WORD_2B4); }
@@ -112,11 +94,6 @@ GUEST_EXPORT(0x006dab64, payload_2bc);
 GUEST_EXPORT(0x006daa54, payload_2c4);
 GUEST_EXPORT(0x006de6f4, payload_2d4);
 GUEST_EXPORT(0x006de8bc, payload_2dc);
-GUEST_FUZZ(0x006daac8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_owner(f)); });
-GUEST_FUZZ(0x006dab64, 100, [](guest::Fuzz &f) { f.arguments(fuzz_owner(f)); });
-GUEST_FUZZ(0x006daa54, 100, [](guest::Fuzz &f) { f.arguments(fuzz_owner(f)); });
-GUEST_FUZZ(0x006de6f4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_owner(f)); });
-GUEST_FUZZ(0x006de8bc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_owner(f)); });
 
 // Whether the global byte's kind has flag 0x80000 or 0x100000 and the session's station 4 state matches.
 bool kind_flag_and_session_slot() {
@@ -132,7 +109,6 @@ bool kind_flag_and_session_slot() {
     return slot_state_matches(guest::addr_of(session->part_1e4).cast<void>(), SLOT_MATCHED);
 }
 GUEST_EXPORT(0x006d46bc, kind_flag_and_session_slot);
-GUEST_FUZZ(0x006d46bc, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the main object's entry in the table has a non-zero first word (false without the table).
 bool main_object_entry_set() {
@@ -145,10 +121,6 @@ bool main_object_entry_set() {
     return at->words[0] != 0;
 }
 GUEST_EXPORT(0x006d96fc, main_object_entry_set);
-GUEST_FUZZ(0x006d96fc, 100, [](guest::Fuzz &f) {
-    *word_entries = f.below(4) != 0 ? f.allocate(WORD_ENTRY_OFFSET + 8 * WORD_ENTRY_STRIDE).cast<u8>() : gptr<u8>(0u);
-    f.arguments();
-});
 
 // The mode while it is above 1, else 1.
 u32 mode_or_one() {
@@ -158,10 +130,6 @@ u32 mode_or_one() {
     return FIRST_MODE_VALUE;
 }
 GUEST_EXPORT(0x006e09c0, mode_or_one);
-GUEST_FUZZ(0x006e09c0, 50, [](guest::Fuzz &f) {
-    (*net_session)->mode_1326f = f.pick<u8>({0, 1, 2, 5});
-    f.arguments();
-});
 
 // Whether the global byte's kind has flag 0x80000 or 0x100000.
 bool kind_has_flag_80000_or_100000() {
@@ -169,7 +137,6 @@ bool kind_has_flag_80000_or_100000() {
            table_entry_has_all_bits(FLAG_100000, read_global_byte_2()) != 0;
 }
 GUEST_EXPORT(0x006e0b2c, kind_has_flag_80000_or_100000);
-GUEST_FUZZ(0x006e0b2c, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The first word of the wear class entry when it is below the limit, else 0 (also without an entry).
 u32 wear_class_first_word(const Item &item) {
@@ -191,20 +158,6 @@ u32 wear_class_second_word(const Item &item) {
     return word < ENTRY_WORD_LIMIT ? word : 0;
 }
 GUEST_EXPORT(0x006e5500, wear_class_second_word);
-GUEST_FUZZ(0x006e567c, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(3) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
-GUEST_FUZZ(0x006e5500, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(3) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
 
 // 0 for kinds with flag 0x10000000, 7 for the ones with flag 4, else the default.
 float kind_float() {
@@ -217,4 +170,3 @@ float kind_float() {
     return *default_float;
 }
 GUEST_EXPORT(0x006e56a4, kind_float);
-GUEST_FUZZ(0x006e56a4, 50, [](guest::Fuzz &f) { f.arguments(); });

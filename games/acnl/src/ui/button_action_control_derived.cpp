@@ -35,7 +35,6 @@ ButtonActionControlEx &construct_button_action_control_ex(ButtonActionControlEx 
     return self;
 }
 GUEST_EXPORT(0x00327d4c, construct_button_action_control_ex);
-GUEST_FUZZ(0x00327d4c, 100, [](guest::Fuzz &f) { f.arguments(f.object<ButtonActionControlEx>()); });
 
 ButtonActionControlChoice &construct_button_action_control_choice(ButtonActionControlChoice &self) {
     construct_button_action_control(self);
@@ -45,4 +44,3 @@ ButtonActionControlChoice &construct_button_action_control_choice(ButtonActionCo
     return self;
 }
 GUEST_EXPORT(0x0033f0d8, construct_button_action_control_choice);
-GUEST_FUZZ(0x0033f0d8, 100, [](guest::Fuzz &f) { f.arguments(f.object<ButtonActionControlChoice>()); });

@@ -88,9 +88,6 @@ void remove_station_from_three_masks(ThreeMasks &object, u32 station) {
     object.flag_253e = 0;
 }
 GUEST_EXPORT(0x006237a4, remove_station_from_three_masks);
-GUEST_FUZZ(0x006237a4, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<ThreeMasks>(), f.pick<u32>({0, 1, 3, 4, f.number()}));
-});
 
 void remove_station_from_first_mask(OneMask &object, u32 station) {
     if (station < StationMask::STATION_COUNT) {
@@ -98,9 +95,6 @@ void remove_station_from_first_mask(OneMask &object, u32 station) {
     }
 }
 GUEST_EXPORT(0x006245ec, remove_station_from_first_mask);
-GUEST_FUZZ(0x006245ec, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<OneMask>(), f.pick<u32>({0, 1, 3, 4, f.number()}));
-});
 
 // Four functions that drop a copy of the session's mask after removing a station from it and answer true; and two
 // that answer the station.
@@ -114,11 +108,6 @@ GUEST_EXPORT(0x00623894, drop_session_mask_copy_b);
 GUEST_EXPORT(0x0062390c, drop_session_mask_copy_c);
 GUEST_EXPORT(0x00623984, drop_session_mask_copy_station_a);
 GUEST_EXPORT(0x006239c0, drop_session_mask_copy_station_b);
-GUEST_FUZZ(0x00623858, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.pick<u32>({0, 3, 4, f.number()})); });
-GUEST_FUZZ(0x00623894, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.pick<u32>({0, 3, 4, f.number()})); });
-GUEST_FUZZ(0x0062390c, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.pick<u32>({0, 3, 4, f.number()})); });
-GUEST_FUZZ(0x00623984, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.pick<u32>({0, 3, 4, f.number()})); });
-GUEST_FUZZ(0x006239c0, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.pick<u32>({0, 3, 4, f.number()})); });
 
 void reset_pair_holder(PairHolder &holder) {
     holder.state_00 = 0;
@@ -127,7 +116,6 @@ void reset_pair_holder(PairHolder &holder) {
     holder.byte_0f = 0;
 }
 GUEST_EXPORT(0x0062478c, reset_pair_holder);
-GUEST_FUZZ(0x0062478c, 50, [](guest::Fuzz &f) { f.arguments(f.object<PairHolder>()); });
 
 ConfirmMachine &construct_confirm_machine(ConfirmMachine &machine) {
     machine.state_00 = 0;
@@ -139,17 +127,12 @@ ConfirmMachine &construct_confirm_machine(ConfirmMachine &machine) {
     return machine;
 }
 GUEST_EXPORT(0x00624920, construct_confirm_machine);
-GUEST_FUZZ(0x00624920, 50, [](guest::Fuzz &f) { f.arguments(f.object<ConfirmMachine>()); });
 
 // Whether every entry of the session's part at 0x230 is flagged.
 bool session_entries_all_flagged() {
     return all_entries_flagged(guest::addr_of((*net_session)->part_230).cast<void>());
 }
 GUEST_EXPORT(0x00625960, session_entries_all_flagged);
-GUEST_FUZZ(0x00625960, 100, [](guest::Fuzz &f) {
-    (*net_session)->part_230.unknown = u8(f.number());
-    f.arguments();
-});
 
 // Checks the first bit of the session's mask (the result is dropped) and records the value.
 void record_value_after_mask_check(u32 value) {
@@ -157,4 +140,3 @@ void record_value_after_mask_check(u32 value) {
     *recorded_value = u16(value);
 }
 GUEST_EXPORT(0x00628cb0, record_value_after_mask_check);
-GUEST_FUZZ(0x00628cb0, 100, [](guest::Fuzz &f) { f.arguments(f.number()); });

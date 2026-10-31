@@ -46,18 +46,6 @@ TimeStamp from_fields(s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 se
     return TimeStamp::from_milliseconds_since_2000(fields.milliseconds_since_2000());
 }
 
-gptr<TimeStamp> some_time(guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    time->year = s32(2000 + f.below(60));
-    time->month = s8(f.below(14));
-    time->day = s8(s32(f.below(34)) - 2);
-    time->hour = s8(f.below(24));
-    time->minute = s8(f.below(60));
-    time->second = s8(f.below(60));
-    time->millisecond = s16(f.below(1000));
-    return time;
-}
-
 }  // namespace
 
 TimeStamp TimeStamp::earliest() {
@@ -69,18 +57,12 @@ void construct_earliest_time(TimeStamp &out) {
 }
 GUEST_EXPORT(0x0056bb88, construct_earliest_time);
 GUEST_EXPORT(0x0056d00c, construct_earliest_time);
-GUEST_FUZZ(0x0056bb88, 100, [](guest::Fuzz &f) { f.arguments(f.object<TimeStamp>()); });
-GUEST_FUZZ(0x0056d00c, 100, [](guest::Fuzz &f) { f.arguments(f.object<TimeStamp>()); });
 
 // The time of a date and a time of day.
 void make_time(TimeStamp &out, s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 second) {
     out = from_fields(year, month, day, hour, minute, second, 0);
 }
 GUEST_EXPORT(0x0056ca68, make_time);
-GUEST_FUZZ(0x0056ca68, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<TimeStamp>(), s32(2000 + f.below(100)), s32(1 + f.below(12)), s32(1 + f.below(31)), s32(f.below(24)),
-                s32(f.below(60)), s32(f.below(60)));
-});
 
 // The same with milliseconds.
 void make_time_with_milliseconds(TimeStamp &out, s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 second,
@@ -88,29 +70,18 @@ void make_time_with_milliseconds(TimeStamp &out, s32 year, s32 month, s32 day, s
     out = from_fields(year, month, day, hour, minute, second, millisecond);
 }
 GUEST_EXPORT(0x002fd5c4, make_time_with_milliseconds);
-GUEST_FUZZ(0x002fd5c4, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<TimeStamp>(), s32(2000 + f.below(100)), s32(1 + f.below(12)), s32(1 + f.below(31)), s32(f.below(24)),
-                s32(f.below(60)), s32(f.below(60)), s32(f.below(1000)));
-});
 
 // The nanoseconds from the fixed origin time to a date and a time of day.
 s64 nanoseconds_of_date_time(s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 second) {
     return from_fields(year, month, day, hour, minute, second, 0).nanoseconds_since_origin();
 }
 GUEST_EXPORT(0x0056caac, nanoseconds_of_date_time);
-GUEST_FUZZ(0x0056caac, 200, [](guest::Fuzz &f) {
-    f.arguments(s32(2000 + f.below(100)), s32(1 + f.below(12)), s32(1 + f.below(31)), s32(f.below(24)), s32(f.below(60)),
-                s32(f.below(60)));
-});
 
 // The weekday (0 is Sunday) of a date.
 u32 weekday_of_date(s32 year, s32 month, s32 day) {
     return from_fields(year, month, day, 0, 0, 0, 0).weekday;
 }
 GUEST_EXPORT(0x0056cb28, weekday_of_date);
-GUEST_FUZZ(0x0056cb28, 200, [](guest::Fuzz &f) {
-    f.arguments(s32(2000 + f.below(100)), s32(1 + f.below(12)), s32(1 + f.below(31)));
-});
 
 // The start of the game's day (6:00) at or before the reference time.
 void current_day_start(TimeStamp &out) {
@@ -119,7 +90,6 @@ void current_day_start(TimeStamp &out) {
     out = time;
 }
 GUEST_EXPORT(0x0056c3ec, current_day_start);
-GUEST_FUZZ(0x0056c3ec, 100, [](guest::Fuzz &f) { f.arguments(f.object<TimeStamp>()); });
 
 void TimeStamp::set_hour(s32 value) {
     *this = from_fields(year, month, day, value, minute, second, millisecond);
@@ -140,11 +110,6 @@ void TimeStamp::set_millisecond(s32 value) {
     *this = from_fields(year, month, day, hour, minute, second, value);
 }
 GUEST_EXPORT(0x0056cbe8, TimeStamp::set_millisecond);
-
-GUEST_FUZZ(0x0056cce4, 150, [](guest::Fuzz &f) { f.arguments(some_time(f), s32(f.below(30))); });
-GUEST_FUZZ(0x0056ce84, 150, [](guest::Fuzz &f) { f.arguments(some_time(f), s32(f.below(100)) - 20); });
-GUEST_FUZZ(0x0056cedc, 150, [](guest::Fuzz &f) { f.arguments(some_time(f), s32(f.below(100)) - 20); });
-GUEST_FUZZ(0x0056cbe8, 150, [](guest::Fuzz &f) { f.arguments(some_time(f), s32(f.below(1200)) - 100); });
 
 u32 TimeStamp::season() const {
     if (calendar_off()) {
@@ -168,7 +133,6 @@ u32 TimeStamp::season() const {
     return SEASON_WINTER;
 }
 GUEST_EXPORT(0x0056d060, TimeStamp::season);
-GUEST_FUZZ(0x0056d060, 200, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
 
 u32 TimeStamp::period_of_year() const {
     if (calendar_off()) {
@@ -183,4 +147,3 @@ u32 TimeStamp::period_of_year() const {
     return 0;
 }
 GUEST_EXPORT(0x0056bc28, TimeStamp::period_of_year);
-GUEST_FUZZ(0x0056bc28, 200, [](guest::Fuzz &f) { f.arguments(some_time(f)); });

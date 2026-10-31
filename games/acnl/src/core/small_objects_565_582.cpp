@@ -61,15 +61,6 @@ s32 angle_to_point(const Float3 &from, const Float3 &to) {
     return atan2_angle(dx, dz);
 }
 GUEST_EXPORT(0x00565a4c, angle_to_point);
-GUEST_FUZZ(0x00565a4c, 100, [](guest::Fuzz &f) {
-    auto from = f.object<Float3>();
-    auto to = f.object<Float3>();
-    for (u32 i = 0; i < 3; i++) {
-        from->v[i] = f.real();
-        to->v[i] = f.real();
-    }
-    f.arguments(from, to);
-});
 
 // The animation value of the first of the character's objects that is in use (0 when none is).
 float character_animation_value(AnimatedCharacter &character) {
@@ -85,13 +76,6 @@ float character_animation_value(AnimatedCharacter &character) {
     return 0.0f;
 }
 GUEST_EXPORT(0x005706fc, character_animation_value);
-GUEST_FUZZ(0x005706fc, 100, [](guest::Fuzz &f) {
-    auto character = f.object<AnimatedCharacter>();
-    character->first_active = 0;
-    character->second_active = 0;
-    character->third_active = 0;
-    f.arguments(character);
-});
 
 // Stores the angle to the point in `out`, and whether turning from the actor's facing to it is a smaller change than
 // the angle in `limit`.
@@ -103,15 +87,6 @@ bool turn_is_smaller_than(FacingActor &actor, gptr<s16> out, const Float3 &point
     return (turn < 0 ? -turn : turn) < (allowed < 0 ? -allowed : allowed);
 }
 GUEST_EXPORT(0x00577fc0, turn_is_smaller_than);
-GUEST_FUZZ(0x00577fc0, 100, [](guest::Fuzz &f) {
-    auto actor = f.object<FacingActor>();
-    auto point = f.object<Float3>();
-    for (u32 i = 0; i < 3; i++) {
-        actor->position.v[i] = f.real();
-        point->v[i] = f.real();
-    }
-    f.arguments(actor, f.allocate(2).cast<s16>(), point, f.allocate(2).cast<s16>());
-});
 
 // Two zeroed word quads followed by four zero words.
 struct QuadPair {
@@ -130,4 +105,3 @@ QuadPair &construct_quad_pair(QuadPair &self) {
     return self;
 }
 GUEST_EXPORT(0x005819ec, construct_quad_pair);
-GUEST_FUZZ(0x005819ec, 100, [](guest::Fuzz &f) { f.arguments(f.object<QuadPair>()); });

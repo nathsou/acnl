@@ -16,13 +16,10 @@ constexpr u32 NO_TABLE_VALUE = 0x3e;
 constexpr u8 STATE_NONE = 0;
 constexpr u8 STATE_4 = 4;
 constexpr u16 STATE_ITEM_NUMBER = 0x27a4;
-constexpr u32 MODE_LIMIT = 1;
 constexpr u32 ROW_SIZE = 16;
 constexpr u32 AMOUNT_LIMIT = 10;
 constexpr u32 AMOUNT_CATEGORY_6 = 6;
 constexpr u32 AMOUNT_CATEGORY_47 = 0x47;
-constexpr u32 APPEARANCE_NUMBER_BASE = 0x3300;  // item numbers of the items the indices come from
-constexpr u32 APPEARANCE_NUMBER_COUNT = 0x200;
 constexpr u32 FIRST_RANGE_END_NUMBER = 0x3452;
 constexpr u32 CALLBACK_ENABLED = 1;
 // The item number maps to an index by adding a base; indices at or above the limit read as 0.
@@ -174,9 +171,6 @@ void get_owner_item(Item &out, gptr<SaveVillager> owner, u32 slot) {
     }
 }
 GUEST_EXPORT(0x003107d5, get_owner_item);
-GUEST_FUZZ(0x003107d5, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.object<SaveVillager>(), f.pick<u32>({0, 1, 2, 3, 4, f.number()}));
-});
 
 // Sets the item number and the two bytes.
 void set_numbered_pair(NumberedPair &self, u32 first, const Item &item, u32 second) {
@@ -185,9 +179,6 @@ void set_numbered_pair(NumberedPair &self, u32 first, const Item &item, u32 seco
     self.second = u8(second);
 }
 GUEST_EXPORT(0x0031224c, set_numbered_pair);
-GUEST_FUZZ(0x0031224c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<NumberedPair>(), f.number(), f.object<Item>(), f.number());
-});
 
 // The scene's vtable; clears a global.
 BsScene &construct_bs_scene(BsScene &self) {
@@ -196,7 +187,6 @@ BsScene &construct_bs_scene(BsScene &self) {
     return self;
 }
 GUEST_EXPORT(0x00313a98, construct_bs_scene);
-GUEST_FUZZ(0x00313a98, 50, [](guest::Fuzz &f) { f.arguments(f.object<BsScene>()); });
 
 // Stores the item 0x27a4 at 0x12.
 void set_item_12_to_27a4(ItemHolder &holder) {
@@ -205,7 +195,6 @@ void set_item_12_to_27a4(ItemHolder &holder) {
     copy_item(holder.item_12, item);
 }
 GUEST_EXPORT(0x00314228, set_item_12_to_27a4);
-GUEST_FUZZ(0x00314228, 50, [](guest::Fuzz &f) { f.arguments(f.object<ItemHolder>()); });
 
 // Whether the save data's byte 0x6e2a6 is neither 0 nor 4.
 bool save_state_6e2a6_is_active() {
@@ -213,10 +202,6 @@ bool save_state_6e2a6_is_active() {
     return state != STATE_NONE && state != STATE_4;
 }
 GUEST_EXPORT(0x00314bc4, save_state_6e2a6_is_active);
-GUEST_FUZZ(0x00314bc4, 100, [](guest::Fuzz &f) {
-    get_save_data()->state_6e2a6 = f.pick<u8>({STATE_NONE, 1, 2, STATE_4, 0xff});
-    f.arguments();
-});
 
 // For a held item of category 0x33: the table value of its offset in the category when that is below 5. 0x3e else.
 u32 held_item_table_value(const HeldItem &held) {
@@ -229,13 +214,6 @@ u32 held_item_table_value(const HeldItem &held) {
     return NO_TABLE_VALUE;
 }
 GUEST_EXPORT(0x00314c1c, held_item_table_value);
-GUEST_FUZZ(0x00314c1c, 200, [](guest::Fuzz &f) {
-    auto held = f.object<HeldItem>();
-    if (f.below(2) == 0) {
-        held->item.id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(held);
-});
 
 SeadParticleHandle &construct_sead_particle_handle(SeadParticleHandle &self) {
     auto &node = *construct_list_node(guest::addr_of(self).cast<void>()).cast<SeadParticleHandle>();
@@ -245,7 +223,6 @@ SeadParticleHandle &construct_sead_particle_handle(SeadParticleHandle &self) {
     return node;
 }
 GUEST_EXPORT(0x003166a8, construct_sead_particle_handle);
-GUEST_FUZZ(0x003166a8, 100, [](guest::Fuzz &f) { f.arguments(f.object<SeadParticleHandle>()); });
 
 // The byte at 8, unless the mode is above 1.
 u32 byte_08_unless_mode_above_1(const ByteHolder &holder) {
@@ -255,7 +232,6 @@ u32 byte_08_unless_mode_above_1(const ByteHolder &holder) {
     return holder.byte_08;
 }
 GUEST_EXPORT(0x00318944, byte_08_unless_mode_above_1);
-GUEST_FUZZ(0x00318944, 100, [](guest::Fuzz &f) { f.arguments(f.object<ByteHolder>()); });
 
 // Releases what the holder owns.
 OwnerHolder &destroy_owner_holder(OwnerHolder &self) {
@@ -268,14 +244,6 @@ OwnerHolder &destroy_owner_holder(OwnerHolder &self) {
     return self;
 }
 GUEST_EXPORT(0x0031bb51, destroy_owner_holder);
-GUEST_FUZZ(0x0031bb51, 100, [](guest::Fuzz &f) {
-    auto holder = f.object<OwnerHolder>();
-    holder->owns_14 = u8(f.below(2));
-    holder->owned_14 = gptr<void>(0u);
-    holder->owned_2c = gptr<void>(0u);
-    holder->owned_30 = gptr<void>(0u);
-    f.arguments(holder);
-});
 
 // Calls the dispatcher of the object's own callback table when the flag is on.
 void dispatch_if_enabled(CallbackOwner &self) {
@@ -286,11 +254,6 @@ void dispatch_if_enabled(CallbackOwner &self) {
     dispatch_offset_0(guest::addr_of(self).cast<void>(), keys[0], keys[1]);
 }
 GUEST_EXPORT(0x0031e570, dispatch_if_enabled);
-GUEST_FUZZ(0x0031e570, 50, [](guest::Fuzz &f) {
-    auto owner = f.object<CallbackOwner>();
-    owner->enabled_4ec = u8(f.pick<u32>({0, 2, 0xff}));
-    f.arguments(owner);
-});
 
 // Empties the sixteen items and zeroes their bytes.
 void clear_item_row(ItemRow &row) {
@@ -300,7 +263,6 @@ void clear_item_row(ItemRow &row) {
     }
 }
 GUEST_EXPORT(0x00322e58, clear_item_row);
-GUEST_FUZZ(0x00322e58, 50, [](guest::Fuzz &f) { f.arguments(f.object<ItemRow>()); });
 
 // Swaps two entries of the row (items and bytes); false when an index is out of range.
 bool swap_item_row_entries(ItemRow &row, u32 a, u32 b) {
@@ -317,9 +279,6 @@ bool swap_item_row_entries(ItemRow &row, u32 a, u32 b) {
     return true;
 }
 GUEST_EXPORT(0x00323234, swap_item_row_entries);
-GUEST_FUZZ(0x00323234, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<ItemRow>(), f.pick<u32>({0, 5, 15, 16, f.number()}), f.pick<u32>({0, 5, 15, 16, f.number()}));
-});
 
 void construct_typed_entry(TypedEntry &self, u32 type, s32 first, s32 second, const Item &item, u32 flag) {
     self.type = u8(type);
@@ -329,9 +288,6 @@ void construct_typed_entry(TypedEntry &self, u32 type, s32 first, s32 second, co
     copy_item(self.item, item);
 }
 GUEST_EXPORT(0x0032a31c, construct_typed_entry);
-GUEST_FUZZ(0x0032a31c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<TypedEntry>(), f.number(), s32(f.number()), s32(f.number()), f.object<Item>(), f.number());
-});
 
 // The default entry: no values, an empty item. Two copies exist, which only differ in the copy routine they call.
 void construct_default_typed_entry(TypedEntry &self) {
@@ -346,8 +302,6 @@ void construct_default_typed_entry(TypedEntry &self) {
 }
 GUEST_EXPORT(0x0032a344, construct_default_typed_entry);
 GUEST_EXPORT(0x0032a470, construct_default_typed_entry);
-GUEST_FUZZ(0x0032a344, 50, [](guest::Fuzz &f) { f.arguments(f.object<TypedEntry>()); });
-GUEST_FUZZ(0x0032a470, 50, [](guest::Fuzz &f) { f.arguments(f.object<TypedEntry>()); });
 
 // Copy constructor; the flag becomes 0 or 1.
 TypedEntry &copy_typed_entry(TypedEntry &self, const TypedEntry &other) {
@@ -362,7 +316,6 @@ TypedEntry &copy_typed_entry(TypedEntry &self, const TypedEntry &other) {
     return self;
 }
 GUEST_EXPORT(0x0032a4cc, copy_typed_entry);
-GUEST_FUZZ(0x0032a4cc, 100, [](guest::Fuzz &f) { f.arguments(f.object<TypedEntry>(), f.object<TypedEntry>()); });
 
 // Stores the number's offset from the base as an index of one of two ranges (the flag tells which); 0 when it falls
 // outside the range.
@@ -386,11 +339,6 @@ void set_appearance_index_12(AppearanceIndices &self, const Item &item) {
     }
 }
 GUEST_EXPORT(0x0032c9e8, set_appearance_index_12);
-GUEST_FUZZ(0x0032c9e8, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({APPEARANCE_NUMBER_BASE, FIRST_RANGE_END_NUMBER, APPEARANCE_NUMBER_BASE + f.below(2 * APPEARANCE_NUMBER_COUNT), f.number()}));
-    f.arguments(f.object<AppearanceIndices>(), item);
-});
 
 // Stores the item number plus a base as a byte index; 0 when it is not below the limit.
 template <u8 AppearanceIndices::*FIELD, u32 BASE, u32 LIMIT>
@@ -414,26 +362,6 @@ GUEST_EXPORT(0x0032ca78, set_appearance_index_15);
 GUEST_EXPORT(0x0032cab8, set_appearance_index_11);
 GUEST_EXPORT(0x0032caf4, set_appearance_index_10);
 GUEST_EXPORT(0x0032cb30, set_appearance_index_13);
-GUEST_FUZZ(0x0032ca78, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(APPEARANCE_NUMBER_BASE + f.below(APPEARANCE_NUMBER_COUNT));
-    f.arguments(f.object<AppearanceIndices>(), item);
-});
-GUEST_FUZZ(0x0032cab8, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(APPEARANCE_NUMBER_BASE + f.below(APPEARANCE_NUMBER_COUNT));
-    f.arguments(f.object<AppearanceIndices>(), item);
-});
-GUEST_FUZZ(0x0032caf4, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(APPEARANCE_NUMBER_BASE + f.below(APPEARANCE_NUMBER_COUNT));
-    f.arguments(f.object<AppearanceIndices>(), item);
-});
-GUEST_FUZZ(0x0032cb30, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(APPEARANCE_NUMBER_BASE + f.below(APPEARANCE_NUMBER_COUNT));
-    f.arguments(f.object<AppearanceIndices>(), item);
-});
 
 // Records the item and the count when the count is small and the item is empty or in wear class 7.
 bool set_wearable_amount(ItemAmount &out, const Item &item, u32 count) {
@@ -448,13 +376,6 @@ bool set_wearable_amount(ItemAmount &out, const Item &item, u32 count) {
     return true;
 }
 GUEST_EXPORT(0x003314f8, set_wearable_amount);
-GUEST_FUZZ(0x003314f8, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(3) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(f.object<ItemAmount>(), item, f.pick<u32>({0, 5, 9, 10, f.number()}));
-});
 
 // Records the item and the count when the count is small and the item is of category 6 or 0x47.
 bool set_item_amount(ItemAmount &out, const Item &item, u32 count) {
@@ -470,10 +391,3 @@ bool set_item_amount(ItemAmount &out, const Item &item, u32 count) {
     return true;
 }
 GUEST_EXPORT(0x00335214, set_item_amount);
-GUEST_FUZZ(0x00335214, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(3) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(f.object<ItemAmount>(), item, f.pick<u32>({0, 5, 9, 10, f.number()}));
-});

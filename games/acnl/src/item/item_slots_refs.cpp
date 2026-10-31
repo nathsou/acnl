@@ -23,7 +23,6 @@ constexpr u32 MAIN_BIT_BASE = 0x1a;
 constexpr u32 STATION_COUNT = 4;
 constexpr u32 SLOT_STRIDE_WORDS = 0x371;
 constexpr u32 MAIN_SLOT_INDEX = 4;
-constexpr u32 MAIN_SLOT_TABLE_SIZE = 0x8000;
 constexpr u32 ENTRY_SIZE = 8;
 constexpr u32 ENTRY_OFFSET = 0x2058;
 
@@ -67,32 +66,6 @@ struct BitsHolder {
 };
 GUEST_OFFSET(BitsHolder, bits, 8);
 
-gptr<ItemSlots> fuzz_slots(guest::Fuzz &f) {
-    auto slots = f.object<ItemSlots>();
-    for (u32 i = 0; i < ItemSlots::SLOT_COUNT; i++) {
-        slots->slots[i].id = f.below(3) != 0 ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-    }
-    return slots;
-}
-
-gptr<SlotsOwner> fuzz_slots_owner(guest::Fuzz &f) {
-    auto owner = f.object<SlotsOwner>();
-    owner->slots = f.below(3) != 0 ? fuzz_slots(f) : gptr<ItemSlots>(0u);
-    owner->fallback = f.below(3) != 0 ? fuzz_slots(f) : gptr<ItemSlots>(0u);
-    return owner;
-}
-
-gptr<Item> fuzz_row(guest::Fuzz &f) {
-    auto row = f.allocate(ROW_SIZE * sizeof(Item)).cast<Item>();
-    for (u32 i = 0; i < ROW_SIZE; i++) {
-        row[i].id = f.below(3) != 0 ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-        if (f.below(5) == 0) {
-            row[i].id = u16(0x4000 + f.below(8));  // kind 2
-        }
-    }
-    return row;
-}
-
 // The row's item at the index when it is of kind 2 or has data, else the empty item.
 gptr<Item> row_item(gptr<Item> row, u32 index) {
     if (index >= ROW_SIZE) {
@@ -114,7 +87,6 @@ gptr<Item> owner_slot_2_if_class_3(SlotsOwner &owner) {
     return owner.fallback == nullptr ? empty_item.ptr() : fallback_slot_2_if_class_3(owner.fallback);
 }
 GUEST_EXPORT(0x0070b0b8, owner_slot_2_if_class_3);
-GUEST_FUZZ(0x0070b0b8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots_owner(f)); });
 
 // Whether the item can be worn together with what the owner wears: never when it has no wear class or is empty; items of
 // class 7 when the mode allows them; when the owner's slot 2 item has the blocking category, only items of that
@@ -138,11 +110,6 @@ bool can_wear_with_owner_slot_2(u32 unused, const Item &item, SlotsOwner &owner)
     return true;
 }
 GUEST_EXPORT(0x0026f808, can_wear_with_owner_slot_2);
-GUEST_FUZZ(0x0026f808, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.below(5) == 0 ? Item::EMPTY : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(0u, item, fuzz_slots_owner(f));
-});
 
 gptr<Item> owner_slot_1_if_class_2(SlotsOwner &owner) {
     if (owner.slots != nullptr) {
@@ -151,7 +118,6 @@ gptr<Item> owner_slot_1_if_class_2(SlotsOwner &owner) {
     return owner.fallback == nullptr ? empty_item.ptr() : fallback_slot_1_if_class_2(owner.fallback);
 }
 GUEST_EXPORT(0x0070b044, owner_slot_1_if_class_2);
-GUEST_FUZZ(0x0070b044, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots_owner(f)); });
 
 // Slot 7's item when it has class 7, else the empty item (no fallback).
 gptr<Item> owner_slot_7_if_class_7(SlotsOwner &owner) {
@@ -161,7 +127,6 @@ gptr<Item> owner_slot_7_if_class_7(SlotsOwner &owner) {
     return empty_item.ptr();
 }
 GUEST_EXPORT(0x0070b088, owner_slot_7_if_class_7);
-GUEST_FUZZ(0x0070b088, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots_owner(f)); });
 
 // Slot 4's item when it has class 4, unless slot 2 holds a class-3 item of the blocking category.
 gptr<Item> owner_slot_4_if_class_4(SlotsOwner &owner) {
@@ -175,7 +140,6 @@ gptr<Item> owner_slot_4_if_class_4(SlotsOwner &owner) {
     return owner.slots->slot_if_class(SLOT_4, WEAR_CLASS_4);
 }
 GUEST_EXPORT(0x0070af88, owner_slot_4_if_class_4);
-GUEST_FUZZ(0x0070af88, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots_owner(f)); });
 
 // The owner's item when it is the first item or has class 1, else the empty item; the fallback when there is none.
 gptr<Item> owner_item_if_class_1(ItemOwner &owner) {
@@ -188,27 +152,18 @@ gptr<Item> owner_item_if_class_1(ItemOwner &owner) {
     return owner.fallback == nullptr ? empty_item.ptr() : fallback_item_if_class_1(owner.fallback);
 }
 GUEST_EXPORT(0x0070afec, owner_item_if_class_1);
-GUEST_FUZZ(0x0070afec, 100, [](guest::Fuzz &f) {
-    auto owner = f.object<ItemOwner>();
-    owner->item = f.below(3) != 0 ? fuzz_row(f) : gptr<Item>(0u);
-    owner->fallback = f.below(3) != 0 ? fuzz_row(f) : gptr<Item>(0u);
-    f.arguments(owner);
-});
 
 gptr<Item> slots_slot_5_if_class_6(ItemSlots &slots) { return slots.slot_if_class(SLOT_5, WEAR_CLASS_6); }
 
 gptr<Item> slots_slot_4_if_class_5(ItemSlots &slots) { return slots.slot_if_class(SLOT_4, WEAR_CLASS_5); }
 GUEST_EXPORT(0x0070f010, slots_slot_5_if_class_6);
 GUEST_EXPORT(0x0070f034, slots_slot_4_if_class_5);
-GUEST_FUZZ(0x0070f010, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
-GUEST_FUZZ(0x0070f034, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
 
 // Whether the row's picked item is empty.
 bool row_item_is_empty(gptr<Item> row, u32 index) {
     return row_item(row, index)->is_empty();
 }
 GUEST_EXPORT(0x0070bf38, row_item_is_empty);
-GUEST_FUZZ(0x0070bf38, 100, [](guest::Fuzz &f) { f.arguments(fuzz_row(f), f.pick<u32>({0, 5, 9, 10, f.number()})); });
 
 // The row's item at the selected index (a global).
 gptr<Item> selected_row_item(gptr<Item> row) {
@@ -218,23 +173,15 @@ gptr<Item> selected_row_item(gptr<Item> row) {
     return row_item(row, u32(*selected_index));
 }
 GUEST_EXPORT(0x0070bf80, selected_row_item);
-GUEST_FUZZ(0x0070bf80, 100, [](guest::Fuzz &f) {
-    *selected_index = s32(f.pick<u32>({0, 5, 9, 10, 0xffffffff}));
-    f.arguments(fuzz_row(f));
-});
 
 gptr<Item> row_item_at(gptr<Item> row, u32 index) { return row_item(row, index); }
 GUEST_EXPORT(0x0070bfd8, row_item_at);
-GUEST_FUZZ(0x0070bfd8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_row(f), f.pick<u32>({0, 5, 9, 10, f.number()})); });
 
 // Copies the pair's item at the index to out (the empty item from index 2 on).
 void copy_pair_item(Item &out, FlaggedPair &pair, u32 index) {
     copy_item(out, index < PAIR_SIZE ? pair.items[index] : *empty_item);
 }
 GUEST_EXPORT(0x0070c07c, copy_pair_item);
-GUEST_FUZZ(0x0070c07c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.object<FlaggedPair>(), f.pick<u32>({0, 1, 2, 3, f.number()}));
-});
 
 // The same, but an item whose flag is set is replaced by the replacement item.
 void copy_pair_item_or_replacement(Item &out, FlaggedPair &pair, u32 index) {
@@ -247,27 +194,18 @@ void copy_pair_item_or_replacement(Item &out, FlaggedPair &pair, u32 index) {
     }
 }
 GUEST_EXPORT(0x0070c130, copy_pair_item_or_replacement);
-GUEST_FUZZ(0x0070c130, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.object<FlaggedPair>(), f.pick<u32>({0, 1, 2, 3, f.number()}));
-});
 
 // Ten times the encrypted value times the factor.
 u32 encrypted_value_times_ten(const EncryptedInt &value, u32 factor) {
     return value.get() * factor * PRICE_FACTOR;
 }
 GUEST_EXPORT(0x0070c16c, encrypted_value_times_ten);
-GUEST_FUZZ(0x0070c16c, 100, [](guest::Fuzz &f) {
-    auto value = f.object<EncryptedInt>();
-    value->set(f.number());
-    f.arguments(value, f.number());
-});
 
 // The holder's value for the main object.
 u32 value_for_main_object(PriceHolder &holder) {
     return holder.values[query_current_main_object()];
 }
 GUEST_EXPORT(0x0070c310, value_for_main_object);
-GUEST_FUZZ(0x0070c310, 100, [](guest::Fuzz &f) { f.arguments(f.object<PriceHolder>()); });
 
 // The sum of the values of the first station and the ones that are waited for.
 u32 sum_of_waited_values(PriceHolder &holder) {
@@ -280,7 +218,6 @@ u32 sum_of_waited_values(PriceHolder &holder) {
     return sum;
 }
 GUEST_EXPORT(0x0070cb5c, sum_of_waited_values);
-GUEST_FUZZ(0x0070cb5c, 100, [](guest::Fuzz &f) { f.arguments(f.object<PriceHolder>()); });
 
 // True without a main object; otherwise whether the holder's bits include the main object's bit (from 0x1a up).
 bool main_object_bit_set(BitsHolder &holder) {
@@ -291,7 +228,6 @@ bool main_object_bit_set(BitsHolder &holder) {
     return (holder.bits & (1u << (query_current_main_object() + MAIN_BIT_BASE))) != 0;
 }
 GUEST_EXPORT(0x0070e4b0, main_object_bit_set);
-GUEST_FUZZ(0x0070e4b0, 100, [](guest::Fuzz &f) { f.arguments(f.object<BitsHolder>()); });
 
 // The entry of the main slot (null for slots from 4 on).
 gptr<u8> main_slot_entry(gptr<u8> table) {
@@ -303,8 +239,6 @@ gptr<u8> main_slot_entry(gptr<u8> table) {
 }
 GUEST_EXPORT(0x0070ef04, main_slot_entry);
 GUEST_EXPORT(0x001df3d4, main_slot_entry);
-GUEST_FUZZ(0x001df3d4, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(MAIN_SLOT_TABLE_SIZE).cast<u8>()); });
-GUEST_FUZZ(0x0070ef04, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(MAIN_SLOT_TABLE_SIZE).cast<u8>()); });
 
 u32 save_value_6e2a8() { return get_save_data()->value_6e2a8; }
 GUEST_EXPORT(0x0070b36c, save_value_6e2a8);
@@ -319,9 +253,6 @@ u32 save_excess_6e2a8() {
     return second < first ? first - second : 0;
 }
 GUEST_EXPORT(0x0070b460, save_excess_6e2a8);
-GUEST_FUZZ(0x0070b460, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0070b36c, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0070b2fc, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Slot 6's item when it has class 6; the fallback's slot 5 when there are no slots of its own.
 gptr<Item> owner_slot_6_if_class_6(SlotsOwner &owner) {
@@ -331,7 +262,6 @@ gptr<Item> owner_slot_6_if_class_6(SlotsOwner &owner) {
     return owner.fallback == nullptr ? empty_item.ptr() : slots_slot_5_if_class_6(*owner.fallback);
 }
 GUEST_EXPORT(0x0070b0fc, owner_slot_6_if_class_6);
-GUEST_FUZZ(0x0070b0fc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots_owner(f)); });
 
 // Copies of single-slot accessors made for other callers.
 gptr<Item> slots_slot_3_if_class_3(ItemSlots &slots) { return slots.slot_if_class(SLOT_3, WEAR_CLASS_3); }
@@ -340,9 +270,6 @@ gptr<Item> slots_slot_4_if_class_4(ItemSlots &slots) { return slots.slot_if_clas
 GUEST_EXPORT(0x0071a578, slots_slot_3_if_class_3);
 GUEST_EXPORT(0x0071a694, slots_slot_5_if_class_5);
 GUEST_EXPORT(0x0071a6b8, slots_slot_4_if_class_4);
-GUEST_FUZZ(0x0071a578, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
-GUEST_FUZZ(0x0071a694, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
-GUEST_FUZZ(0x0071a6b8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });
 
 // Slot 4's item when it has class 4, unless slot 2 holds a class-3 item of the blocking category.
 gptr<Item> slots_slot_4_if_slot_2_allows(ItemSlots &slots) {
@@ -353,4 +280,3 @@ gptr<Item> slots_slot_4_if_slot_2_allows(ItemSlots &slots) {
     return slots.slot_if_class(SLOT_4, WEAR_CLASS_4);
 }
 GUEST_EXPORT(0x0071a3a8, slots_slot_4_if_slot_2_allows);
-GUEST_FUZZ(0x0071a3a8, 100, [](guest::Fuzz &f) { f.arguments(fuzz_slots(f)); });

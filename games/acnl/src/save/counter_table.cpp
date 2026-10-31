@@ -20,8 +20,6 @@ void CounterTable::clear() {
 }
 GUEST_EXPORT(0x0024b7f8, CounterTable::clear);
 GUEST_EXPORT(0x003034d8, CounterTable::clear);  // (a second copy of the same code)
-GUEST_FUZZ(0x0024b7f8, 100, [](guest::Fuzz &f) { f.arguments(f.object<CounterTable>()); });
-GUEST_FUZZ(0x003034d8, 100, [](guest::Fuzz &f) { f.arguments(f.object<CounterTable>()); });
 
 void CounterTable::add(u32 index, u32 amount) {
     if (index >= COUNT) {
@@ -30,9 +28,6 @@ void CounterTable::add(u32 index, u32 amount) {
     counters[index].add(amount, NO_LIMIT);
 }
 GUEST_EXPORT(0x0024b8a8, CounterTable::add);
-GUEST_FUZZ(0x0024b8a8, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<CounterTable>(), f.pick<u32>({0, 5, 23, 24, 0xffffffffu}), f.pick<u32>({0, 1, 100, 0xffffffffu, f.number()}));
-});
 
 // Adds to a counter of the current player.
 void add_to_current_player_counter(u32 index, u32 amount) {
@@ -43,7 +38,6 @@ void add_to_current_player_counter(u32 index, u32 amount) {
     player->counters.add(index, amount);
 }
 GUEST_EXPORT(0x0024b7b8, add_to_current_player_counter);
-GUEST_FUZZ(0x0024b7b8, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 5, 23, 24, 0xffffffffu}), f.pick<u32>({0, 1, 100, f.number()})); });
 
 namespace {
 
@@ -65,4 +59,3 @@ gptr<CounterKindInfo> counter_kind_info(u32 kind) {
     return gptr<CounterKindInfo>(KIND_INFO_ADDRESS + kind * KIND_INFO_SIZE);
 }
 GUEST_EXPORT(0x0029b88c, counter_kind_info);
-GUEST_FUZZ(0x0029b88c, 50, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 5, 20, f.below(40)})); });

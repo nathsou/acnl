@@ -40,14 +40,6 @@ u32 count_bits(const ItemBitSet &set) {
     return count;
 }
 
-gptr<ItemBitSet> fuzz_set(guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    for (u32 &word : set->words) {
-        word = f.below(4) == 0 ? u32(f.number()) : 0;
-    }
-    return set;
-}
-
 // Clears the bits of the items whose data entry `remove` returns true for, then reports whether any bit is left; when none is, the
 // bit of a randomly chosen member of the original set comes back.
 template <typename Predicate>
@@ -90,21 +82,18 @@ s32 ItemBitSet::index_of_nth_set_bit(u32 n) const {
     return NOT_FOUND;
 }
 GUEST_EXPORT(0x007703e0, ItemBitSet::index_of_nth_set_bit);
-GUEST_FUZZ(0x007703e0, 200, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(40)); });
 
 // Removes the items that cost the limit or more; false when none was left (then one original member is restored).
 bool keep_items_cheaper_than(ItemBitSet &set, u32 limit) {
     return filter_set(set, [limit](gptr<ItemData> entry) { return entry->base_price() >= limit; });
 }
 GUEST_EXPORT(0x006f1b1c, keep_items_cheaper_than);
-GUEST_FUZZ(0x006f1b1c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.pick<u32>({0, 10, 100, 1000, 100000, f.number()})); });
 
 // Removes the items that cost less than the limit.
 bool keep_items_at_least(ItemBitSet &set, u32 limit) {
     return filter_set(set, [limit](gptr<ItemData> entry) { return entry->base_price() < limit; });
 }
 GUEST_EXPORT(0x006f0b08, keep_items_at_least);
-GUEST_FUZZ(0x006f0b08, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.pick<u32>({0, 10, 100, 1000, 100000, f.number()})); });
 
 // Keeps the items whose attribute equals `wanted` (a value at or above the limit counts as 0): the filters below only
 // differ in which byte of the data entry they read. Their meanings are not known yet.
@@ -114,7 +103,6 @@ bool keep_items_with_field_1a(ItemBitSet &set, u32 wanted) {
     });
 }
 GUEST_EXPORT(0x006f1f8c, keep_items_with_field_1a);
-GUEST_FUZZ(0x006f1f8c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(4)); });
 
 bool keep_items_with_field_16(ItemBitSet &set, u32 wanted) {
     return filter_set(set, [wanted](gptr<ItemData> entry) {
@@ -122,7 +110,6 @@ bool keep_items_with_field_16(ItemBitSet &set, u32 wanted) {
     });
 }
 GUEST_EXPORT(0x006f22dc, keep_items_with_field_16);
-GUEST_FUZZ(0x006f22dc, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(12)); });
 
 bool keep_items_with_field_17(ItemBitSet &set, u32 wanted) {
     return filter_set(set, [wanted](gptr<ItemData> entry) {
@@ -130,7 +117,6 @@ bool keep_items_with_field_17(ItemBitSet &set, u32 wanted) {
     });
 }
 GUEST_EXPORT(0x0031ab80, keep_items_with_field_17);
-GUEST_FUZZ(0x0031ab80, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(7)); });
 
 // Keeps the items of one category.
 bool keep_items_of_category(ItemBitSet &set, u32 wanted) {
@@ -139,7 +125,6 @@ bool keep_items_of_category(ItemBitSet &set, u32 wanted) {
     });
 }
 GUEST_EXPORT(0x006f3110, keep_items_of_category);
-GUEST_FUZZ(0x006f3110, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.pick<u32>({f.below(Item::NO_CATEGORY), f.below(0x20)})); });
 
 bool keep_items_with_field_15(ItemBitSet &set, u32 wanted) {
     return filter_set(set, [wanted](gptr<ItemData> entry) {
@@ -147,7 +132,6 @@ bool keep_items_with_field_15(ItemBitSet &set, u32 wanted) {
     });
 }
 GUEST_EXPORT(0x006f3244, keep_items_with_field_15);
-GUEST_FUZZ(0x006f3244, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(12)); });
 
 bool keep_items_with_field_18(ItemBitSet &set, u32 wanted) {
     return filter_set(set, [wanted](gptr<ItemData> entry) {
@@ -155,7 +139,6 @@ bool keep_items_with_field_18(ItemBitSet &set, u32 wanted) {
     });
 }
 GUEST_EXPORT(0x006f337c, keep_items_with_field_18);
-GUEST_FUZZ(0x006f337c, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(16)); });
 
 // Keeps the items with one wear class table index.
 bool keep_items_with_wear_class_index(ItemBitSet &set, u32 wanted) {
@@ -164,7 +147,6 @@ bool keep_items_with_wear_class_index(ItemBitSet &set, u32 wanted) {
     });
 }
 GUEST_EXPORT(0x006f3564, keep_items_with_wear_class_index);
-GUEST_FUZZ(0x006f3564, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(WearClassEntry::TABLE_SIZE + 2)); });
 
 // Keeps the items with bit 4 of flags_1c set and bit 7 clear.
 bool keep_items_with_flags_1c_bit4_only(ItemBitSet &set) {
@@ -173,7 +155,6 @@ bool keep_items_with_flags_1c_bit4_only(ItemBitSet &set) {
     });
 }
 GUEST_EXPORT(0x006f2728, keep_items_with_flags_1c_bit4_only);
-GUEST_FUZZ(0x006f2728, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f)); });
 
 // Keeps the items for which ItemData::flag_1c_bit3 is false when `invert` is set, true otherwise.
 bool keep_items_by_flag_1c_bit3(ItemBitSet &set, u32 invert) {
@@ -182,7 +163,6 @@ bool keep_items_by_flag_1c_bit3(ItemBitSet &set, u32 invert) {
     });
 }
 GUEST_EXPORT(0x006f2504, keep_items_by_flag_1c_bit3);
-GUEST_FUZZ(0x006f2504, 100, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(2)); });
 
 // Keeps the items whose high nibble of byte 0x15 equals `wanted` (a nibble of 7 or more counts as 0), and with
 // `keep_also_4` those with nibble 4 too.
@@ -194,4 +174,3 @@ bool keep_items_with_field_15_high(ItemBitSet &set, u32 wanted, u32 keep_also_4)
     });
 }
 GUEST_EXPORT(0x00304d30, keep_items_with_field_15_high);
-GUEST_FUZZ(0x00304d30, 150, [](guest::Fuzz &f) { f.arguments(fuzz_set(f), f.below(9), f.below(2)); });

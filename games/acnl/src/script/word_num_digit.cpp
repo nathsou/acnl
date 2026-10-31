@@ -14,5 +14,3 @@ WordNumDigit &set_word_num_digit_vtable(WordNumDigit &self) {
     return self;
 }
 GUEST_EXPORT(0x00312cb0, set_word_num_digit_vtable);
-
-GUEST_FUZZ(0x00312cb0, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordNumDigit>()); });

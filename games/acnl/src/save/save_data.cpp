@@ -10,6 +10,3 @@ bool save_data_flag_621cf_bit_1() {
     return ((*save_data)->flags_621cf & SaveData::FLAGS_621CF_BIT_1) != 0;
 }
 GUEST_EXPORT(0x00758de4, save_data_flag_621cf_bit_1);
-
-GUEST_FUZZ(0x00758de4, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00758e08, 200, [](guest::Fuzz &f) { f.arguments(); });

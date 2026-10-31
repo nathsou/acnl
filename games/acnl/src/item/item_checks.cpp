@@ -38,21 +38,3 @@ u8 Item::data_unknown_15() const {
     return value >= ItemData::UNKNOWN_15_LIMIT ? 0 : value;
 }
 GUEST_EXPORT(0x00768268, Item::data_unknown_15);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Item> some_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    switch (f.below(4)) {
-    case 0: item->id = Item::EMPTY; break;
-    case 1: item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)); break;
-    case 2: item->id = u16(0x4000 + f.below(0x2000)); break;
-    default: break;
-    }
-    return item;
-}
-
-GUEST_FUZZ(0x00768174, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00768214, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00768248, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00768268, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });

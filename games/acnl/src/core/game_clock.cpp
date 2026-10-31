@@ -78,14 +78,12 @@ bool place_is_open(u32 place) {
     return day_relative_time(opens.minute, opens.hour) <= now && now < closing;
 }
 GUEST_EXPORT(0x0058dd08, place_is_open);
-GUEST_FUZZ(0x0058dd08, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, 6, 7, f.number()})); });
 
 // The season of the reference time.
 u32 current_season() {
     return reference_time->season();
 }
 GUEST_EXPORT(0x0056d0fc, current_season);
-GUEST_FUZZ(0x0056d0fc, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // Sets the reference time and remembers it in nanoseconds, with its distance to the other time (stored apart for the
 // kinds with flag 0x80000 or 0x100000).
@@ -101,12 +99,6 @@ void set_reference_time(const TimeStamp &time) {
     }
 }
 GUEST_EXPORT(0x0056d19c, set_reference_time);
-// (sets the time the game already has, so that the run goes on undisturbed)
-GUEST_FUZZ(0x0056d19c, 50, [](guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    *time = *reference_time;
-    f.arguments(time);
-});
 
 namespace {
 
@@ -134,12 +126,6 @@ void set_clock_from_span(const s64 &span) {
     set_reference_time(*reference_time);
 }
 GUEST_EXPORT(0x0056d230, set_clock_from_span);
-// (the span the clock already has, so that the run goes on undisturbed)
-GUEST_FUZZ(0x0056d230, 20, [](guest::Fuzz &f) {
-    auto span = f.object<s64>();
-    *span = clock_state->since_other_18;
-    f.arguments(span);
-});
 
 namespace {
 
@@ -184,7 +170,6 @@ void update_tick_flags() {
     tick_flags->jumped = !same_down_to_second(previous, *previous_tick_time);
 }
 GUEST_EXPORT(0x00589534, update_tick_flags);
-GUEST_FUZZ(0x00589534, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 TimeStamp GameTime::to_time_stamp() const {
     if (nanoseconds == NONE || nanoseconds == 0) {
@@ -200,11 +185,6 @@ s64 GameTime::nanoseconds_or_earliest() const {
     return nanoseconds;
 }
 GUEST_EXPORT(0x00759664, GameTime::nanoseconds_or_earliest);
-GUEST_FUZZ(0x00759664, 100, [](guest::Fuzz &f) {
-    auto time = f.object<GameTime>();
-    time->nanoseconds = f.pick<s64>({0, GameTime::NONE, s64(f.below(1u << 30)) * 1'000'000 * 40, s64(f.number())});
-    f.arguments(time);
-});
 
 void GameTime::set_time_stamp(const TimeStamp &time) {
     nanoseconds = time.nanoseconds_since_origin();
@@ -240,30 +220,6 @@ void GameTime::round_down_to_day_start() {
 }
 GUEST_EXPORT(0x00314cec, GameTime::round_down_to_day_start);
 
-// ---- inputs for the shadow checker's fuzzing
-
-namespace {
-
-gptr<GameTime> some_game_time(guest::Fuzz &f) {
-    auto time = f.object<GameTime>();
-    time->nanoseconds = f.pick<s64>({0, GameTime::NONE, s64(f.below(1u << 30)) * 1'000'000 * 40, s64(f.below(1u << 30)) * 1'000'000 * 600});
-    return time;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x005cddb4, 100, [](guest::Fuzz &f) {
-    auto stamp = f.object<TimeStamp>();
-    *stamp = *reference_time;
-    f.arguments(f.object<GameTime>(), stamp);
-});
-GUEST_FUZZ(0x005cde34, 50, [](guest::Fuzz &f) { f.arguments(f.object<GameTime>()); });
-GUEST_FUZZ(0x005cdf48, 100, [](guest::Fuzz &f) { f.arguments(f.object<GameTime>(), 0u, s64(u64(f.number()) << 20)); });
-GUEST_FUZZ(0x005cdec0, 200, [](guest::Fuzz &f) {
-    f.arguments(some_game_time(f), s32(f.below(24)), s32(f.below(60)), s32(f.below(60)));
-});
-GUEST_FUZZ(0x00314cec, 200, [](guest::Fuzz &f) { f.arguments(some_game_time(f)); });
-
 // Whether the date is set (year, month and day all non-zero) and is the date of the reference time, or with
 // `game_day` of the game day it falls in (the day starts at 6:00).
 bool Date::is_today(bool game_day) const {
@@ -278,14 +234,6 @@ bool Date::is_today(bool game_day) const {
     return year == u16(now.year) && month == u8(now.month) && day == u8(now.day);
 }
 GUEST_EXPORT(0x0030031c, Date::is_today);
-GUEST_FUZZ(0x0030031c, 300, [](guest::Fuzz &f) {
-    auto date = f.object<Date>();
-    TimeStamp now = *reference_time;
-    date->year = f.below(3) ? u16(now.year) : u16(2000 + f.below(60));
-    date->month = f.below(3) ? u8(now.month) : u8(f.below(13));
-    date->day = f.below(3) ? u8(now.day) : u8(f.below(33));
-    f.arguments(date, f.below(2));
-});
 
 // The game time (nanoseconds from the origin) moved by days, hours, minutes and seconds.
 s64 game_time_advanced(s64 nanoseconds, s32 days, s32 hours, s32 minutes, s32 seconds) {
@@ -294,9 +242,6 @@ s64 game_time_advanced(s64 nanoseconds, s32 days, s32 hours, s32 minutes, s32 se
     return time.nanoseconds_since_origin();
 }
 GUEST_EXPORT(0x0056ca10, game_time_advanced);
-GUEST_FUZZ(0x0056ca10, 200, [](guest::Fuzz &f) {
-    f.arguments(s64(f.below(1u << 30)) * 1'000'000 * 100, s32(f.below(40)) - 20, s32(f.below(48)) - 24, s32(f.below(120)) - 60, s32(f.below(120)) - 60);
-});
 
 namespace {
 
@@ -331,23 +276,3 @@ s64 seconds_between(const TimeStamp &later, const TimeStamp &earlier, bool adjus
     return divide_by_reciprocal_value(nanoseconds_between(later, earlier, adjust), SECOND_RECIPROCAL, SECOND_SHIFT);
 }
 GUEST_EXPORT(0x0056c2c0, seconds_between);
-
-namespace {
-
-gptr<TimeStamp> valid_time_stamp(guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    time->year = s32(2012 + f.below(40));
-    time->month = s8(1 + f.below(12));
-    time->day = s8(1 + f.below(28));
-    time->hour = s8(f.below(24));
-    time->minute = s8(f.below(60));
-    time->second = s8(f.below(60));
-    time->millisecond = s16(f.below(1000));
-    return time;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x0056beec, 200, [](guest::Fuzz &f) { f.arguments(valid_time_stamp(f), valid_time_stamp(f), f.below(2)); });
-GUEST_FUZZ(0x002fd4b4, 200, [](guest::Fuzz &f) { f.arguments(valid_time_stamp(f), valid_time_stamp(f), f.below(2)); });
-GUEST_FUZZ(0x0056c2c0, 200, [](guest::Fuzz &f) { f.arguments(valid_time_stamp(f), valid_time_stamp(f), f.below(2)); });

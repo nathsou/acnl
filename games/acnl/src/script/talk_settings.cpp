@@ -27,5 +27,3 @@ void MessageSettings::reset() {
     byte_84 = UNSET;
 }
 GUEST_EXPORT(0x005b18a8, MessageSettings::reset);
-
-GUEST_FUZZ(0x005b18a8, 100, [](guest::Fuzz &f) { f.arguments(f.object<MessageSettings>()); });

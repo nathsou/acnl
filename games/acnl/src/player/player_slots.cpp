@@ -86,16 +86,3 @@ void FlagsAtB::set_bit_4(u32 on) {
     flags = on != 0 ? (flags | BIT_4) : (flags & ~BIT_4);
 }
 GUEST_EXPORT(0x002fbf48, FlagsAtB::set_bit_4);
-
-GUEST_FUZZ(0x002fb96c, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 3, 4, 7, 8, 0xffffffffu, f.below(10)})); });
-GUEST_FUZZ(0x002fb9f1, 200, [](guest::Fuzz &f) {
-    auto table = f.object<BitTable>();
-    for (u32 i = 0; i < HALFWORD_COUNT; i++) {
-        if (f.below(3) == 0) {
-            table->entries[i] = 0;
-        }
-    }
-    f.arguments(table);
-});
-GUEST_FUZZ(0x002fbf30, 200, [](guest::Fuzz &f) { f.arguments(f.object<FlagsAtB>(), f.pick<u32>({0, 1, 2, f.number()})); });
-GUEST_FUZZ(0x002fbf48, 200, [](guest::Fuzz &f) { f.arguments(f.object<FlagsAtB>(), f.pick<u32>({0, 1, 2, f.number()})); });

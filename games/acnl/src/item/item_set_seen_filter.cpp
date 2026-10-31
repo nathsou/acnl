@@ -38,15 +38,6 @@ bool keep_items_seen_by_player(ItemBitSet &set, gptr<SavePlayer> player) {
     return false;
 }
 GUEST_EXPORT(0x006f0578, keep_items_seen_by_player);
-GUEST_FUZZ(0x006f0578, 200, [](guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    auto player = f.object<SavePlayer>();
-    for (u32 word = 0; word < ItemBitSet::WORDS; word++) {
-        set->words[word] = f.below(40) == 0 ? u32(f.number()) : 0;
-        player->pockets.items_seen.words[word] = f.below(2) ? u32(f.number()) : 0;
-    }
-    f.arguments(set, f.below(4) ? player : gptr<SavePlayer>(0u));
-});
 
 // Keeps in the set only the items of the group (ItemData::group). A random member of the set is picked first: when
 // no item of the set is in the group it becomes the only member. Returns whether any item of the set was in the group.
@@ -69,10 +60,3 @@ bool keep_items_of_group(ItemBitSet &set, u32 group) {
     return false;
 }
 GUEST_EXPORT(0x006f3698, keep_items_of_group);
-GUEST_FUZZ(0x006f3698, 200, [](guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    for (u32 word = 0; word < ItemBitSet::WORDS; word++) {
-        set->words[word] = f.below(30) == 0 ? u32(f.number()) : 0;
-    }
-    f.arguments(set, f.pick<u32>({0, 1, 2, 5, 9, f.below(0x67)}));
-});

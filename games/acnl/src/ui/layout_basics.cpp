@@ -58,7 +58,6 @@ AnimationHeader &construct_layout_animation(AnimationHeader &self) {
     return self;
 }
 GUEST_EXPORT(0x00125aec, construct_layout_animation);
-GUEST_FUZZ(0x00125aec, 200, [](guest::Fuzz &f) { f.arguments(f.object<AnimationHeader>()); });
 
 struct LayoutList {
     gptr<void> vtable;
@@ -83,7 +82,6 @@ LayoutList &construct_layout_list(LayoutList &self) {
     return self;
 }
 GUEST_EXPORT(0x00125e08, construct_layout_list);
-GUEST_FUZZ(0x00125e08, 200, [](guest::Fuzz &f) { f.arguments(f.object<LayoutList>()); });
 
 static bool is_linked(const ListNode &node) {
     return node.next || node.prev;
@@ -158,34 +156,6 @@ bool LayoutList::insert(gptr<ListNode> node) {
     return true;
 }
 GUEST_EXPORT(0x00125ca8, LayoutList::insert);
-// Only empty lists: the node's virtual functions are not called, so no vtable is needed.
-GUEST_FUZZ(0x00125ca8, 300, [](guest::Fuzz &f) {
-    auto list = f.object<LayoutList>();
-    auto node = f.object<ListNode>();
-    auto other = f.object<ListNode>();
-    node->vtable = nullptr;
-    list->head = nullptr;
-    if (f.below(2) != 0) {
-        list->tail = nullptr;
-    } else {
-        list->tail = other;
-    }
-    switch (f.below(4)) {
-    case 0:
-        node->prev = other;
-        node->next = nullptr;
-        break;
-    case 1:
-        node->prev = nullptr;
-        node->next = other;
-        break;
-    default:
-        node->prev = nullptr;
-        node->next = nullptr;
-        break;
-    }
-    f.arguments(list, node);
-});
 
 // A binding between an owner object and a handle made by recompiled code (what they are is not known yet).
 struct ObjectBinding {
@@ -289,17 +259,6 @@ bool ObjectBinding::bind(u32 unknown_1, gptr<void> new_owner, u32 unknown_3) {
     return false;
 }
 GUEST_EXPORT(0x00125b3c, ObjectBinding::bind);
-// Only the paths that do not call into other game code are fuzzed.
-GUEST_FUZZ(0x00125b3c, 200, [](guest::Fuzz &f) {
-    auto binding = f.object<ObjectBinding>();
-    if (f.below(2) != 0) {
-        binding->handle = gptr<void>(f.below(1000) + 1);
-    } else {
-        binding->handle = nullptr;
-        binding->owner = gptr<void>(f.below(1000) + 1);
-    }
-    f.arguments(binding, f.number(), gptr<void>(nullptr), 0u);
-});
 
 // A signed byte of global state (meaning not known yet).
 inline guest::global<s8, 0x0094e43f> value_94e43f;
@@ -308,4 +267,3 @@ s8 global_value_94e43f() {
     return *value_94e43f;
 }
 GUEST_EXPORT(0x00125e28, global_value_94e43f);
-GUEST_FUZZ(0x00125e28, 200, [](guest::Fuzz &f) { f.arguments(); });

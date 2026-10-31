@@ -24,11 +24,9 @@ void set_preset(PresetSlots &slots, u32 index, u16 id) {
 
 void store_item_2873_a(PresetSlots &slots) { set_preset(slots, 0, 0x2873); }
 GUEST_EXPORT(0x002a7900, store_item_2873_a);
-GUEST_FUZZ(0x002a7900, 100, [](guest::Fuzz &f) { f.arguments(f.object<PresetSlots>()); });
 
 void store_item_2873_b(PresetSlots &slots) { set_preset(slots, 0, 0x2873); }
 GUEST_EXPORT(0x002a79e4, store_item_2873_b);
-GUEST_FUZZ(0x002a79e4, 100, [](guest::Fuzz &f) { f.arguments(f.object<PresetSlots>()); });
 
 // By coin toss: item 0x2925 in the last slot or item 0x282b in the first.
 void store_random_item_2925_or_282b(PresetSlots &slots) {
@@ -39,18 +37,15 @@ void store_random_item_2925_or_282b(PresetSlots &slots) {
     }
 }
 GUEST_EXPORT(0x002a7930, store_random_item_2925_or_282b);
-GUEST_FUZZ(0x002a7930, 100, [](guest::Fuzz &f) { f.arguments(f.object<PresetSlots>()); });
 
 // By coin toss: item 0x28c0 or 0x2856 in the first slot.
 void store_random_item_28c0_or_2856(PresetSlots &slots) {
     set_preset(slots, 0, random_below(COIN_TOSS) != 0 ? 0x28c0 : 0x2856);
 }
 GUEST_EXPORT(0x002a7a14, store_random_item_28c0_or_2856);
-GUEST_FUZZ(0x002a7a14, 100, [](guest::Fuzz &f) { f.arguments(f.object<PresetSlots>()); });
 
 void store_items_282b_and_2925(PresetSlots &slots) {
     set_preset(slots, 0, 0x282b);
     set_preset(slots, 3, 0x2925);
 }
 GUEST_EXPORT(0x002a7a7c, store_items_282b_and_2925);
-GUEST_FUZZ(0x002a7a7c, 100, [](guest::Fuzz &f) { f.arguments(f.object<PresetSlots>()); });

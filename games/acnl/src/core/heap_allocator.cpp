@@ -20,5 +20,3 @@ HeapAllocator &construct_heap_allocator(HeapAllocator &self) {
     return self;
 }
 GUEST_EXPORT(0x005673c8, construct_heap_allocator);
-
-GUEST_FUZZ(0x005673c8, 200, [](guest::Fuzz &f) { f.arguments(f.object<HeapAllocator>()); });

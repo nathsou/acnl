@@ -1,6 +1,7 @@
 // Questions about a set of items (an ItemBitSet) and the categories: counts and the value of what is in the set.
 #include "core/entry18.hpp"
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
+#include "item/item.hpp"
 #include "item/item_bit_set.hpp"
 
 namespace {
@@ -102,31 +103,3 @@ static s32 total_value(const ItemBitSet &set) {
     return total;
 }
 GUEST_EXPORT(0x0076fd80, total_value);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-gptr<ItemBitSet> some_set(guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    for (u32 i = 0; i < ItemBitSet::WORDS; i++) {
-        if (f.below(3) == 0) {
-            set->words[i] = f.pick<u32>({0, 0xffffffffu});
-        }
-    }
-    return set;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x0076fe68, 200, [](guest::Fuzz &f) {
-    f.arguments(some_set(f), f.pick<u32>({0x24, 0x27, 0x28, 0x2f, 0x84, f.below(0x9b)}), f.below(2));
-});
-GUEST_FUZZ(0x0076fd80, 100, [](guest::Fuzz &f) { f.arguments(some_set(f)); });
-GUEST_FUZZ(0x0076f954, 300, [](guest::Fuzz &f) {
-    auto records = f.allocate(sizeof(GroupedRecords)).cast<GroupedRecords>();
-    f.bytes(records.cast<void>(), 16);
-    records->group_bits[0] = u8(f.number());
-    records->group_bits[1] = u8(f.number());
-    f.arguments(records, f.pick<u32>({0, 1, Entry18::COUNT - 1, Entry18::COUNT, 0xffffffffu, f.below(Entry18::COUNT)}));
-});

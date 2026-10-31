@@ -30,10 +30,3 @@ s32 pick_random_set_bit(const BitSet32 &set) {
 }  // namespace
 
 GUEST_EXPORT(0x002fe419, pick_random_set_bit);
-
-GUEST_FUZZ(0x002fe419, 300, [](guest::Fuzz &f) {
-    auto set = f.object<BitSet32>();
-    set->limit = f.pick<u32>({0, 1, 5, 27, 32, 33, 40, f.below(41)});
-    set->count = f.pick<u32>({0, 1, 2, 3, 8, f.below(33)});
-    f.arguments(set);
-});

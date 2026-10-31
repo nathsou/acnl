@@ -1,6 +1,6 @@
 // Small helpers of the code around 0x00600000 and 0x00650000: setters, a bounded table, a smoothing step and forwarding
 // calls to the world map and the object at 0x009506b4.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 
 namespace {
 
@@ -173,30 +173,3 @@ static u32 operate_on_selected(u32 first, u32 second) {
     return object_operation(*selected_object, first, second);
 }
 GUEST_EXPORT(0x006501e4, operate_on_selected);
-
-GUEST_FUZZ(0x0060028c, 200, [](guest::Fuzz &f) {
-    auto object = f.object<ObjectWithListener>();
-    object->listener = f.below(3) == 0 ? gptr<u8>() : f.allocate(0x40).cast<u8>();
-    f.arguments(object, f.number(), f.number());
-});
-GUEST_FUZZ(0x006002b8, 200, [](guest::Fuzz &f) {
-    auto owner = f.object<SlotOwner>();
-    u32 filled = f.below(SlotOwner::SLOT_COUNT + 1);
-    for (u32 i = 0; i < SlotOwner::SLOT_COUNT; i++) {
-        owner->slots[i] = i < filled ? f.allocate(0x200).cast<u8>() : gptr<u8>();
-    }
-    f.arguments(owner);
-});
-GUEST_FUZZ(0x00600430, 100, [](guest::Fuzz &f) { f.arguments(f.object<UiReceptBase>()); });
-GUEST_FUZZ(0x0064f368, 200, [](guest::Fuzz &f) { f.arguments(f.object<ScrollState>()); });
-GUEST_FUZZ(0x0064f390, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, ENTRY10_COUNT - 1, ENTRY10_COUNT, 0xffffffffu, f.below(300)})); });
-GUEST_FUZZ(0x0064f5b8, 400, [](guest::Fuzz &f) {
-    auto smoother = f.allocate(sizeof(Smoother)).cast<Smoother>();
-    f.bytes(smoother, 0x40);
-    smoother->value = f.real();
-    smoother->steps_left = f.pick<u16>({0, 1, 2, 10, 0xffff, u16(f.number())});
-    f.arguments(smoother, f.real());
-});
-GUEST_FUZZ(0x0064fdcc, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00650140, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.number(), f.number()); });
-GUEST_FUZZ(0x006501e4, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.number()); });

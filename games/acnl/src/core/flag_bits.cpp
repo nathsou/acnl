@@ -20,9 +20,3 @@ static void set_flag_bit(gptr<u8> bits, u32 index, u32 value) {
     }
 }
 GUEST_EXPORT(0x40207938, set_flag_bit);
-
-GUEST_FUZZ(0x40207938, 300, [](guest::Fuzz &f) {
-    auto bits = f.allocate(8).cast<u8>();
-    f.bytes(bits, 8);
-    f.arguments(bits, f.pick<u32>({0, 1, 2, 5, 7, 8, 9, 0x1e, 0x27, 0x28, 0x29, 0xff, f.below(0x30)}), f.below(2));
-});

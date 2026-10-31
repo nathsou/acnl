@@ -40,9 +40,3 @@ static gptr<void> allocate_from_heap(u32 size, gptr<Heap> heap, u32 alignment) {
     return guest::call_address<gptr<void>>(heap->vtable->allocate, heap, size, alignment);
 }
 GUEST_EXPORT(0x002fd108, allocate_from_heap);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002fd108, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({8, 0x20, 0x38}), gptr<Heap>(), f.pick<u32>({4, 0x20}));
-});

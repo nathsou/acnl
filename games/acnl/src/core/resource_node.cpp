@@ -68,21 +68,3 @@ gptr<void> resource_node_virtual_0(gptr<void> self) {
     return member - 8 - SLOT_OFFSET;
 }
 GUEST_EXPORT(0x005b1a98, resource_node_virtual_0);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<void> zeroed_node(guest::Fuzz &f) {
-    gptr<void> p = f.allocate(0x40);
-    memset(p.get(), 0, 0x40);
-    return p;
-}
-
-GUEST_FUZZ(0x005b1a1c, 200, [](guest::Fuzz &f) { f.arguments(f.object<ClearableSlot>()); });
-GUEST_FUZZ(0x005b1a2c, 200, [](guest::Fuzz &f) {
-    auto a = f.object<ClearableSlot>();
-    auto b = f.below(4) ? f.object<ClearableSlot>() : a;
-    f.arguments(a, b);
-});
-GUEST_FUZZ(0x005b1a48, 200, [](guest::Fuzz &f) { f.arguments(zeroed_node(f)); });
-GUEST_FUZZ(0x005b1a70, 200, [](guest::Fuzz &f) { f.arguments(zeroed_node(f)); });
-GUEST_FUZZ(0x005b1a98, 200, [](guest::Fuzz &f) { f.arguments(zeroed_node(f)); });

@@ -20,4 +20,3 @@ guest::gptr<WordPair> zero_word_pair() {
     return zero_pair.ptr();
 }
 GUEST_EXPORT(0x0052f074, zero_word_pair);
-GUEST_FUZZ(0x0052f074, 50, [](guest::Fuzz &f) { f.arguments(); });

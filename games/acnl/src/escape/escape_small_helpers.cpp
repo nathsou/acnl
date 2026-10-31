@@ -68,36 +68,3 @@ static bool notify_held_target(EscModelBase &self) {
     return true;
 }
 GUEST_EXPORT(0x402ff940, notify_held_target);
-
-GUEST_FUZZ(0x402ff758, 300, [](guest::Fuzz &f) {
-    auto list = f.object<EscapeEntryList>();
-    u32 count = 1 + f.below(4);
-    auto entries = f.allocate(count * 4).cast<gptr<EscapeEntry>>();
-    for (u32 i = 0; i < count; i++) {
-        entries[i] = f.object<EscapeEntry>();
-    }
-    list->count = count;
-    list->entries = entries;
-    f.arguments(list, f.below(count + 2));
-});
-GUEST_FUZZ(0x402ff8e8, 200, [](guest::Fuzz &f) {
-    auto part = f.object<EscapePartState>();
-    if (f.below(2) != 0) {
-        part->value_124 = 0;
-    } else {
-        part->value_124 = 1;
-        part->state_120 = PART_DONE_STATE;
-    }
-    f.arguments(part);
-});
-GUEST_FUZZ(0x402ff940, 200, [](guest::Fuzz &f) {
-    auto model = f.object<EscModelBase>();
-    if (f.below(2) != 0) {
-        model->target = nullptr;
-    } else {
-        auto target = f.object<NotifyTarget>();
-        target->value_110 = 0;
-        model->target = target;
-    }
-    f.arguments(model);
-});

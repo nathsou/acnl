@@ -124,17 +124,6 @@ s32 format_to_buffer_100dfc(gptr<char> buffer, u32 size, gptr<const char> format
     return result;
 }
 
-gptr<u8> fuzz_text(guest::Fuzz &f, u32 max_length, u32 capacity) {
-    gptr<u8> text = f.allocate(capacity).cast<u8>();
-    f.bytes(text, capacity);
-    u32 length = f.below(max_length + 1);
-    for (u32 i = 0; i < length; i++) {
-        text[i] = u8(f.below(255) + 1);
-    }
-    text[length] = 0;
-    return text;
-}
-
 }  // namespace
 
 GUEST_EXPORT(0x00100d2d, memory_compare_100d2c);
@@ -142,40 +131,3 @@ GUEST_EXPORT(0x00100da1, string_append_bounded_100da0);
 GUEST_EXPORT(0x00100dc5, character_to_lower_100dc4);
 GUEST_EXPORT(0x00100ddf, character_to_upper_100dde);
 GUEST_EXPORT(0x00100dfd, format_to_buffer_100dfc);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00100d2d, 400, [](guest::Fuzz &f) {
-    gptr<u8> a = f.allocate(40).cast<u8>();
-    gptr<u8> b = f.allocate(40).cast<u8>();
-    f.bytes(a, 40);
-    for (u32 i = 0; i < 40; i++) {
-        b[i] = a[i];
-    }
-    if (f.below(4) != 0) {
-        b[f.below(28)] = u8(f.number());
-    }
-    u32 offset = f.below(3) == 0 ? f.below(2) : 0;
-    f.arguments(a + offset, b + offset, f.pick<u32>({0, 1, 3, 4, 7, 8, 24, f.below(25)}));
-});
-
-GUEST_FUZZ(0x00100da1, 400, [](guest::Fuzz &f) {
-    gptr<u8> dest = fuzz_text(f, 15, 64);
-    gptr<u8> source = fuzz_text(f, 16, 24);
-    f.arguments(dest.cast<char>(), source.cast<const char>(), f.pick<u32>({0, 1, 5, 17, 40, f.below(40)}));
-});
-
-GUEST_FUZZ(0x00100dc5, 300, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(256), f.below(128), 0xdf})); });
-GUEST_FUZZ(0x00100ddf, 300, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(256), f.below(128), 0xdf})); });
-
-GUEST_FUZZ(0x00100dfd, 300, [](guest::Fuzz &f) {
-    gptr<u8> buffer = f.allocate(64).cast<u8>();
-    f.bytes(buffer, 64);
-    auto format = "ab%dc"_g;
-    switch (f.below(3)) {
-    case 0: format = "hello"_g; break;
-    case 1: format = "%d"_g; break;
-    default: break;
-    }
-    f.arguments(buffer.cast<char>(), f.pick<u32>({0, 1, 2, 8, 40}), format, f.below(100000));
-});

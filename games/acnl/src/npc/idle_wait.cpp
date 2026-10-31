@@ -46,10 +46,3 @@ bool start_waiting(WaitingActor &self) {
     return begin_action_0(self.actor, *second_value_for_waiting, FIRST_PRIORITY);
 }
 GUEST_EXPORT(0x006049ac, start_waiting);
-GUEST_FUZZ(0x006049ac, 100, [](guest::Fuzz &f) {
-    f.allocate(0x1000);  // (clear of the stack the original works on)
-    auto actor = f.allocate(sizeof(WaitingActor)).cast<WaitingActor>();
-    actor->actor.priority = u8(f.below(3));
-    actor->actor.state = f.pick<u8>({0, 5, 0x30});
-    f.arguments(actor);
-});

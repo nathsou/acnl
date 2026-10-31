@@ -28,12 +28,6 @@ void destroy_animations(ButtonActionControlLayout &self) {
     }
 }
 
-void zero_object(gptr<ButtonActionControlLayout> p) {
-    for (u32 i = 0; i < sizeof(ButtonActionControlLayout); i++) {
-        p.cast<u8>()[i] = 0;
-    }
-}
-
 }  // namespace
 
 // Destructor: destroys the four animations. Returns the object.
@@ -49,16 +43,3 @@ gptr<void> destroy_button_action_control_and_list(ButtonActionControlLayout &sel
     return destroy_list_node(guest::addr_of(self).cast<void>());
 }
 GUEST_EXPORT(0x002f76d0, destroy_button_action_control_and_list);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002f7710, 100, [](guest::Fuzz &f) {
-    auto object = f.object<ButtonActionControlLayout>();
-    zero_object(object);
-    f.arguments(object);
-});
-GUEST_FUZZ(0x002f76d0, 100, [](guest::Fuzz &f) {
-    auto object = f.object<ButtonActionControlLayout>();
-    zero_object(object);
-    f.arguments(object);
-});

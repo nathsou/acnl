@@ -130,31 +130,3 @@ u32 StagedObject::amount_for_stage() const {
     }
 }
 GUEST_EXPORT(0x00758e2c, StagedObject::amount_for_stage);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00759298, 200, [](guest::Fuzz &f) { f.arguments(f.object<SaveSection>()); });
-GUEST_FUZZ(0x007592c0, 200, [](guest::Fuzz &f) {
-    auto section = f.object<SaveSection>();
-    if (f.below(2) != 0) {
-        section->checksum = crc32(guest::addr_of(section->payload), SaveSection::PAYLOAD_SIZE, CRC_START, CRC_FINAL_XOR);
-    }
-    f.arguments(section);
-});
-GUEST_FUZZ(0x0075915c, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<SaveSection>(), f.pick<u32>({0, 1, 31, 32, 0x50, 0x51, 0x52, 0xffffffffu, f.below(0x60)}));
-});
-static void fuzz_759270(guest::Fuzz &f) {
-    f.arguments(f.object<EntryBook>(), f.pick<u32>({0, 1, 0x37, 0x38, 0x39, 0xffffffffu, f.below(0x40)}));
-}
-GUEST_FUZZ(0x00759270, 300, fuzz_759270);
-GUEST_FUZZ(0x005cd9f8, 300, fuzz_759270);
-GUEST_FUZZ(0x00759280, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<EventEntries>(), f.pick<u32>({0, 1, 2, 3, 0xffffffffu}));
-});
-GUEST_FUZZ(0x00759260, 200, [](guest::Fuzz &f) { f.arguments(f.object<SmallValueHolder>()); });
-GUEST_FUZZ(0x00758e2c, 200, [](guest::Fuzz &f) {
-    auto object = f.object<StagedObject>();
-    object->stage = f.pick<u8>({0, 1, 2, 3, 4, 5, 6, 0xff, u8(f.number())});
-    f.arguments(object);
-});

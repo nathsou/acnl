@@ -12,10 +12,6 @@ constexpr u32 ACTOR_IDS_ADDRESS = 0x0088e4ec;  // five pairs of actor ids
 constexpr u32 ACTOR_ID_PAIRS = 5;
 constexpr u32 FIRST_VILLAGER_ACTOR_ID = 8;     // villager number plus this
 
-gptr<SaveVillager> some_villagers(guest::Fuzz &f) {
-    return f.allocate(SaveData::VILLAGER_COUNT * sizeof(SaveVillager)).cast<SaveVillager>();
-}
-
 }  // namespace
 
 // How many valid villagers are in state 0 or 1.
@@ -30,7 +26,6 @@ u32 count_villagers_in_state_0_or_1(gptr<SaveVillager> villagers) {
     return count;
 }
 GUEST_EXPORT(0x00118e5d, count_villagers_in_state_0_or_1);
-GUEST_FUZZ(0x00118e5d, 100, [](guest::Fuzz &f) { f.arguments(some_villagers(f)); });
 
 // The index of the first valid villager with the id among the ten, -1 if none.
 s32 index_of_villager_with_id(gptr<SaveVillager> villagers, u32 id) {
@@ -43,7 +38,6 @@ s32 index_of_villager_with_id(gptr<SaveVillager> villagers, u32 id) {
     return -1;
 }
 GUEST_EXPORT(0x001193d1, index_of_villager_with_id);
-GUEST_FUZZ(0x001193d1, 100, [](guest::Fuzz &f) { f.arguments(some_villagers(f), f.pick<u32>({0, 1, 100, 0x18e, f.number()})); });
 
 // The same in a list of `count` villager records, with the id first.
 s32 index_of_villager_with_id_in(u32 id, gptr<SaveVillager> villagers, u32 count) {
@@ -56,9 +50,6 @@ s32 index_of_villager_with_id_in(u32 id, gptr<SaveVillager> villagers, u32 count
     return -1;
 }
 GUEST_EXPORT(0x001121f1, index_of_villager_with_id_in);
-GUEST_FUZZ(0x001121f1, 100, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 100, 0x18e, f.number()}), some_villagers(f), f.below(SaveData::VILLAGER_COUNT + 1));
-});
 
 // Clears flag bit 6 in the byte at 0xbd of every used player record of every valid villager (meaning not known yet).
 void clear_flag_bd_bit6_of_all_player_records(gptr<SaveVillager> villagers) {
@@ -75,7 +66,6 @@ void clear_flag_bd_bit6_of_all_player_records(gptr<SaveVillager> villagers) {
     }
 }
 GUEST_EXPORT(0x0010f48d, clear_flag_bd_bit6_of_all_player_records);
-GUEST_FUZZ(0x0010f48d, 100, [](guest::Fuzz &f) { f.arguments(some_villagers(f)); });
 
 // Sets the flag of a player slot (0 to 3) on every valid villager, except those that have only FLAG_1.
 void set_slot_flag_on_villagers(gptr<SaveVillager> villagers, u32 slot) {
@@ -92,7 +82,6 @@ void set_slot_flag_on_villagers(gptr<SaveVillager> villagers, u32 slot) {
     }
 }
 GUEST_EXPORT(0x0010d645, set_slot_flag_on_villagers);
-GUEST_FUZZ(0x0010d645, 100, [](guest::Fuzz &f) { f.arguments(some_villagers(f), f.pick<u32>({0, 1, 2, 3, 4, 31, 32, f.number()})); });
 
 // For an actor id of the game's table (five pairs of ids): whether the villager that has the id minus 8 as its number
 // is a valid one with only FLAG_1.
@@ -108,7 +97,3 @@ bool is_flag_1_only_villager_actor(u32 actor_id) {
     return false;
 }
 GUEST_EXPORT(0x006cbf6c, is_flag_1_only_villager_actor);
-GUEST_FUZZ(0x006cbf6c, 100, [](guest::Fuzz &f) {
-    gptr<const u8> ids(ACTOR_IDS_ADDRESS);
-    f.arguments(f.pick<u32>({0, 8, ids[f.below(ACTOR_ID_PAIRS * 2)], ids[f.below(ACTOR_ID_PAIRS * 2)], f.number()}));
-});

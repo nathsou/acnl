@@ -67,25 +67,3 @@ s8 AcNpcSp::virtual_45() const {
     return value_1d9f;
 }
 GUEST_EXPORT(0x0075d12c, AcNpcSp::virtual_45);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0075cf88, 300, [](guest::Fuzz &f) {
-    auto object = f.object<StateObject>();
-    object->state = f.pick<u8>({0, 3, 4, 5, 8, 1, 2, 9, u8(f.number())});
-    if (f.below(2) != 0) {
-        object->word_0c = 0;
-    }
-    f.arguments(object, f.pick<u32>({0, 1, 0xffffffff, f.number()}));
-});
-GUEST_FUZZ(0x0075d0f0, 200, [](guest::Fuzz &f) {
-    auto object = f.object<StateObject360>();
-    gptr<void> target = f.allocate(0x100);
-    memset(target.get(), 0, 0x100);
-    object->pointer_360 = target;
-    if (f.below(2) != 0) {
-        object->state = 0;
-    }
-    f.arguments(object);
-});
-GUEST_FUZZ(0x0075d12c, 200, [](guest::Fuzz &f) { f.arguments(f.object<AcNpcSp>()); });

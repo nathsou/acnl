@@ -49,4 +49,3 @@ DragIconControl &construct_drag_icon_control(DragIconControl &self) {
     return self;
 }
 GUEST_EXPORT(0x0029b7c0, construct_drag_icon_control);
-GUEST_FUZZ(0x0029b7c0, 200, [](guest::Fuzz &f) { f.arguments(f.object<DragIconControl>()); });

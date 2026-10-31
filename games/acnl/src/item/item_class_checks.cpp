@@ -1,6 +1,6 @@
 // More yes/no questions about an item, answered from its category, its data bytes, its number and its flags
 // (the functions around 0x00768xxx-0x0076axxx).
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/furniture_ref.hpp"
 #include "item/item.hpp"
 
@@ -234,37 +234,6 @@ u32 Item::section_in_category_27() const {
 }
 GUEST_EXPORT(0x007692f0, Item::section_in_category_27);
 
-GUEST_FUZZ(0x00768008, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00768044, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {0x3d, 0x70, 0x4d, 0x4f, 0x51, 0x79, 0x35, 0x3a})); });
-GUEST_FUZZ(0x007680f0, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00768758, 400, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {0x2f, 0x2c})); });
-GUEST_FUZZ(0x00768b4c, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00768b6c, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00768ba8, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x0076991c, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00768ce8, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00768d60, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x00769670, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x0076a4bc, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
-GUEST_FUZZ(0x007694fc, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {0x0c})); });
-GUEST_FUZZ(0x0076a028, 300, [](guest::Fuzz &f) {
-    auto item = fuzz::assorted_item(f);
-    if (f.below(8) == 0) {
-        item->id = u16(MARKER_NUMBER | (item->id & Item::ID_FLAG));
-    }
-    f.arguments(item);
-});
-GUEST_FUZZ(0x0076a280, 400, [](guest::Fuzz &f) {
-    // categories around the checked special ones
-    auto item = fuzz::assorted_item(f, {0x06, 0x07, 0x2f, 0x31, 0x54, 0x55, 0x56, 0x57, 0x93, 0x94});  // categories near the special ones
-    if (f.below(4) == 0) {
-        // inside the block of special B numbers (0x70 of them)
-        item->id = u16(SPECIAL_B_BLOCK + f.below(0x70));  // inside the block of special B numbers
-    }
-    f.arguments(item);
-});
-GUEST_FUZZ(0x007692f0, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_27})); });
-
 u32 Item::data_byte_0b() const {
     gptr<ItemData> d = data();
     if (!d) {
@@ -273,13 +242,11 @@ u32 Item::data_byte_0b() const {
     return d->unknown_0b < BYTE_0B_LIMIT ? d->unknown_0b : 0;
 }
 GUEST_EXPORT(0x0076c628, Item::data_byte_0b);
-GUEST_FUZZ(0x0076c628, 200, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 bool Item::has_valid_value_06_and_flags_value() const {
     return has_valid_value_06() && flags_value() != 0;
 }
 GUEST_EXPORT(0x0076c648, Item::has_valid_value_06_and_flags_value);
-GUEST_FUZZ(0x0076c648, 200, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 bool Item::has_data_byte_17_low_nibble_2() const {
     gptr<ItemData> d = data();
@@ -290,13 +257,11 @@ bool Item::has_data_byte_17_low_nibble_2() const {
     return value < BYTE_17_LOW_LIMIT && value == BYTE_17_LOW_WANTED;
 }
 GUEST_EXPORT(0x0076c5b0, Item::has_data_byte_17_low_nibble_2);
-GUEST_FUZZ(0x0076c5b0, 200, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 bool Item::is_wear_class_7_in_mode_with_flag_4() const {
     return is_wear_class_7() && table_entry_has_all_bits(MODE_FLAG_4, read_global_byte_2()) != 0;
 }
 GUEST_EXPORT(0x0076aa70, Item::is_wear_class_7_in_mode_with_flag_4);
-GUEST_FUZZ(0x0076aa70, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 // Items of category 0x48 and the object with number 0x9d become item number 0x33a7 (keeping the flags and the flag of the
 // id); every other item becomes the empty item.
@@ -311,7 +276,6 @@ void item_for_category_48_or_number_9d(Item &out, const Item &item) {
     out.flags = item.flags;
 }
 GUEST_EXPORT(0x0076b8c4, item_for_category_48_or_number_9d);
-GUEST_FUZZ(0x0076b8c4, 300, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), fuzz::assorted_item(f, {CATEGORY_48})); });
 
 namespace {
 
@@ -334,7 +298,6 @@ u32 Item::data_tag(u32 index) const {
     return (d.cast<u8>()[TAG_BITS[index].byte_offset] >> TAG_BITS[index].bit) & 1;
 }
 GUEST_EXPORT(0x001892f8, Item::data_tag);
-GUEST_FUZZ(0x001892f8, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f), f.below(10)); });
 
 // ---- more questions about the category and the variation of an item
 
@@ -374,13 +337,11 @@ bool Item::has_category_in_set_c() const {
     return contains(SPECIAL_B_CATEGORIES, category());
 }
 GUEST_EXPORT(0x0076a684, Item::has_category_in_set_c);
-GUEST_FUZZ(0x0076a684, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {0x06, 0x07, 0x2f, 0x31, 0x54, 0x55, 0x56, 0x57, 0x93, 0x94})); });
 
 bool Item::is_category_48_with_wear_index_in_group_a() const {
     return category() == CATEGORY_48 && contains(WEAR_INDICES_GROUP_A, wear_index(*this));
 }
 GUEST_EXPORT(0x0076ae94, Item::is_category_48_with_wear_index_in_group_a);
-GUEST_FUZZ(0x0076ae94, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_48})); });
 
 u32 Item::table_value_for_category_80() const {
     if (category() != CATEGORY_80) {
@@ -394,19 +355,11 @@ u32 Item::table_value_for_category_80() const {
     return TABLE_80_DEFAULT;
 }
 GUEST_EXPORT(0x0076af00, Item::table_value_for_category_80);
-GUEST_FUZZ(0x0076af00, 300, [](guest::Fuzz &f) {
-    auto item = fuzz::assorted_item(f, {CATEGORY_80});
-    if (f.below(2) == 0) {
-        item->id = gptr<u16>(TABLE_80_NUMBERS)[f.below(TABLE_80_COUNT)];
-    }
-    f.arguments(item);
-});
 
 u32 Item::count_if_category_29() const {
     return category() == CATEGORY_29 ? flags_value() + 1u : 0;
 }
 GUEST_EXPORT(0x0076b274, Item::count_if_category_29);
-GUEST_FUZZ(0x0076b274, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_29})); });
 
 // False only for the items with flag 4 of ItemData::flags_1c that are neither flagged by flag_1c_bit3 nor have a valid
 // value_06 with a variation count.
@@ -421,32 +374,27 @@ bool Item::is_not_catalog_flagged_or_exempt() const {
     return (d->flags_1c & FLAGS_1C_BIT_4) == 0;
 }
 GUEST_EXPORT(0x0076c318, Item::is_not_catalog_flagged_or_exempt);
-GUEST_FUZZ(0x0076c318, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 u32 Item::value_if_category_8d() const {
     return category() == CATEGORY_8D ? flags_value() : 0;
 }
 GUEST_EXPORT(0x0076c408, Item::value_if_category_8d);
-GUEST_FUZZ(0x0076c408, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_8D})); });
 
 bool Item::has_wear_index_in_group_b() const {
     return contains(WEAR_INDICES_GROUP_B, wear_index(*this));
 }
 GUEST_EXPORT(0x0076c5e4, Item::has_wear_index_in_group_b);
-GUEST_FUZZ(0x0076c5e4, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 bool Item::is_category_15() const {
     return category() == CATEGORY_15;
 }
 GUEST_EXPORT(0x0076c6a4, Item::is_category_15);
-GUEST_FUZZ(0x0076c6a4, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {CATEGORY_15})); });
 
 bool Item::has_category_flag_bit_1_5() const {
     gptr<u8> entry = category_flags();
     return entry && ((entry[CATEGORY_FLAGS_SECOND_BYTE] >> CATEGORY_FLAG_BIT_5) & 1) != 0;
 }
 GUEST_EXPORT(0x0076c590, Item::has_category_flag_bit_1_5);
-GUEST_FUZZ(0x0076c590, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 // The size (1, 2 or 4) the variation nibble stands for, 0 without a variation.
 u32 Item::variant_size() const {
@@ -460,7 +408,6 @@ u32 Item::variant_size() const {
     return nibble <= SIZE_2_LAST ? SIZE_2 : SIZE_4;
 }
 GUEST_EXPORT(0x0076b5dc, Item::variant_size);
-GUEST_FUZZ(0x0076b5dc, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 // The variation's index inside its size.
 u32 Item::variant_index_in_size() const {
@@ -474,14 +421,12 @@ u32 Item::variant_index_in_size() const {
     return nibble <= SIZE_2_LAST ? nibble - SIZE_2_FIRST : nibble - SIZE_4_FIRST;
 }
 GUEST_EXPORT(0x0076bf68, Item::variant_index_in_size);
-GUEST_FUZZ(0x0076bf68, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 bool Item::passes_sanitize() const {
     Item copy = *this;
     return copy.sanitize();
 }
 GUEST_EXPORT(0x0076ad70, Item::passes_sanitize);
-GUEST_FUZZ(0x0076ad70, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 // Whether any of the eight items of the row has the same number as the item (Thumb entry).
 bool row_has_same_number(gptr<const Item> row, const Item &item) {
@@ -494,14 +439,6 @@ bool row_has_same_number(gptr<const Item> row, const Item &item) {
     return false;
 }
 GUEST_EXPORT(0x0011b469, row_has_same_number);
-GUEST_FUZZ(0x0011b469, 200, [](guest::Fuzz &f) {
-    auto row = f.allocate(8 * sizeof(Item)).cast<Item>();
-    auto item = fuzz::assorted_item(f);
-    for (u32 i = 0; i < 8; i++) {
-        row[i] = f.below(3) == 0 ? *item : *fuzz::assorted_item(f);
-    }
-    f.arguments(row, item);
-});
 
 // ---- the item's special event, regular items and the item data checks
 
@@ -557,7 +494,6 @@ bool Item::has_variant_below_largest_size() const {
     return has_valid_value_06() && flags_value() != 0 && item_size_class(*this) != LARGEST_SIZE_CLASS;
 }
 GUEST_EXPORT(0x0076bd2c, Item::has_variant_below_largest_size);
-GUEST_FUZZ(0x0076bd2c, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f)); });
 
 // An item with data whose category flags have bit 4 and bit 1 set, whose category is not one of a few, that has no variation
 // of the largest size and is not in id set a.
@@ -579,7 +515,6 @@ bool Item::is_regular_item() const {
     return !is_in_id_set_a();
 }
 GUEST_EXPORT(0x007691d0, Item::is_regular_item);
-GUEST_FUZZ(0x007691d0, 400, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {0x24, 0x27, 0x39, 0x49, 0x20, 0x30})); });
 
 // The index (1-20) of the special event the item's availability rule starts, 0 for items without data and other rules.
 u32 Item::event_index_of_rule() const {
@@ -598,21 +533,12 @@ u32 Item::event_index_of_rule() const {
     return 0;
 }
 GUEST_EXPORT(0x006fb66c, Item::event_index_of_rule);
-GUEST_FUZZ(0x006fb66c, 400, [](guest::Fuzz &f) {
-    auto item = fuzz::assorted_item(f);
-    if (f.below(4) == 0) {
-        // the two items rule 0x84 accepts, and one next to them
-        item->id = f.pick<u16>({0x2098, 0x209c, 0x2099});  // the two items of rule 0x84 and one next to them
-    }
-    f.arguments(item);
-});
 
 // Items that are not empty, have valid data and a category of a fixed set (Thumb entry).
 bool Item::has_category_in_set_d() const {
     return !is_empty() && item_has_valid_data(*this) && contains(CATEGORIES_SET_D, category());
 }
 GUEST_EXPORT(0x0011268d, Item::has_category_in_set_d);
-GUEST_FUZZ(0x0011268d, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f, {5, 6, 0x19, 0x2e, 0x58, 0x59})); });
 
 // Whether the item has valid data whose byte 0x19 value is the wanted one (the value 13 of invalid data never matches;
 // Thumb entry).
@@ -624,7 +550,6 @@ bool item_data_byte_19_is(const Item &item, u32 wanted) {
     return value != NOT_BYTE_19_VALUE && value == wanted;
 }
 GUEST_EXPORT(0x00111f71, item_data_byte_19_is);
-GUEST_FUZZ(0x00111f71, 300, [](guest::Fuzz &f) { f.arguments(fuzz::assorted_item(f), f.below(8)); });
 
 // Whether the two items have the same number (the flag in the id left out) and the same flags apart from their two top bits.
 bool Item::equals_ignoring_marks(const Item &other) const {
@@ -632,12 +557,3 @@ bool Item::equals_ignoring_marks(const Item &other) const {
     return (flags & ~FLAG_MARKS) == (other.flags & ~FLAG_MARKS) && (id & NUMBER_MASK) == (other.id & NUMBER_MASK);
 }
 GUEST_EXPORT(0x0076aa04, Item::equals_ignoring_marks);
-GUEST_FUZZ(0x0076aa04, 300, [](guest::Fuzz &f) {
-    auto a = fuzz::assorted_item(f);
-    auto b = fuzz::assorted_item(f);
-    if (f.below(2) != 0) {
-        b->id = u16(a->id ^ (f.below(2) != 0 ? Item::ID_FLAG : 0));  // the flag in the id does not count
-        b->flags = u16(a->flags ^ (f.below(3) << 14));              // nor do the top bits of the flags
-    }
-    f.arguments(a, b);
-});

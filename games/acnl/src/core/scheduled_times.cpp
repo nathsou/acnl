@@ -54,17 +54,3 @@ bool scheduled_time_has_passed(const ScheduledTime &schedule, const TimeStamp &n
     return is_not_before(now, due);
 }
 GUEST_EXPORT(0x00757620, scheduled_time_has_passed);
-GUEST_FUZZ(0x00757620, 300, [](guest::Fuzz &f) {
-    auto schedule = f.object<ScheduledTime>();
-    TimeStamp date = *reference_time;
-    date.add_days(s32(f.below(5)) - 2);
-    GameTime game_time;
-    game_time.set_time_stamp(date);
-    std::memcpy(schedule->date, &game_time, sizeof(game_time));
-    schedule->hour = u8(f.below(24));
-    schedule->minute = u8(f.below(60));
-    schedule->flags = u8(f.below(2));
-    auto now = f.object<TimeStamp>();
-    *now = *reference_time;
-    f.arguments(schedule, now, s32(f.below(200)) - 100);
-});

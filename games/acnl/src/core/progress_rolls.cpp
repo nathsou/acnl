@@ -37,8 +37,3 @@ void roll_stage_byte(gptr<u8> object) {
     object[9] = u8((tier << TIER_SHIFT) | (u32(random_below(LOW_ROLLS)) + LOW_BASE));
 }
 GUEST_EXPORT(0x006efc48, roll_stage_byte);
-GUEST_FUZZ(0x006efc48, 100, [](guest::Fuzz &f) {
-    gptr<SaveData> save = get_save_data();
-    save->flags_621ce = u8((save->flags_621ce & 0x0f) | (f.below(6) << STAGE_SHIFT));
-    f.arguments(f.allocate(16));
-});

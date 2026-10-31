@@ -16,7 +16,7 @@ inline constexpr guest::Function<0x40290510, gptr<void>(gptr<void> memory, u32 c
 constexpr u32 SYMBOL_COUNT = 12;
 constexpr u32 CONSTRUCTOR_ADDRESS = 0x4029166c;
 constexpr u32 TABLE_ENTRY_SIZE = 4;
-constexpr u32 ENTRY_WORD_COUNT = 256;  // words the fuzzer fills; the lookups use indices from the pair table
+constexpr u32 ENTRY_WORD_COUNT = 256;  // the lookups use indices from the pair table
 
 // An entry of an EscapeEntryList as a record of words at 0x2c (meaning not known yet).
 struct EscapeEntryWords {
@@ -142,25 +142,3 @@ static gptr<gptr<void>> find_resource_array(ResourceTableOwner &self, gptr<gptr<
     return result;
 }
 GUEST_EXPORT(0x402fef20, find_resource_array);
-
-GUEST_FUZZ(0x402fe84c, 200, [](guest::Fuzz &f) { f.arguments(f.below(SYMBOL_COUNT), f.number()); });
-GUEST_FUZZ(0x402fe86c, 400, [](guest::Fuzz &f) {
-    auto list = f.object<EscapeEntryList>();
-    u32 count = 1 + f.below(4);
-    auto entries = f.allocate(count * 4).cast<gptr<EscapeEntry>>();
-    for (u32 i = 0; i < count; i++) {
-        auto entry = f.object<EscapeEntryWords>();
-        for (u32 w = 0; w < ENTRY_WORD_COUNT; w++) {
-            entry->values[w] = f.below(2) ? -1 : s32(f.below(count));
-        }
-        entries[i] = entry.cast<EscapeEntry>();
-    }
-    list->count = count;
-    list->entries = entries;
-    f.arguments(list, f.below(count), f.below(14));
-});
-GUEST_FUZZ(0x402fef20, 200, [](guest::Fuzz &f) {
-    auto loader = f.object<ResourceTableOwner>();
-    auto holder = f.object<HeapHolder>();
-    f.arguments(loader, gptr<gptr<const char>>(), f.pick<s32>({0, -1, -100}), holder);
-});

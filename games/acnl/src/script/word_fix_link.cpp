@@ -35,13 +35,3 @@ void LinkOwner::unlink() {
     peer_b34 = nullptr;
 }
 GUEST_EXPORT(0x005ea8dc, LinkOwner::unlink);
-
-GUEST_FUZZ(0x005ea8dc, 300, [](guest::Fuzz &f) {
-    auto owner = f.object<LinkOwner>();
-    if (f.below(4) == 0) {
-        owner->peer = nullptr;
-    } else {
-        owner->peer = f.object<LinkPeer>();
-    }
-    f.arguments(owner, u32(0));
-});

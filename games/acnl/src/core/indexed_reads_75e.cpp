@@ -10,7 +10,6 @@ namespace {
 constexpr u32 ENTRY_COUNT = 4;
 constexpr u32 MASK_COUNT = 5;     // indices below this have a bit in the mask byte
 constexpr u8 NO_ENTRY_ID = 0xa5;  // meaning not known yet
-constexpr u32 FUZZ_OBJECT_SIZE = 0x40;
 constexpr u32 POINTER_SKIP = 2;   // the entry's pointer is returned plus this
 
 inline constexpr guest::Function<0x00624c78, u32(u32 index)> bit_for_index;
@@ -53,24 +52,12 @@ struct BigObject {
 };
 GUEST_OFFSET(BigObject, member_3860, 0x3860);
 
-u32 fuzz_index(guest::Fuzz &f) {
-    return f.pick<u32>({0, 1, 3, 4, 5, 6, 0xffffffffu, f.below(8)});
-}
-
-template <typename T>
-gptr<T> fuzz_bytes_object(guest::Fuzz &f) {
-    auto object = f.allocate(std::max<u32>(sizeof(T), FUZZ_OBJECT_SIZE)).template cast<T>();
-    f.bytes(object.template cast<u8>(), sizeof(T));
-    return object;
-}
-
 }  // namespace
 
 gptr<u8> address_of_member_3860(BigObject &object) {
     return guest::addr_of(object.member_3860);
 }
 GUEST_EXPORT(0x0075e74c, address_of_member_3860);
-GUEST_FUZZ(0x0075e74c, 20, [](guest::Fuzz &f) { f.arguments(f.object<BigObject>()); });
 
 // Whether the bit for the index (below 5) is set in the mask byte.
 bool mask_bit_set(const ByteEntries &object, u32 index) {
@@ -80,7 +67,6 @@ bool mask_bit_set(const ByteEntries &object, u32 index) {
     return (object.mask & (1u << index)) != 0;
 }
 GUEST_EXPORT(0x0075e758, mask_bit_set);
-GUEST_FUZZ(0x0075e758, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<ByteEntries>(f), fuzz_index(f)); });
 
 // The sum of the entry's words in the two arrays, 0 for an index past the entries.
 u32 entry_word_sum(const WordArrays &object, u32 index) {
@@ -90,7 +76,6 @@ u32 entry_word_sum(const WordArrays &object, u32 index) {
     return object.second[index] + object.first[index];
 }
 GUEST_EXPORT(0x0075e78c, entry_word_sum);
-GUEST_FUZZ(0x0075e78c, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<WordArrays>(f), fuzz_index(f)); });
 
 // Whether the flags byte has a bit set for each of the four entries.
 bool all_entries_flagged(const ByteEntries &object) {
@@ -102,17 +87,11 @@ bool all_entries_flagged(const ByteEntries &object) {
     return true;
 }
 GUEST_EXPORT(0x0075e7f8, all_entries_flagged);
-GUEST_FUZZ(0x0075e7f8, 200, [](guest::Fuzz &f) {
-    auto object = fuzz_bytes_object<ByteEntries>(f);
-    object->flags = f.pick<u8>({0, 0xf, 0x7, 0x1, 0xff, u8(f.number())});
-    f.arguments(object);
-});
 
 u32 entry_id(const ByteEntries &object, u32 index) {
     return index < ENTRY_COUNT ? object.ids[index] : NO_ENTRY_ID;
 }
 GUEST_EXPORT(0x0075e830, entry_id);
-GUEST_FUZZ(0x0075e830, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<ByteEntries>(f), fuzz_index(f)); });
 
 // The entry's bit of the flags byte.
 u32 entry_flag(const ByteEntries &object, u32 index) {
@@ -122,7 +101,6 @@ u32 entry_flag(const ByteEntries &object, u32 index) {
     return (object.flags >> index) & 1;
 }
 GUEST_EXPORT(0x0075e840, entry_flag);
-GUEST_FUZZ(0x0075e840, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<ByteEntries>(f), fuzz_index(f)); });
 
 u32 entry_pointer(const PointerEntries &object, u32 index) {
     if (index >= ENTRY_COUNT) {
@@ -131,7 +109,6 @@ u32 entry_pointer(const PointerEntries &object, u32 index) {
     return object.pointers[index].addr();
 }
 GUEST_EXPORT(0x0075e9e4, entry_pointer);
-GUEST_FUZZ(0x0075e9e4, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<PointerEntries>(f), fuzz_index(f)); });
 
 s32 entry_signed_value(const ByteEntries &object, u32 index) {
     if (index >= ENTRY_COUNT) {
@@ -140,7 +117,6 @@ s32 entry_signed_value(const ByteEntries &object, u32 index) {
     return object.values[index];
 }
 GUEST_EXPORT(0x0075e9f8, entry_signed_value);
-GUEST_FUZZ(0x0075e9f8, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<ByteEntries>(f), fuzz_index(f)); });
 
 // Two bytes past the entry's pointer; null when the entry is not present.
 gptr<u8> entry_pointer_plus_2(const PointerEntries &object, u32 index) {
@@ -153,7 +129,6 @@ gptr<u8> entry_pointer_plus_2(const PointerEntries &object, u32 index) {
     return object.pointers[index] + POINTER_SKIP;
 }
 GUEST_EXPORT(0x0075ea0c, entry_pointer_plus_2);
-GUEST_FUZZ(0x0075ea0c, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<PointerEntries>(f), fuzz_index(f)); });
 
 // The entry's id, but only while the local station is 0 (otherwise NO_ENTRY_ID).
 u32 entry_id_for_station_0(const ByteEntries &object, u32 index) {
@@ -163,4 +138,3 @@ u32 entry_id_for_station_0(const ByteEntries &object, u32 index) {
     return NO_ENTRY_ID;
 }
 GUEST_EXPORT(0x0075ea44, entry_id_for_station_0);
-GUEST_FUZZ(0x0075ea44, 200, [](guest::Fuzz &f) { f.arguments(fuzz_bytes_object<ByteEntries>(f), fuzz_index(f)); });

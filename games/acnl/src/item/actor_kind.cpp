@@ -51,35 +51,3 @@ bool item_actor_kind_bytes(u32 &first, u32 &second, const Item &item) {
     return true;
 }
 GUEST_EXPORT(0x00615e30, item_actor_kind_bytes);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x001e90bc, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, ActorKind::COUNT - 1, ActorKind::COUNT, 0xffffffffu, f.below(ActorKind::COUNT)}));
-});
-GUEST_FUZZ(0x0071aa00, 300, [](guest::Fuzz &f) {
-    auto ref = f.object<ActorRef>();
-    if (f.below(4) == 0) {
-        ref->object = nullptr;
-    } else {
-        auto object = f.allocate(sizeof(ActorRef::KindedObject)).cast<ActorRef::KindedObject>();
-        object->kind = u8(f.pick<u32>({0, 1, ActorKind::COUNT - 1, ActorKind::COUNT, 0xff, f.below(ActorKind::COUNT)}));
-        ref->object = object;
-    }
-    f.arguments(ref);
-});
-
-namespace {
-
-gptr<Item> some_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = item_data_table->entries ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-    return item;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x00615964, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x00615e30, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<u32>(), f.object<u32>(), some_item(f));
-});

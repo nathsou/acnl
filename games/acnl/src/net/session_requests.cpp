@@ -9,7 +9,6 @@ namespace {
 
 constexpr u32 STATION_COUNT = StationMask::STATION_COUNT;
 constexpr u32 FIRST_LOCAL_STATION = 0;
-constexpr u8 BIT_STATE_ZERO = 0;
 constexpr u32 RECORD_TYPE_2B = 0x2b;
 constexpr u32 RECORD_TYPE_72 = 0x72;
 constexpr u32 RECORD_TYPE_6E = 0x6e;
@@ -115,10 +114,6 @@ void fill_station_flags(gptr<u8> flags) {
     }
 }
 GUEST_EXPORT(0x00617098, fill_station_flags);
-GUEST_FUZZ(0x00617098, 100, [](guest::Fuzz &f) {
-    (*net_session)->byte_1326c = u8(f.number());
-    f.arguments(f.allocate(STATION_COUNT));
-});
 
 StampWithPair &construct_stamp_with_pair(StampWithPair &self) {
     construct_empty_player_stamp(guest::addr_of(self).cast<void>());
@@ -127,7 +122,6 @@ StampWithPair &construct_stamp_with_pair(StampWithPair &self) {
     return self;
 }
 GUEST_EXPORT(0x0061a7f4, construct_stamp_with_pair);
-GUEST_FUZZ(0x0061a7f4, 50, [](guest::Fuzz &f) { f.arguments(f.object<StampWithPair>()); });
 
 // Adds station 0 to the requester's first mask when the main object has no station; otherwise tells the others.
 void request_stage_2b(MaskRequester &self) {
@@ -140,7 +134,6 @@ void request_stage_2b(MaskRequester &self) {
     buffer.flush_record(RECORD_TYPE_2B, NO_VALUE);
 }
 GUEST_EXPORT(0x0061d888, request_stage_2b);
-GUEST_FUZZ(0x0061d888, 100, [](guest::Fuzz &f) { f.arguments(f.object<MaskRequester>()); });
 
 // Without a session station: refreshes the first set with the main object's station and moves to state 5.
 void begin_state_5(StationSetRequester &self) {
@@ -151,7 +144,6 @@ void begin_state_5(StationSetRequester &self) {
     self.state_00 = STATE_5;
 }
 GUEST_EXPORT(0x0061da90, begin_state_5);
-GUEST_FUZZ(0x0061da90, 100, [](guest::Fuzz &f) { f.arguments(f.object<StationSetRequester>()); });
 
 // Removes the station from each mask and resets the requester.
 void remove_station_from_masks(MaskRequester &self, u32 station) {
@@ -166,9 +158,6 @@ void remove_station_from_masks(MaskRequester &self, u32 station) {
     self.byte_142 = 0;
 }
 GUEST_EXPORT(0x0061dd74, remove_station_from_masks);
-GUEST_FUZZ(0x0061dd74, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<MaskRequester>(), f.pick<u32>({0, 1, 3, 4, f.number()}));
-});
 
 // Refreshes the second set with the session's station and moves to state 0x25.
 void begin_state_25(StationSetRequester &self) {
@@ -176,7 +165,6 @@ void begin_state_25(StationSetRequester &self) {
     self.state_00 = STATE_25;
 }
 GUEST_EXPORT(0x0061e540, begin_state_25);
-GUEST_FUZZ(0x0061e540, 100, [](guest::Fuzz &f) { f.arguments(f.object<StationSetRequester>()); });
 
 // Moves to state 0xc without a session station; otherwise tells the others. Always succeeds.
 bool request_stage_72(StateOnly &self) {
@@ -190,7 +178,6 @@ bool request_stage_72(StateOnly &self) {
     return true;
 }
 GUEST_EXPORT(0x0061ee10, request_stage_72);
-GUEST_FUZZ(0x0061ee10, 100, [](guest::Fuzz &f) { f.arguments(f.object<StateOnly>()); });
 
 static bool request_selection(SelectionRequest &self, u32 flag, u32 value, u16 announced) {
     self.value_02 = u8(value);
@@ -217,16 +204,12 @@ bool request_choice(SelectionRequest &self, u32 choice) {
     return request_selection(self, 0, choice, u16(choice & FLAG_BYTE_MASK));
 }
 GUEST_EXPORT(0x0061f2e8, request_choice);
-GUEST_FUZZ(0x0061f2e8, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<SelectionRequest>(), f.pick<u32>({0, 5, 0x3f, 0x40, f.number()}));
-});
 
 // Selects everything.
 bool request_all(SelectionRequest &self) {
     return request_selection(self, 1, SELECTED_ALL_VALUE, SELECTED_ALL);
 }
 GUEST_EXPORT(0x0061f374, request_all);
-GUEST_FUZZ(0x0061f374, 100, [](guest::Fuzz &f) { f.arguments(f.object<SelectionRequest>()); });
 
 // Destroys the four elements of 0x32 bytes (which have nothing to destroy).
 FlagArrayOwner &destroy_flag_array_owner(FlagArrayOwner &self) {
@@ -235,4 +218,3 @@ FlagArrayOwner &destroy_flag_array_owner(FlagArrayOwner &self) {
     return self;
 }
 GUEST_EXPORT(0x0061f5e0, destroy_flag_array_owner);
-GUEST_FUZZ(0x0061f5e0, 50, [](guest::Fuzz &f) { f.arguments(f.object<FlagArrayOwner>()); });

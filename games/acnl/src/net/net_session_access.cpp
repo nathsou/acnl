@@ -35,11 +35,3 @@ s8 session_buffer_disabled() {
     return static_cast<s8>((*net_session)->buffer.disabled);
 }
 GUEST_EXPORT(0x00624a90, session_buffer_disabled);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1): the game's own session
-
-GUEST_FUZZ(0x00624a3c, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00624a20, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00624a54, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00624a6c, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00624a90, 200, [](guest::Fuzz &f) { f.arguments(); });

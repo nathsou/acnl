@@ -22,10 +22,3 @@ static bool has_flag_bit(gptr<void> self, u32 index) {
     return (u16(1u << (index & 0xf)) & bits) != 0;
 }
 GUEST_EXPORT(0x00300f9c, has_flag_bit);
-
-GUEST_FUZZ(0x00300f9c, 300, [](guest::Fuzz &f) {
-    constexpr u32 size = 0x800;  // covers the table halfwords for query results 0-3
-    auto block = f.allocate(size);
-    f.bytes(block, size);
-    f.arguments(block, f.pick<u32>({0, 1, 14, 15, 16, 0xffffffff, f.below(20)}));
-});

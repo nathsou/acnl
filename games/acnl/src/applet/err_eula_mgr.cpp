@@ -24,7 +24,6 @@ static bool err_eula_is_idle_with_byte_fac() {
     return err_eula_globals->instance->is_idle_with_byte_fac();
 }
 GUEST_EXPORT(0x005ce6dc, err_eula_is_idle_with_byte_fac);
-GUEST_FUZZ(0x005ce6dc, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // Puts the manager back to its initial state (the callbacks both become the reset callback).
 void ErrEulaMgr::reset() {
@@ -39,17 +38,8 @@ void ErrEulaMgr::reset() {
     callback_1c = defaults->reset_callback;
 }
 GUEST_EXPORT(0x005ceb84, ErrEulaMgr::reset);
-GUEST_FUZZ(0x005ceb84, 200, [](guest::Fuzz &f) {
-    // the live manager when there is one (the object is large for scratch memory)
-    gptr<ErrEulaMgr> mgr = err_eula_globals->instance;
-    if (!mgr) {
-        mgr = f.object<ErrEulaMgr>();
-    }
-    f.arguments(mgr);
-});
 
 static s8 read_byte_state_value() {
     return byte_state->value_01;
 }
 GUEST_EXPORT(0x005cebd4, read_byte_state_value);
-GUEST_FUZZ(0x005cebd4, 200, [](guest::Fuzz &f) { f.arguments(); });

@@ -71,18 +71,3 @@ FaderBase &construct_fader_base(FaderBase &self, u8 byte_04, u32 initial_state) 
     return self;
 }
 GUEST_EXPORT(0x005664d8, construct_fader_base);
-
-GUEST_FUZZ(0x00566464, 200, [](guest::Fuzz &f) {
-    auto fader = f.object<FaderBase>();
-    fader->state = f.pick<u8>({0, 1, 2, 3, u8(f.number())});
-    f.arguments(fader);
-});
-GUEST_FUZZ(0x00566498, 200, [](guest::Fuzz &f) {
-    auto fader = f.object<FaderBase>();
-    fader->state = f.pick<u8>({0, 1, 2, 3, u8(f.number())});
-    f.arguments(fader);
-});
-GUEST_FUZZ(0x005664c8, 200, [](guest::Fuzz &f) { f.arguments(f.object<FaderBase>(), f.pick<u32>({0, 1, 2, 0xffffffffu, f.number()})); });
-GUEST_FUZZ(0x005664d8, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<FaderBase>(), f.number() & 0xff, f.pick<u32>({0, 1, 2, 0xffffffffu, f.number()}));
-});

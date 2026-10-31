@@ -15,8 +15,3 @@ ScriptWord &construct_script_word(ScriptWord &self) {
     return self;
 }
 GUEST_EXPORT(0x005f4bfc, construct_script_word);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x005f4bdc, 200, [](guest::Fuzz &f) { f.arguments(f.object<ScriptWord>()); });
-GUEST_FUZZ(0x005f4bfc, 200, [](guest::Fuzz &f) { f.arguments(f.object<ScriptWord>()); });

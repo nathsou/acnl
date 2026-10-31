@@ -45,9 +45,3 @@ bool Item::try_make_kind_2() {
     return true;
 }
 GUEST_EXPORT(0x006ba938, Item::try_make_kind_2);
-GUEST_FUZZ(0x006ba938, 400, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    item->flags = f.below(2) ? 0 : u16(f.number());
-    f.arguments(item);
-});

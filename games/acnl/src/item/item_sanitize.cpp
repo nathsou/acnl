@@ -27,11 +27,6 @@ u8 ItemData::group() const {
     return group_0c >= GROUP_LIMIT ? 0 : group_0c;
 }
 GUEST_EXPORT(0x00748724, ItemData::group);
-GUEST_FUZZ(0x00748724, 100, [](guest::Fuzz &f) {
-    auto data = f.object<ItemData>();
-    data->group_0c = f.pick<u8>({0, 1, 0x66, 0x67, 0x68, 0xff, u8(f.number())});
-    f.arguments(data);
-});
 
 // Sets the bits of the items whose group is the given one; unless the save data allows it, the items the data flags as
 // hidden are left out.
@@ -51,9 +46,6 @@ void mark_items_with_group(ItemBitSet &set, u32 group) {
     }
 }
 GUEST_EXPORT(0x006f34b4, mark_items_with_group);
-GUEST_FUZZ(0x006f34b4, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<ItemBitSet>(), f.pick<u32>({0, 1, 0xe, 0x20, f.below(0x70)}));
-});
 
 // Empties the set.
 void ItemBitSet::clear() {
@@ -62,7 +54,6 @@ void ItemBitSet::clear() {
     }
 }
 GUEST_EXPORT(0x0024a5ec, ItemBitSet::clear);
-GUEST_FUZZ(0x0024a5ec, 50, [](guest::Fuzz &f) { f.arguments(f.object<ItemBitSet>()); });
 
 // Cleans the item: drops the two top bits of the flags, maps small numbers through the small catalog, replaces items
 // of category 0x3f by the member of the group-0xe items at the same position, the first item by the empty item, and
@@ -102,9 +93,3 @@ bool Item::sanitize() {
     return true;
 }
 GUEST_EXPORT(0x006ba118, Item::sanitize);
-GUEST_FUZZ(0x006ba118, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.pick<u16>({u16(f.below(0x120)), u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)), Item::EMPTY, u16(0x4000 + f.below(100)), u16(f.number())});
-    item->flags = u16(f.number());
-    f.arguments(item);
-});

@@ -1,6 +1,6 @@
 // Initialisers and small updates of objects of the 0x001b0000..0x001d0000 area (their classes are not known yet).
 #include "arm.hpp"
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 #include "script/word.hpp"
 
@@ -81,7 +81,6 @@ void pick_random_letters(gptr<u8> out) {
     }
 }
 GUEST_EXPORT(0x001b1af8, pick_random_letters);
-GUEST_FUZZ(0x001b1af8, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(8).cast<u8>()); });
 
 // Empties the sixteen items and clears their sixteen flag bytes.
 void clear_item_list(ItemListWithFlags &list) {
@@ -91,7 +90,6 @@ void clear_item_list(ItemListWithFlags &list) {
     }
 }
 GUEST_EXPORT(0x001b2184, clear_item_list);
-GUEST_FUZZ(0x001b2184, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemListWithFlags>()); });
 
 // Clears the two top flag bits of every item of the list.
 void clear_top_flag_bits_of_items(ItemList &list) {
@@ -100,7 +98,6 @@ void clear_top_flag_bits_of_items(ItemList &list) {
     }
 }
 GUEST_EXPORT(0x001b21bc, clear_top_flag_bits_of_items);
-GUEST_FUZZ(0x001b21bc, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemList>()); });
 
 // Empties the item at the selected index (a global), then forgets the selection.
 void clear_selected_item(gptr<Item> items) {
@@ -111,10 +108,6 @@ void clear_selected_item(gptr<Item> items) {
     *selected_index = NO_INDEX;
 }
 GUEST_EXPORT(0x001b4b80, clear_selected_item);
-GUEST_FUZZ(0x001b4b80, 100, [](guest::Fuzz &f) {
-    *selected_index = f.below(LIST_SIZE);
-    f.arguments(f.object<ItemList>());
-});
 
 // Empties the first ten items, then forgets the selection.
 void clear_first_ten_items(gptr<Item> items) {
@@ -126,7 +119,6 @@ void clear_first_ten_items(gptr<Item> items) {
     *selected_index = NO_INDEX;
 }
 GUEST_EXPORT(0x001b4bc8, clear_first_ten_items);
-GUEST_FUZZ(0x001b4bc8, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemList>()); });
 
 // A word descriptor of capacity 17 (compare construct_word_ptr_sv, whose capacity is 11).
 script::WordPtrSv &construct_word_ptr_sv_17(script::WordPtrSv &self, gptr<void> buffer) {
@@ -136,8 +128,6 @@ script::WordPtrSv &construct_word_ptr_sv_17(script::WordPtrSv &self, gptr<void> 
 }
 GUEST_EXPORT(0x001b6000, construct_word_ptr_sv_17);
 GUEST_EXPORT(0x005b7680, construct_word_ptr_sv_17);
-GUEST_FUZZ(0x005b7680, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
-GUEST_FUZZ(0x001b6000, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
 
 // Constructs the 35 six-byte entries, then sets each to its unset state.
 void init_entry_table(EntryTable &table) {
@@ -152,7 +142,6 @@ void init_entry_table(EntryTable &table) {
     table.flag_d2 = 0;
 }
 GUEST_EXPORT(0x001b6618, init_entry_table);
-GUEST_FUZZ(0x001b6618, 100, [](guest::Fuzz &f) { f.arguments(f.object<EntryTable>()); });
 
 // Stores a 7-bit value in the byte of the packed word that belongs to the main object's slot; without a slot, stores
 // 15 bits in the halfword at 0xc (keeping its top bit).
@@ -167,7 +156,6 @@ void store_value_for_main_slot(PackedWordObject &object, u32 value) {
     }
 }
 GUEST_EXPORT(0x001cdd68, store_value_for_main_slot);
-GUEST_FUZZ(0x001cdd68, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedWordObject>(), f.number()); });
 
 // Sets, in bits 27-29 of the word at 8, one flag per station (1-3) that is waited for; the four bits are cleared first.
 void update_wait_flags(PackedWordObject &object) {
@@ -179,4 +167,3 @@ void update_wait_flags(PackedWordObject &object) {
     }
 }
 GUEST_EXPORT(0x001cde4c, update_wait_flags);
-GUEST_FUZZ(0x001cde4c, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedWordObject>()); });

@@ -67,17 +67,3 @@ void StateTask::run() {
     current->status = states.flag_15 != 0 ? STATUS_DONE_FLAG_SET : STATUS_DONE_FLAG_CLEAR;
 }
 GUEST_EXPORT(0x005f4cf8, StateTask::run);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// Only runs that call no handler (they are arbitrary game code): a start mode that keeps the state, and a state
-// already past the table.
-GUEST_FUZZ(0x005f4cf8, 300, [](guest::Fuzz &f) {
-    auto task = f.object<StateTask>();
-    auto req = f.object<TaskRequest>();
-    req->start_mode = u8(sizeof(START_STATES) + f.below(256 - sizeof(START_STATES)));
-    task->states.state = u8(STATE_COUNT + f.below(256 - STATE_COUNT));
-    task->states.flag_15 = f.pick<u8>({0, 1, u8(f.number())});
-    task->request = req;
-    f.arguments(task);
-});

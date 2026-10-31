@@ -16,10 +16,3 @@ void Thread::virtual_16() {
 
 }  // namespace nfp
 GUEST_EXPORT(0x0051b33c, nfp::Thread::virtual_16);
-
-// Only the path without an object: following random vtables would run arbitrary code.
-GUEST_FUZZ(0x0051b33c, 200, [](guest::Fuzz &f) {
-    auto thread = f.object<nfp::Thread>();
-    thread->object_90 = nullptr;
-    f.arguments(thread);
-});

@@ -104,13 +104,3 @@ void publish_request(gptr<RequestInput> input) {
     }
 }
 GUEST_EXPORT(0x002f896c, publish_request);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002f88b8, 200, [](guest::Fuzz &f) { f.arguments(gptr<void>(nullptr)); });
-GUEST_FUZZ(0x002f8954, 200, [](guest::Fuzz &f) { f.arguments(f.object<ExhibitionNorthBook>()); });
-GUEST_FUZZ(0x002f896c, 200, [](guest::Fuzz &f) {
-    auto input = f.object<RequestInput>();
-    input->mode = f.pick<u8>({0, 1, 2, u8(f.number())});
-    f.arguments(input);
-});

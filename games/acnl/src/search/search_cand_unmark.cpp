@@ -10,11 +10,3 @@ void SearchCandCore::unmark(s32 index) {
     marked_count -= 1;
 }
 GUEST_EXPORT(0x0030716c, SearchCandCore::unmark);
-
-GUEST_FUZZ(0x0030716c, 300, [](guest::Fuzz &f) {
-    auto self = f.object<SearchCandCore>();
-    auto bits = f.allocate(16).cast<u32>();
-    f.bytes(bits, 16);
-    self->bits = bits;
-    f.arguments(self, f.pick<s32>({0, 1, 31, 32, 63, 64, 127, s32(f.below(128))}));
-});

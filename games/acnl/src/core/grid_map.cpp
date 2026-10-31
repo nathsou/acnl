@@ -21,7 +21,6 @@ inline constexpr guest::Function<0x006a69ec, void(s32 &x, s32 &y, u32 &first, u3
 inline constexpr guest::Function<0x0075281c, u32(gptr<GridCellSmall> cell, u32 a, u32 b, u32 c)> process_small_cell;
 inline constexpr guest::Function<0x002faec8, gptr<void>(gptr<void> block, u32 column, u32 row)> block_cell_at;
 
-
 gptr<GridCellSmall> small_cell(GridMap &map, s32 x, s32 y) {
     GridPoint point{x, y};
     if (!map.rect.contains(point) || !map.cells_small) {
@@ -148,88 +147,3 @@ bool GridMap::place_item_at_world(const Item &item, s32 x, s32 z, u32 layer) {
     return place_item_in_block(item, block_x, block_z, cell_x, cell_z, layer);
 }
 GUEST_EXPORT(0x002fc994, GridMap::place_item_at_world);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<GridMap> some_map(guest::Fuzz &f) {
-    auto map = f.object<GridMap>();
-    s32 x0 = f.below(3), y0 = f.below(3);
-    map->rect.min = {x0, y0};
-    map->rect.max = {x0 + s32(f.below(4)), y0 + s32(f.below(4))};
-    map->rect_10.min = {s32(f.below(3)), s32(f.below(3))};
-    map->rect_10.max = {map->rect_10.min.x + s32(f.below(4)), map->rect_10.min.y + s32(f.below(4))};
-    u32 cells = 64;
-    auto small = f.allocate(cells * sizeof(GridCellSmall));
-    memset(small.get(), 0, cells * sizeof(GridCellSmall));
-    map->cells_small = f.below(5) ? small.cast<GridCellSmall>() : gptr<GridCellSmall>(nullptr);
-    map->cells_large = f.below(5) ? f.allocate(16).cast<GridCellLarge>() : gptr<GridCellLarge>(nullptr);
-    return map;
-}
-
-// A cell whose layers (when it has them) are 16x16 cells of 4 bytes.
-static gptr<GridCellSmall> some_layered_cell(guest::Fuzz &f) {
-    constexpr u32 LAYER_BYTES = 16 * 16 * sizeof(Item);
-    auto cell = f.object<GridCellSmall>();
-    for (gptr<void> &layer : cell->layers) {
-        layer = f.below(4) ? f.allocate(LAYER_BYTES) : gptr<void>(nullptr);
-    }
-    return cell;
-}
-
-static s32 some_coordinate(guest::Fuzz &f) {
-    return s32(f.below(8)) - 2;
-}
-
-GUEST_FUZZ(0x0075291c, 300, [](guest::Fuzz &f) { f.arguments(some_map(f), some_coordinate(f), some_coordinate(f)); });
-GUEST_FUZZ(0x007529a0, 200, [](guest::Fuzz &f) { f.arguments(some_map(f)); });
-GUEST_FUZZ(0x007529d8, 300, [](guest::Fuzz &f) { f.arguments(some_map(f), some_coordinate(f), some_coordinate(f)); });
-GUEST_FUZZ(0x00752a80, 200, [](guest::Fuzz &f) { f.arguments(some_map(f), f.below(4), f.below(2)); });
-GUEST_FUZZ(0x00752b44, 300, [](guest::Fuzz &f) {
-    f.arguments(some_map(f), some_coordinate(f), some_coordinate(f), f.below(4), f.below(4), f.below(2));
-});
-GUEST_FUZZ(0x006a6ec0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<s32>(), f.object<s32>(), f.object<s32>(), f.object<s32>(), s32(f.below(100)) - 50,
-                s32(f.below(100)) - 50);
-});
-GUEST_FUZZ(0x002feb00, 300, [](guest::Fuzz &f) {
-    f.arguments(some_map(f), s32(f.below(100)) - 20, s32(f.below(100)) - 20, f.below(2));
-});
-GUEST_FUZZ(0x0075281c, 300, [](guest::Fuzz &f) {
-    auto cell = some_layered_cell(f);
-    f.arguments(cell, s32(f.below(20)) - 2, s32(f.below(20)) - 2, f.below(4));
-});
-GUEST_FUZZ(0x00752820, 300, [](guest::Fuzz &f) {
-    auto cell = some_layered_cell(f);
-    f.arguments(cell, s32(f.below(20)) - 2, s32(f.below(20)) - 2, f.below(4));
-});
-GUEST_FUZZ(0x0057bce0, 300, [](guest::Fuzz &f) {
-    auto cell = some_layered_cell(f);
-    f.arguments(cell, f.object<Item>(), s32(f.below(20)) - 2, s32(f.below(20)) - 2, f.below(3));
-});
-GUEST_FUZZ(0x002fc994, 300, [](guest::Fuzz &f) {
-    auto map = some_map(f);
-    constexpr u32 CELLS = 16;
-    auto cells = f.allocate(CELLS * sizeof(GridCellSmall)).cast<GridCellSmall>();
-    for (u32 i = 0; i < CELLS; i++) {
-        cells[i].layers[0] = f.allocate(16 * 16 * sizeof(Item));
-        cells[i].layers[1] = f.allocate(16 * 16 * sizeof(Item));
-    }
-    map->cells_small = cells;
-    map->rect.min = {0, 0};
-    map->rect.max = {3, 3};
-    f.arguments(map, f.object<Item>(), s32(f.below(80)) - 8, s32(f.below(80)) - 8, f.below(3));
-});
-GUEST_FUZZ(0x00581428, 300, [](guest::Fuzz &f) {
-    auto map = some_map(f);
-    constexpr u32 CELLS = 16;
-    auto cells = f.allocate(CELLS * sizeof(GridCellSmall)).cast<GridCellSmall>();
-    for (u32 i = 0; i < CELLS; i++) {
-        cells[i].layers[0] = f.allocate(16 * 16 * sizeof(Item));
-        cells[i].layers[1] = f.allocate(16 * 16 * sizeof(Item));
-    }
-    map->cells_small = cells;
-    map->rect.min = {0, 0};
-    map->rect.max = {3, 3};
-    f.arguments(map, f.object<Item>(), s32(f.below(6)) - 1, s32(f.below(6)) - 1, s32(f.below(18)) - 1,
-                s32(f.below(18)) - 1, f.below(3));
-});

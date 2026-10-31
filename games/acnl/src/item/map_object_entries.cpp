@@ -33,11 +33,6 @@ u32 map_object_index(const Item &item) {
     return number > MAP_OBJECT_COUNT - 1 ? NO_ENTRY_INDEX : number;
 }
 GUEST_EXPORT(0x0076939c, map_object_index);
-GUEST_FUZZ(0x0076939c, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({0, 1, MAP_OBJECT_COUNT - 2, MAP_OBJECT_COUNT - 1, MAP_OBJECT_COUNT, 0x2000, f.number()}));
-    f.arguments(item);
-});
 
 // The item's map object entry, or null for numbers of 0xfe and more and while the table is not loaded.
 gptr<u8> map_object_entry(const Item &item) {
@@ -53,22 +48,12 @@ gptr<u8> map_object_entry(const Item &item) {
     return entries + index * ENTRY_SIZE;
 }
 GUEST_EXPORT(0x002fd010, map_object_entry);
-GUEST_FUZZ(0x002fd010, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({0, 1, MAP_OBJECT_COUNT - 1, MAP_OBJECT_COUNT, 0x2000, f.below(0x100), f.number()}));
-    f.arguments(item);
-});
 
 // The halfword at 8 of the item's map object entry (the item must have one).
 u16 map_object_value_08(const Item &item) {
     return *(map_object_entry(item) + VALUE_08_OFFSET).cast<u16>();
 }
 GUEST_EXPORT(0x007692e0, map_object_value_08);
-GUEST_FUZZ(0x007692e0, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.below(MAP_OBJECT_COUNT));
-    f.arguments(item);
-});
 
 // Whether the item is a map object whose type is 4, 6, 8 or 25 and whose signed byte at 0xd is at least 4.
 bool map_object_of_type_4_6_8_25_with_byte_0d_at_least_4(const Item &item) {
@@ -84,11 +69,6 @@ bool map_object_of_type_4_6_8_25_with_byte_0d_at_least_4(const Item &item) {
     return type < TYPE_LIMIT && listed && s8(entry[BYTE_0D_OFFSET]) >= BYTE_0D_MINIMUM_A;
 }
 GUEST_EXPORT(0x007698bc, map_object_of_type_4_6_8_25_with_byte_0d_at_least_4);
-GUEST_FUZZ(0x007698bc, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({f.below(MAP_OBJECT_COUNT + 2), f.below(MAP_OBJECT_COUNT), f.number()}));
-    f.arguments(item);
-});
 
 // The same for the items the indexed type check accepts, with the byte at 0xd at least 2.
 bool map_object_of_type_4_6_8_25_with_byte_0d_at_least_2(const Item &item) {
@@ -99,8 +79,3 @@ bool map_object_of_type_4_6_8_25_with_byte_0d_at_least_2(const Item &item) {
     return item_has_type_4_6_8_or_25(item) && s8(entry[BYTE_0D_OFFSET]) >= BYTE_0D_MINIMUM_B;
 }
 GUEST_EXPORT(0x00599e68, map_object_of_type_4_6_8_25_with_byte_0d_at_least_2);
-GUEST_FUZZ(0x00599e68, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({f.below(MAP_OBJECT_COUNT + 2), f.below(MAP_OBJECT_COUNT), f.number()}));
-    f.arguments(item);
-});

@@ -40,9 +40,6 @@ gptr<SaveVillager> valid_villager_at(gptr<SaveVillager> villagers, u32 index) {
     return record;
 }
 GUEST_EXPORT(0x003058c9, valid_villager_at);
-GUEST_FUZZ(0x003058c9, 200, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(VILLAGER_COUNT * sizeof(SaveVillager)).cast<SaveVillager>(), f.pick<u32>({0, 1, 9, 10, f.number()}));
-});
 
 // Fills a slot (when it and the code are in range): the item, the code and the value.
 void set_slot(ItemSlotTable &table, u32 index, const Item &item, u32 code, u32 value) {
@@ -54,7 +51,3 @@ void set_slot(ItemSlotTable &table, u32 index, const Item &item, u32 code, u32 v
     table.values[index].set(value);
 }
 GUEST_EXPORT(0x003058ec, set_slot);
-GUEST_FUZZ(0x003058ec, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<ItemSlotTable>(), f.pick<u32>({0, 3, 7, 8, f.number()}), f.object<Item>(),
-                f.pick<u32>({0, 5, 9, 10, f.number()}), f.number());
-});

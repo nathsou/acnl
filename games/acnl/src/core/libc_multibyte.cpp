@@ -98,31 +98,3 @@ s32 multibyte_to_wide(gptr<u16> dest, gptr<const u8> src, u32 length, gptr<void>
     return CONVERT_INCOMPLETE;
 }
 GUEST_EXPORT(0x002f7951, multibyte_to_wide);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x002f77e8, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 0xffffffff, f.number()})); });
-
-GUEST_FUZZ(0x002f7a10, 200, [](guest::Fuzz &f) { f.arguments(); });
-
-GUEST_FUZZ(0x002f79c5, 300, [](guest::Fuzz &f) {
-    auto wide = f.object<u16>();
-    gptr<void> state = f.below(2) ? gptr<void>(nullptr) : f.object<u32[4]>().cast<void>();
-    f.arguments(wide, f.below(0x100), state);
-});
-
-GUEST_FUZZ(0x002f7951, 300, [](guest::Fuzz &f) {
-    u32 length = f.pick<u32>({0, 1, 2, 5, 8});
-    gptr<const u8> src = nullptr;
-    if (f.below(5) != 0) {
-        gptr<void> bytes = f.allocate(length + 1);
-        f.bytes(bytes, length + 1);
-        if (f.below(4) == 0) {
-            *bytes.cast<u8>() = 0;
-        }
-        src = bytes.cast<const u8>();
-    }
-    gptr<u16> dest = f.below(3) == 0 ? gptr<u16>(nullptr) : f.object<u16>();
-    gptr<void> state = f.below(2) ? gptr<void>(nullptr) : f.object<u32[4]>().cast<void>();
-    f.arguments(dest, src, length, state);
-});

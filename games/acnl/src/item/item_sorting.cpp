@@ -32,13 +32,3 @@ void sort_items_by_menu_order(gptr<Item> items, s32 count) {
     }
 }
 GUEST_EXPORT(0x001afb58, sort_items_by_menu_order);
-GUEST_FUZZ(0x001afb58, 200, [](guest::Fuzz &f) {
-    // (the order table is only there once the menus are loaded; reading through a missing one would fault)
-    u32 count = menu_tables->item_order != nullptr ? f.below(9) : 0;
-    auto items = f.allocate(8 * sizeof(Item)).cast<Item>();
-    for (u32 i = 0; i < 8; i++) {
-        items[i].id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-        items[i].flags = u16(f.number());
-    }
-    f.arguments(items, s32(count));
-});

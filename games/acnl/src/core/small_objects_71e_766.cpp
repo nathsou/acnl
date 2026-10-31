@@ -40,8 +40,6 @@ inline constexpr guest::Function<0x00624c78, u32(u32 index)> bit_for_index;
 inline constexpr guest::Function<0x00300904, u32()> main_object_value;
 inline constexpr guest::Function<0x00305f2c, u32()> read_global_object_byte;
 inline constexpr guest::Function<0x003170ec, bool()> talk_state_active;
-inline constexpr guest::Function<0x005c2c80, bool()> main_slot_value_is_local;
-inline constexpr guest::Function<0x0027ab40, bool(u32 slot)> is_local_slot;
 inline constexpr guest::Function<0x0064f390, u32(u32 index)> entry_10;
 inline constexpr guest::Function<0x002fb328, gptr<SaveData>()> get_save_data;
 inline constexpr guest::Function<0x002fb378, gptr<s8>()> reference_clock;
@@ -130,12 +128,6 @@ s32 station_byte_or_one(StationBytes &object) {
     return object.bytes_34[query_current_main_object()];
 }
 GUEST_EXPORT(0x0071e9e8, station_byte_or_one);
-GUEST_FUZZ(0x0071e9e8, 100, [](guest::Fuzz &f) {
-    auto object = f.object<StationBytes>();
-    object->mode_bits = u8(f.number());
-    (*net_session)->mode_1326f = f.pick<u8>({0, 1, 2, 5});
-    f.arguments(object);
-});
 
 // Bit 0 of the flag byte of the main slot (0 for slots past the four).
 u32 main_slot_flag_bit_0(SlotFlags &object) {
@@ -143,7 +135,6 @@ u32 main_slot_flag_bit_0(SlotFlags &object) {
     return slot < SLOT_COUNT ? object.flags[slot] & BIT_0 : 0;
 }
 GUEST_EXPORT(0x0071fc48, main_slot_flag_bit_0);
-GUEST_FUZZ(0x0071fc48, 100, [](guest::Fuzz &f) { f.arguments(f.object<SlotFlags>()); });
 
 // Bit 1 of the same flag byte.
 u32 main_slot_flag_bit_1(SlotFlags &object) {
@@ -151,21 +142,12 @@ u32 main_slot_flag_bit_1(SlotFlags &object) {
     return slot < SLOT_COUNT ? (object.flags[slot] & BIT_1) >> 1 : 0;
 }
 GUEST_EXPORT(0x0071fd34, main_slot_flag_bit_1);
-GUEST_FUZZ(0x0071fd34, 100, [](guest::Fuzz &f) { f.arguments(f.object<SlotFlags>()); });
 
 // Whether the main slot's value is the object's byte 0x7dd7.
 bool main_slot_is_marked_slot(SlotFlags &object) {
     return slot_value(MAIN_SLOT_INDEX) == object.value_7dd7;
 }
 GUEST_EXPORT(0x0071fcb8, main_slot_is_marked_slot);
-GUEST_FUZZ(0x0071fcb8, 100, [](guest::Fuzz &f) {
-    auto object = f.object<SlotFlags>();
-    object->value_7dd7 = u8(slot_value(MAIN_SLOT_INDEX));
-    if (f.below(2) != 0) {
-        object->value_7dd7 = u8(f.number());
-    }
-    f.arguments(object);
-});
 
 // The angle from one object to another; 0 without another.
 u32 angle_to_object(PositionedObject &from, gptr<PositionedObject> to) {
@@ -176,15 +158,6 @@ u32 angle_to_object(PositionedObject &from, gptr<PositionedObject> to) {
     return u16(angle);
 }
 GUEST_EXPORT(0x007521a4, angle_to_object);
-GUEST_FUZZ(0x007521a4, 100, [](guest::Fuzz &f) {
-    auto from = f.object<PositionedObject>();
-    auto to = f.object<PositionedObject>();
-    for (u32 i = 0; i < 3; i++) {
-        from->position.v[i] = f.real();
-        to->position.v[i] = f.real();
-    }
-    f.arguments(from, f.below(4) != 0 ? to : gptr<PositionedObject>(0u));
-});
 
 // Whether the current player has the identity.
 bool current_player_matches(const PersonalId &identity) {
@@ -192,33 +165,18 @@ bool current_player_matches(const PersonalId &identity) {
     return player != nullptr && identities_match(player->identity, identity) != 0;
 }
 GUEST_EXPORT(0x007576e4, current_player_matches);
-GUEST_FUZZ(0x007576e4, 100, [](guest::Fuzz &f) {
-    auto player = f.object<SavePlayer>();
-    auto identity = f.object<PersonalId>();
-    if (f.below(2) != 0) {
-        *identity = player->identity;
-    }
-    player_context->player = f.below(4) != 0 ? player : gptr<SavePlayer>(0u);
-    f.arguments(identity);
-});
 
 // Whether the station's bit is set in the session's mask byte.
 bool session_has_station(gptr<NetSession> session, u32 station) {
     return (bit_for_index(station) & session->station_mask) != 0;
 }
 GUEST_EXPORT(0x0075dfb4, session_has_station);
-GUEST_FUZZ(0x0075dfb4, 100, [](guest::Fuzz &f) {
-    auto session = f.object<NetSession>();
-    session->station_mask = u8(f.number());
-    f.arguments(session, f.pick<u32>({0, 1, 3, 4, 7}));
-});
 
 // Whether the main object has a value, the registry byte is 2 and the object's first byte is 0.
 bool main_object_idle_in_mode_2(FirstByteHolder &object) {
     return main_object_value() != 0 && read_global_object_byte() == GLOBAL_BYTE_SKIP && object.byte_00 == 0;
 }
 GUEST_EXPORT(0x0075e1a8, main_object_idle_in_mode_2);
-GUEST_FUZZ(0x0075e1a8, 100, [](guest::Fuzz &f) { f.arguments(f.object<FirstByteHolder>()); });
 
 // Whether the byte at 0x21 has the bit of each of the four stations.
 bool all_stations_in_bits(StationBits &object) {
@@ -230,11 +188,6 @@ bool all_stations_in_bits(StationBits &object) {
     return true;
 }
 GUEST_EXPORT(0x0075e410, all_stations_in_bits);
-GUEST_FUZZ(0x0075e410, 100, [](guest::Fuzz &f) {
-    auto object = f.object<StationBits>();
-    object->bits_21 = f.pick<u8>({0, 0xf, 0xff, u8(f.number())});
-    f.arguments(object);
-});
 
 // The station's table byte while the session has no station; 4 otherwise.
 u32 table_byte_without_session_station(EntryTableOwner &owner, u32 station) {
@@ -244,9 +197,6 @@ u32 table_byte_without_session_station(EntryTableOwner &owner, u32 station) {
     return NO_STATION;
 }
 GUEST_EXPORT(0x0075ea7c, table_byte_without_session_station);
-GUEST_FUZZ(0x0075ea7c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<EntryTableOwner>(), f.pick<u32>({0, 3, 4, f.number()}));
-});
 
 // 1 while bit 5 of the flags is clear; otherwise whether a talk entry is active.
 bool talk_active_or_no_flag(TalkAndSlot &object) {
@@ -256,7 +206,6 @@ bool talk_active_or_no_flag(TalkAndSlot &object) {
     return talk_state_active();
 }
 GUEST_EXPORT(0x0076263c, talk_active_or_no_flag);
-GUEST_FUZZ(0x0076263c, 100, [](guest::Fuzz &f) { f.arguments(f.object<TalkAndSlot>()); });
 
 // Bit 6 of a byte of the object picked by the kind of the global byte.
 u32 pair_flag_bit_6(PairFlags &object) {
@@ -265,7 +214,6 @@ u32 pair_flag_bit_6(PairFlags &object) {
     return (byte & BIT_6) != 0;
 }
 GUEST_EXPORT(0x007626c0, pair_flag_bit_6);
-GUEST_FUZZ(0x007626c0, 100, [](guest::Fuzz &f) { f.arguments(f.object<PairFlags>()); });
 
 // The entry for the byte at 0x1a9 when it is below the limit, else 0.
 u32 entry_for_byte_1a9(ByteAt1A9 &object) {
@@ -273,21 +221,12 @@ u32 entry_for_byte_1a9(ByteAt1A9 &object) {
     return index < BYTE_1A9_LIMIT ? entry_10(index) : 0;
 }
 GUEST_EXPORT(0x00763818, entry_for_byte_1a9);
-GUEST_FUZZ(0x00763818, 100, [](guest::Fuzz &f) {
-    auto object = f.object<ByteAt1A9>();
-    object->byte_1a9 = u8(f.below(0xf0));
-    f.arguments(object);
-});
 
 // Whether the save data's byte 0x6e2a6 is 1.
 bool save_state_6e2a6_is_1() {
     return get_save_data()->state_6e2a6 == 1;
 }
 GUEST_EXPORT(0x0076620c, save_state_6e2a6_is_1);
-GUEST_FUZZ(0x0076620c, 50, [](guest::Fuzz &f) {
-    get_save_data()->state_6e2a6 = f.pick<u8>({0, 1, 2});
-    f.arguments();
-});
 
 // Whether the clock's hour byte is outside 7 to 18.
 bool clock_is_night() {
@@ -295,4 +234,3 @@ bool clock_is_night() {
     return hour < s32(DAY_FIRST_HOUR) || hour >= s32(DAY_END_HOUR);
 }
 GUEST_EXPORT(0x00766ed4, clock_is_night);
-GUEST_FUZZ(0x00766ed4, 50, [](guest::Fuzz &f) { f.arguments(); });

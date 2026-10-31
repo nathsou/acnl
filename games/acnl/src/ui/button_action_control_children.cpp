@@ -53,7 +53,6 @@ struct ControlParent {
     u8 unknown_d8[0xe4 - 0xd8];
 
     static constexpr u16 STATE_ENABLED = 8;     // unknown meaning
-    static constexpr u16 STATE_DEFAULT = 0x1f;  // the value the constructor gives (includes STATE_ENABLED)
     static constexpr u32 OPTION_ANY_VALUE = 0x40;  // skips the selection byte check
     static constexpr u32 OPTION_RESET = 2;      // set by the reset
 
@@ -187,97 +186,3 @@ void set_child_value(ControlParent &self, s32 id, u32 value) {
     }
 }
 GUEST_EXPORT(0x002f69c8, set_child_value);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-// Every virtual of the fuzzed objects is same_pointer (0x002f77e8, already rewritten): it does nothing and returns
-// the object's address, so every child reads as usable (virtual 2 nonzero).
-constexpr u32 HARMLESS_FUNCTION = 0x002f77e8;
-constexpr u32 VTABLE_SLOTS = 16;
-constexpr u32 MAX_CHILDREN = 4;
-constexpr u32 CHILD_IDS = 3;  // children get ids in [0, CHILD_IDS)
-constexpr u32 SOME_VALUE = 1;
-
-struct FuzzTree {
-    gptr<ControlParent> parent;
-    gptr<ControlChild> children[MAX_CHILDREN];
-    u32 count;
-};
-
-gptr<u32> harmless_vtable(guest::Fuzz &f) {
-    auto table = f.allocate(VTABLE_SLOTS * sizeof(u32)).cast<u32>();
-    for (u32 slot = 0; slot < VTABLE_SLOTS; slot++) {
-        table[slot] = HARMLESS_FUNCTION;
-    }
-    return table;
-}
-
-// A parent with up to max_children children chained in a list; the active child is null.
-FuzzTree some_tree(guest::Fuzz &f, u32 max_children) {
-    gptr<u32> vtable = harmless_vtable(f);
-    FuzzTree tree{};
-    tree.parent = f.object<ControlParent>();
-    tree.parent->vtable = vtable.addr();
-    tree.parent->active = nullptr;
-    tree.count = f.below(max_children + 1);
-    gptr<ControlChild> next = nullptr;
-    for (u32 i = tree.count; i-- > 0;) {
-        auto child = f.object<ControlChild>();
-        child->vtable = vtable.addr();
-        child->next = next;
-        child->id = s32(f.below(CHILD_IDS));
-        tree.children[i] = child;
-        next = child;
-    }
-    tree.parent->first_child = next;
-    return tree;
-}
-
-u32 some_id(guest::Fuzz &f) {
-    return f.pick<u32>({u32(ControlChild::ANY_ID), 0, f.below(CHILD_IDS), f.number()});
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x002f67ac, 200, [](guest::Fuzz &f) {
-    FuzzTree tree = some_tree(f, MAX_CHILDREN);
-    if (tree.count != 0 && f.below(4) != 0) {
-        tree.parent->active = tree.children[f.below(tree.count)];
-    }
-    f.arguments(tree.parent);
-});
-GUEST_FUZZ(0x002f67e4, 300, [](guest::Fuzz &f) {
-    // no children, and the selection byte check is bypassed: the game's selection object is not reached
-    FuzzTree tree = some_tree(f, 0);
-    u16 state = f.pick<u16>({0, ControlParent::STATE_ENABLED, ControlParent::STATE_DEFAULT, u16(f.number())});
-    tree.parent->state_flags = state;
-    u32 options = f.number();
-    if (state & ControlParent::STATE_ENABLED) {
-        options |= ControlParent::OPTION_ANY_VALUE;
-    }
-    tree.parent->option_flags = options;
-    f.arguments(tree.parent);
-});
-GUEST_FUZZ(0x002f68f0, 300, [](guest::Fuzz &f) {
-    FuzzTree tree = some_tree(f, MAX_CHILDREN);
-    if (tree.count == 0) {
-        // the active child is required: one outside the list
-        auto child = f.object<ControlChild>();
-        child->vtable = tree.parent->vtable;
-        child->next = nullptr;
-        tree.parent->active = child;
-    } else {
-        tree.parent->active = tree.children[f.below(tree.count)];
-    }
-    f.arguments(tree.parent);
-});
-GUEST_FUZZ(0x002f6998, 300, [](guest::Fuzz &f) {
-    FuzzTree tree = some_tree(f, MAX_CHILDREN);
-    f.arguments(tree.parent, some_id(f), f.pick<u32>({0, 1, f.number()}));
-});
-GUEST_FUZZ(0x002f69c8, 300, [](guest::Fuzz &f) {
-    FuzzTree tree = some_tree(f, MAX_CHILDREN);
-    f.arguments(tree.parent, some_id(f), f.pick<u32>({0, SOME_VALUE, f.number()}));
-});

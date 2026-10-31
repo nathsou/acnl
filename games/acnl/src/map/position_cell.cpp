@@ -47,13 +47,3 @@ void position_to_cell(gptr<s32> cell_x, gptr<s32> cell_z, const WorldPosition &p
     *cell_z = row;
 }
 GUEST_EXPORT(0x003171b4, position_to_cell);
-
-GUEST_FUZZ(0x003171b4, 300, [](guest::Fuzz &f) {
-    auto out_x = f.object<s32>();
-    auto out_z = f.object<s32>();
-    auto position = f.object<WorldPosition>();
-    position->x = f.pick<float>({0.0f, -0.5f, 0.5f, -32.0f, 31.9f, f.real(), f.real() * 10.0f});
-    position->y = f.real();
-    position->z = f.pick<float>({0.0f, -0.5f, 0.5f, -32.0f, 31.9f, f.real(), f.real() * 10.0f});
-    f.arguments(out_x, out_z, position);
-});

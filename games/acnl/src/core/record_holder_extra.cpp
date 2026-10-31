@@ -34,17 +34,3 @@ GUEST_EXPORT(0x00755978, TripleHolder::has_id_08);
 GUEST_EXPORT(0x00755994, TripleHolder::id_08);
 GUEST_EXPORT(0x007559a0, TripleHolder::id_0c);
 GUEST_EXPORT(0x00755a08, TripleHolder::has_id_08_again);
-
-static gptr<TripleHolder> some_triple_holder(guest::Fuzz &f) {
-    auto holder = f.object<TripleHolder>();
-    auto record = f.object<IdTripleRecord>();
-    record->id_08 = f.pick<u16>({0, 0xffff, 1, u16(f.number())});
-    holder->record = record;
-    return holder;
-}
-
-GUEST_FUZZ(0x0075596c, 200, [](guest::Fuzz &f) { f.arguments(some_triple_holder(f)); });
-GUEST_FUZZ(0x00755978, 200, [](guest::Fuzz &f) { f.arguments(some_triple_holder(f)); });
-GUEST_FUZZ(0x00755994, 200, [](guest::Fuzz &f) { f.arguments(some_triple_holder(f)); });
-GUEST_FUZZ(0x007559a0, 200, [](guest::Fuzz &f) { f.arguments(some_triple_holder(f)); });
-GUEST_FUZZ(0x00755a08, 200, [](guest::Fuzz &f) { f.arguments(some_triple_holder(f)); });

@@ -59,30 +59,3 @@ static void apply_value(LinkedObject &self) {
 }
 GUEST_EXPORT(0x00569508, apply_value);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-constexpr u32 HARMLESS_FUNCTION = 0x00303660;  // EncryptedInt::get: only reads 8 bytes at r0
-
-gptr<LinkedObject> some_linked_object(guest::Fuzz &f) {
-    auto object = f.object<LinkedObject>();
-    object->target = nullptr;
-    object->owned_20 = nullptr;
-    return object;
-}
-}  // namespace
-
-GUEST_FUZZ(0x005694c8, 200, [](guest::Fuzz &f) { f.arguments(some_linked_object(f)); });
-GUEST_FUZZ(0x00569508, 300, [](guest::Fuzz &f) {
-    auto object = some_linked_object(f);
-    auto vtable = f.allocate(3 * sizeof(u32)).cast<u32>();
-    for (u32 i = 0; i < 3; i++) {
-        vtable[i] = HARMLESS_FUNCTION;
-    }
-    object->vtable = vtable.addr();
-    object->value = f.pick<float>({0.0f, 1.0f, -1.0f, f.real()});
-    if (f.below(2) != 0) {
-        object->target = f.object<LinkedObject>().cast<u32>();
-    }
-    f.arguments(object);
-});

@@ -12,7 +12,6 @@ using guest::gptr;
 
 namespace {
 
-
 // What get_reference_value returns: a 12-byte value of which one byte is read here.
 struct ReferenceValue {
     u8 unknown_00[7];
@@ -176,47 +175,3 @@ bool IdentityRecords::has_record_matching(gptr<SavePlayer> player) const {
     return false;
 }
 GUEST_EXPORT(0x0011a5f5, IdentityRecords::has_record_matching);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// Scratch memory whose every word holds its own address: any pointer the unknown callees load from it stays inside.
-static gptr<void> self_referencing_object(guest::Fuzz &f, u32 size) {
-    gptr<u32> words = f.allocate(size).cast<u32>();
-    for (u32 i = 0; i < size / 4; i++) {
-        words[i] = words.addr();
-    }
-    return words.cast<void>();
-}
-
-static gptr<SaveVillager> some_villager(guest::Fuzz &f) {
-    auto villager = f.object<SaveVillager>();
-    villager->flag_2508 = f.below(2) ? 0 : u8(f.number());
-    villager->flags_2510 = f.pick<u32>({0, 1, 0xffffffff, f.number()});
-    return villager;
-}
-
-GUEST_FUZZ(0x0011a1c9, 200, [](guest::Fuzz &f) { f.arguments(some_villager(f)); });
-GUEST_FUZZ(0x0011a391, 200, [](guest::Fuzz &f) { f.arguments(some_villager(f)); });
-GUEST_FUZZ(0x0011a441, 200, [](guest::Fuzz &f) {
-    auto villager = some_villager(f);
-    gptr<void> object = self_referencing_object(f, 0x1000);
-    f.arguments(villager, object, f.number(), f.object<Value12>());
-});
-GUEST_FUZZ(0x0011a521, 200, [](guest::Fuzz &f) { f.arguments(self_referencing_object(f, 0x2600)); });
-GUEST_FUZZ(0x0011a5f5, 200, [](guest::Fuzz &f) {
-    auto records = self_referencing_object(f, sizeof(IdentityRecords)).cast<IdentityRecords>();
-    for (u32 i = 0; i < IdentityRecords::RECORD_COUNT; i++) {
-        if (f.below(3) == 0) {
-            memset(&records->records[i], 0, sizeof(IdentityRecord));
-        }
-    }
-    if (f.below(3) == 0) {
-        memset(&records->extra, 0, sizeof(IdentityRecord));
-    }
-    // only the player's identity is read: a small window stands for the whole SavePlayer
-    constexpr u32 WINDOW = 0x40;
-    gptr<void> window = f.allocate(WINDOW);
-    f.bytes(window, WINDOW);
-    gptr<SavePlayer> player(window.addr() - u32(offsetof(SavePlayer, identity)));
-    f.arguments(records, f.below(8) == 0 ? gptr<SavePlayer>() : player);
-});

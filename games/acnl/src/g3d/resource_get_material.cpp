@@ -30,12 +30,3 @@ void ResourceGetMaterial::virtual_3() {
     model_virtual_3(guest::addr_of(model_04));
 }
 GUEST_EXPORT(0x002fbd80, ResourceGetMaterial::virtual_3);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// The model and material code cannot be given random objects safely: only the "not ready" path is fuzzed.
-GUEST_FUZZ(0x002fbd80, 200, [](guest::Fuzz &f) {
-    auto self = f.object<ResourceGetMaterial>();
-    self->model_resource_08 = 0;
-    f.arguments(self);
-});

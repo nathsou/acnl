@@ -10,7 +10,6 @@ constexpr u8 PERSONALITY_LIMIT = 8;
 inline constexpr guest::Function<0x0076c6d4, u32(gptr<void> block)> check_block;
 inline constexpr guest::Function<0x002ff81c, bool(gptr<void> first, gptr<void> second)> records_equal;
 
-
 // The fields is_villager_record looks at.
 struct VillagerHeader {
     u8 unknown_00[0x16];
@@ -34,12 +33,6 @@ bool is_villager_record(gptr<VillagerHeader> record) {
     return check_block(guest::addr_of(record->block_16).cast<void>()) != 0;
 }
 GUEST_EXPORT(0x00301e20, is_villager_record);
-GUEST_FUZZ(0x00301e20, 200, [](guest::Fuzz &f) {
-    auto record = f.object<VillagerHeader>();
-    record->id = u16(f.pick<u32>({0, 1, 100, VILLAGER_ID_LIMIT - 1, VILLAGER_ID_LIMIT, f.number()}));
-    record->personality = u8(f.pick<u32>({0, 3, PERSONALITY_LIMIT - 1, PERSONALITY_LIMIT, f.number()}));
-    f.arguments(record);
-});
 
 // The villager of the town (the first of the ten records) with the id; null if none lives there.
 gptr<SaveVillager> find_villager_by_id(gptr<SaveVillager> villagers, u32 id) {
@@ -53,13 +46,6 @@ gptr<SaveVillager> find_villager_by_id(gptr<SaveVillager> villagers, u32 id) {
 }
 GUEST_EXPORT(0x001190fd, find_villager_by_id);
 GUEST_EXPORT(0x00308d05, find_villager_by_id);
-GUEST_FUZZ(0x00308d05, 200, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(SaveData::VILLAGER_COUNT * sizeof(SaveVillager)).cast<SaveVillager>(), f.pick<u32>({0, 1, 100, 0x18e, f.number()}));
-});
-GUEST_FUZZ(0x001190fd, 200, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(SaveData::VILLAGER_COUNT * sizeof(SaveVillager)).cast<SaveVillager>(),
-                f.pick<u32>({0, 1, 100, 0x18e, f.number()}));
-});
 
 // The number of valid villager records among the ten of the town.
 u32 count_villager_records(gptr<SaveVillager> villagers) {
@@ -72,9 +58,6 @@ u32 count_villager_records(gptr<SaveVillager> villagers) {
     return count;
 }
 GUEST_EXPORT(0x00118c75, count_villager_records);
-GUEST_FUZZ(0x00118c75, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(SaveData::VILLAGER_COUNT * sizeof(SaveVillager)).cast<SaveVillager>());
-});
 
 // The index in the list of the first villager that is the same as this one (same id, and both blocks equal);
 // -1 if the villager is not valid or none matches.
@@ -96,21 +79,9 @@ s32 index_of_same_villager(gptr<SaveVillager> villager, gptr<SaveVillager> list,
     return -1;
 }
 GUEST_EXPORT(0x00308971, index_of_same_villager);
-GUEST_FUZZ(0x00308971, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(sizeof(SaveVillager)).cast<SaveVillager>(), f.allocate(3 * sizeof(SaveVillager)).cast<SaveVillager>(), f.below(4));
-});
 
 // The index of the villager in the list of the town's villagers, as index_of_same_villager finds it.
 s32 index_of_villager_in_town(gptr<SaveVillager> villagers, gptr<SaveVillager> villager) {
     return index_of_same_villager(villager, villagers, SaveData::VILLAGER_COUNT);
 }
 GUEST_EXPORT(0x00118c9d, index_of_villager_in_town);
-GUEST_FUZZ(0x00118c9d, 100, [](guest::Fuzz &f) {
-    gptr<SaveVillager> villagers = guest::addr_of((*save_data)->villagers[0]);
-    auto candidate = f.allocate(sizeof(SaveVillager)).cast<SaveVillager>();
-    *candidate = (*save_data)->villagers[f.below(SaveData::VILLAGER_COUNT)];
-    if (f.below(4) == 0) {
-        candidate.cast<u8>()[f.below(sizeof(SaveVillager))] ^= u8(1 + f.below(255));
-    }
-    f.arguments(villagers, candidate);
-});

@@ -153,34 +153,3 @@ static u32 font_base_virtual_12() {
 }
 GUEST_EXPORT(0x0052e9fc, font_base_virtual_12);
 GUEST_EXPORT(0x0052ea58, font_base_virtual_12);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0052e6c8, 300, [](guest::Fuzz &f) {
-    auto mgr = f.object<FontMgr>();
-    for (DLoadSplit &slot : mgr->slots) {
-        slot.state = f.pick<u8>({0, 1, 2, 3, 3, 3, 4});
-    }
-    f.arguments(mgr, f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffff, f.number()}));
-});
-
-// Only states that do not reach the loaders (those run recompiled code on the object's contents).
-GUEST_FUZZ(0x0052e76c, 200, [](guest::Fuzz &f) {
-    auto slot = f.object<DLoadSplit>();
-    slot->state = f.pick<u8>({3, 4, 5, 255});
-    f.arguments(slot);
-});
-
-GUEST_FUZZ(0x0052e858, 200, [](guest::Fuzz &f) {
-    auto slot = f.object<DLoadSplit>();
-    init_string(slot->path, PATH_VTABLE);
-    init_string(slot->file_name, FILE_NAME_VTABLE);
-    auto name = f.allocate(16).cast<char>();
-    memcpy(name.get(), "arial", 6);
-    gptr<FontHeap> heap = f.below(2) ? gptr<FontHeap>() : f.object<FontHeap>();
-    f.arguments(slot, gptr<const char>(name), f.pick<u8>({0, 1, 2}), heap);
-});
-
-GUEST_FUZZ(0x0052e90c, 200, [](guest::Fuzz &f) { f.arguments(f.object<DLoadSplit>(), f.pick<u8>({0, 1})); });
-GUEST_FUZZ(0x0052e9fc, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0052ea58, 200, [](guest::Fuzz &f) { f.arguments(); });

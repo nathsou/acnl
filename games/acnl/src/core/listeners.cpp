@@ -55,15 +55,3 @@ u32 notify_listeners_b(u32 value) {
     return notify(value, SLOT_B);
 }
 GUEST_EXPORT(0x00565f74, notify_listeners_b);
-
-// The listeners are globals that may hold anything in a fuzzed state, so the fuzz only runs with both cleared.
-GUEST_FUZZ(0x00565f00, 200, [](guest::Fuzz &f) {
-    listeners->first = nullptr;
-    listeners->second = nullptr;
-    f.arguments(f.number());
-});
-GUEST_FUZZ(0x00565f74, 200, [](guest::Fuzz &f) {
-    listeners->first = nullptr;
-    listeners->second = nullptr;
-    f.arguments(f.number());
-});

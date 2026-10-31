@@ -3,7 +3,8 @@
 #include <cstring>
 #include <vector>
 
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
+#include "item/item.hpp"
 #include "core/grid_map.hpp"
 
 namespace {
@@ -11,14 +12,12 @@ namespace {
 inline constexpr guest::Function<0x0030b654, bool(const Item &item)> item_has_valid_data;
 inline constexpr guest::Function<0x00305570, u32(const Item &item)> item_kind_11_byte_17;
 inline constexpr guest::Function<0x0076936c, u32(const Item &item)> item_kind_11_top_bits;
-inline constexpr guest::Function<0x006a5e34, gptr<GridMap>()> world_map;
 
 constexpr u32 LAYER_COUNT = 2;
 constexpr u32 FOOTPRINT_KINDS = 5;  // the kinds (the byte 17 of the item data) that have a footprint
 constexpr u32 ROTATIONS = 4;
 constexpr u32 KIND_MASK = 0xff;
 constexpr s32 SEARCH_RADIUS = 1;
-constexpr u32 FUZZ_RANGE = 0x100;
 
 // The tiles a kind of furniture covers, for each of the four rotations: offsets from the first tile (the entry 0 of each
 // rotation is the first tile itself).
@@ -143,69 +142,9 @@ gptr<TileOffset> footprint_tile_offset(const FurnitureShape &shape, u32 tile_ind
 }
 GUEST_EXPORT(0x007457a4, footprint_tile_offset);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-constexpr u32 FUZZ_PAD = 0x1000;
-constexpr u32 FUZZ_BLOCKS_PER_SIDE = 2;
-constexpr u32 FUZZ_BLOCK_CELLS = 16 * 16;
-constexpr u32 FUZZ_TILE_RANGE = FUZZ_BLOCKS_PER_SIDE * 16;
-constexpr u32 FUZZ_PLACE_MIN = 8;
-constexpr u32 FUZZ_PLACE_SPAN = 12;
-constexpr u32 FUZZ_FURNITURE_CANDIDATES = 24;
-
-// The numbers of items that are furniture covering several tiles (found once).
-const std::vector<u16> &furniture_numbers() {
-    static std::vector<u16> numbers;
-    static bool searched = false;
-    if (!searched && item_data_table->entries != nullptr) {
-        searched = true;
-        for (u32 index = 0; index < Item::ITEM_COUNT && numbers.size() < FUZZ_FURNITURE_CANDIDATES; index++) {
-            guest::StackObject<Item> item;  // (guest code needs the item in guest memory)
-            item->id = u16(Item::FIRST_ITEM + index);
-            item->flags = 0;
-            if (!item_has_valid_data(*item)) {
-                continue;
-            }
-            u32 kind = item_kind_11_byte_17(*item) & KIND_MASK;
-            if (kind < FOOTPRINT_KINDS && (*footprints)[kind]->tile_count > 1) {
-                numbers.push_back(item->id);
-            }
-        }
-    }
-    return numbers;
-}
-
 // A map of 2x2 blocks with empty layers.
-gptr<GridMap> synthetic_map(guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto map = f.object<GridMap>();
-    map->rect.min = {0, 0};
-    map->rect.max = {FUZZ_BLOCKS_PER_SIDE - 1, FUZZ_BLOCKS_PER_SIDE - 1};
-    u32 cells = FUZZ_BLOCKS_PER_SIDE * FUZZ_BLOCKS_PER_SIDE;
-    auto small = f.allocate(cells * sizeof(GridCellSmall)).cast<GridCellSmall>();
-    std::memset(small.get(), 0, cells * sizeof(GridCellSmall));
-    for (u32 i = 0; i < cells; i++) {
-        for (u32 layer = 0; layer < LAYER_COUNT; layer++) {
-            auto items = f.allocate(FUZZ_BLOCK_CELLS * sizeof(Item));
-            std::memset(items.get(), 0, FUZZ_BLOCK_CELLS * sizeof(Item));
-            small[i].layers[layer] = items;
-        }
-    }
-    map->cells_small = small;
-    map->cells_large = gptr<GridCellLarge>(0u);
-    return map;
-}
-
-void put_item(gptr<GridMap> map, s32 x, s32 z, u32 layer, const Item &item) {
-    gptr<Item> cell(map->process_world_position(x, z, layer));
-    if (cell != nullptr) {
-        *cell = item;
-    }
-}
-
-
 
 // A map with a furniture and its markers (or the live map); the tile to ask about and the layer.
 struct FurnitureScene {
@@ -215,52 +154,4 @@ struct FurnitureScene {
     u32 layer;
 };
 
-FurnitureScene furniture_scene(guest::Fuzz &f) {
-    const std::vector<u16> &numbers = furniture_numbers();
-    if (numbers.empty() || f.below(5) == 0) {
-        return {world_map(), s32(f.below(FUZZ_RANGE)), s32(f.below(FUZZ_RANGE)), f.below(LAYER_COUNT + 1)};
-    }
-    gptr<GridMap> map = synthetic_map(f);
-    u32 layer = f.below(LAYER_COUNT);
-    s32 first_x = s32(FUZZ_PLACE_MIN + f.below(FUZZ_PLACE_SPAN));
-    s32 first_z = s32(FUZZ_PLACE_MIN + f.below(FUZZ_PLACE_SPAN));
-    auto furniture = f.object<Item>();
-    furniture->id = numbers[f.below(u32(numbers.size()))];
-    furniture->flags = u16(f.number());
-    put_item(map, first_x, first_z, layer, *furniture);
-    u32 kind = item_kind_11_byte_17(*furniture) & KIND_MASK;
-    u32 rotation = item_kind_11_top_bits(*furniture) % ROTATIONS;
-    gptr<Footprint> footprint = (*footprints)[kind];
-    s32 query_x = first_x;
-    s32 query_z = first_z;
-    for (u32 index = 1; index < footprint->tile_count; index++) {
-        const TileOffset &offset = footprint->rotations[rotation][index];
-        put_item(map, first_x + offset.x, first_z + offset.z, layer, *marker_item);
-        if (f.below(2) == 0) {
-            query_x = first_x + offset.x;
-            query_z = first_z + offset.z;
-        }
-    }
-    if (f.below(4) == 0) {
-        query_x += s32(f.below(3)) - 1;
-        query_z += s32(f.below(3)) - 1;
-    }
-    return {map, query_x, query_z, f.below(4) == 0 ? 1 - layer : layer};
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x004e0cec, 400, [](guest::Fuzz &f) {
-    FurnitureScene scene = furniture_scene(f);
-    f.arguments(scene.x, scene.z, scene.layer, scene.map, f.below(4) == 0 ? 1u : 0u);
-});
-GUEST_FUZZ(0x004e424c, 400, [](guest::Fuzz &f) {
-    FurnitureScene scene = furniture_scene(f);
-    f.arguments(f.below(8) != 0 ? f.object<s32>() : gptr<s32>(0u), f.below(8) != 0 ? f.object<s32>() : gptr<s32>(0u), scene.x,
-                scene.z, scene.layer, scene.map);
-});
-GUEST_FUZZ(0x007457a4, 200, [](guest::Fuzz &f) {
-    auto shape = f.object<FurnitureShape>();
-    shape->kind = f.pick<u8>({0, 1, 2, 3, 4, 5, 6});
-    f.arguments(shape, f.below(12));
-});

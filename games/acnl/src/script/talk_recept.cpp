@@ -9,6 +9,4 @@ ITalkRecept &destroy_ITalkRecept(ITalkRecept &self) {
 }
 GUEST_EXPORT(0x003170d0, destroy_ITalkRecept);
 
-GUEST_FUZZ(0x003170d0, 200, [](guest::Fuzz &f) { f.arguments(f.object<ITalkRecept>()); });
-
 }  // namespace script

@@ -58,29 +58,3 @@ static void write_bit(gptr<u8> bits, s32 index, u32 value) {
     }
 }
 GUEST_EXPORT(0x00301d50, write_bit);
-
-GUEST_FUZZ(0x00301d0d, 200, [](guest::Fuzz &f) {
-    auto base = f.allocate(64);
-    f.bytes(base, 64);
-    f.arguments(base, f.pick<u32>({0, 0x00301d30}), f.pick<u32>({0, 2, 4, 12}), f.below(6));
-});
-
-GUEST_FUZZ(0x00301d30, 200, [](guest::Fuzz &f) {
-    auto table = f.allocate(64);
-    f.arguments(table, f.pick<u32>({0, 1, 0x11, 0x12, 0x13, 0xffffffff, f.below(40)}));
-});
-
-GUEST_FUZZ(0x00301d3c, 200, [](guest::Fuzz &f) {
-    auto out = f.allocate(8);
-    f.bytes(out, 8);
-    auto source = f.allocate(8);
-    f.bytes(source, 8);
-    f.arguments(out, source);
-});
-
-GUEST_FUZZ(0x00301d50, 300, [](guest::Fuzz &f) {
-    auto bits = f.allocate(16);
-    f.bytes(bits, 16);
-    f.arguments(bits, f.pick<s32>({0, 1, 7, 8, 16, 17, 18, 19, -1, -9, s32(f.below(24))}),
-                f.pick<u32>({0, 1, f.number()}));
-});

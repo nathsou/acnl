@@ -14,14 +14,6 @@ constexpr u32 CLASS_1 = 1;
 constexpr u32 CLASS_2 = 2;
 constexpr u32 CLASS_3 = 3;
 
-gptr<Item> fuzz_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    return item;
-}
-
 gptr<ItemData> kind_11_data(const Item &item) {
     gptr<ItemData> data = item.data();
     if (!data || !data->has_kind_11()) {
@@ -41,7 +33,6 @@ u32 item_kind_11_byte_13(const Item &item) {
     return data->byte_13;
 }
 GUEST_EXPORT(0x003053d0, item_kind_11_byte_13);
-GUEST_FUZZ(0x003053d0, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
 
 // The low nibble of ItemData::byte_17 when it is below the limit, else 0.
 u32 item_kind_11_byte_17(const Item &item) {
@@ -53,7 +44,6 @@ u32 item_kind_11_byte_17(const Item &item) {
     return property >= BYTE_17_LIMIT ? 0 : property;
 }
 GUEST_EXPORT(0x00305570, item_kind_11_byte_17);
-GUEST_FUZZ(0x00305570, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
 
 // Stores a value in the two top bits of the flags (cleared first, even when the value is too large to store).
 void set_kind_11_flags_value(Item &item, u32 value) {
@@ -66,7 +56,6 @@ void set_kind_11_flags_value(Item &item, u32 value) {
     }
 }
 GUEST_EXPORT(0x003055b4, set_kind_11_flags_value);
-GUEST_FUZZ(0x003055b4, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f), f.pick<u32>({0, 1, 2, 3, 4, f.number()})); });
 
 // Of kind 11, in class 1, and not one of the kinds FurnitureRef::is_kind_in_group names.
 bool item_is_class_1_outside_kind_group(const Item &item) {
@@ -78,7 +67,6 @@ bool item_is_class_1_outside_kind_group(const Item &item) {
     return data && !data.cast<FurnitureRef>()->is_kind_in_group();
 }
 GUEST_EXPORT(0x00319650, item_is_class_1_outside_kind_group);
-GUEST_FUZZ(0x00319650, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
 
 // True for an item without data; otherwise whether the data's flag 1d bit 0 is clear.
 bool item_has_no_flag_1d_bit_0(const Item &item) {
@@ -89,7 +77,6 @@ bool item_has_no_flag_1d_bit_0(const Item &item) {
     return !data.cast<FurnitureRef>()->flag_1d_bit_0();
 }
 GUEST_EXPORT(0x00319a84, item_has_no_flag_1d_bit_0);
-GUEST_FUZZ(0x00319a84, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
 
 // Of kind 11 and in class 2 or 3.
 bool item_is_class_2_or_3(const Item &item) {
@@ -101,4 +88,3 @@ bool item_is_class_2_or_3(const Item &item) {
     return data_class == CLASS_2 || data_class == CLASS_3;
 }
 GUEST_EXPORT(0x0031af3c, item_is_class_2_or_3);
-GUEST_FUZZ(0x0031af3c, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });

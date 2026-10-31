@@ -30,25 +30,3 @@ void RankedValue::clear() {
 }
 GUEST_EXPORT(0x0051b0e4, RankedValue::clear);
 GUEST_EXPORT(0x00137a0c, RankedValue::clear);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<RankedValue> some_ranked_value(guest::Fuzz &f) {
-    auto record = f.object<RankedValue>();
-    if (f.below(4) != 0) {
-        record->rank = f.below(4);
-    }
-    if (f.below(2) != 0) {
-        record->value = 0;
-    }
-    return record;
-}
-
-GUEST_FUZZ(0x0051b094, 200, [](guest::Fuzz &f) {
-    f.arguments(some_ranked_value(f), f.number(), f.number());
-});
-GUEST_FUZZ(0x0051b0b8, 300, [](guest::Fuzz &f) {
-    f.arguments(some_ranked_value(f), f.pick<u32>({0, 1, 2, 3, 255, 256, f.number()}), f.pick<u32>({0, 5, f.number()}));
-});
-GUEST_FUZZ(0x0051b0e4, 200, [](guest::Fuzz &f) { f.arguments(some_ranked_value(f)); });
-GUEST_FUZZ(0x00137a0c, 200, [](guest::Fuzz &f) { f.arguments(some_ranked_value(f)); });

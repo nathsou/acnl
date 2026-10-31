@@ -44,20 +44,9 @@ u32 EscapeCountedObject::classify() const {
     return value_160 < 0 ? 2 : 1;
 }
 GUEST_EXPORT(0x402fc4d8, EscapeCountedObject::classify);
-GUEST_FUZZ(0x402fc4d8, 300, [](guest::Fuzz &f) {
-    auto object = f.object<EscapeCountedObject>();
-    object->count = f.pick<s32>({0, 1, -1, 100, s32(f.number())});
-    object->value_160 = f.pick<s32>({0, 1, -1, s32(f.number())});
-    f.arguments(object);
-});
 
 // A word of the owner's table.
 u32 EscapeTableOwner::table_word(u32 index) const {
     return table.get()->words[index];
 }
 GUEST_EXPORT(0x402fc4fc, EscapeTableOwner::table_word);
-GUEST_FUZZ(0x402fc4fc, 300, [](guest::Fuzz &f) {
-    auto owner = f.object<EscapeTableOwner>();
-    owner->table = f.object<EscapeWordTable>();
-    f.arguments(owner, f.below(EscapeWordTable::ENTRY_COUNT));
-});

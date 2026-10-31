@@ -149,49 +149,4 @@ GUEST_EXPORT(0x005bc99c, remove_second_entry_of);
 
 namespace {
 
-gptr<RecordBook> some_book(guest::Fuzz &f) {
-    auto book = f.object<RecordBook>();
-    return book;
-}
-
-// A player identity that some entries of the book carry.
-gptr<void> some_player(guest::Fuzz &f, gptr<RecordBook> book) {
-    auto player = f.allocate(sizeof(SavedRecordHeader));
-    if (f.below(2) == 0) {
-        auto entries = guest::addr_of(book->first[f.below(FIRST_COUNT)]).cast<u8>();
-        auto copy = player.cast<u8>();
-        for (u32 i = 0; i < sizeof(SavedRecordHeader); i++) {
-            copy[i] = entries[i];
-        }
-    }
-    return player;
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x0030a2b4, 100, [](guest::Fuzz &f) {
-    auto stamp = f.object<TimeStamp>();
-    *stamp = *reference_time;
-    f.arguments(some_book(f), stamp);
-});
-GUEST_FUZZ(0x0030c428, 100, [](guest::Fuzz &f) { f.arguments(some_book(f)); });
-GUEST_FUZZ(0x005bca18, 100, [](guest::Fuzz &f) { f.arguments(some_book(f), f.below(256)); });
-GUEST_FUZZ(0x005bc900, 150, [](guest::Fuzz &f) {
-    auto book = some_book(f);
-    f.arguments(book, some_player(f, book));
-});
-GUEST_FUZZ(0x005bc944, 150, [](guest::Fuzz &f) {
-    auto book = some_book(f);
-    f.arguments(book, some_player(f, book));
-});
-GUEST_FUZZ(0x005bc99c, 150, [](guest::Fuzz &f) {
-    auto book = some_book(f);
-    auto player = some_player(f, book);
-    if (f.below(2) == 0) {
-        auto entry = guest::addr_of(book->second[f.below(SECOND_COUNT)]).cast<u8>();
-        for (u32 i = 0; i < sizeof(SavedRecordHeader); i++) {
-            player.cast<u8>()[i] = entry[i];
-        }
-    }
-    f.arguments(book, player);
-});

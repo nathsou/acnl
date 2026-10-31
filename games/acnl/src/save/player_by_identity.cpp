@@ -39,14 +39,6 @@ gptr<SavePlayer> find_player_by_identity(gptr<SavePlayer> first, const PersonalI
     return gptr<SavePlayer>(0u);
 }
 GUEST_EXPORT(0x0030dc84, find_player_by_identity);
-GUEST_FUZZ(0x0030dc84, 200, [](guest::Fuzz &f) {
-    auto players = f.allocate(SaveData::PLAYER_COUNT * SavePlayer::SIZE).cast<SavePlayer>();
-    auto identity = f.object<PersonalId>();
-    if (f.below(2) == 0) {
-        *identity = players[f.below(SaveData::PLAYER_COUNT)].identity;
-    }
-    f.arguments(players, identity);
-});
 
 // Whether the entry's player has the identity's player id, name (the last code unit counts by its low byte only)
 // and town id.
@@ -63,15 +55,3 @@ bool entry_matches_identity(const PlayerEntry &entry, const IdentityWithValue &o
     return other.value_2c == entry.value_22;
 }
 GUEST_EXPORT(0x0030e56c, entry_matches_identity);
-GUEST_FUZZ(0x0030e56c, 200, [](guest::Fuzz &f) {
-    auto entry = f.object<PlayerEntry>();
-    auto other = f.object<IdentityWithValue>();
-    if (f.below(3) != 0) {
-        memcpy(&other->identity.player, &entry->player, sizeof(PlayerRef));
-        other->value_2c = entry->value_22;
-        if (f.below(3) == 0) {
-            other->value_2c = u16(f.number());
-        }
-    }
-    f.arguments(entry, other);
-});

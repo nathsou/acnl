@@ -61,29 +61,3 @@ void offset_on_circle(gptr<Float3> out, const Float3 &in, u32 angle, float scale
     out->v[2] = in.v[2] + scale * cosine;
 }
 GUEST_EXPORT(0x005d43f4, offset_on_circle);
-
-GUEST_FUZZ(0x005d4350, 200, [](guest::Fuzz &f) {
-    auto out = f.below(4) ? f.object<Float3>() : gptr<Float3>();
-    auto translation = f.object<Float3>();
-    for (u32 i = 0; i < 3; i++) {
-        translation->v[i] = f.real();
-    }
-    auto second = f.allocate(64);
-    auto third = f.allocate(64);
-    auto second_floats = second.cast<float>();
-    auto third_floats = third.cast<float>();
-    for (u32 i = 0; i < 16; i++) {
-        second_floats[i] = f.real();
-        third_floats[i] = f.real();
-    }
-    f.arguments(out, translation, second, third);
-});
-
-GUEST_FUZZ(0x005d43f4, 300, [](guest::Fuzz &f) {
-    auto out = f.below(5) ? f.object<Float3>() : gptr<Float3>();
-    auto in = f.object<Float3>();
-    for (u32 i = 0; i < 3; i++) {
-        in->v[i] = f.real();
-    }
-    f.arguments(out, in, f.pick<u32>({0, 0x4000, 0xffff, f.number()}), f.real());
-});

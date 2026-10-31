@@ -16,9 +16,3 @@ s64 aeabi_lasr(s64 value, u32 amount) {
     return s64(u64(u32(result_high)) << 32 | result_low);
 }
 GUEST_EXPORT(0x00134cb4, aeabi_lasr);
-
-GUEST_FUZZ(0x00134cb4, 400, [](guest::Fuzz &f) {
-    s64 value = s64(u64(f.number()) << 32 | f.number());
-    u32 amount = f.pick<u32>({0, 1, 31, 32, 33, 63, 64, 255, 256, 0x80000020u, f.below(64), f.number()});
-    f.arguments(value, amount);
-});

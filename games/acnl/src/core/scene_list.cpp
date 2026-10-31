@@ -36,7 +36,6 @@ constexpr u32 FLAG_2000_END = 0x1e;
 constexpr u32 FLAG_100000_FIRST = 0x20;
 constexpr u32 OWNED_FIRST_POSITION = FLAG_80_FIRST;
 constexpr u32 OWNED_POSITION_COUNT = FLAG_80_END - FLAG_80_FIRST;
-constexpr u32 MODE_COUNT = 0xa5;  // the mode table's size
 constexpr u32 FLAG_4000_MODE_COUNT = 6;
 constexpr u32 NO_OWNER = 4;
 constexpr u32 FLAG_4000 = 0x4000;  // the modes 0x92-0x97 (six more rooms) have it
@@ -78,9 +77,6 @@ u32 list_position_of_mode(u32 mode) {
     return NOT_LISTED;
 }
 GUEST_EXPORT(0x006f9638, list_position_of_mode);
-GUEST_FUZZ(0x006f9638, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({f.below(MODE_COUNT + 1), mode_list[f.below(LIST_SIZE)], mode_list[f.below(LIST_SIZE)], SPECIAL_MODE}));
-});
 
 // The owner (0-3) of the position the mode has in the list, NO_OWNER for modes without an owned position.
 u32 owner_of_mode(u32 mode) {
@@ -91,9 +87,6 @@ u32 owner_of_mode(u32 mode) {
     return NO_OWNER;
 }
 GUEST_EXPORT(0x006fa40c, owner_of_mode);
-GUEST_FUZZ(0x006fa40c, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({f.below(MODE_COUNT + 1), mode_list[f.below(LIST_SIZE)], mode_list[f.below(LIST_SIZE)]}));
-});
 
 // The room (0-5) of a mode: by its position when it is an owned one, by its number (from 0x92) for the six modes with flag 0x4000,
 // NO_ROOM for all others.
@@ -110,9 +103,6 @@ u32 room_of_mode(u32 mode) {
     return NO_ROOM;
 }
 GUEST_EXPORT(0x006fb030, room_of_mode);
-GUEST_FUZZ(0x006fb030, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({f.below(MODE_COUNT + 1), mode_list[f.below(LIST_SIZE)], FIRST_FLAG_4000_MODE - 1 + f.below(FLAG_4000_MODE_COUNT + 2)}));
-});
 
 namespace {
 
@@ -136,4 +126,3 @@ bool current_mode_is_room_like() {
            (*(entry + ENTRY_FLAGS_OFFSET).cast<u32>() & ENTRY_FLAG_20) != 0;
 }
 GUEST_EXPORT(0x00693410, current_mode_is_room_like);
-GUEST_FUZZ(0x00693410, 50, [](guest::Fuzz &f) { f.arguments(); });

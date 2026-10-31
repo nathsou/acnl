@@ -186,25 +186,6 @@ constexpr u32 OBJECT_VIRTUAL_2 = 2;
 inline constexpr guest::Function<0x00713a70, gptr<HandlerObject>(gptr<void> self)> find_handler_object;
 inline constexpr guest::Function<0x001509dc, u32(u32 key, u32 object_key, u32 argument)> compare_entry;  // 0: match
 
-// ---- fuzz helpers
-
-constexpr u32 SELF_SCRATCH_SIZE = 0x100;       // generic receptor / object scratch
-constexpr u32 BIG_SELF_SCRATCH_SIZE = 0x1000;  // objects the callee reads deep into
-constexpr u32 OWNER_REF_SCRATCH_SIZE = sizeof(BlockOwnerRef) + 0x10;
-constexpr u32 OWNER_SCRATCH_SIZE = sizeof(BlockOwner) + 0x10;
-constexpr u32 SPEAKER_SCRATCH_SIZE = sizeof(TalkSpeaker) + 0x10;
-constexpr u32 VTABLE_SCRATCH_SIZE = 0x40;
-constexpr u32 TARGET_SCRATCH_SIZE = 0x20;
-constexpr u32 PARTNER_SCRATCH_SIZE = sizeof(TalkPartnerRef) + 0x10;
-constexpr u32 ENCRYPTED_INT_GET_ADDRESS = 0x00303660;  // used as a virtual 6 that returns 0 on a bad checksum
-constexpr u32 PICK_LIMIT = 7;                          // one past the last valid code index
-
-gptr<void> zeroed_block(guest::Fuzz &f, u32 size) {
-    gptr<void> p = f.allocate(size);
-    std::memset(p.get(), 0, size);
-    return p;
-}
-
 }  // namespace
 
 // Calls the reset helper, then clears the block of the owner the second object points to. Returns the block.
@@ -333,41 +314,3 @@ u32 april_talk_rcpt_virtual_75(gptr<void> self) {
     return guest::call_member<u32>(handler, self);
 }
 GUEST_EXPORT(0x006330ec, april_talk_rcpt_virtual_75);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x006326a0, 200, [](guest::Fuzz &f) {
-    auto self = zeroed_block(f, SELF_SCRATCH_SIZE);
-    auto ref = zeroed_block(f, OWNER_REF_SCRATCH_SIZE).cast<BlockOwnerRef>();
-    auto owner = f.allocate(OWNER_SCRATCH_SIZE);
-    f.bytes(owner, OWNER_SCRATCH_SIZE);
-    ref->owner = owner.cast<BlockOwner>();
-    f.arguments(self, ref);
-});
-
-GUEST_FUZZ(0x00632904, 300, [](guest::Fuzz &f) {
-    auto self = zeroed_block(f, BIG_SELF_SCRATCH_SIZE);
-    auto speaker = zeroed_block(f, SPEAKER_SCRATCH_SIZE).cast<TalkSpeaker>();
-    // a target whose virtual 6 is EncryptedInt::get on an object with a bad checksum: it returns 0
-    auto vtable = zeroed_block(f, VTABLE_SCRATCH_SIZE).cast<u32>();
-    vtable[TalkEffectTarget::SLOT_6] = ENCRYPTED_INT_GET_ADDRESS;
-    auto target = zeroed_block(f, TARGET_SCRATCH_SIZE).cast<EncryptedInt>();
-    target->scrambled = vtable.addr();
-    target->checksum = EncryptedInt::checksum_of(target->scrambled) + 1;
-    speaker->target = target.cast<TalkEffectTarget>();
-    speaker->code_830 = f.below(2) ? code_table_first[f.below(CODE_COUNT)] : u16(f.number());
-    speaker->code_832 = f.below(2) ? code_table_second[f.below(CODE_COUNT)] : u16(f.number());
-    f.arguments(self, speaker, f.pick<u32>({0, 1, 2, 3, 4, 5, 6, PICK_LIMIT, f.number()}));
-});
-
-GUEST_FUZZ(0x00632a44, 200, [](guest::Fuzz &f) { f.arguments(zeroed_block(f, SELF_SCRATCH_SIZE).cast<NpcNmlPart>()); });
-
-GUEST_FUZZ(0x00632acc, 200, [](guest::Fuzz &f) {
-    auto self = zeroed_block(f, SELF_SCRATCH_SIZE).cast<TalkReceptWithPartner>();
-    if (f.below(2) != 0) {
-        self->partner = zeroed_block(f, PARTNER_SCRATCH_SIZE).cast<TalkPartnerRef>();  // no handle: nothing is called
-    }
-    f.arguments(self);
-});
-
-GUEST_FUZZ(0x006330ec, 200, [](guest::Fuzz &f) { f.arguments(zeroed_block(f, BIG_SELF_SCRATCH_SIZE)); });

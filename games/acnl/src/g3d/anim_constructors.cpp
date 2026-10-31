@@ -71,9 +71,6 @@ BaseAnim &construct_base_anim_4ecf18(BaseAnim &self) { return construct_base_ani
 GUEST_EXPORT(0x004ee868, construct_base_anim_4ee868);
 GUEST_EXPORT(0x004ef9b4, construct_base_anim_4ef9b4);
 GUEST_EXPORT(0x004ecf18, construct_base_anim_4ecf18);
-GUEST_FUZZ(0x004ee868, 100, [](guest::Fuzz &f) { f.arguments(f.object<BaseAnim>()); });
-GUEST_FUZZ(0x004ef9b4, 100, [](guest::Fuzz &f) { f.arguments(f.object<BaseAnim>()); });
-GUEST_FUZZ(0x004ecf18, 100, [](guest::Fuzz &f) { f.arguments(f.object<BaseAnim>()); });
 
 // The variant that also clears a word at 0x18 and a flag byte at 0x1c.
 BaseAnimEx &construct_base_anim_4ecb80(BaseAnimEx &self) {
@@ -83,7 +80,6 @@ BaseAnimEx &construct_base_anim_4ecb80(BaseAnimEx &self) {
     return self;
 }
 GUEST_EXPORT(0x004ecb80, construct_base_anim_4ecb80);
-GUEST_FUZZ(0x004ecb80, 100, [](guest::Fuzz &f) { f.arguments(f.object<BaseAnimEx>()); });
 
 GroupSkeletalAnim &construct_group_skeletal_anim(GroupSkeletalAnim &self) {
     self.value_04 = 0;
@@ -94,4 +90,3 @@ GroupSkeletalAnim &construct_group_skeletal_anim(GroupSkeletalAnim &self) {
     return self;
 }
 GUEST_EXPORT(0x004ef48c, construct_group_skeletal_anim);
-GUEST_FUZZ(0x004ef48c, 100, [](guest::Fuzz &f) { f.arguments(f.object<GroupSkeletalAnim>()); });

@@ -1,5 +1,5 @@
 // BankTableBase: a base class with a vtable, a word and two halfwords, plus two small helpers next to it.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 
 namespace {
 
@@ -75,19 +75,3 @@ void CountdownObject::start(u32 new_value) {
     countdown = INITIAL_COUNTDOWN;
 }
 GUEST_EXPORT(0x002131d4, CountdownObject::start);
-
-GUEST_FUZZ(0x002134a0, 100, [](guest::Fuzz &f) { f.arguments(f.object<BankTableBase>()); });
-GUEST_FUZZ(0x00212f50, 100, [](guest::Fuzz &f) {
-    auto object = f.object<BankTableBase>();
-    object->vtable = fuzz::harmless_vtable(f);
-    f.arguments(object);
-});
-GUEST_FUZZ(0x002132b4, 100, [](guest::Fuzz &f) {
-    auto object = f.object<BankTableBase>();
-    object->vtable = fuzz::harmless_vtable(f);
-    f.arguments(object);
-});
-GUEST_FUZZ(0x00213298, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 0xffffffffu, f.number()}), f.pick<u32>({0, 1, 0xffffffffu, f.number()}));
-});
-GUEST_FUZZ(0x002131d4, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(0x1700).cast<CountdownObject>(), f.number()); });

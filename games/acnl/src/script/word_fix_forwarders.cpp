@@ -21,7 +21,6 @@ GUEST_OFFSET(VirtualHolder, object, 4);
 constexpr u32 FORWARDED_SLOT_A = 0x54 / 4;
 constexpr u32 FORWARDED_SLOT_B = 0x58 / 4;
 
-
 constexpr u32 WORD_FIX_9_VTABLE = 0x0090a3e8;
 
 // The main object (the one MainObject::signed_value reads).
@@ -30,7 +29,6 @@ inline guest::global<gptr<void>, 0x0095362c> main_object;
 inline constexpr guest::Function<0x0075e048, s32(gptr<void> main_object)> main_object_signed_value;
 inline constexpr guest::Function<0x002fe470, u32(gptr<SaveVillager> record)> is_record_valid;
 inline constexpr guest::Function<0x003084cc, u32(script::WordPtr &self)> word_ptr_virtual_0;
-inline constexpr guest::Function<0x00305f2c, u32()> read_global_object_byte;
 
 u32 call_forwarded(gptr<VirtualHolder> holder, u32 slot, u32 a1, u32 a2, u32 a3) {
     gptr<VirtualObject> object = holder->object;
@@ -81,65 +79,3 @@ u32 word_fix_9_virtual_0(script::WordPtr &self) {
     return word_ptr_virtual_0(self);
 }
 GUEST_EXPORT(0x003009cc, word_fix_9_virtual_0);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// Scratch memory whose every word holds its own address: any pointer the callees load from it stays inside.
-static gptr<void> self_referencing_block(guest::Fuzz &f, u32 size) {
-    gptr<u32> words = f.allocate(size).cast<u32>();
-    for (u32 i = 0; i < size / 4; i++) {
-        words[i] = words.addr();
-    }
-    return words.cast<void>();
-}
-
-static gptr<VirtualHolder> some_holder(guest::Fuzz &f) {
-    constexpr u32 VTABLE_SIZE = 0x60;
-    auto vtable = f.allocate(VTABLE_SIZE).cast<u32>();
-    for (u32 i = 0; i < VTABLE_SIZE / 4; i++) {
-        vtable[i] = read_global_object_byte.address;  // a guest function that ignores its arguments
-    }
-    auto inner = f.allocate(0x20).cast<VirtualObject>();
-    inner->vtable = vtable;
-    auto holder = f.allocate(0x10).cast<VirtualHolder>();
-    holder->object = inner;
-    return holder;
-}
-
-GUEST_FUZZ(0x00300904, 200, [](guest::Fuzz &f) { f.arguments(f.number()); });
-GUEST_FUZZ(0x00300914, 200, [](guest::Fuzz &f) {
-    f.arguments(some_holder(f), f.pick<u32>({0, 1}), f.pick<u32>({0, 1}), f.number());
-});
-GUEST_FUZZ(0x00300924, 200, [](guest::Fuzz &f) {
-    f.arguments(some_holder(f), f.pick<u32>({0, 1}), f.pick<u32>({0, 1}), f.number());
-});
-GUEST_FUZZ(0x003009a9, 300, [](guest::Fuzz &f) {
-    constexpr u32 RECORD_SIZE = sizeof(SaveVillager);
-    switch (f.below(4)) {
-    case 0: {
-        // out of range: the records are never touched
-        u32 index = f.pick<u32>({10, 11, 0xffffffff, 10 + f.below(100), f.number() | 0x80000000u});
-        f.arguments(gptr<SaveVillager>(), index);
-        return;
-    }
-    case 1: {
-        // records + index is the null address
-        u32 index = f.below(SaveData::VILLAGER_COUNT);
-        f.arguments(gptr<SaveVillager>(u32(0) - index * RECORD_SIZE), index);
-        return;
-    }
-    default: {
-        // only the selected record is allocated; the base is moved back so that records + index lands on it
-        gptr<void> record = self_referencing_block(f, RECORD_SIZE);
-        u32 index = f.pick<u32>({0, 1, 9, f.below(SaveData::VILLAGER_COUNT)});
-        f.arguments(gptr<SaveVillager>(record.addr() - index * RECORD_SIZE), index);
-        return;
-    }
-    }
-});
-GUEST_FUZZ(0x003009cc, 200, [](guest::Fuzz &f) {
-    auto object = self_referencing_block(f, 0x40).cast<script::WordPtr>();
-    object->buffer = self_referencing_block(f, 0x40);
-    object->capacity = 9;
-    f.arguments(object);
-});

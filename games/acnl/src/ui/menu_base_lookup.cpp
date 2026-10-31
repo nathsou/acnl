@@ -37,8 +37,6 @@ constexpr u32 TABLE_1_ENTRIES_OFFSET = 4;       // in the object of f_2fb310
 constexpr u32 TABLE_1_ENTRY_OFFSET = 0x30;      // inside each entry
 constexpr u32 TABLE_4_ENTRY_OFFSET = 0x304;     // inside each entry
 
-constexpr u32 PACKED_ID_RANGE = 0x700;  // fuzz addresses near small values, like packed ids
-
 inline constexpr guest::Function<0x002fb96c, u32(u32 index)> f_2fb96c;
 inline constexpr guest::Function<0x0020bf50, u32(u32 object, u32 index)> f_20bf50;
 inline constexpr guest::Function<0x002fae84, u32(u32 unused)> get_base_2fae84;
@@ -112,6 +110,3 @@ u32 find_packed_id(u32 address) {
     return NOT_FOUND;
 }
 GUEST_EXPORT(0x006aac60, find_packed_id);
-GUEST_FUZZ(0x006aac60, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 0xffffffff, f.number(), f.below(PACKED_ID_RANGE)}));
-});

@@ -1,7 +1,6 @@
 // Whether a list of recently shown items already holds one like a given item.
 #include <algorithm>
 
-#include "core/fuzz_helpers.hpp"
 #include "guest/guest.hpp"
 #include "item/item.hpp"
 #include "save/save_data.hpp"
@@ -70,19 +69,3 @@ bool list_has_similar_item(gptr<Item> list, const Item &item) {
     return false;
 }
 GUEST_EXPORT(0x00717af4, list_has_similar_item);
-GUEST_FUZZ(0x00717af4, 300, [](guest::Fuzz &f) {
-    constexpr u8 CATEGORIES[] = {0x03, 0x08, 0x0a, 0x24, 0x2f, 0x33, 0x34, 0x42, 0x43, 0x75, 0x76};
-    u8 wanted = f.pick<u8>({CATEGORIES[f.below(sizeof(CATEGORIES))], CATEGORIES[f.below(sizeof(CATEGORIES))]});
-    gptr<Item> item = fuzz::item_in_category(f, wanted);
-    gptr<Item> list = f.allocate(MAX_ENTRIES * sizeof(Item)).cast<Item>();
-    for (u32 index = 0; index < MAX_ENTRIES; index++) {
-        if (f.below(3) == 0) {
-            list[index].id = Item::EMPTY;
-        } else if (f.below(2) == 0) {
-            list[index] = *fuzz::item_in_category(f, f.pick<u8>({wanted, CATEGORIES[f.below(sizeof(CATEGORIES))], CATEGORY_42}));
-        } else {
-            list[index] = *item;
-        }
-    }
-    f.arguments(list, item);
-});

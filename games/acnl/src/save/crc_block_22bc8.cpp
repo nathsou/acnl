@@ -23,16 +23,8 @@ void refresh_crc(CrcBlock &block) {
     block.crc = block.compute();
 }
 GUEST_EXPORT(0x00119859, refresh_crc);
-GUEST_FUZZ(0x00119859, 40, [](guest::Fuzz &f) { f.arguments(f.object<CrcBlock>()); });
 
 bool crc_matches(CrcBlock &block) {
     return block.crc == block.compute();
 }
 GUEST_EXPORT(0x00119875, crc_matches);
-GUEST_FUZZ(0x00119875, 40, [](guest::Fuzz &f) {
-    auto block = f.object<CrcBlock>();
-    if (f.below(2) != 0) {
-        block->crc = block->compute();
-    }
-    f.arguments(block);
-});

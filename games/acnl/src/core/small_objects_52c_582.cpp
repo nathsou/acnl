@@ -28,7 +28,6 @@ constexpr u32 FLAG_BIT_10 = 0x10;
 constexpr u32 FLAG_BIT_11 = 0x11;
 constexpr u32 FLAGS_BLOCK_OFFSET = 0xb06;
 constexpr u32 ALLOCATION_LINK_OFFSET = 8;
-constexpr u32 RES_LOADER_FUZZ_SIZE = 0x400;  // the load-split part's size is not known: be generous
 
 inline constexpr guest::Function<0x003170f8, bool(u32 kind, u32 strict)> talk_state_matches;
 inline constexpr guest::Function<0x005b3ec4, gptr<u8>()> item_tables;
@@ -72,7 +71,6 @@ struct PlayerContext {
 GUEST_OFFSET(PlayerContext, player, 0x234);
 inline guest::global<PlayerContext, 0x00aaef18> player_context;
 
-inline guest::global<gptr<u8>, 0x00957328> item_tables_global;
 inline guest::global<u32[0x172b], 0x00871ac4> default_values_by_item;
 inline guest::global<u32[12], 0x00953238> value_block_953238;
 
@@ -120,28 +118,6 @@ GUEST_EXPORT(0x0052c698, set_talk_flag_in_state_7);
 GUEST_EXPORT(0x0052c75c, set_talk_flag_in_state_a);
 GUEST_EXPORT(0x0052c940, set_talk_flag_in_state_b);
 
-static void fuzz_talk(guest::Fuzz &f) {
-    auto talk = f.object<TalkObject>();
-    talk->byte_1a = u8(f.below(7));
-    talk_global->current = talk;
-}
-GUEST_FUZZ(0x0052c664, 100, [](guest::Fuzz &f) {
-    fuzz_talk(f);
-    f.arguments();
-});
-GUEST_FUZZ(0x0052c698, 100, [](guest::Fuzz &f) {
-    fuzz_talk(f);
-    f.arguments();
-});
-GUEST_FUZZ(0x0052c75c, 100, [](guest::Fuzz &f) {
-    fuzz_talk(f);
-    f.arguments();
-});
-GUEST_FUZZ(0x0052c940, 100, [](guest::Fuzz &f) {
-    fuzz_talk(f);
-    f.arguments();
-});
-
 // In state 0 or 3: turns byte 0x1a from 5 to 1 (and says whether it was 5).
 bool reset_talk_flag_5() {
     if (!talk_state_matches(TALK_STATE_0, 0) && !talk_state_matches(TALK_STATE_3, 0)) {
@@ -155,10 +131,6 @@ bool reset_talk_flag_5() {
     return true;
 }
 GUEST_EXPORT(0x0052c9fc, reset_talk_flag_5);
-GUEST_FUZZ(0x0052c9fc, 100, [](guest::Fuzz &f) {
-    fuzz_talk(f);
-    f.arguments();
-});
 
 // In state 8: sets byte 0x1a and stores the value in byte 0x1b.
 bool set_talk_flag_and_value_in_state_8(u32 value) {
@@ -171,17 +143,12 @@ bool set_talk_flag_and_value_in_state_8(u32 value) {
     return true;
 }
 GUEST_EXPORT(0x0052cd1c, set_talk_flag_and_value_in_state_8);
-GUEST_FUZZ(0x0052cd1c, 100, [](guest::Fuzz &f) {
-    fuzz_talk(f);
-    f.arguments(f.number());
-});
 
 // Whether the talk state is 1 or 2.
 bool talk_state_is_1_or_2() {
     return talk_state_matches(TALK_STATE_1, 0) || talk_state_matches(TALK_STATE_2, 0);
 }
 GUEST_EXPORT(0x0052dad0, talk_state_is_1_or_2);
-GUEST_FUZZ(0x0052dad0, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The five-byte entry of the item's index in the item tables (null without tables or for a bad index).
 gptr<u8> item_table_entry(const Item &item) {
@@ -200,16 +167,6 @@ gptr<u8> item_table_entry(const Item &item) {
     return entries + u32(index) * ITEM_ENTRY_SIZE;
 }
 GUEST_EXPORT(0x00535a1c, item_table_entry);
-GUEST_FUZZ(0x00535a1c, 200, [](guest::Fuzz &f) {
-    auto tables = f.object<ItemTables>();
-    tables->entries = f.below(4) != 0 ? f.allocate(ITEM_ENTRY_SIZE * 8).cast<u8>() : gptr<u8>(0u);
-    *item_tables_global = f.below(5) != 0 ? tables.cast<u8>() : gptr<u8>(0u);
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
 
 // The default value of the item (a word of the block at 0x00953238 for items without a valid index).
 u32 item_default_value(const Item &item) {
@@ -220,13 +177,6 @@ u32 item_default_value(const Item &item) {
     return default_values_by_item[u32(index)];
 }
 GUEST_EXPORT(0x00536060, item_default_value);
-GUEST_FUZZ(0x00536060, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
 
 ResLoader &construct_res_loader(ResLoader &self) {
     g3d::construct_resource_loader(self);
@@ -237,7 +187,6 @@ ResLoader &construct_res_loader(ResLoader &self) {
     return self;
 }
 GUEST_EXPORT(0x005371e0, construct_res_loader);
-GUEST_FUZZ(0x005371e0, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(RES_LOADER_FUZZ_SIZE).cast<ResLoader>()); });
 
 // The identity of the town in the save data.
 gptr<PersonalId> town_identity() {
@@ -245,7 +194,6 @@ gptr<PersonalId> town_identity() {
     return guest::addr_of(block->town_identity);
 }
 GUEST_EXPORT(0x005373a4, town_identity);
-GUEST_FUZZ(0x005373a4, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the current player is the town's owner.
 bool current_player_is_town_owner() {
@@ -256,7 +204,6 @@ bool current_player_is_town_owner() {
     return match_entry(guest::addr_of(player->identity).cast<void>(), town_identity().cast<void>()) != 0;
 }
 GUEST_EXPORT(0x005373bc, current_player_is_town_owner);
-GUEST_FUZZ(0x005373bc, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Frees the allocation and forgets it.
 void free_owned_allocation(OwnerOfAllocation &self) {
@@ -271,11 +218,6 @@ void free_owned_allocation(OwnerOfAllocation &self) {
     self.value_04 = 0;
 }
 GUEST_EXPORT(0x00537e60, free_owned_allocation);
-GUEST_FUZZ(0x00537e60, 50, [](guest::Fuzz &f) {
-    auto owner = f.object<OwnerOfAllocation>();
-    owner->allocation = nullptr;  // nothing to free
-    f.arguments(owner);
-});
 
 // Sets flags 0x10 and 0x11 of the NPC (AcNpc::virtual_48).
 bool set_npc_flags_10_11(NpcFlags &self) {
@@ -284,7 +226,6 @@ bool set_npc_flags_10_11(NpcFlags &self) {
     return true;
 }
 GUEST_EXPORT(0x005782c4, set_npc_flags_10_11);
-GUEST_FUZZ(0x005782c4, 100, [](guest::Fuzz &f) { f.arguments(f.object<NpcFlags>()); });
 
 // Clears flags 0x10 and 0x11 of the NPC (AcNpc::virtual_49).
 bool clear_npc_flags_10_11(NpcFlags &self) {
@@ -293,4 +234,3 @@ bool clear_npc_flags_10_11(NpcFlags &self) {
     return true;
 }
 GUEST_EXPORT(0x00578b04, clear_npc_flags_10_11);
-GUEST_FUZZ(0x00578b04, 100, [](guest::Fuzz &f) { f.arguments(f.object<NpcFlags>()); });

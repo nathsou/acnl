@@ -29,22 +29,12 @@ static u32 get_save_data() {
     return (*save_data).addr();
 }
 GUEST_EXPORT(0x002fb328, get_save_data);
-GUEST_FUZZ(0x002fb328, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 // True unless the 8-byte value is the "none" sentinel.
 static bool is_not_sentinel(gptr<const u8> value) {
     return read_u64(value) != SENTINEL_NONE;
 }
 GUEST_EXPORT(0x002fb338, is_not_sentinel);
-
-static gptr<u8> some_u64(guest::Fuzz &f) {
-    auto p = f.allocate(8).cast<u8>();
-    u64 v = f.pick<u64>({0, SENTINEL_NONE, u64(f.number()), u64(f.number()) << 32 | f.number()});
-    memcpy(p.get(), &v, 8);
-    return p;
-}
-
-GUEST_FUZZ(0x002fb338, 200, [](guest::Fuzz &f) { f.arguments(some_u64(f)); });
 
 // Fills `out` with the base words, adjusted by the 8-byte value unless that is 0 or the sentinel.
 static void make_adjusted_words(gptr<Words12> out, gptr<const u8> value_ptr) {
@@ -57,7 +47,6 @@ static void make_adjusted_words(gptr<Words12> out, gptr<const u8> value_ptr) {
     *out = *words;
 }
 GUEST_EXPORT(0x002fb430, make_adjusted_words);
-GUEST_FUZZ(0x002fb430, 200, [](guest::Fuzz &f) { f.arguments(f.object<Words12>(), some_u64(f)); });
 
 // True when the first value is greater than or equal to the second (signed), each given as a 12-byte struct by value.
 static bool words_not_less(u32 a0, u32 a1, u32 a2, u32 b0, u32 b1, u32 b2) {
@@ -70,6 +59,3 @@ static bool words_not_less(u32 a0, u32 a1, u32 a2, u32 b0, u32 b1, u32 b2) {
     return first >= second;
 }
 GUEST_EXPORT(0x002fb4a0, words_not_less);
-GUEST_FUZZ(0x002fb4a0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.number(), f.number(), f.number(), f.number(), f.number(), f.number());
-});

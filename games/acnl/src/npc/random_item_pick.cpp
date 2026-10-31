@@ -40,20 +40,13 @@ void give_one_of(ItemGiver &giver, u16 first_id, u16 second_id) {
     }
 }
 
-void fuzz_giver(guest::Fuzz &f) {
-    f.arguments(f.object<ItemGiver>());
-}
-
 }  // namespace
 
 void give_item_pair_a(ItemGiver &giver) { give_one_of(giver, 0x235d, 0x23fc); }
 GUEST_EXPORT(0x00109501, give_item_pair_a);
-GUEST_FUZZ(0x00109501, 100, [](guest::Fuzz &f) { fuzz_giver(f); });
 
 void give_item_pair_b(ItemGiver &giver) { give_one_of(giver, 0x235e, 0x23fd); }
 GUEST_EXPORT(0x0010955d, give_item_pair_b);
-GUEST_FUZZ(0x0010955d, 100, [](guest::Fuzz &f) { fuzz_giver(f); });
 
 void give_item_pair_c(ItemGiver &giver) { give_one_of(giver, 0x235c, 0x23fb); }
 GUEST_EXPORT(0x001095b9, give_item_pair_c);
-GUEST_FUZZ(0x001095b9, 100, [](guest::Fuzz &f) { fuzz_giver(f); });

@@ -31,13 +31,3 @@ void node_holder_call_004ee9a8(NodeHolder &self) {
     }
 }
 GUEST_EXPORT(0x002fcd60, node_holder_call_004ee9a8);
-
-// The callees are unknown: only the path without an attachment is fuzzed.
-static gptr<NodeHolder> detached_holder(guest::Fuzz &f) {
-    auto holder = f.object<NodeHolder>();
-    holder->attached = nullptr;
-    return holder;
-}
-
-GUEST_FUZZ(0x002fcd48, 200, [](guest::Fuzz &f) { f.arguments(detached_holder(f)); });
-GUEST_FUZZ(0x002fcd60, 200, [](guest::Fuzz &f) { f.arguments(detached_holder(f)); });

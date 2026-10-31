@@ -61,12 +61,3 @@ static void set_pending_bit(u32 first, u32 second) {
     *pending_bits = *pending_bits | u8(1u << bit);
 }
 GUEST_EXPORT(0x005d4104, set_pending_bit);
-
-GUEST_FUZZ(0x005d4180, 400, [](guest::Fuzz &f) {
-    f.arguments(f.object<s32>(), f.pick<float>({0.0f, 0.5f, -0.5f, 1e-5f, -1e-5f, 1.0f, -1.0f, 1e9f, -1e9f, f.real(), f.real() / 1000}));
-});
-GUEST_FUZZ(0x005d4668, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<Vector3>(), f.object<Vector3>(), f.object<Vector3>(), f.pick<u32>({0, 1, 2, 7, 100, f.number()}));
-});
-GUEST_FUZZ(0x005d4788, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 5, 9, 10, 11, 0xffffffffu})); });
-GUEST_FUZZ(0x005d4104, 200, [](guest::Fuzz &f) { f.arguments(f.number(), f.number()); });

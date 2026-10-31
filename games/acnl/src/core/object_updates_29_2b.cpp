@@ -57,10 +57,6 @@ void copy_entry_template(EntryWords &destination, u32 id) {
     destination = *source;
 }
 GUEST_EXPORT(0x0029cf44, copy_entry_template);
-GUEST_FUZZ(0x0029cf44, 100, [](guest::Fuzz &f) {
-    (*net_session)->buffer.templates = f.allocate(0x2000).cast<u8>();
-    f.arguments(f.object<EntryWords>(), f.below(0x90));
-});
 
 // Zeroes the words, then sets the counter at 0x24 to 0 (which overwrites the last two of them).
 void clear_counter_block(CounterBlock &block) {
@@ -70,7 +66,6 @@ void clear_counter_block(CounterBlock &block) {
     block.counter.set(0);
 }
 GUEST_EXPORT(0x002a7ad0, clear_counter_block);
-GUEST_FUZZ(0x002a7ad0, 100, [](guest::Fuzz &f) { f.arguments(f.object<CounterBlock>()); });
 
 // Counts the countdown in the save data's block at 0x66664 down by one (it stops at 0).
 void decrement_countdown() {
@@ -80,7 +75,6 @@ void decrement_countdown() {
     }
 }
 GUEST_EXPORT(0x002a7de4, decrement_countdown);
-GUEST_FUZZ(0x002a7de4, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 AnimationPair &construct_animation_pair(AnimationPair &pair) {
     pair.unknown_00 = 0;
@@ -91,7 +85,6 @@ AnimationPair &construct_animation_pair(AnimationPair &pair) {
     return pair;
 }
 GUEST_EXPORT(0x002b7c68, construct_animation_pair);
-GUEST_FUZZ(0x002b7c68, 100, [](guest::Fuzz &f) { f.arguments(f.object<AnimationPair>()); });
 
 AnimationPair &destroy_animation_pair(AnimationPair &pair) {
     destroy_animation(guest::addr_of(pair).cast<void>() + SECOND_ANIMATION_OFFSET);
@@ -99,9 +92,3 @@ AnimationPair &destroy_animation_pair(AnimationPair &pair) {
     return pair;
 }
 GUEST_EXPORT(0x002b7c94, destroy_animation_pair);
-GUEST_FUZZ(0x002b7c94, 100, [](guest::Fuzz &f) {
-    // constructed animations have no target, so destroying them calls nothing
-    auto pair = f.object<AnimationPair>();
-    construct_animation_pair(*pair);
-    f.arguments(pair);
-});

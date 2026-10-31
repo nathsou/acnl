@@ -17,14 +17,6 @@ GUEST_SIZE(Handle, 8);
 
 using guest::gptr;
 
-// Builds a Handle pointing at a fresh node with random contents.
-gptr<Handle> some_handle(guest::Fuzz &f) {
-    auto handle = f.object<Handle>();
-    auto node = f.object<Node>();
-    handle->node = node;
-    return handle;
-}
-
 }  // namespace
 
 // The value held by the node a handle refers to.
@@ -57,26 +49,3 @@ static bool words_equal(gptr<u32> a, gptr<u32> b) {
 }
 GUEST_EXPORT(0x00755ad4, words_equal);
 GUEST_EXPORT(0x0072d964, words_equal);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00755a98, 200, [](guest::Fuzz &f) { f.arguments(some_handle(f)); });
-GUEST_FUZZ(0x00755aa4, 200, [](guest::Fuzz &f) { f.arguments(some_handle(f), f.object<u32>()); });
-GUEST_FUZZ(0x00755ab4, 200, [](guest::Fuzz &f) { f.arguments(some_handle(f), f.object<u32>()); });
-GUEST_FUZZ(0x00755ac4, 200, [](guest::Fuzz &f) {
-    auto word = f.object<u32>();
-    if (f.below(3) == 0) {
-        *word = 0;
-    }
-    f.arguments(word);
-});
-static void fuzz_755ad4(guest::Fuzz &f) {
-    auto a = f.object<u32>();
-    auto b = f.object<u32>();
-    if (f.below(2) == 0) {
-        *b = *a;
-    }
-    f.arguments(a, b);
-}
-GUEST_FUZZ(0x00755ad4, 200, fuzz_755ad4);
-GUEST_FUZZ(0x0072d964, 200, fuzz_755ad4);

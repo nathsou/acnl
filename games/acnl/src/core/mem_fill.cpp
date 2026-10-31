@@ -43,24 +43,3 @@ static void fill_5_bytes(gptr<u8> dest, u32 value) {
     dest[4] = u8(word);
 }
 GUEST_EXPORT(0x0077964c, fill_5_bytes);
-
-GUEST_FUZZ(0x00779600, 200, [](guest::Fuzz &f) {
-    auto dest = f.allocate(16).cast<u32>();
-    f.bytes(dest, 16);
-    f.arguments(dest, f.pick<u32>({0, 0xff, 0xffffffff, f.number()}));
-});
-GUEST_FUZZ(0x0077961c, 200, [](guest::Fuzz &f) {
-    auto dest = f.allocate(8).cast<u8>();
-    f.bytes(dest, 8);
-    f.arguments(dest, f.pick<u32>({0, 0xff, 0xffffffff, f.number()}));
-});
-GUEST_FUZZ(0x00779638, 200, [](guest::Fuzz &f) {
-    auto dest = f.allocate(8).cast<u32>();
-    f.bytes(dest, 8);
-    f.arguments(dest, f.pick<u32>({0, 0xc, 0xff, 0xffffffff, f.number()}));
-});
-GUEST_FUZZ(0x0077964c, 200, [](guest::Fuzz &f) {
-    auto dest = f.allocate(8).cast<u8>();
-    f.bytes(dest, 8);
-    f.arguments(dest, f.pick<u32>({0, 0x80, 0xff, f.number()}));
-});

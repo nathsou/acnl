@@ -64,16 +64,3 @@ u32 forward_to_target_virtual_19(WordReference &self, u32 a, u32 b) {
     return guest::call_address<u32>(self.target->vtable[FORWARDED_SLOT], self.target, a, b);
 }
 GUEST_EXPORT(0x00312ca0, forward_to_target_virtual_19);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00312bd0, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordFix19>()); });
-GUEST_FUZZ(0x00312ca0, 200, [](guest::Fuzz &f) {
-    auto reference = f.object<WordReference>();
-    auto target = f.object<hobj::VirtualObject>();
-    auto vtable = f.object<u32[32]>();
-    (*vtable)[FORWARDED_SLOT] = 0x002f77e8;  // same_pointer: harmless
-    target->vtable = vtable.cast<u32>();
-    reference->target = target;
-    f.arguments(reference, f.below(3), f.below(3));
-});

@@ -38,15 +38,6 @@ void ItemRow::push_front(const Item &item) {
     items[0] = item;
 }
 GUEST_EXPORT(0x00114375, ItemRow::push_front);
-GUEST_FUZZ(0x00114375, 300, [](guest::Fuzz &f) {
-    auto row = f.object<ItemRow>();
-    auto item = f.object<Item>();
-    for (Item &slot : row->items) {
-        slot.id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(row, item);
-});
 
 // An object with two item places: the pair is stored as it is, except that an empty first item with a second one of
 // another kind than category 0x2f clears both.
@@ -70,15 +61,6 @@ void ItemPairPlaces::store(const Item &first_item, const Item &second_item) {
     second = second_item;
 }
 GUEST_EXPORT(0x002d50b8, ItemPairPlaces::store);
-GUEST_FUZZ(0x002d50b8, 300, [](guest::Fuzz &f) {
-    auto places = f.object<ItemPairPlaces>();
-    auto first = f.object<Item>();
-    auto second = f.object<Item>();
-    for (Item *item : {first.get(), second.get()}) {
-        item->id = f.below(3) == 0 ? Item::EMPTY : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(places, first, second);
-});
 
 // A row of eight empty items followed by a flag that starts set.
 struct ItemRowWithFlag {
@@ -99,7 +81,6 @@ ItemRowWithFlag &ItemRowWithFlag::construct() {
     return *this;
 }
 GUEST_EXPORT(0x0027b428, ItemRowWithFlag::construct);
-GUEST_FUZZ(0x0027b428, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemRowWithFlag>()); });
 
 namespace {
 
@@ -117,9 +98,3 @@ bool replace_number_c9(Item &item) {
     return true;
 }
 GUEST_EXPORT(0x00596ab0, replace_number_c9);
-GUEST_FUZZ(0x00596ab0, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.below(2) ? NUMBER_C9 : u16(Item::FIRST_ITEM + f.below(100));
-    item->flags = u16(f.number());
-    f.arguments(item);
-});

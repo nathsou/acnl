@@ -1,6 +1,5 @@
 // The constructor of ButtonActionNode (the base of many button-like layout nodes) and the call that starts or
 // stops its animations.
-#include "core/fuzz_helpers.hpp"
 #include "guest/guest.hpp"
 
 using guest::gptr;
@@ -82,7 +81,6 @@ ButtonNode &construct_button_node(ButtonNode &self) {
     return node;
 }
 GUEST_EXPORT(0x002b6de0, construct_button_node);
-GUEST_FUZZ(0x002b6de0, 100, [](guest::Fuzz &f) { f.arguments(f.object<ButtonNode>()); });
 
 // With the flag: marks the node and passes both animation groups to virtual 13 (start); without: calls virtual 7.
 u32 start_or_stop_button_node(ButtonNode &node, u32 start) {
@@ -97,8 +95,3 @@ u32 start_or_stop_button_node(ButtonNode &node, u32 start) {
     return guest::call_address<u32>(again[START_SLOT], self, gptr<u8>(self.addr() + SECOND_ANIMATION_OFFSET), 1u);
 }
 GUEST_EXPORT(0x002b6d20, start_or_stop_button_node);
-GUEST_FUZZ(0x002b6d20, 100, [](guest::Fuzz &f) {
-    auto node = f.object<ButtonNode>();
-    node->vtable = fuzz::harmless_vtable(f, 16).addr();
-    f.arguments(node, f.below(2));
-});

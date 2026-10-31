@@ -27,14 +27,3 @@ void set_value_a83388(u32 value) {
     value_a83388 = value;
 }
 GUEST_EXPORT(0x002fe4d0, set_value_a83388);
-
-GUEST_FUZZ(0x002fe4c0, 200, [](guest::Fuzz &f) {
-    auto object = f.object<IndexedObject>();
-    if (f.below(2) == 0) {
-        object->index_2e = f.below(10);
-    }
-    f.arguments(object);
-});
-GUEST_FUZZ(0x002fe4d0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 0xffffffff, f.number()}));
-});

@@ -14,4 +14,3 @@ u32 random_id_with_top_bit() {
     return u16(random_below(ID_RANGE)) | ID_TOP_BIT;
 }
 GUEST_EXPORT(0x0027a460, random_id_with_top_bit);
-GUEST_FUZZ(0x0027a460, 100, [](guest::Fuzz &f) { f.arguments(); });

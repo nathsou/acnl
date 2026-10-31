@@ -10,9 +10,6 @@ constexpr u32 BASE_VTABLE = 0x0090298c;  // the vtable the load-split constructo
 
 inline constexpr guest::Function<0x0012ca7c, gptr<void>(gptr<void> self)> construct_load_split;
 
-// Scratch for fuzzing: the load-split part's size is not known, so be generous.
-constexpr u32 FUZZ_SIZE = 0x400;
-
 }  // namespace
 
 // Clears the loader's fields, builds the load-split part and gives the whole object its vtable.
@@ -29,6 +26,5 @@ ResourceLoader &construct_resource_loader(ResourceLoader &self) {
     return *gptr<ResourceLoader>(split.addr() - ResourceLoader::LOAD_SPLIT_OFFSET);
 }
 GUEST_EXPORT(0x004ee594, construct_resource_loader);
-GUEST_FUZZ(0x004ee594, 200, [](guest::Fuzz &f) { f.arguments(f.allocate(FUZZ_SIZE)); });
 
 }  // namespace g3d

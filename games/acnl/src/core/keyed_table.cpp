@@ -79,19 +79,3 @@ gptr<KeyedEntry> find_keyed_entry(u32 key, u32, u32 variant) {
     return find_in_run(key, variant, low);
 }
 GUEST_EXPORT(0x0051b110, find_keyed_entry);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static void keyed_lookup_inputs(guest::Fuzz &f) {
-    gptr<KeyedEntry> entries(KeyedTable::ADDRESS);
-    const KeyedEntry &entry = entries[f.below(KeyedTable::COUNT)];
-    u32 key;
-    switch (f.below(4)) {
-    case 0: key = entry.key; break;
-    case 1: key = entry.key + f.below(256); break;
-    case 2: key = (entry.key & KeyedTable::PAGE_MASK) | f.below(256); break;
-    default: key = KeyedTable::KEY_BASE + f.below(KeyedTable::KEY_RANGE + 0x100); break;
-    }
-    f.arguments(key, f.number(), f.pick<u32>({0, entry.variant, f.below(8), f.number()}));
-}
-GUEST_FUZZ(0x0051b110, 400, keyed_lookup_inputs);

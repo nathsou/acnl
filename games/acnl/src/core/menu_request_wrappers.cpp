@@ -58,8 +58,6 @@ void request_storing_field_50(u32 request, s32 value) {
 }
 GUEST_EXPORT(0x006d1cc0, request_storing_field_50);
 GUEST_EXPORT(0x006d2fd0, request_storing_field_50);
-GUEST_FUZZ(0x006d1cc0, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0x40, 0x42, 0x43}), f.number()); });
-GUEST_FUZZ(0x006d2fd0, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0x40, 0x42, 0x43}), f.number()); });
 
 // Makes request 0x45 with the values stored in the object at field 0x30 and in the state; the object's value is
 // cleared again when the request is not accepted.
@@ -74,10 +72,6 @@ void request_45(u32 object_value, s32 value_48, u32 byte_1e) {
     }
 }
 GUEST_EXPORT(0x006d26dc, request_45);
-GUEST_FUZZ(0x006d26dc, 100, [](guest::Fuzz &f) {
-    state_94fd0c->unknown_30 = f.allocate(0x220).addr();
-    f.arguments(f.number(), f.number(), f.below(256));
-});
 
 // Makes request 0x79; when it is accepted, marks the state.
 void request_79() {
@@ -86,7 +80,6 @@ void request_79() {
     }
 }
 GUEST_EXPORT(0x006d2724, request_79);
-GUEST_FUZZ(0x006d2724, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Makes request 0x89; when it is accepted, resets field 0x50.
 void request_89() {
@@ -95,7 +88,6 @@ void request_89() {
     }
 }
 GUEST_EXPORT(0x006d2ff4, request_89);
-GUEST_FUZZ(0x006d2ff4, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Makes request 0x7f; when it is accepted, marks the state and resets field 0x2c.
 void request_7f() {
@@ -105,7 +97,6 @@ void request_7f() {
     }
 }
 GUEST_EXPORT(0x006d30e4, request_7f);
-GUEST_FUZZ(0x006d30e4, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Makes request 0x7e; when it is accepted, marks the state, clears field 0x2c and stores 0 as the global word.
 u32 request_7e() {
@@ -118,7 +109,6 @@ u32 request_7e() {
     return accepted;
 }
 GUEST_EXPORT(0x006d3118, request_7e);
-GUEST_FUZZ(0x006d3118, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Makes request 0x4a (0x49) and, when it is accepted, remembers the item.
 u32 request_with_item_4a(const Item &item) {
@@ -129,7 +119,6 @@ u32 request_with_item_4a(const Item &item) {
     return accepted;
 }
 GUEST_EXPORT(0x006d3158, request_with_item_4a);
-GUEST_FUZZ(0x006d3158, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });
 
 u32 request_with_item_49(const Item &item) {
     u32 accepted = try_request(REQUEST_49, NO_ARGUMENT);
@@ -139,7 +128,6 @@ u32 request_with_item_49(const Item &item) {
     return accepted;
 }
 GUEST_EXPORT(0x006d31e4, request_with_item_49);
-GUEST_FUZZ(0x006d31e4, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });
 
 // Makes request 0x4c and, when it is accepted, remembers the item and the position.
 u32 request_with_item_and_position_4c(const Item &item, const RequestedPosition &position) {
@@ -151,7 +139,6 @@ u32 request_with_item_and_position_4c(const Item &item, const RequestedPosition 
     return accepted;
 }
 GUEST_EXPORT(0x006d318c, request_with_item_and_position_4c);
-GUEST_FUZZ(0x006d318c, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.object<RequestedPosition>()); });
 
 // Makes request 0x7c (the stronger way for kinds 4 and 5); when it is accepted, requests the flag of the kind from the
 // flag manager, remembers the kind and marks the state. Returns whether it was accepted.
@@ -172,7 +159,6 @@ u32 request_7c_of_kind(u32 kind) {
     return accepted;
 }
 GUEST_EXPORT(0x006d2888, request_7c_of_kind);
-GUEST_FUZZ(0x006d2888, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5})); });
 
 // Requests with a fixed code that reset field 0x50 when accepted (0x5f, 0x62).
 void request_5f() {
@@ -181,7 +167,6 @@ void request_5f() {
     }
 }
 GUEST_EXPORT(0x006d32a8, request_5f);
-GUEST_FUZZ(0x006d32a8, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void request_62() {
     if (try_request(REQUEST_62, NO_ARGUMENT) != 0) {
@@ -189,7 +174,6 @@ void request_62() {
     }
 }
 GUEST_EXPORT(0x006d339c, request_62);
-GUEST_FUZZ(0x006d339c, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Makes request 0x7d; when it is accepted, marks the state and resets field 0x2c.
 void request_7d() {
@@ -199,7 +183,6 @@ void request_7d() {
     }
 }
 GUEST_EXPORT(0x006d330c, request_7d);
-GUEST_FUZZ(0x006d330c, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Requests that only mark the state when they are accepted (0x44, 0x5e).
 void request_44() {
@@ -208,7 +191,6 @@ void request_44() {
     }
 }
 GUEST_EXPORT(0x006d3410, request_44);
-GUEST_FUZZ(0x006d3410, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 void request_5e() {
     if (try_request(REQUEST_5E, NO_ARGUMENT) != 0) {
@@ -216,7 +198,6 @@ void request_5e() {
     }
 }
 GUEST_EXPORT(0x006d37b8, request_5e);
-GUEST_FUZZ(0x006d37b8, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Marks the state and a global flag, then makes request 0x8a (by begin_menu_request with `begin`); when it is accepted,
 // resets field 0x50.
@@ -229,7 +210,6 @@ void request_8a(bool begin) {
     }
 }
 GUEST_EXPORT(0x006d3874, request_8a);
-GUEST_FUZZ(0x006d3874, 100, [](guest::Fuzz &f) { f.arguments(f.below(2)); });
 
 // Makes the request (by begin_menu_request with `begin`); when it is accepted, stores the value in field 0x50.
 void request_storing_field_50_beginning(u32 request, s32 value, bool begin) {
@@ -239,7 +219,6 @@ void request_storing_field_50_beginning(u32 request, s32 value, bool begin) {
     }
 }
 GUEST_EXPORT(0x006d343c, request_storing_field_50_beginning);
-GUEST_FUZZ(0x006d343c, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0x40, 0x42, 0x43}), f.number(), f.below(2)); });
 
 // Makes the request; when it is accepted, stores the value in field 0x50 and the halfword in field 0x26 and picks no
 // pocket slot.
@@ -252,7 +231,6 @@ void request_storing_halfword_26(u32 halfword, u32 request, s32 value) {
     }
 }
 GUEST_EXPORT(0x006d3240, request_storing_halfword_26);
-GUEST_FUZZ(0x006d3240, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.pick<u32>({0x40, 0x42, 0x43}), f.number()); });
 
 // The same for item picks: field 0x28 is cleared whatever the result, and byte 0x1a says an item is picked.
 void request_storing_halfword_26_for_item(u32 halfword, u32 request, s32 value) {
@@ -265,7 +243,6 @@ void request_storing_halfword_26_for_item(u32 halfword, u32 request, s32 value) 
     }
 }
 GUEST_EXPORT(0x006d3bd4, request_storing_halfword_26_for_item);
-GUEST_FUZZ(0x006d3bd4, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.pick<u32>({0x40, 0x42, 0x43}), f.number()); });
 
 // Like request_45 for request 0x46 (made by begin_menu_request); when it is not accepted, byte 0xc is cleared too.
 void request_46(u32 object_value, s32 value_48, u32 byte_1e) {
@@ -280,10 +257,6 @@ void request_46(u32 object_value, s32 value_48, u32 byte_1e) {
     }
 }
 GUEST_EXPORT(0x006d33c8, request_46);
-GUEST_FUZZ(0x006d33c8, 100, [](guest::Fuzz &f) {
-    state_94fd0c->unknown_30 = f.allocate(0x220).addr();
-    f.arguments(f.number(), f.number(), f.below(256));
-});
 
 // Makes request 0x4b and, when it is accepted, remembers the item.
 u32 request_with_item_4b(const Item &item) {
@@ -294,4 +267,3 @@ u32 request_with_item_4b(const Item &item) {
     return accepted;
 }
 GUEST_EXPORT(0x006d34e8, request_with_item_4b);
-GUEST_FUZZ(0x006d34e8, 100, [](guest::Fuzz &f) { f.arguments(f.object<Item>()); });

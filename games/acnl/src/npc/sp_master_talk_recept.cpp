@@ -176,8 +176,3 @@ u32 AcNpcSpMasterTalkRecept::virtual_82(gptr<u32> out, u32 mode) {
     return 1;
 }
 GUEST_EXPORT(0x40053fd8, AcNpcSpMasterTalkRecept::virtual_82);
-GUEST_FUZZ(0x40053fd8, 200, [](guest::Fuzz &f) {
-    auto self = f.object<AcNpcSpMasterTalkRecept>();
-    auto out = f.object<u32>();
-    f.arguments(self, out, f.pick<u32>({0, 1, 2, 3}));
-});

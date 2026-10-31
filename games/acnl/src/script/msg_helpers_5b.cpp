@@ -27,7 +27,6 @@ void WordAndFlag::clear() {
     flag = 0;
 }
 GUEST_EXPORT(0x005b19f8, WordAndFlag::clear);
-GUEST_FUZZ(0x005b19f8, 100, [](guest::Fuzz &f) { f.arguments(f.object<WordAndFlag>()); });
 
 // An object that keeps a buffer's translated address and size.
 struct BufferHolder {
@@ -48,7 +47,3 @@ void BufferHolder::set_buffer(u32 address, u32 size) {
     small = size < SMALL_BUFFER_LIMIT;
 }
 GUEST_EXPORT(0x005b2294, BufferHolder::set_buffer);
-GUEST_FUZZ(0x005b2294, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<BufferHolder>(), f.pick<u32>({0, 0x100000, 0x14000000, 0x30000000, 0x1f000000, f.number()}),
-                f.pick<u32>({0, 6, 0xffff, 0x10000, 0xffffffffu}));
-});

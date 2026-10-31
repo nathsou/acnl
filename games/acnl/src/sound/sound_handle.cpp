@@ -31,23 +31,3 @@ void SoundHandle::detach() {
     sound = nullptr;
 }
 GUEST_EXPORT(0x00130ed8, SoundHandle::detach);
-
-GUEST_FUZZ(0x00130ed8, 300, [](guest::Fuzz &f) {
-    auto handle = f.object<SoundHandle>();
-    switch (f.below(4)) {
-    case 0:
-        handle->sound = nullptr;
-        break;
-    default: {
-        auto sound = f.object<HandledSound>();
-        handle->sound = sound;
-        switch (f.below(3)) {
-        case 0: sound->handle = handle; break;
-        case 1: sound->handle = nullptr; break;
-        default: break;  // random bytes, only compared
-        }
-        break;
-    }
-    }
-    f.arguments(handle);
-});

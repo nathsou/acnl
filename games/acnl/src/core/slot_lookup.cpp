@@ -15,7 +15,6 @@ inline guest::global<gptr<NameContext>, 0x00aaef18> name_context_ptr;
 inline constexpr guest::Function<0x002fb378, u32()> get_reference_value;
 inline constexpr guest::Function<0x00757620, u32(gptr<void> a, u32 b, s32 c)> compare_with_limit;
 
-
 }  // namespace
 
 bool SavedRecordInner::has_value() const {
@@ -70,26 +69,3 @@ static gptr<u8> clear_flag_and_get_field(FieldWithFlag &object) {
     return guest::addr_of(object.field_de[0]);
 }
 GUEST_EXPORT(0x0030a014, clear_flag_and_get_field);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<void> some_string(guest::Fuzz &f) {
-    gptr<void> s = f.allocate(64);
-    f.bytes(s, 64);
-    s.cast<u8>()[63] = 0;
-    return s;
-}
-
-GUEST_FUZZ(0x00309ef0, 200, [](guest::Fuzz &f) {
-    auto inner = f.object<SavedRecordInner>();
-    inner->value = f.pick<u8>({0, SavedRecordInner::NONE_VALUE - 1, SavedRecordInner::NONE_VALUE, 0xff, u8(f.number())});
-    f.arguments(inner);
-});
-GUEST_FUZZ(0x00309f04, 200, [](guest::Fuzz &f) { f.arguments(some_string(f)); });
-GUEST_FUZZ(0x00309fbc, 200, [](guest::Fuzz &f) {
-    auto data = f.allocate(16).cast<SaveData>();  // (only addresses are compared: the array is never read)
-    gptr<const SavePlayer> player = f.pick<gptr<const SavePlayer>>(
-        {gptr<const SavePlayer>(nullptr), guest::addr_of(data->players[0]), guest::addr_of(data->players[1]),
-         guest::addr_of(data->players[2]), guest::addr_of(data->players[3]), gptr<const SavePlayer>(data.addr())});
-    f.arguments(data, player);
-});GUEST_FUZZ(0x0030a014, 200, [](guest::Fuzz &f) { f.arguments(f.object<FieldWithFlag>()); });

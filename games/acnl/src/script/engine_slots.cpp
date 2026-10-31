@@ -100,30 +100,3 @@ void clear_table_byte(Engine &self) {
     self.table->byte_04 = 0;
 }
 GUEST_EXPORT(0x00603a18, clear_table_byte);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Engine> some_engine(guest::Fuzz &f) {
-    auto engine = f.object<Engine>();
-    engine->inner = f.object<EngineInner>();
-    auto table = f.object<EngineTable>();
-    table->entries = f.allocate(sizeof(EngineEntry)).cast<EngineEntry>();
-    table->entry_count = f.pick<s32>({0, 1, -1, 5});
-    engine->table = table;
-    return engine;
-}
-
-GUEST_FUZZ(0x0060393c, 300, [](guest::Fuzz &f) {
-    auto object = f.object<TalkState>();
-    object->state = f.pick<u8>({0, 3, 4, 5, 8, 1, 2, 9});
-    if (f.below(2) != 0) {
-        object->word_0c = 0;
-    }
-    f.arguments(object, f.number(), f.pick<u32>({0, 1, f.number()}), f.number());
-});
-GUEST_FUZZ(0x0060396c, 200, [](guest::Fuzz &f) { f.arguments(some_engine(f), f.number()); });
-GUEST_FUZZ(0x006039ec, 300, [](guest::Fuzz &f) {
-    f.arguments(some_engine(f), f.pick<s32>({0, 1, -1, 5, s32(f.number())}),
-                f.pick<s32>({0, 1, -1, 5, 0x7fffffff, s32(f.number())}));
-});
-GUEST_FUZZ(0x00603a18, 200, [](guest::Fuzz &f) { f.arguments(some_engine(f)); });

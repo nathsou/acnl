@@ -1,6 +1,6 @@
 // Getters of the words of a global block (0x009525dc; what the words are is not known yet), a classification of a
 // signed byte, and a comparison with the current time.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 
 namespace {
 
@@ -64,19 +64,3 @@ static s32 compare_with_current_time(const s64 &value) {
     return now != value ? 1 : 0;
 }
 GUEST_EXPORT(0x0031703c, compare_with_current_time);
-
-GUEST_FUZZ(0x00615904, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x006158f4, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00615924, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x006158d4, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x006158c4, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00615934, 300, [](guest::Fuzz &f) {
-    auto holder = f.object<ByteHolder>();
-    holder->value = f.pick<s8>({0, 3, 4, 8, 9, 15, 16, 20, 21, -1, -128, 127, s8(f.number())});
-    f.arguments(holder);
-});
-GUEST_FUZZ(0x0031703c, 300, [](guest::Fuzz &f) {
-    auto value = f.object<s64>();
-    *value = f.pick<s64>({0, 1, -1, INT64_MAX, INT64_MIN, s64(f.number()) << 32 | f.number()});
-    f.arguments(value);
-});

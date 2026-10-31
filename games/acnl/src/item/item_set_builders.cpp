@@ -50,13 +50,6 @@ void add_matching_everywhere(ItemBitSet &set, Matches matches) {
     add_matching(set, Item::FIRST_ITEM, Item::ITEM_COUNT, matches);
 }
 
-// Sets the stage to a random value and passes a set and a value that is often one an attribute can have.
-void fuzz_builder(guest::Fuzz &f, u32 limit) {
-    gptr<SaveData> save = get_save_data();
-    save->flags_621ce = u8((save->flags_621ce & NIBBLE_MASK) | (f.below(3) << STAGE_SHIFT));
-    f.arguments(f.object<ItemBitSet>(), f.pick<u32>({0, 1, 2, limit - 1, limit, f.below(limit)}));
-}
-
 }  // namespace
 
 // Items whose ItemData::byte_16 high nibble is the value.
@@ -66,7 +59,6 @@ void add_items_with_byte_16_high(ItemBitSet &set, u32 value) {
     });
 }
 GUEST_EXPORT(0x006f1c48, add_items_with_byte_16_high);
-GUEST_FUZZ(0x006f1c48, 50, [](guest::Fuzz &f) { fuzz_builder(f, FIRST_BYTE_16_HIGH_LIMIT); });
 
 // Items whose ItemData::byte_16 low nibble is the value.
 void add_items_with_byte_16_low(ItemBitSet &set, u32 value) {
@@ -75,7 +67,6 @@ void add_items_with_byte_16_low(ItemBitSet &set, u32 value) {
     });
 }
 GUEST_EXPORT(0x006f20c4, add_items_with_byte_16_low);
-GUEST_FUZZ(0x006f20c4, 50, [](guest::Fuzz &f) { fuzz_builder(f, BYTE_16_LOW_LIMIT); });
 
 // Items whose ItemData::byte_17 high nibble is the value.
 void add_items_with_byte_17_high(ItemBitSet &set, u32 value) {
@@ -84,7 +75,6 @@ void add_items_with_byte_17_high(ItemBitSet &set, u32 value) {
     });
 }
 GUEST_EXPORT(0x006f2674, add_items_with_byte_17_high);
-GUEST_FUZZ(0x006f2674, 50, [](guest::Fuzz &f) { fuzz_builder(f, BYTE_17_HIGH_LIMIT); });
 
 // Items whose ItemData::byte_1a low two bits are the value.
 void add_items_with_byte_1a(ItemBitSet &set, u32 value) {
@@ -93,7 +83,6 @@ void add_items_with_byte_1a(ItemBitSet &set, u32 value) {
     });
 }
 GUEST_EXPORT(0x006f1e60, add_items_with_byte_1a);
-GUEST_FUZZ(0x006f1e60, 50, [](guest::Fuzz &f) { fuzz_builder(f, BYTE_1A_LIMIT); });
 
 // Items of category 5 whose low nibble of ItemData::class_and_flags_19 is the value.
 void add_category_5_items_with_byte_19_low(ItemBitSet &set, u32 value) {
@@ -103,7 +92,6 @@ void add_category_5_items_with_byte_19_low(ItemBitSet &set, u32 value) {
     });
 }
 GUEST_EXPORT(0x006f0900, add_category_5_items_with_byte_19_low);
-GUEST_FUZZ(0x006f0900, 50, [](guest::Fuzz &f) { fuzz_builder(f, BYTE_19_LOW_LIMIT); });
 
 // Items whose byte_16 high nibble is `high` and whose availability rule (0 from RULE_LIMIT on) is `rule`; nothing
 // is added for rules below RULE_FIRST or for the rules of RULE_REFUSED.
@@ -122,9 +110,3 @@ void add_items_with_byte_16_high_and_rule(ItemBitSet &set, u32 high, u32 rule) {
     });
 }
 GUEST_EXPORT(0x006f2414, add_items_with_byte_16_high_and_rule);
-GUEST_FUZZ(0x006f2414, 100, [](guest::Fuzz &f) {
-    gptr<SaveData> save = get_save_data();
-    save->flags_621ce = u8((save->flags_621ce & NIBBLE_MASK) | (f.below(3) << STAGE_SHIFT));
-    f.arguments(f.object<ItemBitSet>(), f.pick<u32>({0, 1, 5, 10, f.below(FIRST_BYTE_16_HIGH_LIMIT)}),
-                f.pick<u32>({0, 8, 9, 0x14, 0x17, 0x18, 0x30, 0xb8, 0xb9, f.below(0xb9)}));
-});

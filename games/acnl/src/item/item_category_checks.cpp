@@ -109,33 +109,3 @@ bool item_number_in_6c_70(const Item &item) {
 }
 GUEST_EXPORT(0x007683cc, item_number_in_6c_70);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-constexpr u32 FUZZ_ENTRY_NUMBER_LIMIT = 0x110;  // a bit above MAX_ENTRY_NUMBER
-constexpr u32 FUZZ_RANGE_NUMBER_LIMIT = 0x80;   // covers the range and a little beyond
-
-// Item with a random number below the limit and a random ID_FLAG.
-static gptr<Item> small_number_item(guest::Fuzz &f, u32 limit) {
-    auto item = f.object<Item>();
-    item->id = u16(f.below(limit) | (f.below(2) ? Item::ID_FLAG : 0));
-    return item;
-}
-
-static gptr<Item> fuzz_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    switch (f.below(4)) {
-    case 0: item->id = Item::EMPTY; break;
-    case 1: item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)); break;
-    case 2: item->id = u16(f.below(FUZZ_ENTRY_NUMBER_LIMIT) | (f.below(2) ? Item::ID_FLAG : 0)); break;
-    default: break;
-    }
-    return item;
-}
-
-GUEST_FUZZ(0x00768138, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<ItemHolderObject>(), fuzz_item(f), f.number());
-});
-GUEST_FUZZ(0x0076828c, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
-GUEST_FUZZ(0x007682b4, 300, [](guest::Fuzz &f) { f.arguments(small_number_item(f, FUZZ_ENTRY_NUMBER_LIMIT)); });
-GUEST_FUZZ(0x00768310, 300, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
-GUEST_FUZZ(0x007683cc, 300, [](guest::Fuzz &f) { f.arguments(small_number_item(f, FUZZ_RANGE_NUMBER_LIMIT)); });

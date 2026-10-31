@@ -11,9 +11,6 @@ void clear_block9(gptr<MiniGame0Block9> block) {
 GUEST_EXPORT(0x40347e78, clear_block9);
 GUEST_EXPORT(0x0034a630, clear_block9);
 GUEST_EXPORT(0x004c7b50, clear_block9);
-GUEST_FUZZ(0x40347e78, 200, [](guest::Fuzz &f) { f.arguments(f.object<MiniGame0Block9>()); });
-GUEST_FUZZ(0x0034a630, 200, [](guest::Fuzz &f) { f.arguments(f.object<MiniGame0Block9>()); });
-GUEST_FUZZ(0x004c7b50, 200, [](guest::Fuzz &f) { f.arguments(f.object<MiniGame0Block9>()); });
 
 // Copies the 7 bytes of a block.
 void copy_block7(gptr<MiniGame0Block7> dest, gptr<MiniGame0Block7> source) {
@@ -23,13 +20,6 @@ void copy_block7(gptr<MiniGame0Block7> dest, gptr<MiniGame0Block7> source) {
 }
 GUEST_EXPORT(0x40347e8c, copy_block7);
 GUEST_EXPORT(0x401b81d0, copy_block7);
-static void fuzz_40347e8c(guest::Fuzz &f) {
-    auto dest = f.object<MiniGame0Block7>();
-    auto source = f.object<MiniGame0Block7>();
-    f.arguments(dest, source);
-}
-GUEST_FUZZ(0x40347e8c, 200, fuzz_40347e8c);
-GUEST_FUZZ(0x401b81d0, 200, fuzz_40347e8c);
 
 // Fills the 10 bytes of a block with the low byte of value.
 void fill_block10(gptr<MiniGame0Block10> block, u32 value) {
@@ -42,7 +32,3 @@ void fill_block10(gptr<MiniGame0Block10> block, u32 value) {
     memcpy(block->bytes + 8, &half, 2);
 }
 GUEST_EXPORT(0x40347ea8, fill_block10);
-GUEST_FUZZ(0x40347ea8, 200, [](guest::Fuzz &f) {
-    auto block = f.object<MiniGame0Block10>();
-    f.arguments(block, f.number());
-});

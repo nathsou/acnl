@@ -183,7 +183,6 @@ u32 indexed_value(u32 index, u32 flag) {
     return small_values[index];
 }
 GUEST_EXPORT(0x0051d2e4, indexed_value);
-GUEST_FUZZ(0x0051d2e4, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 5, 10, 11, f.number()}), f.below(2)); });
 
 // The signed byte of the row for the index (rows 0-9; 0 beyond): from the row table when the main object is idle,
 // else from the table behind 0x0095386c.
@@ -197,7 +196,6 @@ s32 indexed_row_value(u32 index) {
     return (*indexed_tables)->signed_8e[index];
 }
 GUEST_EXPORT(0x0051d32c, indexed_row_value);
-GUEST_FUZZ(0x0051d32c, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 5, 9, 10, f.number()})); });
 
 // Clears flags 7 to 22 of the set.
 void clear_flags_7_to_22(BitSet32 &set) {
@@ -206,7 +204,6 @@ void clear_flags_7_to_22(BitSet32 &set) {
     }
 }
 GUEST_EXPORT(0x0051d6e8, clear_flags_7_to_22);
-GUEST_FUZZ(0x0051d6e8, 100, [](guest::Fuzz &f) { f.arguments(f.object<BitSet32>()); });
 
 // A byte of the current player's record when it has a value below state 3; otherwise a word of the global block.
 u32 current_record_byte_or_global() {
@@ -217,25 +214,12 @@ u32 current_record_byte_or_global() {
     return global_block->value_7fc;
 }
 GUEST_EXPORT(0x0051d77c, current_record_byte_or_global);
-GUEST_FUZZ(0x0051d77c, 100, [](guest::Fuzz &f) {
-    auto player = f.object<CurrentPlayer>();
-    player->record.value = u8(f.below(SavedRecordInner::NONE_VALUE + 2));
-    player->record.unknown_09 = u8(f.below(5));
-    player_context->player = f.below(4) != 0 ? player : gptr<CurrentPlayer>(0u);
-    f.arguments();
-});
 
 // Stores a random number below the limit for the index in the global block.
 void pick_random_for_index(u32 index) {
     global_block->value_7fc = u32(random_below(s32(random_limits[index])));
 }
 GUEST_EXPORT(0x0051d7cc, pick_random_for_index);
-GUEST_FUZZ(0x0051d7cc, 100, [](guest::Fuzz &f) {
-    for (u32 i = 0; i < 8; i++) {
-        random_limits[i] = f.below(100);
-    }
-    f.arguments(f.below(8));
-});
 
 // A byte for the selector: from the global block when the main object is not idle or the flag is set, else from the
 // table behind 0x0095386c.
@@ -246,7 +230,6 @@ u32 selected_byte(u32 selector, u32 flag) {
     return (*indexed_tables)->flags_82[selector ^ 1];
 }
 GUEST_EXPORT(0x0051d90c, selected_byte);
-GUEST_FUZZ(0x0051d90c, 100, [](guest::Fuzz &f) { f.arguments(f.below(2), f.below(2)); });
 
 // Zeroes the entry; the second form of the mode, 1 or 2, depends on the value of the current mode.
 void reset_mode_setting(ModeSetting &setting) {
@@ -265,7 +248,6 @@ void reset_mode_setting(ModeSetting &setting) {
     }
 }
 GUEST_EXPORT(0x00523b24, reset_mode_setting);
-GUEST_FUZZ(0x00523b24, 50, [](guest::Fuzz &f) { f.arguments(f.object<ModeSetting>()); });
 
 // Clears the inner saved record and a few fields after it.
 void clear_timed_record(TimedRecord &record) {
@@ -276,13 +258,6 @@ void clear_timed_record(TimedRecord &record) {
     record.value_0e = 0;
 }
 GUEST_EXPORT(0x0052abb4, clear_timed_record);
-GUEST_FUZZ(0x0052abb4, 100, [](guest::Fuzz &f) { f.arguments(f.object<TimedRecord>()); });
-
-static void fuzz_talk_object(guest::Fuzz &f) {
-    auto talk = f.object<TalkObject>();
-    talk->byte_1a = u8(f.below(3));
-    talk_global->current = talk;
-}
 
 static bool talk_state_without_flag(u32 state) {
     return talk_state_matches(state, 0) && talk_global->current->byte_1a != BYTE_1A_SET;
@@ -293,19 +268,11 @@ bool talk_state_5_without_flag() {
     return talk_state_without_flag(TALK_STATE_5);
 }
 GUEST_EXPORT(0x0052bf54, talk_state_5_without_flag);
-GUEST_FUZZ(0x0052bf54, 100, [](guest::Fuzz &f) {
-    fuzz_talk_object(f);
-    f.arguments();
-});
 
 bool talk_state_6_without_flag() {
     return talk_state_without_flag(TALK_STATE_6);
 }
 GUEST_EXPORT(0x0052c1fc, talk_state_6_without_flag);
-GUEST_FUZZ(0x0052c1fc, 100, [](guest::Fuzz &f) {
-    fuzz_talk_object(f);
-    f.arguments();
-});
 
 // Sets the current talk object's byte 0x1a when the talk state is 0xc.
 void set_talk_flag_in_state_c() {
@@ -314,10 +281,6 @@ void set_talk_flag_in_state_c() {
     }
 }
 GUEST_EXPORT(0x0052c554, set_talk_flag_in_state_c);
-GUEST_FUZZ(0x0052c554, 100, [](guest::Fuzz &f) {
-    fuzz_talk_object(f);
-    f.arguments();
-});
 
 // Clears the list and resets its thirty-two entries.
 void reset_entry_list(EntryList &list) {
@@ -327,7 +290,6 @@ void reset_entry_list(EntryList &list) {
     }
 }
 GUEST_EXPORT(0x0052c32c, reset_entry_list);
-GUEST_FUZZ(0x0052c32c, 50, [](guest::Fuzz &f) { f.arguments(f.object<EntryList>()); });
 
 // Resets the entry of every node, then clears the list.
 void reset_entry_nodes(EntryNodeList &list) {

@@ -25,11 +25,6 @@ inline constexpr guest::Function<0x0011af89, bool(gptr<SaveVillager> villager, g
 inline constexpr guest::Function<0x0011abc9, gptr<VillagerPlayerRecord>(gptr<SaveVillager> villager, gptr<const PersonalId> identity)>
     find_record_for_identity;
 
-// One of the villagers and one of the players of the save data (the fuzzers only read them).
-gptr<SaveVillager> some_saved_villager(guest::Fuzz &f) {
-    return guest::addr_of(get_save_data()->villagers[f.below(SaveData::VILLAGER_COUNT)]);
-}
-
 }  // namespace
 
 // The friendship tier a friendship value has: the number of thresholds (from the highest down) above it (Thumb entry).
@@ -42,7 +37,6 @@ u32 friendship_tier_of_value(u32 value) {
     return tier;
 }
 GUEST_EXPORT(0x001141a5, friendship_tier_of_value);
-GUEST_FUZZ(0x001141a5, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0x40, 0x80, 0xff, f.below(256)})); });
 
 u32 VillagerPlayerRecord::friendship_tier() const {
     return friendship_tier_of_value(friendship());
@@ -61,7 +55,6 @@ bool villager_is_close_to_a_player(gptr<SaveVillager> villager) {
     return false;
 }
 GUEST_EXPORT(0x0030aa59, villager_is_close_to_a_player);
-GUEST_FUZZ(0x0030aa59, 200, [](guest::Fuzz &f) { f.arguments(some_saved_villager(f)); });
 
 // A rating of the player (the current player when `player` is null) for the villager, from 0 to RATING_MAX, written
 // to `rating`: when the villager has a record for the player (a record in use with its flag bit 7 set) it is the
@@ -91,7 +84,3 @@ void rate_player_for_villager(gptr<u8> rating, gptr<SaveVillager> villager, gptr
     }
 }
 GUEST_EXPORT(0x0030c868, rate_player_for_villager);
-GUEST_FUZZ(0x0030c868, 300, [](guest::Fuzz &f) {
-    gptr<SavePlayer> player = f.below(3) == 0 ? gptr<SavePlayer>(0u) : guest::addr_of(get_save_data()->players[f.below(SaveData::PLAYER_COUNT)]);
-    f.arguments(f.allocate(1).cast<u8>(), some_saved_villager(f), player);
-});

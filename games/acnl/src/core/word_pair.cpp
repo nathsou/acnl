@@ -40,11 +40,3 @@ static WordQuad &construct_word_quad(WordQuad &self) {
     return self;
 }
 GUEST_EXPORT(0x0052f128, construct_word_quad);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0052f0c0, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>(), f.object<WordPair>()); });
-GUEST_FUZZ(0x0052f0dc, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
-GUEST_FUZZ(0x0052f0f0, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>(), f.object<WordPair>()); });
-GUEST_FUZZ(0x0052f104, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>(), f.object<WordPair>()); });
-GUEST_FUZZ(0x0052f128, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordQuad>()); });

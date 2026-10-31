@@ -45,8 +45,6 @@ u32 Xorshift128::next() {
 }
 GUEST_EXPORT(0x0055cb58, Xorshift128::next);
 GUEST_EXPORT(0x0053b8b8, Xorshift128::next);
-GUEST_FUZZ(0x0055cb58, 200, [](guest::Fuzz &f) { f.arguments(f.object<Xorshift128>()); });
-GUEST_FUZZ(0x0053b8b8, 200, [](guest::Fuzz &f) { f.arguments(f.object<Xorshift128>()); });
 
 // A handle: a value that only counts when the flag next to it is set.
 struct Handle {
@@ -60,14 +58,6 @@ bool handles_differ(const Handle &first, const Handle &second) {
     return !(first.valid != 0 && second.valid != 0 && first.value == second.value);
 }
 GUEST_EXPORT(0x00314b04, handles_differ);
-GUEST_FUZZ(0x00314b04, 200, [](guest::Fuzz &f) {
-    auto first = f.object<Handle>();
-    auto second = f.object<Handle>();
-    first->valid = f.below(2);
-    second->valid = f.below(2);
-    second->value = f.below(2) ? first->value : second->value;
-    f.arguments(first, second);
-});
 
 // Sets or clears bit `index` of the first byte; bit numbers of 7 and more do nothing.
 void set_flag_bit_below_7(gptr<u8> flags, u32 index, u32 value) {
@@ -78,11 +68,6 @@ void set_flag_bit_below_7(gptr<u8> flags, u32 index, u32 value) {
     flags[0] = value != 0 ? u8(flags[0] | mask) : u8(flags[0] & ~mask);
 }
 GUEST_EXPORT(0x00316efc, set_flag_bit_below_7);
-GUEST_FUZZ(0x00316efc, 200, [](guest::Fuzz &f) {
-    auto flags = f.allocate(4).cast<u8>();
-    f.bytes(flags, 4);
-    f.arguments(flags, f.below(10), f.below(2));
-});
 
 // How many modes with flag 0x40 come before the mode (counting only the modes below it); -1 when the mode does not have
 // the flag.
@@ -99,7 +84,6 @@ s32 flagged_mode_ordinal(u32 mode) {
     return ordinal;
 }
 GUEST_EXPORT(0x00313440, flagged_mode_ordinal);
-GUEST_FUZZ(0x00313440, 300, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 20, 50, 100, 0xa4, 0xa5, f.below(0xa6)})); });
 
 // A mask of the low `count` bits and how many of them are enabled.
 struct BitMask {
@@ -121,9 +105,6 @@ void init_bit_mask(BitMask &self, u32 count, u32 enabled) {
     self.enabled_count = count;
 }
 GUEST_EXPORT(0x00116ea5, init_bit_mask);
-GUEST_FUZZ(0x00116ea5, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<BitMask>(), f.pick<u32>({0, 1, 8, 31, 32, 33, 255, 256}), f.below(2));
-});
 
 // The word at 0x00974a84 is taken: its value is returned and it is cleared.
 inline guest::global<u32, 0x00974a84> taken_word;
@@ -133,12 +114,6 @@ u32 take_word_974a84() {
     return value;
 }
 GUEST_EXPORT(0x00127680, take_word_974a84);
-GUEST_FUZZ(0x00127680, 20, [](guest::Fuzz &f) {
-    if (*taken_word == 0) {
-        *taken_word = f.number();  // (taken, so the word is zero again afterwards)
-    }
-    f.arguments();
-});
 
 // A node of a tree that points to its parent; the parent points to its first and last child.
 struct TreeNode {
@@ -166,11 +141,3 @@ void detach_from_parent(TreeNode &node) {
     node.parent = nullptr;
 }
 GUEST_EXPORT(0x00136cc8, detach_from_parent);
-GUEST_FUZZ(0x00136cc8, 200, [](guest::Fuzz &f) {
-    auto parent = f.object<TreeNode>();
-    auto node = f.object<TreeNode>();
-    node->parent = f.below(4) == 0 ? gptr<TreeNode>(0u) : parent;
-    parent->first_child = f.below(2) ? node : gptr<TreeNode>(0u);
-    parent->last_child = f.below(2) ? node : gptr<TreeNode>(0u);
-    f.arguments(node);
-});

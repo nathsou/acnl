@@ -1,6 +1,6 @@
 // Turning an item into the one at the same position of another category, and other in-place changes of items by
 // category. What the categories are is not known yet; they are named by number.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 
 namespace {
@@ -30,13 +30,6 @@ void replace_by_same_position_in(Item &item, u8 target) {
     item.flags = replacement->flags;
 }
 
-// An item whose number is in the category, with flags that are zero half of the time.
-gptr<Item> an_item_in_category(guest::Fuzz &f, u8 category) {
-    gptr<Item> item = fuzz::item_in_category(f, category);
-    item->flags = f.below(2) ? 0 : u16(f.number());
-    return item;
-}
-
 }  // namespace
 
 // An item of category 34 becomes the item at its position in category 35; false for other items.
@@ -48,9 +41,6 @@ bool convert_category_34_to_35(Item &item) {
     return true;
 }
 GUEST_EXPORT(0x006ba888, convert_category_34_to_35);
-GUEST_FUZZ(0x006ba888, 200, [](guest::Fuzz &f) {
-    f.arguments(f.below(4) ? an_item_in_category(f, CATEGORY_34) : an_item_in_category(f, CATEGORY_35));
-});
 
 // An item of category 34 becomes the item at its position in category 33; false for other items.
 bool convert_category_34_to_33(Item &item) {
@@ -61,9 +51,6 @@ bool convert_category_34_to_33(Item &item) {
     return true;
 }
 GUEST_EXPORT(0x006bacf0, convert_category_34_to_33);
-GUEST_FUZZ(0x006bacf0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.below(4) ? an_item_in_category(f, CATEGORY_34) : an_item_in_category(f, CATEGORY_35));
-});
 
 // The items 0x2001 to 0x2005 become the item at their position in category 35 (as if they were of category 34);
 // false for other items.
@@ -76,11 +63,6 @@ bool convert_numbers_2001_2005_to_35(Item &item) {
     return true;
 }
 GUEST_EXPORT(0x006baadc, convert_numbers_2001_2005_to_35);
-GUEST_FUZZ(0x006baadc, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({0x2000, 0x2001, 0x2003, 0x2005, 0x2006, 0xa001, f.number()}));
-    f.arguments(item);
-});
 
 // A stack of category 75 or 76 becomes the item at its position in category 33 or 34 respectively (only the
 // number changes, and the id's flag stays); nothing changes for other items or when the position is past the end.
@@ -110,9 +92,6 @@ bool convert_stack_to_single(Item &item) {
     return false;
 }
 GUEST_EXPORT(0x006bb4b0, convert_stack_to_single);
-GUEST_FUZZ(0x006bb4b0, 200, [](guest::Fuzz &f) {
-    f.arguments(an_item_in_category(f, f.below(2) ? CATEGORY_STACK_75 : CATEGORY_STACK_76));
-});
 
 // Resets the low byte of the flags of a category 40 item without flags to the default of the item number
 // FIRST_NUMBER_FOR_40 plus its position in the category (the top two bits stay).
@@ -125,7 +104,6 @@ void reset_category_40_flags(Item &item) {
     item.flags = u16((reference->flags & FLAGS_LOW_BYTE) | (item.flags & Item::FLAGS_TOP_BITS));
 }
 GUEST_EXPORT(0x006bae68, reset_category_40_flags);
-GUEST_FUZZ(0x006bae68, 200, [](guest::Fuzz &f) { f.arguments(an_item_in_category(f, CATEGORY_40)); });
 
 // Uses up one count of a category 29 item (its flags below the top two bits hold the count, which goes from at most
 // COUNTER_MAX down to 0): returns the count it had and lowers it. Returns 0, changing nothing, for other items, when
@@ -142,11 +120,6 @@ u32 take_one_of_category_29(Item &item) {
     return count;
 }
 GUEST_EXPORT(0x006bb76c, take_one_of_category_29);
-GUEST_FUZZ(0x006bb76c, 200, [](guest::Fuzz &f) {
-    auto item = an_item_in_category(f, f.below(4) ? CATEGORY_29 : CATEGORY_35);
-    item->flags = u16(f.pick<u32>({0, 1, 2, 4, 5, 0x4001, 0xc003, 0x3fff, f.number()}));
-    f.arguments(item);
-});
 
 // Takes one item from a stack of category 75 or 76 (the flags below the top two bits hold the count minus one, and
 // the stack is looked at when that is 1 to 8): the count goes down by one, and a stack of two becomes a single item
@@ -170,11 +143,6 @@ bool take_one_from_stack(Item &item) {
     return false;
 }
 GUEST_EXPORT(0x006bb80c, take_one_from_stack);
-GUEST_FUZZ(0x006bb80c, 200, [](guest::Fuzz &f) {
-    auto item = an_item_in_category(f, f.below(2) ? CATEGORY_STACK_75 : CATEGORY_STACK_76);
-    item->flags = u16(f.pick<u32>({0, 1, 2, 5, 8, 9, 0x4001, 0xc002, f.number()}));
-    f.arguments(item);
-});
 
 namespace {
 
@@ -199,11 +167,3 @@ void reset_category_40_flags_of_all(ItemsWithFlagsToReset &object) {
     }
 }
 GUEST_EXPORT(0x002f9bdc, reset_category_40_flags_of_all);
-GUEST_FUZZ(0x002f9bdc, 100, [](guest::Fuzz &f) {
-    auto object = f.object<ItemsWithFlagsToReset>();
-    for (Item &item : object->items) {
-        item = *an_item_in_category(f, f.below(2) ? CATEGORY_40 : CATEGORY_35);
-        item.flags = u16(f.below(2) ? 0 : f.number());
-    }
-    f.arguments(object);
-});

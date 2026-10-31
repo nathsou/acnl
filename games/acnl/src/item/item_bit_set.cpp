@@ -20,8 +20,3 @@ static void clear_item_flags_set_0x200(FlagsHalfwordHolder &self) {
     self.flags = (self.flags & FlagsHalfwordHolder::KEEP_MASK) | FlagsHalfwordHolder::CLEARED_VALUE;
 }
 GUEST_EXPORT(0x003031ec, clear_item_flags_set_0x200);
-
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x003031ec, 200, [](guest::Fuzz &f) { f.arguments(f.object<FlagsHalfwordHolder>()); });

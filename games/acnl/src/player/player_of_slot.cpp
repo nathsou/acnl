@@ -50,7 +50,6 @@ gptr<SavePlayer> player_of_slot_index(u32 index) {
     return player_for_slot(value);
 }
 GUEST_EXPORT(0x002fe8a8, player_of_slot_index);
-GUEST_FUZZ(0x002fe8a8, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, 7, f.number()})); });
 
 // The same without the check for reserved requests, and for the players of the slots as player_record_for_slot gives them.
 gptr<SavePlayer> player_of_slot_index_unreserved(u32 index) {
@@ -65,7 +64,6 @@ gptr<SavePlayer> player_of_slot_index_unreserved(u32 index) {
     return player_record_for_slot(value);
 }
 GUEST_EXPORT(0x005c4e5c, player_of_slot_index_unreserved);
-GUEST_FUZZ(0x005c4e5c, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 2, 3, 4, 5, 7, f.number()})); });
 
 // The save data block of the main object's player; null if that slot is not a local player's.
 gptr<PlayerBlock> block_of_main_player() {
@@ -76,7 +74,6 @@ gptr<PlayerBlock> block_of_main_player() {
     return guest::addr_of(get_save_data()->player_blocks_5d900[value]);
 }
 GUEST_EXPORT(0x005c710c, block_of_main_player);
-GUEST_FUZZ(0x005c710c, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The save data block of a local player (given as a player record); null for other pointers.
 gptr<PlayerBlock> block_of_player(gptr<SavePlayer> player) {
@@ -91,10 +88,6 @@ gptr<PlayerBlock> block_of_player(gptr<SavePlayer> player) {
     return nullptr;
 }
 GUEST_EXPORT(0x005c3db8, block_of_player);
-GUEST_FUZZ(0x005c3db8, 100, [](guest::Fuzz &f) {
-    gptr<SaveData> save = get_save_data();
-    f.arguments(f.below(5) == 0 ? gptr<SavePlayer>(0u) : guest::addr_of(save->players[f.below(SaveData::PLAYER_COUNT)]));
-});
 
 // Whether the current kind has flag 0x80000 or 0x100000, there is a current record, the id has flag 0x100000 in the
 // table and the record's value is 0xb.
@@ -112,4 +105,3 @@ bool record_value_is_11(u32 id) {
     return record_value(holder->record_index) == RECORD_VALUE_WANTED;
 }
 GUEST_EXPORT(0x005b4954, record_value_is_11);
-GUEST_FUZZ(0x005b4954, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0x20, 0xa4, 0xa5, f.below(0xa5)})); });

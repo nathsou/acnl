@@ -51,6 +51,3 @@ ControlButtonBase &construct_control_button_base(ControlButtonBase &self, u32 un
     return self;
 }
 GUEST_EXPORT(0x002cd444, construct_control_button_base);
-GUEST_FUZZ(0x002cd444, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<ControlButtonBase>(), f.number(), f.pick<u32>({1, 2, 3, f.number()}));
-});

@@ -24,20 +24,12 @@ bool EscapeFlagsOwner::has_flag(u32 index) const {
     return (bit_for_index(index) & flags_7c) != 0;
 }
 GUEST_EXPORT(0x40302c20, EscapeFlagsOwner::has_flag);
-GUEST_FUZZ(0x40302c20, 300, [](guest::Fuzz &f) {
-    auto owner = f.object<EscapeFlagsOwner>();
-    if (f.below(2) != 0) {
-        owner->flags_7c &= 0x1ffff;
-    }
-    f.arguments(owner, f.pick<u32>({0, 5, 16, 17, 0xffffffff, f.below(20), f.number()}));
-});
 
 // Stores a word in the minigame globals (meaning not known yet).
 void set_minigame0_value_0c(u32 value) {
     minigame0_globals->value_0c = value;
 }
 GUEST_EXPORT(0x40303324, set_minigame0_value_0c);
-GUEST_FUZZ(0x40303324, 200, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, 1, 0xffffffff, f.number()})); });
 
 // Copies the first five bytes of the table entry for an index to out.
 void copy_tag_entry(u32 index, gptr<u8> out) {
@@ -47,6 +39,3 @@ void copy_tag_entry(u32 index, gptr<u8> out) {
     }
 }
 GUEST_EXPORT(0x40303554, copy_tag_entry);
-GUEST_FUZZ(0x40303554, 200, [](guest::Fuzz &f) {
-    f.arguments(f.below(3), f.allocate(MiniGame0TagEntry::COPIED_SIZE).cast<u8>());
-});

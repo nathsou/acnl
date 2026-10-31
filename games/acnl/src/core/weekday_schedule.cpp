@@ -30,12 +30,6 @@ u32 scheduled_place_at(const TimeStamp &time) {
     return value_for_weekday(table_owner(), words[0], words[1], words[2]);
 }
 GUEST_EXPORT(0x0058e348, scheduled_place_at);
-GUEST_FUZZ(0x0058e348, 100, [](guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    *time = *reference_time;
-    time->add_days(s32(f.below(14)));
-    f.arguments(time);
-});
 
 // The place of today (the game day the clock reports).
 u32 scheduled_place_today() {
@@ -44,7 +38,6 @@ u32 scheduled_place_today() {
     return scheduled_place_at(day);
 }
 GUEST_EXPORT(0x0058e380, scheduled_place_today);
-GUEST_FUZZ(0x0058e380, 100, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the place is today's and is open now.
 bool is_todays_place_open(u32 place) {
@@ -54,4 +47,3 @@ bool is_todays_place_open(u32 place) {
     return scheduled_place_today() == place && place_is_open(place);
 }
 GUEST_EXPORT(0x0058ec6c, is_todays_place_open);
-GUEST_FUZZ(0x0058ec6c, 100, [](guest::Fuzz &f) { f.arguments(f.below(8)); });

@@ -45,8 +45,6 @@ constexpr u8 MASK_20 = 0x20;
 constexpr u8 MASK_40 = 0x40;
 constexpr u8 MASK_80 = 0x80;
 
-constexpr u32 FUZZ_OBJECT_SIZE = 0x800;
-
 void assign_bit(gptr<u8> object, u32 byte, u8 mask, u32 on) {
     if (on != 0) {
         object[byte] = object[byte] | mask;
@@ -55,386 +53,286 @@ void assign_bit(gptr<u8> object, u32 byte, u8 mask, u32 on) {
     }
 }
 
-void fuzz_flag_setter(guest::Fuzz &f) {
-    auto object = f.allocate(FUZZ_OBJECT_SIZE).cast<u8>();
-    f.bytes(object, FUZZ_OBJECT_SIZE);
-    f.arguments(object, f.pick<u32>({0, 1, 0x100, f.number()}));
-}
-
 }  // namespace
 
 void assign_bit0_of_byte01_1aec18(gptr<u8> object, u32 on) { assign_bit(object, BYTE_01, MASK_01, on); }
 GUEST_EXPORT(0x001aec18, assign_bit0_of_byte01_1aec18);
-GUEST_FUZZ(0x001aec18, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte01_1aec30(gptr<u8> object, u32 on) { assign_bit(object, BYTE_01, MASK_04, on); }
 GUEST_EXPORT(0x001aec30, assign_bit2_of_byte01_1aec30);
-GUEST_FUZZ(0x001aec30, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte00_1aec48(gptr<u8> object, u32 on) { assign_bit(object, BYTE_00, MASK_80, on); }
 GUEST_EXPORT(0x001aec48, assign_bit7_of_byte00_1aec48);
-GUEST_FUZZ(0x001aec48, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte00_1df54c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_00, MASK_40, on); }
 GUEST_EXPORT(0x001df54c, assign_bit6_of_byte00_1df54c);
-GUEST_FUZZ(0x001df54c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte06_1df650(gptr<u8> object, u32 on) { assign_bit(object, BYTE_06, MASK_80, on); }
 GUEST_EXPORT(0x001df650, assign_bit7_of_byte06_1df650);
-GUEST_FUZZ(0x001df650, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte12_1e17e4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_12, MASK_01, on); }
 GUEST_EXPORT(0x001e17e4, assign_bit0_of_byte12_1e17e4);
-GUEST_FUZZ(0x001e17e4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte12_1e184c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_12, MASK_80, on); }
 GUEST_EXPORT(0x001e184c, assign_bit7_of_byte12_1e184c);
-GUEST_FUZZ(0x001e184c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte27_1e1864(gptr<u8> object, u32 on) { assign_bit(object, BYTE_27, MASK_80, on); }
 GUEST_EXPORT(0x001e1864, assign_bit7_of_byte27_1e1864);
-GUEST_FUZZ(0x001e1864, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte0d_1e187c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_04, on); }
 GUEST_EXPORT(0x001e187c, assign_bit2_of_byte0d_1e187c);
-GUEST_FUZZ(0x001e187c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte31_1e1894(gptr<u8> object, u32 on) { assign_bit(object, BYTE_31, MASK_20, on); }
 GUEST_EXPORT(0x001e1894, assign_bit5_of_byte31_1e1894);
-GUEST_FUZZ(0x001e1894, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte2d_1e18fc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_01, on); }
 GUEST_EXPORT(0x001e18fc, assign_bit0_of_byte2d_1e18fc);
-GUEST_FUZZ(0x001e18fc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte2d_1e1914(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_02, on); }
 GUEST_EXPORT(0x001e1914, assign_bit1_of_byte2d_1e1914);
-GUEST_FUZZ(0x001e1914, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte2d_1e192c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_04, on); }
 GUEST_EXPORT(0x001e192c, assign_bit2_of_byte2d_1e192c);
-GUEST_FUZZ(0x001e192c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte2d_1e1944(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_08, on); }
 GUEST_EXPORT(0x001e1944, assign_bit3_of_byte2d_1e1944);
-GUEST_FUZZ(0x001e1944, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte2d_1e195c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_10, on); }
 GUEST_EXPORT(0x001e195c, assign_bit4_of_byte2d_1e195c);
-GUEST_FUZZ(0x001e195c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte2d_1e1974(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_20, on); }
 GUEST_EXPORT(0x001e1974, assign_bit5_of_byte2d_1e1974);
-GUEST_FUZZ(0x001e1974, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte2d_1e198c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_40, on); }
 GUEST_EXPORT(0x001e198c, assign_bit6_of_byte2d_1e198c);
-GUEST_FUZZ(0x001e198c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte2d_1e19a4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2D, MASK_80, on); }
 GUEST_EXPORT(0x001e19a4, assign_bit7_of_byte2d_1e19a4);
-GUEST_FUZZ(0x001e19a4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte2e_1e19bc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_01, on); }
 GUEST_EXPORT(0x001e19bc, assign_bit0_of_byte2e_1e19bc);
-GUEST_FUZZ(0x001e19bc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte2e_1e19d4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_08, on); }
 GUEST_EXPORT(0x001e19d4, assign_bit3_of_byte2e_1e19d4);
-GUEST_FUZZ(0x001e19d4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte2e_1e19ec(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_10, on); }
 GUEST_EXPORT(0x001e19ec, assign_bit4_of_byte2e_1e19ec);
-GUEST_FUZZ(0x001e19ec, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte2e_1e1a04(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_20, on); }
 GUEST_EXPORT(0x001e1a04, assign_bit5_of_byte2e_1e1a04);
-GUEST_FUZZ(0x001e1a04, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte2e_1e1a1c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_40, on); }
 GUEST_EXPORT(0x001e1a1c, assign_bit6_of_byte2e_1e1a1c);
-GUEST_FUZZ(0x001e1a1c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte2e_1e1a34(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_80, on); }
 GUEST_EXPORT(0x001e1a34, assign_bit7_of_byte2e_1e1a34);
-GUEST_FUZZ(0x001e1a34, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte2f_1e1a4c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2F, MASK_01, on); }
 GUEST_EXPORT(0x001e1a4c, assign_bit0_of_byte2f_1e1a4c);
-GUEST_FUZZ(0x001e1a4c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte2f_1e1a64(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2F, MASK_02, on); }
 GUEST_EXPORT(0x001e1a64, assign_bit1_of_byte2f_1e1a64);
-GUEST_FUZZ(0x001e1a64, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte2f_1e1a7c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2F, MASK_04, on); }
 GUEST_EXPORT(0x001e1a7c, assign_bit2_of_byte2f_1e1a7c);
-GUEST_FUZZ(0x001e1a7c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte2f_1e1a94(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2F, MASK_08, on); }
 GUEST_EXPORT(0x001e1a94, assign_bit3_of_byte2f_1e1a94);
-GUEST_FUZZ(0x001e1a94, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte0b_1e1aac(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0B, MASK_08, on); }
 GUEST_EXPORT(0x001e1aac, assign_bit3_of_byte0b_1e1aac);
-GUEST_FUZZ(0x001e1aac, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte2e_1e1ac4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_02, on); }
 GUEST_EXPORT(0x001e1ac4, assign_bit1_of_byte2e_1e1ac4);
-GUEST_FUZZ(0x001e1ac4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte2e_1e1adc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2E, MASK_04, on); }
 GUEST_EXPORT(0x001e1adc, assign_bit2_of_byte2e_1e1adc);
-GUEST_FUZZ(0x001e1adc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte2f_1e1af4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_2F, MASK_10, on); }
 GUEST_EXPORT(0x001e1af4, assign_bit4_of_byte2f_1e1af4);
-GUEST_FUZZ(0x001e1af4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0b_1e1b0c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0B, MASK_40, on); }
 GUEST_EXPORT(0x001e1b0c, assign_bit6_of_byte0b_1e1b0c);
-GUEST_FUZZ(0x001e1b0c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte13_1e1b24(gptr<u8> object, u32 on) { assign_bit(object, BYTE_13, MASK_10, on); }
 GUEST_EXPORT(0x001e1b24, assign_bit4_of_byte13_1e1b24);
-GUEST_FUZZ(0x001e1b24, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte30_1e1b3c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_30, MASK_20, on); }
 GUEST_EXPORT(0x001e1b3c, assign_bit5_of_byte30_1e1b3c);
-GUEST_FUZZ(0x001e1b3c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte08_1e1b54(gptr<u8> object, u32 on) { assign_bit(object, BYTE_08, MASK_04, on); }
 GUEST_EXPORT(0x001e1b54, assign_bit2_of_byte08_1e1b54);
-GUEST_FUZZ(0x001e1b54, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte05_1e1b6c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_05, MASK_04, on); }
 GUEST_EXPORT(0x001e1b6c, assign_bit2_of_byte05_1e1b6c);
-GUEST_FUZZ(0x001e1b6c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte0e_1e1bdc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_20, on); }
 GUEST_EXPORT(0x001e1bdc, assign_bit5_of_byte0e_1e1bdc);
-GUEST_FUZZ(0x001e1bdc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte18_1e1c40(gptr<u8> object, u32 on) { assign_bit(object, BYTE_18, MASK_08, on); }
 GUEST_EXPORT(0x001e1c40, assign_bit3_of_byte18_1e1c40);
-GUEST_FUZZ(0x001e1c40, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte12_1e1c84(gptr<u8> object, u32 on) { assign_bit(object, BYTE_12, MASK_02, on); }
 GUEST_EXPORT(0x001e1c84, assign_bit1_of_byte12_1e1c84);
-GUEST_FUZZ(0x001e1c84, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0a_1e23f0(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0A, MASK_40, on); }
 GUEST_EXPORT(0x001e23f0, assign_bit6_of_byte0a_1e23f0);
-GUEST_FUZZ(0x001e23f0, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte02_301efc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_02, MASK_10, on); }
 GUEST_EXPORT(0x00301efc, assign_bit4_of_byte02_301efc);
-GUEST_FUZZ(0x00301efc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte08_3021b8(gptr<u8> object, u32 on) { assign_bit(object, BYTE_08, MASK_40, on); }
 GUEST_EXPORT(0x003021b8, assign_bit6_of_byte08_3021b8);
-GUEST_FUZZ(0x003021b8, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte08_3021bc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_08, MASK_80, on); }
 GUEST_EXPORT(0x003021bc, assign_bit7_of_byte08_3021bc);
-GUEST_FUZZ(0x003021bc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte09_3021c4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_09, MASK_08, on); }
 GUEST_EXPORT(0x003021c4, assign_bit3_of_byte09_3021c4);
-GUEST_FUZZ(0x003021c4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0a_3021cc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0A, MASK_40, on); }
 GUEST_EXPORT(0x003021cc, assign_bit6_of_byte0a_3021cc);
-GUEST_FUZZ(0x003021cc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte0a_3021d0(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0A, MASK_80, on); }
 GUEST_EXPORT(0x003021d0, assign_bit7_of_byte0a_3021d0);
-GUEST_FUZZ(0x003021d0, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte0b_3021d8(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0B, MASK_20, on); }
 GUEST_EXPORT(0x003021d8, assign_bit5_of_byte0b_3021d8);
-GUEST_FUZZ(0x003021d8, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0b_3021dc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0B, MASK_40, on); }
 GUEST_EXPORT(0x003021dc, assign_bit6_of_byte0b_3021dc);
-GUEST_FUZZ(0x003021dc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte0b_3021e0(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0B, MASK_80, on); }
 GUEST_EXPORT(0x003021e0, assign_bit7_of_byte0b_3021e0);
-GUEST_FUZZ(0x003021e0, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte0c_3021e4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0C, MASK_01, on); }
 GUEST_EXPORT(0x003021e4, assign_bit0_of_byte0c_3021e4);
-GUEST_FUZZ(0x003021e4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte0c_3021ec(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0C, MASK_80, on); }
 GUEST_EXPORT(0x003021ec, assign_bit7_of_byte0c_3021ec);
-GUEST_FUZZ(0x003021ec, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte0d_3021f0(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_01, on); }
 GUEST_EXPORT(0x003021f0, assign_bit0_of_byte0d_3021f0);
-GUEST_FUZZ(0x003021f0, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte0d_3021f4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_02, on); }
 GUEST_EXPORT(0x003021f4, assign_bit1_of_byte0d_3021f4);
-GUEST_FUZZ(0x003021f4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte0d_3021f8(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_04, on); }
 GUEST_EXPORT(0x003021f8, assign_bit2_of_byte0d_3021f8);
-GUEST_FUZZ(0x003021f8, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte0d_3021fc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_08, on); }
 GUEST_EXPORT(0x003021fc, assign_bit3_of_byte0d_3021fc);
-GUEST_FUZZ(0x003021fc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte0d_302200(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_10, on); }
 GUEST_EXPORT(0x00302200, assign_bit4_of_byte0d_302200);
-GUEST_FUZZ(0x00302200, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte0d_302264(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_20, on); }
 GUEST_EXPORT(0x00302264, assign_bit5_of_byte0d_302264);
-GUEST_FUZZ(0x00302264, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0d_302268(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0D, MASK_40, on); }
 GUEST_EXPORT(0x00302268, assign_bit6_of_byte0d_302268);
-GUEST_FUZZ(0x00302268, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte0e_30226c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_02, on); }
 GUEST_EXPORT(0x0030226c, assign_bit1_of_byte0e_30226c);
-GUEST_FUZZ(0x0030226c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte0e_302270(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_04, on); }
 GUEST_EXPORT(0x00302270, assign_bit2_of_byte0e_302270);
-GUEST_FUZZ(0x00302270, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte0e_302274(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_08, on); }
 GUEST_EXPORT(0x00302274, assign_bit3_of_byte0e_302274);
-GUEST_FUZZ(0x00302274, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte0e_302278(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_10, on); }
 GUEST_EXPORT(0x00302278, assign_bit4_of_byte0e_302278);
-GUEST_FUZZ(0x00302278, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte0e_30227c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_20, on); }
 GUEST_EXPORT(0x0030227c, assign_bit5_of_byte0e_30227c);
-GUEST_FUZZ(0x0030227c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0e_302280(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_40, on); }
 GUEST_EXPORT(0x00302280, assign_bit6_of_byte0e_302280);
-GUEST_FUZZ(0x00302280, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte0e_302284(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0E, MASK_80, on); }
 GUEST_EXPORT(0x00302284, assign_bit7_of_byte0e_302284);
-GUEST_FUZZ(0x00302284, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte0f_302288(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0F, MASK_01, on); }
 GUEST_EXPORT(0x00302288, assign_bit0_of_byte0f_302288);
-GUEST_FUZZ(0x00302288, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte0f_30228c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0F, MASK_02, on); }
 GUEST_EXPORT(0x0030228c, assign_bit1_of_byte0f_30228c);
-GUEST_FUZZ(0x0030228c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte0f_302290(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0F, MASK_04, on); }
 GUEST_EXPORT(0x00302290, assign_bit2_of_byte0f_302290);
-GUEST_FUZZ(0x00302290, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte0f_302294(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0F, MASK_08, on); }
 GUEST_EXPORT(0x00302294, assign_bit3_of_byte0f_302294);
-GUEST_FUZZ(0x00302294, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte0f_302298(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0F, MASK_10, on); }
 GUEST_EXPORT(0x00302298, assign_bit4_of_byte0f_302298);
-GUEST_FUZZ(0x00302298, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte0f_30229c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0F, MASK_20, on); }
 GUEST_EXPORT(0x0030229c, assign_bit5_of_byte0f_30229c);
-GUEST_FUZZ(0x0030229c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0f_3022a0(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0F, MASK_40, on); }
 GUEST_EXPORT(0x003022a0, assign_bit6_of_byte0f_3022a0);
-GUEST_FUZZ(0x003022a0, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte10_3022b0(gptr<u8> object, u32 on) { assign_bit(object, BYTE_10, MASK_01, on); }
 GUEST_EXPORT(0x003022b0, assign_bit0_of_byte10_3022b0);
-GUEST_FUZZ(0x003022b0, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte10_3022b4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_10, MASK_02, on); }
 GUEST_EXPORT(0x003022b4, assign_bit1_of_byte10_3022b4);
-GUEST_FUZZ(0x003022b4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte10_3022d8(gptr<u8> object, u32 on) { assign_bit(object, BYTE_10, MASK_04, on); }
 GUEST_EXPORT(0x003022d8, assign_bit2_of_byte10_3022d8);
-GUEST_FUZZ(0x003022d8, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte01_3022dc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_01, MASK_04, on); }
 GUEST_EXPORT(0x003022dc, assign_bit2_of_byte01_3022dc);
-GUEST_FUZZ(0x003022dc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit7_of_byte0b_305114(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0B, MASK_80, on); }
 GUEST_EXPORT(0x00305114, assign_bit7_of_byte0b_305114);
-GUEST_FUZZ(0x00305114, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte04_305b78(gptr<u8> object, u32 on) { assign_bit(object, BYTE_04, MASK_04, on); }
 GUEST_EXPORT(0x00305b78, assign_bit2_of_byte04_305b78);
-GUEST_FUZZ(0x00305b78, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte03_305de4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_03, MASK_02, on); }
 GUEST_EXPORT(0x00305de4, assign_bit1_of_byte03_305de4);
-GUEST_FUZZ(0x00305de4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit5_of_byte0b_306da4(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0B, MASK_20, on); }
 GUEST_EXPORT(0x00306da4, assign_bit5_of_byte0b_306da4);
-GUEST_FUZZ(0x00306da4, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte01_30ce38(gptr<u8> object, u32 on) { assign_bit(object, BYTE_01, MASK_10, on); }
 GUEST_EXPORT(0x0030ce38, assign_bit4_of_byte01_30ce38);
-GUEST_FUZZ(0x0030ce38, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte20_318550(gptr<u8> object, u32 on) { assign_bit(object, BYTE_20, MASK_08, on); }
 GUEST_EXPORT(0x00318550, assign_bit3_of_byte20_318550);
-GUEST_FUZZ(0x00318550, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit1_of_byte04_6f39dc(gptr<u8> object, u32 on) { assign_bit(object, BYTE_04, MASK_02, on); }
 GUEST_EXPORT(0x006f39dc, assign_bit1_of_byte04_6f39dc);
-GUEST_FUZZ(0x006f39dc, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte03_6f3a0c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_03, MASK_04, on); }
 GUEST_EXPORT(0x006f3a0c, assign_bit2_of_byte03_6f3a0c);
-GUEST_FUZZ(0x006f3a0c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte1f_4008f858(gptr<u8> object, u32 on) { assign_bit(object, BYTE_1F, MASK_01, on); }
 GUEST_EXPORT(0x4008f858, assign_bit0_of_byte1f_4008f858);
-GUEST_FUZZ(0x4008f858, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte20_40641f84(gptr<u8> object, u32 on) { assign_bit(object, BYTE_20, MASK_40, on); }
 GUEST_EXPORT(0x40641f84, assign_bit6_of_byte20_40641f84);
-GUEST_FUZZ(0x40641f84, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte30_40641f9c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_30, MASK_08, on); }
 GUEST_EXPORT(0x40641f9c, assign_bit3_of_byte30_40641f9c);
-GUEST_FUZZ(0x40641f9c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit6_of_byte0a_40650c60(gptr<u8> object, u32 on) { assign_bit(object, BYTE_0A, MASK_40, on); }
 GUEST_EXPORT(0x40650c60, assign_bit6_of_byte0a_40650c60);
-GUEST_FUZZ(0x40650c60, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit2_of_byte01_4067281c(gptr<u8> object, u32 on) { assign_bit(object, BYTE_01, MASK_04, on); }
 GUEST_EXPORT(0x4067281c, assign_bit2_of_byte01_4067281c);
-GUEST_FUZZ(0x4067281c, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit0_of_byte10_4067b458(gptr<u8> object, u32 on) { assign_bit(object, BYTE_10, MASK_01, on); }
 GUEST_EXPORT(0x4067b458, assign_bit0_of_byte10_4067b458);
-GUEST_FUZZ(0x4067b458, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte00_4067b470(gptr<u8> object, u32 on) { assign_bit(object, BYTE_00, MASK_10, on); }
 GUEST_EXPORT(0x4067b470, assign_bit4_of_byte00_4067b470);
-GUEST_FUZZ(0x4067b470, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit4_of_byte1c_4067b488(gptr<u8> object, u32 on) { assign_bit(object, BYTE_1C, MASK_10, on); }
 GUEST_EXPORT(0x4067b488, assign_bit4_of_byte1c_4067b488);
-GUEST_FUZZ(0x4067b488, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });
 
 void assign_bit3_of_byte1c_4067b4a0(gptr<u8> object, u32 on) { assign_bit(object, BYTE_1C, MASK_08, on); }
 GUEST_EXPORT(0x4067b4a0, assign_bit3_of_byte1c_4067b4a0);
-GUEST_FUZZ(0x4067b4a0, 100, [](guest::Fuzz &f) { fuzz_flag_setter(f); });

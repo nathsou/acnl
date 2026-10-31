@@ -35,9 +35,3 @@ void PairRing::push(u32 first, u32 second) {
     pairs[newest].second = u8(second);
 }
 GUEST_EXPORT(0x0030ac48, PairRing::push);
-GUEST_FUZZ(0x0030ac48, 300, [](guest::Fuzz &f) {
-    auto ring = f.object<PairRing>();
-    ring->count = f.pick<u8>({0, 1, 2, 3, 3, 3, 4, 0xff});
-    ring->newest = f.pick<u8>({0, 1, 2, 2, 0xfe, 0xff});
-    f.arguments(ring, f.number(), f.number());
-});

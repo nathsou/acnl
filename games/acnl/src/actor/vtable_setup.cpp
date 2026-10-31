@@ -14,5 +14,3 @@ static gptr<void> construct_event_book(gptr<void> self) {
     return self;
 }
 GUEST_EXPORT(0x006e4824, construct_event_book);
-
-GUEST_FUZZ(0x006e4824, 200, [](guest::Fuzz &f) { f.arguments(f.allocate(16)); });

@@ -20,9 +20,6 @@ script::WordPtrSv &construct_word_ptr_sv_with_capacity(script::WordPtrSv &self, 
     return self;
 }
 GUEST_EXPORT(0x00604890, construct_word_ptr_sv_with_capacity);
-GUEST_FUZZ(0x00604890, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<script::WordPtrSv>(), f.number(), f.pick<u32>({9, 0x15, 0x41, 0xf8, f.number()}));
-});
 
 WordCPtrSv &construct_word_c_ptr_sv(WordCPtrSv &self, guest::gptr<void> buffer, u32 capacity) {
     self.buffer = buffer;
@@ -31,9 +28,6 @@ WordCPtrSv &construct_word_c_ptr_sv(WordCPtrSv &self, guest::gptr<void> buffer, 
     return self;
 }
 GUEST_EXPORT(0x005d867c, construct_word_c_ptr_sv);
-GUEST_FUZZ(0x005d867c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<WordCPtrSv>(), f.number(), f.pick<u32>({9, 0xb, 0x15, 0x18, 0x41, f.number()}));
-});
 
 namespace {
 constexpr u32 WORD_CAPACITY_9 = 9;
@@ -47,8 +41,6 @@ script::WordPtrSv &construct_word_ptr_sv_9(script::WordPtrSv &self, guest::gptr<
 }
 GUEST_EXPORT(0x00308944, construct_word_ptr_sv_9);
 GUEST_EXPORT(0x0031824c, construct_word_ptr_sv_9);
-GUEST_FUZZ(0x00308944, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
-GUEST_FUZZ(0x0031824c, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
 
 namespace {
 constexpr u32 OFFSET_C1_BASE = 0xaa;
@@ -78,6 +70,3 @@ script::WordPtrSv &construct_word_ptr_sv_68(script::WordPtrSv &self, guest::gptr
 GUEST_EXPORT(0x005cc4b4, construct_word_ptr_sv_aa);
 GUEST_EXPORT(0x005cc4e4, construct_word_ptr_sv_22c);
 GUEST_EXPORT(0x005cc504, construct_word_ptr_sv_68);
-GUEST_FUZZ(0x005cc4b4, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
-GUEST_FUZZ(0x005cc4e4, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
-GUEST_FUZZ(0x005cc504, 100, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });

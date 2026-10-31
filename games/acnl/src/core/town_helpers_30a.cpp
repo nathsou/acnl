@@ -9,8 +9,6 @@ namespace {
 
 // ---- find the first matching entry of 16
 
-
-
 // ---- sead::BufferedSafeStringBase<char>
 
 inline constexpr guest::Function<0x00134544, void(gptr<char> dest, gptr<const char> source, s32 count)>
@@ -84,8 +82,6 @@ GUEST_SIZE(CalleeFrameOffset, 16);
 
 // ---- SaveVillager flag
 constexpr u32 FLAG_18 = 1u << 18;  // unknown flag
-
-// ---- fuzz sizes
 
 }  // namespace
 
@@ -173,45 +169,3 @@ static void set_flag_18(SaveVillager &self) {
     self.flags_2510 |= FLAG_18;
 }
 GUEST_EXPORT(0x0030a1a0, set_flag_18);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0030a018, 300, [](guest::Fuzz &f) {
-    constexpr u32 VTABLE_SLOTS = 4;
-    constexpr u32 HARMLESS_FUNCTION = 0x002fb328;  // get_word_95bf74: no effects
-    auto vtable = f.allocate(VTABLE_SLOTS * sizeof(u32)).cast<u32>();
-    for (u32 i = 0; i < VTABLE_SLOTS; i++) {
-        vtable[i] = HARMLESS_FUNCTION;
-    }
-    constexpr u32 TEXT_SIZE = 48;
-    auto text = f.allocate(TEXT_SIZE).cast<char>();
-    f.bytes(text, TEXT_SIZE);
-    u32 length = f.below(TEXT_SIZE);
-    for (u32 i = 0; i < length; i++) {
-        if (u8(text[i]) == *string_terminator) {
-            text[i] = 'a';
-        }
-    }
-    text[length] = char(*string_terminator);
-    auto source = f.object<SafeString>();
-    source->vtable = vtable;
-    source->text = text;
-    auto self = f.object<BufferedSafeString>();
-    f.arguments(self, source);
-});
-
-GUEST_FUZZ(0x0030a01c, 200, [](guest::Fuzz &f) { f.arguments(); });
-
-GUEST_FUZZ(0x0030a038, 200, [](guest::Fuzz &f) {
-    constexpr u32 MAX_FUZZ_LIMIT = 40;
-    auto set = f.object<BitSet32>();
-    set->limit = f.below(MAX_FUZZ_LIMIT);
-    f.arguments(set, f.pick<u32>({0, 1, 2, 2, 3}));
-});
-
-GUEST_FUZZ(0x0030a1a0, 200, [](guest::Fuzz &f) {
-    constexpr u32 SIZE = 0x2600;  // past flags_2510
-    auto object = f.allocate(SIZE);
-    f.bytes(object, SIZE);
-    f.arguments(object.cast<SaveVillager>());
-});

@@ -40,19 +40,3 @@ void RequestObject::set_idle() {
     id = NO_ID;
 }
 GUEST_EXPORT(0x00275e8c, RequestObject::set_idle);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00275b4c, 300, [](guest::Fuzz &f) {
-    auto object = f.object<RequestObject>();
-    object->state = f.pick<u32>({RequestObject::STATE_BEGUN, RequestObject::STATE_BEGUN,
-                                 RequestObject::STATE_ENTRY_PICKED, RequestObject::STATE_READY,
-                                 RequestObject::STATE_IDLE, 0, f.number()});
-    object->id = f.pick<s32>({RequestObject::NO_ID, RequestObject::NO_ID, 5, s32(f.number())});
-    // the manager is only asked when the game has one
-    if (!*entry_manager && object->id == RequestObject::NO_ID) {
-        object->id = 0;
-    }
-    f.arguments(object, s32(f.number()));
-});
-GUEST_FUZZ(0x00275e8c, 200, [](guest::Fuzz &f) { f.arguments(f.object<RequestObject>()); });

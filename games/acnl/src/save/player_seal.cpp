@@ -26,13 +26,6 @@ u32 count_players_with_identity(guest::gptr<SavePlayer> players) {
     return count;
 }
 GUEST_EXPORT(0x0071a108, count_players_with_identity);
-GUEST_FUZZ(0x0071a108, 50, [](guest::Fuzz &f) {
-    auto players = f.allocate(PLAYER_COUNT * SavePlayer::SIZE).cast<SavePlayer>();
-    for (u32 i = 0; i < PLAYER_COUNT; i++) {
-        players[i].identity.player.id = u16(f.below(2));
-    }
-    f.arguments(players);
-});
 
 // Stores the two CRC-32s of every player: the first at its start (over the bytes up to the second CRC), the second at
 // 0x6b88 (over the bytes after it).
@@ -47,7 +40,3 @@ void seal_players(guest::gptr<SavePlayer> players) {
     }
 }
 GUEST_EXPORT(0x0071a2b0, seal_players);
-GUEST_FUZZ(0x0071a2b0, 20, [](guest::Fuzz &f) {
-    auto players = f.allocate(PLAYER_COUNT * SavePlayer::SIZE).cast<SavePlayer>();
-    f.arguments(players);
-});

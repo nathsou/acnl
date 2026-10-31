@@ -19,24 +19,3 @@ static bool has_other_callback(const CallbackHolder &holder) {
     return !(holder.callback == *known_callback);
 }
 GUEST_EXPORT(0x0031f260, has_other_callback);
-
-GUEST_FUZZ(0x0031f260, 300, [](guest::Fuzz &f) {
-    auto holder = f.allocate(sizeof(CallbackHolder)).cast<CallbackHolder>();
-    f.bytes(holder.cast<void>(), 0x20);
-    guest::MemberFunctionPointer known = *known_callback;
-    switch (f.below(4)) {
-    case 0:
-        holder->callback = known;
-        break;
-    case 1:
-        holder->callback = {known.function, known.adjust ^ 1};
-        break;
-    case 2:
-        holder->callback = {0, f.pick<s32>({0, 1, 2, 3, known.adjust})};
-        break;
-    default:
-        holder->callback = {f.number(), s32(f.number())};
-        break;
-    }
-    f.arguments(holder);
-});

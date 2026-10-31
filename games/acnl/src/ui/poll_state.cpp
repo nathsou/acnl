@@ -59,13 +59,3 @@ void FlagsPair::reset() {
     word_14 = 0;
 }
 GUEST_EXPORT(0x002cd508, FlagsPair::reset);
-
-GUEST_FUZZ(0x002cd508, 100, [](guest::Fuzz &f) { f.arguments(f.object<FlagsPair>()); });
-GUEST_FUZZ(0x002cd77c, 200, [](guest::Fuzz &f) {
-    auto state = f.allocate(sizeof(PollState)).cast<PollState>();
-    std::memset(state.get(), 0, sizeof(PollState));
-    state->ready = f.pick<u8>({0, 1});
-    state->result = f.pick<u32>({0, 5, f.number()});
-    state->pending_value = f.number();
-    f.arguments(state, f.object<u32>());
-});

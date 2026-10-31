@@ -103,16 +103,6 @@ struct Row8After20 {
 };
 GUEST_OFFSET(Row8After20, items, 0x14);
 
-template <typename Table>
-void fill_flags(guest::Fuzz &f, gptr<Table> table) {
-    for (u8 &flag : table->flags) {
-        flag = u8(f.below(2));
-    }
-    for (Item &item : table->items) {
-        item.id = f.below(4) != 0 ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-    }
-}
-
 }  // namespace
 
 // The items of the table are copied; flagged ones become the placeholder; and kind-11 items of class 4 or 5 get another.
@@ -130,11 +120,6 @@ void copy_table18_item(Item &out, Table18 &table, u32 index) {
     }
 }
 GUEST_EXPORT(0x00710a34, copy_table18_item);
-GUEST_FUZZ(0x00710a34, 200, [](guest::Fuzz &f) {
-    auto table = f.object<Table18>();
-    fill_flags(f, table);
-    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 5, 17, 18, f.number()}));
-});
 
 void copy_table6_item(Item &out, Table6 &table, u32 index) {
     if (index >= COUNT_6) {
@@ -146,11 +131,6 @@ void copy_table6_item(Item &out, Table6 &table, u32 index) {
     }
 }
 GUEST_EXPORT(0x00710d10, copy_table6_item);
-GUEST_FUZZ(0x00710d10, 200, [](guest::Fuzz &f) {
-    auto table = f.object<Table6>();
-    fill_flags(f, table);
-    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 3, 5, 6, f.number()}));
-});
 
 void copy_table24_item(Item &out, Table24 &table, u32 index) {
     if (index >= COUNT_18) {
@@ -166,11 +146,6 @@ void copy_table24_item(Item &out, Table24 &table, u32 index) {
     }
 }
 GUEST_EXPORT(0x007118bc, copy_table24_item);
-GUEST_FUZZ(0x007118bc, 200, [](guest::Fuzz &f) {
-    auto table = f.object<Table24>();
-    fill_flags(f, table);
-    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 11, 23, 24, f.number()}));
-});
 
 // The fourth item becomes a placeholder unless the global byte is 2 or the mode is above 1.
 void copy_row4_item_with_placeholder(Item &out, gptr<Item> items, u32 index) {
@@ -185,17 +160,11 @@ void copy_row4_item_with_placeholder(Item &out, gptr<Item> items, u32 index) {
     copy_item(out, items[index]);
 }
 GUEST_EXPORT(0x00712dc0, copy_row4_item_with_placeholder);
-GUEST_FUZZ(0x00712dc0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.allocate(COUNT_4 * sizeof(Item)).cast<Item>(), f.pick<u32>({0, 1, 2, 3, 4, f.number()}));
-});
 
 void copy_row4_after_16_item(Item &out, Row4After16 &row, u32 index) {
     copy_item(out, index < COUNT_4 ? row.items[index] : *empty_item);
 }
 GUEST_EXPORT(0x00713054, copy_row4_after_16_item);
-GUEST_FUZZ(0x00713054, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.object<Row4After16>(), f.pick<u32>({0, 3, 4, f.number()}));
-});
 
 // Whether the first row's item at the index is empty and the second row's is not.
 bool pair_row_first_empty_second_not(TwoRows4 &rows, u32 index) {
@@ -205,14 +174,6 @@ bool pair_row_first_empty_second_not(TwoRows4 &rows, u32 index) {
     return rows.first[index].is_empty() && !rows.second[index].is_empty();
 }
 GUEST_EXPORT(0x00713074, pair_row_first_empty_second_not);
-GUEST_FUZZ(0x00713074, 100, [](guest::Fuzz &f) {
-    auto rows = f.object<TwoRows4>();
-    for (u32 i = 0; i < COUNT_4; i++) {
-        rows->first[i].id = f.below(2) != 0 ? Item::EMPTY : u16(Item::FIRST_ITEM);
-        rows->second[i].id = f.below(2) != 0 ? Item::EMPTY : u16(Item::FIRST_ITEM);
-    }
-    f.arguments(rows, f.pick<u32>({0, 1, 3, 4, f.number()}));
-});
 
 // The first row's item when the flag is set, the second row's otherwise.
 void copy_two_rows_item(Item &out, TwoRows4 &rows, u32 index) {
@@ -225,13 +186,6 @@ void copy_two_rows_item(Item &out, TwoRows4 &rows, u32 index) {
     }
 }
 GUEST_EXPORT(0x007130b0, copy_two_rows_item);
-GUEST_FUZZ(0x007130b0, 100, [](guest::Fuzz &f) {
-    auto rows = f.object<TwoRows4>();
-    for (u8 &flag : rows->flags) {
-        flag = u8(f.below(2));
-    }
-    f.arguments(f.object<Item>(), rows, f.pick<u32>({0, 3, 4, f.number()}));
-});
 
 void copy_table13_item(Item &out, Table13 &table, u32 index) {
     if (index >= COUNT_13) {
@@ -243,21 +197,11 @@ void copy_table13_item(Item &out, Table13 &table, u32 index) {
     }
 }
 GUEST_EXPORT(0x00713370, copy_table13_item);
-GUEST_FUZZ(0x00713370, 100, [](guest::Fuzz &f) {
-    auto table = f.object<Table13>();
-    for (u8 &flag : table->flags) {
-        flag = u8(f.below(2));
-    }
-    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 6, 12, 13, f.number()}));
-});
 
 void copy_row4_item(Item &out, Row4 &row, u32 index) {
     copy_item(out, index < COUNT_4 ? row.items[index] : *empty_item);
 }
 GUEST_EXPORT(0x00717964, copy_row4_item);
-GUEST_FUZZ(0x00717964, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.object<Row4>(), f.pick<u32>({0, 3, 4, f.number()}));
-});
 
 // A copy of the item with its two top flag bits cleared; a category 0x7c item becomes the placeholder.
 void copy_row8_item_cleared(Item &out, Row8After20 &row, u32 index) {
@@ -275,26 +219,12 @@ void copy_row8_item_cleared(Item &out, Row8After20 &row, u32 index) {
     copy_item(out, *copy);
 }
 GUEST_EXPORT(0x00718270, copy_row8_item_cleared);
-GUEST_FUZZ(0x00718270, 200, [](guest::Fuzz &f) {
-    auto row = f.object<Row8After20>();
-    for (Item &item : row->items) {
-        item.id = f.below(4) != 0 ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-    }
-    f.arguments(f.object<Item>(), row, f.pick<u32>({0, 4, 7, 8, f.number()}));
-});
 
 // Whether the row's item at the index is of category 0x7c (true past the end).
 bool row8_item_is_category_7c(Row8After20 &row, u32 index) {
     return index >= COUNT_8 || row.items[index].category() == CATEGORY_7C;
 }
 GUEST_EXPORT(0x007182f0, row8_item_is_category_7c);
-GUEST_FUZZ(0x007182f0, 100, [](guest::Fuzz &f) {
-    auto row = f.object<Row8After20>();
-    for (Item &item : row->items) {
-        item.id = f.below(4) != 0 ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-    }
-    f.arguments(row, f.pick<u32>({0, 4, 7, 8, f.number()}));
-});
 
 void copy_table7_item(Item &out, Table7 &table, u32 index) {
     if (index >= COUNT_7) {
@@ -306,13 +236,6 @@ void copy_table7_item(Item &out, Table7 &table, u32 index) {
     }
 }
 GUEST_EXPORT(0x0071c134, copy_table7_item);
-GUEST_FUZZ(0x0071c134, 100, [](guest::Fuzz &f) {
-    auto table = f.object<Table7>();
-    for (u8 &flag : table->flags) {
-        flag = u8(f.below(2));
-    }
-    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 3, 6, 7, f.number()}));
-});
 
 // Like copy_table24_item, with a different placeholder for the plain ones.
 void copy_table11_item(Item &out, Table11 &table, u32 index) {
@@ -329,11 +252,6 @@ void copy_table11_item(Item &out, Table11 &table, u32 index) {
     }
 }
 GUEST_EXPORT(0x0071c6ac, copy_table11_item);
-GUEST_FUZZ(0x0071c6ac, 200, [](guest::Fuzz &f) {
-    auto table = f.object<Table11>();
-    fill_flags(f, table);
-    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 5, 10, 11, f.number()}));
-});
 
 void copy_table8_item(Item &out, Table8 &table, u32 index) {
     if (index >= COUNT_8) {
@@ -345,8 +263,3 @@ void copy_table8_item(Item &out, Table8 &table, u32 index) {
     }
 }
 GUEST_EXPORT(0x0071e9ac, copy_table8_item);
-GUEST_FUZZ(0x0071e9ac, 200, [](guest::Fuzz &f) {
-    auto table = f.object<Table8>();
-    fill_flags(f, table);
-    f.arguments(f.object<Item>(), table, f.pick<u32>({0, 5, 7, 8, f.number()}));
-});

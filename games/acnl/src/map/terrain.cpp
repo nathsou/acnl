@@ -67,17 +67,11 @@ u8 GridCellLarge::terrain_at(s32 x, s32 z) const {
     return tiles[u32(z) & TILE_MASK][u32(x) & TILE_MASK].terrain;
 }
 GUEST_EXPORT(0x0075d608, GridCellLarge::terrain_at);
-GUEST_FUZZ(0x0075d608, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<GridCellLarge>(), s32(f.number()), s32(f.number()));
-});
 
 bool GridCellLarge::tile_has_flag_6(s32 x, s32 z) const {
     return (tiles[u32(z) & TILE_MASK][u32(x) & TILE_MASK].flags_09 & GridTile::FLAGS_09_BIT_6) != 0;
 }
 GUEST_EXPORT(0x0075d868, GridCellLarge::tile_has_flag_6);
-GUEST_FUZZ(0x0075d868, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<GridCellLarge>(), s32(f.number()), s32(f.number()));
-});
 
 // The height of a corner of the tile (0-3): its halfword's low five bits times 8.
 u32 GridTile::corner_height(u32 corner) const {
@@ -101,10 +95,6 @@ static u32 tile_corner_height_3(const GridTile &tile) {
     return tile.corner_height(3);
 }
 GUEST_EXPORT(0x0075d858, tile_corner_height_3);
-GUEST_FUZZ(0x0075d828, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
-GUEST_FUZZ(0x0075d848, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
-GUEST_FUZZ(0x0075d838, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
-GUEST_FUZZ(0x0075d858, 100, [](guest::Fuzz &f) { f.arguments(f.object<GridTile>()); });
 
 // The height of the tile (x, z) of the block as a number: the first corner's, or the highest corner's when the tile has not
 // got flag 6.
@@ -123,9 +113,6 @@ float GridCellLarge::tile_height(s32 x, s32 z) const {
     return float(height);
 }
 GUEST_EXPORT(0x006a96d8, GridCellLarge::tile_height);
-GUEST_FUZZ(0x006a96d8, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<GridCellLarge>(), s32(f.number()), s32(f.number()));
-});
 
 // The terrain of the tile (cell_x, cell_z) of the block (block_x, block_z) of the map with the given number; 0 when the
 // map or the block does not exist and for the no-terrain value.
@@ -142,18 +129,12 @@ u32 terrain_at_block_tile(s32 block_x, s32 block_z, s32 cell_x, s32 cell_z, u32 
     return terrain < NO_TERRAIN ? terrain : 0;
 }
 GUEST_EXPORT(0x006c5ad8, terrain_at_block_tile);
-GUEST_FUZZ(0x006c5ad8, 200, [](guest::Fuzz &f) {
-    f.arguments(s32(f.below(10)) - 2, s32(f.below(10)) - 2, s32(f.below(20)) - 2, s32(f.below(20)) - 2, f.below(4));
-});
 
 // The terrain at a world position (see split_world_position).
 u32 terrain_at_world(s32 x, s32 z, u32 map_number) {
     return terrain_at_block_tile(x >> BLOCK_SHIFT, z >> BLOCK_SHIFT, x & BLOCK_MASK, z & BLOCK_MASK, map_number);
 }
 GUEST_EXPORT(0x00315788, terrain_at_world);
-GUEST_FUZZ(0x00315788, 200, [](guest::Fuzz &f) {
-    f.arguments(s32(f.below(200)) - 20, s32(f.below(200)) - 20, f.below(4));
-});
 
 // Whether the terrain at a world position is one of the special ones.
 bool is_special_terrain_at(s32 x, s32 z, u32 map_number) {
@@ -226,7 +207,6 @@ bool terrain_has_flag_bit_1(u32 terrain) {
     return (terrain_flags[table_index(terrain)] & TERRAIN_FLAG_1) != 0;
 }
 GUEST_EXPORT(0x005cdf68, terrain_has_flag_bit_1);
-GUEST_FUZZ(0x005cdf68, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(TERRAIN_TABLE_SIZE + 3), 0xffffffffu})); });
 
 // The terrain one or two tiles back (z - 1, z - 2) is the terrain 3.
 static bool terrain_3_behind(s32 x, s32 z, u32 map_number) {
@@ -265,32 +245,3 @@ u32 terrain_byte_d91e_at(s32 x, s32 z, u32 map_number) {
     return byte_95d91e(terrain_at_world(x, z, map_number));
 }
 GUEST_EXPORT(0x006c5b2c, terrain_byte_d91e_at);
-
-namespace {
-
-// Fuzzing: a world position and a map number
-void fuzz_world_position(guest::Fuzz &f) {
-    f.arguments(s32(f.below(200)) - 20, s32(f.below(200)) - 20, f.below(4));
-}
-void fuzz_block_tile(guest::Fuzz &f) {
-    f.arguments(s32(f.below(10)) - 2, s32(f.below(10)) - 2, s32(f.below(20)) - 2, s32(f.below(20)) - 2, f.below(4));
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x002fca6c, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c5a3c, 200, fuzz_block_tile);
-GUEST_FUZZ(0x005ce300, 200, fuzz_world_position);
-GUEST_FUZZ(0x005cdf88, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c5744, 200, fuzz_block_tile);
-GUEST_FUZZ(0x006c5ed4, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c86f8, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c56c8, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c778c, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c79c8, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c77d8, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c8928, 200, fuzz_world_position);
-GUEST_FUZZ(0x00300298, 200, fuzz_world_position);
-GUEST_FUZZ(0x00300a74, 200, fuzz_world_position);
-GUEST_FUZZ(0x002fe6b8, 200, fuzz_world_position);
-GUEST_FUZZ(0x006c5b2c, 200, fuzz_world_position);

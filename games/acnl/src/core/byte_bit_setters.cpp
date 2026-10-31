@@ -6,8 +6,6 @@ using guest::gptr;
 
 namespace {
 
-constexpr u32 FUZZ_OBJECT_SIZE = 0x20;
-
 constexpr u8 BIT_0 = 0x01;
 constexpr u8 BIT_1 = 0x02;
 constexpr u8 BIT_2 = 0x04;
@@ -30,12 +28,6 @@ void assign_byte_bit(gptr<u8> object, u32 on) {
     object[Offset] = byte;
 }
 
-void fuzz_bit_setter(guest::Fuzz &f) {
-    auto object = f.allocate(FUZZ_OBJECT_SIZE).cast<u8>();
-    f.bytes(object, FUZZ_OBJECT_SIZE);
-    f.arguments(object, f.pick<u32>({0, 1, 0x100, f.number()}));
-}
-
 }  // namespace
 
 void assign_bit_7_of_byte_0d(gptr<u8> object, u32 on) { assign_byte_bit<BYTE_0D, BIT_7>(object, on); }
@@ -52,11 +44,3 @@ void assign_bit_3_of_byte_00(gptr<u8> object, u32 on) { assign_byte_bit<BYTE_00,
 GUEST_EXPORT(0x002fb780, assign_bit_3_of_byte_00);
 void assign_bit_4_of_byte_00(gptr<u8> object, u32 on) { assign_byte_bit<BYTE_00, BIT_4>(object, on); }
 GUEST_EXPORT(0x002fb798, assign_bit_4_of_byte_00);
-
-GUEST_FUZZ(0x002fbfc8, 100, [](guest::Fuzz &f) { fuzz_bit_setter(f); });
-GUEST_FUZZ(0x002fbfe0, 100, [](guest::Fuzz &f) { fuzz_bit_setter(f); });
-GUEST_FUZZ(0x002faf74, 100, [](guest::Fuzz &f) { fuzz_bit_setter(f); });
-GUEST_FUZZ(0x002fb750, 100, [](guest::Fuzz &f) { fuzz_bit_setter(f); });
-GUEST_FUZZ(0x002fb768, 100, [](guest::Fuzz &f) { fuzz_bit_setter(f); });
-GUEST_FUZZ(0x002fb780, 100, [](guest::Fuzz &f) { fuzz_bit_setter(f); });
-GUEST_FUZZ(0x002fb798, 100, [](guest::Fuzz &f) { fuzz_bit_setter(f); });

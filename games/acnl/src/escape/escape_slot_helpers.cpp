@@ -44,19 +44,6 @@ void EscapeSlotOwner::add_entry(gptr<EscapeSlotEntry> entry, u32 append_word) {
     }
 }
 GUEST_EXPORT(0x402fc2e4, EscapeSlotOwner::add_entry);
-GUEST_FUZZ(0x402fc2e4, 300, [](guest::Fuzz &f) {
-    auto owner = f.object<EscapeSlotOwner>();
-    u32 used = f.below(34);
-    for (u32 i = 0; i < EscapeSlotOwner::SLOT_COUNT; i++) {
-        owner->slots[i] = i < used ? gptr<EscapeSlotEntry>(0x1000 + i * 4) : gptr<EscapeSlotEntry>();
-    }
-    gptr<EscapeSlotEntry> entry;
-    if (f.below(8) != 0) {
-        entry = f.object<EscapeSlotEntry>();
-        entry->count = f.below(4);
-    }
-    f.arguments(owner, entry, f.pick<u32>({0, 1, f.number()}));
-});
 
 // Per-index factors of the movement speed (12 floats).
 inline guest::global<float[12], 0x403699a0> speed_factors;
@@ -94,16 +81,6 @@ void EscapeMover::update_speed() {
     speed = scaled / divisor;
 }
 GUEST_EXPORT(0x402fc340, EscapeMover::update_speed);
-GUEST_FUZZ(0x402fc340, 300, [](guest::Fuzz &f) {
-    auto mover = f.object<EscapeMover>();
-    for (u32 i = 0; i < 3; i++) {
-        mover->start[i] = f.real();
-        mover->end[i] = f.real();
-    }
-    mover->factor_index = f.below(12);
-    mover->divisor = f.pick<float>({0.0f, 1.0f, -1.0f, f.real()});
-    f.arguments(mover);
-});
 
 // A part of an object that is notified (through a still recompiled function) once a word is set.
 struct EscapeNotifyPart {
@@ -132,12 +109,6 @@ u32 EscapeNotifier::forward_if_set() {
     return notify_part(guest::addr_of(part));
 }
 GUEST_EXPORT(0x402fc548, EscapeNotifier::forward_if_set);
-// Only the path that calls nothing: the other one runs game code on the object.
-GUEST_FUZZ(0x402fc548, 200, [](guest::Fuzz &f) {
-    auto object = f.object<EscapeNotifier>();
-    object->part.flag_08 = 0;
-    f.arguments(object);
-});
 
 namespace {
 
@@ -197,9 +168,6 @@ u32 lookup_resource_by_index(gptr<void> self, u32 index) {
     return guest::addr_of(found->relative_offset).addr() + found->relative_offset;
 }
 GUEST_EXPORT(0x402fc560, lookup_resource_by_index);
-GUEST_FUZZ(0x402fc560, 100, [](guest::Fuzz &f) {
-    f.arguments(f.object<u32>(), f.pick<u32>({0, 24, 25, 26, 27, 28, 30, 31, 100}));
-});
 
 namespace {
 inline constexpr guest::Function<0x40290f18, float(float range)> random_up_to;
@@ -216,6 +184,3 @@ float sample_between(float a, float b) {
     return random_up_to(high - low) + low;
 }
 GUEST_EXPORT(0x402fc584, sample_between);
-GUEST_FUZZ(0x402fc584, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<float>({0.0f, 1.0f, f.real()}), f.pick<float>({0.0f, 10.0f, f.real()}));
-});

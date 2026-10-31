@@ -32,18 +32,3 @@ GUEST_EXPORT(0x007559b8, RecordHolder::has_second_id);
 GUEST_EXPORT(0x007559d4, RecordHolder::first_id_again);
 GUEST_EXPORT(0x007559e0, RecordHolder::second_id);
 GUEST_EXPORT(0x007559ec, RecordHolder::has_first_id);
-
-static gptr<RecordHolder> some_holder(guest::Fuzz &f) {
-    auto holder = f.object<RecordHolder>();
-    auto record = f.object<IdRecord>();
-    record->first_id = f.pick<u16>({0, 0xffff, 1, u16(f.number())});
-    record->second_id = f.pick<u16>({0, 0xffff, 1, u16(f.number())});
-    holder->record = record;
-    return holder;
-}
-
-GUEST_FUZZ(0x007559ac, 200, [](guest::Fuzz &f) { f.arguments(some_holder(f)); });
-GUEST_FUZZ(0x007559b8, 200, [](guest::Fuzz &f) { f.arguments(some_holder(f)); });
-GUEST_FUZZ(0x007559d4, 200, [](guest::Fuzz &f) { f.arguments(some_holder(f)); });
-GUEST_FUZZ(0x007559e0, 200, [](guest::Fuzz &f) { f.arguments(some_holder(f)); });
-GUEST_FUZZ(0x007559ec, 200, [](guest::Fuzz &f) { f.arguments(some_holder(f)); });

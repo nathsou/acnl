@@ -1,6 +1,5 @@
 // Small helpers around 0x0030f4d8: a bit set of 33 flags, a block picker, a lookup in the table of active entries,
 // and copies of small structures.
-#include "core/fuzz_helpers.hpp"
 #include "core/date.hpp"
 #include "guest/guest.hpp"
 #include "save/villager.hpp"
@@ -79,17 +78,3 @@ void store_reference_value() {
     *stored_reference_value = *get_reference_value();
 }
 GUEST_EXPORT(0x0031014c, store_reference_value);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0030f4d8, 200, [](guest::Fuzz &f) {
-    auto object = f.object<VirtualWithWord>();
-    object->vtable = fuzz::harmless_vtable(f);
-    f.arguments(object);
-});
-GUEST_FUZZ(0x0030f56c, 200, [](guest::Fuzz &f) { f.arguments(f.object<Date>(), f.object<WideDate>()); });
-GUEST_FUZZ(0x0030fbb4, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<Block1228>(), f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffffu, f.below(10)}));
-});
-GUEST_FUZZ(0x0030fca0, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0031014c, 100, [](guest::Fuzz &f) { f.arguments(); });

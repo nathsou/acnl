@@ -77,14 +77,3 @@ PlayerStamp &construct_empty_player_stamp(PlayerStamp &self) {
     return self;
 }
 GUEST_EXPORT(0x00624008, construct_empty_player_stamp);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x00623e70, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<StationSet>(), f.pick<u32>({0, 1, 2, 3, 4, 0xffffffff}), f.pick<u32>({0, 1, 2}));
-});
-GUEST_FUZZ(0x00623f34, 200, [](guest::Fuzz &f) { f.arguments(f.object<PlayerStamp>()); });
-GUEST_FUZZ(0x00623ff0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<PlayerStamp>(), f.object<PersonalId>(), f.object<u32>());
-});
-GUEST_FUZZ(0x00624008, 200, [](guest::Fuzz &f) { f.arguments(f.object<PlayerStamp>()); });

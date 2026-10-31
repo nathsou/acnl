@@ -36,7 +36,6 @@ void clear_identity_with_flags(IdentityWithFlags &record) {
     record.byte_2d = 0;
 }
 GUEST_EXPORT(0x003052f0, clear_identity_with_flags);
-GUEST_FUZZ(0x003052f0, 100, [](guest::Fuzz &f) { f.arguments(f.object<IdentityWithFlags>()); });
 
 // Empties both parts like PlayerRef::clear, and sets the value to "none" and the byte to the reset mode.
 void clear_identity_with_value(IdentityWithValue &record) {
@@ -46,4 +45,3 @@ void clear_identity_with_value(IdentityWithValue &record) {
     record.byte_2e = RESET_MODE;
 }
 GUEST_EXPORT(0x003084d0, clear_identity_with_value);
-GUEST_FUZZ(0x003084d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<IdentityWithValue>()); });

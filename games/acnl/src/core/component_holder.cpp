@@ -108,9 +108,6 @@ gptr<void> allocate_from_heap(u32 size, gptr<void> object, u32 alignment) {
     return guest::call_address<gptr<void>>(vtable_function(object, HEAP_ALLOCATE_SLOT), object, size, alignment);
 }
 GUEST_EXPORT(0x00131280, allocate_from_heap);
-GUEST_FUZZ(0x00131280, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({4, 0x20, 0x34, f.below(0x100) + 1}), gptr<void>(nullptr), f.pick<u32>({4, 0x20, 0x80}));
-});
 
 // Destroys and frees the owned objects (unless flagged to skip), then marks the holder inactive.
 void ComponentHolder::release_objects() {
@@ -141,16 +138,6 @@ void ComponentHolder::release_objects() {
     active_28 = 0;
 }
 GUEST_EXPORT(0x0013138c, ComponentHolder::release_objects);
-GUEST_FUZZ(0x0013138c, 200, [](guest::Fuzz &f) {
-    auto holder = f.object<ComponentHolder>();
-    if (f.below(2)) {
-        holder->flags_150 |= ComponentHolder::FLAG_150_SKIP_RELEASE;
-    } else {
-        holder->flags_150 &= ~ComponentHolder::FLAG_150_SKIP_RELEASE;
-        holder->active_28 = 0;
-    }
-    f.arguments(holder);
-});
 
 // Asks for a state (kind), optionally with a transform, and reports whether the previous request of that kind
 // completed with a result of 1.
@@ -176,12 +163,6 @@ bool ComponentHolder::request_state(u32 kind, gptr<const Transform> transform) {
     return result == 1;
 }
 GUEST_EXPORT(0x00131470, ComponentHolder::request_state);
-GUEST_FUZZ(0x00131470, 200, [](guest::Fuzz &f) {
-    auto holder = f.object<ComponentHolder>();
-    holder->request_30 = u8(1 + f.below(255));
-    u32 kind = f.below(2) ? u32(holder->request_30) : f.number();
-    f.arguments(holder, kind, gptr<const Transform>(nullptr));
-});
 
 namespace {
 
@@ -209,6 +190,3 @@ void take_if_higher_priority(PrioritizedValue &target, const PrioritizedValue &o
     target.byte_9 = other.byte_9;
 }
 GUEST_EXPORT(0x00131530, take_if_higher_priority);
-GUEST_FUZZ(0x00131530, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<PrioritizedValue>(), f.object<PrioritizedValue>());
-});

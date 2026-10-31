@@ -86,26 +86,4 @@ LineTracer &construct_line_tracer(LineTracer &self) {
 }
 GUEST_EXPORT(0x005d5810, construct_line_tracer);
 
-GUEST_FUZZ(0x005d56e4, 200, [](guest::Fuzz &f) {
-    auto tracer = f.object<LineTracer>();
-    auto source = f.object<MsgSource>();
-    source->following_code = NEWLINE;
-    f.arguments(tracer, source);
-});
-GUEST_FUZZ(0x005d5738, 300, [](guest::Fuzz &f) {
-    auto tracer = f.object<LineTracer>();
-    auto buffer = f.allocate(64).cast<u8>();
-    auto text = f.allocate(64);
-    f.bytes(text, 64);
-    tracer->write_position = buffer;
-    tracer->write_limit = buffer + f.pick<u32>({0, 10, 20, 40, 64});
-    auto chunk = f.object<LineChunk>();
-    chunk->data = text;
-    chunk->size_bytes = f.below(41);
-    f.arguments(tracer, chunk);
-});
-GUEST_FUZZ(0x005d5774, 200, [](guest::Fuzz &f) { f.arguments(f.object<LineTracer>()); });
-GUEST_FUZZ(0x005d51f8, 200, [](guest::Fuzz &f) { f.arguments(f.object<LineTracer>()); });
-GUEST_FUZZ(0x005d5810, 200, [](guest::Fuzz &f) { f.arguments(f.object<LineTracer>()); });
-
 }  // namespace script

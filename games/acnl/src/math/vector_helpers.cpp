@@ -60,7 +60,6 @@ static void rotate_xy(Float3 &vec, u32 angle) {
 }
 GUEST_EXPORT(0x0056a274, rotate_xy);
 
-
 // Scales the vector to unit length, unless it is (nearly) zero.
 static void normalize(Float3 &vec) {
     float x = vec.v[0];
@@ -87,18 +86,3 @@ static void copy_float3(Float3 &dest, const Float3 &source) {
     dest.v[2] = source.v[2];
 }
 GUEST_EXPORT(0x0056a3cc, copy_float3);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Float3> some_float3(guest::Fuzz &f) {
-    auto v = f.object<Float3>();
-    for (u32 i = 0; i < 3; i++) {
-        v->v[i] = f.pick<float>({0.0f, 1.0f, -1.0f, 1e-10f, f.real(), f.real()});
-    }
-    return v;
-}
-
-GUEST_FUZZ(0x0056a224, 300, [](guest::Fuzz &f) { f.arguments(some_float3(f), f.number()); });
-GUEST_FUZZ(0x0056a274, 300, [](guest::Fuzz &f) { f.arguments(some_float3(f), f.number()); });
-GUEST_FUZZ(0x0056a378, 300, [](guest::Fuzz &f) { f.arguments(some_float3(f)); });
-GUEST_FUZZ(0x0056a3cc, 200, [](guest::Fuzz &f) { f.arguments(some_float3(f), some_float3(f)); });

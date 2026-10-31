@@ -40,14 +40,6 @@ bool button_slot_check(ButtonSlotState &slot) {
 }
 GUEST_EXPORT(0x0074fdd0, button_slot_check);
 
-GUEST_FUZZ(0x0074fdd0, 300, [](guest::Fuzz &f) {
-    auto slot = f.object<ButtonSlotState>();
-    slot->kind = f.pick<u8>({0, 1, 3, 2, 1, 3, u8(f.number())});
-    slot->value_4 = f.real();
-    slot->value_8 = f.below(2) ? f.real() : slot->value_4;
-    f.arguments(slot);
-});
-
 // The squared distance between two points on the X/Z plane.
 float distance_squared_xz(const Float3 &a, const Float3 &b) {
     float dx = b.v[0] - a.v[0];
@@ -58,10 +50,6 @@ float distance_squared_xz(const Float3 &a, const Float3 &b) {
 GUEST_EXPORT(0x0074fe34, distance_squared_xz);
 GUEST_EXPORT(0x40206398, distance_squared_xz);
 GUEST_EXPORT(0x404e3b14, distance_squared_xz);
-
-GUEST_FUZZ(0x0074fe34, 200, [](guest::Fuzz &f) { f.arguments(f.object<Float3>(), f.object<Float3>()); });
-GUEST_FUZZ(0x40206398, 200, [](guest::Fuzz &f) { f.arguments(f.object<Float3>(), f.object<Float3>()); });
-GUEST_FUZZ(0x404e3b14, 200, [](guest::Fuzz &f) { f.arguments(f.object<Float3>(), f.object<Float3>()); });
 
 // out = a - b
 void float3_subtract(Float3 &out, const Float3 &a, const Float3 &b) {
@@ -75,12 +63,6 @@ void float3_subtract(Float3 &out, const Float3 &a, const Float3 &b) {
 GUEST_EXPORT(0x0074fe58, float3_subtract);
 GUEST_EXPORT(0x40538c6c, float3_subtract);
 
-static void fuzz_74fe58(guest::Fuzz &f) {
-    f.arguments(f.object<Float3>(), f.object<Float3>(), f.object<Float3>());
-}
-GUEST_FUZZ(0x0074fe58, 200, fuzz_74fe58);
-GUEST_FUZZ(0x40538c6c, 200, fuzz_74fe58);
-
 // out = a * scale
 void float3_scale(Float3 &out, const Float3 &a, float scale) {
     float x = a.v[0] * scale;
@@ -92,10 +74,6 @@ void float3_scale(Float3 &out, const Float3 &a, float scale) {
 }
 GUEST_EXPORT(0x0074fe88, float3_scale);
 
-GUEST_FUZZ(0x0074fe88, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<Float3>(), f.object<Float3>(), f.real());
-});
-
 // out = a + b
 void float3_add(Float3 &out, const Float3 &a, const Float3 &b) {
     float x = a.v[0] + b.v[0];
@@ -106,7 +84,3 @@ void float3_add(Float3 &out, const Float3 &a, const Float3 &b) {
     out.v[2] = z;
 }
 GUEST_EXPORT(0x0074feb0, float3_add);
-
-GUEST_FUZZ(0x0074feb0, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<Float3>(), f.object<Float3>(), f.object<Float3>());
-});

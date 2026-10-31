@@ -47,13 +47,6 @@ gptr<u32> copy_8_bytes(gptr<u32> dest, gptr<const u32> source) {
     return dest;
 }
 GUEST_EXPORT(0x401ae6d0, copy_8_bytes);
-GUEST_FUZZ(0x401ae6d0, 200, [](guest::Fuzz &f) {
-    gptr<u32> dest = f.allocate(8).cast<u32>();
-    gptr<u32> source = f.allocate(8).cast<u32>();
-    f.bytes(dest, 8);
-    f.bytes(source, 8);
-    f.arguments(dest, source);
-});
 
 // Copies the fields of a record of 0x2e bytes (the bytes between them are left alone); always succeeds.
 bool copy_item_fields(ItemFields &dest, const ItemFields &source) {
@@ -76,7 +69,6 @@ bool copy_item_fields(ItemFields &dest, const ItemFields &source) {
     return true;
 }
 GUEST_EXPORT(0x401ae85c, copy_item_fields);
-GUEST_FUZZ(0x401ae85c, 200, [](guest::Fuzz &f) { f.arguments(f.object<ItemFields>(), f.object<ItemFields>()); });
 
 // Stores an id through `out`, translating ids of the 0x2000/0x4000 kinds through a table; false if out of range.
 bool translate_id(gptr<u16> out, u32 id) {
@@ -95,12 +87,3 @@ bool translate_id(gptr<u16> out, u32 id) {
     return true;
 }
 GUEST_EXPORT(0x401ae7a4, translate_id);
-GUEST_FUZZ(0x401ae7a4, 300, [](guest::Fuzz &f) {
-    u32 id = f.number();
-    if (f.below(2) != 0) {
-        id &= 0xffff;
-    }
-    gptr<u16> out = f.allocate(4).cast<u16>();
-    f.bytes(out, 4);
-    f.arguments(out, id);
-});

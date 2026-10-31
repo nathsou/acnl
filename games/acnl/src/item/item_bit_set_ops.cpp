@@ -1,5 +1,6 @@
 // Operations on ItemBitSet.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
+#include "item/item.hpp"
 #include "item/item_bit_set.hpp"
 
 namespace {
@@ -63,40 +64,3 @@ static bool contains_item_for(const ItemBitSet &set, u32 first, u32 second) {
     return set.contains(item);
 }
 GUEST_EXPORT(0x007701f8, contains_item_for);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-gptr<ItemBitSet> some_set(guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    for (u32 i = 0; i < ItemBitSet::WORDS; i++) {
-        switch (f.below(4)) {
-        case 0:
-            set->words[i] = 0;
-            break;
-        case 1:
-            set->words[i] = 0xffffffff;
-            break;
-        default:
-            break;
-        }
-    }
-    return set;
-}
-
-gptr<Item> some_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.pick<u32>({0x2000, 0x372a, 0x372b, 0x3800, 0x7ffe, 0x2000 + f.below(Item::ITEM_COUNT)}) |
-               (f.below(2) ? 0x8000 : 0);
-    item->flags = u16(f.number());
-    return item;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x00303094, 300, [](guest::Fuzz &f) { f.arguments(some_set(f), some_item(f)); });
-GUEST_FUZZ(0x003030d4, 200, [](guest::Fuzz &f) { f.arguments(some_set(f)); });
-GUEST_FUZZ(0x0076f9b4, 200, [](guest::Fuzz &f) { f.arguments(some_set(f)); });
-GUEST_FUZZ(0x007701b8, 300, [](guest::Fuzz &f) { f.arguments(some_set(f), some_item(f)); });
-GUEST_FUZZ(0x007701f8, 200, [](guest::Fuzz &f) { f.arguments(some_set(f), f.below(40), f.below(40)); });

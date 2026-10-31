@@ -80,24 +80,3 @@ void pick_distinct_items(gptr<Item> out, u32 count, ItemBitSet &set) {
     }
 }
 GUEST_EXPORT(0x003004c4, pick_distinct_items);
-
-// ---- inputs for the shadow checker's fuzzing
-
-namespace {
-
-gptr<ItemBitSet> some_set(guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    for (u32 &word : set->words) {
-        word = f.below(8) == 0 ? u32(f.number()) : 0;
-    }
-    return set;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x002fea2c, 300, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), some_set(f)); });
-GUEST_FUZZ(0x001acd28, 300, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), some_set(f), f.number()); });
-GUEST_FUZZ(0x001acdc4, 300, [](guest::Fuzz &f) { f.arguments(f.object<Item>(), f.below(20), some_set(f)); });
-GUEST_FUZZ(0x003004c4, 300, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(8 * sizeof(Item)).cast<Item>(), f.pick<u32>({0, 1, 3, 8, f.below(9)}), some_set(f));
-});

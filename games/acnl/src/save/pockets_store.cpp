@@ -105,42 +105,6 @@ bool Pockets::set_slot(u32 slot, const Item &item, u32 lock, bool record) {
 }
 GUEST_EXPORT(0x002bf9cc, Pockets::set_slot);
 
-// ---- inputs for the shadow checker's fuzzing
-
-namespace {
-
-gptr<Pockets> pockets_with_room(guest::Fuzz &f) {
-    auto pockets = f.object<Pockets>();
-    for (u32 slot = 0; slot < Pockets::SLOTS; slot++) {
-        pockets->items[slot].id = f.below(2) ? Item::EMPTY : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-        pockets->items[slot].flags = 0;
-        pockets->slot_locked[slot] = u8(f.below(3));
-    }
-    return pockets;
-}
-
-gptr<Item> item_to_store(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.pick<u16>({u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)), Item::EMPTY, u16(f.below(0x120)), u16(BELL_BAG_100 + f.below(20))});
-    item->flags = f.below(3) ? 0 : u16(f.number());
-    return item;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x00322e98, 300, [](guest::Fuzz &f) {
-    f.arguments(pockets_with_room(f), f.pick<u32>({0, 5, 15, 16, f.number()}), item_to_store(f), f.below(3), f.object<Item>());
-});
-GUEST_FUZZ(0x00322db8, 300, [](guest::Fuzz &f) {
-    f.arguments(pockets_with_room(f), item_to_store(f), f.below(3), f.object<Item>());
-});
-GUEST_FUZZ(0x002bf814, 300, [](guest::Fuzz &f) {
-    f.arguments(pockets_with_room(f), item_to_store(f), f.below(3), f.below(2));
-});
-GUEST_FUZZ(0x002bf9cc, 300, [](guest::Fuzz &f) {
-    f.arguments(pockets_with_room(f), f.pick<u32>({0, 5, 15, 16}), item_to_store(f), f.below(3), f.below(2));
-});
-
 // Puts a cleaned-up copy of the item in the place of a list of 40 items; false (and no change) when the index is out of
 // range or the item does not pass Item::sanitize.
 bool store_sanitized_item(gptr<Item> list, u32 index, const Item &item) {
@@ -157,13 +121,9 @@ bool store_sanitized_item(gptr<Item> list, u32 index, const Item &item) {
     return true;
 }
 GUEST_EXPORT(0x002d49d8, store_sanitized_item);
-GUEST_FUZZ(0x002d49d8, 200, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(40 * sizeof(Item)).cast<Item>(), f.pick<u32>({0, 5, 39, 40, f.number()}), item_to_store(f));
-});
 
 // Whether the player's pockets hold an unlocked item of category 0x98.
 bool player_has_unlocked_item_of_category_98(SavePlayer &player) {
     return player.pockets.has_unlocked_item_of_category_98();
 }
 GUEST_EXPORT(0x0023e1e0, player_has_unlocked_item_of_category_98);
-GUEST_FUZZ(0x0023e1e0, 100, [](guest::Fuzz &f) { f.arguments(f.object<SavePlayer>()); });

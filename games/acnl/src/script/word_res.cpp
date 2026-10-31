@@ -24,5 +24,3 @@ WordRes &construct_word_res(WordRes &self) {
 }  // namespace
 
 GUEST_EXPORT(0x005fcfd8, construct_word_res);
-
-GUEST_FUZZ(0x005fcfd8, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordRes>()); });

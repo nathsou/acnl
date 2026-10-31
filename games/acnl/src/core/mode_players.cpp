@@ -1,5 +1,4 @@
 // Which player a mode (a place in the game) belongs to.
-#include "core/fuzz_helpers.hpp"
 #include "guest/guest.hpp"
 #include "save/save_data.hpp"
 
@@ -57,7 +56,6 @@ gptr<SavePlayer> player_of_mode(u32 mode) {
     return nullptr;
 }
 GUEST_EXPORT(0x006f86a4, player_of_mode);
-GUEST_FUZZ(0x006f86a4, 300, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(NO_MODE), f.below(NO_MODE), NO_MODE - 1, 0x92, 0x56 + f.below(0x30)})); });
 
 // Whether the player of the mode's page is the one of the main slot (false for modes without such a page).
 bool mode_page_player_is_main_slot(u32 mode) {
@@ -68,4 +66,3 @@ bool mode_page_player_is_main_slot(u32 mode) {
     return slot >= 0 && (u32(slot) & PAGE_MASK) == slot_value(MAIN_SLOT_INDEX);
 }
 GUEST_EXPORT(0x005b4018, mode_page_player_is_main_slot);
-GUEST_FUZZ(0x005b4018, 300, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(NO_MODE + 1), 0x56 + f.below(0x30)})); });

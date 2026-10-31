@@ -46,22 +46,3 @@ void copy_item_with_top_bits(Item &out, const Item &src, u32 bits) {
     }
 }
 GUEST_EXPORT(0x003117dc, copy_item_with_top_bits);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<Item> valid_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (item_data_table->entries && f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    } else {
-        item->id = Item::EMPTY;
-    }
-    return item;
-}
-
-GUEST_FUZZ(0x003117bc, 300, [](guest::Fuzz &f) { f.arguments(valid_item(f)); });
-GUEST_FUZZ(0x003117dc, 300, [](guest::Fuzz &f) {
-    auto out = valid_item(f);
-    auto src = valid_item(f);
-    f.arguments(out, src, f.pick<u32>({0, 1, 2, 3, 4, 5, 0xffffffff}));
-});

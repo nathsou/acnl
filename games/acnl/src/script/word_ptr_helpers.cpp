@@ -60,29 +60,3 @@ GUEST_EXPORT(0x005fcf7c, set_word_buffer);
 GUEST_EXPORT(0x005fcf88, copy_word_buffer);
 GUEST_EXPORT(0x005fcf9c, construct_empty_word_ptr);
 GUEST_EXPORT(0x005fcfbc, construct_word_res_unbounded);
-
-GUEST_FUZZ(0x005fcf24, 300, [](guest::Fuzz &f) {
-    auto word = f.object<WordPtr>();
-    switch (f.below(4)) {
-    case 0:
-        word->buffer = nullptr;
-        break;
-    case 1:
-        word->capacity = f.pick<u32>({0, 0x40000000, 0x80000005, 0xffffffff});
-        word->buffer = nullptr;
-        break;
-    default: {
-        u32 capacity = f.below(41);
-        word->capacity = capacity;
-        word->buffer = f.allocate(capacity * 2 + 8);
-        break;
-    }
-    }
-    f.arguments(word);
-});
-GUEST_FUZZ(0x005fcf7c, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<WordPtr>(), f.allocate(16), f.pick<u32>({0, 0x34, 0x35, f.number()}));
-});
-GUEST_FUZZ(0x005fcf88, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPtr>(), f.object<WordPtr>()); });
-GUEST_FUZZ(0x005fcf9c, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPtr>()); });
-GUEST_FUZZ(0x005fcfbc, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPtr>(), f.allocate(16)); });

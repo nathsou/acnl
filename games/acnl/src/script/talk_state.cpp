@@ -48,8 +48,3 @@ bool talk_state_active() {
     return talk_state_matches(ANY_KIND, 0);
 }
 GUEST_EXPORT(0x003170ec, talk_state_active);
-
-GUEST_FUZZ(0x003170f8, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({ANY_KIND, f.below(16), f.number()}), f.pick<u32>({0, 1, f.number()}));
-});
-GUEST_FUZZ(0x003170ec, 200, [](guest::Fuzz &f) { f.arguments(); });

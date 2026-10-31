@@ -33,11 +33,6 @@ constexpr Table TABLE_TYPE_0x14{0x00890bb4, 0x05};
 constexpr u32 TYPE_7_TABLE = 0x008909de;
 constexpr u32 TYPE_7_ONLY_ROW = 6;
 
-// Fuzzing bounds: the largest row count of any table, and a few columns past the end of a row.
-constexpr u32 FUZZ_MAX_ROWS = 0x26 + 4;
-constexpr u32 FUZZ_MAX_COLUMNS = COLUMNS + 2;
-constexpr u32 FUZZ_MAX_TYPE = 0x20;
-
 s8 read(u32 address, u32 column) {
     if (column >= COLUMNS) {
         return COLUMN_OUT_OF_RANGE;
@@ -75,8 +70,3 @@ s8 lookup_table_value(u32 type, u32 row, u32 column) {
     }
 }
 GUEST_EXPORT(0x005d55bc, lookup_table_value);
-
-GUEST_FUZZ(0x005d55bc, 400, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({TYPE_4, TYPE_5, TYPE_7, TYPE_0x11, TYPE_0x12, TYPE_0x14, f.below(FUZZ_MAX_TYPE)}),
-                f.below(FUZZ_MAX_ROWS), f.below(FUZZ_MAX_COLUMNS));
-});

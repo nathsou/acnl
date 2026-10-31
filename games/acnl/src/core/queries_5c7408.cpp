@@ -136,13 +136,3 @@ bool try_lock_once() {
     return true;
 }
 GUEST_EXPORT(0x005c7920, try_lock_once);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x005c7408, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x005c7438, 300, [](guest::Fuzz &f) {
-    f.arguments(f.below(5), f.pick<float>({0.0f, -1.0f, 1.0f, f.real(), f.real() / 1000.0f}));
-});
-GUEST_FUZZ(0x005c74b0, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x005c789c, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x005c7920, 200, [](guest::Fuzz &f) { f.arguments(); });

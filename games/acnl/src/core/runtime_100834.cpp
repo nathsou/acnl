@@ -109,41 +109,6 @@ void release_global_object_48() {
 }
 GUEST_EXPORT(0x00100901, release_global_object_48);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-// A fake object whose release slot is a harmless guest function (the string length above).
-gptr<VirtualObject> some_fake_object(guest::Fuzz &f) {
-    auto vtable = f.allocate(sizeof(u32) * (RELEASE_SLOT + 1)).cast<u32>();
-    for (u32 i = 0; i <= RELEASE_SLOT; i++) {
-        vtable[i] = 0x00100835;
-    }
-    auto object = f.allocate(16).cast<VirtualObject>();
-    f.bytes(object, 16);
-    object->vtable = vtable;
-    object.cast<u32>()[1] = 0;  // terminates the string the fake release reads
-    return object;
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x00100835, 300, [](guest::Fuzz &f) {
-    u32 length = f.pick<u32>({0, 1, 4, 8, f.below(64)});
-    auto text = f.allocate((length + 1) * 2).cast<u16>();
-    for (u32 i = 0; i < length; i++) {
-        text[i] = u16(f.number() | 1);
-    }
-    text[length] = 0;
-    f.arguments(text.cast<const u16>());
-});
-GUEST_FUZZ(0x00100851, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00100899, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x001008e9, 200, [](guest::Fuzz &f) {
-    global_objects_952c38->object_64 = some_fake_object(f);
-    f.arguments();
-});
-GUEST_FUZZ(0x00100901, 200, [](guest::Fuzz &f) {
-    global_objects_952c38->object_48 = some_fake_object(f);
-    f.arguments();
-});

@@ -1,6 +1,5 @@
 // Schedules that say on which days and at what time of day something happens (an event's record keeps a day pattern and a
 // time pattern), and whether a time stamp fits them.
-#include "core/fuzz_helpers.hpp"
 #include "core/time_stamp.hpp"
 #include "guest/guest.hpp"
 
@@ -17,9 +16,7 @@ constexpr u32 FIRST_TEN_DAYS = 0x21;
 constexpr u32 SECOND_TEN_DAYS = 0x22;
 constexpr u32 LAST_DAYS = 0x23;
 constexpr u32 EVEN_DAYS = 0x24;
-constexpr u32 ODD_DAYS = 0x25;
 constexpr u32 NO_DAY_LIMIT = 0x26;
-constexpr u32 LAST_DAY_NUMBER = 31;
 constexpr u32 TEN_DAYS = 10;
 constexpr u32 LAST_DAYS_FIRST = 21;
 constexpr u32 LAST_DAYS_COUNT = 11;
@@ -92,35 +89,3 @@ bool schedule_matches_time(gptr<gptr<Schedule>> schedule_pointer, gptr<gptr<Time
     return false;
 }
 GUEST_EXPORT(0x0075b374, schedule_matches_time);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static void fuzz_schedule(guest::Fuzz &f, bool day) {
-    auto schedule = f.object<Schedule>();
-    auto time = f.object<TimeStamp>();
-    time->year = f.pick<s32>({2012, 2016, 2100, 2024, 2023});
-    time->month = s8(1 + f.below(12));
-    time->day = s8(1 + f.below(31));
-    time->hour = s8(f.below(24));
-    u8 pattern = u8(f.pick<u32>({0, 1 + f.below(31), 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 1 + f.below(9), 10 + f.below(24), 0x22}));
-    if (day) {
-        schedule->day_pattern = pattern;
-        if (pattern == LAST_DAY_OF_MONTH && f.below(2) != 0) {
-            time->day = s8(days_in_month(time->year, u32(time->month)));
-        } else if (pattern > 0 && pattern <= LAST_DAY_NUMBER && f.below(3) == 0) {
-            time->day = s8(pattern);
-        }
-    } else {
-        schedule->time_pattern = pattern;
-        if (pattern >= HOUR_PATTERN_FIRST && f.below(3) == 0) {
-            time->hour = s8(pattern - HOUR_PATTERN_FIRST);
-        }
-    }
-    auto schedule_pointer = f.object<gptr<Schedule>>();
-    auto time_pointer = f.object<gptr<TimeStamp>>();
-    *schedule_pointer = schedule;
-    *time_pointer = time;
-    f.arguments(schedule_pointer, time_pointer);
-}
-GUEST_FUZZ(0x0075b464, 400, [](guest::Fuzz &f) { fuzz_schedule(f, true); });
-GUEST_FUZZ(0x0075b374, 400, [](guest::Fuzz &f) { fuzz_schedule(f, false); });

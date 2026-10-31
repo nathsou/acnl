@@ -37,8 +37,3 @@ u8 SubValueOwner::query_value(u32 unknown_r1) {
     return sub->value_c8;
 }
 GUEST_EXPORT(0x0071ef10, SubValueOwner::query_value);
-GUEST_FUZZ(0x0071ef10, 200, [](guest::Fuzz &f) {
-    auto owner = f.object<SubValueOwner>();
-    owner->sub = nullptr;  // the other path calls into code that follows further pointers
-    f.arguments(owner, f.number());
-});

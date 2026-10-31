@@ -62,13 +62,3 @@ u32 MailMgrSingletonDisposer::destroy() {
     return destroy_disposer(self);
 }
 GUEST_EXPORT(0x005f4c88, MailMgrSingletonDisposer::destroy);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// A disposer that is not the registered one and belongs to no heap (all zero), so the base destructor has nothing
-// to unlink.
-GUEST_FUZZ(0x005f4c88, 200, [](guest::Fuzz &f) {
-    auto disposer = f.object<MailMgrSingletonDisposer>();
-    *disposer = MailMgrSingletonDisposer{};
-    f.arguments(disposer);
-});

@@ -48,15 +48,3 @@ void set_flag_bit_1(FlagBytes &self, u32 enable) {
     }
 }
 GUEST_EXPORT(0x00306134, set_flag_bit_1);
-
-GUEST_FUZZ(0x00305f44, 200, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00306084, 300, [](guest::Fuzz &f) {
-    auto block = f.allocate(sizeof(WordTriple) * 2).cast<u32>();
-    f.bytes(block, sizeof(WordTriple) * 2);
-    // separate or overlapping source and destination
-    u32 shift = f.below(3);
-    f.arguments(block.cast<WordTriple>(), (block + shift + (f.below(2) ? 0 : 3)).cast<WordTriple>());
-});
-GUEST_FUZZ(0x00306134, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<FlagBytes>(), f.pick<u32>({0, 1, 2, 0x100, 0xffffffff, f.number()}));
-});

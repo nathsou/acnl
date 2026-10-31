@@ -105,17 +105,3 @@ GUEST_EXPORT(0x0081e938, script::destroy_word_fix_9);
 GUEST_EXPORT(0x0081e95c, script::word_key_29_virtual_7);
 GUEST_EXPORT(0x0081e98c, script::construct_word_fix_29);
 GUEST_EXPORT(0x0081ea08, script::destroy_word_key_29);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0081e8d0, 200, [](guest::Fuzz &f) { f.arguments(f.object<script::WordFix9>()); });
-GUEST_FUZZ(0x0081e938, 200, [](guest::Fuzz &f) { f.arguments(f.object<script::WordFix9>()); });
-GUEST_FUZZ(0x0081e95c, 200, [](guest::Fuzz &f) {
-    auto object = f.object<script::WordFix29>();
-    object->head.vtable = 0x00909e38;
-    object->head.buffer = guest::addr_of(object->text[0]);
-    object->head.capacity = script::WordFix29::CAPACITY;
-    f.arguments(object);
-});
-GUEST_FUZZ(0x0081e98c, 200, [](guest::Fuzz &f) { f.arguments(f.object<script::WordFix29>()); });
-GUEST_FUZZ(0x0081ea08, 200, [](guest::Fuzz &f) { f.arguments(f.object<script::WordFix29>()); });

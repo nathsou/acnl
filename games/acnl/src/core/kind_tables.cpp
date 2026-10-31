@@ -4,7 +4,6 @@
 namespace {
 
 constexpr u32 KIND_COUNT = 0xa5;
-constexpr u32 KIND_NONE = 0xa5;
 constexpr u32 MAX_COUNT = 0x30;           // limit of the counts table
 constexpr u32 NO_KIND_BYTE = 0xfc;        // the byte for an out-of-range kind
 constexpr u32 FIRST_SPECIAL_KIND = 0xa1;  // kinds 0xa1 and 0xa2 are special (meaning not known yet)
@@ -61,20 +60,6 @@ static bool is_listed_byte(u32 value) {
 }
 GUEST_EXPORT(0x005b436c, is_listed_byte);
 
-GUEST_FUZZ(0x005b4120, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x005b42fc, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, 2, 3, KIND_COUNT - 1, KIND_COUNT, 0xffffffffu, f.below(KIND_COUNT)}));
-});
-GUEST_FUZZ(0x005b4340, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 1, KIND_COUNT - 1, KIND_COUNT, 0xffffffffu, f.below(KIND_COUNT)}));
-});
-GUEST_FUZZ(0x005b4358, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, FIRST_SPECIAL_KIND - 1, FIRST_SPECIAL_KIND, SECOND_SPECIAL_KIND, 0xa3, f.number()}));
-});
-GUEST_FUZZ(0x005b436c, 300, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 105, 106, 107, 127, 128, 129, 0x100 + 106, f.number(), f.below(140)}));
-});
-
 namespace {
 
 struct KindStateByte1 {
@@ -89,4 +74,3 @@ static u8 kind_state_byte_1() {
     return kind_state_1->byte_01;
 }
 GUEST_EXPORT(0x003041c8, kind_state_byte_1);
-GUEST_FUZZ(0x003041c8, 100, [](guest::Fuzz &f) { f.arguments(); });

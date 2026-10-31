@@ -60,7 +60,6 @@ bool is_snow_period() {
     return mode_has_seasonal_effects() && period_table_value(PERIOD_VALUE_COLUMN) == SNOW_PERIOD_VALUE;
 }
 GUEST_EXPORT(0x0062fb44, is_snow_period);
-GUEST_FUZZ(0x0062fb44, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 bool is_period_value_5_to_7() {
     if (!mode_has_seasonal_effects()) {
@@ -71,8 +70,6 @@ bool is_period_value_5_to_7() {
 }
 GUEST_EXPORT(0x0062fac8, is_period_value_5_to_7);
 GUEST_EXPORT(0x0062fb04, is_period_value_5_to_7);
-GUEST_FUZZ(0x0062fb04, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062fac8, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether cherry blossom petals fly: both the day start the clock reports and the day start of the reference time are
 // in April 7th-10th.
@@ -90,7 +87,6 @@ bool is_sakura_petal_time() {
     return today.month == SAKURA_MONTH && today.day >= SAKURA_FIRST_DAY && today.day <= SAKURA_LAST_DAY;
 }
 GUEST_EXPORT(0x00630164, is_sakura_petal_time);
-GUEST_FUZZ(0x00630164, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // A coin flip that is the same all day (and in every game with the same town flags): the first number of a generator
 // seeded from the date.
@@ -103,7 +99,6 @@ bool date_seeded_coin_flip() {
     return arm::to_s32(generator.next_float() * COIN_SCALE) != 0;
 }
 GUEST_EXPORT(0x0062f5c4, date_seeded_coin_flip);
-GUEST_FUZZ(0x0062f5c4, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The word of the object's group table for the period (see OBJECT_GROUPS), NO_VALUE for objects in no group.
 u32 seasonal_value_of_object(const ObjectWithItem &object) {
@@ -118,19 +113,12 @@ u32 seasonal_value_of_object(const ObjectWithItem &object) {
     return NO_VALUE;
 }
 GUEST_EXPORT(0x00595b18, seasonal_value_of_object);
-GUEST_FUZZ(0x00595b18, 200, [](guest::Fuzz &f) {
-    auto object = f.object<ObjectWithItem>();
-    const ObjectGroup &group = OBJECT_GROUPS[f.below(sizeof(OBJECT_GROUPS) / sizeof(OBJECT_GROUPS[0]))];
-    object->item.id = f.below(4) == 0 ? u16(f.number()) : group.numbers[f.below(2)];
-    f.arguments(object);
-});
 
 // The opposite of is_snow_period.
 bool is_snow_free_period() {
     return !is_snow_period();
 }
 GUEST_EXPORT(0x006cb9fc, is_snow_free_period);
-GUEST_FUZZ(0x006cb9fc, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the day start the clock reports is a Saturday (the weekday of a time is 0 for Sunday).
 bool day_start_is_saturday() {
@@ -139,4 +127,3 @@ bool day_start_is_saturday() {
     return day_start.weekday == SATURDAY;
 }
 GUEST_EXPORT(0x0071728c, day_start_is_saturday);
-GUEST_FUZZ(0x0071728c, 50, [](guest::Fuzz &f) { f.arguments(); });

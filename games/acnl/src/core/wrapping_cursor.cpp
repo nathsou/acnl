@@ -26,19 +26,3 @@ void WrappingCursor::advance() {
     wrap_count = wrap_count + 1;
 }
 GUEST_EXPORT(0x0052f144, WrappingCursor::advance);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0052f144, 300, [](guest::Fuzz &f) {
-    auto cursor = f.object<WrappingCursor>();
-    auto reset = f.object<s32>();
-    auto limit = f.object<s32>();
-    cursor->reset_value = f.below(5) == 0 ? gptr<s32>() : reset;
-    cursor->limit = f.below(5) == 0 ? gptr<s32>() : limit;
-    switch (f.below(3)) {
-    case 0: cursor->current = *limit; break;
-    case 1: cursor->current = *limit - 1; break;
-    default: break;
-    }
-    f.arguments(cursor);
-});

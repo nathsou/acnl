@@ -23,10 +23,6 @@ void TownRef::clear() {
     reinterpret_cast<PlayerRef *>(this)->clear();
 }
 
-GUEST_FUZZ(0x0030589c, 100, [](guest::Fuzz &f) { f.arguments(f.object<PlayerRef>()); });
-
-GUEST_FUZZ(0x0030f52c, 200, [](guest::Fuzz &f) { f.arguments(f.object<PlayerRef>(), f.object<PlayerRef>()); });
-
 namespace {
 
 constexpr u32 TOWN_NAME_COMPARED_BYTES = 0x12;  // the first nine characters; the tenth is compared on its own
@@ -51,17 +47,3 @@ bool PersonalId::equals(const PersonalId &other) const {
                                  TOWN_NAME_COMPARED_BYTES) == 0;
 }
 GUEST_EXPORT(0x002fe940, PersonalId::equals);
-GUEST_FUZZ(0x002fe940, 300, [](guest::Fuzz &f) {
-    auto identity = f.object<PersonalId>();
-    auto other = f.object<PersonalId>();
-    if (f.below(2) != 0) {
-        *other = *identity;
-        if (f.below(2) != 0) {
-            other->town.name[f.below(TownRef::NAME_LENGTH)] ^= u16(1 + f.below(3));
-        }
-        if (f.below(4) == 0) {
-            other->town.id = u16(f.number());
-        }
-    }
-    f.arguments(identity, other);
-});

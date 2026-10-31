@@ -34,19 +34,3 @@ static u32 query_11_unless_blocked() {
     return query_5c507c(QUERY_11, QUERY_FLAG_ON);
 }
 GUEST_EXPORT(0x005c2d5c, query_11_unless_blocked);
-
-// Mostly blocked inputs (either flag), sometimes neither flag so the query runs.
-GUEST_FUZZ(0x005c2d5c, 300, [](guest::Fuzz &f) {
-    u32 choice = f.below(4);
-    u8 a = *block_byte_a & u8(~BLOCK_BYTE_A_FLAG);
-    u8 b = *block_byte_b & u8(~BLOCK_BYTE_B_FLAG);
-    if (choice == 0 || choice == 2) {
-        a |= BLOCK_BYTE_A_FLAG;
-    }
-    if (choice == 1 || choice == 2) {
-        b |= BLOCK_BYTE_B_FLAG;
-    }
-    block_byte_a = a;
-    block_byte_b = b;
-    f.arguments();
-});

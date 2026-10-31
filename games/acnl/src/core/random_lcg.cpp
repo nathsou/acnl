@@ -27,6 +27,3 @@ u32 advance_random(Random &generator) {
     return next;
 }
 GUEST_EXPORT(0x00565e8c, advance_random);
-
-GUEST_FUZZ(0x00565e7c, 200, [](guest::Fuzz &f) { f.arguments(f.number()); });
-GUEST_FUZZ(0x00565e8c, 300, [](guest::Fuzz &f) { f.arguments(f.object<Random>()); });

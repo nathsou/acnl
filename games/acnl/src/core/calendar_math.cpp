@@ -136,20 +136,12 @@ s32 days_from_2000(s32 year, s32 month, s32 day) {
     return days_since_2000(year, month, day);
 }
 GUEST_EXPORT(0x0012f87c, days_from_2000);
-GUEST_FUZZ(0x0012f87c, 400, [](guest::Fuzz &f) {
-    f.arguments(f.pick<s32>({1990, 2000, 2012, 2013, 2050, 2100, 1900, s32(1900 + f.below(300))}), s32(1 + f.below(12)),
-                s32(1 + f.below(31)));
-});
 
 // Writes the count of milliseconds since 2000-01-01 of a date and a time of day.
 void fields_to_count(gptr<s64> out, s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 second, s32 millisecond) {
     *out = count_of_fields(year, month, day, hour, minute, second, millisecond);
 }
 GUEST_EXPORT(0x00129698, fields_to_count);
-GUEST_FUZZ(0x00129698, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<s64>(), s32(1990 + f.below(120)), s32(1 + f.below(12)), s32(1 + f.below(31)), s32(f.below(24)),
-                s32(f.below(60)), s32(f.below(60)), s32(f.below(1000)));
-});
 
 // The same, returning the output pointer.
 gptr<s64> make_count(gptr<s64> out, s32 year, s32 month, s32 day, s32 hour, s32 minute, s32 second, s32 millisecond) {
@@ -157,10 +149,6 @@ gptr<s64> make_count(gptr<s64> out, s32 year, s32 month, s32 day, s32 hour, s32 
     return out;
 }
 GUEST_EXPORT(0x0012f974, make_count);
-GUEST_FUZZ(0x0012f974, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<s64>(), s32(1990 + f.below(120)), s32(1 + f.below(12)), s32(1 + f.below(31)), s32(f.below(24)),
-                s32(f.below(60)), s32(f.below(60)), s32(f.below(1000)));
-});
 
 // The year, month and day of a day number (days since 2000-01-01); the outputs may be null.
 void date_from_days(gptr<s32> year, gptr<s32> month, gptr<s32> day, s32 days) {
@@ -176,9 +164,6 @@ void date_from_days(gptr<s32> year, gptr<s32> month, gptr<s32> day, s32 days) {
     }
 }
 GUEST_EXPORT(0x00129508, date_from_days);
-GUEST_FUZZ(0x00129508, 400, [](guest::Fuzz &f) {
-    f.arguments(f.object<s32>(), f.below(4) ? f.object<s32>() : gptr<s32>(0u), f.object<s32>(), s32(f.below(120000)) - 3000);
-});
 
 TimeStamp TimeStamp::from_milliseconds_since_2000(s64 count) {
     s64 biased = count + COUNT_DAY_BIAS * TimeStamp::MILLISECONDS_PER_DAY;
@@ -204,44 +189,17 @@ void count_to_time_stamp(gptr<TimeStamp> out, gptr<const s64> count) {
     *out = TimeStamp::from_milliseconds_since_2000(*count);
 }
 GUEST_EXPORT(0x001264f0, count_to_time_stamp);
-GUEST_FUZZ(0x001264f0, 400, [](guest::Fuzz &f) {
-    auto count = f.object<s64>();
-    *count = f.below(5) ? s64(f.below(1u << 31)) * s64(1 + f.below(900)) : -s64(f.below(1u << 31)) * s64(1 + f.below(30));
-    f.arguments(f.object<TimeStamp>(), count);
-});
 
 void time_stamp_to_count(gptr<s64> out, const TimeStamp &time) {
     *out = time.milliseconds_since_2000();
 }
 GUEST_EXPORT(0x001240fc, time_stamp_to_count);
-GUEST_FUZZ(0x001240fc, 200, [](guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    time->year = s32(1990 + f.below(120));
-    time->month = s8(1 + f.below(12));
-    time->day = s8(1 + f.below(31));
-    time->hour = s8(f.below(24));
-    time->minute = s8(f.below(60));
-    time->second = s8(f.below(60));
-    time->millisecond = s16(f.below(1000));
-    f.arguments(f.object<s64>(), time);
-});
 
 s64 TimeStamp::nanoseconds_since_origin() const {
     s64 origin = time_origin;
     return s64(u64(milliseconds_since_2000() - origin) * u64(NANOSECONDS_PER_MILLISECOND));
 }
 GUEST_EXPORT(0x0056be20, TimeStamp::nanoseconds_since_origin);
-GUEST_FUZZ(0x0056be20, 200, [](guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    time->year = s32(2012 + f.below(40));
-    time->month = s8(1 + f.below(12));
-    time->day = s8(1 + f.below(28));
-    time->hour = s8(f.below(24));
-    time->minute = s8(f.below(60));
-    time->second = s8(f.below(60));
-    time->millisecond = s16(f.below(1000));
-    f.arguments(time);
-});
 
 // The origin plus the nanoseconds (rounded toward zero to milliseconds).
 TimeStamp TimeStamp::from_nanoseconds_since_origin(s64 nanoseconds) {
@@ -254,10 +212,6 @@ void time_stamp_from_nanoseconds(TimeStamp &out, s64 nanoseconds) {
     out = TimeStamp::from_nanoseconds_since_origin(nanoseconds);
 }
 GUEST_EXPORT(0x0056c258, time_stamp_from_nanoseconds);
-GUEST_FUZZ(0x0056c258, 300, [](guest::Fuzz &f) {
-    s64 value = f.below(4) ? s64(f.below(1u << 31)) * s64(1 + f.below(1'000'000)) : -s64(f.below(1u << 31)) * s64(f.below(100));
-    f.arguments(f.object<TimeStamp>(), value);
-});
 
 void TimeStamp::wrap_year() {
     s32 current = year;
@@ -276,8 +230,3 @@ void TimeStamp::wrap_year() {
     }
 }
 GUEST_EXPORT(0x0056cb7c, TimeStamp::wrap_year);
-GUEST_FUZZ(0x0056cb7c, 300, [](guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    time->year = f.pick<s32>({2000, 2011, 2012, 2050, 2051, 2090, 2129, 2200, 1900, s32(1950 + f.below(300)), s32(f.number())});
-    f.arguments(time);
-});

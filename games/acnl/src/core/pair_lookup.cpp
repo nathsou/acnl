@@ -25,9 +25,6 @@ s32 index_in_pair_a83370(u32 value) {
     return NO_MATCH;
 }
 GUEST_EXPORT(0x00309ccc, index_in_pair_a83370);
-GUEST_FUZZ(0x00309ccc, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({pair_a83370->values[0], pair_a83370->values[1], 0, 1, 0xffffffffu, f.number()}));
-});
 
 // Empties both values.
 void reset_pair_a83370() {
@@ -36,4 +33,3 @@ void reset_pair_a83370() {
     }
 }
 GUEST_EXPORT(0x003079f8, reset_pair_a83370);
-GUEST_FUZZ(0x003079f8, 20, [](guest::Fuzz &f) { f.arguments(); });

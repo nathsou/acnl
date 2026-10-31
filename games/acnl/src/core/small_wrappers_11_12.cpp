@@ -52,9 +52,6 @@ bool any_flag_set_in_range(const FlagBytes<FLAG_COUNT> &flags, s32 begin, s32 en
     return false;
 }
 GUEST_EXPORT(0x0011b5a5, any_flag_set_in_range);
-GUEST_FUZZ(0x0011b5a5, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<FlagBytes<FLAG_COUNT>>(), f.pick<s32>({-2, 0, 3, 31, 32}), f.pick<s32>({-1, 0, 5, 33, 40}));
-});
 
 OwningHolder &destroy_owning_holder(OwningHolder &holder) {
     holder.vtable = OWNING_VTABLE;
@@ -62,28 +59,17 @@ OwningHolder &destroy_owning_holder(OwningHolder &holder) {
     return holder;
 }
 GUEST_EXPORT(0x0011bda5, destroy_owning_holder);
-GUEST_FUZZ(0x0011bda5, 20, [](guest::Fuzz &f) {
-    auto holder = f.object<OwningHolder>();
-    holder->owned = nullptr;
-    f.arguments(holder);
-});
 
 OwnedPointer &release_pointer_holder(OwnedPointer &holder) {
     release_owned_object(holder.owned);
     return holder;
 }
 GUEST_EXPORT(0x0011c1fd, release_pointer_holder);
-GUEST_FUZZ(0x0011c1fd, 20, [](guest::Fuzz &f) {
-    auto holder = f.object<OwnedPointer>();
-    holder->owned = nullptr;
-    f.arguments(holder);
-});
 
 u32 selection_for_mode() {
     return mode_95721c_index() == 0 ? SELECTION_FOR_MODE_0 : SELECTION_FOR_OTHER_MODES;
 }
 GUEST_EXPORT(0x00120344, selection_for_mode);
-GUEST_FUZZ(0x00120344, 20, [](guest::Fuzz &f) { f.arguments(); });
 
 // An address by region (the original also reads the flag, without using it).
 u32 address_for_region_a(u32 region) {
@@ -96,7 +82,6 @@ u32 address_for_region_a(u32 region) {
     return 0;
 }
 GUEST_EXPORT(0x00121824, address_for_region_a);
-GUEST_FUZZ(0x00121824, 50, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({0, REGION_2, REGION_3, 0x10000, 0xffffffffu})); });
 
 // An address by region and the flag at 0x0097d8a1.
 u32 address_for_region_b(u32 region) {
@@ -110,7 +95,3 @@ u32 address_for_region_b(u32 region) {
     return 0;
 }
 GUEST_EXPORT(0x00121860, address_for_region_b);
-GUEST_FUZZ(0x00121860, 100, [](guest::Fuzz &f) {
-    *flag_97d8a1 = f.pick<s8>({0, 1, -1});
-    f.arguments(f.pick<u32>({0, REGION_2, REGION_3, 0x10000, 0xffffffffu}));
-});

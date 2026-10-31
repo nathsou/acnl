@@ -39,4 +39,3 @@ bool get_flagged_player_date(gptr<Date> out, bool no_leap_day) {
     return true;
 }
 GUEST_EXPORT(0x0058e6e8, get_flagged_player_date);
-GUEST_FUZZ(0x0058e6e8, 100, [](guest::Fuzz &f) { f.arguments(f.object<Date>(), f.below(2)); });

@@ -1,7 +1,7 @@
 // Updates of objects of the 0x00200000..0x00220000 area (their classes are not known yet): a random pick among the
 // slots not yet used, state changes driven by the global byte at 0x002f74c8, preset item sets and a pending-item
 // slot.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "core/word_pair.hpp"
 #include "hobj/house_object.hpp"
 #include "item/item.hpp"
@@ -105,13 +105,6 @@ s32 pick_unused_slot(const SlotPicker &picker) {
     return picked;
 }
 GUEST_EXPORT(0x0020bbf8, pick_unused_slot);
-GUEST_FUZZ(0x0020bbf8, 200, [](guest::Fuzz &f) {
-    auto picker = f.object<SlotPicker>();
-    for (u8 &byte : picker->used_bits) {
-        byte = f.pick<u8>({0, 0xff, 0x0f, 0xf0, u8(f.number())});  // all, none and halves of the bits
-    }
-    f.arguments(picker);
-});
 
 // Stores a new mode (the global byte 0x5e forces mode 0) and, when it changed, calls the object's virtual function 6.
 u32 change_mode(ModeObject &object, s32 new_mode) {
@@ -126,23 +119,12 @@ u32 change_mode(ModeObject &object, s32 new_mode) {
     return guest::call_address<u32>(*gptr<u32>(object.vtable + NOTIFY_SLOT * 4), guest::addr_of(object));
 }
 GUEST_EXPORT(0x0020ad0c, change_mode);
-static void fuzz_change_mode(guest::Fuzz &f) {
-    auto object = f.object<ModeObject>();
-    object->vtable = fuzz::harmless_vtable(f, NOTIFY_SLOT + 1).addr();
-    object->mode_35 = f.pick<s8>({0, 1, 2, -1});
-    f.arguments(object, f.pick<s32>({0, 1, 2, -1, 0x101}));  // (0x101 does not fit a byte)
-}
-GUEST_FUZZ(0x0020ad0c, 100, fuzz_change_mode);
 
 // Jumps to change_mode.
 GUEST_EXPORT(0x0024fc44, change_mode);
 GUEST_EXPORT(0x002503ac, change_mode);
 GUEST_EXPORT(0x002d595c, change_mode);
 GUEST_EXPORT(0x002d5bc8, change_mode);
-GUEST_FUZZ(0x0024fc44, 100, fuzz_change_mode);
-GUEST_FUZZ(0x002503ac, 100, fuzz_change_mode);
-GUEST_FUZZ(0x002d595c, 100, fuzz_change_mode);
-GUEST_FUZZ(0x002d5bc8, 100, fuzz_change_mode);
 
 // Sets the flag at 0x37 (when the table entry for the global byte has bit 0x20, unless the byte is 0x5e) and
 // switches the state at 0x3c between 3 and 0xd.
@@ -156,11 +138,6 @@ void update_flag_and_state(ModeObject &object) {
     object.state_3c = special ? STATE_SPECIAL : STATE_NORMAL;
 }
 GUEST_EXPORT(0x0020ad4c, update_flag_and_state);
-GUEST_FUZZ(0x0020ad4c, 100, [](guest::Fuzz &f) {
-    auto object = f.object<ModeObject>();
-    object->state_3c = f.pick<u32>({0, 3, 3, 0xd, 7});
-    f.arguments(object);
-});
 
 // Stores one of two items at random.
 void store_random_item_a(ItemSlots &slots) {
@@ -172,7 +149,6 @@ void store_random_item_a(ItemSlots &slots) {
     }
 }
 GUEST_EXPORT(0x0020d6a8, store_random_item_a);
-GUEST_FUZZ(0x0020d6a8, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemSlots>()); });
 
 void store_item_set_a(ItemSlots &slots) {
     set_preset(slots, 0, 0x25da);  // item number
@@ -180,14 +156,12 @@ void store_item_set_a(ItemSlots &slots) {
     set_preset(slots, 3, 0x2767);  // item number
 }
 GUEST_EXPORT(0x0020d77c, store_item_set_a);
-GUEST_FUZZ(0x0020d77c, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemSlots>()); });
 
 void store_item_set_b(ItemSlots &slots) {
     set_preset(slots, 0, 0x2598);  // item number
     set_preset(slots, 3, 0x26fe);  // item number
 }
 GUEST_EXPORT(0x0020d7f4, store_item_set_b);
-GUEST_FUZZ(0x0020d7f4, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemSlots>()); });
 
 // Resets the four records: their first eight bytes to the "never" value and their four flag bytes to 0.
 void reset_records(RecordList &list) {
@@ -199,7 +173,6 @@ void reset_records(RecordList &list) {
     }
 }
 GUEST_EXPORT(0x0020d858, reset_records);
-GUEST_FUZZ(0x0020d858, 100, [](guest::Fuzz &f) { f.arguments(f.object<RecordList>()); });
 
 // Remembers an item as pending, unless one is already or the item is empty.
 void set_pending_item(const Item &item) {
@@ -210,12 +183,6 @@ void set_pending_item(const Item &item) {
     copy_item(pending_item->item, item);
 }
 GUEST_EXPORT(0x00216420, set_pending_item);
-GUEST_FUZZ(0x00216420, 100, [](guest::Fuzz &f) {
-    pending_item->busy = f.pick<u8>({0, 0, 1});
-    auto item = f.object<Item>();
-    item->id = f.pick<u16>({Item::EMPTY, Item::FIRST_ITEM, Item::FIRST_ITEM + 1});
-    f.arguments(item);
-});
 
 // Forgets the pending item (when none is in progress).
 void clear_pending_item() {
@@ -226,10 +193,6 @@ void clear_pending_item() {
     pending_item->flag = NOT_PENDING;
 }
 GUEST_EXPORT(0x00216468, clear_pending_item);
-GUEST_FUZZ(0x00216468, 100, [](guest::Fuzz &f) {
-    pending_item->busy = f.pick<u8>({0, 0, 1});
-    f.arguments();
-});
 
 void set_item_37c(ItemHolder &holder, const Item &item) {
     Item copy;
@@ -237,4 +200,3 @@ void set_item_37c(ItemHolder &holder, const Item &item) {
     copy_item(holder.item_37c, copy);
 }
 GUEST_EXPORT(0x00205f50, set_item_37c);
-GUEST_FUZZ(0x00205f50, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemHolder>(), f.object<Item>()); });

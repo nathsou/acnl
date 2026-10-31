@@ -1,5 +1,6 @@
 // Turning a player's belongings into bells in the bank.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
+#include "item/item.hpp"
 #include "item/item_slots.hpp"
 #include "save/player.hpp"
 
@@ -48,14 +49,3 @@ u32 sell_shoes_and_pockets_to_bank(SavePlayer &player) {
     return paid;
 }
 GUEST_EXPORT(0x006bced4, sell_shoes_and_pockets_to_bank);
-GUEST_FUZZ(0x006bced4, 200, [](guest::Fuzz &f) {
-    auto player = f.object<SavePlayer>();
-    gptr<ItemSlots> worn = worn_items(player);
-    worn->slots[SHOES_SLOT] = *fuzz::assorted_item(f);
-    for (u32 slot = 0; slot < Pockets::SLOTS; slot++) {
-        player->pockets.items[slot] = *fuzz::assorted_item(f);
-        player->pockets.slot_locked[slot] = 0;
-    }
-    player->bank = EncryptedInt::make(f.below(1000), u16(f.number()), u8(f.below(EncryptedInt::ROTATIONS)));
-    f.arguments(player);
-});

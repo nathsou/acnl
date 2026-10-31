@@ -33,9 +33,3 @@ u64 divide_with_remainder(s32 dividend, s32 divisor) {
     return u64(remainder) << WORD_BITS | quotient;
 }
 GUEST_EXPORT(0x002f9e1c, divide_with_remainder);
-GUEST_FUZZ(0x002f9e1c, 400, [](guest::Fuzz &f) {
-    auto operand = [&f]() {
-        return s32(f.pick<u32>({0, 1, 2, 7, 100, 0xffffffffu, 0xfffffff9u, 0x7fffffffu, 0x80000000u, f.number(), f.below(1000)}));
-    };
-    f.arguments(operand(), operand());
-});

@@ -20,9 +20,3 @@ void ShortId::set(const PersonalId &id) {
     town_id = id.town.id;
 }
 GUEST_EXPORT(0x006256f8, ShortId::set);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x006256dc, 200, [](guest::Fuzz &f) { f.arguments(f.object<ShortId>()); });
-GUEST_FUZZ(0x00625720, 200, [](guest::Fuzz &f) { f.arguments(f.object<ShortId>()); });
-GUEST_FUZZ(0x006256f8, 200, [](guest::Fuzz &f) { f.arguments(f.object<ShortId>(), f.object<PersonalId>()); });

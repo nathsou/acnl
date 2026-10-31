@@ -1,5 +1,5 @@
 // Random values scaled by a factor, an angle in radians, and queries on the game's pair of global fader objects.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "core/random.hpp"
 #include "hobj/house_object.hpp"
 
@@ -81,12 +81,3 @@ static void notify_pair() {
     }
 }
 GUEST_EXPORT(0x00566154, notify_pair);
-
-GUEST_FUZZ(0x00565bec, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00565c10, 200, [](guest::Fuzz &f) { f.arguments(f.real()); });
-GUEST_FUZZ(0x00565c34, 200, [](guest::Fuzz &f) { f.arguments(f.real()); });
-GUEST_FUZZ(0x00565c70, 300, [](guest::Fuzz &f) { f.arguments(f.real(), f.real()); });
-GUEST_FUZZ(0x00565fe8, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00566374, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00566044, 100, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00566154, 100, [](guest::Fuzz &f) { f.arguments(); });

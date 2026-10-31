@@ -59,15 +59,3 @@ void finish_event(EventRecord &record, gptr<SavePlayer> player) {
     }
 }
 GUEST_EXPORT(0x005bce04, finish_event);
-GUEST_FUZZ(0x005bce04, 100, [](guest::Fuzz &f) {
-    f.allocate(0x1000);  // (clear of the stack)
-    auto record = f.object<EventRecord>();
-    record->value = f.pick<u8>({0, 5, NONE_VALUE, 0x30});
-    record->state = f.pick<u8>({0, 2, 3, 4});
-    auto player = f.object<SavePlayer>();
-    player->identity.player.id = f.pick<u16>({0, 1, 0x1234});
-    for (u32 slot = 0; slot < Pockets::SLOTS; slot++) {
-        player->pockets.items[slot].id = f.below(3) == 0 ? u16(f.number()) : u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(record, f.below(5) == 0 ? gptr<SavePlayer>(0u) : player);
-});

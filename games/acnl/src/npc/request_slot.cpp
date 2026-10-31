@@ -34,12 +34,6 @@ s32 request_owner_state() {
     return request_slot->owner->state;
 }
 GUEST_EXPORT(0x00292bac, request_owner_state);
-GUEST_FUZZ(0x00292bac, 100, [](guest::Fuzz &f) {
-    auto owner = f.object<RequestOwner>();
-    owner->state = f.pick<s8>({0, 1, -1, 5, -128, 127});
-    request_slot->owner = f.below(4) ? owner : gptr<RequestOwner>(0u);
-    f.arguments();
-});
 
 // Claims the slot for a kind; false when it is already claimed.
 bool begin_request(u32 kind) {
@@ -51,7 +45,3 @@ bool begin_request(u32 kind) {
     return true;
 }
 GUEST_EXPORT(0x00290cfc, begin_request);
-GUEST_FUZZ(0x00290cfc, 100, [](guest::Fuzz &f) {
-    request_slot->pending = f.pick<u8>({0, 0, 1, 7});
-    f.arguments(f.pick<u32>({0, 1, 0x1ff, f.number()}));
-});

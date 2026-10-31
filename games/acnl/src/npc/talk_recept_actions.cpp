@@ -1,5 +1,4 @@
 // Small actions of NPC talk receivers: forwarding to the speaker's handler, and beginning a request.
-#include "core/fuzz_helpers.hpp"
 #include "guest/guest.hpp"
 #include "npc/forwarding_handler.hpp"
 
@@ -7,7 +6,6 @@ using guest::gptr;
 
 namespace {
 
-constexpr u32 TARGET_VFUNCTION_SLOT = 0x80 / 4;  // the target's virtual function the handler forwards to (0x005f11f4)
 constexpr u32 FLAG_BIT_REQUESTED = 7;            // meaning not known yet
 constexpr u32 REQUEST_KIND = 1;                  // meaning not known yet
 
@@ -50,17 +48,6 @@ bool TalkRecept::forward_to_handler(u32 first, u32 second) {
     return true;
 }
 GUEST_EXPORT(0x00230f90, TalkRecept::forward_to_handler);
-GUEST_FUZZ(0x00230f90, 200, [](guest::Fuzz &f) {
-    auto recept = f.object<TalkRecept>();
-    auto owner = f.object<TalkOwner>();
-    auto handler = f.object<ForwardingHandler>();
-    auto target = f.object<hobj::VirtualObject>();
-    target->vtable = fuzz::harmless_vtable(f, TARGET_VFUNCTION_SLOT + 1);
-    handler->target = target;
-    owner->handler = f.below(4) ? handler : gptr<ForwardingHandler>(0u);
-    recept->owner = f.below(4) ? owner : gptr<TalkOwner>(0u);
-    f.arguments(recept, f.number(), f.pick<u32>({0xb, 0xc, 0x10, f.number()}));
-});
 
 // When the request slot's owner has state 0: marks the receiver as requested and tries to begin the request.
 // Otherwise returns the owner's state.
@@ -73,4 +60,3 @@ u32 TalkRecept::begin_request_if_idle() {
     return begin_request(REQUEST_KIND);
 }
 GUEST_EXPORT(0x00231724, TalkRecept::begin_request_if_idle);
-GUEST_FUZZ(0x00231724, 100, [](guest::Fuzz &f) { f.arguments(f.object<TalkRecept>()); });

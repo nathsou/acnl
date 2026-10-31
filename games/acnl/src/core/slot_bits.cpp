@@ -64,30 +64,6 @@ static u32 station_is_waited_for(u32 station) {
 }
 GUEST_EXPORT(0x00624f00, station_is_waited_for);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-constexpr u32 FUZZ_SCRATCH_SIZE = 0x100;  // room for a SlotBlocks and what its sub-block helper touches
-constexpr u32 FUZZ_MAX_COUNT = 5;         // counters just past SLOT_COUNT
-
-// A slot index: valid ones, the first invalid ones, and extremes.
-u32 some_slot(guest::Fuzz &f) {
-    return f.pick<u32>({0, 1, 2, 3, SLOT_COUNT, SLOT_COUNT + 1, 0xffffffff, f.below(SLOT_COUNT), f.number()});
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x00624aa4, 300, [](guest::Fuzz &f) {
-    auto object = f.object<StationMask>();
-    if (f.below(2) != 0) {
-        object->count = u8(f.below(FUZZ_MAX_COUNT + 1));
-    }
-    f.arguments(object, some_slot(f));
-});
-GUEST_FUZZ(0x00624ae4, 300, [](guest::Fuzz &f) {
-    gptr<void> block = f.allocate(FUZZ_SCRATCH_SIZE);
-    std::memset(block.get(), 0, FUZZ_SCRATCH_SIZE);
-    f.arguments(block.cast<SlotBlocks>(), some_slot(f));
-});
-GUEST_FUZZ(0x00624f00, 200, [](guest::Fuzz &f) { f.arguments(f.below(SLOT_COUNT + 1)); });

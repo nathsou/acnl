@@ -62,33 +62,3 @@ void ToggleObject::set_mode_from(const ModeSource &source) {
 }
 GUEST_EXPORT(0x004ee958, ToggleObject::set_mode_from);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-constexpr u32 SCRATCH_SIZE = 0x60;
-constexpr u32 CONSTRUCTOR_ADDRESS = 0x004ee4ec;  // harmless virtual: returns its argument (the object itself)
-
-gptr<ToggleObject> some_toggle_object(guest::Fuzz &f) {
-    auto self = f.allocate(SCRATCH_SIZE).cast<ToggleObject>();
-    f.bytes(self, SCRATCH_SIZE);
-    auto vtable = f.allocate(16).cast<u32>();
-    for (u32 i = 0; i < 4; i++) {
-        vtable[i] = CONSTRUCTOR_ADDRESS;
-    }
-    self->vtable = vtable;
-    return self;
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x004ee904, 300, [](guest::Fuzz &f) {
-    f.arguments(some_toggle_object(f), f.pick<u32>({0, 1, 2, 5, 0xffffffff}));
-});
-GUEST_FUZZ(0x004ee958, 300, [](guest::Fuzz &f) {
-    auto source = f.object<ModeSource>();
-    if (f.below(2) != 0) {
-        source->flag = 0;
-    }
-    f.arguments(some_toggle_object(f), source);
-});

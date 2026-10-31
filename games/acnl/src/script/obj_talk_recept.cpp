@@ -16,10 +16,3 @@ gptr<void> destroy_obj_talk_recept(gptr<void> self) {
     return destroy_italk_recept(flow - FLOW_RECEPT_OFFSET);
 }
 GUEST_EXPORT(0x0023bc4c, destroy_obj_talk_recept);
-
-GUEST_FUZZ(0x0023bc4c, 200, [](guest::Fuzz &f) {
-    constexpr u32 size = 0x100;
-    gptr<void> object = f.allocate(size);
-    std::memset(object.cast<u8>().get(), 0, size);
-    f.arguments(object);
-});

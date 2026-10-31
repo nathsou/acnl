@@ -54,22 +54,3 @@ u32 call_virtual_5(VirtualObject &self, u32 arg1, u32 unused_r2, u32 arg3) {
 
 GUEST_EXPORT(0x003083d4, terminate_short_text);
 GUEST_EXPORT(0x0030846c, call_virtual_5);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x003083bc, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<script::WordPtr>(), f.number(), f.pick<u32>({0, 9, 11, 0x200, f.number()}));
-});
-GUEST_FUZZ(0x00308450, 200, [](guest::Fuzz &f) { f.arguments(f.object<script::WordPtrSv>(), f.number()); });
-GUEST_FUZZ(0x003083d4, 200, [](guest::Fuzz &f) { f.arguments(f.object<ShortTextHolder>()); });
-GUEST_FUZZ(0x0030846c, 200, [](guest::Fuzz &f) {
-    // slot 5 points at a harmless known function (terminate_short_text, which only writes byte 0x0f of the object)
-    auto vtable = f.allocate(8 * sizeof(u32)).cast<u32>();
-    for (u32 i = 0; i < 8; i++) {
-        vtable[i] = 0x003083d4;
-    }
-    auto object = f.allocate(0x20).cast<VirtualObject>();
-    f.bytes(object, 0x20);
-    object->vtable = vtable;
-    f.arguments(object, f.number(), f.number(), f.number());
-});

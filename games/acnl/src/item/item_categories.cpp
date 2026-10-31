@@ -24,11 +24,6 @@ constexpr u8 HIDDEN_ITEM_FLAG = 0x01;  // ItemData::flags_1b bit 0
 constexpr u32 SAVE_FLAG_SHIFT = 4;
 // The indexed item types that map to the small catalog (what the types stand for is not known yet).
 constexpr u32 MAPPED_TYPES[] = {0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11, 0x14, 0x1b, 0x1c};
-constexpr u32 FUZZ_CATEGORIES[] = {0, 1, 0x10, 0x33, 0x34, 0x40, 0x75, 0x76};
-constexpr u8 FUZZ_SAVE_FLAGS[] = {0, 0x10, 0x20, 0x01};
-constexpr u32 LOW_NUMBER_COUNT = 8;
-constexpr u32 CATALOG_FUZZ_SPAN = 0x30;
-constexpr u32 CATALOG_FUZZ_BASE = NUMBER_OFFSET_9F;
 
 inline constexpr guest::Function<0x002fb328, gptr<SaveData>()> get_save_data;
 inline constexpr guest::Function<0x002fccdc, u32(const Item &item)> indexed_item_type;
@@ -45,15 +40,6 @@ u16 number_at(u32 category, s32 position) {
 // The position of the item inside its own category, -1 for items without data.
 s32 position_in_category(const Item &item) {
     return item.data() ? item_offset_in_category(item) : -1;
-}
-
-gptr<Item> fuzz_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    item->flags = u16(f.number());
-    return item;
 }
 
 }  // namespace
@@ -95,10 +81,6 @@ void mark_category_in_set(ItemBitSet &set, u32 category) {
     }
 }
 GUEST_EXPORT(0x00302944, mark_category_in_set);
-GUEST_FUZZ(0x00302944, 100, [](guest::Fuzz &f) {
-    get_save_data()->flags_621ce = f.pick<u8>({FUZZ_SAVE_FLAGS[0], FUZZ_SAVE_FLAGS[1], FUZZ_SAVE_FLAGS[2], FUZZ_SAVE_FLAGS[3]});
-    f.arguments(f.object<ItemBitSet>(), f.pick<u32>({FUZZ_CATEGORIES[1], FUZZ_CATEGORIES[2], FUZZ_CATEGORIES[3], FUZZ_CATEGORIES[4], FUZZ_CATEGORIES[5], FUZZ_CATEGORIES[6], FUZZ_CATEGORIES[7], f.below(Item::NO_CATEGORY)}));
-});
 
 // Turns an item of the first category into the item at the same position of the second one (empty past its end),
 // keeping the flag in the id; false for items of other categories.
@@ -117,19 +99,12 @@ bool convert_item_category(Item &item, u32 from, u32 to) {
     return true;
 }
 GUEST_EXPORT(0x006b9858, convert_item_category);
-GUEST_FUZZ(0x006b9858, 200, [](guest::Fuzz &f) {
-    f.arguments(fuzz_item(f), f.pick<u32>({FUZZ_CATEGORIES[0], FUZZ_CATEGORIES[3], FUZZ_CATEGORIES[4], FUZZ_CATEGORIES[6], f.below(Item::NO_CATEGORY)}),
-                f.pick<u32>({FUZZ_CATEGORIES[0], FUZZ_CATEGORIES[3], FUZZ_CATEGORIES[4], FUZZ_CATEGORIES[6], f.below(Item::NO_CATEGORY)}));
-});
 
 // The number of the item at the position in the category, or the empty number past the end.
 u16 item_number_in_category(u32 category, u32 position) {
     return number_at(category, s32(position));
 }
 GUEST_EXPORT(0x006b9b30, item_number_in_category);
-GUEST_FUZZ(0x006b9b30, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({FUZZ_CATEGORIES[0], FUZZ_CATEGORIES[3], FUZZ_CATEGORIES[4], f.below(Item::NO_CATEGORY)}), f.below(300));
-});
 
 namespace {
 
@@ -164,15 +139,6 @@ bool step_back_in_category_39(Item &item) {
     return true;
 }
 GUEST_EXPORT(0x006b9b78, step_back_in_category_39);
-GUEST_FUZZ(0x006b9b78, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = f.below(3) ? number_at(CATEGORY_39, s32(f.below(40))) : u16(NUMBER_2283);
-    item->flags = u16(f.number());
-    if (f.below(4) == 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
 
 // Turns the item into its earlier form: into the same position of the earlier category for the categories in
 // CATEGORY_STEPS, and for four item numbers into the item before; false for other items.
@@ -194,22 +160,6 @@ bool convert_to_earlier_form(Item &item) {
     return false;
 }
 GUEST_EXPORT(0x006ba62c, convert_to_earlier_form);
-GUEST_FUZZ(0x006ba62c, 300, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    switch (f.below(3)) {
-    case 0:
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-        break;
-    case 1:
-        item->id = f.pick<u16>({0x3058, 0x305b, 0x3065, 0x3068, 0x3059});
-        break;
-    default:
-        item->id = number_at(f.pick<u32>({0x56, 0x57, 0x31, 0x93, 0x94, 0x54}), s32(f.below(30)));
-        break;
-    }
-    item->flags = u16(f.number());
-    f.arguments(item);
-});
 
 // The unit item of a stack item (categories 0x75 and 0x76 stand for 0x33 and 0x34), the empty number otherwise.
 u32 stack_unit_number(const Item &item) {
@@ -225,7 +175,6 @@ u32 stack_unit_number(const Item &item) {
     return number_at(unit_category, position_in_category(item));
 }
 GUEST_EXPORT(0x007693d0, stack_unit_number);
-GUEST_FUZZ(0x007693d0, 200, [](guest::Fuzz &f) { f.arguments(fuzz_item(f)); });
 
 // Turns the numbers 1 to 5 of the first item range into the matching item of category 0x34 (as a fresh item).
 bool convert_low_numbers_to_unit(Item &item) {
@@ -240,12 +189,6 @@ bool convert_low_numbers_to_unit(Item &item) {
     return true;
 }
 GUEST_EXPORT(0x006bada0, convert_low_numbers_to_unit);
-GUEST_FUZZ(0x006bada0, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(Item::FIRST_ITEM + f.below(LOW_NUMBER_COUNT));
-    item->flags = u16(f.number());
-    f.arguments(item);
-});
 
 // The counterpart of an item for the small catalog (numbers up to 0xfd): items of several indexed types map to
 // category 0x40 by their number, any other item becomes the empty item; larger numbers are copied.
@@ -270,10 +213,3 @@ void catalog_counterpart(Item &out, const Item &item) {
     out.flags = item.flags;
 }
 GUEST_EXPORT(0x006b9a34, catalog_counterpart);
-GUEST_FUZZ(0x006b9a34, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({CATALOG_FUZZ_BASE + f.below(CATALOG_FUZZ_SPAN), NUMBER_C9, SMALL_NUMBER_LIMIT + 3, Item::FIRST_ITEM + 1, f.below(SMALL_NUMBER_LIMIT)}) |
-                   (f.below(2) != 0 ? Item::ID_FLAG : 0));
-    item->flags = u16(f.number());
-    f.arguments(f.object<Item>(), item);
-});

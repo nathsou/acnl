@@ -39,11 +39,3 @@ bool holder_has_item_with_special_rule(SlotsHolder &holder) {
     return false;
 }
 GUEST_EXPORT(0x0023e254, holder_has_item_with_special_rule);
-GUEST_FUZZ(0x0023e254, 200, [](guest::Fuzz &f) {
-    auto holder = f.object<SlotsHolder>();
-    for (Item &item : holder->slots.slots) {
-        item.id = item_data_table->entries ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-        item.flags = u16(f.below(16));
-    }
-    f.arguments(holder);
-});

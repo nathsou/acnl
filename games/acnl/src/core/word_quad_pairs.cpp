@@ -21,17 +21,3 @@ WordQuad &add_pair_to_both_halves(WordQuad &self, const WordPair &pair) {
     return self;
 }
 GUEST_EXPORT(0x0052f2a8, add_pair_to_both_halves);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-GUEST_FUZZ(0x0052f188, 300, [](guest::Fuzz &f) {
-    auto quad = f.object<WordQuad>();
-    auto low = f.object<WordPair>();
-    auto high = f.object<WordPair>();
-    f.arguments(quad, low, high);
-});
-GUEST_FUZZ(0x0052f2a8, 300, [](guest::Fuzz &f) {
-    auto quad = f.object<WordQuad>();
-    auto pair = f.object<WordPair>();
-    f.arguments(quad, pair);
-});

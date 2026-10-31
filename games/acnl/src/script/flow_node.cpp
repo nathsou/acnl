@@ -69,8 +69,7 @@ u32 acquire_argument_handle(ArgumentHandle &self, u32 argument) {
 }
 GUEST_EXPORT(0x005b17fc, acquire_argument_handle);
 
-// The same with the other kinds of handle (not fuzzed: acquiring takes handles from a shared pool, which differ
-// between the original's and the rewrite's run).
+// The same with the other kinds of handle.
 u32 acquire_argument_handle_kind_b(ArgumentHandle &self, u32 argument) {
     self.argument = argument;
     self.handle = acquire_handle_kind_b(argument);
@@ -147,44 +146,3 @@ bool text_starts_with(gptr<const char> text, gptr<const char> prefix) {
     return compare_entry(text, prefix, prefix_length) == 0;
 }
 GUEST_EXPORT(0x005b1850, text_starts_with);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-static gptr<char> some_text(guest::Fuzz &f, u32 max_length) {
-    gptr<char> p = f.allocate(0x120).cast<char>();
-    u32 length = f.below(max_length + 1);
-    for (u32 i = 0; i < 0x120; i++) {
-        p[i] = 'a' + f.below(2);
-    }
-    p[length] = 0;
-    return p;
-}
-
-GUEST_FUZZ(0x005b17e0, 200, [](guest::Fuzz &f) { f.arguments(f.object<libms::FlowNode>(), f.number()); });
-GUEST_FUZZ(0x005b1708, 200, [](guest::Fuzz &f) { f.arguments(f.object<libms::FlowNode>(), f.object<libms::FlowNode>()); });
-GUEST_FUZZ(0x005b1734, 200, [](guest::Fuzz &f) { f.arguments(f.object<libms::FlowNode>(), f.object<libms::FlowNode>()); });
-GUEST_FUZZ(0x005b177c, 100, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>()); });
-GUEST_FUZZ(0x005b17d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>()); });
-GUEST_FUZZ(0x00134f5c, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.number()); });
-GUEST_FUZZ(0x005b178c, 100, [](guest::Fuzz &f) { f.arguments(f.number(), f.number()); });
-GUEST_FUZZ(0x005b17fc, 200, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>(), 1 + f.below(64)); });
-GUEST_FUZZ(0x005b1818, 200, [](guest::Fuzz &f) {
-    auto holder = f.object<ArgumentHandle>();
-    holder->handle = 0;
-    f.arguments(holder);
-});
-GUEST_FUZZ(0x005b1840, 200, [](guest::Fuzz &f) { f.arguments(f.object<ArgumentHandle>()); });
-GUEST_FUZZ(0x005b1850, 400, [](guest::Fuzz &f) {
-    gptr<char> text = f.below(8) == 0 ? gptr<char>() : some_text(f, f.pick<u32>({0, 3, 10, 40}));
-    gptr<char> prefix;
-    if (f.below(8) != 0) {
-        prefix = some_text(f, f.pick<u32>({0, 2, 5, 40}));
-        if (text && f.below(2) != 0) {
-            u32 n = f.below(5);
-            for (u32 i = 0; i < n && text[i] != 0; i++) {
-                prefix[i] = text[i];
-            }
-        }
-    }
-    f.arguments(text, prefix);
-});

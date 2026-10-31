@@ -62,22 +62,44 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
 
 `emit.rs` writes a proved decompilation as C++ that compiles in this repository (a namespace per function, packed
 structs of the argument objects with `GUEST_OFFSET` checks, callees as `guest::Function`, `GUEST_EXPORT` and a
-generated `GUEST_FUZZ`), for the harness to check and a person to name. A draft stands for the proved AST statement
+for a person (or a model's name map) to name. A draft stands for the proved AST statement
 for statement: registers start from the guest CPU as in the generated prologue, are read back from it after calls as
 `SI()` does, the argument registers a function does not keep are passed from the CPU, float arguments are handed over
 before calls, and a function using its stack frame keeps sp in step with the CPU. What it cannot write that way yet is
-refused with the reason. The printing of the AST as C++ is not proved: the harness (shadow checks and the generated
-fuzzers) checks it. Drafts are generated from the game and stay in build/.
+refused with the reason. The printing of the AST as C++ is proved by reading the C++ back (plan, step 2). Drafts are
+generated from the game and stay in build/ until they are proved.
 
 ## games/acnl/src/decompiled
 
-The verified drafts are committed there, one file per 64 KiB address area (`tools/decomp/check_drafts.py DRAFTS.cpp`
-splits a batch with `split.py`, runs the harness, drops the functions that mismatch or crash, and keeps the verified
-ones). Their names are generated and recognisable, to be replaced by real ones later (by hand or with a model):
+The proved drafts go there (`split.py DRAFTS.cpp OUTDIR` splits a batch into files). Their names are generated and
+recognisable, to be replaced by real ones later:
 
 - functions: `d_<address>::f_<address>` (the namespace keeps each draft's helpers apart);
 - the objects their arguments point to: `Object_<address>_<argument>`, fields `byte_/half_/word_<offset>`;
 - callees: `call_<address>` (`guest::Function`), registers `r0`-`r14`, flags `nf/zf/cf/vf`.
 
-Renaming a function means moving it out of `decompiled/` into the area it belongs to, with the repository's usual
-structs and names; the harness checks the result as for any rewrite.
+## Plan for the full rewrite (2026-10-31)
+
+Everything mechanical is done by tools; a model is used only for names and short comments. Equivalence is proved,
+never sampled:
+
+1. `original ≡ D`: the decompiler's output D (its AST) is proved equal to the recompiled original (above; slow
+   queries, done once per function, cached).
+2. `D ≡ C++`: the C++ file that is committed is read back by a parser for the C++ subset the emitter writes and proved
+   equal to D. D and the C++ have the same statements, so this is fast; it is repeated after every rename or edit and
+   covers the export's ABI (argument positions, results) and the printer. By transitivity the committed C++ equals the
+   original for every input, without fuzzing.
+3. Program-wide analyses (algorithmic): signatures (argument registers, whether callers read r1), types and structs
+   (unification of pointer types across calls, RTTI classes and vtables), library and twin recognition.
+4. Names: a model returns name maps (structs, fields, functions, parameters, locals, constants) and comments, never
+   code; the tool applies them, regenerates the C++ and proves step 2 again. Structs first (their names spread to every
+   function that uses them), then functions callees before callers. In batches through the API.
+5. Faster proofs: memory as a sequence of stores with loads and stores as uninterpreted functions (sound, and enough
+   whenever no pass reorders memory operations), the byte-array model only as the fallback.
+6. Code layout (algorithmic, then named): functions are placed by the translation unit they came from, recovered from
+   the binary (RVCT links each object file's functions, literal pools and constant data contiguously; class methods
+   from RTTI and vtables, file-local helpers called only by their neighbours and shared rodata mark the boundaries).
+   One .cpp per unit, folders by library and subsystem (SDK, NintendoWare and sead ranges from the RTTI namespaces,
+   one folder per CRO module, the game's code by call-graph clusters), a header per struct or class used across
+   units. Placement is metadata the emitter reads; files are named `tu_<address>.cpp` until the naming step names
+   them with the rest. Moving code does not touch the proofs, which are per function.

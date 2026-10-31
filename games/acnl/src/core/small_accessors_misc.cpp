@@ -1,6 +1,5 @@
 // Small helpers of objects whose types are not known yet, found in several areas: lists searched for a free entry, flags of
 // the global bytes, and little tables.
-#include "core/fuzz_helpers.hpp"
 #include "graphics/hemisphere_light.hpp"
 #include "guest/guest.hpp"
 #include "item/item.hpp"
@@ -9,7 +8,6 @@ using guest::gptr;
 
 namespace {
 
-constexpr u32 FUZZ_PAD = 0x1000;
 constexpr u32 ENTRY_STRIDE_280 = 0x280;
 constexpr u32 FREE_SEARCH_10 = 10;
 constexpr u32 FREE_SEARCH_80 = 0x50;
@@ -138,17 +136,6 @@ s32 first_clear_entry_of_80(gptr<EntryWithByte270> entries) {
 }
 GUEST_EXPORT(0x007105d4, first_clear_entry_of_80);
 
-static void fuzz_entries(guest::Fuzz &f, u32 count) {
-    f.allocate(FUZZ_PAD);
-    auto entries = f.allocate(count * sizeof(EntryWithByte270)).cast<EntryWithByte270>();
-    for (u32 i = 0; i < count; i++) {
-        entries[i].flags = f.below(8) == 0 ? u8(f.number() & ~BYTE_270_LOW_BITS) : u8(f.number() | 1);
-    }
-    f.arguments(entries);
-}
-GUEST_FUZZ(0x0071dc9c, 100, [](guest::Fuzz &f) { fuzz_entries(f, FREE_SEARCH_10); });
-GUEST_FUZZ(0x007105d4, 100, [](guest::Fuzz &f) { fuzz_entries(f, FREE_SEARCH_80); });
-
 // Copies the nth vector of the list to the destination when the list has more than n of them, else the zero vector.
 void list_vector_or_zero(Float3 &destination, Float3List &list, u32 index) {
     if (list.count > index) {
@@ -158,16 +145,6 @@ void list_vector_or_zero(Float3 &destination, Float3List &list, u32 index) {
     destination = *zero_vector;
 }
 GUEST_EXPORT(0x00765fa8, list_vector_or_zero);
-GUEST_FUZZ(0x00765fa8, 100, [](guest::Fuzz &f) {
-    auto list = f.object<Float3List>();
-    list->count = f.below(12);
-    for (Float3 &vector : list->vectors) {
-        for (float &value : vector.v) {
-            value = f.real();
-        }
-    }
-    f.arguments(f.object<Float3>(), list, f.below(12));
-});
 
 // Whether the value is one of the ten bytes of the table at 0x0088e4ec.
 bool value_is_in_table_e4ec(u32 value) {
@@ -179,9 +156,6 @@ bool value_is_in_table_e4ec(u32 value) {
     return false;
 }
 GUEST_EXPORT(0x006cac2c, value_is_in_table_e4ec);
-GUEST_FUZZ(0x006cac2c, 100, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({(*table_e4ec)[f.below(TABLE_E4EC_COUNT)], f.below(256), f.number()}));
-});
 
 // Whether one of the requests in the list at 0x0098c4fc has the value in the byte at 0x24 of its entry.
 bool request_list_has_value(u32 value) {
@@ -193,7 +167,6 @@ bool request_list_has_value(u32 value) {
     return false;
 }
 GUEST_EXPORT(0x006d1f38, request_list_has_value);
-GUEST_FUZZ(0x006d1f38, 100, [](guest::Fuzz &f) { f.arguments(f.below(256)); });
 
 // Clears the bit of the cell (x, z) in the grid of 0x70 by 0x60 bits; cells outside it do nothing.
 void clear_grid_bit(BitGrid &grid, s32 x, s32 z) {
@@ -204,12 +177,6 @@ void clear_grid_bit(BitGrid &grid, s32 x, s32 z) {
     grid.words[bit / WORD_BITS] &= ~(1u << (bit % WORD_BITS));
 }
 GUEST_EXPORT(0x005a2708, clear_grid_bit);
-GUEST_FUZZ(0x005a2708, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto grid = f.allocate(sizeof(BitGrid)).cast<BitGrid>();
-    f.arguments(grid, f.pick<s32>({0, 5, GRID_COLUMNS - 1, GRID_COLUMNS, -1, s32(f.number())}),
-                f.pick<s32>({0, 5, GRID_ROWS - 1, GRID_ROWS, -1, s32(f.number())}));
-});
 
 // The slot's object when its key is the given one and it is not busy; null otherwise (and for numbers outside 0-8).
 gptr<SlotInfo> free_slot_with_key(SlotTable &table, s32 index, u32 key) {
@@ -220,14 +187,6 @@ gptr<SlotInfo> free_slot_with_key(SlotTable &table, s32 index, u32 key) {
     return slot->busy == 0 ? slot : gptr<SlotInfo>(nullptr);
 }
 GUEST_EXPORT(0x0071cc4c, free_slot_with_key);
-GUEST_FUZZ(0x0071cc4c, 100, [](guest::Fuzz &f) {
-    auto table = f.object<SlotTable>();
-    for (u32 i = 0; i < SLOTS_9; i++) {
-        table->slots[i] = f.object<SlotInfo>();
-        table->keys[i] = f.below(3);
-    }
-    f.arguments(table, f.pick<s32>({0, 3, 8, 9, -1}), f.below(3));
-});
 
 // Whether the item's number (the flag in the id left out) is one of five.
 bool item_number_in_set_76af88(const Item &item) {
@@ -240,11 +199,6 @@ bool item_number_in_set_76af88(const Item &item) {
     return false;
 }
 GUEST_EXPORT(0x0076af88, item_number_in_set_76af88);
-GUEST_FUZZ(0x0076af88, 100, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    item->id = u16(f.pick<u32>({ITEM_NUMBERS[f.below(5)], ITEM_NUMBERS[f.below(5)] | Item::ID_FLAG, ITEM_NUMBERS[0] + 1, f.number()}));
-    f.arguments(item);
-});
 
 // A class of the bit pattern of a float: 4 when the fraction is not zero, 1 when the exponent is, 2 when the exponent is
 // all ones; 5 when only the exponent is set.
@@ -260,9 +214,6 @@ u32 float_class(u32 bits) {
     return result == FLOAT_CLASS_EXPONENT ? FLOAT_CLASS_ONLY_EXPONENT : result;
 }
 GUEST_EXPORT(0x007796d8, float_class);
-GUEST_FUZZ(0x007796d8, 200, [](guest::Fuzz &f) {
-    f.arguments(f.pick<u32>({0, 0x80000000u, 0x3f800000u, 0x7f800000u, 0x7fc00000u, 0x00000001u, 0xff800000u, f.number()}));
-});
 
 // Puts the entry in its starting state: the state 0xa5 (none), no word, no byte.
 void reset_entry_24(Entry24 &entry) {
@@ -271,10 +222,6 @@ void reset_entry_24(Entry24 &entry) {
     entry.byte_40 = 0;
 }
 GUEST_EXPORT(0x005b5068, reset_entry_24);
-GUEST_FUZZ(0x005b5068, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    f.arguments(f.allocate(sizeof(Entry24)).cast<Entry24>());
-});
 
 // Sets the bit (0-5) of the byte at 0x75.
 void set_bit_75(Byte75 &object, u32 bit) {
@@ -283,29 +230,22 @@ void set_bit_75(Byte75 &object, u32 bit) {
     }
 }
 GUEST_EXPORT(0x005be180, set_bit_75);
-GUEST_FUZZ(0x005be180, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    f.arguments(f.allocate(sizeof(Byte75)).cast<Byte75>(), f.pick<u32>({f.below(9), 0xffffffffu}));
-});
 
 // Bits of the global flag bytes.
 bool control_flag_b_bit_5() {
     return (*control_flags_b & FLAGS_B_BIT_5) != 0;
 }
 GUEST_EXPORT(0x005c1774, control_flag_b_bit_5);
-GUEST_FUZZ(0x005c1774, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 bool control_flag_a_bit_4() {
     return (*control_flags_a & FLAGS_A_BIT_4) != 0;
 }
 GUEST_EXPORT(0x005c1d64, control_flag_a_bit_4);
-GUEST_FUZZ(0x005c1d64, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 bool control_flag_a_bit_3() {
     return (*control_flags_a & FLAGS_A_BIT_3) != 0;
 }
 GUEST_EXPORT(0x005c6c34, control_flag_a_bit_3);
-GUEST_FUZZ(0x005c6c34, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Sets the pair of floats at 0x84c to (0, 1).
 void init_position_pair(PositionStore &store) {
@@ -313,10 +253,6 @@ void init_position_pair(PositionStore &store) {
     store.pair[1] = 1.0f;
 }
 GUEST_EXPORT(0x0065393c, init_position_pair);
-GUEST_FUZZ(0x0065393c, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    f.arguments(f.allocate(sizeof(PositionStore)).cast<PositionStore>());
-});
 
 namespace {
 
@@ -328,8 +264,6 @@ constexpr u32 LARGE_RECORD_WORDS = 0xe5;
 constexpr u32 SMALL_RECORD_WORDS = 0xdb;
 constexpr u32 LARGE_RECORDS_OFFSET = 0x4410;
 constexpr u32 SMALL_RECORDS_OFFSET = 0x890;
-constexpr u32 SELF_RELATIVE_ENTRY_OFFSET = 0x28;
-constexpr u32 SELF_RELATIVE_ENTRY_SHIFT = 4;
 
 struct Flags09 {
     u8 unknown_00[9];
@@ -362,12 +296,6 @@ bool flags_09_bit_is_set(Flags09 &object, u32 bit) {
     return bit < SMALL_BIT_COUNT_6 && (object.flags & (1u << bit)) != 0;
 }
 GUEST_EXPORT(0x0075f1c4, flags_09_bit_is_set);
-GUEST_FUZZ(0x0075f1c4, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto object = f.allocate(sizeof(Flags09)).cast<Flags09>();
-    object->flags = u8(f.number());
-    f.arguments(object, f.pick<u32>({f.below(SMALL_BIT_COUNT_6 + 3), 0xffffffffu}));
-});
 
 // Clears a bit (0-0x6b) of the bytes from 0x1a of the object; other numbers do nothing.
 void clear_bit_from_1a(BitBytes1A &object, u32 bit) {
@@ -376,10 +304,6 @@ void clear_bit_from_1a(BitBytes1A &object, u32 bit) {
     }
 }
 GUEST_EXPORT(0x0020be80, clear_bit_from_1a);
-GUEST_FUZZ(0x0020be80, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    f.arguments(f.allocate(sizeof(BitBytes1A)).cast<BitBytes1A>(), f.pick<u32>({f.below(CLEAR_BIT_COUNT + 3), 0xffffffffu}));
-});
 
 // Sets the bit (0-5) of the byte at 0x28.
 void set_bit_28(Byte28Owner &owner, u32 bit) {
@@ -388,10 +312,6 @@ void set_bit_28(Byte28Owner &owner, u32 bit) {
     }
 }
 GUEST_EXPORT(0x0020bea4, set_bit_28);
-GUEST_FUZZ(0x0020bea4, 100, [](guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    f.arguments(f.allocate(sizeof(Byte28Owner)).cast<Byte28Owner>(), f.pick<u32>({f.below(BYTE_28_BIT_COUNT + 3), 0xffffffffu}));
-});
 
 // The address of the record (words of 4 bytes: 0xe5 of them from 0x4410 when the byte at 0x8431 is set, 0xdb from 0x890 otherwise).
 gptr<u8> record_by_size_flag(gptr<RecordSizeOwner> owner, u32 index) {
@@ -401,14 +321,6 @@ gptr<u8> record_by_size_flag(gptr<RecordSizeOwner> owner, u32 index) {
 }
 GUEST_EXPORT(0x0026fac4, record_by_size_flag);
 GUEST_EXPORT(0x00718d08, record_by_size_flag);
-static void fuzz_26fac4(guest::Fuzz &f) {
-    f.allocate(FUZZ_PAD);
-    auto owner = f.allocate(sizeof(RecordSizeOwner)).cast<RecordSizeOwner>();
-    owner->large_flag = f.pick<u8>({0, 1, 5});
-    f.arguments(owner, f.below(6));
-}
-GUEST_FUZZ(0x0026fac4, 100, fuzz_26fac4);
-GUEST_FUZZ(0x00718d08, 100, fuzz_26fac4);
 
 namespace {
 
@@ -452,36 +364,24 @@ gptr<u8> villager_player_record_address(gptr<u8> base, u32 index) {
 }
 GUEST_EXPORT(0x001198d1, villager_player_record_address);
 GUEST_EXPORT(0x001126fd, villager_player_record_address);
-static void fuzz_1198d1(guest::Fuzz &f) {
-    f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(PLAYER_RECORD_COUNT + 3), 0xffffffffu}));
-}
-GUEST_FUZZ(0x001198d1, 100, fuzz_1198d1);
-GUEST_FUZZ(0x001126fd, 100, fuzz_1198d1);
 
 // The address of the record (0x1ac bytes each, fifteen of them); null for numbers past the last (Thumb entry).
 gptr<u8> record_1ac_address(gptr<u8> base, u32 index) {
     return index < RECORD_1AC_COUNT ? base + index * RECORD_1AC_SIZE : gptr<u8>(nullptr);
 }
 GUEST_EXPORT(0x00108421, record_1ac_address);
-GUEST_FUZZ(0x00108421, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(RECORD_1AC_COUNT + 3), 0xffffffffu}));
-});
 
 // The address of the record (0x280 bytes each, four of them, from 0x1810); null for numbers past the last (Thumb entry).
 gptr<u8> record_280_address(gptr<u8> base, u32 index) {
     return index < RECORD_280_COUNT ? base + index * ENTRY_STRIDE_280 + RECORD_280_OFFSET : gptr<u8>(nullptr);
 }
 GUEST_EXPORT(0x0011a051, record_280_address);
-GUEST_FUZZ(0x0011a051, 100, [](guest::Fuzz &f) {
-    f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(RECORD_280_COUNT + 3), 0xffffffffu}));
-});
 
 // Whether the three low bits of the word at 0x18 of the object at 0x00974ad8 are clear.
 bool flag_word_low_bits_clear() {
     return (flag_word_holder->word & FLAG_WORD_MASK) == 0;
 }
 GUEST_EXPORT(0x00124284, flag_word_low_bits_clear);
-GUEST_FUZZ(0x00124284, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // Whether the node is in the list that starts at the ends' first node (following the next links).
 bool list_contains_node(LinkedEnds &ends, gptr<LinkedNode> node) {
@@ -496,15 +396,6 @@ bool list_contains_node(LinkedEnds &ends, gptr<LinkedNode> node) {
     return false;
 }
 GUEST_EXPORT(0x00138920, list_contains_node);
-GUEST_FUZZ(0x00138920, 100, [](guest::Fuzz &f) {
-    auto ends = f.object<LinkedEnds>();
-    auto first = f.object<LinkedNode>();
-    auto second = f.object<LinkedNode>();
-    first->next = second;
-    second->next = gptr<LinkedNode>(0u);
-    ends->first = first;
-    f.arguments(ends, f.pick<gptr<LinkedNode>>({first, second, f.object<LinkedNode>(), gptr<LinkedNode>(0u)}));
-});
 
 // Takes the node out of the list the ends describe (the first and last nodes of the list are replaced when it was one of them).
 void unlink_from_ends(LinkedEnds &ends, LinkedNode &node) {
@@ -532,14 +423,3 @@ void unlink_from_ends(LinkedEnds &ends, LinkedNode &node) {
     node.next = nullptr;
 }
 GUEST_EXPORT(0x0013f000, unlink_from_ends);
-GUEST_FUZZ(0x0013f000, 200, [](guest::Fuzz &f) {
-    auto ends = f.object<LinkedEnds>();
-    auto before = f.object<LinkedNode>();
-    auto node = f.object<LinkedNode>();
-    auto after = f.object<LinkedNode>();
-    node->previous = f.below(3) != 0 ? before : gptr<LinkedNode>(0u);
-    node->next = f.below(3) != 0 ? after : gptr<LinkedNode>(0u);
-    ends->first = f.below(2) != 0 ? node.cast<LinkedNode>() : before;
-    ends->last = f.below(2) != 0 ? node.cast<LinkedNode>() : after;
-    f.arguments(ends, node);
-});

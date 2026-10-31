@@ -1,5 +1,5 @@
 // Yes/no questions about an item, answered from its id, its data entry and the flags of its category.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
 #include "item/item.hpp"
 
 namespace {
@@ -83,45 +83,6 @@ bool Item::is_in_category_group_24_27_28() const {
 }
 GUEST_EXPORT(0x0076c52c, Item::is_in_category_group_24_27_28);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-// Items with data (when it is loaded), empty slots, map objects and kind 2 ids, with assorted flags.
-gptr<Item> some_item(guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    switch (f.below(8)) {
-    case 0:
-        item->id = Item::EMPTY;
-        break;
-    case 1:
-        item->id = u16(f.below(Item::FIRST_ITEM));
-        break;
-    case 2:
-        item->id = Item::FIRST_ITEM;
-        break;
-    default:
-        item->id = item_data_table->entries ? u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT)) : Item::EMPTY;
-        break;
-    }
-    if (f.below(4) == 0) {
-        item->id |= Item::ID_FLAG;
-    }
-    if (f.below(3) == 0) {
-        item->flags = f.pick<u16>({0, 0xc000, 1, 0x4000, 0x8001});
-    }
-    return item;
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x0031079c, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x007485d0, 300, [](guest::Fuzz &f) {
-    gptr<ItemData> d = item_data_table->entries;
-    f.arguments(d ? d + f.below(Item::ITEM_COUNT) : f.object<ItemData>());
-});
-GUEST_FUZZ(0x0076c440, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x0076c458, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x0076c480, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x0076c4d8, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });
-GUEST_FUZZ(0x0076c52c, 300, [](guest::Fuzz &f) { f.arguments(some_item(f)); });

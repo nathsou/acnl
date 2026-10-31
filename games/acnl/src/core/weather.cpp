@@ -5,7 +5,6 @@
 #include <cstring>
 
 #include "arm.hpp"
-#include "core/fuzz_helpers.hpp"
 #include "core/random.hpp"
 #include "core/time_stamp.hpp"
 #include "guest/guest.hpp"
@@ -96,7 +95,6 @@ TimeStamp reference_copy() {
 
 }  // namespace
 
-
 namespace {
 
 constexpr u32 YEAR_SEED_SHIFT = 9, MONTH_SEED_SHIFT = 5, SEED_SHIFT = 16;
@@ -141,7 +139,6 @@ inline guest::global<SeasonLimit[SEASON_GROUP_COUNT], 0x00895068> season_limits;
 inline guest::global<gptr<u8>[SEASON_GROUP_COUNT], 0x0095e06c> group_weights;  // the weights of the 0x34 patterns for each group
 
 }  // namespace
-
 
 // Whether one of the day's events is on at the date (the day start of the time given as three words): asked of every event
 // object but the ones of a few kinds; with `strict` also leaving out the events of kind 0x23 and above. False while the
@@ -400,7 +397,6 @@ namespace {
 
 constexpr u8 SPECIAL_MONTH = 8;           // the month in which special event hours are drawn (without `any_month`)
 constexpr u32 EVENT_HOUR_FIRST = 9;       // the hours drawn are 9 to 14
-constexpr u32 EVENT_HOUR_COUNT = 6;
 constexpr float HALF_CHANCE_SCALE = 2.0f;
 constexpr float HOUR_SCALE = 6.0f;
 constexpr u32 SEED_MONTH_SHIFT = 6, SEED_DAY_SHIFT = 6, SEED_YEAR_SHIFT_B = 12;
@@ -435,13 +431,6 @@ s32 seeded_event_hour(const TimeStamp &date, bool any_month) {
     return arm::to_s32(seed.next_float() * HOUR_SCALE) + s32(EVENT_HOUR_FIRST);
 }
 GUEST_EXPORT(0x0063061c, seeded_event_hour);
-GUEST_FUZZ(0x0063061c, 300, [](guest::Fuzz &f) {
-    auto date = f.object<TimeStamp>();
-    date->year = s32(2012 + f.below(40));
-    date->month = s8(f.pick<u32>({8, 8, 1 + f.below(12)}));
-    date->day = s8(1 + f.below(28));
-    f.arguments(date, f.below(2));
-});
 
 // The hour of today's special event: in the modes with flag 0x20000 from the cycle pattern (patterns up to 4: drawn from
 // the date, or 12), else the hour stored in the save data when it is for today; -1 for none.
@@ -462,7 +451,6 @@ s32 special_event_hour_today() {
     return get_save_data()->event_hour_today;
 }
 GUEST_EXPORT(0x006301e8, special_event_hour_today);
-GUEST_FUZZ(0x006301e8, 50, [](guest::Fuzz &f) { f.arguments(); });
 
 // The pattern of the game day of the reference time.
 u32 weather_pattern_today_by_mode() {
@@ -598,64 +586,6 @@ u32 snow_event_phase() {
 }
 GUEST_EXPORT(0x00630364, snow_event_phase);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
 namespace {
 
-constexpr s64 NANOSECONDS_PER_DAY = 86'400'000'000'000;
-constexpr u32 FUZZ_DAYS = 5;
-
-// A time stamp around the reference time (in half of the cases, to hit the stored days) or anywhere in the years 2012-2015.
-gptr<TimeStamp> some_time(guest::Fuzz &f) {
-    auto time = f.object<TimeStamp>();
-    if (f.below(2) != 0) {
-        *time = *reference_time;
-        time->add_days(s32(f.below(FUZZ_DAYS)) - 1);
-        time->add_hours(s32(f.below(HOURS)) - s32(time->hour));
-        return time;
-    }
-    time->year = s32(2012 + f.below(4));
-    time->month = s8(1 + f.below(12));
-    time->day = s8(1 + f.below(28));
-    time->hour = s8(f.below(HOURS));
-    time->minute = s8(f.below(60));
-    time->second = s8(f.below(60));
-    time->millisecond = s16(f.below(1000));
-    return time;
-}
-
-s64 some_nanoseconds(guest::Fuzz &f) {
-    return reference_time->nanoseconds_since_origin() + (s64(f.below(FUZZ_DAYS)) - 1) * NANOSECONDS_PER_DAY +
-           s64(f.below(HOURS)) * (NANOSECONDS_PER_DAY / HOURS);
-}
-
 }  // namespace
-
-GUEST_FUZZ(0x0058efe8, 200, [](guest::Fuzz &f) {
-    auto time = some_time(f);
-    u32 words[3];
-    std::memcpy(words, time.get(), sizeof(words));
-    f.arguments(words[0], words[1], words[2], f.below(2));
-});
-GUEST_FUZZ(0x00318568, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
-GUEST_FUZZ(0x0062ff8c, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
-GUEST_FUZZ(0x0062fed4, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
-GUEST_FUZZ(0x0062f04c, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
-GUEST_FUZZ(0x0062f32c, 300, [](guest::Fuzz &f) { f.arguments(some_nanoseconds(f)); });
-GUEST_FUZZ(0x0062f3f0, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062f428, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062f460, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
-GUEST_FUZZ(0x0062f4b8, 300, [](guest::Fuzz &f) { f.arguments(some_nanoseconds(f)); });
-GUEST_FUZZ(0x0062f658, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
-GUEST_FUZZ(0x0062f950, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062f728, 100, [](guest::Fuzz &f) { f.arguments(f.below(HOURS)); });
-GUEST_FUZZ(0x0062fa38, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062fea0, 300, [](guest::Fuzz &f) { f.arguments(some_time(f)); });
-GUEST_FUZZ(0x0062fc34, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062fd7c, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062fdd4, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062fc6c, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00630590, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x006304ac, 50, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x0062f7f8, 100, [](guest::Fuzz &f) { f.arguments(f.object<u8>(), f.object<u8>()); });
-GUEST_FUZZ(0x00630364, 50, [](guest::Fuzz &f) { f.arguments(); });

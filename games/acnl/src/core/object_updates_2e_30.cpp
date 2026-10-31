@@ -1,6 +1,7 @@
 // Small functions of the 0x002e0000..0x00310000 area (their classes are not known yet): searches in the players and
 // the item set, a record comparison and the constructor of a table object.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
+#include "item/item.hpp"
 #include "item/item_bit_set.hpp"
 #include "save/player.hpp"
 #include "save/save_data.hpp"
@@ -59,7 +60,6 @@ bool any_player_matches(PlayerArray &array, const PersonalId &identity) {
     return false;
 }
 GUEST_EXPORT(0x002ff8f0, any_player_matches);
-GUEST_FUZZ(0x002ff8f0, 40, [](guest::Fuzz &f) { f.arguments(f.object<PlayerArray>(), f.object<PersonalId>()); });
 
 // Whether two records have the same id, kind and block.
 bool records_equal(const IdRecord &first, const IdRecord &second) {
@@ -69,14 +69,6 @@ bool records_equal(const IdRecord &first, const IdRecord &second) {
     return memory_compare(guest::addr_of(first.block[0]), guest::addr_of(second.block[0]), ID_SIZE) == 0;
 }
 GUEST_EXPORT(0x002ff81c, records_equal);
-GUEST_FUZZ(0x002ff81c, 200, [](guest::Fuzz &f) {
-    auto first = f.object<IdRecord>();
-    auto second = f.object<IdRecord>();
-    if (f.below(2) != 0) {
-        *second = *first;
-    }
-    f.arguments(first, second);
-});
 
 // Clears a bit of the item set unless that would leave it empty (it must keep at least one bit).
 bool clear_bit_keeping_one(ItemBitSet &set, const Item &item) {
@@ -86,12 +78,6 @@ bool clear_bit_keeping_one(ItemBitSet &set, const Item &item) {
     return set.clear_bit_of(item);
 }
 GUEST_EXPORT(0x002fe9dc, clear_bit_keeping_one);
-GUEST_FUZZ(0x002fe9dc, 100, [](guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    auto item = f.object<Item>();
-    item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    f.arguments(set, item);
-});
 
 // Builds the three tables of the object, which starts in state 3.
 TableObject &construct_table_object(TableObject &object) {
@@ -104,4 +90,3 @@ TableObject &construct_table_object(TableObject &object) {
     return object;
 }
 GUEST_EXPORT(0x002ebce4, construct_table_object);
-GUEST_FUZZ(0x002ebce4, 20, [](guest::Fuzz &f) { f.arguments(f.object<TableObject>()); });

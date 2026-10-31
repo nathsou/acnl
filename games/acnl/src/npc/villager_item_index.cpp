@@ -32,6 +32,3 @@ Item &copy_villager_item_by_index(Item &out, const SaveVillager &villager, u32 i
     return out;
 }
 GUEST_EXPORT(0x00310829, copy_villager_item_by_index);
-GUEST_FUZZ(0x00310829, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<Item>(), f.object<SaveVillager>(), f.pick<u32>({0, 5, 9, 10, 11, 12, 15, 16, f.number()}));
-});

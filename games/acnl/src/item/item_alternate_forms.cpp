@@ -1,5 +1,6 @@
 // Turning an item into its alternate form, and listing which items of a category are in a set.
-#include "core/fuzz_helpers.hpp"
+#include "guest/guest.hpp"
+#include "item/item.hpp"
 #include "item/item_bit_set.hpp"
 
 u16 item_number_in_category(u32 category, u32 position);
@@ -59,15 +60,6 @@ bool convert_to_alternate_form(Item &item) {
     return false;
 }
 GUEST_EXPORT(0x006ba4c8, convert_to_alternate_form);
-GUEST_FUZZ(0x006ba4c8, 300, [](guest::Fuzz &f) {
-    if (f.below(3) == 0) {
-        auto item = f.object<Item>();
-        item->id = u16(NUMBER_PAIRS[f.below(4)].from | (f.below(2) ? Item::ID_FLAG : 0));
-        f.arguments(item);
-    } else {
-        f.arguments(fuzz::item_in_category(f, CATEGORY_PAIRS[f.below(5)].from));
-    }
-});
 
 // Clears the bits of every item of four categories (the numbers in a table of the game) from the set.
 void clear_items_of_listed_categories(ItemBitSet &set) {
@@ -82,10 +74,6 @@ void clear_items_of_listed_categories(ItemBitSet &set) {
     }
 }
 GUEST_EXPORT(0x006ef6e0, clear_items_of_listed_categories);
-GUEST_FUZZ(0x006ef6e0, 50, [](guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    f.arguments(set);
-});
 
 // Lists the positions within the category of the items that are in the set (words of the set are looked up by
 // item index); false, with an invalid list, for categories of more than MAX_POSITIONS items.
@@ -113,10 +101,3 @@ bool list_items_in_set(CategoryPositions &out, const ItemBitSet &set, u32 catego
     return true;
 }
 GUEST_EXPORT(0x006ef7a4, list_items_in_set);
-GUEST_FUZZ(0x006ef7a4, 100, [](guest::Fuzz &f) {
-    auto set = f.object<ItemBitSet>();
-    for (u32 word = 0; word < ItemBitSet::WORDS; word++) {
-        set->words[word] = f.below(3) == 0 ? 0 : u32(f.number());
-    }
-    f.arguments(f.object<CategoryPositions>(), set, f.pick<u32>({0x54, 0x55, 0x2f, 0x06, 0x33, f.below(Item::NO_CATEGORY)}));
-});

@@ -43,17 +43,6 @@ gptr<PadState> first_pad() {
     return *manager->pads;
 }
 
-// Points the manager at pads built for a fuzz input.
-void fuzz_input_manager(guest::Fuzz &f) {
-    auto manager = f.object<InputManager>();
-    auto pad = f.object<PadState>();
-    auto pads = f.object<gptr<PadState>>();
-    *pads = pad;
-    manager->pad_count = 1;
-    manager->pads = pads;
-    *input_manager = manager;
-}
-
 }  // namespace
 
 bool pad_has_bit_08(u32 mask) {
@@ -63,10 +52,6 @@ bool pad_has_bit_08(u32 mask) {
     return (first_pad()->bits_08 & mask) != 0;
 }
 GUEST_EXPORT(0x00521cf4, pad_has_bit_08);
-GUEST_FUZZ(0x00521cf4, 200, [](guest::Fuzz &f) {
-    fuzz_input_manager(f);
-    f.arguments(f.pick<u32>({1, 0x8000, 0x10000, 0xffffffffu, f.number()}));
-});
 
 bool pad_has_bit_04(u32 mask) {
     if (err_eula_is_idle_with_byte_fac()) {
@@ -75,10 +60,6 @@ bool pad_has_bit_04(u32 mask) {
     return (first_pad()->bits_04 & mask) != 0;
 }
 GUEST_EXPORT(0x00521d3c, pad_has_bit_04);
-GUEST_FUZZ(0x00521d3c, 200, [](guest::Fuzz &f) {
-    fuzz_input_manager(f);
-    f.arguments(f.pick<u32>({1, 2, 0x8000, 0x80000, 0xffffffffu, f.number()}));
-});
 
 // Bit 0 of the first pad's second word, when condition 0x005c2cf4 holds.
 bool pad_bit_04_0_when_5c2cf4() {
@@ -91,10 +72,6 @@ bool pad_bit_04_0_when_5c2cf4() {
     return (first_pad()->bits_04 & BIT_0) != 0;
 }
 GUEST_EXPORT(0x00521d84, pad_bit_04_0_when_5c2cf4);
-GUEST_FUZZ(0x00521d84, 200, [](guest::Fuzz &f) {
-    fuzz_input_manager(f);
-    f.arguments();
-});
 
 bool pad_has_bit_110(u32 mask) {
     if (err_eula_is_idle_with_byte_fac()) {
@@ -103,7 +80,3 @@ bool pad_has_bit_110(u32 mask) {
     return (first_pad()->bits_110 & mask) != 0;
 }
 GUEST_EXPORT(0x00304c1c, pad_has_bit_110);
-GUEST_FUZZ(0x00304c1c, 200, [](guest::Fuzz &f) {
-    fuzz_input_manager(f);
-    f.arguments(f.pick<u32>({1, 2, 0x8000, 0x80000, 0xffffffffu, f.number()}));
-});

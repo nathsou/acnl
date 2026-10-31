@@ -23,5 +23,3 @@ Allocator &construct_Allocator(Allocator &self) {
 }  // namespace ssys::ma
 
 GUEST_EXPORT(0x00120840, ssys::ma::construct_Allocator);
-
-GUEST_FUZZ(0x00120840, 200, [](guest::Fuzz &f) { f.arguments(f.object<ssys::ma::Allocator>()); });

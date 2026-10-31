@@ -56,10 +56,6 @@ static u32 record_has_flag_bit(gptr<FlaggedRecord> record, u32 index) {
     return (record->flags >> index) & 1;
 }
 GUEST_EXPORT(0x0030b90c, record_has_flag_bit);
-GUEST_FUZZ(0x0030b90c, 200, [](guest::Fuzz &f) {
-    auto record = f.object<FlaggedRecord>();
-    f.arguments(record, f.pick<u32>({0, 1, 2, 3, 7, 8, 9, 0xffffffffu, f.number()}));
-});
 
 // Applies a mode (0: nothing, 1: set flag 4, other: notify and clear flag 8), then clears the matching flag of the
 // record's table entry according to its kind and marks the state done.
@@ -88,10 +84,3 @@ static void apply_record_mode(gptr<FlaggedRecord> record, u32 mode) {
     record->state_1f = STATE_DONE;
 }
 GUEST_EXPORT(0x0030b924, apply_record_mode);
-// (only the modes that call nothing but the table lookup are fuzzed)
-GUEST_FUZZ(0x0030b924, 200, [](guest::Fuzz &f) {
-    auto record = f.object<FlaggedRecord>();
-    record->table_index = s8(f.pick<u32>({0xff, 0}));
-    record->kind_1e = u8(f.pick<u32>({KIND_E, KIND_10, 0, f.below(256)}));
-    f.arguments(record, f.pick<u32>({0, 1}));
-});

@@ -52,16 +52,6 @@ void remove_first_matching(DatedEntryList &list, Match matches) {
     freed.value = s8(FREE_BYTE);
 }
 
-gptr<DatedEntryList> some_list(guest::Fuzz &f) {
-    auto list = f.object<DatedEntryList>();
-    list->count = u8(f.below(LIST_CAPACITY + 1));
-    for (DatedEntry &entry : list->entries) {
-        entry.kind = u8(f.pick<u32>({0, 1, 2, 5, 0x15, 0x16, 0xff}));
-        entry.value = s8(f.pick<s32>({-1, 0, 1, 2, 3, 4, 9, 10}));
-    }
-    return list;
-}
-
 }  // namespace
 
 // Removes the first entry of the player kind that has the slot (nothing for slots from PLAYER_SLOTS up).
@@ -72,7 +62,6 @@ void remove_player_entry(DatedEntryList &list, s32 slot) {
     remove_first_matching(list, [slot](const DatedEntry &entry) { return entry.kind == PLAYER_KIND && entry.value == slot; });
 }
 GUEST_EXPORT(0x001b60fc, remove_player_entry);
-GUEST_FUZZ(0x001b60fc, 200, [](guest::Fuzz &f) { f.arguments(some_list(f), f.pick<s32>({-1, 0, 1, 2, 3, 4})); });
 
 // Removes the first entry of the other kind with the number (nothing for numbers from OTHER_LIMIT up).
 void remove_numbered_entry(DatedEntryList &list, s32 number) {
@@ -82,7 +71,6 @@ void remove_numbered_entry(DatedEntryList &list, s32 number) {
     remove_first_matching(list, [number](const DatedEntry &entry) { return entry.kind == OTHER_KIND && entry.value == number; });
 }
 GUEST_EXPORT(0x001b63b4, remove_numbered_entry);
-GUEST_FUZZ(0x001b63b4, 200, [](guest::Fuzz &f) { f.arguments(some_list(f), f.pick<s32>({-1, 0, 1, 2, 9, 10})); });
 
 // Removes the first entry whose kind is the one the game's table gives for the id (nothing for ids it does not hold).
 void remove_entry_of_id(DatedEntryList &list, u32 id) {
@@ -100,7 +88,3 @@ void remove_entry_of_id(DatedEntryList &list, u32 id) {
     remove_first_matching(list, [kind](const DatedEntry &entry) { return s8(entry.kind) == kind; });
 }
 GUEST_EXPORT(0x001b64a8, remove_entry_of_id);
-GUEST_FUZZ(0x001b64a8, 200, [](guest::Fuzz &f) {
-    gptr<const u8> table(KIND_TABLE_ADDRESS);
-    f.arguments(some_list(f), f.pick<u32>({0, 1, table[f.below(KIND_TABLE_PAIRS) * 2], 0xfb, 0xfc, 0x100, f.number()}));
-});

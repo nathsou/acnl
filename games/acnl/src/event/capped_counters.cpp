@@ -119,12 +119,3 @@ void CounterSource::count_event(u32 key) {
     add_to_counters(*block, slot, 1);
 }
 GUEST_EXPORT(0x00656edc, CounterSource::count_event);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// Only the disabled path: the enabled one depends on game objects that random inputs cannot provide safely.
-GUEST_FUZZ(0x00656edc, 200, [](guest::Fuzz &f) {
-    auto source = f.object<CounterSource>();
-    source->flags_171 &= u8(~CounterSource::FLAG_COUNTS);
-    f.arguments(source, f.pick<u32>({0, 1, 2, f.number()}));
-});

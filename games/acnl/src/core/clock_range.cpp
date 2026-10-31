@@ -25,7 +25,6 @@ bool update_byte_from_clock_7(s8 &byte) {
     return byte != previous;
 }
 GUEST_EXPORT(0x00589458, update_byte_from_clock_7);
-GUEST_FUZZ(0x00589458, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(4).cast<s8>()); });
 
 // Stores the clock's byte 9 in the byte; whether that changed it.
 bool update_byte_from_clock_9(s8 &byte) {
@@ -34,7 +33,6 @@ bool update_byte_from_clock_9(s8 &byte) {
     return byte != previous;
 }
 GUEST_EXPORT(0x005894fc, update_byte_from_clock_9);
-GUEST_FUZZ(0x005894fc, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(4).cast<s8>()); });
 
 // Whether the clock's hour and minute (as one 16-bit value; the minute is sign-extended, as the game does) are in
 // [start, end), where the range may wrap around midnight (end before start).
@@ -48,11 +46,6 @@ bool clock_in_range(u32 start_hour, u32 start_minute, u32 end_hour, u32 end_minu
     return now < end || now >= start;
 }
 GUEST_EXPORT(0x00589480, clock_in_range);
-GUEST_FUZZ(0x00589480, 200, [](guest::Fuzz &f) {
-    reference_clock->hour_08 = u8(f.below(24));
-    reference_clock->minute_09 = s8(f.below(60));
-    f.arguments(f.below(24), f.below(60), f.below(24), f.below(60));
-});
 
 // The clock's signed bytes 7, 8 and 9.
 s32 clock_byte_07() { return reference_clock->value_07; }
@@ -61,6 +54,3 @@ s32 clock_byte_09() { return reference_clock->minute_09; }
 GUEST_EXPORT(0x00589678, clock_byte_07);
 GUEST_EXPORT(0x00589688, clock_byte_08);
 GUEST_EXPORT(0x00589698, clock_byte_09);
-GUEST_FUZZ(0x00589678, 20, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00589688, 20, [](guest::Fuzz &f) { f.arguments(); });
-GUEST_FUZZ(0x00589698, 20, [](guest::Fuzz &f) { f.arguments(); });

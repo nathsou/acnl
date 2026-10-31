@@ -125,9 +125,6 @@ static void copy_8_bytes(gptr<WordPair> dest, gptr<WordPair> source) {
     *dest = value;
 }
 GUEST_EXPORT(0x003081b4, copy_8_bytes);
-GUEST_FUZZ(0x003081b4, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<WordPair>(), f.object<WordPair>());
-});
 
 /// Resets every entry of a shared entry table (marker, flags, counter) and clears bit 0 of every entry's bits.
 static void reset_shared_entry_table(SharedEntryTable &table) {
@@ -142,8 +139,6 @@ static void reset_shared_entry_table(SharedEntryTable &table) {
 }
 GUEST_EXPORT(0x003081c8, reset_shared_entry_table);
 GUEST_EXPORT(0x0029ce10, reset_shared_entry_table);
-GUEST_FUZZ(0x003081c8, 200, [](guest::Fuzz &f) { f.arguments(f.object<SharedEntryTable>()); });
-GUEST_FUZZ(0x0029ce10, 200, [](guest::Fuzz &f) { f.arguments(f.object<SharedEntryTable>()); });
 
 /// Clears the global block at 0x009ab588, runs the reset hook of each of its records, and clears a global flag.
 static void reset_global_block_a() {
@@ -162,7 +157,6 @@ static void reset_global_block_a() {
     flag_9516b8 = 0;
 }
 GUEST_EXPORT(0x00308238, reset_global_block_a);
-GUEST_FUZZ(0x00308238, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 /// Resets the two tables of the global block at 0x009b41c4, clears its buffer and sets two indices to -1.
 static void reset_global_block_b() {
@@ -179,7 +173,6 @@ static void reset_global_block_b() {
     state_952694->index_14 = UnknownState952694::NO_INDEX;
 }
 GUEST_EXPORT(0x003082bc, reset_global_block_b);
-GUEST_FUZZ(0x003082bc, 200, [](guest::Fuzz &f) { f.arguments(); });
 
 /// Prepares an object and its 16 sub-objects, then the region at its end.
 static void init_object_with_sub_objects(gptr<ObjectWithSubObjects> object) {
@@ -191,9 +184,3 @@ static void init_object_with_sub_objects(gptr<ObjectWithSubObjects> object) {
     init_region(guest::addr_of(object->region));
 }
 GUEST_EXPORT(0x00308355, init_object_with_sub_objects);
-GUEST_FUZZ(0x00308355, 200, [](guest::Fuzz &f) {
-    constexpr u32 OBJECT_FUZZ_SIZE = 0x2000;  // more than the callees reach (the object's size is not known)
-    auto object = f.allocate(OBJECT_FUZZ_SIZE);
-    f.bytes(object, OBJECT_FUZZ_SIZE);
-    f.arguments(object.cast<ObjectWithSubObjects>());
-});

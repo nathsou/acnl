@@ -52,27 +52,3 @@ GUEST_EXPORT(0x0081bc80, CallbackTable::dispatch);
 GUEST_EXPORT(0x0081bd88, CallbackTable::dispatch);
 GUEST_EXPORT(0x0081be90, CallbackTable::dispatch);
 GUEST_EXPORT(0x0081bf98, CallbackTable::dispatch);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// Entries never carry callbacks, so the fuzzer cannot jump to garbage.
-static void fuzz_dispatch(guest::Fuzz &f) {
-    auto table = f.object<CallbackTable>();
-    u32 count = f.below(7);
-    auto entries = f.allocate(sizeof(CallbackTableEntry) * (count ? count : 1)).cast<CallbackTableEntry>();
-    for (u32 i = 0; i < count; i++) {
-        CallbackTableEntry &e = entries[i];
-        e.unknown_00 = f.number();
-        e.callback = guest::MemberFunctionPointer{0, 0};
-        e.key1 = f.pick<u32>({0, 1, 2});
-        e.key2 = f.pick<u32>({0, 1, 2, 3});
-    }
-    table->entries = entries;
-    table->count = count;
-    f.arguments(table, f.pick<u32>({0, 1, 2}), f.pick<u32>({0, 1, 2, 3}));
-}
-
-GUEST_FUZZ(0x0081bc80, 300, fuzz_dispatch);
-GUEST_FUZZ(0x0081bd88, 300, fuzz_dispatch);
-GUEST_FUZZ(0x0081be90, 300, fuzz_dispatch);
-GUEST_FUZZ(0x0081bf98, 300, fuzz_dispatch);

@@ -36,13 +36,6 @@ u32 item_property_17(const Item &item) {
     return property >= PROPERTY_LIMIT ? 0 : property;
 }
 GUEST_EXPORT(0x00302fec, item_property_17);
-GUEST_FUZZ(0x00302fec, 200, [](guest::Fuzz &f) {
-    auto item = f.object<Item>();
-    if (f.below(4) != 0) {
-        item->id = u16(Item::FIRST_ITEM + f.below(Item::ITEM_COUNT));
-    }
-    f.arguments(item);
-});
 
 // False while the save data's level is below 4; otherwise whether the holder's flag is set.
 bool level_allows_flag(const FlagHolder &holder) {
@@ -53,4 +46,3 @@ bool level_allows_flag(const FlagHolder &holder) {
     return holder.flag_01 != 0;
 }
 GUEST_EXPORT(0x0030290c, level_allows_flag);
-GUEST_FUZZ(0x0030290c, 100, [](guest::Fuzz &f) { f.arguments(f.object<FlagHolder>()); });

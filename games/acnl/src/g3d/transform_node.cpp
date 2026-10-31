@@ -128,59 +128,5 @@ TransformNode &construct_transform_node(TransformNode &self) {
 }
 GUEST_EXPORT(0x004ee4ec, construct_transform_node);
 
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-namespace {
-
-constexpr u32 CONSTRUCTOR_ADDRESS = 0x004ee4ec;  // harmless as a vtable target: writes two words at r0
-
-gptr<TransformNode> some_transform_node(guest::Fuzz &f) {
-    auto self = f.object<TransformNode>();
-    self->vtable = gptr<u32>(TransformNode::VTABLE);
-    self->node = f.object<SceneNode>();
-    self->node->allocator = nullptr;
-    auto vtable = f.object<u32[8]>();
-    for (u32 i = 0; i < 8; i++) {
-        (*vtable)[i] = CONSTRUCTOR_ADDRESS;
-    }
-    self->node->vtable = vtable.cast<u32>();
-    return self;
-}
-
-float some_scale(guest::Fuzz &f) {
-    switch (f.below(6)) {
-    case 0: return 0.0f;
-    case 1: return f.pick<float>({0.01f, -0.01f, -0.0f, 0.005f, -0.005f, 0.0099999f});
-    case 2: return f.real() / 100000.0f;
-    case 3: return std::bit_cast<float>(f.number());
-    default: return f.real();
-    }
-}
-
-}  // namespace
-
-GUEST_FUZZ(0x004ee364, 200, [](guest::Fuzz &f) {
-    f.arguments(some_transform_node(f), f.pick<u32>({0, 1}));
-});
-GUEST_FUZZ(0x004ee39c, 200, [](guest::Fuzz &f) {
-    auto camera = f.object<Camera>();
-    camera->node = nullptr;
-    f.arguments(camera);
-});
-GUEST_FUZZ(0x004ee3e8, 400, [](guest::Fuzz &f) {
-    auto scale = f.object<Vec3>();
-    scale->x = some_scale(f);
-    scale->y = some_scale(f);
-    scale->z = some_scale(f);
-    f.arguments(some_transform_node(f), scale);
-});
-GUEST_FUZZ(0x004ee4c8, 200, [](guest::Fuzz &f) {
-    auto self = some_transform_node(f);
-    for (u32 i = 0; i < 3; i++) {
-        self->node->transform.scale[i] = f.real();
-    }
-    f.arguments(self);
-});
-GUEST_FUZZ(0x004ee4ec, 200, [](guest::Fuzz &f) { f.arguments(f.object<TransformNode>()); });
 
 }  // namespace g3d

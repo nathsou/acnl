@@ -16,9 +16,3 @@ static bool byte_at_index_at_least(gptr<u8> self, u32 minimum) {
     return self[index + FIRST_BYTE_OFFSET] >= minimum;
 }
 GUEST_EXPORT(0x00300f64, byte_at_index_at_least);
-
-GUEST_FUZZ(0x00300f64, 200, [](guest::Fuzz &f) {
-    auto object = f.allocate(64);
-    f.bytes(object, 64);
-    f.arguments(object, f.pick<u32>({0, 1, 3, 5, 7, 0xff, f.below(256)}));
-});

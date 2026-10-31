@@ -1,5 +1,5 @@
 // C++ drafts of proved decompilations, in the repository's conventions (gptr, structs with GUEST_OFFSET checks,
-// GUEST_EXPORT, a generated GUEST_FUZZ), for the harness to check and a person to name. A draft stands for the proved
+// GUEST_EXPORT), for a person (or a model's name map) to name. A draft stands for the proved
 // AST statement for statement; what cannot be written that way yet is refused (Err with the reason).
 use crate::ast::*;
 use crate::flow::liveness;
@@ -448,12 +448,6 @@ impl Emitter {
     }
 }
 
-fn sp_or_ea(e: &Expr) -> bool {
-    let mut r = crate::types::Reads::default();
-    crate::types::reads(e, &mut r);
-    r.vars.iter().any(|v| v == "r13" || v == "ea")
-}
-
 // what the emitter leaves out: the registers the decompiler unsaved (saved_* copies and their restores)
 fn stack_bookkeeping(s: &Stmt) -> bool {
     match s {
@@ -737,30 +731,5 @@ pub fn emit(f: &Function) -> R<String> {
     let _ = callee_saved;
     out.push_str(&format!("\n}}  // namespace d_{:08x}\n", f.address));
     out.push_str(&format!("GUEST_EXPORT(0x{:08x}, d_{:08x}::{});\n", addr, f.address, base));
-    // fuzzing: random objects for the arguments with fields, random words for the others
-    let mut gen = Vec::new();
-    for k in 0..last_param.map_or(0, |m| m + 1) {
-        let p = ARGS[k];
-        if !params.contains(&p) {
-            gen.push("f.number()".to_string());
-            continue;
-        }
-        if let Some(st) = e.known.get(&k) {
-            gen.push(format!("f.object<{}>()", st));
-            continue;
-        }
-        match e.struct_name.get(&k) {
-            Some(s) => gen.push(format!("f.object<d_{:08x}::{}>()", f.address, s)),
-            None => gen.push("f.pick<u32>({0, 1, 0xffffffff, f.below(0x100), f.number()})".into()),
-        }
-    }
-    for _ in 0..last_float.map_or(0, |m| m + 1) {
-        gen.push("f.real()".into());
-    }
-    out.push_str(&format!(
-        "GUEST_FUZZ(0x{:08x}, 100, [](guest::Fuzz &f) {{ f.arguments({}); }});  // (from the original)\n",
-        addr,
-        gen.join(", ")
-    ));
     Ok(out)
 }

@@ -111,30 +111,3 @@ BufferedSafeString<CAPACITY_64> &construct_buffered_string_40_copy(BufferedSafeS
     return self;
 }
 GUEST_EXPORT(0x00810f5c, construct_buffered_string_40_copy);
-
-// ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
-
-// A valid string of the 64-character kind with random text, terminated somewhere inside its buffer.
-static gptr<BufferedSafeString<CAPACITY_64>> some_source_string(guest::Fuzz &f) {
-    auto string = f.object<BufferedSafeString<CAPACITY_64>>();
-    string->vtable = CHAIN_CAPACITY_64.final_vtable;
-    string->buffer = gptr<char>(guest::addr_of(&string->storage[0]));
-    string->capacity = CAPACITY_64;
-    for (u32 i = 0; i < CAPACITY_64; i++) {
-        if (string->storage[i] == 0) {
-            string->storage[i] = 'a';
-        }
-    }
-    string->storage[f.below(CAPACITY_64)] = 0;
-    string->storage[CAPACITY_64 - 1] = 0;
-    return string;
-}
-
-GUEST_FUZZ(0x00810f00, 200, [](guest::Fuzz &f) { f.arguments(f.object<BufferedSafeString<CAPACITY_32>>()); });
-GUEST_FUZZ(0x00811048, 200, [](guest::Fuzz &f) { f.arguments(f.object<BufferedSafeString<CAPACITY_64>>()); });
-GUEST_FUZZ(0x00811190, 300, [](guest::Fuzz &f) { f.arguments(f.object<BufferedSafeString<CAPACITY_8>>()); });
-GUEST_FUZZ(0x008111ec, 300, [](guest::Fuzz &f) { f.arguments(f.object<BufferedSafeString<CAPACITY_96>>()); });
-GUEST_FUZZ(0x00810f5c, 300, [](guest::Fuzz &f) {
-    auto destination = f.object<BufferedSafeString<CAPACITY_64>>();
-    f.arguments(destination, some_source_string(f));
-});

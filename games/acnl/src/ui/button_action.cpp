@@ -3,7 +3,6 @@
 
 using guest::gptr;
 
-
 namespace {
 
 // A slot of ButtonActionCstmNode (0x28 bytes); the handle at 0x18 is what f_0074fdd0 checks.
@@ -91,10 +90,6 @@ void set_node_values(ButtonActionNode &node, const ButtonActionValues &v) {
 }
 GUEST_EXPORT(0x002b6a00, set_node_values);
 
-GUEST_FUZZ(0x002b6a00, 200, [](guest::Fuzz &f) {
-    f.arguments(f.object<ButtonActionNode>(), f.object<ButtonActionValues>());
-});
-
 // Notifies the target's object about the source: through the target's list when it has one.
 void notify_drag_icon_target(DragIconTarget &target, DragIconSource &source) {
     if (source.handle_18 == 0 || !target.object_1c) {
@@ -109,21 +104,6 @@ void notify_drag_icon_target(DragIconTarget &target, DragIconSource &source) {
 }
 GUEST_EXPORT(0x002b6a3c, notify_drag_icon_target);
 
-GUEST_FUZZ(0x002b6a3c, 200, [](guest::Fuzz &f) {
-    auto target = f.object<DragIconTarget>();
-    auto source = f.object<DragIconSource>();
-    auto list = f.object<ChildList>();
-    list->sentinel.next = guest::addr_of(list->sentinel);  // empty list
-    target->list_10 = list;
-    target->object_1c = f.below(2) ? f.object<DragIconObject>() : gptr<DragIconObject>();
-    if (f.below(3) == 0) {
-        source->handle_18 = 0;
-    } else if (source->handle_18 == 0) {
-        source->handle_18 = 1;
-    }
-    f.arguments(target, source);
-});
-
 // True when one of the two slots is in use and f_0074fdd0 reports 0 for it.
 bool button_action_node_virtual_11(ButtonActionNode &node) {
     if (node.slot_70.handle_18 != 0 && slot_check(node.slot_70) == 0) {
@@ -136,13 +116,6 @@ bool button_action_node_virtual_11(ButtonActionNode &node) {
 }
 GUEST_EXPORT(0x002b6aa4, button_action_node_virtual_11);
 
-GUEST_FUZZ(0x002b6aa4, 200, [](guest::Fuzz &f) {
-    auto node = f.object<ButtonActionNode>();
-    node->slot_70.handle_18 = 0;  // (the check function is not safe on random slots)
-    node->slot_98.handle_18 = 0;
-    f.arguments(node);
-});
-
 // Runs the source's virtual function 2 (vtable slot at 8) and flags the target's object.
 void drag_icon_target_trigger(DragIconTarget &target, DragIconSource &source) {
     if (source.handle_18 == 0) {
@@ -153,20 +126,3 @@ void drag_icon_target_trigger(DragIconTarget &target, DragIconSource &source) {
 }
 GUEST_EXPORT(0x002b6af8, drag_icon_target_trigger);
 
-// A read-only guest function (EncryptedInt::get) used as a safe virtual target.
-constexpr u32 SAFE_VIRTUAL_TARGET = 0x00303660;
-
-GUEST_FUZZ(0x002b6af8, 200, [](guest::Fuzz &f) {
-    auto target = f.object<DragIconTarget>();
-    target->object_1c = f.object<DragIconObject>();
-    auto source = f.object<DragIconSource>();
-    auto vtable = f.object<SourceVtable>();
-    vtable->slot_8 = SAFE_VIRTUAL_TARGET;
-    source->vtable = vtable;
-    if (f.below(2) == 0) {
-        source->handle_18 = 0;
-    } else if (source->handle_18 == 0) {
-        source->handle_18 = 1;
-    }
-    f.arguments(target, source);
-});

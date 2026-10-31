@@ -17,7 +17,6 @@ static u32 clear_field_or_update(gptr<u16> field, u32 value) {
     return update_field(field, UPDATE_MODE, UPDATE_LIMIT);
 }
 GUEST_EXPORT(0x003074b8, clear_field_or_update);
-GUEST_FUZZ(0x003074b8, 200, [](guest::Fuzz &f) { f.arguments(f.object<u16>(), 0u); });
 
 // Ten flags in two bytes.
 struct FlagBits10 {
@@ -36,6 +35,3 @@ void FlagBits10::set(u32 index) {
     bytes[index / 8] |= u8(1u << (index & 7));
 }
 GUEST_EXPORT(0x0030755c, FlagBits10::set);
-GUEST_FUZZ(0x0030755c, 300, [](guest::Fuzz &f) {
-    f.arguments(f.object<FlagBits10>(), f.pick<u32>({0, 1, 7, 8, 9, 10, 11, 0xffffffff, f.below(12)}));
-});

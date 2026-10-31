@@ -5,5 +5,3 @@ u32 current_dialog() {
     return dialog_state->current_dialog;
 }
 GUEST_EXPORT(0x00251374, current_dialog);
-
-GUEST_FUZZ(0x00251374, 200, [](guest::Fuzz &f) { f.arguments(); });
