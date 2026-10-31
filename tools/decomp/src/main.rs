@@ -188,6 +188,22 @@ fn selftest(addrs: &[String]) {
 // function whose decompiled form differs (a decompiler bug).
 fn check_all(limit: usize, threads: usize) {
     let funcs: Vec<(u32, String)> = generated_functions().into_iter().take(limit).collect();
+    check_functions(funcs, threads);
+}
+
+// the same for the functions listed in a file (hex addresses, one per line)
+fn check_list(list: &str, threads: usize) {
+    let wanted: std::collections::HashSet<u32> = std::fs::read_to_string(list)
+        .unwrap()
+        .lines()
+        .filter_map(|l| u32::from_str_radix(l.trim().trim_start_matches("0x"), 16).ok())
+        .map(|a| a & !1)
+        .collect();
+    let funcs: Vec<(u32, String)> = generated_functions().into_iter().filter(|(a, _)| wanted.contains(&(a & !1))).collect();
+    check_functions(funcs, threads);
+}
+
+fn check_functions(funcs: Vec<(u32, String)>, threads: usize) {
     let chunks: Vec<Vec<(u32, String)>> = (0..threads)
         .map(|t| funcs.iter().skip(t).step_by(threads).cloned().collect())
         .collect();
@@ -452,6 +468,7 @@ fn main() {
                              args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("emit") => emit_drafts(&args[2..]),
         Some("emit-batch") => emit_batch(&args[2], &args[3], args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
+        Some("check-list") => check_list(&args[2], args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("selftest") => selftest(&args[2..]),
         Some("sym-all") => sym_all(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX)),
         _ => eprintln!("usage: decomp decompile ADDR... | check-all [N] [THREADS] | dump [OUT] [N] [THREADS] | selftest ADDR... | bisect ADDR | parse-all | sym-all [N]"),

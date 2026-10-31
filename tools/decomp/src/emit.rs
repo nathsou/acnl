@@ -228,7 +228,31 @@ impl Emitter {
         }
     }
 
+    // the Z / N flag of a VFP comparison as the comparison (exact: Z is a == b, N is a < b, both false for NaN)
+    fn float_compare(&self, e: &Expr) -> R<Option<String>> {
+        if let Expr::Bin(BinOp::And, x, one) = e {
+            if let (Expr::Bin(BinOp::Shr, y, k), Expr::Num(1, _)) = (&**x, &**one) {
+                let op = match **k {
+                    Expr::Num(30, _) => "==",
+                    Expr::Num(31, _) => "<",
+                    _ => return Ok(None),
+                };
+                if let Expr::Bin(BinOp::Or, _, cmp) = &**y {
+                    if let Expr::Call(n, args) = &**cmp {
+                        if n == "vfp_cmpf" && args.len() == 2 {
+                            return Ok(Some(format!("u32({} {} {})", self.expr(&args[0], 7)?, op, self.expr(&args[1], 7)?)));
+                        }
+                    }
+                }
+            }
+        }
+        Ok(None)
+    }
+
     fn expr(&self, e: &Expr, outer: u32) -> R<String> {
+        if let Some(c) = self.float_compare(e)? {
+            return Ok(c);
+        }
         Ok(match e {
             Expr::Num(v, t) => num(*v, *t),
             Expr::Float(v, _) => format!("{:?}", v),

@@ -17,6 +17,12 @@ types and comments, without trusting the decompiler: every output it prints has 
 It reads `build/acnl/generated/code_*.c` (run from the repository root after a build). Z3 comes from Homebrew
 (`tools/decomp/.cargo/config.toml` points the z3 crate at it).
 
+## Results (2026-10-31, whole corpus)
+
+All 90,344 generated functions, 5 s per solver query, 10 threads, 1 h 40 min: 80,937 proved (89.6 %), 8,636 solver
+timeouts (most prove with 60 s: `DECOMP_RETRY_MS`), about 720 with system calls or rare statements (not handled), 6 that
+differ (decompiler bugs the checker caught; a decompilation that is not proved is never used).
+
 ## How it works
 
 - `parse.rs` reads the generated C subset (register copies, flags, `RD`/`WR` memory macros, labels and gotos, the
@@ -62,3 +68,16 @@ for statement: registers start from the guest CPU as in the generated prologue, 
 before calls, and a function using its stack frame keeps sp in step with the CPU. What it cannot write that way yet is
 refused with the reason. The printing of the AST as C++ is not proved: the harness (shadow checks and the generated
 fuzzers) checks it. Drafts are generated from the game and stay in build/.
+
+## games/acnl/src/decompiled
+
+The verified drafts are committed there, one file per 64 KiB address area (`tools/decomp/check_drafts.py DRAFTS.cpp`
+splits a batch with `split.py`, runs the harness, drops the functions that mismatch or crash, and keeps the verified
+ones). Their names are generated and recognisable, to be replaced by real ones later (by hand or with a model):
+
+- functions: `d_<address>::f_<address>` (the namespace keeps each draft's helpers apart);
+- the objects their arguments point to: `Object_<address>_<argument>`, fields `byte_/half_/word_<offset>`;
+- callees: `call_<address>` (`guest::Function`), registers `r0`-`r14`, flags `nf/zf/cf/vf`.
+
+Renaming a function means moving it out of `decompiled/` into the area it belongs to, with the repository's usual
+structs and names; the harness checks the result as for any rewrite.
