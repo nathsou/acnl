@@ -52,6 +52,19 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
             v.map(|v| Expr::Num(v as u64, Ty::U32))
         }
 
+        // (x << a) >> b with b >= a (unsigned 32 bits): a bit field, (x >> (b - a)) & mask
+        Expr::Bin(BinOp::Shr, l, b) if whole == Some(Ty::U32) && matches!(&**l, Expr::Bin(BinOp::Shl, _, _)) => {
+            match (&**l, num_any(b)) {
+                (Expr::Bin(BinOp::Shl, x, a), Some(b)) if type_of(x, types) == Some(Ty::U32) => match num_any(a) {
+                    Some(a) if a <= b && b < 32 => {
+                        let shifted = if b == a { (**x).clone() } else { Expr::Bin(BinOp::Shr, x.clone(), Box::new(Expr::Num(b - a, Ty::U32))) };
+                        Some(Expr::Bin(BinOp::And, Box::new(shifted), Box::new(Expr::Num((1u64 << (32 - b)) - 1, Ty::U32))))
+                    }
+                    _ => None,
+                },
+                _ => None,
+            }
+        }
         // x ^ x -> 0, x - x -> 0 (expressions have no side effects: both sides are the same value)
         Expr::Bin(BinOp::Xor | BinOp::Sub, a, b) if a == b && whole.map_or(false, |t| !t.float()) => Some(Expr::Num(0, whole.unwrap())),
         // x & 0 -> 0, 0 >> k -> 0, 0 << k -> 0

@@ -404,6 +404,8 @@ impl Emitter {
                 UnOp::Not => "~",
                 UnOp::LNot => "!",
             }, self.expr(a, 11)?),
+            // arithmetic on constants (a value folded to its constant meets another): its result
+            Expr::Bin(..) if self.constant_u32(e).is_some() => num(self.constant_u32(e).unwrap(), Ty::U32),
             Expr::Bin(op, a, b) => {
                 let p = prec(*op);
                 let s = format!("{} {} {}", self.expr(a, p - 1)?, op_text(*op), self.expr(b, p)?);
@@ -463,6 +465,31 @@ impl Emitter {
             Some(live) => self.reload.iter().filter(|(v, _)| live.contains(v)).cloned().collect(),
             None => self.reload.clone(),
         }
+    }
+
+    // the value of a 32-bit unsigned expression made of constants (and variables holding one), wrapping as the guest
+    fn constant_u32(&self, e: &Expr) -> Option<u64> {
+        let v = match e {
+            Expr::Num(k, Ty::U32) => *k as u32,
+            Expr::Var(v) => match self.values.constant(&self.cur, v) {
+                Some((k, Ty::U32)) => k as u32,
+                _ => return None,
+            },
+            Expr::Bin(op, a, b) => {
+                let (x, y) = (self.constant_u32(a)? as u32, self.constant_u32(b)? as u32);
+                match op {
+                    BinOp::Add => x.wrapping_add(y),
+                    BinOp::Sub => x.wrapping_sub(y),
+                    BinOp::Mul => x.wrapping_mul(y),
+                    BinOp::And => x & y,
+                    BinOp::Or => x | y,
+                    BinOp::Xor => x ^ y,
+                    _ => return None,
+                }
+            }
+            _ => return None,
+        };
+        Some(v as u64)
     }
 
     // the address an access goes to when it is a constant (written as such, or held in a variable)
