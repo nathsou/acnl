@@ -39,7 +39,9 @@ fn cache() -> &'static std::sync::Mutex<std::collections::HashSet<(u32, u64)>> {
 }
 
 fn proof_key(original: &Function, d: &Decompiled) -> (u32, u64) {
-    let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION;
+    // (the call model depends on the signature table, when there is one)
+    let sig = if crate::signatures::table().map.is_empty() { 0 } else { crate::signatures::table().hash };
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION ^ sig;
     let text = format!("{}\n{:?}\n{:?}", crate::print::function(&d.function), d.save_slots, d.saved);
     for b in text.bytes() {
         h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);
@@ -311,6 +313,19 @@ L_5014:
     #[test]
     fn round_trip_call_and_saves() {
         round_trip("f_00005000", &["r0", "r4", "r13", "r14"], SAVES, ("r0 + 1u", "r0 + 2u"));
+    }
+
+    #[test]
+    fn proves_signatures() {
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let sig = |name: &str, regs: &[&str], body: &str| {
+            crate::signatures::prove(&ctx, &parse::function(&function(name, regs, body)).unwrap())
+        };
+        // compares r1, stores through r2, writes r0 before reading it
+        assert_eq!(sig("f_00001000", &["r0", "r1", "r2", "r14"], PREDICATED), Some(vec!["r1".to_string(), "r2".to_string()]));
+        // a loop over r1
+        assert_eq!(sig("f_00002000", &["r0", "r1", "r14"], LOOP), Some(vec!["r1".to_string()]));
     }
 
     #[test]

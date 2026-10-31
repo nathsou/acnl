@@ -646,19 +646,55 @@ impl<'c> Sym<'c> {
         let fl: Vec<BV> = (0..16).map(|i| st.cpu[&format!("s{}", i)].clone()).collect();
         args.extend(fl.iter());  // float arguments
         args.push(&st.world);
-        let mut m = self.uf_mem("call_mem", &args, &seen);
+        // a callee with a proved signature (signatures.rs): memory, effects and the results a caller observes depend on
+        // its argument registers only (each result also on its own value: a register it leaves alone passes through)
+        let sig = target.simplify().as_u64().and_then(|t| crate::signatures::of(t as u32));
+        let few: Option<Vec<BV>> = sig.map(|regs| regs.iter().map(|k| st.cpu[k].clone()).collect());
+        let mut fewer: Vec<&BV> = vec![target];
+        if let Some(v) = &few {
+            fewer.extend(v.iter());
+            fewer.push(&sp);
+            fewer.push(&st.world);
+        }
+        let mut m = match &few {
+            Some(_) => self.uf_mem("call_mem_sig", &fewer, &seen),
+            None => self.uf_mem("call_mem", &args, &seen),
+        };
         for (a, old) in &saved {
             m = m.store(a, old);
         }
         args.push(&digest);
+        fewer.push(&digest);
         let mut out = Vec::new();
         for k in ["r0", "r1", "r2", "r3", "r12", "r14", "nf", "zf", "cf", "vf", "qf", "ge", "fpscr"] {
-            out.push((k.to_string(), self.uf(&format!("call_{}", k), &args, 32)));
+            let v = match &few {
+                Some(_) if crate::signatures::RESULTS.contains(&k) => {
+                    let own = st.cpu[k].clone();
+                    let mut a = fewer.clone();
+                    a.push(&own);
+                    self.uf(&format!("call_{}_sig", k), &a, 32)
+                }
+                _ => self.uf(&format!("call_{}", k), &args, 32),
+            };
+            out.push((k.to_string(), v));
         }
         for i in 0..16 {
-            out.push((format!("s{}", i), self.uf(&format!("call_s{}", i), &args, 32)));
+            let k = format!("s{}", i);
+            let v = match &few {
+                Some(_) if crate::signatures::RESULTS.contains(&k.as_str()) => {
+                    let own = st.cpu[&k].clone();
+                    let mut a = fewer.clone();
+                    a.push(&own);
+                    self.uf(&format!("call_{}_sig", k), &a, 32)
+                }
+                _ => self.uf(&format!("call_{}", k), &args, 32),
+            };
+            out.push((k, v));
         }
-        let w = self.uf("call_world", &args, 32);
+        let w = match &few {
+            Some(_) => self.uf("call_world_sig", &fewer, 32),
+            None => self.uf("call_world", &args, 32),
+        };
         for (k, v) in out {
             st.cpu.insert(k, v);
         }

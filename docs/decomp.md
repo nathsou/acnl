@@ -52,6 +52,10 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
 - A guest call is opaque: its results (r0-r3, r12, lr, flags, s0-s15, memory, effects) are functions of its target,
   r0-r3, sp, s0-s15, the effects token and the memory it sees. Callees keep r4-r11 and sp, return normally, and do not
   read or write the caller's register save area (calling convention).
+- A callee with a proved signature (`decomp signatures`, below): its results a caller observes (r0, r1, s0, s1), its
+  memory and effects depend on its argument registers only, sp, the memory and the effects token (and each result on
+  its own value: a register it leaves alone passes through); its scratch results still depend on every argument
+  register. Without a table (`DECOMP_SIGNATURES`, default `build/acnl/decomp_signatures.txt`) every callee takes them all.
 - A system call (`rt_svc`) is opaque too: r0-r7, memory and effects become functions of its number, r0-r7, sp, the
   thread's TLS address, the memory and the effects token; the other registers stay, and so does the caller's save area.
 - Only entry 0 of a function is decompiled (the others are the runtime resuming a function in the middle).
@@ -64,6 +68,17 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   a fraction of a second. `DECOMP_FRAME=0` uses one memory with an assumption per access through a pointer instead,
   checked not to rule out any way out of the function (much slower).
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
+
+## Signatures (`decomp signatures OUT [N] [THREADS]`)
+
+Which argument registers (r0-r3, s0-s15) a function's behaviour depends on, proved by non-interference: the function
+against a copy of itself that starts by giving the other argument registers arbitrary values. First the ones that are no
+results (r2, r3, s2-s15) at once, comparing everything; then each result register that is no argument (r0, r1, s0, s1)
+alone, comparing everything but itself. Changing the registers one group after the other, the statement the call
+model uses follows. The guess comes from liveness (the registers read before being written, and those its calls read);
+a wrong guess is never a wrong signature, only no signature. Each pass uses the table of the previous one for the
+callees (sound by induction on the passes: every fact is proved under facts proved before). With a signature, the C++
+passes a callee only its arguments: `call_0011c00c(r0)` instead of four registers.
 
 ## C++ drafts
 

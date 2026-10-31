@@ -9,6 +9,7 @@ mod inline;
 mod parse;
 mod print;
 mod saves;
+mod signatures;
 mod propagate;
 mod simplify;
 mod structure;
@@ -459,6 +460,35 @@ const HELPERS: [&str; 52] = [
     "sqrt", "fabsf", "fabs", "__builtin_clz", "clz",
 ];
 
+// Proves the signatures of all functions (or the first N): which argument registers each one reads.
+fn signatures_all(out: &str, n: usize, threads: usize) {
+    let funcs: Vec<(u32, String)> = generated_functions().into_iter().take(n).collect();
+    let chunks: Vec<Vec<(u32, String)>> = (0..threads).map(|t| funcs.iter().skip(t).step_by(threads).cloned().collect()).collect();
+    let handles: Vec<_> = chunks
+        .into_iter()
+        .map(|chunk| {
+            std::thread::spawn(move || {
+                let cfg = z3::Config::new();
+                let ctx = z3::Context::new(&cfg);
+                let mut res = Vec::new();
+                for (addr, text) in chunk {
+                    if let Ok(f) = parse::function(&text) {
+                        if let Some(regs) = signatures::prove(&ctx, &f) {
+                            res.push((addr & !1, regs));
+                        }
+                    }
+                }
+                res
+            })
+        })
+        .collect();
+    let mut all: Vec<(u32, Vec<String>)> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
+    all.sort();
+    let text: String = all.iter().map(|(a, r)| format!("{:08x} {}\n", a, r.join(" "))).collect();
+    fs::write(out, text).unwrap();
+    println!("{} of {} functions have a proved signature ({})", all.len(), funcs.len(), out);
+}
+
 // The C++ of a draft proved equal to the decompiled function, itself proved equal to the original: the verdict.
 fn prove_export(ctx: &z3::Context, e: &cpp::Export) -> Result<(), String> {
     let f = e.function.as_ref().map_err(|w| format!("unreadable: {}", w))?;
@@ -568,6 +598,9 @@ fn main() {
         Some("emit-batch") => emit_batch(&args[2], &args[3], args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("check-list") => check_list(&args[2], args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("selftest") => selftest(&args[2..]),
+        Some("signatures") => signatures_all(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp_signatures.txt"),
+                                             args.get(3).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX),
+                                             args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("prove-cpp") => prove_cpp(&args[2], args.get(3).map(|s| s.as_str()).filter(|s| *s != "-"),
                                        args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("sym-all") => sym_all(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX)),

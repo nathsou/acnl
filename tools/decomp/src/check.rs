@@ -47,6 +47,11 @@ fn merged<'c>(s: &Sym<'c>, exits: &[Exit<'c>], key: &str) -> BV<'c> {
 }
 
 pub fn equivalent(ctx: &Context, original: &Function, candidate: &Function, save_slots: &[u32]) -> Verdict {
+    equivalent_skipping(ctx, original, candidate, save_slots, &HashSet::new())
+}
+
+// The same, not comparing the observed registers in `skip`.
+pub fn equivalent_skipping(ctx: &Context, original: &Function, candidate: &Function, save_slots: &[u32], skip: &HashSet<String>) -> Verdict {
     let mut s = Sym::new(ctx);
     let mut init: State = s.initial("in_");
     s.entry_sp = Some(init.cpu["r13"].clone());
@@ -74,7 +79,7 @@ pub fn equivalent(ctx: &Context, original: &Function, candidate: &Function, save
         solver.assert(x);
     }
     let mut diffs: Vec<(String, Bool)> = Vec::new();
-    for k in OBSERVED {
+    for k in OBSERVED.iter().copied().filter(|k| !skip.contains(*k)) {
         let (va, vb) = (merged(&s, &a, k), merged(&s, &b, k));
         diffs.push((k.to_string(), va._eq(&vb).not()));
     }
@@ -199,6 +204,8 @@ pub struct Relations {
     // the original's copies of the registers it restores before returning (saved_rX) equal what the candidate leaves
     // in the CPU (rX, or LR for lr)
     pub restored: Vec<String>,
+    // observed registers not compared at the exits
+    pub unobserved: HashSet<String>,
 }
 
 // The same, with the CPU fields in `free` left unrelated at the loop headers (a weaker invariant: still sound, as
@@ -210,7 +217,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
     let (free, lr_slot) = (&rel.free, rel.lr_slot);
     let (_, olabels, oheaders) = Sym::graph(original);
     if oheaders.is_empty() {
-        return equivalent(ctx, original, candidate, slots);
+        return equivalent_skipping(ctx, original, candidate, slots, &rel.unobserved);
     }
     // the cut points: the candidate's loop headers (its labels are a subset of the original's); a cycle of the
     // original they do not cut shows up as a loop when its segment runs (unknown, never a wrong proof)
@@ -415,7 +422,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
         let (oleave, cleave) = (any_cond(ctx, &oc), any_cond(ctx, &cc));
         diffs.push(("exit condition".into(), oleave._eq(&cleave).not()));
         if !oexits.is_empty() && !cexits.is_empty() {
-            for k in OBSERVED {
+            for k in OBSERVED.iter().copied().filter(|k| !rel.unobserved.contains(*k)) {
                 let a: Vec<(Bool, BV)> = oexits.iter().map(|e| (e.cond.clone(), e.state.cpu[k].clone())).collect();
                 let b: Vec<(Bool, BV)> = cexits.iter().map(|e| (e.cond.clone(), e.state.cpu[k].clone())).collect();
                 diffs.push((k.to_string(), Bool::and(ctx, &[&oleave, &merge_bv(&a)._eq(&merge_bv(&b)).not()])));
@@ -625,5 +632,5 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     };
     let lr_slot = pushed.registers.iter().find(|(r, _)| r == "r14").map(|(_, off)| *off);
     let restored = d.saved.iter().map(|(r, _)| r.clone()).collect();
-    equivalent_with_loops_free(ctx, &df, cpp, &pushed.slots, &[], &Relations { free, lr_slot, restored })
+    equivalent_with_loops_free(ctx, &df, cpp, &pushed.slots, &[], &Relations { free, lr_slot, restored, unobserved: HashSet::new() })
 }

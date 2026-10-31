@@ -119,6 +119,8 @@ struct Emitter {
     has_sp: bool,                  // the function keeps r13 in a variable
     float_args: Vec<(String, u32)>, // float registers to hand over before a call (variable, s index)
     call_args: String,              // r0-r3 as a call passes them (the CPU's for registers the function does not keep)
+    call_list: Vec<String>,         // the same, one by one
+    needs: HashMap<u32, Need>,      // what each direct callee is handed (signatures.rs)
     has_r0: bool,                   // the function keeps r0 in a variable (else results stay in the CPU)
     pc: Option<String>,             // the target of the next indirect call (the AST sets c->pc first)
     fields: BTreeMap<usize, BTreeMap<u64, Ty>>,
@@ -186,12 +188,26 @@ fn op_text(op: BinOp) -> &'static str {
 
 impl Emitter {
     // what SO() hands over to a callee besides r0-r3: the stack pointer and the float arguments
-    fn before_call(&mut self, indent: usize) {
+    // before a tail call: the callee-saved registers the function changed (a fragment of a function hands them on;
+    // the callee keeps them, so they are what the caller sees)
+    fn tail_write_back(&mut self, indent: usize) {
+        for (field, v) in self.write_back.clone() {
+            if ["guest::cpu()->r[1]", "guest::cpu()->s[0]", "guest::cpu()->s[1]", "guest::cpu()->r[13]"].contains(&field.as_str()) {
+                continue;
+            }
+            self.line(indent, &format!("{} = {};", field, v));
+        }
+    }
+
+    fn before_call(&mut self, indent: usize, target: Option<u32>) {
         if self.stack && self.has_sp {
             self.line(indent, "guest::cpu()->r[13] = r13;");
         }
+        let need = target.and_then(|t| self.needs.get(&t)).cloned();
         for (v, k) in self.float_args.clone() {
-            self.line(indent, &format!("guest::cpu()->s[{}] = {};", k, v));
+            if need.as_ref().map_or(true, |n| n.full || n.floats.contains(&k)) {
+                self.line(indent, &format!("guest::cpu()->s[{}] = {};", k, v));
+            }
         }
     }
 
@@ -442,9 +458,13 @@ impl Emitter {
                 Stmt::Goto(l) => self.line(indent, &format!("goto {};", l)),
                 Stmt::Label(l) => self.out.push_str(&format!("{}:;\n", l)),
                 Stmt::GuestCall(t, tail) => {
-                    self.before_call(indent);
+                    self.before_call(indent, Some(*t));
                     let name = self.callees.entry(*t).or_insert_with(|| format!("call_{:08x}", t & !1)).clone();
-                    let call = format!("{}({})", name, self.call_args);
+                    let arity = self.needs.get(t).map_or(4, |n| if n.full { 4 } else { n.arity });
+                    let call = format!("{}({})", name, self.call_list[..arity].join(", "));
+                    if *tail {
+                        self.tail_write_back(indent);
+                    }
                     if *tail {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};\n{}return;", call, "    ".repeat(indent)) });
                     } else {
@@ -473,8 +493,11 @@ impl Emitter {
                 }
                 Stmt::Dispatch(tail) => {
                     let Some(target) = self.pc.take() else { return Err("indirect call without a target".into()) };
-                    self.before_call(indent);
+                    self.before_call(indent, None);
                     let call = format!("guest::call_address<u32>({}, {})", target, self.call_args);
+                    if *tail {
+                        self.tail_write_back(indent);
+                    }
                     if *tail {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};", call) });
                         if !returns {
@@ -506,6 +529,77 @@ impl Emitter {
         }
         Ok(())
     }
+}
+
+// What a direct callee is handed: with a proved signature (signatures.rs), its argument registers, r0 (whose result is
+// read, and may pass through) and the results read after the call (they may pass through too); everything when it has
+// none, or when a scratch register is read after the call (its result depends on every argument register).
+#[derive(Clone, Default)]
+struct Need {
+    arity: usize,       // core registers r0..r(arity-1)
+    floats: HashSet<u32>, // float registers written before the call
+    full: bool,
+}
+
+fn call_needs(f: &Function, lv: &crate::flow::Liveness) -> HashMap<u32, Need> {
+    let field: HashMap<&str, String> = f.synced.iter().map(|(v, fl)| (v.as_str(), crate::sym::cpu_key(fl))).collect();
+    let outputs = |k: &str| {
+        matches!(k, "r0" | "r1" | "r2" | "r3" | "r12" | "r14" | "nf" | "zf" | "cf" | "vf" | "qf" | "ge" | "fpscr")
+            || k.strip_prefix('s').and_then(|n| n.parse::<u32>().ok()).map_or(false, |n| n < 16)
+    };
+    fn walk(list: &[Stmt], prefix: &[usize], out: &mut Vec<(u32, bool, Vec<usize>)>) {
+        for (i, s) in list.iter().enumerate() {
+            let mut p = prefix.to_vec();
+            p.push(i);
+            match s {
+                Stmt::GuestCall(t, tail) => out.push((*t, *tail, p)),
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    walk(a, &[p.clone(), vec![0]].concat(), out);
+                    walk(b, &[p.clone(), vec![1]].concat(), out);
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut sites = Vec::new();
+    walk(&f.body, &[], &mut sites);
+    let mut needs: HashMap<u32, Need> = HashMap::new();
+    for (t, tail, p) in sites {
+        let n = needs.entry(t).or_default();
+        let Some(sig) = crate::signatures::of(t) else {
+            n.full = true;
+            continue;
+        };
+        // what is read of the call's results: the observed ones after a tail call, the live ones after a call
+        let read: Vec<String> = if tail {
+            crate::signatures::RESULTS.iter().map(|k| k.to_string()).collect()
+        } else {
+            let mut next = p.clone();
+            *next.last_mut().unwrap() += 1;
+            match lv.live_out.get(&next) {
+                Some(live) => live.iter().filter_map(|v| field.get(v.as_str()).cloned()).filter(|k| outputs(k)).collect(),
+                None => {
+                    n.full = true;
+                    continue;
+                }
+            }
+        };
+        if read.iter().any(|k| !crate::signatures::RESULTS.contains(&k.as_str())) {
+            n.full = true;
+            continue;
+        }
+        let mut core = 1; // r0
+        for k in sig.iter().chain(read.iter()) {
+            if let Some(i) = k.strip_prefix('r').and_then(|x| x.parse::<usize>().ok()) {
+                core = core.max(i + 1);
+            }
+            if let Some(i) = k.strip_prefix('s').and_then(|x| x.parse::<u32>().ok()) {
+                n.floats.insert(i);
+            }
+        }
+        n.arity = n.arity.max(core);
+    }
+    needs
 }
 
 // what the emitter leaves out: the registers the decompiler unsaved (saved_* copies and their restores)
@@ -617,12 +711,13 @@ pub fn emit(f: &Function) -> R<String> {
     let params: Vec<&str> = ARGS.iter().copied().filter(|r| lv.at_entry.contains(*r) && declared.contains(r)).collect();
     // parameters go by position (the k-th is rk): every register up to the last one read gets one
     let last_param = params.iter().map(|p| p[1..].parse::<usize>().unwrap()).max();
-    let call_args: String = ARGS
+    let call_list: Vec<String> = ARGS
         .iter()
         .enumerate()
         .map(|(k, r)| if declared.contains(r) { r.to_string() } else { format!("guest::cpu()->r[{}]", k) })
-        .collect::<Vec<_>>()
-        .join(", ");
+        .collect();
+    let call_args = call_list.join(", ");
+    let needs = call_needs(f, &lv);
     let floats: Vec<String> = (0..16).map(|i| format!("S{}", i)).filter(|s| lv.at_entry.contains(s)).collect();
     let last_float = floats.iter().map(|s| s[1..].parse::<usize>().unwrap()).max();
     if lv.at_entry.iter().any(|v| v.starts_with('S') && !floats.contains(v)) {
@@ -687,7 +782,7 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), out: String::new() };
     let returns = assigned.contains("r0");
     // the body first (it decides the callees)
     e.stmts(&f.body, 1, returns, &[])?;
@@ -731,7 +826,9 @@ pub fn emit(f: &Function) -> R<String> {
         e.struct_name.insert(*k, name);
     }
     for (t, n) in &e.callees {
-        out.push_str(&format!("inline constexpr guest::Function<0x{:08x}, u32(u32, u32, u32, u32)> {};  // (from the original)\n", t, n));
+        let arity = e.needs.get(t).map_or(4, |n| if n.full { 4 } else { n.arity });
+        let args = vec!["u32"; arity].join(", ");
+        out.push_str(&format!("inline constexpr guest::Function<0x{:08x}, u32({})> {};  // (from the original)\n", t, args, n));
     }
     out.push('\n');
     let mut sig = Vec::new();
