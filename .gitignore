@@ -7,3 +7,4 @@ __pycache__/
 
 # the decompiler's Rust build
 tools/decomp/target/
+tools/decomp/target-dev/

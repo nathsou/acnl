@@ -10,8 +10,8 @@ import argparse
 import os
 import re
 
-HEADER = '''// Functions decompiled by tools/decomp (docs/decomp.md): each is proved equal to the recompiled original. The names are generated (d_<address>::f_<address>, Object_<address>_<argument>, word_<offset>)
-// and still to be chosen.
+HEADER = '''// Functions decompiled by tools/decomp (docs/decomp.md), each proved equal to the recompiled original (prove-cpp). The
+// names are generated (d_<address>::f_<address>, Object_<address>_<argument>, word_<offset>) and still to be chosen.
 #include "guest/guest.hpp"
 '''
 

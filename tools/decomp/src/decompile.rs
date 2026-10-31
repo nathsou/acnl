@@ -14,7 +14,7 @@ pub fn decompile(original: &Function) -> Decompiled {
 }
 
 // Bump when the checker or the meaning of the AST changes: earlier proofs in the cache then no longer count.
-const CHECKER_VERSION: u64 = 3;
+const CHECKER_VERSION: u64 = 4;
 
 // Proofs already done (DECOMP_CACHE, default build/acnl/decomp_proved.txt): "address hash" per line, the hash of a
 // decompiled function proved equal to the original at that address (FNV-1a of its printout and CHECKER_VERSION).
@@ -39,9 +39,10 @@ fn cache() -> &'static std::sync::Mutex<std::collections::HashSet<(u32, u64)>> {
 }
 
 fn proof_key(original: &Function, d: &Decompiled) -> (u32, u64) {
-    // (the call model depends on the signature table, when there is one)
-    let sig = if crate::signatures::table().map.is_empty() { 0 } else { crate::signatures::table().hash };
-    let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION ^ sig;
+    // (the call model depends on the signatures of the callees, when they have one)
+    let sig = crate::signatures::callee_key(original);
+    let none = 0xcbf2_9ce4_8422_2325;
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION ^ if sig == none { 0 } else { sig };
     let text = format!("{}\n{:?}\n{:?}", crate::print::function(&d.function), d.save_slots, d.saved);
     for b in text.bytes() {
         h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);
@@ -278,6 +279,50 @@ L_5014:
         assert!(text.contains(change.0), "{}", text);
         let changed = text.replacen(change.0, change.1, 1);
         assert!(matches!(crate::check::verify_cpp(&ctx, &f, &d, &read(&changed)), Verdict::Differs(_)), "{}", changed);
+    }
+
+    // a load 8 bytes before the argument (0xfffffff8 in the guest's 32-bit arithmetic)
+    const BEFORE: &str = "L_6000:
+  { u32 ea = r0 + 0xfffffff8u; u32 v = RD32(ea); r0 = v; }
+  tpc = r14; c->pc = tpc; SO(); return;";
+
+    #[test]
+    fn round_trip_field_before_the_object() {
+        // no field at 0xfffffff8: on the host, g_mem + address + 0xfffffff8 is 4 GiB past the object
+        round_trip("f_00006000", &["r0", "r14"], BEFORE, ("0xfffffff8u", "0xfffffff4u"));
+    }
+
+    #[test]
+    fn rejects_a_field_before_the_object() {
+        let f = parse::function(&function("f_00006000", &["r0", "r14"], BEFORE)).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let (d, _) = decompile_and_prove(&ctx, &f);
+        assert!(!crate::emit::emit(&d.function).unwrap().contains("unknown_0[0xfffffff8]"));
+        let helpers = std::collections::HashSet::new();
+        let hand = |offset: &str| {
+            format!("struct __attribute__((packed)) Before {{\n    u8 unknown_0[{}];\n    u32 word;\n}};\n\nu32 f_00006000(gptr<Before> arg0) {{\n    return arg0->word;\n}}\nGUEST_EXPORT(0x00006000, f_00006000);\n", offset)
+        };
+        let read = |t: &str| crate::cpp::read(t, &helpers).unwrap().exports.remove(0).function;
+        assert!(read(&hand("0x8")).is_ok());
+        let e = read(&hand("0xfffffff8"));
+        assert!(e.as_ref().is_err_and(|w| w.contains("does not wrap")), "{:?}", e.map(|_| ()));
+    }
+
+    // a shrink-wrapped prologue: an early return before the push, then a call and a return through the saved lr
+    const SHRINK_WRAPPED: &str = "L_7000:
+  { u32 a = r0; u32 b = 0x0u; u32 res = a - b; zf = res == 0; (void)res; }
+  if (zf) { tpc = r14; c->pc = tpc; SO(); return; }
+  { u32 ea = r13 - 8; WR32(ea + 0, r4); WR32(ea + 4, r14); r13 = ea; }
+  { u32 a = 0; (void)a; u32 b = r0; u32 res = b; r4 = res; }
+  r14 = 0x7014u; SO(); f_00004000(c, 0); SI(); if (__builtin_expect(c->pc != 0x7014u, 0)) return;
+L_7014:
+  { u32 a = r0; u32 b = r4; u32 res = a + b; r0 = res; }
+  { u32 ea = r13; r4 = RD32(ea + 0); tpc = RD32(ea + 4); r13 = ea + 8; } c->pc = tpc; SO(); return;";
+
+    #[test]
+    fn round_trip_shrink_wrapped() {
+        round_trip("f_00007000", &["r0", "r4", "r13", "r14"], SHRINK_WRAPPED, ("r0 + r4", "r0 - r4"));
     }
 
     #[test]

@@ -599,10 +599,19 @@ impl<'c> Sym<'c> {
         Ok(())
     }
 
+    // a value as the CPU holds it: a float register's bits are the float's (a copy, not a conversion)
+    fn to_cpu(&self, v: &BV<'c>, t: Ty) -> BV<'c> {
+        if t == Ty::F32 { v.clone() } else { self.resize(v, t, Ty::U32) }
+    }
+
+    fn from_cpu(&self, v: &BV<'c>, t: Ty) -> BV<'c> {
+        if t == Ty::F32 { v.clone() } else { self.resize(v, Ty::U32, t) }
+    }
+
     fn sync_out(&self, st: &mut State<'c>, synced: &[(String, CpuField)]) {
         for (v, f) in synced {
             if let Some((t, val)) = st.vars.get(v) {
-                let nv = self.resize(val, *t, Ty::U32);
+                let nv = self.to_cpu(val, *t);
                 st.cpu.insert(cpu_key(f), nv);
             }
         }
@@ -611,7 +620,7 @@ impl<'c> Sym<'c> {
     fn sync_in(&self, st: &mut State<'c>, synced: &[(String, CpuField)]) {
         for (v, f) in synced {
             if let (Some((t, _)), Some(cv)) = (st.vars.get(v).cloned(), st.cpu.get(&cpu_key(f)).cloned()) {
-                let nv = self.resize(&cv, Ty::U32, t);
+                let nv = self.from_cpu(&cv, t);
                 st.vars.insert(v.clone(), (t, nv));
             }
         }
@@ -1019,8 +1028,8 @@ impl<'c> Sym<'c> {
             }
             Stmt::SetCpu(fl, e) => {
                 let (t, v) = self.eval(st, e)?;
-                let nv = self.resize(&v, t, if matches!(fl, CpuField::S(_)) { Ty::F32 } else { Ty::U32 });
-                let nv = self.resize(&nv, if matches!(fl, CpuField::S(_)) { Ty::F32 } else { Ty::U32 }, Ty::U32);
+                // into a float register: converted to float first if it is not one (C assignment), then its bits
+                let nv = if matches!(fl, CpuField::S(_)) { self.to_cpu(&self.resize(&v, t, Ty::F32), Ty::F32) } else { self.resize(&v, t, Ty::U32) };
                 st.cpu.insert(cpu_key(fl), self.norm(&nv));
             }
             Stmt::Store(ty, a, v) => {

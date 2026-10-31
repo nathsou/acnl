@@ -12,7 +12,11 @@
 // - float == and < are the Z and N bits of vfp_cmpf (3dsrecomp/runtime/cpu.h: Z iff a == b, N iff a < b), which is
 //   how the recompiled code compares floats;
 // - fields: offsets from the file's packed structs, or the type database for the repository's structs (each such
-//   assumption is listed by layout_assumptions, for the compiler to check).
+//   assumption is listed by layout_assumptions, for the compiler to check). A field is reached on the host at
+//   g_mem + address + offset, without the guest's 32-bit wrap: offsets of MAX_FIELD_OFFSET or more are refused (a
+//   field at 0xfffffff8 is 8 bytes before the object in the guest, but 4 GiB after it on the host), and below it the
+//   sum cannot wrap because guest addresses are below 0x80000000 (3DS user space);
+// - shifts: by constants below the width only (C++ leaves larger or variable amounts open; the model defines them).
 use crate::ast::*;
 use crate::typedb::PathStep;
 use std::collections::{HashMap, HashSet};
@@ -21,6 +25,7 @@ type R<T> = Result<T, String>;
 
 pub const RETURN_TO_HOST: u64 = 0xFFFF_1000;
 pub const LR: &str = "__lr"; // the return address at the entry
+pub const MAX_FIELD_OFFSET: u64 = 0x8000_0000;
 
 #[derive(Clone, Debug, PartialEq)]
 enum Tok {
@@ -220,8 +225,9 @@ enum V {
 }
 
 struct Parser<'a> {
-    t: Vec<Tok>,
+    t: &'a [Tok],
     i: usize,
+    half: Option<usize>, // a '>>' at this index of which one '>' closed a template argument list
     scope: &'a Scope,
     vars: HashMap<String, CType>,
     helpers: &'a HashSet<String>,
@@ -285,9 +291,13 @@ fn is_float(t: &CType) -> bool {
 
 impl<'a> Parser<'a> {
     fn peek(&self) -> Option<&Tok> {
-        self.t.get(self.i)
+        self.peek_at(0)
     }
     fn peek_at(&self, k: usize) -> Option<&Tok> {
+        const GT: Tok = Tok::P(">");
+        if self.half == Some(self.i + k) {
+            return Some(&GT);
+        }
         self.t.get(self.i + k)
     }
     fn is(&self, p: &str) -> bool {
@@ -343,7 +353,7 @@ impl<'a> Parser<'a> {
             return Ok(());
         }
         if self.is(">>") {
-            self.t[self.i] = Tok::P(">");
+            self.half = Some(self.i);
             return Ok(());
         }
         Err(format!("expected '>' at {:?}", self.peek()))
@@ -396,7 +406,7 @@ impl<'a> Parser<'a> {
 
     fn place_address(&mut self, p: &Place) -> R<(Expr, CType)> {
         match p {
-            Place::Mem(a, off, t) => Ok((add(a.clone(), *off), t.clone())),
+            Place::Mem(a, off, t) => Ok((add(a.clone(), host_offset(*off)?), t.clone())),
             Place::Db(a, s, path) => {
                 let db = crate::view::types().ok_or("no type database")?;
                 let (off, base) = db.resolve(s, path).ok_or_else(|| format!("{}.{}: not a field", s, path_text(path)))?;
@@ -405,7 +415,7 @@ impl<'a> Parser<'a> {
                 if !self.layout.contains(&assumption) {
                     self.layout.push(assumption);
                 }
-                Ok((add(a.clone(), off), t))
+                Ok((add(a.clone(), host_offset(off)?), t))
             }
             _ => Err("address of a register".into()),
         }
@@ -680,6 +690,13 @@ impl<'a> Parser<'a> {
                 BinOp::Shl | BinOp::Shr => promote(*a),
                 _ => common(*a, *b),
             };
+            if matches!(op, BinOp::Shl | BinOp::Shr) {
+                // C++ leaves a shift by the width or more undefined (the model's shift gives 0 or the sign)
+                match rhs {
+                    Expr::Num(k, _) if k < t.bits() as u64 => {}
+                    _ => return Err(format!("a shift by {:?} (only constants below the width are defined in C++)", rhs)),
+                }
+            }
             lhs = Expr::Bin(op, Box::new(lhs), Box::new(rhs));
             lt = CType::Val(t);
         }
@@ -984,6 +1001,15 @@ impl<'a> Parser<'a> {
             }
             self.i = save;
         }
+        // a preemption point: only lets other threads run (ignored, as in the original)
+        if self.is_id("guest") && self.peek_at(2) == Some(&Tok::Id("preempt".into())) {
+            self.i += 3;
+            self.expect("(")?;
+            self.expect(")")?;
+            self.expect(";")?;
+            out.push(Stmt::Preempt);
+            return Ok(());
+        }
         // a system call (guest::svc: rt_svc on the guest CPU)
         if self.is_id("guest") && self.peek_at(2) == Some(&Tok::Id("svc".into())) {
             self.i += 3;
@@ -1058,6 +1084,14 @@ impl<'a> Parser<'a> {
         }
         Ok(())
     }
+}
+
+// a field offset the host adds as the guest does (MAX_FIELD_OFFSET)
+fn host_offset(off: u64) -> R<u64> {
+    if off >= MAX_FIELD_OFFSET {
+        return Err(format!("a field at 0x{:x} (the host does not wrap it as the guest does)", off));
+    }
+    Ok(off)
 }
 
 fn add(a: Expr, off: u64) -> Expr {
@@ -1215,7 +1249,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let mut fields = Vec::new();
                 let mut offset = 0u64;
                 while t.get(j) != Some(&Tok::P("}")) {
-                    let mut p = Parser { t: t.clone(), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                    let mut p = Parser { t: &t, half: None, i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
                     let ft = p.try_type()?.ok_or_else(|| format!("field type in {}", name))?;
                     let fname = p.ident()?;
                     let ft = if p.eat("[") {
@@ -1245,7 +1279,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" => {
                 // inline constexpr guest::Function<0xADDR, R(A...)> name;
-                let mut p = Parser { t: t.clone(), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
                 p.expect_id("constexpr")?;
                 p.expect_id("guest")?;
                 p.expect("::")?;
@@ -1276,7 +1310,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             _ => {
                 // a function definition: TYPE NAME ( ... ) { ... }
-                let mut p = Parser { t: t.clone(), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
                 match p.try_type()? {
                     Some(_) => {
                         let name = p.ident()?;
@@ -1302,7 +1336,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             out.push(Export { address, function: Err(format!("no definition of {}", name)), layout: vec![] });
             continue;
         };
-        let mut p = Parser { t: t.clone(), i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+        let mut p = Parser { t: &t, half: None, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
         let f = function(&mut p, address);
         out.push(Export { address, function: f, layout: p.layout });
     }

@@ -38,6 +38,14 @@ CPU *cpu();
 // A system call from rewritten code: rt_svc on the guest CPU, which reads and writes the CPU's registers.
 void svc(u32 number);
 
+// A preemption point (on a loop's back edge, as the recompiled code has them): lets a thread the kernel readied run,
+// the way the 3DS kernel preempts a busy loop.
+inline void preempt() {
+    if (rt_preempt_flag) {
+        rt_preempt(cpu());
+    }
+}
+
 // the return address rewritten code gives the functions it calls: a guest function returning there is back in C++
 constexpr u32 RETURN_TO_HOST = 0xFFFF1000u;
 

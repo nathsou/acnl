@@ -62,6 +62,11 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
 - Preemption points (`rt_preempt`) only switch threads and are ignored.
 - The stack pointer is in [0x1000, 0xf0000000).
 - A tail call (a branch to another function) returns to the lr it was given.
+- Callees are functions, not fragments of one: 12.7k of the 91.6k generated functions start at a label inside
+  another function (jump table targets, shared epilogues that pop that function's saved registers and pc). They do
+  not return to the lr they are given, so `prove-cpp` refuses a draft of one and a draft that calls one (in the
+  original equivalence both sides make the same call, so it holds whatever the callee does). A tail call to an
+  epilogue written as `return call_X(...)` came back to the epilogue's popped pc instead of the C++ caller in the game.
 - The register save area (the bytes the prologue's push writes) is a region of its own: only accesses at a known
   distance below the entry sp reach it (pushes, pops); accesses through pointers and callees never do (calling
   convention: compiled code never reads saved registers through a pointer). With it, removing the saves proves in
@@ -76,9 +81,12 @@ against a copy of itself that starts by giving the other argument registers arbi
 results (r2, r3, s2-s15) at once, comparing everything; then each result register that is no argument (r0, r1, s0, s1)
 alone, comparing everything but itself. Changing the registers one group after the other, the statement the call
 model uses follows. The guess comes from liveness (the registers read before being written, and those its calls read);
-a wrong guess is never a wrong signature, only no signature. Each pass uses the table of the previous one for the
-callees (sound by induction on the passes: every fact is proved under facts proved before). With a signature, the C++
-passes a callee only its arguments: `call_0011c00c(r0)` instead of four registers.
+a wrong guess is never a wrong signature, only no signature. Functions are proved callees first, in one pass over the
+call graph: a function waits until every function it calls has been tried, and is proved with their signatures (sound
+by induction: every fact is proved under facts proved before); the functions of a recursive cycle go one after the
+other, each with the signatures of those before it. With a signature, the C++ passes a callee only its arguments:
+`call_0011c00c(r0)` instead of four registers. A cached proof (`decomp_proved.txt`) is keyed by the signatures of the
+function's own callees, so extending the table keeps every proof that does not depend on the change.
 
 ## C++ drafts
 
@@ -105,7 +113,15 @@ edit. The reading spells out what runs around the C++ (guest/include/guest/abi.h
 - float `==` and `<` are the Z and N bits of the runtime's `vfp_cmpf` (exactly how it computes them);
 - field offsets come from the file's packed structs or, for the repository's structs, from the type database. Every
   such assumption becomes a `static_assert` (offset, size, signedness or pointer type) in a translation unit that
-  holds the file, compiled before anything is proved: a stale database cannot give a wrong proof.
+  holds the file, compiled before anything is proved: a stale database cannot give a wrong proof. A field is reached
+  on the host at `g_mem + address + offset`, which does not wrap at 32 bits as the guest does, so offsets of
+  0x80000000 or more are refused (the emitter writes such an access as `*gptr<T>(address + offset)` instead): a
+  field at 0xfffffff8 is 8 bytes before the object in the game but 4 GiB after it on the host. That one read past the
+  guest memory and crashed the game at random moments, with no proof failing;
+- shifts are by constants below the width only (C++ leaves the others undefined, the model defines them);
+- the build compiles the C++ with `-fwrapv -fno-strict-aliasing -ffp-contract=off` (CMakeLists.txt): signed
+  arithmetic wraps, memory is bytes whatever the type of the pointer, and float operations round one at a time, as
+  the model assumes.
 
 When the decompiled function keeps its pushes (functions with loops), the C++ keeps them too and returns through its
 copy of the entry lr: at the loop headers both are related by the invariant that the lr slot still holds that lr,

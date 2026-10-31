@@ -2,6 +2,7 @@
 // GUEST_EXPORT), for a person (or a model's name map) to name. A draft stands for the proved
 // AST statement for statement; what cannot be written that way yet is refused (Err with the reason).
 use crate::ast::*;
+use crate::cpp::MAX_FIELD_OFFSET;
 use crate::flow::liveness;
 use crate::print::cpu;
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -16,20 +17,10 @@ fn callee_saved(r: &str) -> bool {
 
 // the fields of the objects the arguments point to: argument -> offset -> type of the access
 fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) -> R<()> {
-    fn arg_off(a: &Expr) -> Option<(usize, u64)> {
-        match a {
-            Expr::Var(v) if v.starts_with("arg") => Some((v[3..].parse().ok()?, 0)),
-            Expr::Bin(BinOp::Add, b, o) => match (&**b, &**o) {
-                (Expr::Var(v), Expr::Num(n, _)) if v.starts_with("arg") => Some((v[3..].parse().ok()?, *n)),
-                _ => None,
-            },
-            _ => None,
-        }
-    }
     fn expr(e: &Expr, out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) {
         match e {
             Expr::Load(t, a) => {
-                if let Some((k, o)) = arg_off(a) {
+                if let Some((k, o)) = arg_off_of(a) {
                     out.entry(k).or_default().entry(o).or_insert(*t);
                 }
                 expr(a, out);
@@ -52,7 +43,7 @@ fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) -> R<()> 
         match s {
             Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => expr(e, out),
             Stmt::Store(t, a, v) => {
-                if let Some((k, o)) = arg_off(a) {
+                if let Some((k, o)) = arg_off_of(a) {
                     out.entry(k).or_default().entry(o).or_insert(*t);
                 }
                 expr(a, out);
@@ -74,11 +65,14 @@ fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) -> R<()> 
     Ok(())
 }
 
+// (a field only below MAX_FIELD_OFFSET: the host does not wrap g_mem + address + offset as the guest does)
 fn arg_off_of(a: &Expr) -> Option<(usize, u64)> {
     match a {
         Expr::Var(v) if v.starts_with("arg") => Some((v[3..].parse().ok()?, 0)),
         Expr::Bin(BinOp::Add, b, o) => match (&**b, &**o) {
-            (Expr::Var(v), Expr::Num(n, _)) if v.starts_with("arg") => Some((v[3..].parse().ok()?, *n)),
+            (Expr::Var(v), Expr::Num(n, _)) if v.starts_with("arg") && *n < MAX_FIELD_OFFSET => {
+                Some((v[3..].parse().ok()?, *n))
+            }
             _ => None,
         },
         _ => None,
@@ -130,6 +124,7 @@ struct Emitter {
     write_back: Vec<(String, String)>, // (CPU field, variable)
     svc_regs: Vec<(String, u32)>,      // r0-r7 kept in variables: handed to a system call and read back after it
     live: crate::flow::Liveness,       // what is read later, by statement path (flow.rs numbering)
+    labels: HashSet<String>,           // the labels written so far (a goto to one is a loop's back edge)
     out: String,
 }
 
@@ -233,14 +228,7 @@ impl Emitter {
         if let Some((read, _, _)) = self.known_field(t, a) {
             return Some(read);
         }
-        let (k, off) = match a {
-            Expr::Var(v) if v.starts_with("arg") => (v[3..].parse::<usize>().ok()?, 0),
-            Expr::Bin(BinOp::Add, b, o) => match (&**b, &**o) {
-                (Expr::Var(v), Expr::Num(n, _)) if v.starts_with("arg") => (v[3..].parse().ok()?, *n),
-                _ => return None,
-            },
-            _ => return None,
-        };
+        let (k, off) = arg_off_of(a)?;
         if self.fields.get(&k)?.get(&off) == Some(&t) {
             Some(format!("arg{}->{}", k, field_name(t, off)))
         } else {
@@ -436,14 +424,18 @@ impl Emitter {
                         None => {
                             self.line(indent, "do {");
                             self.out.push_str(&format!("{}:;\n", top));
+                            self.labels.insert(top.clone());
                             self.stmts(body, indent + 1, returns, &pa)?;
                             self.stmts(check, indent + 1, returns, &pb)?;
+                            self.line(indent + 1, "guest::preempt();");
                             let text = format!("}} while ({});", self.expr(cond, 0)?);
                             self.line(indent, &text);
                         }
                         Some(t) => {
                             self.line(indent, "for (;;) {");
                             self.out.push_str(&format!("{}:;\n", t));
+                            self.labels.insert(t.clone());
+                            self.labels.insert(top.clone());
                             self.stmts(check, indent + 1, returns, &pb)?;
                             let text = format!("if (!({})) {{", self.expr(cond, 0)?);
                             self.line(indent + 1, &text);
@@ -451,12 +443,21 @@ impl Emitter {
                             self.line(indent + 1, "}");
                             self.out.push_str(&format!("{}:;\n", top));
                             self.stmts(body, indent + 1, returns, &pa)?;
+                            self.line(indent + 1, "guest::preempt();");
                             self.line(indent, "}");
                         }
                     }
                 }
-                Stmt::Goto(l) => self.line(indent, &format!("goto {};", l)),
-                Stmt::Label(l) => self.out.push_str(&format!("{}:;\n", l)),
+                Stmt::Goto(l) => {
+                    if self.labels.contains(l) {
+                        self.line(indent, "guest::preempt();"); // a back edge
+                    }
+                    self.line(indent, &format!("goto {};", l));
+                }
+                Stmt::Label(l) => {
+                    self.labels.insert(l.clone());
+                    self.out.push_str(&format!("{}:;\n", l));
+                }
                 Stmt::GuestCall(t, tail) => {
                     self.before_call(indent, Some(*t));
                     let name = self.callees.entry(*t).or_insert_with(|| format!("call_{:08x}", t & !1)).clone();
@@ -782,7 +783,7 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), out: String::new() };
     let returns = assigned.contains("r0");
     // the body first (it decides the callees)
     e.stmts(&f.body, 1, returns, &[])?;

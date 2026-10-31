@@ -16,39 +16,73 @@ pub const ARGS: [&str; 20] = [
 // the results a caller observes, which a signature makes depend on the arguments only
 pub const RESULTS: [&str; 4] = ["r0", "r1", "s0", "s1"];
 
-pub struct Table {
-    pub map: HashMap<u32, Vec<String>>, // function address -> its argument registers
-    pub hash: u64,                      // of the file (part of the proof cache's key: the model depends on it)
-}
-
-static TABLE: std::sync::OnceLock<Table> = std::sync::OnceLock::new();
+// function address (bit 0 clear) -> its argument registers: read from DECOMP_SIGNATURES (default
+// build/acnl/decomp_signatures.txt) on first use, extended by `insert` while signatures are being proved
+static TABLE: std::sync::OnceLock<std::sync::RwLock<HashMap<u32, Vec<String>>>> = std::sync::OnceLock::new();
 
 pub fn path() -> String {
     std::env::var("DECOMP_SIGNATURES").unwrap_or("build/acnl/decomp_signatures.txt".into())
 }
 
-// "address reg reg ..." per line (DECOMP_SIGNATURES; none: every function takes every argument register)
-pub fn table() -> &'static Table {
-    TABLE.get_or_init(|| {
-        let text = std::fs::read_to_string(path()).unwrap_or_default();
-        let mut h: u64 = 0xcbf2_9ce4_8422_2325;
-        for b in text.bytes() {
-            h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);
-        }
-        let map = text
-            .lines()
-            .filter_map(|l| {
-                let mut w = l.split_whitespace();
-                let a = u32::from_str_radix(w.next()?, 16).ok()?;
-                Some((a, w.map(|r| r.to_string()).collect()))
-            })
-            .collect();
-        Table { map, hash: h }
-    })
+// "address reg reg ..." per line
+pub fn parse_table(text: &str) -> HashMap<u32, Vec<String>> {
+    text.lines()
+        .filter_map(|l| {
+            let mut w = l.split_whitespace();
+            let a = u32::from_str_radix(w.next()?, 16).ok()?;
+            Some((a & !1, w.map(|r| r.to_string()).collect()))
+        })
+        .collect()
 }
 
-pub fn of(address: u32) -> Option<&'static Vec<String>> {
-    table().map.get(&(address & !1))
+fn table() -> &'static std::sync::RwLock<HashMap<u32, Vec<String>>> {
+    TABLE.get_or_init(|| std::sync::RwLock::new(parse_table(&std::fs::read_to_string(path()).unwrap_or_default())))
+}
+
+// Starts from this table instead of the file (proving signatures from scratch).
+pub fn reset(map: HashMap<u32, Vec<String>>) {
+    *table().write().unwrap() = map;
+}
+
+pub fn insert(address: u32, regs: Vec<String>) {
+    table().write().unwrap().insert(address & !1, regs);
+}
+
+pub fn of(address: u32) -> Option<Vec<String>> {
+    table().read().unwrap().get(&(address & !1)).cloned()
+}
+
+// The signatures a proof about `f` can use (those of its direct callees), hashed: part of the proof cache's key, so
+// that a proof made with other callee signatures is not taken for this one.
+pub fn callee_key(f: &Function) -> u64 {
+    let mut called = Vec::new();
+    direct_callees(&f.body, &mut called);
+    called.sort();
+    called.dedup();
+    let t = table().read().unwrap();
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for c in called {
+        if let Some(regs) = t.get(&(c & !1)) {
+            for b in format!("{:x} {};", c & !1, regs.join(" ")).bytes() {
+                h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);
+            }
+        }
+    }
+    h
+}
+
+// the guest functions a function calls directly (tail calls included)
+pub fn direct_callees(list: &[Stmt], out: &mut Vec<u32>) {
+    for s in list {
+        match s {
+            Stmt::GuestCall(t, _) => out.push(*t),
+            Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                direct_callees(a, out);
+                direct_callees(b, out);
+            }
+            _ => {}
+        }
+    }
 }
 
 // Whether `f` behaves the same when the registers in `changed` hold other values (opaque ones), comparing every
@@ -106,7 +140,7 @@ fn call_reads(list: &[Stmt], out: &mut Vec<String>) {
     for s in list {
         match s {
             Stmt::GuestCall(t, _) => match of(*t) {
-                Some(regs) => out.extend(regs.iter().cloned()),
+                Some(regs) => out.extend(regs),
                 None => out.extend(ARGS.iter().map(|k| k.to_string())),
             },
             Stmt::Dispatch(_) | Stmt::Svc(_) => out.extend(ARGS.iter().map(|k| k.to_string())),
@@ -153,6 +187,13 @@ pub fn prove(ctx: &Context, f: &Function) -> Option<Vec<String>> {
                 if non_interference(ctx, f, &fewer) {
                     reads = fewer;
                 }
+            }
+        }
+        // the float registers a callee without a signature is passed look read: none of them, at once
+        if reads.iter().any(|r| r.starts_with('s')) {
+            let fewer: Vec<String> = reads.iter().filter(|r| !r.starts_with('s')).cloned().collect();
+            if non_interference(ctx, f, &fewer) {
+                reads = fewer;
             }
         }
         Some(reads)

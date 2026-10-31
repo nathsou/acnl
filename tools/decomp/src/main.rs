@@ -460,39 +460,194 @@ const HELPERS: [&str; 53] = [
     "sqrt", "fabsf", "fabs", "__builtin_clz", "clz",
 ];
 
-// Proves the signatures of all functions (or the first N): which argument registers each one reads.
+// Proves the signatures of all functions (or the first N), callees before callers: a function is proved once every
+// function it calls has been tried, with their signatures (sound by induction: each one is proved under signatures
+// proved before). The functions of a recursive cycle are proved one after the other, in address order, each with the
+// signatures of those before it. Starts from no signatures; writes OUT as it goes.
 fn signatures_all(out: &str, n: usize, threads: usize) {
+    use std::collections::{HashSet, VecDeque};
     let funcs: Vec<(u32, String)> = generated_functions().into_iter().take(n).collect();
-    let chunks: Vec<Vec<(u32, String)>> = (0..threads).map(|t| funcs.iter().skip(t).step_by(threads).cloned().collect()).collect();
-    let handles: Vec<_> = chunks
-        .into_iter()
-        .map(|chunk| {
+    let parsed: Vec<Option<ast::Function>> = funcs.iter().map(|(_, t)| parse::function(t).ok()).collect();
+    let index: HashMap<u32, usize> = funcs.iter().enumerate().map(|(i, (a, _))| (a & !1, i)).collect();
+    let count = funcs.len();
+    // the call graph (direct calls, within the functions considered)
+    let calls: Vec<Vec<usize>> = parsed
+        .iter()
+        .map(|f| {
+            let mut c = Vec::new();
+            if let Some(f) = f {
+                signatures::direct_callees(&f.body, &mut c);
+            }
+            let mut v: Vec<usize> = c.iter().filter_map(|t| index.get(&(t & !1)).copied()).collect();
+            v.sort();
+            v.dedup();
+            v
+        })
+        .collect();
+    // strongly connected components (Tarjan, iterative); each one is proved as a unit
+    let mut comp = vec![usize::MAX; count];
+    let mut comps: Vec<Vec<usize>> = Vec::new();
+    {
+        let (mut idx, mut low, mut on) = (vec![usize::MAX; count], vec![0; count], vec![false; count]);
+        let (mut next, mut stack) = (0, Vec::new());
+        for root in 0..count {
+            if idx[root] != usize::MAX {
+                continue;
+            }
+            let mut work: Vec<(usize, usize)> = vec![(root, 0)];
+            while let Some(&mut (v, ref mut k)) = work.last_mut() {
+                if *k == 0 {
+                    idx[v] = next;
+                    low[v] = next;
+                    next += 1;
+                    stack.push(v);
+                    on[v] = true;
+                }
+                if *k < calls[v].len() {
+                    let w = calls[v][*k];
+                    *k += 1;
+                    if idx[w] == usize::MAX {
+                        work.push((w, 0));
+                    } else if on[w] {
+                        low[v] = low[v].min(idx[w]);
+                    }
+                    continue;
+                }
+                work.pop();
+                if let Some(&(u, _)) = work.last() {
+                    low[u] = low[u].min(low[v]);
+                }
+                if low[v] == idx[v] {
+                    let mut members = Vec::new();
+                    loop {
+                        let w = stack.pop().unwrap();
+                        on[w] = false;
+                        comp[w] = comps.len();
+                        members.push(w);
+                        if w == v {
+                            break;
+                        }
+                    }
+                    members.sort_by_key(|&m| funcs[m].0);
+                    comps.push(members);
+                }
+            }
+        }
+    }
+    // a component waits for the components it calls
+    let mut waits = vec![0usize; comps.len()];
+    let mut callers: Vec<HashSet<usize>> = vec![HashSet::new(); comps.len()];
+    for v in 0..count {
+        for &w in &calls[v] {
+            if comp[w] != comp[v] && callers[comp[w]].insert(comp[v]) {
+                waits[comp[v]] += 1;
+            }
+        }
+    }
+    signatures::reset(HashMap::new());
+    let ready: VecDeque<usize> = (0..comps.len()).filter(|&c| waits[c] == 0).collect();
+    struct Queue {
+        ready: VecDeque<usize>,
+        waits: Vec<usize>,
+        left: usize,
+        found: Vec<(u32, Vec<String>)>,
+    }
+    let state = std::sync::Arc::new((std::sync::Mutex::new(Queue { ready, waits, left: comps.len(), found: Vec::new() }), std::sync::Condvar::new()));
+    let shared = std::sync::Arc::new((funcs, parsed, comps, callers));
+    let file = std::sync::Arc::new(std::sync::Mutex::new(fs::File::create(out).unwrap()));
+    let handles: Vec<_> = (0..threads)
+        .map(|_| {
+            let (state, shared, file) = (state.clone(), shared.clone(), file.clone());
             std::thread::spawn(move || {
                 let cfg = z3::Config::new();
                 let ctx = z3::Context::new(&cfg);
-                let mut res = Vec::new();
-                for (addr, text) in chunk {
-                    if let Ok(f) = parse::function(&text) {
-                        if let Some(regs) = signatures::prove(&ctx, &f) {
-                            res.push((addr & !1, regs));
+                let (funcs, parsed, comps, callers) = &*shared;
+                loop {
+                    let c = {
+                        let (m, cv) = &*state;
+                        let mut q = m.lock().unwrap();
+                        loop {
+                            if let Some(c) = q.ready.pop_front() {
+                                break c;
+                            }
+                            if q.left == 0 {
+                                return;
+                            }
+                            q = cv.wait(q).unwrap();
+                        }
+                    };
+                    for &v in &comps[c] {
+                        let Some(f) = &parsed[v] else { continue };
+                        if let Some(regs) = signatures::prove(&ctx, f) {
+                            let a = funcs[v].0 & !1;
+                            signatures::insert(a, regs.clone());
+                            use std::io::Write;
+                            let _ = writeln!(file.lock().unwrap(), "{:08x} {}", a, regs.join(" "));
+                            state.0.lock().unwrap().found.push((a, regs));
                         }
                     }
+                    let (m, cv) = &*state;
+                    let mut q = m.lock().unwrap();
+                    q.left -= 1;
+                    for &d in &callers[c] {
+                        q.waits[d] -= 1;
+                        if q.waits[d] == 0 {
+                            q.ready.push_back(d);
+                        }
+                    }
+                    cv.notify_all();
                 }
-                res
             })
         })
         .collect();
-    let mut all: Vec<(u32, Vec<String>)> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
+    for h in handles {
+        h.join().unwrap();
+    }
+    let mut all = std::mem::take(&mut state.0.lock().unwrap().found);
     all.sort();
     let text: String = all.iter().map(|(a, r)| format!("{:08x} {}\n", a, r.join(" "))).collect();
     fs::write(out, text).unwrap();
-    println!("{} of {} functions have a proved signature ({})", all.len(), funcs.len(), out);
+    println!("{} of {} functions have a proved signature ({})", all.len(), shared.0.len(), out);
+}
+
+// Functions whose entry is also a label inside another function (entry -> that function): pieces of it, such as
+// jump table targets and shared epilogues, that the recompiler's discovery also made functions. They run in the
+// frame of the function they belong to (an epilogue pops its saved registers and pc), so they do not return to the lr
+// they are given, which the call model assumes of every callee: neither a draft of one nor a draft calling one is
+// proved (the draft of the function they belong to holds their code).
+fn fragments(funcs: &HashMap<u32, String>) -> HashMap<u32, u32> {
+    let mut out = HashMap::new();
+    for (a, text) in funcs {
+        for line in text.lines() {
+            let Some(hex) = line.strip_prefix("L_").and_then(|r| r.strip_suffix(':')) else { continue };
+            if let Ok(l) = u32::from_str_radix(hex, 16) {
+                if l != a & !1 && funcs.contains_key(&l) {
+                    out.entry(l).or_insert(*a & !1);
+                }
+            }
+        }
+    }
+    out
+}
+
+struct Program {
+    functions: HashMap<u32, String>, // generated functions by address (bit 0 clear)
+    fragments: HashMap<u32, u32>,
 }
 
 // The C++ of a draft proved equal to the decompiled function, itself proved equal to the original: the verdict.
-fn prove_export(ctx: &z3::Context, e: &cpp::Export) -> Result<(), String> {
+fn prove_export(ctx: &z3::Context, e: &cpp::Export, p: &Program) -> Result<(), String> {
     let f = e.function.as_ref().map_err(|w| format!("unreadable: {}", w))?;
-    let orig = find(e.address).ok_or("no original")?;
+    if let Some(owner) = p.fragments.get(&(e.address & !1)) {
+        return Err(format!("a fragment of f_{:08x}", owner));
+    }
+    let mut called = Vec::new();
+    signatures::direct_callees(&f.body, &mut called);
+    if let Some(t) = called.iter().find(|t| p.fragments.contains_key(&(*t & !1))) {
+        return Err(format!("calls f_{:08x}, a fragment of another function", t));
+    }
+    let text = p.functions.get(&(e.address & !1)).ok_or("no original")?;
+    let orig = parse::function(text).map_err(|w| format!("original: {}", w))?;
     let (dd, v) = decompile::decompile_and_prove_retrying(ctx, &orig);
     match v {
         check::Verdict::Proved => {}
@@ -566,10 +721,13 @@ fn prove_cpp(path: &str, out: Option<&str>, threads: usize) {
     }
     let exports = std::sync::Arc::new(file.exports);
     let broken = std::sync::Arc::new(broken);
+    let functions: HashMap<u32, String> = generated_functions().into_iter().map(|(a, t)| (a & !1, t)).collect();
+    let program = std::sync::Arc::new(Program { fragments: fragments(&functions), functions });
     let handles: Vec<_> = (0..threads)
         .map(|t| {
             let exports = exports.clone();
             let broken = broken.clone();
+            let program = program.clone();
             std::thread::spawn(move || {
                 let cfg = z3::Config::new();
                 let ctx = z3::Context::new(&cfg);
@@ -581,7 +739,7 @@ fn prove_cpp(path: &str, out: Option<&str>, threads: usize) {
                         if broken.contains(&(e.address & !1)) {
                             (e.address, Err("does not compile".to_string()))
                         } else {
-                            (e.address, prove_export(&ctx, e))
+                            (e.address, prove_export(&ctx, e, &program))
                         }
                     })
                     .collect::<Vec<_>>()

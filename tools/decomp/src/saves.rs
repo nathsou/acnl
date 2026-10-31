@@ -207,8 +207,11 @@ pub fn pushed_slots(f: &Function) -> (Vec<u32>, Option<u32>) {
                 }
             }
             Stmt::Store(..) | Stmt::Decl(..) | Stmt::Nop | Stmt::Preempt => {}
-            // an early exit before the push (a shrink-wrapped prologue)
-            Stmt::If(_, a, b) if b.is_empty() && matches!(a.as_slice(), [Stmt::Goto(_)]) => {}
+            // an early exit before the push (a shrink-wrapped prologue): a branch that leaves (a jump, a return, a
+            // tail call) changes nothing on the way to the push
+            Stmt::If(_, a, b)
+                if b.is_empty()
+                    && matches!(a.last(), Some(Stmt::Goto(_) | Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true))) => {}
             _ => break, // the end of the entry block
         }
     }
