@@ -147,6 +147,29 @@ so the reader pairs a renamed draft's declarations and labels with the draft's b
 proves with the draft's names. The checker is tested by mutation: changing a constant, a comparison, an operand or a
 field of the C++ is caught.
 
+## Structs (`decomp structs [OUTDIR] [HEADER] [THREADS]`)
+
+The objects functions receive, as structs shared across the program (`structs.rs`). Facts come from every function's
+decompilation: the fields an argument's object has (offsets and types of its accesses), the constants stored at its
+offset 0 (vtables) and the arguments passed on unchanged (entry values, copies seen through). With the program's RTTI
+(`build/acnl/rtti.json`: 4923 classes, their bases and vtables) the arguments are typed by class: a vtable's functions
+receive `this` of its class, a function storing a vtable at its argument's offset 0 builds or destroys one, and an
+argument passed on makes the callee's argument at least that class (the closest common ancestor of all it receives),
+until nothing changes. A class's struct holds the fields its typed arguments access and its primary bases' fields, at
+their offsets (packed). First run: 3705 class structs for 25392 arguments of 25229 functions. The header goes to
+`games/acnl/src/recovered/structs.hpp` and the type database (structs, parameter types) to OUTDIR; with
+`DECOMP_TYPES=OUTDIR` the emitter writes the class instead of a per-function struct. The facts are hints: each draft
+that uses a struct still has its layout checked by the compiler and is proved as usual. Without RTTI, arguments are
+joined across calls by equality (union-find), which joins too much through generic callees.
+
+## Names (`name.py`, `rename.py`)
+
+A model chooses names; it never writes code. `name.py DRAFTS NAMES.json ADDRESS...` asks it for a name map per
+function (name, comment, variable and label renames), callees first so that each prompt shows its callees' names, with
+the RTTI class of a virtual function as context, and checks every answer. `rename.py NAMES.json IN OUT` applies a map
+(functions, variables, labels, callees, globals, comments) with the same checks (identifiers, no keywords or runtime
+helpers, no collisions); `prove-cpp` then proves the renamed drafts (declarations pair by their order).
+
 ## games/acnl/src/decompiled
 
 The proved drafts go there (`split.py DRAFTS.cpp OUTDIR` splits a batch into files). Their names are generated and

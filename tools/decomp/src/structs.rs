@@ -14,6 +14,7 @@ use std::collections::{BTreeMap, HashMap};
 pub struct Facts {
     pub fields: BTreeMap<usize, BTreeMap<u64, Ty>>, // argument -> offset -> type of the accesses
     pub flows: Vec<(usize, u32, usize)>,             // (argument, callee, the callee's argument)
+    pub vptrs: Vec<(usize, u64)>,                    // (argument, constant stored at its offset 0: a vtable)
 }
 
 const ARGS: [&str; 4] = ["r0", "r1", "r2", "r3"];
@@ -59,6 +60,237 @@ pub fn facts(f: &Function) -> Facts {
         }
     }
     walk(&f.body, &[], &values, &regs, &mut out.flows);
+    // constants stored at an argument's offset 0 (a constructor or destructor setting the object's vtable)
+    fn stores(list: &[Stmt], prefix: &[usize], values: &crate::values::Values, out: &mut Vec<(usize, u64)>) {
+        for (i, s) in list.iter().enumerate() {
+            let p: Vec<usize> = [prefix, &[i]].concat();
+            match s {
+                Stmt::Store(Ty::U32, Expr::Var(a), v) if a.starts_with("arg") => {
+                    let k: Option<usize> = a[3..].parse().ok();
+                    let c = match v {
+                        Expr::Num(c, _) => Some(*c),
+                        Expr::Var(x) => values.constant(&p, x).map(|(c, _)| c),
+                        _ => None,
+                    };
+                    if let (Some(k), Some(c)) = (k, c) {
+                        out.push((k, c & 0xffff_ffff));
+                    }
+                }
+                Stmt::If(_, a, b) => {
+                    stores(a, &[p.clone(), vec![0]].concat(), values, out);
+                    stores(b, &[p.clone(), vec![1]].concat(), values, out);
+                }
+                Stmt::While { body, check, .. } => {
+                    stores(body, &[p.clone(), vec![0]].concat(), values, out);
+                    stores(check, &[p.clone(), vec![1]].concat(), values, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    stores(&f.body, &[], &values, &mut out.vptrs);
+    out
+}
+
+// The classes of the program's RTTI (build/acnl/rtti.json): name, base classes, primary vtable and its functions.
+pub struct Class {
+    pub name: String,      // C++ identifier (namespaces joined with __)
+    pub bases: Vec<usize>, // indices of the base classes (at offset 0 first)
+    pub vtable: Option<u64>,
+    pub functions: Vec<u32>,
+}
+
+// The struct names the repository's sources (games/acnl/src, the recovered header aside) and the type database
+// already use: recovered classes are named around them.
+pub fn taken_names(src: &str) -> std::collections::HashSet<String> {
+    fn scan(dir: &std::path::Path, out: &mut std::collections::HashSet<String>) {
+        let Ok(entries) = std::fs::read_dir(dir) else { return };
+        for e in entries.flatten() {
+            let p = e.path();
+            if p.is_dir() {
+                if p.file_name().map_or(false, |n| n != "recovered") {
+                    scan(&p, out);
+                }
+            } else if p.extension().map_or(false, |x| x == "hpp" || x == "cpp") {
+                let Ok(text) = std::fs::read_to_string(&p) else { continue };
+                for line in text.lines() {
+                    if let Some(rest) = line.trim_start().strip_prefix("struct ") {
+                        let rest = rest.trim_start_matches("__attribute__((packed)) ");
+                        let name: String = rest.chars().take_while(|c| c.is_ascii_alphanumeric() || *c == '_').collect();
+                        if !name.is_empty() {
+                            out.insert(name);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let mut out = std::collections::HashSet::new();
+    scan(std::path::Path::new(src), &mut out);
+    out
+}
+
+pub fn classes(path: &str, taken: &std::collections::HashSet<String>) -> Vec<Class> {
+    let Ok(text) = std::fs::read_to_string(path) else { return vec![] };
+    let Ok(serde_json::Value::Object(map)) = serde_json::from_str::<serde_json::Value>(&text) else { return vec![] };
+    let mut keys: Vec<&String> = map.keys().collect();
+    keys.sort_by_key(|k| k.parse::<u64>().unwrap_or(0));
+    let index: HashMap<u64, usize> = keys.iter().enumerate().filter_map(|(i, k)| Some((k.parse().ok()?, i))).collect();
+    let mut used: HashMap<String, usize> = HashMap::new();
+    let mut out = Vec::new();
+    for k in &keys {
+        let v = &map[*k];
+        let raw = v["class"].as_str().unwrap_or("").to_string();
+        let mut name: String = raw
+            .replace("(anonymous namespace)", "anon")
+            .replace("::", "__")
+            .chars()
+            .map(|c| if c.is_ascii_alphanumeric() || c == '_' { c } else { '_' })
+            .collect();
+        if taken.contains(&name) {
+            name = format!("{}_rec", name);
+        }
+        let n = used.entry(name.clone()).or_insert(0);
+        *n += 1;
+        if *n > 1 {
+            name = format!("{}_{}", name, n);
+        }
+        let mut bases: Vec<(i64, usize)> = v["bases"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|b| Some((b["offset"].as_i64().unwrap_or(0), *index.get(&b["typeinfo"].as_u64()?)?)))
+            .collect();
+        bases.sort();
+        let primary = v["vtables"].as_array().into_iter().flatten().find(|t| t["offset_to_top"].as_i64() == Some(0));
+        out.push(Class {
+            name,
+            bases: bases.into_iter().map(|(_, b)| b).collect(),
+            vtable: primary.and_then(|t| t["address"].as_u64()),
+            functions: primary
+                .and_then(|t| t["functions"].as_array())
+                .into_iter()
+                .flatten()
+                .filter_map(|f| f.as_u64().map(|a| a as u32 & !1))
+                .collect(),
+        });
+    }
+    out
+}
+
+// The ancestors of a class through the bases at offset 0 (itself first), the chain a pointer to it is also a pointer to.
+fn chain(classes: &[Class], c: usize) -> Vec<usize> {
+    let mut out = vec![c];
+    let mut at = c;
+    while let Some(&b) = classes[at].bases.first() {
+        if out.contains(&b) {
+            break;
+        }
+        out.push(b);
+        at = b;
+    }
+    out
+}
+
+// the closest class both are (a common ancestor in the primary chain), if any
+fn join(classes: &[Class], a: usize, b: usize) -> Option<usize> {
+    let ca = chain(classes, a);
+    chain(classes, b).into_iter().find(|x| ca.contains(x))
+}
+
+// Types arguments with the RTTI classes: a vtable's functions receive `this` of its class, a function storing a
+// vtable at its argument's offset 0 builds or destroys an object of that class; an argument passed on unchanged makes
+// the callee's argument at least that class (the closest common ancestor of all it receives), until nothing changes.
+// A class's fields are those its typed arguments access, with its ancestors' (a pointer to a class points to its
+// primary bases too); the struct of a class holds them all, at their offsets.
+pub fn by_class(all: &HashMap<u32, Facts>, classes: &[Class], skip: &dyn Fn(u32, usize) -> bool) -> Recovered {
+    let mut ty: HashMap<(u32, usize), usize> = HashMap::new();
+    let by_vtable: HashMap<u64, usize> = classes.iter().enumerate().filter_map(|(i, c)| Some((c.vtable?, i))).collect();
+    let seed = |key: (u32, usize), c: usize, ty: &mut HashMap<(u32, usize), usize>| {
+        let t = match ty.get(&key) {
+            Some(&old) => join(classes, old, c),
+            None => Some(c),
+        };
+        match t {
+            Some(t) => {
+                ty.insert(key, t);
+            }
+            None => {
+                ty.remove(&key);
+            }
+        }
+    };
+    for (i, c) in classes.iter().enumerate() {
+        for f in &c.functions {
+            seed((*f, 0), i, &mut ty);
+        }
+    }
+    // constructors and destructors: the exact class (it stores its own vtable last, after the bases' ones)
+    for (a, f) in all {
+        if let Some((k, c)) = f.vptrs.iter().rev().find_map(|(k, v)| by_vtable.get(v).map(|c| (*k, *c))) {
+            ty.insert((*a, k), c);
+        }
+    }
+    let mut changed = true;
+    let mut rounds = 0;
+    while changed && rounds < 20 {
+        changed = false;
+        rounds += 1;
+        for (a, f) in all {
+            for (k, t, j) in &f.flows {
+                let Some(&c) = ty.get(&(*a, *k)) else { continue };
+                let callee = (*t, *j);
+                let next = match ty.get(&callee) {
+                    Some(&old) => join(classes, old, c),
+                    None => Some(c),
+                };
+                if let Some(n) = next {
+                    if ty.get(&callee) != Some(&n) {
+                        ty.insert(callee, n);
+                        changed = true;
+                    }
+                }
+            }
+        }
+    }
+    // fields per class, then with the ancestors' (conflicting sizes at one offset: the first kept)
+    let mut own: Vec<BTreeMap<u64, Ty>> = vec![BTreeMap::new(); classes.len()];
+    for ((a, k), c) in &ty {
+        if let Some(fs) = all.get(a).and_then(|f| f.fields.get(k)) {
+            for (off, t) in fs {
+                own[*c].entry(*off).or_insert(*t);
+            }
+        }
+    }
+    let mut out = Recovered { structs: BTreeMap::new(), params: BTreeMap::new() };
+    let mut made: std::collections::HashSet<usize> = std::collections::HashSet::new();
+    let mut keys: Vec<&(u32, usize)> = ty.keys().collect();
+    keys.sort();
+    for key in keys {
+        if skip(key.0, key.1) {
+            continue;
+        }
+        let c = ty[key];
+        if made.insert(c) {
+            let mut fields: BTreeMap<u64, Ty> = BTreeMap::new();
+            for x in chain(classes, c).into_iter().rev() {
+                for (off, t) in &own[x] {
+                    fields.entry(*off).or_insert(*t);
+                }
+            }
+            // overlapping fields: the earlier one stays
+            let mut end = 0u64;
+            fields.retain(|off, t| {
+                let keep = *off >= end;
+                if keep {
+                    end = off + (t.bits() / 8) as u64;
+                }
+                keep
+            });
+            out.structs.insert(classes[c].name.clone(), fields);
+        }
+        out.params.entry(key.0).or_default().insert(key.1, classes[c].name.clone());
+    }
     out
 }
 

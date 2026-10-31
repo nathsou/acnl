@@ -454,12 +454,13 @@ fn emit_batch(list: &str, out: &str, threads: usize) {
 }
 
 // The runtime's helper functions (3dsrecomp/runtime/cpu.h, libm) a C++ draft may call.
-const HELPERS: [&str; 53] = [
+const HELPERS: [&str; 63] = [
     "vfp_cmpf", "ror32", "lsl_r", "lsr_r", "asr_r", "ror_r", "lsl_rc", "lsr_rc", "asr_rc", "ror_rc", "sat32", "qadd", "qsub", "qdadd",
     "qdsub", "smlaxy", "smlaxy_add", "ssat", "usat", "ssat16", "usat16", "sxtb", "sxth", "uxtb", "uxth", "sxtb16", "uxtb16",
     "add16x", "rev16", "sel", "usad8", "pas_lane", "pas16", "pas8", "vfp_cmpd", "cvt_s32", "cvt_u32", "vfp_round",
     "vcvt_sz_f", "vcvt_uz_f", "vcvt_sz_d", "vcvt_uz_d", "vcvt_sr_f", "vcvt_ur_f", "vcvt_sr_d", "vcvt_ur_d", "D2F", "sqrtf",
     "sqrt", "fabsf", "fabs", "__builtin_clz", "clz",
+    "pas_qadd16", "pas_qasx", "pas_qsax", "pas_qsub16", "pas_sadd16", "pas_ssax", "pas_ssub16", "pas_uhadd8", "pas_uqsub8", "__builtin_bswap32",
 ];
 
 // Proves the signatures of all functions (or the first N), callees before callers: a function is proved once every
@@ -635,7 +636,10 @@ fn structs_all(outdir: &str, header: &str, threads: usize) {
     let all: HashMap<u32, structs::Facts> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
     let db = view::types();
     let skip = |a: u32, k: usize| db.map_or(false, |db| db.param(a, k).map_or(false, |st| db.header(&st).is_some()));
-    let r = structs::unify(&all, &skip);
+    // with the RTTI's classes when there are (DECOMP_RTTI, default build/acnl/rtti.json), else by joining across calls
+    let taken = structs::taken_names("games/acnl/src");
+    let classes = structs::classes(&std::env::var("DECOMP_RTTI").unwrap_or("build/acnl/rtti.json".into()), &taken);
+    let r = if classes.is_empty() { structs::unify(&all, &skip) } else { structs::by_class(&all, &classes, &skip) };
     let src = std::env::var("DECOMP_TYPES").unwrap_or("build/tools/ghidra".into());
     let read = |f: &str, empty: &str| -> serde_json::Value {
         serde_json::from_str(&fs::read_to_string(format!("{}/{}", src, f)).unwrap_or_else(|_| empty.to_string())).unwrap()
