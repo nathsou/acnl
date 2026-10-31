@@ -400,12 +400,15 @@ gptr<u8> record_by_size_flag(gptr<RecordSizeOwner> owner, u32 index) {
     return owner.cast<u8>() + index * words * sizeof(u32) + (large ? LARGE_RECORDS_OFFSET : SMALL_RECORDS_OFFSET);
 }
 GUEST_EXPORT(0x0026fac4, record_by_size_flag);
-GUEST_FUZZ(0x0026fac4, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x00718d08, record_by_size_flag);
+static void fuzz_26fac4(guest::Fuzz &f) {
     f.allocate(FUZZ_PAD);
     auto owner = f.allocate(sizeof(RecordSizeOwner)).cast<RecordSizeOwner>();
     owner->large_flag = f.pick<u8>({0, 1, 5});
     f.arguments(owner, f.below(6));
-});
+}
+GUEST_FUZZ(0x0026fac4, 100, fuzz_26fac4);
+GUEST_FUZZ(0x00718d08, 100, fuzz_26fac4);
 
 namespace {
 
@@ -448,9 +451,12 @@ gptr<u8> villager_player_record_address(gptr<u8> base, u32 index) {
     return index < PLAYER_RECORD_COUNT ? base + index * PLAYER_RECORD_SIZE + PLAYER_RECORDS_OFFSET : gptr<u8>(nullptr);
 }
 GUEST_EXPORT(0x001198d1, villager_player_record_address);
-GUEST_FUZZ(0x001198d1, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x001126fd, villager_player_record_address);
+static void fuzz_1198d1(guest::Fuzz &f) {
     f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(PLAYER_RECORD_COUNT + 3), 0xffffffffu}));
-});
+}
+GUEST_FUZZ(0x001198d1, 100, fuzz_1198d1);
+GUEST_FUZZ(0x001126fd, 100, fuzz_1198d1);
 
 // The address of the record (0x1ac bytes each, fifteen of them); null for numbers past the last (Thumb entry).
 gptr<u8> record_1ac_address(gptr<u8> base, u32 index) {

@@ -263,9 +263,12 @@ gptr<u16> tile_address(TileGrid &grid, u32 column, u32 row) {
     return guest::addr_of(grid.tiles[row][column]);
 }
 GUEST_EXPORT(0x0075db98, tile_address);
-GUEST_FUZZ(0x0075db98, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x00613734, tile_address);
+static void fuzz_75db98(guest::Fuzz &f) {
     f.arguments(f.object<TileGrid>(), f.pick<u32>({f.below(TILE_COLUMNS + 2), 0xffffffffu}), f.pick<u32>({f.below(TILE_ROWS + 2), 0xffffffffu}));
-});
+}
+GUEST_FUZZ(0x0075db98, 100, fuzz_75db98);
+GUEST_FUZZ(0x00613734, 100, fuzz_75db98);
 
 // Stores the value in the halfword when it is below 0x384 (signed); whether it was stored.
 bool store_half_below_384(u16 &half, s32 value) {
@@ -319,7 +322,9 @@ void fill_eight_bytes(gptr<u32> destination, u32 value) {
     destination[1] = filled;
 }
 GUEST_EXPORT(0x007796a0, fill_eight_bytes);
+GUEST_EXPORT(0x402fdfd8, fill_eight_bytes);
 GUEST_FUZZ(0x007796a0, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(8).cast<u32>(), f.number()); });
+GUEST_FUZZ(0x402fdfd8, 100, [](guest::Fuzz &f) { f.arguments(f.allocate(8).cast<u32>(), f.number()); });
 
 // Sets or clears bit 0 of the word at 0x28.
 void set_flag_bit_0_at_28(FlagWord28 &object, bool value) {
@@ -422,7 +427,9 @@ void copy_ten_bytes(TenBytes &destination, const TenBytes &source) {
     destination = source;
 }
 GUEST_EXPORT(0x007795d0, copy_ten_bytes);
+GUEST_EXPORT(0x401b81b4, copy_ten_bytes);
 GUEST_FUZZ(0x007795d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<TenBytes>(), f.object<TenBytes>()); });
+GUEST_FUZZ(0x401b81b4, 100, [](guest::Fuzz &f) { f.arguments(f.object<TenBytes>(), f.object<TenBytes>()); });
 
 // The pockets of the player of the slot (null without a player).
 gptr<Pockets> pockets_of_slot_player(u32 slot) {

@@ -44,7 +44,9 @@ u32 Xorshift128::next() {
     return result;
 }
 GUEST_EXPORT(0x0055cb58, Xorshift128::next);
+GUEST_EXPORT(0x0053b8b8, Xorshift128::next);
 GUEST_FUZZ(0x0055cb58, 200, [](guest::Fuzz &f) { f.arguments(f.object<Xorshift128>()); });
+GUEST_FUZZ(0x0053b8b8, 200, [](guest::Fuzz &f) { f.arguments(f.object<Xorshift128>()); });
 
 // A handle: a value that only counts when the flag next to it is set.
 struct Handle {

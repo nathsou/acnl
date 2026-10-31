@@ -67,6 +67,7 @@ gptr<u32> EntryBook::entry(u32 index) {
     return guest::addr_of(entries[index < ENTRY_COUNT ? index : 0]);
 }
 GUEST_EXPORT(0x00759270, EntryBook::entry);
+GUEST_EXPORT(0x005cd9f8, EntryBook::entry);
 
 // An object with two words of entries from offset 0xe8 (event book).
 struct EventEntries {
@@ -143,9 +144,11 @@ GUEST_FUZZ(0x007592c0, 200, [](guest::Fuzz &f) {
 GUEST_FUZZ(0x0075915c, 300, [](guest::Fuzz &f) {
     f.arguments(f.object<SaveSection>(), f.pick<u32>({0, 1, 31, 32, 0x50, 0x51, 0x52, 0xffffffffu, f.below(0x60)}));
 });
-GUEST_FUZZ(0x00759270, 300, [](guest::Fuzz &f) {
+static void fuzz_759270(guest::Fuzz &f) {
     f.arguments(f.object<EntryBook>(), f.pick<u32>({0, 1, 0x37, 0x38, 0x39, 0xffffffffu, f.below(0x40)}));
-});
+}
+GUEST_FUZZ(0x00759270, 300, fuzz_759270);
+GUEST_FUZZ(0x005cd9f8, 300, fuzz_759270);
 GUEST_FUZZ(0x00759280, 200, [](guest::Fuzz &f) {
     f.arguments(f.object<EventEntries>(), f.pick<u32>({0, 1, 2, 3, 0xffffffffu}));
 });

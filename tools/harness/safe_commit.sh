@@ -19,5 +19,5 @@ fi
 git add games guest tools docs
 git commit -q -m "$1
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git push -q origin main 2>&1 | tail -1
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" && git push -q origin main 2>&1 | tail -1
 git log --oneline | head -1

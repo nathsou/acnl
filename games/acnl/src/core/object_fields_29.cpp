@@ -68,11 +68,18 @@ u32 call_virtual_1_if_present(gptr<VirtualObject> object) {
     return guest::call_address<u32>(object->vtable[FIRST_SLOT], object);
 }
 GUEST_EXPORT(0x0024f71c, call_virtual_1_if_present);
-GUEST_FUZZ(0x0024f71c, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x00324944, call_virtual_1_if_present);
+GUEST_EXPORT(0x00347454, call_virtual_1_if_present);
+GUEST_EXPORT(0x00524b44, call_virtual_1_if_present);
+static void fuzz_24f71c(guest::Fuzz &f) {
     auto object = f.object<VirtualObject>();
     object->vtable = fuzz::harmless_vtable(f, FIRST_SLOT + 1);
     f.arguments(f.below(4) != 0 ? object : gptr<VirtualObject>(0u));
-});
+}
+GUEST_FUZZ(0x0024f71c, 100, fuzz_24f71c);
+GUEST_FUZZ(0x00324944, 100, fuzz_24f71c);
+GUEST_FUZZ(0x00347454, 100, fuzz_24f71c);
+GUEST_FUZZ(0x00524b44, 100, fuzz_24f71c);
 
 // The distance between the two positions, counting both ends, but never below 0.
 void update_count_720(CountObject &object) {

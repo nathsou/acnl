@@ -152,6 +152,7 @@ static u32 font_base_virtual_12() {
     return 2;
 }
 GUEST_EXPORT(0x0052e9fc, font_base_virtual_12);
+GUEST_EXPORT(0x0052ea58, font_base_virtual_12);
 
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
 
@@ -182,3 +183,4 @@ GUEST_FUZZ(0x0052e858, 200, [](guest::Fuzz &f) {
 
 GUEST_FUZZ(0x0052e90c, 200, [](guest::Fuzz &f) { f.arguments(f.object<DLoadSplit>(), f.pick<u8>({0, 1})); });
 GUEST_FUZZ(0x0052e9fc, 200, [](guest::Fuzz &f) { f.arguments(); });
+GUEST_FUZZ(0x0052ea58, 200, [](guest::Fuzz &f) { f.arguments(); });

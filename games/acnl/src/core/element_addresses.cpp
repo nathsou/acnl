@@ -44,7 +44,9 @@ gptr<u8> small_record_address(gptr<u8> base, u32 index) {
     return element_address<RECORD_COUNT, SMALL_RECORD_STRIDE, 0>(base, index);
 }
 GUEST_EXPORT(0x0071dcdc, small_record_address);
+GUEST_EXPORT(0x002c002c, small_record_address);
 GUEST_FUZZ(0x0071dcdc, 100, [](guest::Fuzz &f) { fuzz_element_address(f, RECORD_COUNT); });
+GUEST_FUZZ(0x002c002c, 100, [](guest::Fuzz &f) { fuzz_element_address(f, RECORD_COUNT); });
 
 gptr<u8> page_address(gptr<u8> base, u32 index) {
     return element_address<PAGE_COUNT, PAGE_STRIDE, PAGE_OFFSET>(base, index);
@@ -62,7 +64,9 @@ gptr<u8> slot_address(gptr<u8> base, u32 index) {
     return element_address<SLOT_COUNT, SLOT_STRIDE, 0>(base, index);
 }
 GUEST_EXPORT(0x0071d648, slot_address);
+GUEST_EXPORT(0x002be920, slot_address);
 GUEST_FUZZ(0x0071d648, 100, [](guest::Fuzz &f) { fuzz_element_address(f, SLOT_COUNT); });
+GUEST_FUZZ(0x002be920, 100, [](guest::Fuzz &f) { fuzz_element_address(f, SLOT_COUNT); });
 
 gptr<u8> block_address(gptr<u8> base, u32 index) {
     return element_address<BLOCK_COUNT, BLOCK_STRIDE, BLOCK_OFFSET>(base, index);

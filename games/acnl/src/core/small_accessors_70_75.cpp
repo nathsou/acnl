@@ -276,7 +276,8 @@ gptr<u8> entry_of_table_owner(EntryTableHolder &holder) {
     return table.cast<u8>() + table->entries_offset + holder.index * ENTRY_STRIDE_152;
 }
 GUEST_EXPORT(0x00754a9c, entry_of_table_owner);
-GUEST_FUZZ(0x00754a9c, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x00754a4c, entry_of_table_owner);
+static void fuzz_754a9c(guest::Fuzz &f) {
     auto holder = f.object<EntryTableHolder>();
     auto owner = f.object<TableOwner>();
     auto table = f.allocate(FUZZ_TABLE_BYTES).cast<EntryTable>();
@@ -285,7 +286,9 @@ GUEST_FUZZ(0x00754a9c, 100, [](guest::Fuzz &f) {
     holder->owner = owner;
     holder->index = f.below(5);
     f.arguments(holder);
-});
+}
+GUEST_FUZZ(0x00754a9c, 100, fuzz_754a9c);
+GUEST_FUZZ(0x00754a4c, 100, fuzz_754a9c);
 
 // The catalog value of the nth catalog item (-1 for the ones past the last).
 s32 catalog_value_of_index(u32 owner, u32 index) {  // (the owner is not used)

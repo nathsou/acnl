@@ -24,7 +24,11 @@ void assign_packed_a(PackedValue &value, u32 byte, u32 number) {
     value.raw = (byte & BYTE_MASK) | (number << NUMBER_SHIFT);
 }
 GUEST_EXPORT(0x0062575c, assign_packed_a);
+GUEST_EXPORT(0x00625924, assign_packed_a);
+GUEST_EXPORT(0x00626100, assign_packed_a);
 GUEST_FUZZ(0x0062575c, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedValue>(), f.number(), f.number()); });
+GUEST_FUZZ(0x00625924, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedValue>(), f.number(), f.number()); });
+GUEST_FUZZ(0x00626100, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedValue>(), f.number(), f.number()); });
 
 void assign_packed_b(PackedValue &value, u32 byte, u32 number) {
     value.raw = (byte & BYTE_MASK) | (number << NUMBER_SHIFT);
@@ -48,7 +52,13 @@ void clear_packed_a(PackedValue &value) {
     value.raw = 0;
 }
 GUEST_EXPORT(0x00625780, clear_packed_a);
+GUEST_EXPORT(0x00625948, clear_packed_a);
+GUEST_EXPORT(0x00625f90, clear_packed_a);
+GUEST_EXPORT(0x00626124, clear_packed_a);
 GUEST_FUZZ(0x00625780, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedValue>()); });
+GUEST_FUZZ(0x00625948, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedValue>()); });
+GUEST_FUZZ(0x00625f90, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedValue>()); });
+GUEST_FUZZ(0x00626124, 100, [](guest::Fuzz &f) { f.arguments(f.object<PackedValue>()); });
 
 void clear_packed_b(PackedValue &value) {
     value.raw = 0;

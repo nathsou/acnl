@@ -43,6 +43,7 @@ u32 offset_identity_thunk(u32 object) {
     return object;
 }
 GUEST_EXPORT(0x0012e858, offset_identity_thunk);
+GUEST_EXPORT(0x0032a4b8, offset_identity_thunk);
 
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
 
@@ -65,3 +66,4 @@ GUEST_FUZZ(0x001b0544, 400, [](guest::Fuzz &f) {
     f.arguments(some_fader(f), f.real(), f.pick<s32>({0, 1, 2, 20, 900, -1, -100, static_cast<s32>(f.below(1000))}));
 });
 GUEST_FUZZ(0x0012e858, 200, [](guest::Fuzz &f) { f.arguments(f.number()); });
+GUEST_FUZZ(0x0032a4b8, 200, [](guest::Fuzz &f) { f.arguments(f.number()); });

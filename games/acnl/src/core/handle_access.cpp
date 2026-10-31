@@ -56,6 +56,7 @@ static bool words_equal(gptr<u32> a, gptr<u32> b) {
     return *a == *b;
 }
 GUEST_EXPORT(0x00755ad4, words_equal);
+GUEST_EXPORT(0x0072d964, words_equal);
 
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
 
@@ -69,11 +70,13 @@ GUEST_FUZZ(0x00755ac4, 200, [](guest::Fuzz &f) {
     }
     f.arguments(word);
 });
-GUEST_FUZZ(0x00755ad4, 200, [](guest::Fuzz &f) {
+static void fuzz_755ad4(guest::Fuzz &f) {
     auto a = f.object<u32>();
     auto b = f.object<u32>();
     if (f.below(2) == 0) {
         *b = *a;
     }
     f.arguments(a, b);
-});
+}
+GUEST_FUZZ(0x00755ad4, 200, fuzz_755ad4);
+GUEST_FUZZ(0x0072d964, 200, fuzz_755ad4);

@@ -262,11 +262,16 @@ bool record_number_is(LinkedIndex &owner, s32 number) {
     return current == number;
 }
 GUEST_EXPORT(0x002d5b78, record_number_is);
-GUEST_FUZZ(0x002d5b78, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x002a9da4, record_number_is);
+GUEST_EXPORT(0x002d5900, record_number_is);
+static void fuzz_2d5b78(guest::Fuzz &f) {
     auto owner = f.object<LinkedIndex>();
     owner->record = f.below(4) != 0 ? f.allocate(FUZZ_BLOCK * 2).cast<u8>() : gptr<u8>(0u);
     f.arguments(owner, f.pick<s32>({-1, 0, 5, s32(f.number())}));
-});
+}
+GUEST_FUZZ(0x002d5b78, 100, fuzz_2d5b78);
+GUEST_FUZZ(0x002a9da4, 100, fuzz_2d5b78);
+GUEST_FUZZ(0x002d5900, 100, fuzz_2d5b78);
 
 // Packs five values: the first byte, the second above it, the third's low nibble at bit 16, the fourth and fifth at bit 20.
 u32 pack_five(u32 first, u32 second, u32 third, u32 fourth, u32 fifth) {
@@ -373,9 +378,12 @@ gptr<u8> record_2160_address_of_8(gptr<u8> base, u32 index) {
     return index < RECORD_8_COUNT ? base + index * RECORD_2160_SIZE : base;
 }
 GUEST_EXPORT(0x00304ed8, record_2160_address_of_8);
-GUEST_FUZZ(0x00304ed8, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x0070f51c, record_2160_address_of_8);
+static void fuzz_304ed8(guest::Fuzz &f) {
     f.arguments(f.allocate(FUZZ_BLOCK).cast<u8>(), f.pick<u32>({f.below(RECORD_8_COUNT + 3), 0xffffffffu}));
-});
+}
+GUEST_FUZZ(0x00304ed8, 100, fuzz_304ed8);
+GUEST_FUZZ(0x0070f51c, 100, fuzz_304ed8);
 
 // Whether the two bits 9-10 of the word at 0x2510 are 2.
 bool field_2510_is_2(Flags2510 &object) {

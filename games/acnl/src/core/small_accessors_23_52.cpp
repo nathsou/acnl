@@ -40,7 +40,9 @@ u32 word_ab7df4(u32 index) {
     return words_ab7df4[index < TABLE_AB7DF4_COUNT ? index : 0];
 }
 GUEST_EXPORT(0x00314a04, word_ab7df4);
+GUEST_EXPORT(0x00242194, word_ab7df4);
 GUEST_FUZZ(0x00314a04, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(TABLE_AB7DF4_COUNT + 3), 0xffffffffu})); });
+GUEST_FUZZ(0x00242194, 100, [](guest::Fuzz &f) { f.arguments(f.pick<u32>({f.below(TABLE_AB7DF4_COUNT + 3), 0xffffffffu})); });
 
 // The word of the table at 0x00ab7de4 (the first for indexes past the 4 of it).
 u32 word_ab7de4(u32 index) {
@@ -77,11 +79,13 @@ gptr<u8> record_302_address(gptr<u8> base, u32 index) {
     return base + RECORDS_OFFSET + (index < RECORD_COUNT ? index * RECORD_SIZE : 0);
 }
 GUEST_EXPORT(0x0030512c, record_302_address);
+GUEST_EXPORT(0x00716684, record_302_address);
 GUEST_EXPORT(0x00317efc, record_302_address);
 static void fuzz_record_302(guest::Fuzz &f) {
     f.arguments(f.allocate(FUZZ_PAD).cast<u8>(), f.pick<u32>({f.below(RECORD_COUNT + 3), 0xffffffffu}));
 }
 GUEST_FUZZ(0x0030512c, 100, fuzz_record_302);
+GUEST_FUZZ(0x00716684, 100, fuzz_record_302);
 GUEST_FUZZ(0x00317efc, 100, fuzz_record_302);
 
 // Clears the words of the list and puts the cursor back at the start.
@@ -175,9 +179,14 @@ void set_bit_below_29(gptr<u8> bits, u32 index, u32 value) {
     *byte = value != 0 ? u8(*byte | mask) : u8(*byte & ~mask);
 }
 GUEST_EXPORT(0x00309904, set_bit_below_29);
-GUEST_FUZZ(0x00309904, 200, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x401fe918, set_bit_below_29);
+GUEST_EXPORT(0x40530fc8, set_bit_below_29);
+static void fuzz_309904(guest::Fuzz &f) {
     f.arguments(f.allocate(8).cast<u8>(), f.pick<u32>({f.below(BIT_COUNT_29 + 3), 0xffffffffu}), f.below(2));
-});
+}
+GUEST_FUZZ(0x00309904, 200, fuzz_309904);
+GUEST_FUZZ(0x401fe918, 200, fuzz_309904);
+GUEST_FUZZ(0x40530fc8, 200, fuzz_309904);
 
 // Takes the first unused entry of the 32 (marks it as new: kind 0xe, everything else cleared) and returns the address of
 // the data part of it; null when all are used.

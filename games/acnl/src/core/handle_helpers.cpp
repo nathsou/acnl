@@ -137,6 +137,11 @@ void clear_word_pair(WordPair &pair) {
     pair.second = 0;
 }
 GUEST_EXPORT(0x0013f274, clear_word_pair);
+GUEST_EXPORT(0x001515bc, clear_word_pair);
+GUEST_EXPORT(0x001515e4, clear_word_pair);
+GUEST_EXPORT(0x003d464c, clear_word_pair);
+GUEST_EXPORT(0x005a8b14, clear_word_pair);
+GUEST_EXPORT(0x005aa450, clear_word_pair);
 
 namespace {
 
@@ -213,6 +218,11 @@ GUEST_FUZZ(0x0013f1a8, 200, [](guest::Fuzz &f) {
 });
 
 GUEST_FUZZ(0x0013f274, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
+GUEST_FUZZ(0x001515bc, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
+GUEST_FUZZ(0x001515e4, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
+GUEST_FUZZ(0x003d464c, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
+GUEST_FUZZ(0x005a8b14, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
+GUEST_FUZZ(0x005aa450, 200, [](guest::Fuzz &f) { f.arguments(f.object<WordPair>()); });
 
 GUEST_FUZZ(0x0013f28c, 200, [](guest::Fuzz &f) {
     auto holder = f.object<HandleHolder>();

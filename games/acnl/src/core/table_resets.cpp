@@ -141,7 +141,9 @@ static void reset_shared_entry_table(SharedEntryTable &table) {
     }
 }
 GUEST_EXPORT(0x003081c8, reset_shared_entry_table);
+GUEST_EXPORT(0x0029ce10, reset_shared_entry_table);
 GUEST_FUZZ(0x003081c8, 200, [](guest::Fuzz &f) { f.arguments(f.object<SharedEntryTable>()); });
+GUEST_FUZZ(0x0029ce10, 200, [](guest::Fuzz &f) { f.arguments(f.object<SharedEntryTable>()); });
 
 /// Clears the global block at 0x009ab588, runs the reset hook of each of its records, and clears a global flag.
 static void reset_global_block_a() {

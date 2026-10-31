@@ -51,6 +51,7 @@ GUEST_EXPORT(0x002fe874, call_target_with_two<0x94>);
 GUEST_EXPORT(0x005f12b4, call_target_with_one<0x78>);
 GUEST_EXPORT(0x005f1264, call_target_with_none<0x3c>);
 GUEST_EXPORT(0x005f12a4, call_target_with_none<0x48>);
+GUEST_EXPORT(0x00744978, call_target_with_none<0x48>);
 GUEST_EXPORT(0x005f12c4, call_target_with_none<0xa4>);
 
 // ---- inputs for the shadow checker's fuzzing (GUEST_FUZZ=1)
@@ -69,4 +70,5 @@ GUEST_FUZZ(0x002fe874, 100, [](guest::Fuzz &f) { fuzz_with_two(f); });
 GUEST_FUZZ(0x005f12b4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_handler(f), f.number()); });
 GUEST_FUZZ(0x005f1264, 100, [](guest::Fuzz &f) { f.arguments(fuzz_handler(f)); });
 GUEST_FUZZ(0x005f12a4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_handler(f)); });
+GUEST_FUZZ(0x00744978, 100, [](guest::Fuzz &f) { f.arguments(fuzz_handler(f)); });
 GUEST_FUZZ(0x005f12c4, 100, [](guest::Fuzz &f) { f.arguments(fuzz_handler(f)); });

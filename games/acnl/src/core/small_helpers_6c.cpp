@@ -163,6 +163,8 @@ static ItemState &construct_nothing(ItemState &self) {
     return self;
 }
 GUEST_EXPORT(0x006c51d0, construct_nothing);
+GUEST_EXPORT(0x00624024, construct_nothing);
+GUEST_EXPORT(0x00691b20, construct_nothing);
 
 static bool number_in_range(u32 number) {
     return number - NUMBER_RANGE_FIRST < NUMBER_RANGE_COUNT;
@@ -222,6 +224,8 @@ GUEST_FUZZ(0x006c4e6c, 300, [](guest::Fuzz &f) {
 });
 GUEST_FUZZ(0x006c5180, 200, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
 GUEST_FUZZ(0x006c51d0, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
+GUEST_FUZZ(0x00624024, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
+GUEST_FUZZ(0x00691b20, 100, [](guest::Fuzz &f) { f.arguments(f.object<ItemState>()); });
 GUEST_FUZZ(0x006e56f4, 300, [](guest::Fuzz &f) {
     f.arguments(f.pick<u32>({0, 0x2f, 0x30, 0x3b, 0x3c, 0xffffffffu, f.below(0x50)}));
 });

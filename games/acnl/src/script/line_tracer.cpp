@@ -73,6 +73,7 @@ bool LineTracer::virtual_4() const {
     return finished == 0;
 }
 GUEST_EXPORT(0x005d5774, LineTracer::virtual_4);
+GUEST_EXPORT(0x005d51f8, LineTracer::virtual_4);
 
 LineTracer &construct_line_tracer(LineTracer &self) {
     construct_msg_engine(reinterpret_cast<MsgEngine &>(self));
@@ -104,6 +105,7 @@ GUEST_FUZZ(0x005d5738, 300, [](guest::Fuzz &f) {
     f.arguments(tracer, chunk);
 });
 GUEST_FUZZ(0x005d5774, 200, [](guest::Fuzz &f) { f.arguments(f.object<LineTracer>()); });
+GUEST_FUZZ(0x005d51f8, 200, [](guest::Fuzz &f) { f.arguments(f.object<LineTracer>()); });
 GUEST_FUZZ(0x005d5810, 200, [](guest::Fuzz &f) { f.arguments(f.object<LineTracer>()); });
 
 }  // namespace script

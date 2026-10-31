@@ -122,11 +122,14 @@ bool halfword_is_nonzero(const u16 &value) {
     return value != 0;
 }
 GUEST_EXPORT(0x0076c6d4, halfword_is_nonzero);
-GUEST_FUZZ(0x0076c6d4, 100, [](guest::Fuzz &f) {
+GUEST_EXPORT(0x0071a0a0, halfword_is_nonzero);
+static void fuzz_76c6d4(guest::Fuzz &f) {
     auto value = f.object<u16>();
     *value = u16(f.below(2) == 0 ? 0 : f.number());
     f.arguments(value);
-});
+}
+GUEST_FUZZ(0x0076c6d4, 100, fuzz_76c6d4);
+GUEST_FUZZ(0x0071a0a0, 100, fuzz_76c6d4);
 GUEST_FUZZ(0x006e7204, 200, [](guest::Fuzz &f) {
     f.allocate(STACK_CLEARANCE);  // (keeps the object clear of the stack the original works on)
     auto object = f.allocate(sizeof(ActorObject)).cast<ActorObject>();

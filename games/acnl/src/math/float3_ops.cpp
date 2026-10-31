@@ -56,8 +56,12 @@ float distance_squared_xz(const Float3 &a, const Float3 &b) {
     return result + dz * dz;
 }
 GUEST_EXPORT(0x0074fe34, distance_squared_xz);
+GUEST_EXPORT(0x40206398, distance_squared_xz);
+GUEST_EXPORT(0x404e3b14, distance_squared_xz);
 
 GUEST_FUZZ(0x0074fe34, 200, [](guest::Fuzz &f) { f.arguments(f.object<Float3>(), f.object<Float3>()); });
+GUEST_FUZZ(0x40206398, 200, [](guest::Fuzz &f) { f.arguments(f.object<Float3>(), f.object<Float3>()); });
+GUEST_FUZZ(0x404e3b14, 200, [](guest::Fuzz &f) { f.arguments(f.object<Float3>(), f.object<Float3>()); });
 
 // out = a - b
 void float3_subtract(Float3 &out, const Float3 &a, const Float3 &b) {
@@ -69,10 +73,13 @@ void float3_subtract(Float3 &out, const Float3 &a, const Float3 &b) {
     out.v[2] = z;
 }
 GUEST_EXPORT(0x0074fe58, float3_subtract);
+GUEST_EXPORT(0x40538c6c, float3_subtract);
 
-GUEST_FUZZ(0x0074fe58, 200, [](guest::Fuzz &f) {
+static void fuzz_74fe58(guest::Fuzz &f) {
     f.arguments(f.object<Float3>(), f.object<Float3>(), f.object<Float3>());
-});
+}
+GUEST_FUZZ(0x0074fe58, 200, fuzz_74fe58);
+GUEST_FUZZ(0x40538c6c, 200, fuzz_74fe58);
 
 // out = a * scale
 void float3_scale(Float3 &out, const Float3 &a, float scale) {
