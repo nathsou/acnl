@@ -330,7 +330,8 @@ impl Emitter {
         }
     }
 
-    // a load or store of argN + off through the repository's struct: (read expression, write wrapper)
+    // a load or store of argN + off through the repository's struct: (read expression, the place, the conversion a
+    // stored value goes through, `{}` standing for the value)
     fn known_field(&self, t: Ty, a: &Expr) -> Option<(String, String, String)> {
         let (k, off) = arg_off_of(a)?;
         let st = self.known.get(&k)?;
@@ -340,11 +341,11 @@ impl Emitter {
         let base = db.field_base(st, off, bytes)?;
         let place = format!("arg{}->{}", k, path);
         Some(match base.as_str() {
-            "float" => (format!("std::bit_cast<u32>({})", place), place, "std::bit_cast<float>(u32(".into()),
-            "ptr" => (format!("{}.addr()", place), place, "gptr<void>(u32(".into()),
-            // (one conversion when the field already has the access's type; "x((" keeps the closing count)
-            _ if base_c(&base) == t.c_name() => (format!("{}({})", t.c_name(), place), place, format!("{}((", t.c_name())),
-            _ => (format!("{}({})", t.c_name(), place), place, format!("{}({}(", base_c(&base), t.c_name())),
+            "float" => (format!("std::bit_cast<u32>({})", place), place, "std::bit_cast<float>(u32({}))".into()),
+            "ptr" => (format!("{}.addr()", place), place, "gptr<void>(u32({}))".into()),
+            // (no conversion when the field already has the access's type)
+            _ if base_c(&base) == t.c_name() => (place.clone(), place, format!("{}({{}})", t.c_name())),
+            _ => (format!("{}({})", t.c_name(), place), place, format!("{}({}({{}}))", base_c(&base), t.c_name())),
         })
     }
 
@@ -572,7 +573,7 @@ impl Emitter {
                             Expr::Call(n, args) if n == "F2U" && wrap.starts_with("std::bit_cast<float>") => {
                                 format!("{} = {};", place, self.expr(&args[0], 0)?)
                             }
-                            _ => format!("{} = {}{}));", place, wrap, value),
+                            _ => format!("{} = {};", place, wrap.replace("{}", &value)),
                         };
                         self.line(indent, &text);
                         i += 1;
