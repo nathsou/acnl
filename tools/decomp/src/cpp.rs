@@ -519,7 +519,16 @@ impl<'a> Parser<'a> {
                     let mut args = Vec::new();
                     if !self.is(")") {
                         loop {
-                            args.push(self.expr()?.0);
+                            // &v: a helper's second result written to a variable (a carry, a saturation flag)
+                            if self.eat("&") {
+                                let v = self.ident()?;
+                                if !matches!(self.vars.get(&v), Some(CType::Val(_))) {
+                                    return Err(format!("&{} of a non-variable", v));
+                                }
+                                args.push(Expr::AddrOf(v));
+                            } else {
+                                args.push(self.expr()?.0);
+                            }
                             if !self.eat(",") {
                                 break;
                             }

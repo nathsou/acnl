@@ -625,12 +625,7 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     let mut free: HashSet<String> = df.synced.iter().map(|(_, f)| crate::sym::cpu_key(f)).collect();
     free.insert("pc".into());
     // with the pushes kept, both return through the saved lr; the save area is the pushed slots
-    let pushed = if d.save_slots.is_empty() {
-        crate::saves::remove_saves(&mut original.clone())
-    } else {
-        crate::saves::Saves { slots: vec![], registers: vec![] }
-    };
-    let lr_slot = pushed.registers.iter().find(|(r, _)| r == "r14").map(|(_, off)| *off);
+    let (slots, lr_slot) = if d.save_slots.is_empty() { crate::saves::pushed_slots(original) } else { (vec![], None) };
     let restored = d.saved.iter().map(|(r, _)| r.clone()).collect();
-    equivalent_with_loops_free(ctx, &df, cpp, &pushed.slots, &[], &Relations { free, lr_slot, restored, unobserved: HashSet::new() })
+    equivalent_with_loops_free(ctx, &df, cpp, &slots, &[], &Relations { free, lr_slot, restored, unobserved: HashSet::new() })
 }

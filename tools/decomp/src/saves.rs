@@ -71,6 +71,16 @@ fn rewrite_pops(list: &mut [Stmt], saved: &[(String, u64)]) -> bool {
     ok
 }
 
+// The function's entry label (L_<its address>; other code the recompiler placed before it, such as a veneer a branch
+// reaches, comes first otherwise), or the first label.
+fn entry_label(f: &Function) -> Option<usize> {
+    let own = format!("L_{:x}", f.address);
+    f.body
+        .iter()
+        .position(|s| matches!(s, Stmt::Label(l) if *l == own))
+        .or_else(|| f.body.iter().position(|s| matches!(s, Stmt::Label(_))))
+}
+
 pub struct Saves {
     pub slots: Vec<u32>,              // bytes below the entry sp
     pub registers: Vec<(String, u32)>, // each saved register and the offset below the entry sp of its slot
@@ -79,7 +89,7 @@ pub struct Saves {
 pub fn remove_saves(f: &mut Function) -> Saves {
     let none = || Saves { slots: vec![], registers: vec![] };
     // the push right after the entry label
-    let entry = match f.body.iter().position(|s| matches!(s, Stmt::Label(_))) {
+    let entry = match entry_label(f) {
         Some(i) => i + 1,
         None => return none(),
     };
@@ -144,4 +154,63 @@ pub fn remove_saves(f: &mut Function) -> Saves {
         }
     }
     Saves { slots, registers }
+}
+
+// The bytes the entry block stores callee-saved registers (and lr) to, at known offsets below the entry sp, before
+// changing them (any shape of push, after other pushes such as a varargs function's arguments), and the offset of
+// lr's slot. A function that keeps its pushes returns through these slots; callees leave them alone.
+pub fn pushed_slots(f: &Function) -> (Vec<u32>, Option<u32>) {
+    let mut slots = Vec::new();
+    let mut lr = None;
+    let Some(entry) = entry_label(f) else { return (slots, lr) };
+    // variables at a known distance from the entry sp (sp itself, ea = sp - k, ...)
+    let mut at: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+    at.insert("r13".into(), 0);
+    let mut changed: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let offset = |e: &Expr, at: &std::collections::HashMap<String, i64>| -> Option<i64> {
+        match e {
+            Expr::Var(v) => at.get(v).copied(),
+            Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b) => match (&**a, &**b) {
+                (Expr::Var(v), Expr::Num(k, _)) => {
+                    let base = at.get(v)?;
+                    Some(if *op == BinOp::Add { base + *k as i64 } else { base - *k as i64 })
+                }
+                _ => None,
+            },
+            _ => None,
+        }
+    };
+    for s in &f.body[entry + 1..] {
+        match s {
+            Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
+                match offset(e, &at) {
+                    Some(o) => {
+                        at.insert(n.clone(), o);
+                    }
+                    None => {
+                        at.remove(n);
+                    }
+                }
+                changed.insert(n.clone());
+            }
+            Stmt::Store(Ty::U32, a, Expr::Var(r)) if callee_saved(r) && !changed.contains(r) => {
+                if let Some(o) = offset(a, &at) {
+                    if o < 0 {
+                        let below = (-o) as u32;
+                        for b in 0..4 {
+                            slots.push(below - b);
+                        }
+                        if r == "r14" {
+                            lr = Some(below);
+                        }
+                    }
+                }
+            }
+            Stmt::Store(..) | Stmt::Decl(..) | Stmt::Nop | Stmt::Preempt => {}
+            // an early exit before the push (a shrink-wrapped prologue)
+            Stmt::If(_, a, b) if b.is_empty() && matches!(a.as_slice(), [Stmt::Goto(_)]) => {}
+            _ => break, // the end of the entry block
+        }
+    }
+    (slots, lr)
 }

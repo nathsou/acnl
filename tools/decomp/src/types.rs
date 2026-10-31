@@ -31,6 +31,7 @@ fn helper_type(name: &str) -> Ty {
     match name {
         "U2F" | "sqrtf" | "fabsf" | "vfp_f" => Ty::F32,
         "D2F" | "sqrt" | "fabs" => Ty::F64,
+        "D2B" => Ty::U64, // a double's bits
         _ => Ty::U32,
     }
 }

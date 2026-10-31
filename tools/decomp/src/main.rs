@@ -452,8 +452,8 @@ fn emit_batch(list: &str, out: &str, threads: usize) {
 }
 
 // The runtime's helper functions (3dsrecomp/runtime/cpu.h, libm) a C++ draft may call.
-const HELPERS: [&str; 52] = [
-    "ror32", "lsl_r", "lsr_r", "asr_r", "ror_r", "lsl_rc", "lsr_rc", "asr_rc", "ror_rc", "sat32", "qadd", "qsub", "qdadd",
+const HELPERS: [&str; 53] = [
+    "vfp_cmpf", "ror32", "lsl_r", "lsr_r", "asr_r", "ror_r", "lsl_rc", "lsr_rc", "asr_rc", "ror_rc", "sat32", "qadd", "qsub", "qdadd",
     "qdsub", "smlaxy", "smlaxy_add", "ssat", "usat", "ssat16", "usat16", "sxtb", "sxth", "uxtb", "uxth", "sxtb16", "uxtb16",
     "add16x", "rev16", "sel", "usad8", "pas_lane", "pas16", "pas8", "vfp_cmpd", "cvt_s32", "cvt_u32", "vfp_round",
     "vcvt_sz_f", "vcvt_uz_f", "vcvt_sz_d", "vcvt_uz_d", "vcvt_sr_f", "vcvt_ur_f", "vcvt_sr_d", "vcvt_ur_d", "D2F", "sqrtf",
@@ -524,29 +524,67 @@ fn prove_cpp(path: &str, out: Option<&str>, threads: usize) {
     let compiled = std::process::Command::new(&cxx)
         .args(["-std=gnu++20", "-fsyntax-only", "-Iguest/include", "-Igames/acnl/src", "-I../3dsrecomp/runtime", "-isysroot", &sdk, &check_path])
         .output();
-    let layout_ok = match compiled {
-        Ok(o) if o.status.success() => true,
+    // errors inside a draft's namespace leave that draft out (it does not compile); anywhere else (a layout
+    // assertion) they stop everything
+    let mut broken: std::collections::HashSet<u32> = std::collections::HashSet::new();
+    match compiled {
+        Ok(o) if o.status.success() => {}
         Ok(o) => {
             let err = String::from_utf8_lossy(&o.stderr);
-            println!("layout check failed ({}):\n{}", check_path, err.lines().filter(|l| l.contains("error")).take(10).collect::<Vec<_>>().join("\n"));
-            false
+            let check_text = fs::read_to_string(&check_path).unwrap_or_default();
+            let lines: Vec<&str> = check_text.lines().collect();
+            let mut fatal = Vec::new();
+            for l in err.lines().filter(|l| l.contains(": error:")) {
+                let n: usize = l.split(':').nth(1).and_then(|x| x.parse().ok()).unwrap_or(0);
+                // the draft around the line: the last "namespace d_X {" before it, unless closed in between
+                let mut owner = None;
+                for k in (0..n.min(lines.len())).rev() {
+                    if lines[k].starts_with("}  // namespace d_") {
+                        break;
+                    }
+                    if let Some(rest) = lines[k].strip_prefix("namespace d_") {
+                        owner = u32::from_str_radix(rest.trim_end_matches(" {"), 16).ok();
+                        break;
+                    }
+                }
+                match owner {
+                    Some(a) => {
+                        broken.insert(a);
+                    }
+                    None => fatal.push(l.to_string()),
+                }
+            }
+            if !fatal.is_empty() {
+                println!("layout check failed ({}):\n{}", check_path, fatal.iter().take(10).cloned().collect::<Vec<_>>().join("\n"));
+                return;
+            }
         }
         Err(e) => {
             println!("layout check: cannot run {}: {}", cxx, e);
-            false
+            return;
         }
-    };
-    if !layout_ok {
-        return;
     }
     let exports = std::sync::Arc::new(file.exports);
+    let broken = std::sync::Arc::new(broken);
     let handles: Vec<_> = (0..threads)
         .map(|t| {
             let exports = exports.clone();
+            let broken = broken.clone();
             std::thread::spawn(move || {
                 let cfg = z3::Config::new();
                 let ctx = z3::Context::new(&cfg);
-                exports.iter().skip(t).step_by(threads).map(|e| (e.address, prove_export(&ctx, e))).collect::<Vec<_>>()
+                exports
+                    .iter()
+                    .skip(t)
+                    .step_by(threads)
+                    .map(|e| {
+                        if broken.contains(&(e.address & !1)) {
+                            (e.address, Err("does not compile".to_string()))
+                        } else {
+                            (e.address, prove_export(&ctx, e))
+                        }
+                    })
+                    .collect::<Vec<_>>()
             })
         })
         .collect();
@@ -574,6 +612,9 @@ fn prove_cpp(path: &str, out: Option<&str>, threads: usize) {
     }
     if let Some(o) = out {
         fs::write(o, proved).unwrap();
+        // and why the others are not
+        let failed: String = all.iter().filter_map(|(a, r)| r.as_ref().err().map(|w| format!("{:08x} {}\n", a, w))).collect();
+        fs::write(format!("{}.failed", o), failed).unwrap();
     }
 }
 

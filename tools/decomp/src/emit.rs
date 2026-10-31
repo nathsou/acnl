@@ -787,6 +787,10 @@ pub fn emit(f: &Function) -> R<String> {
     // the body first (it decides the callees)
     e.stmts(&f.body, 1, returns, &[])?;
     let body = std::mem::take(&mut e.out);
+    // a register's saved copy used beyond saving and restoring (a second push of it): not written yet
+    if body.contains("saved_") {
+        return Err("uses a saved register copy".into());
+    }
     let mut out = String::new();
     for st in e.known.values() {
         if let Some(h) = crate::view::types().and_then(|db| db.header(st)) {
