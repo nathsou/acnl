@@ -34,7 +34,8 @@ fn subst_cond(s: &mut Stmt, x: &str, by: &Expr) {
 }
 
 // one propagation in this list (or a nested one); returns whether something changed
-fn step(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, types: &HashMap<String, Ty>) -> bool {
+fn step(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, types: &HashMap<String, Ty>,
+        synced: &std::collections::HashSet<String>) -> bool {
     for i in 0..list.len() {
         let mut p = prefix.clone();
         p.push(i);
@@ -43,7 +44,7 @@ fn step(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, types: &HashMap<Stri
             pa.push(0);
             let mut pb = p.clone();
             pb.push(1);
-            if step(a, &pa, lv, types) || step(b, &pb, lv, types) {
+            if step(a, &pa, lv, types, synced) || step(b, &pb, lv, types, synced) {
                 return true;
             }
             continue;
@@ -62,6 +63,10 @@ fn step(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, types: &HashMap<Stri
         // the statement that reads x, before anything interferes
         let mut found = None;
         for j in i + 1..list.len() {
+            // SO() reads every synced register (into the CPU state a call or the caller sees)
+            if matches!(list[j], Stmt::SyncOut) && synced.contains(&x) {
+                break;
+            }
             let (own, nested) = cond_uses(&list[j], &x);
             if nested > 0 {
                 break;
@@ -118,7 +123,8 @@ pub fn propagate(f: &mut Function) {
     collect_decls(&f.body, &mut types);
     for _ in 0..2000 {
         let lv = liveness(f);
-        if !step(&mut f.body, &vec![], &lv, &types) {
+        let synced: std::collections::HashSet<String> = f.synced.iter().map(|(v, _)| v.clone()).collect();
+        if !step(&mut f.body, &vec![], &lv, &types, &synced) {
             break;
         }
     }

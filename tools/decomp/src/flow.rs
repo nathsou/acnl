@@ -80,6 +80,22 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
                 flatten(b, &pb, out, fresh);
                 out.push(Node::Label(end));
             }
+            Stmt::While { top, test, body, check, cond } => {
+                if let Some(t) = test {
+                    out.push(Node::Jump(t.clone()));
+                }
+                out.push(Node::Label(top.clone()));
+                let mut pa = p.clone();
+                pa.push(0);
+                flatten(body, &pa, out, fresh);
+                if let Some(t) = test {
+                    out.push(Node::Label(t.clone()));
+                }
+                let mut pb = p.clone();
+                pb.push(1);
+                flatten(check, &pb, out, fresh);
+                out.push(Node::JumpIf(expr_vars(cond), top.clone(), None));
+            }
             Stmt::Goto(l) => out.push(Node::Jump(l.clone())),
             Stmt::Label(l) => out.push(Node::Label(l.clone())),
             Stmt::Switch(e, cases) => out.push(Node::Switch(expr_vars(e), cases.iter().map(|(_, l)| l.clone()).collect())),

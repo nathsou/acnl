@@ -148,6 +148,10 @@ pub enum Stmt {
     // `if (c->pc != expected) return;` after a call: the callee did not come back normally
     ReturnUnlessPc(Expr),
     Return,
+    // a loop the structuring found; it stands for exactly these labels and jumps:
+    //   test None:     top: body; check; if (cond) goto top;                 (do { } while)
+    //   test Some(t):  goto t; top: body; t: check; if (cond) goto top;     (while / for (;;))
+    While { top: String, test: Option<String>, body: Vec<Stmt>, check: Vec<Stmt>, cond: Expr },
     Nop,
     // anything the parser does not model yet (the function is then left alone)
     Unsupported(String),

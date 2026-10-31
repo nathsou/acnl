@@ -18,6 +18,15 @@ fn count_refs(list: &[Stmt], out: &mut HashMap<String, usize>) {
                 count_refs(a, out);
                 count_refs(b, out);
             }
+            Stmt::While { top, test, body, check, .. } => {
+                // the loop's own jumps (the back edge, the jump to the test)
+                *out.entry(top.clone()).or_default() += 1;
+                if let Some(t) = test {
+                    *out.entry(t.clone()).or_default() += 1;
+                }
+                count_refs(body, out);
+                count_refs(check, out);
+            }
             _ => {}
         }
     }
@@ -25,7 +34,7 @@ fn count_refs(list: &[Stmt], out: &mut HashMap<String, usize>) {
 
 fn has_label(list: &[Stmt]) -> bool {
     list.iter().any(|s| match s {
-        Stmt::Label(_) => true,
+        Stmt::Label(_) | Stmt::While { .. } => true,
         Stmt::If(_, a, b) => has_label(a) || has_label(b),
         _ => false,
     })
@@ -92,8 +101,61 @@ fn step(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
     false
 }
 
+// top: B; if (c) goto top;                       -> do { B } while (c)
+// goto t; top: B; t: T; if (c) goto top;          -> while / for (;;)
+// when the labels have no other reference and B, T contain no labels
+fn loops(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
+    for s in list.iter_mut() {
+        if let Stmt::If(_, a, b) = s {
+            if loops(a, refs) || loops(b, refs) {
+                return true;
+            }
+        }
+    }
+    for i in 0..list.len() {
+        let top = match &list[i] {
+            Stmt::Label(l) if refs.get(l) == Some(&1) => l.clone(),
+            _ => continue,
+        };
+        // the back edge
+        let Some(j) = list[i + 1..].iter().position(|s| matches!(s, Stmt::If(_, a, b) if b.is_empty() && matches!(a.as_slice(), [Stmt::Goto(l)] if *l == top))).map(|p| p + i + 1) else {
+            continue;
+        };
+        let cond = match &list[j] {
+            Stmt::If(c, _, _) => c.clone(),
+            _ => unreachable!(),
+        };
+        let inner: Vec<Stmt> = list[i + 1..j].to_vec();
+        // rotated: "goto t" right before top, and t inside
+        let rotated = i > 0 && matches!(&list[i - 1], Stmt::Goto(t) if refs.get(t) == Some(&1)
+            && inner.iter().filter(|s| matches!(s, Stmt::Label(l) if l == t)).count() == 1);
+        if rotated {
+            let t = match &list[i - 1] {
+                Stmt::Goto(t) => t.clone(),
+                _ => unreachable!(),
+            };
+            let k = inner.iter().position(|s| matches!(s, Stmt::Label(l) if *l == t)).unwrap();
+            let (body, check) = (inner[..k].to_vec(), inner[k + 1..].to_vec());
+            if has_label(&body) || has_label(&check) {
+                continue;
+            }
+            let w = Stmt::While { top, test: Some(t), body, check, cond };
+            list.splice(i - 1..j + 1, std::iter::once(w));
+            return true;
+        }
+        if has_label(&inner) {
+            continue;
+        }
+        let w = Stmt::While { top, test: None, body: inner, check: vec![], cond };
+        list.splice(i..j + 1, std::iter::once(w));
+        return true;
+    }
+    false
+}
+
+// also the preemption points (no-ops in the model: they only let other threads run), which sit on back edges
 fn drop_self_moves(list: &mut Vec<Stmt>) {
-    list.retain(|s| !matches!(s, Stmt::Assign(x, Expr::Var(y)) if x == y));
+    list.retain(|s| !matches!(s, Stmt::Assign(x, Expr::Var(y)) if x == y) && !matches!(s, Stmt::Preempt));
     for s in list.iter_mut() {
         if let Stmt::If(_, a, b) = s {
             drop_self_moves(a);
@@ -192,7 +254,7 @@ pub fn structure(f: &mut Function) {
         for (_, l) in &f.entries {
             *refs.entry(l.clone()).or_default() += 1;
         }
-        if !step(&mut f.body, &refs) {
+        if !step(&mut f.body, &refs) && !loops(&mut f.body, &refs) {
             break;
         }
     }

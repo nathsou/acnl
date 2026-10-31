@@ -76,6 +76,18 @@ fn flatten(stmts: &[Stmt], out: &mut Vec<Ins>, fresh: &mut usize) {
             Stmt::Goto(l) => out.push(Ins::Jump(l.clone())),
             Stmt::Label(l) => out.push(Ins::Label(l.clone())),
             Stmt::Switch(e, cases) => out.push(Ins::Switch(e.clone(), cases.clone())),
+            Stmt::While { top, test, body, check, cond } => {
+                if let Some(t) = test {
+                    out.push(Ins::Jump(t.clone()));
+                }
+                out.push(Ins::Label(top.clone()));
+                flatten(body, out, fresh);
+                if let Some(t) = test {
+                    out.push(Ins::Label(t.clone()));
+                }
+                flatten(check, out, fresh);
+                out.push(Ins::JumpIf(cond.clone(), top.clone()));
+            }
             other => out.push(Ins::Do(other.clone())),
         }
     }

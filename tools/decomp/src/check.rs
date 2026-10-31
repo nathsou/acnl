@@ -138,7 +138,7 @@ fn var_types(f: &Function) -> HashMap<String, Ty> {
                 Stmt::Decl(t, n, _) => {
                     out.insert(n.clone(), *t);
                 }
-                Stmt::If(_, a, b) => {
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                     walk(a, out);
                     walk(b, out);
                 }
@@ -175,13 +175,18 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
     if oheaders.is_empty() {
         return equivalent(ctx, original, candidate, slots);
     }
-    let (_, clabels, _) = Sym::graph(candidate);
+    // the cut points: the candidate's loop headers (its labels are a subset of the original's); a cycle of the
+    // original they do not cut shows up as a loop when its segment runs (unknown, never a wrong proof)
+    let (_, clabels, cheaders) = Sym::graph(candidate);
     let mut names = Vec::new();
-    for b in &oheaders {
-        match label_of_block(&olabels, *b) {
-            Some(n) if clabels.contains_key(&n) => names.push(n),
+    for b in &cheaders {
+        match label_of_block(&clabels, *b) {
+            Some(n) if olabels.contains_key(&n) => names.push(n),
             _ => return Verdict::Unknown("loop header without a shared label".into()),
         }
+    }
+    if names.is_empty() {
+        return Verdict::Unknown("the candidate has no loop where the original has one".into());
     }
     let ocuts: HashSet<usize> = names.iter().map(|n| olabels[n]).collect();
     let ccuts: HashSet<usize> = names.iter().map(|n| clabels[n]).collect();
@@ -189,11 +194,16 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
     let (otypes, ctypes) = (var_types(original), var_types(candidate));
     // sp at each loop header, below the entry sp (measured where the header is first reached, proved after)
     let mut deltas: HashMap<String, u64> = HashMap::new();
+    let deadline = std::time::Instant::now()
+        + std::time::Duration::from_secs(std::env::var("DECOMP_BUDGET_S").ok().and_then(|v| v.parse().ok()).unwrap_or(60));
     let mut todo: Vec<Option<String>> = vec![None];
     let mut done: HashSet<Option<String>> = HashSet::new();
     while let Some(start) = todo.pop() {
         if !done.insert(start.clone()) {
             continue;
+        }
+        if std::time::Instant::now() > deadline {
+            return Verdict::Unknown("time budget".into());
         }
         let mut s = Sym::new(ctx);
         let shared: State = s.initial("in_");

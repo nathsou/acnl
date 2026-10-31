@@ -105,6 +105,116 @@ fn simplify_cond(e: &mut Expr, types: &HashMap<String, Ty>) {
     }
 }
 
+fn var(e: &Expr, name: &str) -> bool {
+    matches!(e, Expr::Var(v) if v == name)
+}
+
+// res >> 31 (the N flag of res = a - b)
+fn is_n(e: &Expr, res: &str) -> bool {
+    matches!(e, Expr::Bin(BinOp::Shr, x, k) if var(x, res) && matches!(**k, Expr::Num(31, _)))
+}
+
+// ((a ^ b) & (a ^ res)) >> 31 (the V flag of res = a - b)
+fn is_v(e: &Expr, res: &str, a: &Expr, b: &Expr) -> bool {
+    if let Expr::Bin(BinOp::Shr, x, k) = e {
+        if !matches!(**k, Expr::Num(31, _)) {
+            return false;
+        }
+        if let Expr::Bin(BinOp::And, p, q) = &**x {
+            let ab = |t: &Expr| matches!(t, Expr::Bin(BinOp::Xor, l, r) if **l == *a && **r == *b);
+            let ar = |t: &Expr| matches!(t, Expr::Bin(BinOp::Xor, l, r) if **l == *a && var(r, res));
+            return (ab(p) && ar(q)) || (ar(p) && ab(q));
+        }
+    }
+    false
+}
+
+fn is_zero(e: &Expr, res: &str) -> bool {
+    let e = match e {
+        Expr::Cast(_, x) => &**x,
+        other => other,
+    };
+    matches!(e, Expr::Bin(BinOp::Eq, x, z) if var(x, res) && matches!(**z, Expr::Num(0, _)))
+}
+
+fn is_nonzero(e: &Expr, res: &str) -> bool {
+    let e = match e {
+        Expr::Cast(_, x) => &**x,
+        other => other,
+    };
+    matches!(e, Expr::Bin(BinOp::Ne, x, z) if var(x, res) && matches!(**z, Expr::Num(0, _)))
+}
+
+// The flag tests of a signed comparison of a and b (res = a - b) as the comparison itself.
+fn signed_compare(c: &Expr, res: &str, a: &Expr, b: &Expr) -> Option<Expr> {
+    let sa = || Box::new(Expr::Cast(Ty::S32, Box::new(a.clone())));
+    let sb = || Box::new(Expr::Cast(Ty::S32, Box::new(b.clone())));
+    let nv = |e: &Expr, op: BinOp| matches!(e, Expr::Bin(o, n, v) if *o == op
+        && ((is_n(n, res) && is_v(v, res, a, b)) || (is_n(v, res) && is_v(n, res, a, b))));
+    if nv(c, BinOp::Ne) {
+        return Some(Expr::Bin(BinOp::Lt, sa(), sb()));
+    }
+    if nv(c, BinOp::Eq) {
+        return Some(Expr::Bin(BinOp::Ge, sa(), sb()));
+    }
+    if let Expr::Bin(BinOp::LOr, x, y) = c {
+        if is_zero(x, res) && nv(y, BinOp::Ne) {
+            return Some(Expr::Bin(BinOp::Le, sa(), sb()));
+        }
+    }
+    if let Expr::Bin(BinOp::LAnd, x, y) = c {
+        if is_nonzero(x, res) && nv(y, BinOp::Eq) {
+            return Some(Expr::Bin(BinOp::Gt, sa(), sb()));
+        }
+    }
+    None
+}
+
+// u32 res = a - b; if (<flags of res>) ...  ->  the comparison in the if (res is then dead)
+fn signed_compares(list: &mut [Stmt]) {
+    for i in 0..list.len() {
+        if let Stmt::If(_, a, b) = &mut list[i] {
+            signed_compares(a);
+            signed_compares(b);
+        }
+        if i + 1 >= list.len() {
+            continue;
+        }
+        // u32 res = x << k; if (res >> 31) / if (res != 0) / if (res == 0): a test of bit 31 - k / of the low bits
+        if let Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Shl, x, k))) = &list[i] {
+            if let (Expr::Num(k, _), Stmt::If(c, _, _)) = (&**k, &list[i + 1]) {
+                if *k < 32 {
+                    let (r, x, k) = (r.clone(), (**x).clone(), *k);
+                    let top = Expr::Num(1u64 << (31 - k), Ty::U32);
+                    let low = Expr::Num((1u64 << (32 - k)) - 1, Ty::U32);
+                    let and = |m: Expr| Expr::Bin(BinOp::And, Box::new(x.clone()), Box::new(m));
+                    let new = if is_n(c, &r) {
+                        Some(and(top))
+                    } else if is_nonzero(c, &r) {
+                        Some(Expr::Bin(BinOp::Ne, Box::new(and(low)), Box::new(Expr::Num(0, Ty::U32))))
+                    } else if is_zero(c, &r) {
+                        Some(Expr::Bin(BinOp::Eq, Box::new(and(low)), Box::new(Expr::Num(0, Ty::U32))))
+                    } else {
+                        None
+                    };
+                    if let (Some(n), Stmt::If(c, _, _)) = (new, &mut list[i + 1]) {
+                        *c = n;
+                    }
+                }
+            }
+        }
+        let (res, a, b) = match &list[i] {
+            Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Sub, a, b))) => (r.clone(), (**a).clone(), (**b).clone()),
+            _ => continue,
+        };
+        if let Stmt::If(c, _, _) = &mut list[i + 1] {
+            if let Some(n) = signed_compare(c, &res, &a, &b) {
+                *c = n;
+            }
+        }
+    }
+}
+
 fn simplify_list(list: &mut [Stmt], types: &mut HashMap<String, Ty>) {
     for s in list.iter_mut() {
         match s {
@@ -218,5 +328,6 @@ pub fn simplify(f: &mut Function) {
     let mut types: HashMap<String, Ty> = f.locals.iter().map(|(t, n, _)| (n.clone(), *t)).collect();
     types.insert("entry".into(), Ty::U32);
     simplify_list(&mut f.body, &mut types);
+    signed_compares(&mut f.body);
     while merge_ifs(&mut f.body) {}
 }

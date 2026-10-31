@@ -122,6 +122,29 @@ pub fn stmts(list: &[Stmt], indent: usize, out: &mut String) {
                     out.push_str(&format!("{}}}\n", pad));
                 }
             }
+            Stmt::While { top, test, body, check, cond } => {
+                out.push_str(&format!("{}// loop {}{}\n", pad, top, test.as_ref().map(|t| format!(" (test {})", t)).unwrap_or_default()));
+                match test {
+                    None => {
+                        out.push_str(&format!("{}do {{\n", pad));
+                        stmts(body, indent + 1, out);
+                        stmts(check, indent + 1, out);
+                        out.push_str(&format!("{}}} while ({});\n", pad, expr(cond)));
+                    }
+                    Some(_) if check.is_empty() => {
+                        out.push_str(&format!("{}while ({}) {{\n", pad, expr(cond)));
+                        stmts(body, indent + 1, out);
+                        out.push_str(&format!("{}}}\n", pad));
+                    }
+                    Some(_) => {
+                        out.push_str(&format!("{}for (;;) {{\n", pad));
+                        stmts(check, indent + 1, out);
+                        out.push_str(&format!("{}    if (!({})) break;\n", pad, expr(cond)));
+                        stmts(body, indent + 1, out);
+                        out.push_str(&format!("{}}}\n", pad));
+                    }
+                }
+            }
             Stmt::Goto(l) => out.push_str(&format!("{}goto {};\n", pad, l)),
             Stmt::Label(l) => out.push_str(&format!("{}:\n", l)),
             Stmt::SyncOut => out.push_str(&format!("{}SO();\n", pad)),

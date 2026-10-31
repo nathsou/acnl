@@ -169,11 +169,14 @@ fn sweep(list: &mut Vec<Stmt>, keep: &HashSet<String>, types: &mut HashMap<Strin
             }
         }
         // still used after the window (on another path or after interference): leave it
-        let after: usize = list[end..]
-            .iter()
-            .take_while(|s| !matches!(s, Stmt::Decl(_, y, _) if *y == x))
-            .map(|s| count_stmt(s, &x))
-            .sum();
+        // (the initialiser of the next declaration of x still reads this one: `u64 t = a + (t >> 32)`)
+        let mut after = 0;
+        for s in &list[end..] {
+            after += count_stmt(s, &x);
+            if matches!(s, Stmt::Decl(_, y, _) if *y == x) {
+                break;
+            }
+        }
         let ty_e = type_of(&e, types);
         if blocked || after > 0 || (uses > 1 && !trivial(&e)) || ty_e.is_none() {
             types.insert(x.clone(), t);

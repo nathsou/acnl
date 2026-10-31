@@ -11,6 +11,7 @@ mod propagate;
 mod simplify;
 mod structure;
 mod sym;
+mod typedb;
 mod types;
 mod view;
 
@@ -118,16 +119,16 @@ fn decompile_one(addr: u32) {
         Some(f) => f,
         None => return println!("{:x}: not found or not parsed", addr),
     };
-    let dd = decompile::decompile(&orig);
+    let cfg = z3::Config::new();
+    let ctx = z3::Context::new(&cfg);
+    let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
     let d = dd.function.clone();
     if std::env::var("DECOMP_RAW").is_ok() {
         println!("{}", print::function(&d));
     } else {
         println!("{}", view::view(&d));
     }
-    let cfg = z3::Config::new();
-    let ctx = z3::Context::new(&cfg);
-    let verdict = match check::verify(&ctx, &orig, &dd) {
+    let verdict = match v {
         check::Verdict::Proved => "proved".to_string(),
         check::Verdict::Differs(w) => format!("DIFFERS: {}", w),
         check::Verdict::Unknown(w) => format!("unknown: {}", w),
@@ -204,12 +205,18 @@ fn check_all(limit: usize, threads: usize) {
                             continue;
                         }
                     };
-                    let dd = decompile::decompile(&orig);
-                    let v = match check::verify(&ctx, &orig, &dd) {
+                    let t0 = std::time::Instant::now();
+                    let (_dd, verdict) = decompile::decompile_and_prove(&ctx, &orig);
+                    let t1 = t0.elapsed().as_secs_f32();
+                    let v = match verdict {
                         check::Verdict::Proved => "proved".to_string(),
                         check::Verdict::Differs(w) => format!("DIFFERS {}", w),
                         check::Verdict::Unknown(w) => format!("unknown {}", w.chars().take(40).collect::<String>()),
                     };
+                    let total = t0.elapsed().as_secs_f32();
+                    if total > 10.0 {
+                        eprintln!("slow {:x}: decompile {:.1}s, total {:.1}s: {}", addr, t1, total, v);
+                    }
                     out.push((addr, v));
                 }
                 out
@@ -222,7 +229,7 @@ fn check_all(limit: usize, threads: usize) {
     for (a, v) in &all {
         let key = if v.starts_with("DIFFERS") { "DIFFERS".to_string() } else { v.clone() };
         *counts.entry(key).or_default() += 1;
-        if v.starts_with("DIFFERS") {
+        if v != "proved" {
             println!("{:x} {}", a, v);
         }
     }
@@ -269,6 +276,40 @@ fn loops_with_saves(n: usize) {
     println!();
 }
 
+// Proves the function after every pass of the decompiler: the first pass that breaks equivalence is the bug.
+fn bisect(addr: u32) {
+    let Some(orig) = find(addr) else { return };
+    let cfg = z3::Config::new();
+    let ctx = z3::Context::new(&cfg);
+    let mut n = 0;
+    let mut broken = false;
+    let mut prev: Option<String> = None;
+    decompile::decompile_traced(&orig, &mut |pass, f, slots| {
+        n += 1;
+        if broken {
+            return;
+        }
+        let d = decompile::Decompiled { function: f.clone(), save_slots: slots.to_vec(), saved: vec![] };
+        let v = check::verify(&ctx, &orig, &d);
+        let text = match v {
+            check::Verdict::Proved => "proved".to_string(),
+            check::Verdict::Differs(w) => {
+                broken = true;
+                format!("DIFFERS {}", w)
+            }
+            check::Verdict::Unknown(w) => format!("unknown {}", w),
+        };
+        println!("{:3} {:40} {}", n, pass, text);
+        if broken {
+            if let Some(p) = &prev {
+                println!("---- before:\n{}", p);
+            }
+            println!("---- after:\n{}", print::function(f));
+        }
+        prev = Some(print::function(f));
+    });
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
@@ -282,6 +323,7 @@ fn main() {
                                        args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("self-equal") => self_equal(u32::from_str_radix(args[2].trim_start_matches("0x"), 16).unwrap()),
         Some("loops-with-saves") => loops_with_saves(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(3000)),
+        Some("bisect") => bisect(u32::from_str_radix(args[2].trim_start_matches("0x"), 16).unwrap()),
         Some("selftest") => selftest(&args[2..]),
         Some("sym-all") => sym_all(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX)),
         _ => eprintln!("usage: decomp parse-all | sym-all [N]"),
