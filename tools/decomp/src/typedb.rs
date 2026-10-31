@@ -10,6 +10,29 @@ pub struct TypeDb {
     names: HashMap<u32, String>,                  // function -> its name (rewrites and known symbols)
     arity: HashMap<u32, usize>,                   // rewritten function -> number of core-register arguments
     globals: HashMap<u32, String>,                // address -> name of the repository's guest::global<T, A> name
+    headers: HashMap<String, String>,             // struct -> the header that defines it (path under games/acnl/src)
+}
+
+// "struct Name {" in the repository's headers
+fn scan_headers(dir: &std::path::Path, root: &std::path::Path, out: &mut HashMap<String, String>) {
+    let Ok(entries) = std::fs::read_dir(dir) else { return };
+    for e in entries.flatten() {
+        let p = e.path();
+        if p.is_dir() {
+            scan_headers(&p, root, out);
+        } else if p.extension().map_or(false, |x| x == "hpp") {
+            let Ok(text) = std::fs::read_to_string(&p) else { continue };
+            let rel = p.strip_prefix(root).unwrap_or(&p).to_string_lossy().to_string();
+            for line in text.lines() {
+                if let Some(rest) = line.strip_prefix("struct ") {
+                    let name: String = rest.chars().take_while(|c| c.is_ascii_alphanumeric() || *c == '_').collect();
+                    if !name.is_empty() && rest[name.len()..].trim_start().starts_with(['{', ':']) {
+                        out.entry(name).or_insert(rel.clone());
+                    }
+                }
+            }
+        }
+    }
 }
 
 // "guest::global<T, 0xADDR> name" declarations of the rewrites
@@ -86,7 +109,14 @@ impl TypeDb {
         }
         let mut globals = HashMap::new();
         scan_globals(std::path::Path::new("games/acnl/src"), &mut globals);
-        Some(TypeDb { structs, by_gname, params: p, names, arity, globals })
+        let mut headers = HashMap::new();
+        let root = std::path::Path::new("games/acnl/src");
+        scan_headers(root, root, &mut headers);
+        Some(TypeDb { structs, by_gname, params: p, names, arity, globals, headers })
+    }
+
+    pub fn header(&self, name: &str) -> Option<&String> {
+        self.headers.get(name)
     }
 
     pub fn global(&self, addr: u32) -> Option<&String> {
@@ -119,6 +149,37 @@ impl TypeDb {
         }
         if let Some(e) = t.get("array") {
             return Some(self.size(e)? * t.get("n")?.as_u64()?);
+        }
+        None
+    }
+
+    // the base type of the field `field_path` finds ("float", "byte", ...)
+    pub fn field_base(&self, name: &str, offset: u64, bytes: u64) -> Option<String> {
+        let s = self.structs.get(name)?;
+        for f in s.get("fields")?.as_array()? {
+            let (fo, ft) = (f.get("offset")?.as_u64()?, f.get("type")?);
+            let fsize = self.size(ft)?;
+            if offset < fo || offset + bytes > fo + fsize {
+                continue;
+            }
+            return self.base_within(ft, offset - fo, bytes);
+        }
+        None
+    }
+
+    fn base_within(&self, t: &Value, offset: u64, bytes: u64) -> Option<String> {
+        if let Some(b) = t.as_str() {
+            return if offset == 0 && base_size(b)? == bytes { Some(b.to_string()) } else { None };
+        }
+        if t.get("ptr").is_some() {
+            return if offset == 0 && bytes == 4 { Some("ptr".into()) } else { None };
+        }
+        if let Some(sn) = t.get("struct").and_then(|v| v.as_str()) {
+            return self.field_base(sn, offset, bytes);
+        }
+        if let Some(e) = t.get("array") {
+            let es = self.size(e)?;
+            return self.base_within(e, offset % es, bytes);
         }
         None
     }

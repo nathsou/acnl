@@ -74,6 +74,34 @@ fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>) -> R<()> 
     Ok(())
 }
 
+fn arg_off_of(a: &Expr) -> Option<(usize, u64)> {
+    match a {
+        Expr::Var(v) if v.starts_with("arg") => Some((v[3..].parse().ok()?, 0)),
+        Expr::Bin(BinOp::Add, b, o) => match (&**b, &**o) {
+            (Expr::Var(v), Expr::Num(n, _)) if v.starts_with("arg") => Some((v[3..].parse().ok()?, *n)),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+// the C++ type of a type database base type
+fn base_c(b: &str) -> &'static str {
+    match b {
+        "byte" => "u8",
+        "sbyte" => "s8",
+        "char" => "char",
+        "bool" => "bool",
+        "ushort" => "u16",
+        "short" => "s16",
+        "uint" => "u32",
+        "int" => "s32",
+        "ulonglong" => "u64",
+        "longlong" => "s64",
+        _ => "u32",
+    }
+}
+
 fn field_name(t: Ty, off: u64) -> String {
     let kind = match t.bits() {
         8 => "byte",
@@ -85,6 +113,7 @@ fn field_name(t: Ty, off: u64) -> String {
 }
 
 struct Emitter {
+    known: HashMap<usize, String>, // arguments whose struct the repository already has (k -> C++ name)
     stack: bool, // the function uses its stack frame: r13 is the guest's sp, kept in step with the CPU at calls
     reload: Vec<(String, String)>, // after a call: variable <- CPU field (what SI() reads back)
     has_sp: bool,                  // the function keeps r13 in a variable
@@ -162,7 +191,26 @@ impl Emitter {
         }
     }
 
+    // a load or store of argN + off through the repository's struct: (read expression, write wrapper)
+    fn known_field(&self, t: Ty, a: &Expr) -> Option<(String, String, String)> {
+        let (k, off) = arg_off_of(a)?;
+        let st = self.known.get(&k)?;
+        let db = crate::view::types()?;
+        let bytes = (t.bits() / 8) as u64;
+        let path = db.field_path(st, off, bytes)?;
+        let base = db.field_base(st, off, bytes)?;
+        let place = format!("arg{}->{}", k, path);
+        Some(match base.as_str() {
+            "float" => (format!("std::bit_cast<u32>({})", place), place, "std::bit_cast<float>(u32(".into()),
+            "ptr" => (format!("{}.addr()", place), place, "gptr<void>(u32(".into()),
+            _ => (format!("{}({})", t.c_name(), place), place, format!("{}({}(", base_c(&base), t.c_name())),
+        })
+    }
+
     fn field_access(&self, t: Ty, a: &Expr) -> Option<String> {
+        if let Some((read, _, _)) = self.known_field(t, a) {
+            return Some(read);
+        }
         let (k, off) = match a {
             Expr::Var(v) if v.starts_with("arg") => (v[3..].parse::<usize>().ok()?, 0),
             Expr::Bin(BinOp::Add, b, o) => match (&**b, &**o) {
@@ -207,6 +255,15 @@ impl Emitter {
             },
             Expr::Call(n, args) => {
                 let a: R<Vec<String>> = args.iter().map(|x| self.expr(x, 0)).collect();
+                if n == "U2F" {
+                    if let [Expr::Load(Ty::U32, addr)] = args.as_slice() {
+                        if let Some((_, place, wrap)) = self.known_field(Ty::U32, addr) {
+                            if wrap.starts_with("std::bit_cast<float>") {
+                                return Ok(place);
+                            }
+                        }
+                    }
+                }
                 match n.as_str() {
                     "F2U" => format!("std::bit_cast<u32>({})", a?[0]),
                     "U2F" => format!("std::bit_cast<float>({})", a?[0]),
@@ -256,6 +313,18 @@ impl Emitter {
                 Stmt::SetCpu(f, _) => return Err(format!("writes {}", cpu(f))),
                 Stmt::Store(t, a, v) => {
                     let value = self.expr(v, 0)?;
+                    if let Some((_, place, wrap)) = self.known_field(*t, a) {
+                        // a float stored into a float field: no round trip through its bits
+                        let text = match v {
+                            Expr::Call(n, args) if n == "F2U" && wrap.starts_with("std::bit_cast<float>") => {
+                                format!("{} = {};", place, self.expr(&args[0], 0)?)
+                            }
+                            _ => format!("{} = {}{}));", place, wrap, value),
+                        };
+                        self.line(indent, &text);
+                        i += 1;
+                        continue;
+                    }
                     let text = match self.field_access(*t, a) {
                         Some(f) => format!("{} = {}({});", f, t.c_name(), value),
                         None => format!("*gptr<{}>({}) = {}({});", t.c_name(), self.expr(a, 0)?, t.c_name(), value),
@@ -446,6 +515,7 @@ fn uses_call_clobbers(f: &Function) -> Option<String> {
 }
 
 pub fn emit(f: &Function) -> R<String> {
+    let addr = f.address | f.thumb as u32;
     let stack = reads_stack(&f.body);
     if let Some(v) = uses_call_clobbers(f) {
         return Err(format!("reads {} after a call", v));
@@ -477,7 +547,6 @@ pub fn emit(f: &Function) -> R<String> {
     }
     let mut fl = BTreeMap::new();
     fields(&f.body, &mut fl)?;
-    let addr = f.address | f.thumb as u32;
     let base = format!("f_{:08x}", f.address);
     let reload: Vec<(String, String)> = f
         .synced
@@ -498,7 +567,20 @@ pub fn emit(f: &Function) -> R<String> {
         })
         .collect();
     let has_r0 = declared.contains("r0");
-    let mut e = Emitter { stack, reload, has_sp, float_args, call_args, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), out: String::new() };
+    // arguments whose struct the repository has, when every access of the function is one of its fields
+    let mut known = HashMap::new();
+    if let Some(db) = crate::view::types() {
+        for (k, fs) in &fl {
+            let Some(st) = db.param(addr, *k) else { continue };
+            if st.contains("::") || db.header(&st).is_none() {
+                continue;
+            }
+            if fs.iter().all(|(off, t)| db.field_path(&st, *off, (t.bits() / 8) as u64).is_some()) {
+                known.insert(*k, st);
+            }
+        }
+    }
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), out: String::new() };
     let mut assigned = HashSet::new();
     crate::view::assigned_vars(&f.body, &mut assigned);
     let returns = assigned.contains("r0");
@@ -506,11 +588,16 @@ pub fn emit(f: &Function) -> R<String> {
     e.stmts(&f.body, 1, returns)?;
     let body = std::mem::take(&mut e.out);
     let mut out = String::new();
+    for st in e.known.values() {
+        if let Some(h) = crate::view::types().and_then(|db| db.header(st)) {
+            out.push_str(&format!("#include \"{}\"\n", h));
+        }
+    }
     out.push_str(&format!("// {}: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).\n", base));
     out.push_str(&format!("namespace d_{:08x} {{\n\n", f.address));
     let copies: HashSet<usize> = (0..4).filter(|k| vars.contains_key(&format!("arg{}", k))).collect();
     for (k, fs) in &e.fields {
-        if !copies.contains(k) {
+        if !copies.contains(k) || e.known.contains_key(k) {
             continue;
         }
         let name = format!("Object_{:08x}_{}", f.address, k);
@@ -545,6 +632,10 @@ pub fn emit(f: &Function) -> R<String> {
     let mut sig = Vec::new();
     for p in &params {
         let k: usize = p[1..].parse().unwrap();
+        if let Some(st) = e.known.get(&k) {
+            sig.push(format!("gptr<{}> arg{}", st, k));
+            continue;
+        }
         match e.struct_name.get(&k) {
             Some(s) => sig.push(format!("gptr<{}> arg{}", s, k)),
             None if copies.contains(&k) => sig.push(format!("u32 arg{}_value", k)),
@@ -573,7 +664,7 @@ pub fn emit(f: &Function) -> R<String> {
         }
         let init = if params.contains(&n.as_str()) {
             let k: usize = n[1..].parse().unwrap();
-            if e.struct_name.contains_key(&k) {
+            if e.struct_name.contains_key(&k) || e.known.contains_key(&k) {
                 format!("arg{}.addr()", k)
             } else if copies.contains(&k) {
                 format!("arg{}_value", k)
@@ -595,7 +686,7 @@ pub fn emit(f: &Function) -> R<String> {
         locals.push(format!("{} {} = {};", t.c_name(), n, init));
     }
     for k in &copies {
-        if !e.struct_name.contains_key(k) {
+        if !e.struct_name.contains_key(k) && !e.known.contains_key(k) {
             // an argument kept as a plain value
             locals.push(format!("gptr<u8> arg{} = gptr<u8>(arg{}_value);", k, k));
         }
@@ -612,6 +703,10 @@ pub fn emit(f: &Function) -> R<String> {
     let mut gen = Vec::new();
     for p in &params {
         let k: usize = p[1..].parse().unwrap();
+        if let Some(st) = e.known.get(&k) {
+            gen.push(format!("f.object<{}>()", st));
+            continue;
+        }
         match e.struct_name.get(&k) {
             Some(s) => gen.push(format!("f.object<d_{:08x}::{}>()", f.address, s)),
             None => gen.push("f.pick<u32>({0, 1, 0xffffffff, f.below(0x100), f.number()})".into()),

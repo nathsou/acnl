@@ -7,7 +7,7 @@ use crate::print::expr_at;
 
 static TYPES: std::sync::OnceLock<Option<crate::typedb::TypeDb>> = std::sync::OnceLock::new();
 
-fn types() -> Option<&'static crate::typedb::TypeDb> {
+pub(crate) fn types() -> Option<&'static crate::typedb::TypeDb> {
     TYPES
         .get_or_init(|| crate::typedb::TypeDb::load(&std::env::var("DECOMP_TYPES").unwrap_or("build/tools/ghidra".into())))
         .as_ref()
