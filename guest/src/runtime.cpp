@@ -27,6 +27,8 @@ CPU *cpu() {
 }
 void detail::set_cpu(CPU *c) { tls_cpu = c; }
 
+void svc(u32 number) { rt_svc(cpu(), number); }
+
 void fatal(const char *fmt, ...) {
     char buf[1024];
     va_list ap;

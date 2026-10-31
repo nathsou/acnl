@@ -3,6 +3,7 @@
 use serde_json::Value;
 use std::collections::HashMap;
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum PathStep {
     Field(String),
     Index(u64),
@@ -156,6 +157,10 @@ impl TypeDb {
             return Some(self.size(e)? * t.get("n")?.as_u64()?);
         }
         None
+    }
+
+    pub fn has_struct(&self, name: &str) -> bool {
+        self.structs.contains_key(name)
     }
 
     // The other way round: the offset and base type of a field path ("position", ".v", "[1]" ...) in a struct.

@@ -139,6 +139,7 @@ fn collect_addr(e: &Expr, out: &mut Vec<String>) {
     }
 }
 
+#[derive(Clone)]
 pub struct Liveness {
     pub live_out: HashMap<Path, Set>,
     pub at_label: HashMap<String, Set>, // live on entry to each label
@@ -183,7 +184,8 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                             } else {
                                 matches!(fl.as_str(), "r0" | "r1" | "s0" | "s1")
                             };
-                            observed || (tail && call_argument(fl)) // tail calls pass arguments
+                            // tail calls pass arguments, and the callee returns through lr
+                            observed || (tail && (call_argument(fl) || fl == "r14"))
                         })
                         .cloned()
                         .collect()

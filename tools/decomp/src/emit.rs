@@ -124,6 +124,10 @@ struct Emitter {
     fields: BTreeMap<usize, BTreeMap<u64, Ty>>,
     struct_name: HashMap<usize, String>,
     callees: BTreeMap<u32, String>, // target -> local guest::Function name
+    // before a plain return: the registers a caller sees that the function changes, handed back as SO() does
+    write_back: Vec<(String, String)>, // (CPU field, variable)
+    svc_regs: Vec<(String, u32)>,      // r0-r7 kept in variables: handed to a system call and read back after it
+    live: crate::flow::Liveness,       // what is read later, by statement path (flow.rs numbering)
     out: String,
 }
 
@@ -255,9 +259,16 @@ impl Emitter {
         }
         Ok(match e {
             Expr::Num(v, t) => num(*v, *t),
-            Expr::Float(v, _) => format!("{:?}", v),
+            Expr::Float(v, t) => {
+                if !v.is_finite() {
+                    return Err("a float literal that is not finite".into());
+                }
+                format!("{:?}{}", v, if *t == Ty::F32 { "f" } else { "" })
+            }
             Expr::Var(n) if n.starts_with("arg") => format!("{}.addr()", n),
             Expr::Var(n) => n.clone(),
+            // the thread's TLS address (IPC buffers): the CPU's, it never changes
+            Expr::Cpu(CpuField::Tls) => "guest::cpu()->tls".into(),
             Expr::Cpu(f) => return Err(format!("reads {}", cpu(f))),
             Expr::Un(op, a) => format!("{}{}", match op {
                 UnOp::Neg => "-",
@@ -292,6 +303,7 @@ impl Emitter {
                 }
                 match n.as_str() {
                     "F2U" => format!("std::bit_cast<u32>({})", a?[0]),
+                    "D2B" => format!("std::bit_cast<u64>({})", a?[0]),
                     "U2F" => format!("std::bit_cast<float>({})", a?[0]),
                     // the runtime's helpers (3dsrecomp/runtime/cpu.h)
                     _ => format!("{}({})", n, a?.join(", ")),
@@ -311,10 +323,34 @@ impl Emitter {
         self.out.push('\n');
     }
 
-    fn stmts(&mut self, list: &[Stmt], indent: usize, returns: bool) -> R<()> {
+    // the variables of `reload` live after the SI() that follows the statement at `path` (all when unknown)
+    fn reloads_after(&self, path: &[usize]) -> Vec<(String, String)> {
+        let mut next = path.to_vec();
+        *next.last_mut().unwrap() += 1;
+        match self.live.live_out.get(&next) {
+            Some(live) => self.reload.iter().filter(|(v, _)| live.contains(v)).cloned().collect(),
+            None => self.reload.clone(),
+        }
+    }
+
+    fn stmts(&mut self, list: &[Stmt], indent: usize, returns: bool, prefix: &[usize]) -> R<()> {
         let mut i = 0;
+        let mut reachable = true;
         while i < list.len() {
             let s = &list[i];
+            let mut path = prefix.to_vec();
+            path.push(i);
+            // after a return, a tail call or a goto, nothing runs before the next label
+            if let Stmt::Label(_) = s {
+                reachable = true;
+            }
+            if !reachable {
+                i += 1;
+                continue;
+            }
+            if matches!(s, Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)) {
+                reachable = false;
+            }
             // no guessing here: only what the proved AST marks as bookkeeping (saved_*) is left out
             if stack_bookkeeping(s) {
                 i += 1;
@@ -329,8 +365,15 @@ impl Emitter {
                     self.pc = self.expr(e, 0).ok();
                 }
                 Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) => {}
-                Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b))
-                    if !self.stack && n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => {}
+                // sp moved by a constant (the frame) in a function that does not otherwise use it: the CPU's sp moves,
+                // so the functions it calls see the stack where the original's callees did
+                Stmt::Assign(n, Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b))
+                    if !self.stack && n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) =>
+                {
+                    let Expr::Num(k, _) = **b else { unreachable!() };
+                    let text = format!("guest::cpu()->r[13] {}= {};", if *op == BinOp::Add { "+" } else { "-" }, num(k, Ty::U32));
+                    self.line(indent, &text);
+                }
                 Stmt::Decl(_, _, None) => {}
                 Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
                     let text = format!("{} = {};", n, self.expr(e, 0)?);
@@ -360,36 +403,38 @@ impl Emitter {
                 Stmt::If(c, a, b) => {
                     let text = format!("if ({}) {{", self.expr(c, 0)?);
                     self.line(indent, &text);
-                    self.stmts(a, indent + 1, returns)?;
+                    let (pa, pb) = ([path.clone(), vec![0]].concat(), [path.clone(), vec![1]].concat());
+                    self.stmts(a, indent + 1, returns, &pa)?;
                     if b.is_empty() {
                         self.line(indent, "}");
                     } else {
                         self.line(indent, "} else {");
-                        self.stmts(b, indent + 1, returns)?;
+                        self.stmts(b, indent + 1, returns, &pb)?;
                         self.line(indent, "}");
                     }
                 }
                 Stmt::While { top, test, body, check, cond } => {
                     // labels kept: other gotos may still use them
+                    let (pa, pb) = ([path.clone(), vec![0]].concat(), [path.clone(), vec![1]].concat());
                     match test {
                         None => {
                             self.line(indent, "do {");
                             self.out.push_str(&format!("{}:;\n", top));
-                            self.stmts(body, indent + 1, returns)?;
-                            self.stmts(check, indent + 1, returns)?;
+                            self.stmts(body, indent + 1, returns, &pa)?;
+                            self.stmts(check, indent + 1, returns, &pb)?;
                             let text = format!("}} while ({});", self.expr(cond, 0)?);
                             self.line(indent, &text);
                         }
                         Some(t) => {
                             self.line(indent, "for (;;) {");
                             self.out.push_str(&format!("{}:;\n", t));
-                            self.stmts(check, indent + 1, returns)?;
+                            self.stmts(check, indent + 1, returns, &pb)?;
                             let text = format!("if (!({})) {{", self.expr(cond, 0)?);
                             self.line(indent + 1, &text);
                             self.line(indent + 2, "break;");
                             self.line(indent + 1, "}");
                             self.out.push_str(&format!("{}:;\n", top));
-                            self.stmts(body, indent + 1, returns)?;
+                            self.stmts(body, indent + 1, returns, &pa)?;
                             self.line(indent, "}");
                         }
                     }
@@ -404,13 +449,16 @@ impl Emitter {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};\n{}return;", call, "    ".repeat(indent)) });
                     } else {
                         self.line(indent, &if self.has_r0 { format!("r0 = {};", call) } else { format!("{};", call) });
-                        // the registers the callee may have changed, as the original reads them back
-                        for (v, field) in self.reload.clone() {
+                        // the registers the callee may have changed that are read later, as the original reads them back
+                        for (v, field) in self.reloads_after(&path) {
                             self.line(indent, &format!("{} = {};", v, field));
                         }
                     }
                 }
                 Stmt::Return => {
+                    for (field, v) in self.write_back.clone() {
+                        self.line(indent, &format!("{} = {};", field, v));
+                    }
                     let r = if !returns { "return;" } else if self.has_r0 { "return r0;" } else { "return guest::cpu()->r[0];" };
                     self.line(indent, r);
                 }
@@ -434,12 +482,24 @@ impl Emitter {
                         }
                     } else {
                         self.line(indent, &if self.has_r0 { format!("r0 = {};", call) } else { format!("{};", call) });
-                        for (v, field) in self.reload.clone() {
+                        for (v, field) in self.reloads_after(&path) {
                             self.line(indent, &format!("{} = {};", v, field));
                         }
                     }
                 }
-                Stmt::Svc(_) => return Err("system call".into()),
+                Stmt::Svc(n) => {
+                    // as SO() / SI() around rt_svc: the registers the kernel reads, and those it may change
+                    for (v, k) in self.svc_regs.clone() {
+                        self.line(indent, &format!("guest::cpu()->r[{}] = {};", k, v));
+                    }
+                    if self.stack && self.has_sp {
+                        self.line(indent, "guest::cpu()->r[13] = r13;");
+                    }
+                    self.line(indent, &format!("guest::svc(0x{:x});", n));
+                    for (v, k) in self.svc_regs.clone() {
+                        self.line(indent, &format!("{} = guest::cpu()->r[{}];", v, k));
+                    }
+                }
                 Stmt::Unsupported(w) => return Err(w.clone()),
             }
             i += 1;
@@ -603,12 +663,34 @@ pub fn emit(f: &Function) -> R<String> {
             }
         }
     }
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), out: String::new() };
     let mut assigned = HashSet::new();
     crate::view::assigned_vars(&f.body, &mut assigned);
+    // what a caller observes besides r0 (check.rs OBSERVED): r1, s0, s1, r4-r11 and sp
+    // (registers restored from a saved_* copy before every return keep the caller's value in the CPU)
+    let restored: HashSet<String> = vars.keys().filter_map(|n| n.strip_prefix("saved_").map(|r| r.to_string())).collect();
+    let write_back: Vec<(String, String)> = f
+        .synced
+        .iter()
+        .filter(|(v, _)| assigned.contains(v) && !restored.contains(v))
+        .filter_map(|(v, fl)| match fl {
+            CpuField::R(13) if !stack => None, // the CPU's sp is moved directly
+            CpuField::R(n @ (1 | 4..=11 | 13)) => Some((format!("guest::cpu()->r[{}]", n), v.clone())),
+            CpuField::S(n @ (0 | 1)) => Some((format!("guest::cpu()->s[{}]", n), v.clone())),
+            _ => None,
+        })
+        .collect();
+    let svc_regs: Vec<(String, u32)> = f
+        .synced
+        .iter()
+        .filter_map(|(v, fl)| match fl {
+            CpuField::R(k) if *k <= 7 => Some((v.clone(), *k)),
+            _ => None,
+        })
+        .collect();
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), out: String::new() };
     let returns = assigned.contains("r0");
     // the body first (it decides the callees)
-    e.stmts(&f.body, 1, returns)?;
+    e.stmts(&f.body, 1, returns, &[])?;
     let body = std::mem::take(&mut e.out);
     let mut out = String::new();
     for st in e.known.values() {
@@ -666,13 +748,13 @@ pub fn emit(f: &Function) -> R<String> {
         match e.struct_name.get(&k) {
             Some(s) => sig.push(format!("gptr<{}> arg{}", s, k)),
             None if copies.contains(&k) => sig.push(format!("u32 arg{}_value", k)),
-            None => sig.push(format!("u32 {}_in", p)),
+            None => sig.push(format!("u32 {}", p)), // the register itself is the parameter
         }
     }
     for k in 0..last_float.map_or(0, |m| m + 1) {
         let s = format!("S{}", k);
         if floats.contains(&s) {
-            sig.push(format!("float {}_in", s));
+            sig.push(format!("float {}", s));
         } else {
             sig.push(format!("float {}_unused", s));
         }
@@ -701,10 +783,12 @@ pub fn emit(f: &Function) -> R<String> {
             } else if copies.contains(&k) {
                 format!("arg{}_value", k)
             } else {
-                format!("{}_in", n)
+                continue; // the parameter
             }
         } else if floats.contains(n) {
-            format!("{}_in", n)
+            continue; // the parameter
+        } else if !lv.at_entry.contains(n) {
+            "0".into() // its value at the entry is never read
         } else {
             // as the generated code's prologue: the register's value in the guest CPU
             match f.synced.iter().find(|(v, _)| v == n) {

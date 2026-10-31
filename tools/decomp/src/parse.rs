@@ -394,6 +394,26 @@ impl P {
                     out.push(Stmt::Dispatch(false));
                     return Ok(());
                 }
+                "DSET" => {
+                    // DSET(lo, hi, value): the double's bits into two float registers (runtime/cpu.h); the value is
+                    // computed once, before either half is written
+                    self.i += 2;
+                    let lo = self.ident()?;
+                    self.expect(",")?;
+                    let hi = self.ident()?;
+                    self.expect(",")?;
+                    let v = self.expr()?;
+                    self.expect(")")?;
+                    self.expect(";")?;
+                    static FRESH: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+                    let t = format!("dset_{}", FRESH.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
+                    let bits = || Expr::Call("D2B".into(), vec![Expr::Var(t.clone())]);
+                    out.push(Stmt::Decl(Ty::F64, t.clone(), Some(v)));
+                    out.push(Stmt::Assign(lo, Expr::Call("U2F".into(), vec![Expr::Cast(Ty::U32, Box::new(bits()))])));
+                    let high = Expr::Bin(BinOp::Shr, Box::new(bits()), Box::new(Expr::Num(32, Ty::U32)));
+                    out.push(Stmt::Assign(hi, Expr::Call("U2F".into(), vec![Expr::Cast(Ty::U32, Box::new(high))])));
+                    return Ok(());
+                }
                 "rt_svc" => {
                     self.i += 2;
                     self.ident()?;

@@ -19,6 +19,10 @@ pub struct State<'c> {
     pub cpu: BTreeMap<String, BV<'c>>, // CpuField keys ("r0", "s3", "zf", "pc" ...)
     pub mem: Array<'c>,
     pub world: BV<'c>,
+    // the register save area, by byte offset below the entry sp: a region of its own, reached only by accesses at a
+    // known distance from the entry sp (pushes and pops); accesses through pointers and callees never reach it (the
+    // calling convention: compiled code never reads saved registers through a pointer)
+    pub frame: BTreeMap<u32, BV<'c>>,
 }
 
 pub fn cpu_key(f: &CpuField) -> String {
@@ -45,8 +49,8 @@ pub struct Sym<'c> {
     pub entry_sp: Option<BV<'c>>,
     calls: usize,
     pub assumptions: Vec<Bool<'c>>,
-    // while set, every memory access is assumed to stay out of the save area (the candidate has no push/pop:
-    // an access there would be the program reading a callee's saved registers, which compiled code never does)
+    // while set, every memory access through a pointer is assumed to stay out of the save area (compiled code never
+    // reaches saved registers that way); accesses at a known distance from the entry sp are exact and need no assumption
     pub guard_save_area: bool,
 }
 
@@ -209,6 +213,7 @@ impl<'c> Sym<'c> {
             cpu,
             mem: Array::new_const(self.ctx, format!("{}mem", prefix), &asort, &msort),
             world: BV::new_const(self.ctx, format!("{}world", prefix), 32),
+            frame: BTreeMap::new(),
         }
     }
 
@@ -274,11 +279,84 @@ impl<'c> Sym<'c> {
         b.ite(&self.bv(1, 32), &self.bv(0, 32))
     }
 
+    // whether the save area is modelled as a region of its own (State::frame); DECOMP_FRAME=0: one memory, with an
+    // assumption per access through a pointer instead (slower)
+    fn frame_model(&self) -> bool {
+        !self.save_slots.is_empty() && self.entry_sp.is_some() && std::env::var("DECOMP_FRAME").map_or(true, |x| x != "0")
+    }
+
+    // the save area byte at this address, if it is one (a known distance below the entry sp)
+    fn frame_offset(&self, a: &BV<'c>) -> Option<u32> {
+        if !self.frame_model() {
+            return None;
+        }
+        let d = self.entry_sp.as_ref().unwrap().bvsub(a).simplify().as_u64()?;
+        let d = u32::try_from(d).ok()?;
+        if self.save_slots.contains(&d) {
+            Some(d)
+        } else {
+            None
+        }
+    }
+
+    // the save area of a state from its memory (at the entry: what the bytes there hold)
+    pub fn init_frame(&self, st: &mut State<'c>) {
+        if !self.frame_model() {
+            return;
+        }
+        let esp = self.entry_sp.clone().unwrap();
+        for k in &self.save_slots {
+            let a = esp.bvsub(&self.bv(*k as u64, 32));
+            st.frame.insert(*k, st.mem.select(&a).as_bv().unwrap());
+        }
+    }
+
+    pub fn load_st(&self, st: &State<'c>, addr: &BV<'c>, bytes: u32) -> BV<'c> {
+        if !self.frame_model() {
+            return self.load(&st.mem, addr, bytes);
+        }
+        let mut v: Option<BV> = None;
+        for i in 0..bytes {
+            let a = addr.bvadd(&self.bv(i as u64, 32));
+            let b = match self.frame_offset(&a).and_then(|k| st.frame.get(&k)) {
+                Some(b) => b.clone(),
+                None => st.mem.select(&a).as_bv().unwrap(),
+            };
+            v = Some(match v {
+                None => b,
+                Some(lo) => b.concat(&lo),
+            });
+        }
+        v.unwrap()
+    }
+
+    pub fn store_st(&self, st: &mut State<'c>, addr: &BV<'c>, val: &BV<'c>) {
+        if !self.frame_model() {
+            st.mem = self.store(&st.mem, addr, val);
+            return;
+        }
+        let (addr, val) = (self.norm(addr), self.norm(val));
+        for i in 0..val.get_size() / 8 {
+            let a = addr.bvadd(&self.bv(i as u64, 32));
+            let byte = val.extract(i * 8 + 7, i * 8);
+            match self.frame_offset(&a) {
+                Some(k) => {
+                    st.frame.insert(k, byte);
+                }
+                None => st.mem = st.mem.store(&a, &byte),
+            }
+        }
+    }
+
     fn guard(&mut self, addr: &BV<'c>, bytes: u32) {
-        if !self.guard_save_area || self.save_slots.is_empty() {
+        if !self.guard_save_area || self.save_slots.is_empty() || self.frame_model() {
             return;
         }
         let Some(esp) = self.entry_sp.clone() else { return };
+        // an access at a known distance from the entry sp (pushes, pops, locals) is exact: no assumption needed
+        if addr.bvsub(&esp).simplify().as_u64().is_some() {
+            return;
+        }
         let below = *self.save_slots.iter().max().unwrap() as u64;
         // [addr, addr + bytes) does not meet [esp - below, esp)
         let lo = esp.bvsub(&self.bv(below, 32));
@@ -300,7 +378,18 @@ impl<'c> Sym<'c> {
         v.unwrap()
     }
 
+    // equal values as one term where Z3's simplifier can tell (constants folded, casts of casts): the two programs'
+    // states are then often the same terms, which the solver compares at once (DECOMP_NORM=0 turns it off)
+    pub fn norm(&self, v: &BV<'c>) -> BV<'c> {
+        if std::env::var("DECOMP_NORM").map_or(true, |x| x != "0") {
+            v.simplify()
+        } else {
+            v.clone()
+        }
+    }
+
     pub fn store(&self, mem: &Array<'c>, addr: &BV<'c>, val: &BV<'c>) -> Array<'c> {
+        let (addr, val) = (&self.norm(addr), &self.norm(val));
         let bytes = val.get_size() / 8;
         let mut m = mem.clone();
         for i in 0..bytes {
@@ -420,7 +509,7 @@ impl<'c> Sym<'c> {
                 let (t, v) = self.eval(st, a)?;
                 let addr = self.resize(&v, t, Ty::U32);
                 self.guard(&addr, ty.bits() / 8);
-                (*ty, self.load(&st.mem, &addr, ty.bits() / 8))
+                (*ty, self.load_st(st, &addr, ty.bits() / 8))
             }
             Expr::Call(name, args) => self.helper(st, name, args)?,
             Expr::AddrOf(n) => return Err(format!("&{} outside a helper call", n)),
@@ -465,6 +554,7 @@ impl<'c> Sym<'c> {
         }
         Ok(match name {
             "F2U" => (Ty::U32, vals[0].1.clone()),
+            "D2B" => (Ty::U64, vals[0].1.clone()), // a double's bits
             "U2F" => (Ty::F32, u32v(self, 0)),
             "ror32" | "ror_r" => {
                 let x = u32v(self, 0);
@@ -504,7 +594,7 @@ impl<'c> Sym<'c> {
 
     fn assign(&mut self, st: &mut State<'c>, name: &str, t: Ty, v: BV<'c>) -> Result<()> {
         let (vt, _) = st.vars.get(name).cloned().ok_or_else(|| format!("assignment to undeclared {}", name))?;
-        let nv = self.resize(&v, t, vt);
+        let nv = self.norm(&self.resize(&v, t, vt));
         st.vars.insert(name.to_string(), (vt, nv));
         Ok(())
     }
@@ -532,6 +622,7 @@ impl<'c> Sym<'c> {
         self.calls += 1;
         // the caller's save area is not the callee's business: it sees a canonical content, which is put back after
         let saved: Vec<(BV, BV)> = match &self.entry_sp {
+            Some(_) if self.frame_model() => vec![],
             Some(esp) => self
                 .save_slots
                 .iter()
@@ -569,6 +660,49 @@ impl<'c> Sym<'c> {
         }
         let w = self.uf("call_world", &args, 32);
         for (k, v) in out {
+            st.cpu.insert(k, v);
+        }
+        st.world = w;
+        st.mem = m;
+    }
+
+    // a system call (rt_svc): the kernel's view of what changes, r0-r7 (its handlers write r0-r5), guest memory and
+    // the world (other threads run meanwhile); it reads r0-r7, sp, the thread's TLS (IPC buffers), memory and the
+    // world, and leaves the caller's register save area alone like a callee
+    pub fn svc(&mut self, st: &mut State<'c>, n: u32) {
+        let saved: Vec<(BV, BV)> = match &self.entry_sp {
+            Some(_) if self.frame_model() => vec![],
+            Some(esp) => self
+                .save_slots
+                .iter()
+                .map(|off| {
+                    let a = esp.bvsub(&self.bv(*off as u64, 32));
+                    (a.clone(), st.mem.select(&a).as_bv().unwrap())
+                })
+                .collect(),
+            None => vec![],
+        };
+        let mut seen = st.mem.clone();
+        for (a, _) in &saved {
+            seen = seen.store(a, &self.bv(0, 8));
+        }
+        let digest = self.uf_mem_digest(&seen);
+        let number = self.bv(n as u64, 32);
+        let regs: Vec<BV> = (0..8).map(|i| st.cpu[&format!("r{}", i)].clone()).collect();
+        let (sp, tls) = (st.cpu["r13"].clone(), st.cpu["tls"].clone());
+        let mut args: Vec<&BV> = vec![&number];
+        args.extend(regs.iter());
+        args.push(&sp);
+        args.push(&tls);
+        args.push(&st.world);
+        let mut m = self.uf_mem("svc_mem", &args, &seen);
+        for (a, old) in &saved {
+            m = m.store(a, old);
+        }
+        args.push(&digest);
+        let outs: Vec<(String, BV)> = (0..8).map(|i| (format!("r{}", i), self.uf(&format!("svc_r{}", i), &args, 32))).collect();
+        let w = self.uf("svc_world", &args, 32);
+        for (k, v) in outs {
             st.cpu.insert(k, v);
         }
         st.world = w;
@@ -683,15 +817,19 @@ impl<'c> Sym<'c> {
                 match &block[k] {
                     Ins::Do(s) => match s {
                         Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => {
+                            // a tail call: the callee returns to the lr it was given (the caller's caller)
                             if let Stmt::GuestCall(t, true) = s {
                                 self.sync_out(&mut st, &f.synced);
                                 let target = self.bv(*t as u64, 32);
+                                let lr = st.cpu["r14"].clone();
                                 self.call(&mut st, &target);
-                                st.cpu.insert("pc".into(), st.cpu["r14"].clone());
+                                st.cpu.insert("pc".into(), lr);
                             }
                             if let Stmt::Dispatch(true) = s {
                                 let target = st.cpu["pc"].clone();
+                                let lr = st.cpu["r14"].clone();
                                 self.call(&mut st, &target);
+                                st.cpu.insert("pc".into(), lr);
                             }
                             exits.push(Exit { cond: pc.clone(), state: st.clone() });
                             fell = false;
@@ -806,6 +944,16 @@ impl<'c> Sym<'c> {
             }
             st.cpu.insert(k, v);
         }
+        let fkeys: Vec<u32> = st.frame.keys().cloned().collect();
+        for k in fkeys {
+            let mut v = st.frame[&k].clone();
+            for (c, s) in ins.iter().rev().skip(1) {
+                if let Some(x) = s.frame.get(&k) {
+                    v = c.ite(x, &v);
+                }
+            }
+            st.frame.insert(k, v);
+        }
         let mut m = st.mem.clone();
         let mut w = st.world.clone();
         for (c, s) in ins.iter().rev().skip(1) {
@@ -823,7 +971,7 @@ impl<'c> Sym<'c> {
                 let v = match e {
                     Some(e) => {
                         let (et, ev) = self.eval(st, e)?;
-                        self.resize(&ev, et, *t)
+                        self.norm(&self.resize(&ev, et, *t))
                     }
                     None => self.bv(0, t.bits()),
                 };
@@ -837,7 +985,7 @@ impl<'c> Sym<'c> {
                 let (t, v) = self.eval(st, e)?;
                 let nv = self.resize(&v, t, if matches!(fl, CpuField::S(_)) { Ty::F32 } else { Ty::U32 });
                 let nv = self.resize(&nv, if matches!(fl, CpuField::S(_)) { Ty::F32 } else { Ty::U32 }, Ty::U32);
-                st.cpu.insert(cpu_key(fl), nv);
+                st.cpu.insert(cpu_key(fl), self.norm(&nv));
             }
             Stmt::Store(ty, a, v) => {
                 let (ta, va) = self.eval(st, a)?;
@@ -845,7 +993,7 @@ impl<'c> Sym<'c> {
                 let addr = self.resize(&va, ta, Ty::U32);
                 let val = self.resize(&vv, tv, *ty);
                 self.guard(&addr, ty.bits() / 8);
-                st.mem = self.store(&st.mem, &addr, &val);
+                self.store_st(st, &addr, &val);
             }
             Stmt::SyncOut => self.sync_out(st, &f.synced),
             Stmt::SyncIn => self.sync_in(st, &f.synced),
@@ -865,7 +1013,7 @@ impl<'c> Sym<'c> {
                 st.cpu.insert("pc".into(), e);
             }
             Stmt::Preempt | Stmt::Nop => {}
-            Stmt::Svc(n) => return Err(format!("system call {}", n)),
+            Stmt::Svc(n) => self.svc(st, *n),
             Stmt::Unsupported(w) => return Err(format!("unsupported: {}", w)),
             other => return Err(format!("statement {:?}", other)),
         }

@@ -1,6 +1,7 @@
 mod addresses;
 mod ast;
 mod check;
+mod cpp;
 mod decompile;
 mod emit;
 mod flow;
@@ -449,6 +450,103 @@ fn emit_batch(list: &str, out: &str, threads: usize) {
     }
 }
 
+// The runtime's helper functions (3dsrecomp/runtime/cpu.h, libm) a C++ draft may call.
+const HELPERS: [&str; 52] = [
+    "ror32", "lsl_r", "lsr_r", "asr_r", "ror_r", "lsl_rc", "lsr_rc", "asr_rc", "ror_rc", "sat32", "qadd", "qsub", "qdadd",
+    "qdsub", "smlaxy", "smlaxy_add", "ssat", "usat", "ssat16", "usat16", "sxtb", "sxth", "uxtb", "uxth", "sxtb16", "uxtb16",
+    "add16x", "rev16", "sel", "usad8", "pas_lane", "pas16", "pas8", "vfp_cmpd", "cvt_s32", "cvt_u32", "vfp_round",
+    "vcvt_sz_f", "vcvt_uz_f", "vcvt_sz_d", "vcvt_uz_d", "vcvt_sr_f", "vcvt_ur_f", "vcvt_sr_d", "vcvt_ur_d", "D2F", "sqrtf",
+    "sqrt", "fabsf", "fabs", "__builtin_clz", "clz",
+];
+
+// The C++ of a draft proved equal to the decompiled function, itself proved equal to the original: the verdict.
+fn prove_export(ctx: &z3::Context, e: &cpp::Export) -> Result<(), String> {
+    let f = e.function.as_ref().map_err(|w| format!("unreadable: {}", w))?;
+    let orig = find(e.address).ok_or("no original")?;
+    let (dd, v) = decompile::decompile_and_prove_retrying(ctx, &orig);
+    match v {
+        check::Verdict::Proved => {}
+        check::Verdict::Differs(w) => return Err(format!("the decompiled function is not proved: differs {}", w)),
+        check::Verdict::Unknown(w) => return Err(format!("the decompiled function is not proved: {}", w)),
+    }
+    let v = check::verify_cpp(ctx, &orig, &dd, f);
+    match v {
+        check::Verdict::Proved => Ok(()),
+        check::Verdict::Differs(w) => Err(format!("differs: {}", w)),
+        check::Verdict::Unknown(w) => Err(format!("unknown: {}", w)),
+    }
+}
+
+// Proves every GUEST_EXPORT of a C++ file of drafts; writes the proved addresses to OUT (one per line).
+fn prove_cpp(path: &str, out: Option<&str>, threads: usize) {
+    let text = fs::read_to_string(path).unwrap();
+    let helpers: std::collections::HashSet<String> = HELPERS.iter().map(|s| s.to_string()).collect();
+    let file = match cpp::read(&text, &helpers) {
+        Ok(x) => x,
+        Err(e) => return println!("{}: {}", path, e),
+    };
+    // the layout facts the reading assumed, confirmed by the compiler against the repository's headers
+    let check = cpp::layout_check(&text, &file);
+    let check_path = format!("{}/decomp_layout_check.cpp", std::env::var("DECOMP_WORK").unwrap_or("build/acnl".into()));
+    fs::write(&check_path, check).unwrap();
+    let sdk = std::process::Command::new("xcrun").arg("--show-sdk-path").output().map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).unwrap_or_default();
+    let cxx = std::env::var("CXX").unwrap_or("clang++".into());
+    let compiled = std::process::Command::new(&cxx)
+        .args(["-std=gnu++20", "-fsyntax-only", "-Iguest/include", "-Igames/acnl/src", "-I../3dsrecomp/runtime", "-isysroot", &sdk, &check_path])
+        .output();
+    let layout_ok = match compiled {
+        Ok(o) if o.status.success() => true,
+        Ok(o) => {
+            let err = String::from_utf8_lossy(&o.stderr);
+            println!("layout check failed ({}):\n{}", check_path, err.lines().filter(|l| l.contains("error")).take(10).collect::<Vec<_>>().join("\n"));
+            false
+        }
+        Err(e) => {
+            println!("layout check: cannot run {}: {}", cxx, e);
+            false
+        }
+    };
+    if !layout_ok {
+        return;
+    }
+    let exports = std::sync::Arc::new(file.exports);
+    let handles: Vec<_> = (0..threads)
+        .map(|t| {
+            let exports = exports.clone();
+            std::thread::spawn(move || {
+                let cfg = z3::Config::new();
+                let ctx = z3::Context::new(&cfg);
+                exports.iter().skip(t).step_by(threads).map(|e| (e.address, prove_export(&ctx, e))).collect::<Vec<_>>()
+            })
+        })
+        .collect();
+    let mut all: Vec<(u32, Result<(), String>)> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
+    all.sort_by_key(|x| x.0);
+    let mut why: HashMap<String, usize> = HashMap::new();
+    let mut proved = String::new();
+    for (a, r) in &all {
+        match r {
+            Ok(()) => proved.push_str(&format!("{:08x}\n", a)),
+            Err(w) => {
+                if all.len() <= 20 {
+                    println!("{:08x}: {}", a, w);
+                }
+                *why.entry(w.chars().take(80).collect()).or_default() += 1;
+            }
+        }
+    }
+    let n = proved.lines().count();
+    println!("{} of {} proved", n, all.len());
+    let mut v: Vec<_> = why.into_iter().collect();
+    v.sort_by(|a, b| b.1.cmp(&a.1));
+    for (e, c) in v.into_iter().take(15) {
+        println!("{:6} {}", c, e);
+    }
+    if let Some(o) = out {
+        fs::write(o, proved).unwrap();
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
@@ -470,6 +568,8 @@ fn main() {
         Some("emit-batch") => emit_batch(&args[2], &args[3], args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("check-list") => check_list(&args[2], args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("selftest") => selftest(&args[2..]),
+        Some("prove-cpp") => prove_cpp(&args[2], args.get(3).map(|s| s.as_str()).filter(|s| *s != "-"),
+                                       args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("sym-all") => sym_all(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX)),
         _ => eprintln!("usage: decomp decompile ADDR... | check-all [N] [THREADS] | dump [OUT] [N] [THREADS] | selftest ADDR... | bisect ADDR | parse-all | sym-all [N]"),
     }

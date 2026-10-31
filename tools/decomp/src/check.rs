@@ -48,9 +48,10 @@ fn merged<'c>(s: &Sym<'c>, exits: &[Exit<'c>], key: &str) -> BV<'c> {
 
 pub fn equivalent(ctx: &Context, original: &Function, candidate: &Function, save_slots: &[u32]) -> Verdict {
     let mut s = Sym::new(ctx);
-    let init: State = s.initial("in_");
+    let mut init: State = s.initial("in_");
     s.entry_sp = Some(init.cpu["r13"].clone());
     s.save_slots = save_slots.to_vec();
+    s.init_frame(&mut init);
     let a = match s.run(original, &init) {
         Ok(x) => x,
         Err(e) => return Verdict::Unknown(format!("original: {}", e)),
@@ -184,6 +185,29 @@ fn any_cond<'c>(ctx: &'c Context, conds: &[Bool<'c>]) -> Bool<'c> {
 
 pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidate: &Function, slots: &[u32],
                              saved: &[(String, u32)]) -> Verdict {
+    equivalent_with_loops_free(ctx, original, candidate, slots, saved, &Relations::default())
+}
+
+// What else relates the two programs at the loop headers (for a decompiled function against its C++).
+#[derive(Default)]
+pub struct Relations {
+    // CPU fields left unrelated (a weaker invariant: still sound, as every step is proved from it)
+    pub free: HashSet<String>,
+    // both keep the pushes, and the slot this far below the entry sp holds the return address, which the candidate
+    // keeps in a variable (cpp::LR): that slot holds LR in both
+    pub lr_slot: Option<u32>,
+    // the original's copies of the registers it restores before returning (saved_rX) equal what the candidate leaves
+    // in the CPU (rX, or LR for lr)
+    pub restored: Vec<String>,
+}
+
+// The same, with the CPU fields in `free` left unrelated at the loop headers (a weaker invariant: still sound, as
+// every step is proved from it). For a decompiled function against its C++: the decompiled function keeps
+// registers in variables and writes them to the CPU only around calls, the C++ writes only what a call takes.
+// Each relation is assumed at a header and proved on arrival.
+pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, candidate: &Function, slots: &[u32],
+                                  saved: &[(String, u32)], rel: &Relations) -> Verdict {
+    let (free, lr_slot) = (&rel.free, rel.lr_slot);
     let (_, olabels, oheaders) = Sym::graph(original);
     if oheaders.is_empty() {
         return equivalent(ctx, original, candidate, slots);
@@ -213,6 +237,7 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                     for r in ["r0", "r1", "r2", "r3"] {
                         out.insert(r.into());
                     }
+                    out.insert("(SI)".into());
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                     written(a, out);
@@ -225,8 +250,18 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
     let mut w = HashSet::new();
     written(&original.body, &mut w);
     written(&candidate.body, &mut w);
+    // SI() writes every register a function keeps in variables
+    for f in [original, candidate] {
+        let mut wf = HashSet::new();
+        written(&f.body, &mut wf);
+        if wf.contains("(SI)") {
+            w.extend(f.synced.iter().map(|(v, _)| v.clone()));
+        }
+    }
+    // (and lr, which neither writes, still equals the copy of the entry lr the C++ returns through)
     let unwritten_args: Vec<(String, String)> = (0..4)
         .map(|k| (format!("r{}", k), format!("arg{}", k)))
+        .chain(std::iter::once(("r14".to_string(), crate::cpp::LR.to_string())))
         .filter(|(r, a)| !w.contains(r) && ctypes.contains_key(a) && otypes.contains_key(a) && otypes.contains_key(r))
         .collect();
     let ocuts: HashSet<usize> = names.iter().map(|n| olabels[n]).collect();
@@ -254,7 +289,7 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
         // the entry sp (where the save area is): the function's sp at the entry, a parameter of the segment otherwise
         let esp = match &start {
             None => shared.cpu["r13"].clone(),
-            Some(_) if saved.is_empty() => BV::new_const(ctx, "v___entry_sp", 32),
+            Some(_) if saved.is_empty() && slots.is_empty() => BV::new_const(ctx, "v___entry_sp", 32),
             Some(l) => {
                 let Some(d) = deltas.get(l) else { return Verdict::Unknown(format!("no sp offset at {}", l)) };
                 // r13 is related at the header (shared value v_r13); the entry sp is above it
@@ -263,10 +298,28 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
         };
         s.entry_sp = Some(esp.clone());
         s.save_slots = slots.to_vec();
+        // the save area: at the entry, what memory holds there; at a loop header, unrelated between the programs
+        // unless both keep the pushes (lr_slot: then the same bytes, proved equal on arrival), before the invariants
+        s.init_frame(&mut oinit);
+        s.init_frame(&mut cinit);
+        if start.is_some() {
+            for k in slots {
+                let (o, c) = if lr_slot.is_some() {
+                    let v = BV::new_const(ctx, format!("v_frame_{}", k), 8);
+                    (v.clone(), v)
+                } else {
+                    (BV::new_const(ctx, format!("o_frame_{}", k), 8), BV::new_const(ctx, format!("c_frame_{}", k), 8))
+                };
+                if oinit.frame.contains_key(k) {
+                    oinit.frame.insert(*k, o);
+                    cinit.frame.insert(*k, c);
+                }
+            }
+        }
         if let Some(l) = &start {
             // related variables: those the candidate needs at the label; the original's other ones are arbitrary
             let mut related = clive.at_label.get(l).cloned().unwrap_or_default();
-            if !saved.is_empty() {
+            if !saved.is_empty() || !slots.is_empty() {
                 related.insert("r13".to_string());
             }
             for (v, t) in &ctypes {
@@ -290,11 +343,25 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                     }
                 }
             }
+            // invariant: the original's saved_rX copies hold what the candidate leaves in the CPU
+            for reg in &rel.restored {
+                let name = format!("saved_{}", reg);
+                let value = if reg == "r14" { cinit.vars.get(crate::cpp::LR).map(|x| x.1.clone()) } else { cinit.cpu.get(reg).cloned() };
+                if let (Some((t, _)), Some(v)) = (oinit.vars.get(&name).cloned(), value) {
+                    oinit.vars.insert(name, (t, v));
+                }
+            }
+            // invariant: the return address slot holds LR (both programs)
+            if let (Some(off), Some((_, lr))) = (lr_slot, cinit.vars.get(crate::cpp::LR).cloned()) {
+                let a = esp.bvsub(&s.bv(off as u64, 32));
+                s.store_st(&mut oinit, &a, &lr);
+                s.store_st(&mut cinit, &a, &lr);
+            }
             // invariant: the original's save area holds the registers the candidate keeps in saved_*
             for (reg, off) in saved {
                 if let Some((_, v)) = cinit.vars.get(&format!("saved_{}", reg)) {
                     let a = esp.bvsub(&s.bv(*off as u64, 32));
-                    oinit.mem = s.store(&oinit.mem, &a, v);
+                    s.store_st(&mut oinit, &a, v);
                 }
             }
         }
@@ -374,12 +441,12 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                 continue;
             }
             let mut related = clive.at_label.get(n).cloned().unwrap_or_default();
-            if !saved.is_empty() {
+            if !saved.is_empty() || !slots.is_empty() {
                 related.insert("r13".to_string());
             }
             todo.push(Some(n.clone()));
             // the sp invariant: r13 = entry sp - delta at the header
-            if !saved.is_empty() {
+            if !saved.is_empty() || !slots.is_empty() {
                 let sp_at: Vec<(Bool, BV)> = ca.iter().filter_map(|x| x.2.vars.get("r13").map(|y| (x.1.clone(), y.1.clone()))).collect();
                 if sp_at.len() != ca.len() {
                     return Verdict::Unknown(format!("r13 at {}", n));
@@ -408,6 +475,41 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                     }
                 }
             }
+            // both keep the pushes: the same save area bytes at the header
+            if lr_slot.is_some() {
+                for k in slots {
+                    let a: Option<Vec<(Bool, BV)>> = oa.iter().map(|x| x.2.frame.get(k).map(|y| (x.1.clone(), y.clone()))).collect();
+                    let b: Option<Vec<(Bool, BV)>> = ca.iter().map(|x| x.2.frame.get(k).map(|y| (x.1.clone(), y.clone()))).collect();
+                    if let (Some(a), Some(b)) = (a, b) {
+                        diffs.push((format!("save area byte {} at {}", k, n), Bool::and(ctx, &[&oreach, &merge_bv(&a)._eq(&merge_bv(&b)).not()])));
+                    }
+                }
+            }
+            // the saved_rX invariant at the header
+            for reg in &rel.restored {
+                let name = format!("saved_{}", reg);
+                let a: Option<Vec<(Bool, BV)>> = oa.iter().map(|x| x.2.vars.get(&name).map(|y| (x.1.clone(), y.1.clone()))).collect();
+                let b: Option<Vec<(Bool, BV)>> = ca
+                    .iter()
+                    .map(|x| {
+                        let v = if reg == "r14" { x.2.vars.get(crate::cpp::LR).map(|y| y.1.clone()) } else { x.2.cpu.get(reg).cloned() };
+                        v.map(|v| (x.1.clone(), v))
+                    })
+                    .collect();
+                if let (Some(a), Some(b)) = (a, b) {
+                    diffs.push((format!("{} at {}", name, n), Bool::and(ctx, &[&oreach, &merge_bv(&a)._eq(&merge_bv(&b)).not()])));
+                }
+            }
+            // the return address slot invariant at the header
+            if let Some(off) = lr_slot {
+                let addr = esp.bvsub(&s.bv(off as u64, 32));
+                for (arr, reach, which) in [(&oa, &oreach, "original"), (&ca, &creach, "candidate")] {
+                    let lr: Option<Vec<(Bool, BV)>> = arr.iter().map(|x| x.2.vars.get(crate::cpp::LR).map(|y| (x.1.clone(), y.1.clone()))).collect();
+                    let Some(lr) = lr else { return Verdict::Unknown(format!("no return address variable at {}", n)) };
+                    let slot: Vec<(Bool, BV)> = arr.iter().map(|x| (x.1.clone(), s.load_st(&x.2, &addr, 4))).collect();
+                    diffs.push((format!("lr slot of the {} at {}", which, n), Bool::and(ctx, &[reach, &merge_bv(&slot)._eq(&merge_bv(&lr)).not()])));
+                }
+            }
             // the save area invariant at the header
             for (reg, off) in saved {
                 let name = format!("saved_{}", reg);
@@ -415,7 +517,7 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                     continue;
                 }
                 let addr = esp.bvsub(&s.bv(*off as u64, 32));
-                let a: Vec<(Bool, BV)> = oa.iter().map(|x| (x.1.clone(), s.load(&x.2.mem, &addr, 4))).collect();
+                let a: Vec<(Bool, BV)> = oa.iter().map(|x| (x.1.clone(), s.load_st(&x.2, &addr, 4))).collect();
                 let b: Option<Vec<(Bool, BV)>> = ca.iter().map(|x| x.2.vars.get(&name).map(|y| (x.1.clone(), y.1.clone()))).collect();
                 match b {
                     Some(b) => diffs.push((format!("{} slot at {}", reg, n), Bool::and(ctx, &[&oreach, &merge_bv(&a)._eq(&merge_bv(&b)).not()]))),
@@ -432,7 +534,7 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
                     _ => return Verdict::Unknown(format!("{} at {} not in both", v, n)),
                 }
             }
-            for k in crate::sym::cpu_keys() {
+            for k in crate::sym::cpu_keys().into_iter().filter(|k| !free.contains(k)) {
                 let a: Vec<(Bool, BV)> = oa.iter().map(|x| (x.1.clone(), x.2.cpu[&k].clone())).collect();
                 let b: Vec<(Bool, BV)> = ca.iter().map(|x| (x.1.clone(), x.2.cpu[&k].clone())).collect();
                 diffs.push((format!("cpu {} at {}", k, n), Bool::and(ctx, &[&oreach, &merge_bv(&a)._eq(&merge_bv(&b)).not()])));
@@ -444,6 +546,11 @@ pub fn equivalent_with_loops<'c>(ctx: &'c Context, original: &Function, candidat
             let a: Vec<(Bool, BV)> = oa.iter().map(|x| (x.1.clone(), x.2.world.clone())).collect();
             let b: Vec<(Bool, BV)> = ca.iter().map(|x| (x.1.clone(), x.2.world.clone())).collect();
             diffs.push((format!("effects at {}", n), Bool::and(ctx, &[&oreach, &merge_bv(&a)._eq(&merge_bv(&b)).not()])));
+        }
+        if std::env::var("DECOMP_DEBUG").is_ok() {
+            // the obligations the simplifier cannot settle alone (the two sides are not the same term)
+            let open: Vec<&String> = diffs.iter().filter(|(_, d)| d.simplify().as_bool() != Some(false)).map(|(k, _)| k).collect();
+            eprintln!("segment from {}: {} obligations, open: {:?}", start.as_deref().unwrap_or("entry"), diffs.len(), open);
         }
         let any: Vec<&Bool> = diffs.iter().map(|(_, d)| d).collect();
         solver.assert(&Bool::or(ctx, &any));
@@ -481,4 +588,42 @@ pub fn verify(ctx: &Context, original: &Function, d: &crate::decompile::Decompil
     body.extend(std::mem::take(&mut o.body));
     o.body = body;
     equivalent_with_loops(ctx, &o, &d.function, &d.save_slots, &d.saved)
+}
+
+// The C++ of a decompiled function, read back (cpp.rs), against the decompiled function `d` of `original` (itself
+// proved equal to the original).
+pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Decompiled, cpp: &Function) -> Verdict {
+    // a renamed draft: its variables and labels get the draft's names back, paired by their order (the proof relates
+    // variables at loop headers by name)
+    let mut cpp = cpp.clone();
+    if let Some(draft) = crate::emit::emit(&d.function)
+        .ok()
+        .and_then(|t| crate::cpp::read(&t, &HashSet::new()).ok())
+        .and_then(|mut f| f.exports.pop())
+        .and_then(|e| e.function.ok())
+    {
+        let (dv, dl) = crate::cpp::declared_names(&draft);
+        let (cv, cl) = crate::cpp::declared_names(&cpp);
+        if dv.len() == cv.len() && dl.len() == cl.len() {
+            let map: HashMap<String, String> = cv.into_iter().zip(dv).chain(cl.into_iter().zip(dl)).filter(|(a, b)| a != b).collect();
+            crate::cpp::rename(&mut cpp, &map);
+        }
+    }
+    let cpp = &cpp;
+    // the decompiled function gets the C++'s copy of the return address (unused there), to relate them at loops
+    let mut df = d.function.clone();
+    df.body.insert(0, Stmt::Decl(Ty::U32, crate::cpp::LR.into(), Some(Expr::Cpu(crate::ast::CpuField::R(14)))));
+    // the CPU copies of the registers the decompiled function keeps in variables are not related at loop headers,
+    // nor pc (the return address a call leaves there differs)
+    let mut free: HashSet<String> = df.synced.iter().map(|(_, f)| crate::sym::cpu_key(f)).collect();
+    free.insert("pc".into());
+    // with the pushes kept, both return through the saved lr; the save area is the pushed slots
+    let pushed = if d.save_slots.is_empty() {
+        crate::saves::remove_saves(&mut original.clone())
+    } else {
+        crate::saves::Saves { slots: vec![], registers: vec![] }
+    };
+    let lr_slot = pushed.registers.iter().find(|(r, _)| r == "r14").map(|(_, off)| *off);
+    let restored = d.saved.iter().map(|(r, _)| r.clone()).collect();
+    equivalent_with_loops_free(ctx, &df, cpp, &pushed.slots, &[], &Relations { free, lr_slot, restored })
 }

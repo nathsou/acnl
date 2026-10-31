@@ -11,6 +11,15 @@ fn num_u32(e: &Expr) -> Option<u64> {
     }
 }
 
+// a 32-bit constant of either signedness, as its bits
+fn num_any(e: &Expr) -> Option<u64> {
+    match e {
+        Expr::Num(v, Ty::U32) => Some(*v & 0xffff_ffff),
+        Expr::Num(v, Ty::S32) => Some(*v & 0xffff_ffff),
+        _ => None,
+    }
+}
+
 fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
     match e {
         Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => simplify_expr(a, types),
@@ -43,11 +52,24 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
             v.map(|v| Expr::Num(v as u64, Ty::U32))
         }
 
-        // (a + c1) + c2 -> a + (c1 + c2), all unsigned 32-bit
-        Expr::Bin(BinOp::Add, a, b) => match (&**a, num_u32(b)) {
-            (Expr::Bin(BinOp::Add, x, y), Some(c2)) if num_u32(y).is_some() && whole == Some(Ty::U32) => {
-                let c1 = num_u32(y).unwrap();
-                Some(Expr::Bin(BinOp::Add, x.clone(), Box::new(Expr::Num((c1 + c2) & 0xffff_ffff, Ty::U32))))
+        // x ^ x -> 0, x - x -> 0 (expressions have no side effects: both sides are the same value)
+        Expr::Bin(BinOp::Xor | BinOp::Sub, a, b) if a == b && whole.map_or(false, |t| !t.float()) => Some(Expr::Num(0, whole.unwrap())),
+        // x & 0 -> 0, 0 >> k -> 0, 0 << k -> 0
+        Expr::Bin(BinOp::And, _, b) if matches!(&**b, Expr::Num(0, _)) && whole.map_or(false, |t| !t.float()) => {
+            Some(Expr::Num(0, whole.unwrap()))
+        }
+        Expr::Bin(BinOp::Shr | BinOp::Shl, a, _) if matches!(&**a, Expr::Num(0, _)) && whole.map_or(false, |t| !t.float()) => {
+            Some(Expr::Num(0, whole.unwrap()))
+        }
+        // (a + c1) + c2 -> a + (c1 + c2), (a - c1) + c2 -> a + (c2 - c1), a unsigned 32-bit (constants of either sign
+        // are converted to it)
+        Expr::Bin(BinOp::Add, a, b) => match (&**a, num_any(b)) {
+            (Expr::Bin(op @ (BinOp::Add | BinOp::Sub), x, y), Some(c2))
+                if num_any(y).is_some() && whole == Some(Ty::U32) && type_of(x, types) == Some(Ty::U32) =>
+            {
+                let c1 = num_any(y).unwrap() as u32;
+                let c = if *op == BinOp::Add { c1.wrapping_add(c2 as u32) } else { (c2 as u32).wrapping_sub(c1) };
+                Some(Expr::Bin(BinOp::Add, x.clone(), Box::new(Expr::Num(c as u64, Ty::U32))))
             }
             (x, Some(0)) if type_of(x, types) == whole => Some(x.clone()),
             _ => None,
@@ -71,11 +93,15 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
                 None
             }
         }
-        // (a + c1) - c2 -> a + (c1 - c2), unsigned 32-bit
-        Expr::Bin(BinOp::Sub, a, b) if num_u32(b).is_some() && whole == Some(Ty::U32) => match &**a {
-            Expr::Bin(BinOp::Add, x, y) if num_u32(y).is_some() => {
-                let c = (num_u32(y).unwrap() as u32).wrapping_sub(num_u32(b).unwrap() as u32);
+        // (a + c1) - c2 -> a + (c1 - c2), (a - c1) - c2 -> a - (c1 + c2), a unsigned 32-bit
+        Expr::Bin(BinOp::Sub, a, b) if num_any(b).is_some() && whole == Some(Ty::U32) => match &**a {
+            Expr::Bin(BinOp::Add, x, y) if num_any(y).is_some() && type_of(x, types) == Some(Ty::U32) => {
+                let c = (num_any(y).unwrap() as u32).wrapping_sub(num_any(b).unwrap() as u32);
                 Some(Expr::Bin(BinOp::Add, x.clone(), Box::new(Expr::Num(c as u64, Ty::U32))))
+            }
+            Expr::Bin(BinOp::Sub, x, y) if num_any(y).is_some() && type_of(x, types) == Some(Ty::U32) => {
+                let c = (num_any(y).unwrap() as u32).wrapping_add(num_any(b).unwrap() as u32);
+                Some(Expr::Bin(BinOp::Sub, x.clone(), Box::new(Expr::Num(c as u64, Ty::U32))))
             }
             _ => None,
         },

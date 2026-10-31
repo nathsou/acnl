@@ -13,15 +13,74 @@ pub fn decompile(original: &Function) -> Decompiled {
     decompile_traced(original, &mut |_, _, _| {})
 }
 
+// Bump when the checker or the meaning of the AST changes: earlier proofs in the cache then no longer count.
+const CHECKER_VERSION: u64 = 3;
+
+// Proofs already done (DECOMP_CACHE, default build/acnl/decomp_proved.txt): "address hash" per line, the hash of a
+// decompiled function proved equal to the original at that address (FNV-1a of its printout and CHECKER_VERSION).
+static CACHE: std::sync::OnceLock<std::sync::Mutex<std::collections::HashSet<(u32, u64)>>> = std::sync::OnceLock::new();
+
+fn cache_path() -> String {
+    std::env::var("DECOMP_CACHE").unwrap_or("build/acnl/decomp_proved.txt".into())
+}
+
+fn cache() -> &'static std::sync::Mutex<std::collections::HashSet<(u32, u64)>> {
+    CACHE.get_or_init(|| {
+        let text = std::fs::read_to_string(cache_path()).unwrap_or_default();
+        let set = text
+            .lines()
+            .filter_map(|l| {
+                let mut w = l.split_whitespace();
+                Some((u32::from_str_radix(w.next()?, 16).ok()?, u64::from_str_radix(w.next()?, 16).ok()?))
+            })
+            .collect();
+        std::sync::Mutex::new(set)
+    })
+}
+
+fn proof_key(original: &Function, d: &Decompiled) -> (u32, u64) {
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION;
+    let text = format!("{}\n{:?}\n{:?}", crate::print::function(&d.function), d.save_slots, d.saved);
+    for b in text.bytes() {
+        h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);
+    }
+    (original.address, h)
+}
+
+// verify, or the proof found earlier for this very decompilation
+fn verify_cached(ctx: &z3::Context, original: &Function, d: &Decompiled) -> crate::check::Verdict {
+    let key = proof_key(original, d);
+    if cache().lock().unwrap().contains(&key) {
+        return crate::check::Verdict::Proved;
+    }
+    let v = crate::check::verify(ctx, original, d);
+    if matches!(v, crate::check::Verdict::Proved) {
+        cache().lock().unwrap().insert(key);
+        use std::io::Write;
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(cache_path()) {
+            let _ = writeln!(f, "{:08x} {:016x}", key.0, key.1);
+        }
+    }
+    v
+}
+
 // Decompiles and proves; when removing the register saves does not give a proof, tries again keeping them.
 pub fn decompile_and_prove(ctx: &z3::Context, original: &Function) -> (Decompiled, crate::check::Verdict) {
     let first = decompile_with(original, true, &mut |_, _, _| {});
-    let v = crate::check::verify(ctx, original, &first);
+    let v = verify_cached(ctx, original, &first);
+    if std::env::var("DECOMP_DEBUG").is_ok() {
+        let w = match &v {
+            crate::check::Verdict::Proved => "proved".to_string(),
+            crate::check::Verdict::Differs(w) => format!("differs {}", w),
+            crate::check::Verdict::Unknown(w) => format!("unknown {}", w),
+        };
+        eprintln!("{:x}: saves removed: {:?} -> {}", original.address, first.save_slots, w);
+    }
     if matches!(v, crate::check::Verdict::Proved) || first.save_slots.is_empty() {
         return (first, v);
     }
     let second = decompile_with(original, false, &mut |_, _, _| {});
-    let v2 = crate::check::verify(ctx, original, &second);
+    let v2 = verify_cached(ctx, original, &second);
     (second, v2)
 }
 
@@ -48,10 +107,8 @@ pub fn decompile_traced(original: &Function, after: &mut dyn FnMut(&str, &Functi
 
 pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn FnMut(&str, &Function, &[u32])) -> Decompiled {
     let mut f = original.clone();
-    // register saves are removed only without loops: with loops the save-area invariants make the proof slow,
-    // so the proved form keeps the pushes and pops (the view does not show them)
-    let (_, _, headers) = crate::sym::Sym::graph(&f);
-    let sv = if headers.is_empty() && remove_saves {
+    // the register saves (the save area is a region of its own in the proof: cheap, loops included)
+    let sv = if remove_saves {
         saves::remove_saves(&mut f)
     } else {
         saves::Saves { slots: vec![], registers: vec![] }
@@ -153,6 +210,107 @@ L_300c:
     #[test]
     fn proves_a_call_with_an_argument() {
         assert!(matches!(prove(&function("f_00003000", &["r0", "r1", "r14"], CALL)), Verdict::Proved));
+    }
+
+    // push {r4, lr}; r4 = r0 + 1; a store through r0; a call; r0 = r4; pop {r4, pc}
+    const SAVES: &str = "L_5000:
+  { u32 ea = r13 - 8; WR32(ea + 0, r4); WR32(ea + 4, r14); r13 = r13 - 8; }
+  { u32 a = r0; u32 b = 0x1u; u32 res = a + b; r4 = res; }
+  { u32 ea = r0 + 0x4u; WR32(ea, r4); }
+  r14 = 0x5014u; SO(); f_00004000(c, 0); SI(); if (__builtin_expect(c->pc != 0x5014u, 0)) return;
+L_5014:
+  { u32 a = 0; (void)a; u32 b = r4; u32 res = b; r0 = res; }
+  { u32 ea = r13 + 0; u32 nb = r13 + 8; r13 = nb; r4 = RD32(ea + 0); tpc = RD32(ea + 4); } c->pc = tpc; SO(); return;";
+
+    #[test]
+    fn removes_the_register_saves() {
+        let f = parse::function(&function("f_00005000", &["r0", "r4", "r13", "r14"], SAVES)).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let (d, v) = decompile_and_prove(&ctx, &f);
+        assert!(matches!(v, Verdict::Proved));
+        assert!(!d.save_slots.is_empty(), "the saves are removed");
+    }
+
+    #[test]
+    fn rejects_a_missing_restore() {
+        // the decompiled function with its saves removed, but r4 not restored from its copy before returning
+        let f = parse::function(&function("f_00005000", &["r0", "r4", "r13", "r14"], SAVES)).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let mut d = crate::decompile::decompile_with(&f, true, &mut |_, _, _| {});
+        assert!(!d.save_slots.is_empty());
+        fn unrestore(list: &mut Vec<crate::ast::Stmt>) -> bool {
+            use crate::ast::{Expr, Stmt};
+            let mut changed = false;
+            for s in list.iter_mut() {
+                match s {
+                    Stmt::Assign(r, Expr::Var(v)) if r == "r4" && v == "saved_r4" => {
+                        *s = Stmt::Nop;
+                        changed = true;
+                    }
+                    Stmt::If(_, a, b) => changed |= unrestore(a) | unrestore(b),
+                    _ => {}
+                }
+            }
+            changed
+        }
+        assert!(unrestore(&mut d.function.body), "the restore is there to remove");
+        assert!(matches!(crate::check::verify(&ctx, &f, &d), Verdict::Differs(_)));
+    }
+
+    // the C++ of a decompiled function, read back: proved equal; a changed copy is not
+    fn round_trip(name: &str, regs: &[&str], body: &str, change: (&str, &str)) {
+        let f = parse::function(&function(name, regs, body)).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let (d, v) = decompile_and_prove(&ctx, &f);
+        assert!(matches!(v, Verdict::Proved));
+        let text = crate::emit::emit(&d.function).expect("emits");
+        let helpers = std::collections::HashSet::new();
+        let read = |t: &str| crate::cpp::read(t, &helpers).unwrap().exports.remove(0).function.unwrap();
+        match crate::check::verify_cpp(&ctx, &f, &d, &read(&text)) {
+            Verdict::Proved => {}
+            Verdict::Differs(w) | Verdict::Unknown(w) => panic!("{}\n{}", w, text),
+        }
+        assert!(text.contains(change.0), "{}", text);
+        let changed = text.replacen(change.0, change.1, 1);
+        assert!(matches!(crate::check::verify_cpp(&ctx, &f, &d, &read(&changed)), Verdict::Differs(_)), "{}", changed);
+    }
+
+    #[test]
+    fn round_trip_renamed_loop() {
+        // the loop's draft with every variable and label renamed proves too
+        let f = parse::function(&function("f_00002000", &["r0", "r1", "r14"], LOOP)).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let (d, _) = decompile_and_prove(&ctx, &f);
+        let text = crate::emit::emit(&d.function).unwrap();
+        let mut renamed = text.clone();
+        for (a, b) in [("r0", "sum"), ("r1", "count"), ("res", "left"), ("L_2004", "next"), ("f_00002000", "sum_down")] {
+            renamed = renamed.replace(a, b);
+        }
+        let helpers = std::collections::HashSet::new();
+        let g = crate::cpp::read(&renamed, &helpers).unwrap().exports.remove(0).function.unwrap();
+        match crate::check::verify_cpp(&ctx, &f, &d, &g) {
+            Verdict::Proved => {}
+            Verdict::Differs(w) | Verdict::Unknown(w) => panic!("{}\n{}", w, renamed),
+        }
+    }
+
+    #[test]
+    fn round_trip_predicated() {
+        round_trip("f_00001000", &["r0", "r1", "r2", "r14"], PREDICATED, ("2u", "3u"));
+    }
+
+    #[test]
+    fn round_trip_loop() {
+        round_trip("f_00002000", &["r0", "r1", "r14"], LOOP, ("r0 + r1", "r0 - r1"));
+    }
+
+    #[test]
+    fn round_trip_call_and_saves() {
+        round_trip("f_00005000", &["r0", "r4", "r13", "r14"], SAVES, ("r0 + 1u", "r0 + 2u"));
     }
 
     #[test]

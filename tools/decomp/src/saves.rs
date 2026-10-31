@@ -18,15 +18,26 @@ fn ea_plus(e: &Expr) -> Option<u64> {
     }
 }
 
-// rewrites pops "ea = r13; rX = RD32(ea + k) ...": the slot of rX is at the same k as in the push
+// sp itself: r13, or r13 + 0 (ldm r13!, {...} computes its first address that way)
+fn is_sp(e: &Expr) -> bool {
+    match e {
+        Expr::Var(v) => v == "r13",
+        Expr::Bin(BinOp::Add, a, b) => matches!((&**a, &**b), (Expr::Var(v), Expr::Num(0, _)) if v == "r13"),
+        _ => false,
+    }
+}
+
+// rewrites pops "ea = r13; rX = RD32(ea + k) ..." (ldr rX, [sp], #4 / ldm sp!, {...}, whose sp update may come
+// before the loads): the slot of rX is at the same k as in the push
 fn rewrite_pops(list: &mut [Stmt], saved: &[(String, u64)]) -> bool {
     let mut ok = true;
     let mut in_pop = false;
     let mut pending: Option<u64> = None;
     for s in list.iter_mut() {
         match s {
-            Stmt::Decl(Ty::U32, n, Some(Expr::Var(v))) if n == "ea" && v == "r13" => in_pop = true,
+            Stmt::Decl(Ty::U32, n, Some(e)) if n == "ea" && is_sp(e) => in_pop = true,
             Stmt::Decl(_, n, _) if n == "ea" => in_pop = false,
+            Stmt::Label(_) => in_pop = false,
             // ldr rX, [sp], #4: u32 v = RD32(ea); ...; rX = v (the register is named by the later assignment)
             Stmt::Decl(Ty::U32, v, Some(Expr::Load(Ty::U32, a))) if in_pop && v == "v" => {
                 pending = ea_plus(a);
@@ -50,7 +61,6 @@ fn rewrite_pops(list: &mut [Stmt], saved: &[(String, u64)]) -> bool {
                     }
                 }
             }
-            Stmt::Assign(n, _) if in_pop && n == "r13" => in_pop = false,
             Stmt::If(_, a, b) => {
                 ok &= rewrite_pops(a, saved);
                 ok &= rewrite_pops(b, saved);
@@ -99,7 +109,15 @@ pub fn remove_saves(f: &mut Function) -> Saves {
         }
         i += 1;
     }
-    if !matches!(f.body.get(i), Some(Stmt::Assign(n, Expr::Var(v))) if n == "r13" && v == "ea") || saved.is_empty() {
+    // the sp update: r13 = ea (str rX, [sp, #-4]!) or r13 = r13 - frame (stmdb sp!, {...})
+    let updates_sp = match f.body.get(i) {
+        Some(Stmt::Assign(n, Expr::Var(v))) => n == "r13" && v == "ea",
+        Some(Stmt::Assign(n, Expr::Bin(BinOp::Sub, a, b))) => {
+            n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(k, _) if k == frame)
+        }
+        _ => false,
+    };
+    if !updates_sp || saved.is_empty() {
         return none();
     }
     let mut copy = f.body.clone();

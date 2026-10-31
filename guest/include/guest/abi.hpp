@@ -35,6 +35,9 @@ namespace guest {
 // the CPU of the guest thread running on this host thread
 CPU *cpu();
 
+// A system call from rewritten code: rt_svc on the guest CPU, which reads and writes the CPU's registers.
+void svc(u32 number);
+
 // the return address rewritten code gives the functions it calls: a guest function returning there is back in C++
 constexpr u32 RETURN_TO_HOST = 0xFFFF1000u;
 
