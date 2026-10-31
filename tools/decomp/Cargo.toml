@@ -1,0 +1,11 @@
+[package]
+name = "decomp"
+version = "0.1.0"
+edition = "2021"
+description = "Decompiles the recompiled C of ACNL functions into readable C++ and proves the two equivalent"
+
+[dependencies]
+z3 = "0.12"
+
+[profile.release]
+debug = 1

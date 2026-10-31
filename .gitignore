@@ -4,3 +4,6 @@ data/
 .DS_Store
 __pycache__/
 .venv/
+
+# the decompiler's Rust build
+tools/decomp/target/
