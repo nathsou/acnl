@@ -19,6 +19,18 @@ HEADER = '''// Functions decompiled by tools/decomp (docs/decomp.md): each is pr
 DRAFT = re.compile(r'((?:#include "[^"]+"\n)*)(// f_([0-9a-f]{8}): decompiled.*?\nGUEST_FUZZ\(0x[0-9a-f]{8},[^\n]*\n)', re.S)
 
 
+def exported(src, skip):
+    """Addresses the sources outside `skip` already export (a draft of one would be a duplicate symbol)."""
+    out = set()
+    for d, _, files in os.walk(src):
+        if os.path.abspath(d).startswith(os.path.abspath(skip)):
+            continue
+        for f in files:
+            if f.endswith('.cpp'):
+                out |= set(int(x, 16) & ~1 for x in re.findall(r'GUEST_EXPORT(?:_FRAMED)?\((0x[0-9a-fA-F]+)', open(os.path.join(d, f)).read()))
+    return out
+
+
 def addresses(path):
     return set(int(l.split()[0], 16) & ~1 for l in open(path) if l.strip())
 
@@ -31,6 +43,8 @@ def main():
     ap.add_argument('--keep')
     a = ap.parse_args()
     drop = addresses(a.drop) if a.drop else set()
+    src = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'games', 'acnl', 'src')
+    drop |= exported(src, a.outdir)
     keep = addresses(a.keep) if a.keep else None
     areas = {}
     for m in DRAFT.finditer(open(a.drafts).read()):

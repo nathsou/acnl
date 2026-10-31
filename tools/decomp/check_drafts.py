@@ -34,6 +34,13 @@ def split(drafts, out, drop=None, keep=None):
     print(r.stdout.strip(), flush=True)
 
 
+def exported_drafts(files):
+    out = set()
+    for f in files:
+        out |= set(int(x, 16) & ~1 for x in re.findall(r'GUEST_EXPORT\((0x[0-9a-f]+)', open(f).read()))
+    return out
+
+
 def write(path, addrs):
     with open(path, 'w') as f:
         f.write(''.join('%x\n' % a for a in sorted(addrs)))
@@ -69,6 +76,17 @@ def main():
         m = re.search(r'\(blamed ([0-9a-f]+)\)', log)
         if m:
             new.add(int(m.group(1), 16) & ~1)
+        # the run's own log: drafts that mismatched before a crash, and the draft a crash returned to
+        shadow = os.path.join(work, 'runs', 'harness', 'stdout.txt')
+        text = open(shadow, errors='replace').read() if os.path.exists(shadow) else ''
+        new |= set(int(x, 16) & ~1 for x in re.findall(r'MISMATCH d_([0-9a-f]{8})::', text))
+        crash = re.search(r'FATAL: .*?lr=([0-9a-f]{8})', text)
+        if crash:
+            lr = int(crash.group(1), 16)
+            starts = sorted(exported_drafts(files))
+            below = [a for a in starts if a <= lr]
+            if below and lr - below[-1] < 0x1000:
+                new.add(below[-1])
         fails = set(int(x, 16) & ~1 for x in re.findall(r'^FAIL ([0-9a-f]+) ', log, re.M))
         exported = set()
         for f in files:
@@ -83,6 +101,8 @@ def main():
         dropped |= new
     write(os.path.join(work, 'decomp_verified.txt'), verified)
     write(os.path.join(work, 'decomp_unverified.txt'), unverified)
+    if not verified:
+        sys.exit('nothing verified: the area files are left as they were for inspection')
     split(a.drafts, out, keep=os.path.join(work, 'decomp_verified.txt'))
 
 

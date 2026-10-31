@@ -561,6 +561,8 @@ pub fn emit(f: &Function) -> R<String> {
     let declared: HashSet<&str> = f.locals.iter().map(|(_, n, _)| n.as_str()).collect();
     let _ = has_calls;
     let params: Vec<&str> = ARGS.iter().copied().filter(|r| lv.at_entry.contains(*r) && declared.contains(r)).collect();
+    // parameters go by position (the k-th is rk): every register up to the last one read gets one
+    let last_param = params.iter().map(|p| p[1..].parse::<usize>().unwrap()).max();
     let call_args: String = ARGS
         .iter()
         .enumerate()
@@ -568,6 +570,7 @@ pub fn emit(f: &Function) -> R<String> {
         .collect::<Vec<_>>()
         .join(", ");
     let floats: Vec<String> = (0..16).map(|i| format!("S{}", i)).filter(|s| lv.at_entry.contains(s)).collect();
+    let last_float = floats.iter().map(|s| s[1..].parse::<usize>().unwrap()).max();
     if lv.at_entry.iter().any(|v| v.starts_with('S') && !floats.contains(v)) {
         return Err("reads float registers above s15".into());
     }
@@ -656,8 +659,12 @@ pub fn emit(f: &Function) -> R<String> {
     }
     out.push('\n');
     let mut sig = Vec::new();
-    for p in &params {
-        let k: usize = p[1..].parse().unwrap();
+    for k in 0..last_param.map_or(0, |m| m + 1) {
+        let p = ARGS[k];
+        if !params.contains(&p) {
+            sig.push(format!("u32 {}_unused", p));
+            continue;
+        }
         if let Some(st) = e.known.get(&k) {
             sig.push(format!("gptr<{}> arg{}", st, k));
             continue;
@@ -668,8 +675,13 @@ pub fn emit(f: &Function) -> R<String> {
             None => sig.push(format!("u32 {}_in", p)),
         }
     }
-    for s in &floats {
-        sig.push(format!("float {}_in", s));
+    for k in 0..last_float.map_or(0, |m| m + 1) {
+        let s = format!("S{}", k);
+        if floats.contains(&s) {
+            sig.push(format!("float {}_in", s));
+        } else {
+            sig.push(format!("float {}_unused", s));
+        }
     }
     out.push_str(&format!("{} {}({}) {{\n", if returns { "u32" } else { "void" }, base, sig.join(", ")));
     // the registers and temporaries, all declared first (so gotos jump over no initialisation); only those used
@@ -727,8 +739,12 @@ pub fn emit(f: &Function) -> R<String> {
     out.push_str(&format!("GUEST_EXPORT(0x{:08x}, d_{:08x}::{});\n", addr, f.address, base));
     // fuzzing: random objects for the arguments with fields, random words for the others
     let mut gen = Vec::new();
-    for p in &params {
-        let k: usize = p[1..].parse().unwrap();
+    for k in 0..last_param.map_or(0, |m| m + 1) {
+        let p = ARGS[k];
+        if !params.contains(&p) {
+            gen.push("f.number()".to_string());
+            continue;
+        }
         if let Some(st) = e.known.get(&k) {
             gen.push(format!("f.object<{}>()", st));
             continue;
@@ -738,7 +754,7 @@ pub fn emit(f: &Function) -> R<String> {
             None => gen.push("f.pick<u32>({0, 1, 0xffffffff, f.below(0x100), f.number()})".into()),
         }
     }
-    for _ in &floats {
+    for _ in 0..last_float.map_or(0, |m| m + 1) {
         gen.push("f.real()".into());
     }
     out.push_str(&format!(
