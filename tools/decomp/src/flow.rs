@@ -28,7 +28,7 @@ enum Node {
     JumpIf(Set, String, Option<Path>), // the if statement it comes from (live_out = after its condition)
     Switch(Set, Vec<String>),
     SyncOut(Path),
-    SyncIn,
+    SyncIn(Path),
     Exit(bool), // return (false) or tail call (true)
     Call,
 }
@@ -100,7 +100,7 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
             Stmt::Label(l) => out.push(Node::Label(l.clone())),
             Stmt::Switch(e, cases) => out.push(Node::Switch(expr_vars(e), cases.iter().map(|(_, l)| l.clone()).collect())),
             Stmt::SyncOut => out.push(Node::SyncOut(p)),
-            Stmt::SyncIn => out.push(Node::SyncIn),
+            Stmt::SyncIn => out.push(Node::SyncIn(p)),
             Stmt::GuestCall(_, false) | Stmt::Dispatch(false) | Stmt::Svc(_) => out.push(Node::Call),
             Stmt::Return => out.push(Node::Exit(false)),
             Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => out.push(Node::Exit(true)),
@@ -147,6 +147,12 @@ pub struct Liveness {
 
 // Live variables after each simple statement.
 pub fn liveness(f: &Function) -> Liveness {
+    liveness_with(f, true)
+}
+
+// With preserve false, keeping callee-saved registers for the caller does not count as reading them (what a C++
+// function, which keeps them anyway, needs to know).
+pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
     let mut nodes = Vec::new();
     let mut fresh = 0;
     flatten(&f.body, &vec![], &mut nodes, &mut fresh);
@@ -162,7 +168,7 @@ pub fn liveness(f: &Function) -> Liveness {
                     .iter()
                     .filter(|v| {
                         let fl = &field_of[*v];
-                        call_argument(fl) || survives_call(fl)
+                        call_argument(fl) || (preserve && survives_call(fl))
                     })
                     .cloned()
                     .collect(),
@@ -172,7 +178,12 @@ pub fn liveness(f: &Function) -> Liveness {
                         .iter()
                         .filter(|v| {
                             let fl = &field_of[*v];
-                            OBSERVED.contains(&fl.as_str()) || (tail && call_argument(fl)) // tail calls pass arguments
+                            let observed = if preserve {
+                                OBSERVED.contains(&fl.as_str())
+                            } else {
+                                matches!(fl.as_str(), "r0" | "r1" | "s0" | "s1")
+                            };
+                            observed || (tail && call_argument(fl)) // tail calls pass arguments
                         })
                         .cloned()
                         .collect()
@@ -239,10 +250,13 @@ pub fn liveness(f: &Function) -> Liveness {
                     x.extend(u.iter().cloned());
                     x
                 }
-                Node::SyncIn => {
+                Node::SyncIn(_) => {
                     let mut x = out.clone();
                     for v in &synced {
-                        x.remove(v);
+                        // without preserve, what survives a call is the variable itself (not redefined)
+                        if preserve || !survives_call(&field_of[v]) {
+                            x.remove(v);
+                        }
                     }
                     x
                 }
@@ -266,6 +280,7 @@ pub fn liveness(f: &Function) -> Liveness {
         let path = match &nodes[i] {
             Node::Simple(p, ..) => Some(p),
             Node::JumpIf(_, _, Some(p)) => Some(p),
+            Node::SyncIn(p) => Some(p),
             _ => None,
         };
         if let Some(p) = path {

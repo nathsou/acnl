@@ -2,6 +2,7 @@ mod addresses;
 mod ast;
 mod check;
 mod decompile;
+mod emit;
 mod flow;
 mod inline;
 mod parse;
@@ -352,6 +353,86 @@ fn dump(out: &str, limit: usize, threads: usize) {
     println!("{} functions written to {}", all.len(), out);
 }
 
+// C++ drafts of proved decompilations (refused when not proved or not expressible yet).
+fn emit_drafts(addrs: &[String]) {
+    let cfg = z3::Config::new();
+    let ctx = z3::Context::new(&cfg);
+    for a in addrs {
+        let addr = u32::from_str_radix(a.trim_start_matches("0x"), 16).unwrap();
+        let Some(orig) = find(addr) else { continue };
+        let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
+        if !matches!(v, check::Verdict::Proved) {
+            println!("// {:x}: not proved, no draft", addr);
+            continue;
+        }
+        match emit::emit(&dd.function) {
+            Ok(code) => println!("{}", code),
+            Err(e) => println!("// {:x}: no draft: {}", addr, e),
+        }
+    }
+}
+
+// Drafts of the listed functions (hex addresses, one per line) into one C++ file, in parallel; prints why the others
+// have none.
+fn emit_batch(list: &str, out: &str, threads: usize) {
+    let wanted: std::collections::HashSet<u32> = std::fs::read_to_string(list)
+        .unwrap()
+        .lines()
+        .filter_map(|l| u32::from_str_radix(l.trim().trim_start_matches("0x"), 16).ok())
+        .map(|a| a & !1)
+        .collect();
+    let funcs: Vec<(u32, String)> = generated_functions().into_iter().filter(|(a, _)| wanted.contains(&(a & !1))).collect();
+    let chunks: Vec<Vec<(u32, String)>> =
+        (0..threads).map(|t| funcs.iter().skip(t).step_by(threads).cloned().collect()).collect();
+    let handles: Vec<_> = chunks
+        .into_iter()
+        .map(|chunk| {
+            std::thread::spawn(move || {
+                let cfg = z3::Config::new();
+                let ctx = z3::Context::new(&cfg);
+                let mut res = Vec::new();
+                for (addr, text) in chunk {
+                    let r = match parse::function(&text) {
+                        Err(e) => Err(format!("unparsed: {}", e)),
+                        Ok(orig) => {
+                            let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
+                            if matches!(v, check::Verdict::Proved) {
+                                emit::emit(&dd.function)
+                            } else {
+                                Err("not proved".into())
+                            }
+                        }
+                    };
+                    res.push((addr, r));
+                }
+                res
+            })
+        })
+        .collect();
+    let mut all: Vec<(u32, Result<String, String>)> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
+    all.sort_by_key(|x| x.0);
+    let mut text = String::from("// Drafts from tools/decomp (generated; not for the repository).\n#include \"guest/guest.hpp\"\n\n#include <bit>\n\nusing guest::gptr;\n\n");
+    let mut why: HashMap<String, usize> = HashMap::new();
+    let mut n = 0;
+    for (_, r) in &all {
+        match r {
+            Ok(code) => {
+                text.push_str(code);
+                text.push('\n');
+                n += 1;
+            }
+            Err(e) => *why.entry(e.chars().take(50).collect()).or_default() += 1,
+        }
+    }
+    std::fs::write(out, text).unwrap();
+    println!("{} drafts of {} functions in {}", n, all.len(), out);
+    let mut v: Vec<_> = why.into_iter().collect();
+    v.sort_by(|a, b| b.1.cmp(&a.1));
+    for (e, c) in v.into_iter().take(10) {
+        println!("{:6} {}", c, e);
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
@@ -369,6 +450,8 @@ fn main() {
         Some("dump") => dump(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp"),
                              args.get(3).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX),
                              args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
+        Some("emit") => emit_drafts(&args[2..]),
+        Some("emit-batch") => emit_batch(&args[2], &args[3], args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("selftest") => selftest(&args[2..]),
         Some("sym-all") => sym_all(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX)),
         _ => eprintln!("usage: decomp decompile ADDR... | check-all [N] [THREADS] | dump [OUT] [N] [THREADS] | selftest ADDR... | bisect ADDR | parse-all | sym-all [N]"),

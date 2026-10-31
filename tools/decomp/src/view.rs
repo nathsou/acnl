@@ -99,6 +99,10 @@ use std::collections::HashSet;
 
 const ARGUMENTS: [&str; 4] = ["r0", "r1", "r2", "r3"];
 
+pub fn assigned_vars(list: &[Stmt], out: &mut HashSet<String>) {
+    assigned(list, out)
+}
+
 fn assigned(list: &[Stmt], out: &mut HashSet<String>) {
     for s in list {
         match s {
@@ -158,7 +162,7 @@ fn sp_based(e: &Expr) -> bool {
     r.vars.iter().any(|v| v == "r13" || v == "ea")
 }
 
-fn bookkeeping(s: &Stmt, sp_read: bool) -> bool {
+pub(crate) fn bookkeeping(s: &Stmt, sp_read: bool) -> bool {
     match s {
         // a push or pop the proved form kept: a callee-saved register stored to, or loaded from, the stack
         Stmt::Store(Ty::U32, a, Expr::Var(r)) if callee_saved(r) && sp_based(a) => true,
