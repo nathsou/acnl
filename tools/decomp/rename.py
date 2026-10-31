@@ -6,7 +6,8 @@
 NAMES.json:
     {"functions": {"0011c0fa": {"name": "find_owner", "comment": "Finds ...", "vars": {"r0_1": "heap"},
                                 "labels": {"L_2f8914": "search_heap"}}},
-     "globals": {"00975338": "main_heap"}}
+     "globals": {"00975338": "main_heap"},
+     "structs": {"Object_002f896c_0": {"name": "RequestInput", "fields": {"byte_0": "mode"}}, "AcNpcSp": {"fields": {"word_1c": "state"}}}}
 
 In each draft: the function's name (definition and GUEST_EXPORT), its variables and labels, the names of the callees it
 declares (call_<address> -> the callee's chosen name) and of its globals (global_<address>). Names are checked
@@ -33,6 +34,28 @@ def valid(name):
     return bool(IDENT.match(name)) and name not in KEYWORDS and not name.startswith('__')
 
 
+def rename_fields(text, names):
+    """Fields, by struct: `argK->old` where argK is a gptr<Struct> parameter, and the draft's own struct definitions
+    (their field declarations and GUEST_OFFSET checks)."""
+    structs = names.get('structs', {})
+    if not structs:
+        return text
+    for st, k in re.findall(r'gptr<(\w+)> arg(\d)\b', text):
+        for old, new in structs.get(st, {}).get('fields', {}).items():
+            text = re.sub(r'\barg%s->%s\b' % (k, re.escape(old)), 'arg%s->%s' % (k, new), text)
+    def struct_body(m):
+        fields = structs.get(m.group(2), {}).get('fields', {})
+        body = m.group(3)
+        for old, new in fields.items():
+            body = re.sub(r'(\s)%s;' % re.escape(old), r'\1%s;' % new, body)
+        return m.group(1) + body
+    text = re.sub(r'(struct (?:__attribute__\(\(packed\)\) )?(\w+) \{\n)(.*?\n\})', struct_body, text, flags=re.S)
+    def offset(m):
+        new = structs.get(m.group(1), {}).get('fields', {}).get(m.group(2))
+        return 'GUEST_OFFSET(%s, %s,' % (m.group(1), new) if new else m.group(0)
+    return re.sub(r'GUEST_OFFSET\((\w+), (\w+),', offset, text)
+
+
 def rename_draft(text, addr, names):
     functions = names.get('functions', {})
     mine = functions.get(addr, {})
@@ -46,6 +69,9 @@ def rename_draft(text, addr, names):
             mapping[word] = functions[word[5:]]['name']
         if word.startswith('global_') and word[7:15] in names.get('globals', {}):
             mapping[word] = names['globals'][word[7:15]] + word[15:]
+    for st, info in names.get('structs', {}).items():
+        if info.get('name'):
+            mapping[st] = info['name']
     present = set(WORD.findall(text))
     mapping = {k: v for k, v in mapping.items() if k in present and k != v}
     # checks: identifiers, and no two names (old or new) the same
@@ -54,7 +80,7 @@ def rename_draft(text, addr, names):
     final = [mapping.get(w, w) for w in present]
     if len(set(final)) != len(final):
         return text, 'collision'
-    out = WORD.sub(lambda m: mapping.get(m.group(0), m.group(0)), text)
+    out = WORD.sub(lambda m: mapping.get(m.group(0), m.group(0)), rename_fields(text, names))
     if mine.get('comment'):
         comment = ''.join('// ' + line + '\n' for line in mine['comment'].splitlines())
         out = out.replace('namespace d_' + addr + ' {\n', comment + 'namespace d_' + addr + ' {\n', 1)
