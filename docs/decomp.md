@@ -125,8 +125,13 @@ edit. The reading spells out what runs around the C++ (guest/include/guest/abi.h
 
 When the decompiled function keeps its pushes (functions with loops), the C++ keeps them too and returns through its
 copy of the entry lr: at the loop headers both are related by the invariant that the lr slot still holds that lr,
-and the save area bytes are the same in both (assumed at a header, proved on arrival). `DECOMP_DEBUG=1` prints, for
-each segment, the obligations the simplifier cannot settle alone.
+and the save area bytes are the same in both (assumed at a header, proved on arrival). A register a caller observes
+that the C++ leaves in the CPU (it keeps no variable for it, or touches neither the variable nor the CPU's copy) holds
+what the decompiled function keeps in its variable, at every header (assumed there, proved on arrival like the rest).
+`DECOMP_DEBUG=1` prints, for each segment, the obligations the simplifier cannot settle alone.
+
+A short block that ends the function (straight code ending in a return or a tail call) is written in place of each goto
+to it, an early return; labels nothing jumps to are left out.
 
 Only the subset the emitter writes is accepted (with any names); `char` and `bool` fields are refused (their values in
 guest memory are not what C++ assumes), and so is a file that defines a function named like a runtime helper. Renamed
