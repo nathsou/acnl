@@ -112,7 +112,6 @@ struct Emitter {
     reload: Vec<(String, String)>, // after a call: variable <- CPU field (what SI() reads back)
     has_sp: bool,                  // the function keeps r13 in a variable
     float_args: Vec<(String, u32)>, // float registers to hand over before a call (variable, s index)
-    call_args: String,              // r0-r3 as a call passes them (the CPU's for registers the function does not keep)
     call_list: Vec<String>,         // the same, one by one
     needs: HashMap<u32, Need>,      // what each direct callee is handed (signatures.rs)
     has_r0: bool,                   // the function keeps r0 in a variable (else results stay in the CPU)
@@ -125,8 +124,11 @@ struct Emitter {
     svc_regs: Vec<(String, u32)>,      // r0-r7 kept in variables: handed to a system call and read back after it
     live: crate::flow::Liveness,       // what is read later, by statement path (flow.rs numbering)
     labels: HashSet<String>,           // the labels written so far (a goto to one is a loop's back edge)
+    values: crate::values::Values,     // each variable split into its values (values.rs)
+    cur: Vec<usize>,                   // the path of the statement being written (which value a variable is there)
     exits: HashMap<String, Exit>,      // short blocks that end the function, written in place of a goto to them
     targets: HashSet<String>,          // labels something other than such a goto still jumps to
+    returns: bool,                     // the function returns r0
     out: String,
 }
 
@@ -254,24 +256,76 @@ impl Emitter {
     // what SO() hands over to a callee besides r0-r3: the stack pointer and the float arguments
     // before a tail call: the callee-saved registers the function changed (a fragment of a function hands them on;
     // the callee keeps them, so they are what the caller sees)
-    fn tail_write_back(&mut self, indent: usize) {
-        for (field, v) in self.write_back.clone() {
-            if ["guest::cpu()->r[1]", "guest::cpu()->s[0]", "guest::cpu()->s[1]", "guest::cpu()->r[13]"].contains(&field.as_str()) {
-                continue;
-            }
-            self.line(indent, &format!("{} = {};", field, v));
+    fn tail_write_back(&mut self, indent: usize, path: &[usize]) {
+        for (field, v) in self.tail_writes() {
+            let text = format!("{} = {};", field, self.values.read(path, &v));
+            self.line(indent, &text);
         }
     }
 
-    fn before_call(&mut self, indent: usize, target: Option<u32>) {
+    // what a tail call hands back besides the callee's results: the callee-saved registers the function changed
+    fn tail_writes(&self) -> Vec<(String, String)> {
+        self.write_back
+            .iter()
+            .filter(|(field, _)| !["guest::cpu()->r[1]", "guest::cpu()->s[0]", "guest::cpu()->s[1]", "guest::cpu()->r[13]"].contains(&field.as_str()))
+            .cloned()
+            .collect()
+    }
+
+    // the float arguments written before a call (variable, s index)
+    fn floats_for(&self, target: Option<u32>) -> Vec<(String, u32)> {
+        let need = target.and_then(|t| self.needs.get(&t)).cloned();
+        self.float_args.iter().filter(|(_, k)| need.as_ref().map_or(true, |n| n.full || n.floats.contains(k))).cloned().collect()
+    }
+
+    // the core arguments of a call, as written (registers the function keeps, the CPU's for the others)
+    fn args_for(&self, target: Option<u32>) -> Vec<String> {
+        let arity = target.and_then(|t| self.needs.get(&t)).map_or(4, |n| if n.full { 4 } else { n.arity });
+        self.call_list[..arity].to_vec()
+    }
+
+    // What the emitter reads and writes at a call, a return or a system call (values.rs): the variables it writes
+    // there, and those it reads back.
+    fn effects(&self, s: &Stmt, path: &[usize]) -> (Vec<String>, Vec<String>) {
+        let is_var = |a: &String| !a.starts_with("guest::");
+        let mut uses: Vec<String> = Vec::new();
+        let mut defs: Vec<String> = Vec::new();
+        match s {
+            Stmt::GuestCall(_, tail) | Stmt::Dispatch(tail) => {
+                let target = if let Stmt::GuestCall(t, _) = s { Some(*t) } else { None };
+                uses.extend(self.args_for(target).into_iter().filter(is_var));
+                uses.extend(self.floats_for(target).into_iter().map(|(v, _)| v));
+                if *tail {
+                    uses.extend(self.tail_writes().into_iter().map(|(_, v)| v));
+                } else {
+                    if self.result_read(path) {
+                        defs.push("r0".into());
+                    }
+                    defs.extend(self.reloads_after(path).into_iter().map(|(v, _)| v));
+                }
+            }
+            Stmt::Return => {
+                uses.extend(self.write_back.iter().map(|(_, v)| v.clone()));
+                if self.returns && self.has_r0 {
+                    uses.push("r0".into());
+                }
+            }
+            Stmt::Svc(_) => {
+                uses.extend(self.svc_regs.iter().map(|(v, _)| v.clone()));
+                defs.extend(self.svc_regs.iter().map(|(v, _)| v.clone()));
+            }
+            _ => {}
+        }
+        (uses, defs)
+    }
+
+    fn before_call(&mut self, indent: usize, target: Option<u32>, path: &[usize]) {
         if self.stack && self.has_sp {
             self.line(indent, "guest::cpu()->r[13] = r13;");
         }
-        let need = target.and_then(|t| self.needs.get(&t)).cloned();
-        for (v, k) in self.float_args.clone() {
-            if need.as_ref().map_or(true, |n| n.full || n.floats.contains(&k)) {
-                self.line(indent, &format!("guest::cpu()->s[{}] = {};", k, v));
-            }
+        for (v, k) in self.floats_for(target) {
+            let text = format!("guest::cpu()->s[{}] = {};", k, self.values.read(path, &v));
+            self.line(indent, &text);
         }
     }
 
@@ -339,7 +393,7 @@ impl Emitter {
                 format!("{:?}{}", v, if *t == Ty::F32 { "f" } else { "" })
             }
             Expr::Var(n) if n.starts_with("arg") => format!("{}.addr()", n),
-            Expr::Var(n) => n.clone(),
+            Expr::Var(n) => self.values.read(&self.cur, n),
             // the thread's TLS address (IPC buffers): the CPU's, it never changes
             Expr::Cpu(CpuField::Tls) => "guest::cpu()->tls".into(),
             Expr::Cpu(f) => return Err(format!("reads {}", cpu(f))),
@@ -406,6 +460,21 @@ impl Emitter {
         }
     }
 
+    // whether r0 is read after the call at `path` before being written (the call's result is used)
+    fn result_read(&self, path: &[usize]) -> bool {
+        if !self.has_r0 {
+            return false;
+        }
+        let mut next = path.to_vec();
+        *next.last_mut().unwrap() += 1;
+        self.live.live_out.get(&next).map_or(true, |live| live.contains("r0"))
+    }
+
+    // a call argument as written: the value a kept register has at the call, or the CPU's
+    fn arg_text(&self, path: &[usize], a: &str) -> String {
+        if a.starts_with("guest::") { a.to_string() } else { self.values.read(path, a) }
+    }
+
     fn stmts(&mut self, list: &[Stmt], indent: usize, returns: bool, prefix: &[usize]) -> R<()> {
         self.stmts_from(list, 0, indent, returns, prefix)
     }
@@ -418,6 +487,7 @@ impl Emitter {
             let s = &list[i];
             let mut path = prefix.to_vec();
             path.push(first + i);
+            self.cur = path.clone();
             // after a return, a tail call or a goto, nothing runs before the next label something jumps to
             if let Stmt::Label(l) = s {
                 reachable = reachable || self.targets.contains(l);
@@ -453,8 +523,9 @@ impl Emitter {
                     self.line(indent, &text);
                 }
                 Stmt::Decl(_, _, None) => {}
+                Stmt::Decl(_, _, Some(_)) | Stmt::Assign(_, _) if self.values.left_out(&path) => {}
                 Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
-                    let text = format!("{} = {};", n, self.expr(e, 0)?);
+                    let text = format!("{} = {};", self.values.name(&path, n), self.expr(e, 0)?);
                     self.line(indent, &text);
                 }
                 Stmt::SetCpu(f, _) => return Err(format!("writes {}", cpu(f))),
@@ -502,6 +573,7 @@ impl Emitter {
                             self.stmts(body, indent + 1, returns, &pa)?;
                             self.stmts(check, indent + 1, returns, &pb)?;
                             self.line(indent + 1, "guest::preempt();");
+                            self.cur = crate::values::loop_condition(&path);
                             let text = format!("}} while ({});", self.expr(cond, 0)?);
                             self.line(indent, &text);
                         }
@@ -511,6 +583,7 @@ impl Emitter {
                             self.labels.insert(t.clone());
                             self.labels.insert(top.clone());
                             self.stmts(check, indent + 1, returns, &pb)?;
+                            self.cur = crate::values::loop_condition(&path);
                             let text = format!("if (!({})) {{", self.expr(cond, 0)?);
                             self.line(indent + 1, &text);
                             self.line(indent + 2, "break;");
@@ -539,29 +612,38 @@ impl Emitter {
                     }
                 }
                 Stmt::GuestCall(t, tail) => {
-                    self.before_call(indent, Some(*t));
+                    self.before_call(indent, Some(*t), &path);
                     let name = self.callees.entry(*t).or_insert_with(|| format!("call_{:08x}", t & !1)).clone();
-                    let arity = self.needs.get(t).map_or(4, |n| if n.full { 4 } else { n.arity });
-                    let call = format!("{}({})", name, self.call_list[..arity].join(", "));
+                    let args: Vec<String> = self.args_for(Some(*t)).iter().map(|a| self.arg_text(&path, a)).collect();
+                    let call = format!("{}({})", name, args.join(", "));
                     if *tail {
-                        self.tail_write_back(indent);
+                        self.tail_write_back(indent, &path);
                     }
                     if *tail {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};\n{}return;", call, "    ".repeat(indent)) });
                     } else {
-                        self.line(indent, &if self.has_r0 { format!("r0 = {};", call) } else { format!("{};", call) });
+                        let r0 = self.values.name(&path, "r0");
+                        self.line(indent, &if self.result_read(&path) { format!("{} = {};", r0, call) } else { format!("{};", call) });
                         // the registers the callee may have changed that are read later, as the original reads them back
                         for (v, field) in self.reloads_after(&path) {
-                            self.line(indent, &format!("{} = {};", v, field));
+                            let text = format!("{} = {};", self.values.name(&path, &v), field);
+                            self.line(indent, &text);
                         }
                     }
                 }
                 Stmt::Return => {
                     for (field, v) in self.write_back.clone() {
-                        self.line(indent, &format!("{} = {};", field, v));
+                        let text = format!("{} = {};", field, self.values.read(&path, &v));
+                        self.line(indent, &text);
                     }
-                    let r = if !returns { "return;" } else if self.has_r0 { "return r0;" } else { "return guest::cpu()->r[0];" };
-                    self.line(indent, r);
+                    let r = if !returns {
+                        "return;".to_string()
+                    } else if self.has_r0 {
+                        format!("return {};", self.values.read(&path, "r0"))
+                    } else {
+                        "return guest::cpu()->r[0];".to_string()
+                    };
+                    self.line(indent, &r);
                 }
                 Stmt::Switch(e, cases) => {
                     let text = format!("switch ({}) {{", self.expr(e, 0)?);
@@ -574,10 +656,11 @@ impl Emitter {
                 }
                 Stmt::Dispatch(tail) => {
                     let Some(target) = self.pc.take() else { return Err("indirect call without a target".into()) };
-                    self.before_call(indent, None);
-                    let call = format!("guest::call_address<u32>({}, {})", target, self.call_args);
+                    self.before_call(indent, None, &path);
+                    let args: Vec<String> = self.args_for(None).iter().map(|a| self.arg_text(&path, a)).collect();
+                    let call = format!("guest::call_address<u32>({}, {})", target, args.join(", "));
                     if *tail {
-                        self.tail_write_back(indent);
+                        self.tail_write_back(indent, &path);
                     }
                     if *tail {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};", call) });
@@ -585,23 +668,27 @@ impl Emitter {
                             self.line(indent, "return;");
                         }
                     } else {
-                        self.line(indent, &if self.has_r0 { format!("r0 = {};", call) } else { format!("{};", call) });
+                        let r0 = self.values.name(&path, "r0");
+                        self.line(indent, &if self.result_read(&path) { format!("{} = {};", r0, call) } else { format!("{};", call) });
                         for (v, field) in self.reloads_after(&path) {
-                            self.line(indent, &format!("{} = {};", v, field));
+                            let text = format!("{} = {};", self.values.name(&path, &v), field);
+                            self.line(indent, &text);
                         }
                     }
                 }
                 Stmt::Svc(n) => {
                     // as SO() / SI() around rt_svc: the registers the kernel reads, and those it may change
                     for (v, k) in self.svc_regs.clone() {
-                        self.line(indent, &format!("guest::cpu()->r[{}] = {};", k, v));
+                        let text = format!("guest::cpu()->r[{}] = {};", k, self.values.read(&path, &v));
+                        self.line(indent, &text);
                     }
                     if self.stack && self.has_sp {
                         self.line(indent, "guest::cpu()->r[13] = r13;");
                     }
                     self.line(indent, &format!("guest::svc(0x{:x});", n));
                     for (v, k) in self.svc_regs.clone() {
-                        self.line(indent, &format!("{} = guest::cpu()->r[{}];", v, k));
+                        let text = format!("{} = guest::cpu()->r[{}];", self.values.name(&path, &v), k);
+                        self.line(indent, &text);
                     }
                 }
                 Stmt::Unsupported(w) => return Err(w.clone()),
@@ -797,7 +884,6 @@ pub fn emit(f: &Function) -> R<String> {
         .enumerate()
         .map(|(k, r)| if declared.contains(r) { r.to_string() } else { format!("guest::cpu()->r[{}]", k) })
         .collect();
-    let call_args = call_list.join(", ");
     let needs = call_needs(f, &lv);
     let floats: Vec<String> = (0..16).map(|i| format!("S{}", i)).filter(|s| lv.at_entry.contains(s)).collect();
     let last_float = floats.iter().map(|s| s[1..].parse::<usize>().unwrap()).max();
@@ -863,7 +949,14 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), exits: HashMap::new(), targets: HashSet::new(), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0"), out: String::new() };
+    // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
+    // sp, lr, nor what a helper writes through a pointer)
+    let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
+    let mut pointed: Vec<String> = Vec::new();
+    crate::values::each_expr(&f.body, &mut |x| pointed.extend(crate::flow::out_params(x)));
+    splittable.retain(|n| !n.starts_with("arg") && !n.starts_with("saved_") && n != "r13" && n != "r14" && !pointed.contains(n));
+    e.values = crate::values::split(f, &splittable, &|s, p| e.effects(s, p));
     exit_blocks(&f.body, &[], &mut e.exits);
     jump_targets(&f.body, &e.exits, &mut e.targets);
     let returns = assigned.contains("r0");
@@ -984,6 +1077,15 @@ pub fn emit(f: &Function) -> R<String> {
             }
         };
         locals.push(format!("{} {} = {};", t.c_name(), n, init));
+    }
+    // the values split off a variable (values.rs), with its type
+    for (name, var) in &e.values.fresh {
+        if !used.contains(name) {
+            continue;
+        }
+        let t = vars.get(var).copied().or_else(|| f.locals.iter().find(|(_, n, _)| n == var).map(|(t, _, _)| *t));
+        let Some(t) = t else { return Err(format!("no type for {}", var)) };
+        locals.push(format!("{} {} = 0;", t.c_name(), name));
     }
     for k in &copies {
         if !e.struct_name.contains_key(k) && !e.known.contains_key(k) {

@@ -16,6 +16,7 @@ mod structure;
 mod sym;
 mod typedb;
 mod types;
+mod values;
 mod view;
 
 use std::collections::HashMap;

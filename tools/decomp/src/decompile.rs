@@ -322,7 +322,7 @@ L_7014:
 
     #[test]
     fn round_trip_shrink_wrapped() {
-        round_trip("f_00007000", &["r0", "r4", "r13", "r14"], SHRINK_WRAPPED, ("r0 + r4", "r0 - r4"));
+        round_trip("f_00007000", &["r0", "r4", "r13", "r14"], SHRINK_WRAPPED, ("r0_1 + r4_1", "r0_1 - r4_1"));
     }
 
     // a loop in a function that writes neither r0 nor r1 (a caller still observes them: the C++ leaves them in the CPU)

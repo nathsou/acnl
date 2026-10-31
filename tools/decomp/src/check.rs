@@ -365,7 +365,8 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
             // copy is not otherwise related: the original's is dead)
             // one value for the three: the one the saved copy holds when the original restores the register (that
             // invariant set it), else the original's variable's (which the other invariants set)
-            for (v, k) in &rel.mirrored {
+            let needed = start.as_ref().and_then(|l| olive.at_label.get(l)).cloned().unwrap_or_default();
+            for (v, k) in rel.mirrored.iter().filter(|(v, _)| needed.contains(v)) {
                 let (Some((t, var)), Some(cpu)) = (oinit.vars.get(v).cloned(), cinit.cpu.get(k).cloned()) else { continue };
                 if t.bits() != 32 {
                     continue;
@@ -501,8 +502,9 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
                     }
                 }
             }
-            // the mirrored registers at the header
-            for (v, k) in &rel.mirrored {
+            // the mirrored registers at the header (those the original reads from there on)
+            let needed = olive.at_label.get(n).cloned().unwrap_or_default();
+            for (v, k) in rel.mirrored.iter().filter(|(v, _)| needed.contains(v)) {
                 let a: Option<Vec<(Bool, BV)>> = oa.iter().map(|x| x.2.vars.get(v).map(|y| (x.1.clone(), y.1.clone()))).collect();
                 let b: Vec<(Bool, BV)> = ca.iter().map(|x| (x.1.clone(), x.2.cpu[k].clone())).collect();
                 if let Some(a) = a {
@@ -710,6 +712,13 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     }
     let mut assigned = HashSet::new();
     assigns(&cpp.body, &mut assigned);
+    // a value split off a register (values.rs: rN_k) is a variable for that register
+    let base = |n: &String| match n.rsplit_once('_') {
+        Some((b, k)) if !k.is_empty() && k.bytes().all(|c| c.is_ascii_digit()) => b.to_string(),
+        _ => n.clone(),
+    };
+    let declared: HashSet<String> = declared.iter().map(base).collect();
+    let assigned: HashSet<String> = assigned.iter().map(base).collect();
     // a register a caller observes that the C++ leaves in the CPU: it keeps no variable for it, or neither writes the
     // CPU's copy nor its variable (both keep the entry value)
     let mirrored = df

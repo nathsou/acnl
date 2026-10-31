@@ -29,8 +29,12 @@ enum Node {
     Switch(Set, Vec<String>),
     SyncOut(Path),
     SyncIn(Path),
-    Exit(bool), // return (false) or tail call (true)
-    Call,
+    Exit(bool, Option<u32>), // return (false) or tail call (true), with a direct tail call's target
+    Call(Option<u32>), // a direct call's target (its signature tells which registers it reads)
+    // an SO() before a call to a function with a signature: the registers it always hands over, and the results
+    // (r0, r1, s0, s1) it hands over when they are read after the call (a result may pass through: the callee's value
+    // of it depends on the one before), read after the SI() at the index given
+    SyncOutCall(Path, Set, Vec<String>, usize),
 }
 
 fn expr_vars(e: &Expr) -> Set {
@@ -101,16 +105,18 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
             Stmt::Switch(e, cases) => out.push(Node::Switch(expr_vars(e), cases.iter().map(|(_, l)| l.clone()).collect())),
             Stmt::SyncOut => out.push(Node::SyncOut(p)),
             Stmt::SyncIn => out.push(Node::SyncIn(p)),
-            Stmt::GuestCall(_, false) | Stmt::Dispatch(false) | Stmt::Svc(_) => out.push(Node::Call),
-            Stmt::Return => out.push(Node::Exit(false)),
-            Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => out.push(Node::Exit(true)),
+            Stmt::GuestCall(t, false) => out.push(Node::Call(Some(*t))),
+            Stmt::Dispatch(false) | Stmt::Svc(_) => out.push(Node::Call(None)),
+            Stmt::Return => out.push(Node::Exit(false, None)),
+            Stmt::GuestCall(t, true) => out.push(Node::Exit(true, Some(*t))),
+            Stmt::Dispatch(true) => out.push(Node::Exit(true, None)),
             Stmt::Preempt | Stmt::Nop => {}
-            Stmt::Unsupported(_) => out.push(Node::Call),
+            Stmt::Unsupported(_) => out.push(Node::Call(None)),
         }
     }
 }
 
-fn out_params(e: &Expr) -> Vec<String> {
+pub fn out_params(e: &Expr) -> Vec<String> {
     let mut r = Reads::default();
     reads(e, &mut r);
     if !r.out_params {
@@ -163,9 +169,31 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
     // what an SO() reads depends on what follows it
     for k in 0..nodes.len() {
         if let Node::SyncOut(_) = &nodes[k] {
-            let next = nodes[k + 1..].iter().find(|n| !matches!(n, Node::Simple(_, _, None, _) | Node::Label(_)));
+            let at = nodes[k + 1..].iter().position(|n| !matches!(n, Node::Simple(_, _, None, _) | Node::Label(_))).map(|i| k + 1 + i);
+            let next = at.map(|i| &nodes[i]);
+            let p = if let Node::SyncOut(p) = &nodes[k] { p.clone() } else { unreachable!() };
+            // a call with a signature: what it reads, what survives it, and its results when read after it
+            if let (Some(Node::Call(Some(t))), Some(i)) = (next, at) {
+                if let Some(sig) = crate::signatures::of(*t) {
+                    let si = nodes[i + 1..].iter().position(|n| matches!(n, Node::SyncIn(_))).map(|j| i + 1 + j);
+                    if let Some(si) = si {
+                        let always: Set = synced
+                            .iter()
+                            .filter(|v| {
+                                let fl = &field_of[*v];
+                                sig.contains(fl) || fl == "r13" || (preserve && survives_call(fl))
+                            })
+                            .cloned()
+                            .collect();
+                        let results: Vec<String> =
+                            synced.iter().filter(|v| crate::signatures::RESULTS.contains(&field_of[*v].as_str())).cloned().collect();
+                        nodes[k] = Node::SyncOutCall(p, always, results, si);
+                        continue;
+                    }
+                }
+            }
             let uses: Set = match next {
-                Some(Node::Call) => synced
+                Some(Node::Call(_)) => synced
                     .iter()
                     .filter(|v| {
                         let fl = &field_of[*v];
@@ -173,8 +201,10 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                     })
                     .cloned()
                     .collect(),
-                Some(Node::Exit(tail)) => {
+                Some(Node::Exit(tail, target)) => {
                     let tail = *tail;
+                    // a tail call to a function with a signature hands over its arguments only
+                    let sig = target.and_then(crate::signatures::of);
                     synced
                         .iter()
                         .filter(|v| {
@@ -185,14 +215,17 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                                 matches!(fl.as_str(), "r0" | "r1" | "s0" | "s1")
                             };
                             // tail calls pass arguments, and the callee returns through lr
-                            observed || (tail && (call_argument(fl) || fl == "r14"))
+                            let argument = match &sig {
+                                Some(regs) => regs.contains(fl) || fl == "r13",
+                                None => call_argument(fl),
+                            };
+                            observed || (tail && (argument || fl == "r14"))
                         })
                         .cloned()
                         .collect()
                 }
                 _ => synced.iter().cloned().collect(),
             };
-            let p = if let Node::SyncOut(p) = &nodes[k] { p.clone() } else { unreachable!() };
             nodes[k] = Node::Simple(p, uses, None, false);
         }
     }
@@ -219,7 +252,7 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                 }
                 v
             }
-            Node::Exit(_) => vec![],
+            Node::Exit(..) => vec![],
             _ => {
                 if i + 1 < n {
                     vec![i + 1]
@@ -252,6 +285,16 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                     x.extend(u.iter().cloned());
                     x
                 }
+                Node::SyncOutCall(_, always, results, si) => {
+                    let mut x = out.clone();
+                    x.extend(always.iter().cloned());
+                    let mut after = Set::new();
+                    for &s in &succ[*si] {
+                        after.extend(live_in[s].iter().cloned());
+                    }
+                    x.extend(results.iter().filter(|r| after.contains(*r)).cloned());
+                    x
+                }
                 Node::SyncIn(_) => {
                     let mut x = out.clone();
                     for v in &synced {
@@ -262,7 +305,7 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                     }
                     x
                 }
-                Node::Exit(_) => Set::new(),
+                Node::Exit(..) => Set::new(),
                 _ => out.clone(),
             };
             if inn != live_in[i] {
@@ -280,7 +323,7 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
     let mut live_out = HashMap::new();
     for i in 0..n {
         let path = match &nodes[i] {
-            Node::Simple(p, ..) => Some(p),
+            Node::Simple(p, ..) | Node::SyncOutCall(p, ..) => Some(p),
             Node::JumpIf(_, _, Some(p)) => Some(p),
             Node::SyncIn(p) => Some(p),
             _ => None,
