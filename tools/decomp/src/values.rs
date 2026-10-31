@@ -523,9 +523,10 @@ pub fn arguments_in_addresses(f: &Function) -> Function {
     let (_, _, headers) = crate::sym::Sym::graph(f);
     let mut written: HashSet<String> = HashSet::new();
     crate::view::assigned_vars(&f.body, &mut written);
+    let loop_free = headers.is_empty();
     let copies: HashSet<String> = copies
         .into_iter()
-        .filter(|a| headers.is_empty() || !written.contains(&format!("r{}", &a[3..])))
+        .filter(|a| loop_free || !written.contains(&format!("r{}", &a[3..])))
         .collect();
     let regs: Vec<String> = ["r0", "r1", "r2", "r3"].iter().map(|r| r.to_string()).collect();
     let vars: HashSet<String> = f.synced.iter().map(|(v, _)| v.clone()).filter(|v| v != "r13" && v != "r14").collect();
@@ -534,13 +535,14 @@ pub fn arguments_in_addresses(f: &Function) -> Function {
         Stmt::Return => (vec!["r0".to_string()], vec![]),
         _ => (vec![], vec![]),
     });
-    fn subst(a: &mut Expr, p: &[usize], values: &Values, copies: &HashSet<String>) {
+    // (without loops, any register holding an argument's entry value; with loops, the argument's own register)
+    fn subst(a: &mut Expr, p: &[usize], values: &Values, copies: &HashSet<String>, any: bool) {
         let fix = |e: &mut Expr| {
             if let Expr::Var(v) = e {
                 if let Some(entry) = values.entry_value(p, v) {
                     if let Some(k) = entry.strip_prefix('r') {
                         let arg = format!("arg{}", k);
-                        if copies.contains(&arg) && entry == v {
+                        if copies.contains(&arg) && (entry == v || any) {
                             *e = Expr::Var(arg);
                         }
                     }
@@ -553,51 +555,51 @@ pub fn arguments_in_addresses(f: &Function) -> Function {
             _ => {}
         }
     }
-    fn loads(e: &mut Expr, p: &[usize], values: &Values, copies: &HashSet<String>) {
+    fn loads(e: &mut Expr, p: &[usize], values: &Values, copies: &HashSet<String>, loop_free: bool) {
         match e {
             Expr::Load(_, a) => {
-                loads(a, p, values, copies);
-                subst(a, p, values, copies);
+                loads(a, p, values, copies, loop_free);
+                subst(a, p, values, copies, loop_free);
             }
-            Expr::Un(_, a) | Expr::Cast(_, a) => loads(a, p, values, copies),
+            Expr::Un(_, a) | Expr::Cast(_, a) => loads(a, p, values, copies, loop_free),
             Expr::Bin(_, a, b) => {
-                loads(a, p, values, copies);
-                loads(b, p, values, copies);
+                loads(a, p, values, copies, loop_free);
+                loads(b, p, values, copies, loop_free);
             }
             Expr::Cond(c, a, b) => {
-                loads(c, p, values, copies);
-                loads(a, p, values, copies);
-                loads(b, p, values, copies);
+                loads(c, p, values, copies, loop_free);
+                loads(a, p, values, copies, loop_free);
+                loads(b, p, values, copies, loop_free);
             }
-            Expr::Call(_, args) => args.iter_mut().for_each(|x| loads(x, p, values, copies)),
+            Expr::Call(_, args) => args.iter_mut().for_each(|x| loads(x, p, values, copies, loop_free)),
             _ => {}
         }
     }
-    fn walk(list: &mut [Stmt], prefix: &[usize], values: &Values, copies: &HashSet<String>) {
+    fn walk(list: &mut [Stmt], prefix: &[usize], values: &Values, copies: &HashSet<String>, loop_free: bool) {
         for (i, s) in list.iter_mut().enumerate() {
             let p: Path = [prefix, &[i]].concat();
             match s {
-                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => loads(e, &p, values, copies),
+                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => loads(e, &p, values, copies, loop_free),
                 Stmt::Store(_, a, v) => {
-                    loads(a, &p, values, copies);
-                    loads(v, &p, values, copies);
-                    subst(a, &p, values, copies);
+                    loads(a, &p, values, copies, loop_free);
+                    loads(v, &p, values, copies, loop_free);
+                    subst(a, &p, values, copies, loop_free);
                 }
                 Stmt::If(c, a, b) => {
-                    loads(c, &p, values, copies);
-                    walk(a, &[p.clone(), vec![0]].concat(), values, copies);
-                    walk(b, &[p.clone(), vec![1]].concat(), values, copies);
+                    loads(c, &p, values, copies, loop_free);
+                    walk(a, &[p.clone(), vec![0]].concat(), values, copies, loop_free);
+                    walk(b, &[p.clone(), vec![1]].concat(), values, copies, loop_free);
                 }
                 Stmt::While { body, check, cond, .. } => {
-                    walk(body, &[p.clone(), vec![0]].concat(), values, copies);
-                    walk(check, &[p.clone(), vec![1]].concat(), values, copies);
-                    loads(cond, &loop_condition(&p), values, copies);
+                    walk(body, &[p.clone(), vec![0]].concat(), values, copies, loop_free);
+                    walk(check, &[p.clone(), vec![1]].concat(), values, copies, loop_free);
+                    loads(cond, &loop_condition(&p), values, copies, loop_free);
                 }
                 _ => {}
             }
         }
     }
-    walk(&mut g.body, &[], &values, &copies);
+    walk(&mut g.body, &[], &values, &copies, loop_free);
     g
 }
 
