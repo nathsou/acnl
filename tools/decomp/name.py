@@ -30,7 +30,9 @@ unless the code shows mail. When nothing tells what a value means, name it by it
 - The comment: one or two sentences saying what the function does, in the present tense, without guessing beyond the \
 code. Mention what is not known yet when it matters.
 - Variables to rename are the locals the function declares (r0_1, r4, res_1, ...) and its labels (L_<address>); keep \
-names unique, never C++ keywords. Do not rename parameters arg0..arg3, structs, fields, globals or callees.
+names unique, never C++ keywords. Do not rename parameters arg0..arg3, globals or callees.
+- The function's own structs (Object_<address>_<k>, the object an argument points to) and their fields \
+(byte_/half_/word_<offset>) may get names: structs in CamelCase, fields in snake_case. Leave other structs alone.
 Answer with the JSON object only."""
 
 SCHEMA = {
@@ -42,8 +44,13 @@ SCHEMA = {
                                             'required': ['from', 'to'], 'additionalProperties': False}},
         'labels': {'type': 'array', 'items': {'type': 'object', 'properties': {'from': {'type': 'string'}, 'to': {'type': 'string'}},
                                               'required': ['from', 'to'], 'additionalProperties': False}},
+        'structs': {'type': 'array', 'items': {'type': 'object', 'properties': {'from': {'type': 'string'}, 'to': {'type': 'string'}},
+                                               'required': ['from', 'to'], 'additionalProperties': False}},
+        'fields': {'type': 'array', 'items': {'type': 'object', 'properties': {'struct': {'type': 'string'}, 'from': {'type': 'string'},
+                                                                               'to': {'type': 'string'}},
+                                              'required': ['struct', 'from', 'to'], 'additionalProperties': False}},
     },
-    'required': ['name', 'comment', 'vars', 'labels'],
+    'required': ['name', 'comment', 'vars', 'labels', 'structs', 'fields'],
     'additionalProperties': False,
 }
 
@@ -129,6 +136,15 @@ def main():
                  'vars': {p['from']: p['to'] for p in answer['vars']}, 'labels': {p['from']: p['to'] for p in answer['labels']}}
         trial = json.loads(json.dumps(names))
         trial['functions'][a] = entry
+        own = 'Object_%s_' % a
+        structs = {}
+        for p in answer['structs']:
+            if p['from'].startswith(own):
+                structs.setdefault(p['from'], {})['name'] = p['to']
+        for p in answer['fields']:
+            if p['struct'].startswith(own):
+                structs.setdefault(p['struct'], {}).setdefault('fields', {})[p['from']] = p['to']
+        trial.setdefault('structs', {}).update(structs)
         _, why = rename.rename_draft(drafts[a], a, trial)
         u = response.usage
         cost = (u.input_tokens + (u.cache_read_input_tokens or 0) * 0.05 + (u.cache_creation_input_tokens or 0) * 1.25) * price_in / 1e6 \
@@ -138,6 +154,7 @@ def main():
             print('%s %s: not used (%s)' % (a, entry['name'], why))
             continue
         names['functions'][a] = entry
+        names.setdefault('structs', {}).update(structs)
         json.dump(names, open(args.names, 'w'), indent=1, sort_keys=True)
         print('%s %-40s in %5d out %5d  $%.4f' % (a, entry['name'], u.input_tokens, u.output_tokens, cost))
     print('spent $%.4f' % spent)
