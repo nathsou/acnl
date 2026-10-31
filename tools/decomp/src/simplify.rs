@@ -126,12 +126,36 @@ fn is_truth_valued(e: &Expr) -> bool {
         | Expr::Un(UnOp::LNot, _))
 }
 
-// In a condition only truth matters: casts of 0/1 values go, and negated integer comparisons flip.
+// In a condition only truth matters: casts of 0/1 values go, negated integer comparisons flip, negations move inside
+// && and || (De Morgan), and an unsigned comparison with its equality merges (a >= b && a != b is a > b).
 fn simplify_cond(e: &mut Expr, types: &HashMap<String, Ty>) {
     loop {
         let next = match e {
             Expr::Cast(_, inner) if is_truth_valued(inner) => Some((**inner).clone()),
-            Expr::Un(UnOp::LNot, inner) => match &**inner {
+            Expr::Bin(op @ (BinOp::LAnd | BinOp::LOr), a, b) => {
+                simplify_cond(a, types);
+                simplify_cond(b, types);
+                let same = |x: &Expr, y: &Expr| matches!((x, y), (Expr::Bin(_, p, q), Expr::Bin(_, r, t)) if p == r && q == t);
+                let int = |x: &Expr| type_of(x, types).map_or(false, |t| !t.float());
+                match (&op, &**a, &**b) {
+                    (BinOp::LAnd, Expr::Bin(BinOp::Ge, x, y), Expr::Bin(BinOp::Ne, _, _)) if same(a, b) && int(x) && int(y) => {
+                        Some(Expr::Bin(BinOp::Gt, x.clone(), y.clone()))
+                    }
+                    (BinOp::LOr, Expr::Bin(BinOp::Lt, x, y), Expr::Bin(BinOp::Eq, _, _)) if same(a, b) && int(x) && int(y) => {
+                        Some(Expr::Bin(BinOp::Le, x.clone(), y.clone()))
+                    }
+                    _ => None,
+                }
+            }
+            Expr::Un(UnOp::LNot, inner) => match {
+                simplify_cond(inner, types);
+                &**inner
+            } {
+                Expr::Bin(op @ (BinOp::LAnd | BinOp::LOr), a, b) => {
+                    let not = |x: &Expr| Box::new(Expr::Un(UnOp::LNot, Box::new(x.clone())));
+                    let other = if *op == BinOp::LAnd { BinOp::LOr } else { BinOp::LAnd };
+                    Some(Expr::Bin(other, not(a), not(b)))
+                }
                 Expr::Cast(_, x) if is_truth_valued(x) => Some(Expr::Un(UnOp::LNot, x.clone())),
                 Expr::Un(UnOp::LNot, x) if is_truth_valued(x) => Some((**x).clone()),
                 Expr::Bin(op, a, b) => {
@@ -226,6 +250,22 @@ fn signed_compare(c: &Expr, res: &str, a: &Expr, b: &Expr) -> Option<Expr> {
     None
 }
 
+// the signed comparisons of a and b (res = a - b) anywhere in a condition
+fn compares_in(c: &mut Expr, res: &str, a: &Expr, b: &Expr) {
+    if let Some(n) = signed_compare(c, res, a, b) {
+        *c = n;
+        return;
+    }
+    match c {
+        Expr::Bin(BinOp::LAnd | BinOp::LOr, x, y) => {
+            compares_in(x, res, a, b);
+            compares_in(y, res, a, b);
+        }
+        Expr::Un(UnOp::LNot, x) => compares_in(x, res, a, b),
+        _ => {}
+    }
+}
+
 // u32 res = a - b; if (<flags of res>) ...  ->  the comparison in the if (res is then dead)
 fn signed_compares(list: &mut [Stmt]) {
     for i in 0..list.len() {
@@ -260,13 +300,20 @@ fn signed_compares(list: &mut [Stmt]) {
             }
         }
         let (res, a, b) = match &list[i] {
-            Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Sub, a, b))) => (r.clone(), (**a).clone(), (**b).clone()),
+            Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Sub, a, b))) | Stmt::Assign(r, Expr::Bin(BinOp::Sub, a, b)) => {
+                (r.clone(), (**a).clone(), (**b).clone())
+            }
             _ => continue,
         };
+        // (not when the subtraction reads res itself: the condition's res is the new value)
+        let mut r = Reads::default();
+        reads(&a, &mut r);
+        reads(&b, &mut r);
+        if r.vars.contains(&res) {
+            continue;
+        }
         if let Stmt::If(c, _, _) = &mut list[i + 1] {
-            if let Some(n) = signed_compare(c, &res, &a, &b) {
-                *c = n;
-            }
+            compares_in(c, &res, &a, &b);
         }
     }
 }
