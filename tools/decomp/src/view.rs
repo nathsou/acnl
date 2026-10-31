@@ -79,6 +79,10 @@ fn view_expr(e: &Expr) -> Expr {
             None => Expr::Load(*t, Box::new(view_expr(a))),
         },
         Expr::Cast(Ty::U32, a) if matches!(&**a, Expr::Load(Ty::U8 | Ty::U16, _)) => view_expr(a),
+        // the address of a global the rewrites have named
+        Expr::Num(v, Ty::U32) if types().and_then(|db| db.global(*v as u32)).is_some() => {
+            Expr::Var(format!("&{}", types().unwrap().global(*v as u32).unwrap()))
+        }
         Expr::Un(op, a) => Expr::Un(*op, Box::new(view_expr(a))),
         Expr::Cast(t, a) => Expr::Cast(*t, Box::new(view_expr(a))),
         Expr::Bin(op, a, b) => Expr::Bin(*op, Box::new(view_expr(a)), Box::new(view_expr(b))),

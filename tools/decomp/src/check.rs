@@ -6,7 +6,13 @@ use z3::{Context, SatResult, Solver};
 
 // a solver that gives up (unknown) after the timeout instead of running forever
 fn new_solver(ctx: &Context) -> Solver<'_> {
-    let solver = Solver::new(ctx);
+    // arrays, uninterpreted functions and bit-vectors: Z3's solver for that logic is faster than the default
+    let logic = std::env::var("DECOMP_LOGIC").unwrap_or_else(|_| "QF_AUFBV".into());
+    let solver = if logic.is_empty() {
+        Solver::new(ctx)
+    } else {
+        Solver::new_for_logic(ctx, logic.as_str()).unwrap_or_else(|| Solver::new(ctx))
+    };
     let mut p = z3::Params::new(ctx);
     let ms = std::env::var("DECOMP_TIMEOUT_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(20_000u32);
     p.set_u32("timeout", ms);

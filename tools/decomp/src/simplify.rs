@@ -28,6 +28,21 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
     }
     let whole = type_of(e, types);
     let replacement = match e {
+        // operations on two unsigned 32-bit constants (literal pools: address + pc)
+        Expr::Bin(op, a, b) if num_u32(a).is_some() && num_u32(b).is_some() => {
+            let (x, y) = (num_u32(a).unwrap() as u32, num_u32(b).unwrap() as u32);
+            let v = match op {
+                BinOp::Add => Some(x.wrapping_add(y)),
+                BinOp::Sub => Some(x.wrapping_sub(y)),
+                BinOp::And => Some(x & y),
+                BinOp::Or => Some(x | y),
+                BinOp::Xor => Some(x ^ y),
+                BinOp::Mul => Some(x.wrapping_mul(y)),
+                _ => None,
+            };
+            v.map(|v| Expr::Num(v as u64, Ty::U32))
+        }
+
         // (a + c1) + c2 -> a + (c1 + c2), all unsigned 32-bit
         Expr::Bin(BinOp::Add, a, b) => match (&**a, num_u32(b)) {
             (Expr::Bin(BinOp::Add, x, y), Some(c2)) if num_u32(y).is_some() && whole == Some(Ty::U32) => {
@@ -56,6 +71,21 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
                 None
             }
         }
+        // (a + c1) - c2 -> a + (c1 - c2), unsigned 32-bit
+        Expr::Bin(BinOp::Sub, a, b) if num_u32(b).is_some() && whole == Some(Ty::U32) => match &**a {
+            Expr::Bin(BinOp::Add, x, y) if num_u32(y).is_some() => {
+                let c = (num_u32(y).unwrap() as u32).wrapping_sub(num_u32(b).unwrap() as u32);
+                Some(Expr::Bin(BinOp::Add, x.clone(), Box::new(Expr::Num(c as u64, Ty::U32))))
+            }
+            _ => None,
+        },
+        // x - y == 0 -> x == y, x - y != 0 -> x != y (same width: exact in wrapping arithmetic)
+        Expr::Bin(op @ (BinOp::Eq | BinOp::Ne), a, b) if matches!(&**b, Expr::Num(0, _)) => match &**a {
+            Expr::Bin(BinOp::Sub, x, y) if type_of(a, types).map_or(false, |t| t.bits() >= 32) => {
+                Some(Expr::Bin(*op, x.clone(), y.clone()))
+            }
+            _ => None,
+        },
         // (T)x where x already has type T
         Expr::Cast(t, a) if type_of(a, types) == Some(*t) => Some((**a).clone()),
         _ => None,

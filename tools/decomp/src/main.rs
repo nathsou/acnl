@@ -310,6 +310,48 @@ fn bisect(addr: u32) {
     });
 }
 
+// Writes the view of every function (or the first N) to OUT/<address>.c with its verdict on the first line, and
+// OUT/index.txt (address, verdict). Generated from the game: it stays in build/, like the recompiled C.
+fn dump(out: &str, limit: usize, threads: usize) {
+    std::fs::create_dir_all(out).unwrap();
+    let funcs: Vec<(u32, String)> = generated_functions().into_iter().take(limit).collect();
+    let chunks: Vec<Vec<(u32, String)>> =
+        (0..threads).map(|t| funcs.iter().skip(t).step_by(threads).cloned().collect()).collect();
+    let out_dir = out.to_string();
+    let handles: Vec<_> = chunks
+        .into_iter()
+        .map(|chunk| {
+            let out_dir = out_dir.clone();
+            std::thread::spawn(move || {
+                let cfg = z3::Config::new();
+                let ctx = z3::Context::new(&cfg);
+                let mut index = Vec::new();
+                for (addr, text) in chunk {
+                    let Ok(orig) = parse::function(&text) else {
+                        index.push((addr, "unparsed".to_string()));
+                        continue;
+                    };
+                    let (dd, v) = decompile::decompile_and_prove(&ctx, &orig);
+                    let verdict = match v {
+                        check::Verdict::Proved => "proved".to_string(),
+                        check::Verdict::Differs(w) => format!("not proved (differs: {})", w),
+                        check::Verdict::Unknown(w) => format!("not proved ({})", w),
+                    };
+                    let body = format!("// {}\n{}", verdict, view::view(&dd.function));
+                    std::fs::write(format!("{}/{:08x}.c", out_dir, addr), body).unwrap();
+                    index.push((addr, verdict));
+                }
+                index
+            })
+        })
+        .collect();
+    let mut all: Vec<(u32, String)> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
+    all.sort();
+    let text: String = all.iter().map(|(a, v)| format!("{:08x} {}\n", a, v)).collect();
+    std::fs::write(format!("{}/index.txt", out), text).unwrap();
+    println!("{} functions written to {}", all.len(), out);
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
@@ -324,8 +366,11 @@ fn main() {
         Some("self-equal") => self_equal(u32::from_str_radix(args[2].trim_start_matches("0x"), 16).unwrap()),
         Some("loops-with-saves") => loops_with_saves(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(3000)),
         Some("bisect") => bisect(u32::from_str_radix(args[2].trim_start_matches("0x"), 16).unwrap()),
+        Some("dump") => dump(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp"),
+                             args.get(3).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX),
+                             args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("selftest") => selftest(&args[2..]),
         Some("sym-all") => sym_all(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX)),
-        _ => eprintln!("usage: decomp parse-all | sym-all [N]"),
+        _ => eprintln!("usage: decomp decompile ADDR... | check-all [N] [THREADS] | dump [OUT] [N] [THREADS] | selftest ADDR... | bisect ADDR | parse-all | sym-all [N]"),
     }
 }

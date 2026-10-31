@@ -9,6 +9,32 @@ pub struct TypeDb {
     params: HashMap<u32, HashMap<usize, String>>, // function -> argument index -> Ghidra struct name
     names: HashMap<u32, String>,                  // function -> its name (rewrites and known symbols)
     arity: HashMap<u32, usize>,                   // rewritten function -> number of core-register arguments
+    globals: HashMap<u32, String>,                // address -> name of the repository's guest::global<T, A> name
+}
+
+// "guest::global<T, 0xADDR> name" declarations of the rewrites
+fn scan_globals(dir: &std::path::Path, out: &mut HashMap<u32, String>) {
+    let Ok(entries) = std::fs::read_dir(dir) else { return };
+    for e in entries.flatten() {
+        let p = e.path();
+        if p.is_dir() {
+            scan_globals(&p, out);
+        } else if p.extension().map_or(false, |x| x == "cpp" || x == "hpp") {
+            let Ok(text) = std::fs::read_to_string(&p) else { continue };
+            for line in text.lines() {
+                let Some(at) = line.find("guest::global<") else { continue };
+                let rest = &line[at..];
+                let Some(hex) = rest.find(", 0x") else { continue };
+                let digits: String = rest[hex + 4..].chars().take_while(|c| c.is_ascii_hexdigit()).collect();
+                let after = &rest[hex + 4 + digits.len()..];
+                let Some(name) = after.strip_prefix("> ") else { continue };
+                let name: String = name.chars().take_while(|c| c.is_ascii_alphanumeric() || *c == '_').collect();
+                if let (Ok(a), false) = (u32::from_str_radix(&digits, 16), name.is_empty()) {
+                    out.insert(a, name);
+                }
+            }
+        }
+    }
 }
 
 fn base_size(t: &str) -> Option<u64> {
@@ -58,7 +84,13 @@ impl TypeDb {
                 }
             }
         }
-        Some(TypeDb { structs, by_gname, params: p, names, arity })
+        let mut globals = HashMap::new();
+        scan_globals(std::path::Path::new("games/acnl/src"), &mut globals);
+        Some(TypeDb { structs, by_gname, params: p, names, arity, globals })
+    }
+
+    pub fn global(&self, addr: u32) -> Option<&String> {
+        self.globals.get(&addr)
     }
 
     pub fn name(&self, addr: u32) -> Option<&String> {

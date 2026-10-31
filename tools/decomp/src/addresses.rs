@@ -80,6 +80,28 @@ fn targets(list: &[Stmt], out: &mut std::collections::HashSet<String>) {
 
 thread_local! {
     static TARGETS: std::cell::RefCell<std::collections::HashSet<String>> = Default::default();
+    // variables nothing in the function writes (an argument register that stays the argument everywhere)
+    static CONSTANT: std::cell::RefCell<std::collections::HashSet<String>> = Default::default();
+}
+
+fn written(list: &[Stmt], out: &mut std::collections::HashSet<String>) {
+    for s in list {
+        match s {
+            Stmt::Decl(_, n, _) | Stmt::Assign(n, _) => {
+                out.insert(n.clone());
+            }
+            Stmt::SyncIn => {
+                for r in ["r0", "r1", "r2", "r3", "r12", "r14"] {
+                    out.insert(r.into());
+                }
+            }
+            Stmt::If(_, a, b) => {
+                written(a, out);
+                written(b, out);
+            }
+            _ => {}
+        }
+    }
 }
 
 fn walk(list: &mut [Stmt], env: &mut Env) {
@@ -132,7 +154,9 @@ fn walk(list: &mut [Stmt], env: &mut Env) {
                 }
             }
             // a label another path can jump to: only the argument copies are still known
-            Stmt::Label(l) if TARGETS.with(|t| t.borrow().contains(l)) => env.retain(|k, _| k.starts_with("arg")),
+            Stmt::Label(l) if TARGETS.with(|t| t.borrow().contains(l)) => {
+                env.retain(|k, _| k.starts_with("arg") || CONSTANT.with(|c| c.borrow().contains(k)))
+            }
             Stmt::SyncIn => {
                 for r in ["r0", "r1", "r2", "r3", "r12", "r14"] {
                     env.remove(r);
@@ -157,6 +181,11 @@ pub fn normalize_addresses(f: &mut Function) {
     let mut t = std::collections::HashSet::new();
     targets(&f.body, &mut t);
     TARGETS.with(|x| *x.borrow_mut() = t);
+    let mut w = std::collections::HashSet::new();
+    written(&f.body, &mut w);
+    let constant: std::collections::HashSet<String> =
+        args.iter().map(|k| ARGS[*k].to_string()).filter(|r| !w.contains(r)).collect();
+    CONSTANT.with(|x| *x.borrow_mut() = constant);
     walk(&mut f.body, &mut env);
     // the copies of the arguments, first thing in the function
     let mut prologue: Vec<Stmt> = args.iter().map(|k| Stmt::Decl(Ty::U32, format!("arg{}", k), Some(Expr::Var(ARGS[*k].into())))).collect();
