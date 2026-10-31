@@ -212,6 +212,21 @@ pub fn pushed_slots(f: &Function) -> (Vec<u32>, Option<u32>) {
             Stmt::If(_, a, b)
                 if b.is_empty()
                     && matches!(a.last(), Some(Stmt::Goto(_) | Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true))) => {}
+            // predicated instructions before the push that only set registers the push does not involve (not sp, not a
+            // register it saves, not one at a known distance from sp)
+            Stmt::If(_, a, b)
+                if a.iter().chain(b.iter()).all(|x| match x {
+                    Stmt::Assign(n, _) | Stmt::Decl(_, n, _) => n != "r13" && !callee_saved(n) && !at.contains_key(n),
+                    Stmt::Nop | Stmt::Preempt => true,
+                    _ => false,
+                }) =>
+            {
+                for x in a.iter().chain(b.iter()) {
+                    if let Stmt::Assign(n, _) | Stmt::Decl(_, n, _) = x {
+                        changed.insert(n.clone());
+                    }
+                }
+            }
             _ => break, // the end of the entry block
         }
     }
