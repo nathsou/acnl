@@ -40,7 +40,10 @@ naming goes callees first over the whole program, starting from the 18,979 names
 - The decompiled function is built in the same language, by passes that each keep the meaning: `inline.rs` (block
   temporaries), `flow.rs` (liveness under the calling convention, dead code), `propagate.rs` (register values into
   their single use), `simplify.rs` (constant folding, conditions, predicated ifs into if/else), `saves.rs` (removes the
-  saving of callee-saved registers, also when the push comes after early exits: a shrink-wrapped prologue), `structure.rs` (gotos into ifs, duplicated return tails, the entry table).
+  saving of callee-saved registers, also when the push comes after early exits: a shrink-wrapped prologue),
+  `addresses.rs` (an address that is an argument plus a constant, through copies and calls, written as `argK + c`:
+  a field of the object the argument points to; a branch that leaves does not count where paths meet, and the
+  runtime's re-entry table is no jump: only entry 0 is decompiled), `structure.rs` (gotos into ifs, duplicated return tails, the entry table).
 - `sym.rs` gives both programs one meaning by symbolic execution: values are bit-vectors, guest memory is an array of
   bytes, paths are merged at joins. `check.rs` asks Z3 for an input where the original and the decompiled function
   differ in what a caller can observe; none means proved. Functions with loops are proved segment by segment between

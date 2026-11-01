@@ -68,6 +68,8 @@ fn targets(list: &[Stmt], out: &mut std::collections::HashSet<String>) {
             Stmt::Goto(l) => {
                 out.insert(l.clone());
             }
+            // (not the runtime's re-entry table: only entry 0 is decompiled, and proved)
+            Stmt::Switch(Expr::Var(v), _) if v == "entry" => {}
             Stmt::Switch(_, cases) => out.extend(cases.iter().map(|(_, l)| l.clone())),
             Stmt::If(_, a, b) => {
                 targets(a, out);
@@ -146,10 +148,19 @@ fn walk(list: &mut [Stmt], env: &mut Env) {
                 let (mut ea, mut eb) = (env.clone(), env.clone());
                 walk(a, &mut ea);
                 walk(b, &mut eb);
-                env.retain(|k, v| ea.get(k) == Some(v) && eb.get(k) == Some(v));
-                for (k, v) in &ea {
-                    if eb.get(k) == Some(v) {
-                        env.insert(k.clone(), *v);
+                // (a branch that leaves, by a return, a tail call or a jump, does not reach what follows; a jump's
+                // label forgets what it does not know)
+                let leaves = |x: &[Stmt]| matches!(x.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
+                match (leaves(a), leaves(b)) {
+                    (true, false) => *env = eb,
+                    (false, true) => *env = ea,
+                    _ => {
+                        env.retain(|k, v| ea.get(k) == Some(v) && eb.get(k) == Some(v));
+                        for (k, v) in &ea {
+                            if eb.get(k) == Some(v) {
+                                env.insert(k.clone(), *v);
+                            }
+                        }
                     }
                 }
             }
