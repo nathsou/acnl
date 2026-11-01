@@ -364,6 +364,67 @@ fn signed_compares(list: &mut [Stmt]) {
         if let Stmt::If(c, _, _) = &mut list[i + 1] {
             compares_in(c, &res, &a, &b);
         }
+        // a later if (the statements between leaving res, a and b alone, and holding no control flow)
+        let mut rr = r.clone();
+        rr.vars.push(res.clone());
+        for k in i + 2..list.len() {
+            if modifies(&list[i + 1..k], &rr) || has_control(&list[i + 1..k]) {
+                break;
+            }
+            if let Stmt::If(c, _, _) = &mut list[k] {
+                compares_in(c, &res, &a, &b);
+            }
+        }
+    }
+}
+
+// Flags kept in variables (nf = res >> 31; vf = ...;) read by a later if's condition: their definitions there, when
+// nothing between changes what they read or the flag (the signed comparisons can then be recognised).
+fn flags_into_conditions(list: &mut [Stmt]) {
+    for i in 0..list.len() {
+        if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = &mut list[i] {
+            flags_into_conditions(a);
+            flags_into_conditions(b);
+        }
+        let Stmt::If(c, a, b) = &list[i] else { continue };
+        let mut r = Reads::default();
+        reads(c, &mut r);
+        let mut cond = c.clone();
+        let mut changed = false;
+        // (not a flag the if's own branches set: a predicated compare chain, which condition_chains joins)
+        let sets = |v: &String| {
+            let mut one = Reads::default();
+            one.vars.push(v.clone());
+            modifies(a, &one) || modifies(b, &one)
+        };
+        for v in r.vars.iter().filter(|v| ["nf", "zf", "cf", "vf"].iter().any(|f| v.starts_with(f)) && !sets(v)) {
+            // its definition in this list before the if
+            let Some(j) = (0..i).rev().find(|&j| matches!(&list[j], Stmt::Decl(_, n, Some(_)) | Stmt::Assign(n, _) if n == v)) else { continue };
+            let e = match &list[j] {
+                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) => e.clone(),
+                _ => continue,
+            };
+            let mut er = Reads::default();
+            reads(&e, &mut er);
+            if er.memory || er.cpu || er.out_params || er.vars.contains(v) {
+                continue;
+            }
+            er.vars.push(v.clone());
+            if modifies(&list[j + 1..i], &er) || has_control(&list[j + 1..i]) {
+                continue;
+            }
+            let mut w = Stmt::If(cond.clone(), vec![], vec![]);
+            crate::inline::subst_stmt(&mut w, v, &e);
+            if let Stmt::If(nc, _, _) = w {
+                cond = nc;
+                changed = true;
+            }
+        }
+        if changed {
+            if let Stmt::If(c, _, _) = &mut list[i] {
+                *c = cond;
+            }
+        }
     }
 }
 
@@ -587,8 +648,16 @@ fn modifies(list: &[Stmt], r: &Reads) -> bool {
     })
 }
 
-fn negation_of(a: &Expr, b: &Expr) -> bool {
-    matches!(b, Expr::Un(UnOp::LNot, x) if **x == *a) || matches!(a, Expr::Un(UnOp::LNot, x) if **x == *b)
+// whether b is the negation of a: !a once negations are pushed in (flipped integer comparisons, De Morgan)
+fn negation_of(a: &Expr, b: &Expr, types: &HashMap<String, Ty>) -> bool {
+    if matches!(b, Expr::Un(UnOp::LNot, x) if **x == *a) || matches!(a, Expr::Un(UnOp::LNot, x) if **x == *b) {
+        return true;
+    }
+    let mut n = Expr::Un(UnOp::LNot, Box::new(a.clone()));
+    simplify_cond(&mut n, types);
+    let mut m = b.clone();
+    simplify_cond(&mut m, types);
+    n == m
 }
 
 fn has_control(list: &[Stmt]) -> bool {
@@ -599,12 +668,12 @@ fn has_control(list: &[Stmt]) -> bool {
     })
 }
 
-fn merge_ifs(list: &mut Vec<Stmt>) -> bool {
+fn merge_ifs(list: &mut Vec<Stmt>, types: &HashMap<String, Ty>) -> bool {
     let mut changed = false;
     for s in list.iter_mut() {
         if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = s {
-            changed |= merge_ifs(a);
-            changed |= merge_ifs(b);
+            changed |= merge_ifs(a, types);
+            changed |= merge_ifs(b, types);
         }
     }
     let mut i = 0;
@@ -621,7 +690,7 @@ fn merge_ifs(list: &mut Vec<Stmt>) -> bool {
                     let mut b = b1.clone();
                     b.extend(b2.iter().cloned());
                     Some(Stmt::If(c1.clone(), a, b))
-                } else if negation_of(c1, c2) {
+                } else if negation_of(c1, c2, types) {
                     let mut a = a1.clone();
                     a.extend(b2.iter().cloned());
                     let mut b = b1.clone();
@@ -663,10 +732,14 @@ pub fn simplify(f: &mut Function) {
     simplify_list(&mut f.body, &mut types);
     let synced: std::collections::HashSet<String> = f.synced.iter().map(|(v, _)| v.clone()).collect();
     let locals: std::collections::HashSet<String> = f.locals.iter().map(|(_, n, _)| n.clone()).collect();
-    // (after the flag patterns, which read the temporary)
+    // (complementary predicated ifs first: once their flags are substituted, the second tests the old values)
+    while merge_ifs(&mut f.body, &types) {}
+    // (and the predicated compare chains, which read the flag variable)
+    while condition_chains(&mut f.body) {}
+    flags_into_conditions(&mut f.body);
     signed_compares(&mut f.body);
     copies_in_conditions(&mut f.body, &|t| !synced.contains(t) && !locals.contains(t) && !t.starts_with("arg") && !t.starts_with("saved_"));
-    while merge_ifs(&mut f.body) {}
+    while merge_ifs(&mut f.body, &types) {}
     while condition_chains(&mut f.body) {}
     while merge_same_exits(&mut f.body) {}
     while choices(&mut f.body) {}

@@ -65,7 +65,7 @@ pub fn type_of(e: &Expr, vars: &HashMap<String, Ty>) -> Option<Ty> {
 }
 
 // What an expression reads: variables, CPU fields, memory.
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct Reads {
     pub vars: Vec<String>,
     pub cpu: bool,

@@ -166,7 +166,11 @@ result):
 - Conditions: `res = a - 0` compares (`cmp r0, #0`) as `s32(a) < 0`; `x = A; if (!x) x = B;` is `A || B` (and `&&`
   for `if (x)`); `if (A) X; if (B) X;` with X returning is `if (A || B) X`; a copy `x = t` right before a condition
   that reads t lets it read x (so `t = r1 >> 1; r1 = t; while (t)` is `r1 >>= ...; while (r1)`); negated comparisons
-  flip inside loops too.
+  flip inside loops too. Complementary predicated ifs merge into an if/else even when the second condition is written
+  differently (`nf != vf` and `nf == vf`, `!c || z` and `c && !z`: compared once negations are pushed in), before the
+  flags they test are substituted into conditions (`nf = res >> 31; vf = ...;` read by a later if, when nothing between
+  changes them, and not a flag the if itself sets); the signed comparison of `res = a - b` is then found in later ifs
+  too. `cmp; movlt; movge` becomes `x = s32(a) < 6 ? 0x1800 : 0`.
 - Shifts: `lsl_r(x, n & m)` with m < 32 is `x << (n & m)` (and lsr, asr); a shift's carry nobody reads is the plain
   shift (`lsl_rc` and `lsl_r` give the same value; the model now knows that value, the carry stays opaque).
 - `if (c) { x = A; } else { x = B; }` is `x = c ? A : B;` (`c ? 1 : 0` the condition itself); a register read folded
