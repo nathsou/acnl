@@ -763,7 +763,11 @@ pub fn function(text: &str) -> R<Function> {
             }
         }
     }
-    Ok(Function { address: target & !1, thumb: target & 1 != 0, name, synced, locals, entries, body: rest })
+    let mut f = Function { address: target & !1, thumb: target & 1 != 0, name, synced, locals, entries, body: rest };
+    if crate::sites::enabled() {
+        crate::sites::annotate(&mut f);
+    }
+    Ok(f)
 }
 
 // Every function of the generated files, as (address with the Thumb bit, text).

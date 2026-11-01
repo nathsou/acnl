@@ -52,6 +52,8 @@ pub struct Sym<'c> {
     // facts of the model (the read-only words' values): asserted like the assumptions, but an exit they rule out is
     // one the program cannot take, not a vacuous proof
     pub facts: Vec<Bool<'c>>,
+    // the site of the next indirect call (Stmt::Site)
+    pub site: Option<Vec<String>>,
     // while set, every memory access through a pointer is assumed to stay out of the save area (compiled code never
     // reaches saved registers that way); accesses at a known distance from the entry sp are exact and need no assumption
     pub guard_save_area: bool,
@@ -181,7 +183,7 @@ pub struct Exit<'c> {
 
 impl<'c> Sym<'c> {
     pub fn new(ctx: &'c Context) -> Self {
-        Sym { ctx, save_slots: vec![], entry_sp: None, calls: 0, assumptions: vec![], facts: vec![], guard_save_area: false }
+        Sym { ctx, save_slots: vec![], entry_sp: None, calls: 0, assumptions: vec![], facts: vec![], site: None, guard_save_area: false }
     }
 
     pub fn bv(&self, v: u64, bits: u32) -> BV<'c> {
@@ -683,7 +685,14 @@ impl<'c> Sym<'c> {
         args.push(&st.world);
         // a callee with a proved signature (signatures.rs): memory, effects and the results a caller observes depend on
         // its argument registers only (each result also on its own value: a register it leaves alone passes through)
-        let sig = target.simplify().as_u64().and_then(|t| crate::signatures::of(t as u32));
+        // an indirect call's site (sites.rs): its callee is a callee with that signature (an assumption)
+        // (the site wins over a target the solver finds constant on one path only: both sides have the site)
+        let site = self.site.take();
+        let sig = match (site, target.simplify().as_u64()) {
+            (Some(regs), _) => Some(regs),
+            (None, Some(t)) => crate::signatures::of(t as u32),
+            (None, None) => None,
+        };
         let few: Option<Vec<BV>> = sig.map(|regs| regs.iter().map(|k| st.cpu[k].clone()).collect());
         let mut fewer: Vec<&BV> = vec![target];
         if let Some(v) = &few {
@@ -730,8 +739,16 @@ impl<'c> Sym<'c> {
             Some(_) => self.uf("call_world_sig", &fewer, 32),
             None => self.uf("call_world", &args, 32),
         };
+        // a callee that returns its first argument (returns.rs) gives r0 back
+        let kept = match target.simplify().as_u64() {
+            Some(t) if crate::returns::returns_first_argument(t as u32) => Some(st.cpu["r0"].clone()),
+            _ => None,
+        };
         for (k, v) in out {
             st.cpu.insert(k, v);
+        }
+        if let Some(r0) = kept {
+            st.cpu.insert("r0".into(), r0);
         }
         st.world = w;
         st.mem = m;
@@ -1084,6 +1101,7 @@ impl<'c> Sym<'c> {
                 st.cpu.insert("pc".into(), e);
             }
             Stmt::Preempt | Stmt::Nop => {}
+            Stmt::Site(regs) => self.site = Some(regs.clone()),
             Stmt::Svc(n) => self.svc(st, *n),
             Stmt::Unsupported(w) => return Err(format!("unsupported: {}", w)),
             other => return Err(format!("statement {:?}", other)),

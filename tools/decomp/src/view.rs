@@ -225,7 +225,7 @@ fn body(list: &[Stmt], indent: usize, returns: bool, out: &mut String) {
                 i += 1;
                 continue;
             }
-            Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) => {}
+            Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::Site(_) | Stmt::ReturnUnlessPc(_) => {}
             Stmt::SetCpu(CpuField::Pc, _) if matches!(list.get(i + 1), Some(Stmt::SyncOut)) => {}
             Stmt::Decl(_, _, None) => {}
             // the copies of the arguments are the parameters

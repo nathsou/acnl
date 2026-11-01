@@ -137,6 +137,11 @@ struct Emitter {
     targets: HashSet<String>,          // labels something other than such a goto still jumps to
     returns: bool,                     // the function returns r0
     after_calls: HashSet<Vec<usize>>,  // calls every path reaches through another call (flow::after_calls)
+    sites: HashMap<Vec<usize>, Vec<String>>, // the indirect calls' sites (sites.rs)
+    site_extras: HashMap<Vec<usize>, Vec<String>>, // what they hand over through the CPU besides (site_extras)
+    synced: Vec<(String, CpuField)>,
+    fallthrough: HashMap<Vec<usize>, String>, // gotos at the end of an if right before a label (fallthrough_gotos)
+    breaks: HashSet<Vec<usize>>, // gotos out of the innermost loop (loop_breaks)
     arities: HashMap<u32, usize>,      // the arguments each direct callee is written with (at most)
     fixed: bool,                       // the second pass: every call to a callee writes arities[callee] arguments
     var_types: HashMap<String, Ty>,    // the decompiled function's variables and their types
@@ -147,13 +152,17 @@ struct Emitter {
 }
 
 // A label's block when it is short, straight and ends the function (a return or a tail call): a goto to it is
-// written as a copy of it, an early return. The copy runs the same statements, so the proof is unchanged.
+// written as a copy of it, an early return. The copy runs the same statements, so the proof is unchanged. A short
+// straight block ending with a goto (a jump block: `L: r1 = 4; goto M;`) is copied the same way, so that a goto to it
+// at the end of an if right before M becomes the block's statements in the if.
 #[derive(Clone)]
 struct Exit {
     list: Vec<Stmt>, // the list holding it, from its first statement (path numbering continues from `first`)
     prefix: Vec<usize>,
     first: usize,
     written: usize, // the statements a copy writes
+    jump: Option<String>, // a jump block's goto
+    only_gotos: bool, // reached by gotos only (after a statement that does not fall through)
 }
 
 const EXIT_BLOCK_STATEMENTS: usize = 8;
@@ -166,8 +175,10 @@ fn exit_blocks(list: &[Stmt], prefix: &[usize], out: &mut HashMap<String, Exit>)
         match s {
             Stmt::Label(l) => {
                 let rest = &list[i + 1..];
-                let end = rest.iter().position(|x| matches!(x, Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
-                if let Some(k) = end {
+                let end = rest.iter().position(|x| matches!(x, Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true) | Stmt::Goto(_)));
+                let jump = end.and_then(|k| if let Stmt::Goto(m) = &rest[k] { Some(m.clone()) } else { None });
+                let only_gotos = i > 0 && matches!(list[i - 1], Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true));
+                if let (Some(k), true) = (end, jump.as_ref() != Some(l)) {
                     // (labels inside are fine while only gotos to exit blocks reach them: see exits_and_targets)
                     let straight = rest[..k].iter().all(|x| {
                         !matches!(
@@ -179,10 +190,10 @@ fn exit_blocks(list: &[Stmt], prefix: &[usize], out: &mut HashMap<String, Exit>)
                     // (counting what is written: not the calling-convention bookkeeping)
                     let written = rest[..k]
                         .iter()
-                        .filter(|x| !stack_bookkeeping(x) && !matches!(x, Stmt::Label(_) | Stmt::Nop | Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::SetCpu(CpuField::Pc, _)))
+                        .filter(|x| !stack_bookkeeping(x) && !matches!(x, Stmt::Label(_) | Stmt::Nop | Stmt::Site(_) | Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::SetCpu(CpuField::Pc, _)))
                         .count();
                     if straight && written < EXIT_BLOCK_STATEMENTS {
-                        out.insert(l.clone(), Exit { list: rest[..=k].to_vec(), prefix: prefix.to_vec(), first: i + 1, written });
+                        out.insert(l.clone(), Exit { list: rest[..=k].to_vec(), prefix: prefix.to_vec(), first: i + 1, written, jump, only_gotos });
                     }
                 }
             }
@@ -199,22 +210,102 @@ fn exit_blocks(list: &[Stmt], prefix: &[usize], out: &mut HashMap<String, Exit>)
     }
 }
 
-// the labels jumped to other than by a goto to an exit block (switch cases, loops, other gotos)
-fn jump_targets(list: &[Stmt], exits: &HashMap<String, Exit>, out: &mut HashSet<String>) {
-    for s in list {
+// The gotos to the label right after the innermost loop around them: written `break;`. (`follow`: the label control
+// reaches past the end of the list, when the list is the last thing before it.)
+fn loop_breaks(list: &[Stmt], prefix: &[usize], exit: Option<&str>, follow: Option<&str>, out: &mut HashSet<Vec<usize>>) {
+    for (i, s) in list.iter().enumerate() {
+        let path: Vec<usize> = [prefix, &[i]].concat();
+        // the label right after this statement
+        let after = match list.get(i + 1) {
+            Some(Stmt::Label(l)) => Some(l.as_str()),
+            None => follow,
+            _ => None,
+        };
         match s {
-            Stmt::Goto(l) if !exits.contains_key(l) => {
-                out.insert(l.clone());
+            Stmt::Goto(l) if Some(l.as_str()) == exit => {
+                out.insert(path);
             }
+            Stmt::If(_, a, b) => {
+                loop_breaks(a, &[path.clone(), vec![0]].concat(), exit, after, out);
+                loop_breaks(b, &[path.clone(), vec![1]].concat(), exit, after, out);
+            }
+            Stmt::While { body, check, .. } => {
+                loop_breaks(body, &[path.clone(), vec![0]].concat(), after, None, out);
+                loop_breaks(check, &[path.clone(), vec![1]].concat(), after, None, out);
+            }
+            _ => {}
+        }
+    }
+}
+
+// The gotos that end a branch of an if right before a label (path -> that label): a copy of a jump block to that
+// label needs no goto there.
+fn fallthrough_gotos(list: &[Stmt], prefix: &[usize], out: &mut HashMap<Vec<usize>, String>) {
+    for (i, s) in list.iter().enumerate() {
+        let path: Vec<usize> = [prefix, &[i]].concat();
+        match s {
+            Stmt::If(_, a, b) => {
+                if let Some(Stmt::Label(m)) = list.get(i + 1) {
+                    for (k, branch) in [a, b].into_iter().enumerate() {
+                        if let Some(Stmt::Goto(_)) = branch.last() {
+                            out.insert([path.clone(), vec![k, branch.len() - 1]].concat(), m.clone());
+                        }
+                    }
+                }
+                fallthrough_gotos(a, &[path.clone(), vec![0]].concat(), out);
+                fallthrough_gotos(b, &[path.clone(), vec![1]].concat(), out);
+            }
+            Stmt::While { body, check, .. } => {
+                fallthrough_gotos(body, &[path.clone(), vec![0]].concat(), out);
+                fallthrough_gotos(check, &[path.clone(), vec![1]].concat(), out);
+            }
+            _ => {}
+        }
+    }
+}
+
+// the labels jumped to other than by a goto to an exit block (switch cases, loops, other gotos); a jump block's goto
+// counts where a copy of it keeps it (not right before its label), and the block itself not when only gotos reach it
+fn jump_targets(list: &[Stmt], prefix: &[usize], exits: &HashMap<String, Exit>, fallthrough: &HashMap<Vec<usize>, String>,
+                breaks: &HashSet<Vec<usize>>, out: &mut HashSet<String>) {
+    let mut skip_to: Option<usize> = None;
+    for (i, s) in list.iter().enumerate() {
+        let path: Vec<usize> = [prefix, &[i]].concat();
+        if let Some(k) = skip_to {
+            if i <= k {
+                continue;
+            }
+            skip_to = None;
+        }
+        match s {
+            Stmt::Label(l) => {
+                if let Some(x) = exits.get(l).filter(|x| x.jump.is_some() && x.only_gotos) {
+                    skip_to = Some(i + x.list.len());
+                }
+            }
+            Stmt::Goto(l) => match exits.get(l) {
+                None => {
+                    if !breaks.contains(&path) {
+                        out.insert(l.clone());
+                    }
+                }
+                Some(x) => {
+                    if let Some(m) = &x.jump {
+                        if fallthrough.get(&path) != Some(m) && !exits.contains_key(m) {
+                            out.insert(m.clone());
+                        }
+                    }
+                }
+            },
             Stmt::Switch(_, cases) => out.extend(cases.iter().map(|(_, l)| l.clone())),
             Stmt::If(_, a, b) => {
-                jump_targets(a, exits, out);
-                jump_targets(b, exits, out);
+                jump_targets(a, &[path.clone(), vec![0]].concat(), exits, fallthrough, breaks, out);
+                jump_targets(b, &[path.clone(), vec![1]].concat(), exits, fallthrough, breaks, out);
             }
             // (a loop's own labels: only when something else jumps to them)
             Stmt::While { body, check, .. } => {
-                jump_targets(body, exits, out);
-                jump_targets(check, exits, out);
+                jump_targets(body, &[path.clone(), vec![0]].concat(), exits, fallthrough, breaks, out);
+                jump_targets(check, &[path.clone(), vec![1]].concat(), exits, fallthrough, breaks, out);
             }
             _ => {}
         }
@@ -314,15 +405,50 @@ impl Emitter {
     }
 
     // the float arguments written before a call (variable, s index)
-    fn floats_for(&self, target: Option<u32>) -> Vec<(String, u32)> {
+    fn floats_for(&self, target: Option<u32>, path: &[usize]) -> Vec<(String, u32)> {
+        if let (None, Some(_)) = (target, self.sites.get(path)) {
+            return vec![];
+        }
         let need = target.and_then(|t| self.needs.get(&t)).cloned();
         self.float_args.iter().filter(|(_, k)| need.as_ref().map_or(true, |n| n.full || n.floats.contains(k))).cloned().collect()
     }
 
-    // the core arguments of a call, as written (registers the function keeps, the CPU's for the others)
-    fn args_for(&self, target: Option<u32>) -> Vec<String> {
-        let arity = target.and_then(|t| self.needs.get(&t)).map_or(4, |n| if n.full { 4 } else { n.arity });
+    // the core arguments of a call, as written (registers the function keeps, the CPU's for the others); an indirect
+    // call with a site (sites.rs) passes the site's
+    fn args_for(&self, target: Option<u32>, path: &[usize]) -> Vec<String> {
+        let arity = match (target, self.sites.get(path)) {
+            (None, Some(site)) => site.iter().filter(|r| r.starts_with('r')).count(),
+            _ => target.and_then(|t| self.needs.get(&t)).map_or(4, |n| if n.full { 4 } else { n.arity }),
+        };
         self.call_list[..arity].to_vec()
+    }
+
+    // The float arguments of an indirect call with a site, as C++ arguments (the float registers it does not keep from
+    // the CPU), and the registers it hands over through the CPU besides: the results read after the call, which may
+    // pass through the callee, or every argument register when a scratch result is read (site_extras).
+    fn site_floats(&self, path: &[usize]) -> Vec<String> {
+        let Some(site) = self.sites.get(path) else { return vec![] };
+        site.iter()
+            .filter_map(|r| r.strip_prefix('s').and_then(|k| k.parse::<u32>().ok()))
+            .map(|k| match self.float_args.iter().find(|(_, j)| *j == k) {
+                Some((v, _)) => v.clone(),
+                None => format!("guest::cpu()->s[{}]", k),
+            })
+            .collect()
+    }
+
+    fn site_extra(&self, path: &[usize]) -> Vec<(String, String)> {
+        let Some(extra) = self.site_extras.get(path) else { return vec![] };
+        let mut out = Vec::new();
+        for k in extra {
+            let Some((v, _)) = self.synced.iter().find(|(_, fl)| crate::sym::cpu_key(fl) == *k) else { continue };
+            let field = match k.strip_prefix('s') {
+                Some(n) => format!("guest::cpu()->s[{}]", n),
+                None => format!("guest::cpu()->r[{}]", &k[1..]),
+            };
+            out.push((field, v.clone()));
+        }
+        out
     }
 
     // What the emitter reads and writes at a call, a return or a system call (values.rs): the variables it writes
@@ -334,8 +460,10 @@ impl Emitter {
         match s {
             Stmt::GuestCall(_, tail) | Stmt::Dispatch(tail) => {
                 let target = if let Stmt::GuestCall(t, _) = s { Some(*t) } else { None };
-                uses.extend(self.args_for(target).into_iter().filter(is_var));
-                uses.extend(self.floats_for(target).into_iter().map(|(v, _)| v));
+                uses.extend(self.args_for(target, path).into_iter().filter(is_var));
+                uses.extend(self.floats_for(target, path).into_iter().map(|(v, _)| v));
+                uses.extend(self.site_floats(path).into_iter().filter(is_var));
+                uses.extend(self.site_extra(path).into_iter().map(|(_, v)| v));
                 if *tail {
                     uses.extend(self.tail_writes().into_iter().map(|(_, v)| v));
                 } else {
@@ -364,7 +492,7 @@ impl Emitter {
         if self.stack && self.has_sp {
             self.line(indent, "guest::cpu()->r[13] = r13;");
         }
-        for (v, k) in self.floats_for(target) {
+        for (v, k) in self.floats_for(target, path) {
             let text = format!("guest::cpu()->s[{}] = {};", k, self.var_text(path, &v));
             self.line(indent, &text);
         }
@@ -795,7 +923,7 @@ impl Emitter {
                         _ => self.vtable_slot(e),
                     };
                 }
-                Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) => {}
+                Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::Site(_) | Stmt::ReturnUnlessPc(_) => {}
                 // sp moved by a constant (the frame) in a function that does not otherwise use it: the CPU's sp moves,
                 // so the functions it calls see the stack where the original's callees did
                 Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b))
@@ -979,8 +1107,12 @@ impl Emitter {
                 }
                 Stmt::Goto(l) if self.exits.contains_key(l) => {
                     let x = self.exits[l].clone();
-                    self.stmts_from(&x.list, x.first, indent, returns, &x.prefix)?;
+                    // (a jump block's goto to the label right after this if: falling through)
+                    let falls = x.jump.is_some() && self.fallthrough.get(&path) == x.jump.as_ref();
+                    let n = if falls { x.list.len() - 1 } else { x.list.len() };
+                    self.stmts_from(&x.list[..n], x.first, indent, returns, &x.prefix)?;
                 }
+                Stmt::Goto(_) if self.breaks.contains(&path) => self.line(indent, "break;"),
                 Stmt::Goto(l) => {
                     if self.labels.contains(l) {
                         self.line(indent, "guest::preempt();"); // a back edge
@@ -996,7 +1128,7 @@ impl Emitter {
                 Stmt::GuestCall(t, tail) => {
                     self.before_call(indent, Some(*t), &path);
                     let name = self.callees.entry(*t).or_insert_with(|| format!("call_{:08x}", t & !1)).clone();
-                    let all: Vec<String> = self.args_for(Some(*t)).iter().map(|a| self.arg_text(&path, a)).collect();
+                    let all: Vec<String> = self.args_for(Some(*t), &path).iter().map(|a| self.arg_text(&path, a)).collect();
                     let mut args = all.clone();
                     // after another call, the registers left in the CPU are that call's leftovers: a guest::Function
                     // call leaves the CPU's registers past its arguments alone, so trailing ones need not be written
@@ -1061,17 +1193,29 @@ impl Emitter {
                         self.line(indent, &format!("// {}", what));
                     }
                     self.before_call(indent, None, &path);
-                    let mut args: Vec<String> = self.args_for(None).iter().map(|a| self.arg_text(&path, a)).collect();
-                    // (after another call, the registers left in the CPU need not be written: see GuestCall)
-                    if self.after_calls.contains(&path) {
+                    for (field, v) in self.site_extra(&path) {
+                        let text = format!("{} = {};", field, self.var_text(&path, &v));
+                        self.line(indent, &text);
+                    }
+                    let mut args: Vec<String> = self.args_for(None, &path).iter().map(|a| self.arg_text(&path, a)).collect();
+                    let site = self.sites.contains_key(&path);
+                    for v in self.site_floats(&path) {
+                        let text = if v.starts_with("guest::") { v.clone() } else { self.var_text(&path, &v) };
+                        args.push(text);
+                    }
+                    // (after another call, the registers left in the CPU need not be written: see GuestCall; a site
+                    // is as many arguments as it says)
+                    if self.after_calls.contains(&path) && !site {
                         while args.last().map_or(false, |a| a.starts_with("guest::cpu()->r[")) {
                             args.pop();
                         }
                     }
+                    // (with sites, a call with none is one whose callee may read any argument register)
+                    let name = if crate::sites::enabled() && !site { "guest::call_address_any" } else { "guest::call_address" };
                     let call = if args.is_empty() {
-                        format!("guest::call_address<u32>({})", target)
+                        format!("{}<u32>({})", name, target)
                     } else {
-                        format!("guest::call_address<u32>({}, {})", target, args.join(", "))
+                        format!("{}<u32>({}, {})", name, target, args.join(", "))
                     };
                     if *tail {
                         self.tail_write_back(indent, &path);
@@ -1124,6 +1268,50 @@ struct Need {
     arity: usize,       // core registers r0..r(arity-1)
     floats: HashSet<u32>, // float registers written before the call
     full: bool,
+}
+
+// What an indirect call with a site (sites.rs) hands over besides its arguments: the results read after it that are
+// no argument of the site (a callee may leave them as they were), or every other argument register when a scratch
+// result is read after it (scratch results depend on every argument register: sym.rs).
+fn site_extras(f: &Function, lv: &crate::flow::Liveness) -> HashMap<Vec<usize>, Vec<String>> {
+    let field: HashMap<&str, String> = f.synced.iter().map(|(v, fl)| (v.as_str(), crate::sym::cpu_key(fl))).collect();
+    let flows = crate::flow::scratch_flows(f);
+    let mut out = HashMap::new();
+    let tails = crate::sites::at_tail_calls(f);
+    for (p, site) in crate::sites::at_calls(f) {
+        // after a tail call, what the function's callers observe
+        if tails.contains_key(&p) {
+            let extra: Vec<String> = crate::signatures::RESULTS
+                .iter()
+                .filter(|k| crate::results::observed(f.address, k) && !site.iter().any(|r| r == *k))
+                .map(|k| k.to_string())
+                .collect();
+            if !extra.is_empty() {
+                out.insert(p, extra);
+            }
+            continue;
+        }
+        let mut next = p.clone();
+        *next.last_mut().unwrap() += 1;
+        let read: Vec<String> = match lv.live_out.get(&next) {
+            Some(live) => live.iter().filter_map(|v| field.get(v.as_str()).cloned()).collect(),
+            None => crate::signatures::ARGS.iter().map(|k| k.to_string()).collect(),
+        };
+        let scratch = flows.contains(&p)
+            || read.iter().any(|k| {
+                matches!(k.as_str(), "r2" | "r3" | "r12" | "nf" | "zf" | "cf" | "vf" | "qf" | "ge" | "fpscr")
+                    || k.strip_prefix('s').and_then(|n| n.parse::<u32>().ok()).map_or(false, |n| (2..16).contains(&n))
+            });
+        let extra: Vec<String> = if scratch {
+            crate::signatures::ARGS.iter().map(|k| k.to_string()).filter(|k| !site.contains(k)).collect()
+        } else {
+            crate::signatures::RESULTS.iter().map(|k| k.to_string()).filter(|k| read.contains(k) && !site.contains(k)).collect()
+        };
+        if !extra.is_empty() {
+            out.insert(p, extra);
+        }
+    }
+    out
 }
 
 fn call_needs(f: &Function, lv: &crate::flow::Liveness) -> HashMap<u32, Need> {
@@ -2560,7 +2748,9 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), vtables: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), arities: HashMap::new(), fixed: false, out: String::new() };
+    // (sp written to the CPU before calls only when the function moves it: otherwise the CPU's is the same)
+    let has_sp = has_sp && assigned.contains("r13");
+    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), vtables: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), sites: crate::sites::at_calls(f), site_extras: site_extras(f, &lv), synced: f.synced.clone(), fallthrough: HashMap::new(), breaks: HashSet::new(), arities: HashMap::new(), fixed: false, out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -2591,7 +2781,24 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     }
     count_gotos(&f.body, &mut gotos);
     e.exits.retain(|l, x| x.written * gotos.get(l).copied().unwrap_or(0) <= EXIT_COPIES_STATEMENTS);
-    jump_targets(&f.body, &e.exits, &mut e.targets);
+    // (a jump block to a jump block is not copied: no chains, no cycles)
+    loop {
+        let chained: Vec<String> = e
+            .exits
+            .iter()
+            .filter(|(_, x)| x.jump.as_ref().map_or(false, |m| e.exits.get(m).map_or(false, |y| y.jump.is_some())))
+            .map(|(l, _)| l.clone())
+            .collect();
+        if chained.is_empty() {
+            break;
+        }
+        for l in chained {
+            e.exits.remove(&l);
+        }
+    }
+    fallthrough_gotos(&f.body, &[], &mut e.fallthrough);
+    loop_breaks(&f.body, &[], None, None, &mut e.breaks);
+    jump_targets(&f.body, &[], &e.exits, &e.fallthrough, &e.breaks, &mut e.targets);
     // an exit block holding a label something else jumps to is not copied (the copy would define it again)
     loop {
         let holding: Vec<String> = e
@@ -2607,7 +2814,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
             e.exits.remove(&l);
         }
         e.targets.clear();
-        jump_targets(&f.body, &e.exits, &mut e.targets);
+        jump_targets(&f.body, &[], &e.exits, &e.fallthrough, &e.breaks, &mut e.targets);
     }
     let returns = assigned.contains("r0") && crate::results::observed(f.address, "r0");
     // the body first (it decides the callees), twice: the first time finds how many arguments each callee's calls need

@@ -109,8 +109,13 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
             Stmt::Dispatch(false) | Stmt::Svc(_) => out.push(Node::Call(None, p.clone())),
             Stmt::Return => out.push(Node::Exit(false, None)),
             Stmt::GuestCall(t, true) => out.push(Node::Exit(true, Some(*t))),
-            Stmt::Dispatch(true) => out.push(Node::Exit(true, None)),
+            Stmt::Dispatch(true) => {
+                // (a marker with the call's path: sites.rs)
+                out.push(Node::Simple(p.clone(), Set::new(), None, false));
+                out.push(Node::Exit(true, None));
+            }
             Stmt::Preempt | Stmt::Nop => {}
+            Stmt::Site(_) => out.push(Node::Simple(p, Set::new(), None, false)),
             Stmt::Unsupported(_) => out.push(Node::Call(None, p.clone())),
         }
     }
@@ -198,7 +203,94 @@ pub fn after_calls(f: &Function) -> HashSet<Path> {
         .collect()
 }
 
+// the statement at a path (see the top of the file)
+fn stmt_at<'a>(list: &'a [Stmt], p: &[usize]) -> Option<&'a Stmt> {
+    let s = list.get(*p.first()?)?;
+    if p.len() == 1 {
+        return Some(s);
+    }
+    let inner = match (s, p[1]) {
+        (Stmt::If(_, a, _), 0) | (Stmt::While { body: a, .. }, 0) => a,
+        (Stmt::If(_, _, b), 1) | (Stmt::While { check: b, .. }, 1) => b,
+        _ => return None,
+    };
+    stmt_at(inner, &p[2..])
+}
+
+// At each indirect call: the argument registers (r0-r3, s0-s15) written on some path since the
+// function's entry or the last call (sites.rs).
+pub fn written_since_call(f: &Function) -> HashMap<Path, Set> {
+    let mut nodes = Vec::new();
+    let mut fresh = 0;
+    flatten(&f.body, &vec![], &mut nodes, &mut fresh);
+    let field_of: HashMap<&str, String> = f.synced.iter().map(|(v, fl)| (v.as_str(), crate::sym::cpu_key(fl))).collect();
+    let argument = |k: &str| call_argument(k) && k != "r13";
+    // the register a node writes
+    let writes = |node: &Node| -> Option<String> {
+        let Node::Simple(p, _, def, _) = node else { return None };
+        let k = match def {
+            Some(v) => field_of.get(v.as_str())?.clone(),
+            None => match stmt_at(&f.body, p)? {
+                Stmt::SetCpu(fl, _) => crate::sym::cpu_key(fl),
+                _ => return None,
+            },
+        };
+        argument(&k).then_some(k)
+    };
+    let labels: HashMap<String, usize> =
+        nodes.iter().enumerate().filter_map(|(i, n)| if let Node::Label(l) = n { Some((l.clone(), i)) } else { None }).collect();
+    let n = nodes.len();
+    let succ = |i: usize| -> Vec<usize> {
+        let next = if i + 1 < n { vec![i + 1] } else { vec![] };
+        match &nodes[i] {
+            Node::Jump(l) => labels.get(l).map(|&t| vec![t]).unwrap_or_default(),
+            Node::JumpIf(_, l, _) => labels.get(l).map(|&t| vec![t]).unwrap_or_default().into_iter().chain(next).collect(),
+            Node::Switch(_, ls) => ls.iter().filter_map(|l| labels.get(l).copied()).chain(next).collect(),
+            Node::Exit(..) => vec![],
+            _ => next,
+        }
+    };
+    // a forward "may" analysis (None: not reached yet); a call starts over
+    let mut before: Vec<Option<Set>> = vec![None; n];
+    if n == 0 {
+        return HashMap::new();
+    }
+    before[0] = Some(Set::new());
+    let mut work = vec![0usize];
+    while let Some(i) = work.pop() {
+        let Some(b) = before[i].clone() else { continue };
+        let out = match &nodes[i] {
+            Node::Call(..) => Set::new(),
+            node => {
+                let mut x = b;
+                x.extend(writes(node));
+                x
+            }
+        };
+        for j in succ(i) {
+            let mut new = before[j].clone().unwrap_or_default();
+            let grew = before[j].is_none() || out.iter().any(|k| !new.contains(k));
+            if grew {
+                new.extend(out.iter().cloned());
+                before[j] = Some(new);
+                work.push(j);
+            }
+        }
+    }
+    nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, node)| match node {
+            Node::Call(None, p) | Node::Simple(p, ..) if matches!(stmt_at(&f.body, p), Some(Stmt::Dispatch(_))) => {
+                Some((p.clone(), before[i].clone().unwrap_or_default()))
+            }
+            _ => None,
+        })
+        .collect()
+}
+
 pub fn scratch_flows(f: &Function) -> HashSet<Path> {
+    let sites = crate::sites::at_calls(f);
     let kept: HashSet<String> = f.synced.iter().map(|(_, fl)| crate::sym::cpu_key(fl)).collect();
     let unkept: Vec<String> = ["r2", "r3"]
         .iter()
@@ -248,7 +340,11 @@ pub fn scratch_flows(f: &Function) -> HashSet<Path> {
                 return true;
             }
         }
-        match target.and_then(crate::signatures::of) {
+        let sig = match node {
+            Node::Call(None, p) => sites.get(p).cloned(),
+            _ => target.and_then(crate::signatures::of),
+        };
+        match sig {
             Some(regs) => regs.iter().any(|r| unkept.contains(r)),
             None => true,
         }
@@ -332,6 +428,7 @@ pub fn liveness(f: &Function) -> Liveness {
 // With preserve false, keeping callee-saved registers for the caller does not count as reading them (what a C++
 // function, which keeps them anyway, needs to know).
 pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
+    let sites = crate::sites::at_calls(f);
     let mut nodes = Vec::new();
     let mut fresh = 0;
     flatten(&f.body, &vec![], &mut nodes, &mut fresh);
@@ -347,8 +444,14 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
             // a call with a signature: what it reads, what survives it, and its results when read after it
             let scratch = scratch_flows(f);
             let flows = matches!(next, Some(Node::Call(_, cp)) if scratch.contains(cp));
-            if let (Some(Node::Call(Some(t), _)), Some(i), false) = (next, at, flows) {
-                if let Some(sig) = crate::signatures::of(*t) {
+            let sig = match next {
+                Some(Node::Call(Some(t), _)) => crate::signatures::of(*t),
+                // an indirect call with a site (sites.rs)
+                Some(Node::Call(None, cp)) => sites.get(cp).cloned(),
+                _ => None,
+            };
+            if let (Some(Node::Call(..)), Some(i), false) = (next, at, flows) {
+                if let Some(sig) = sig {
                     let si = nodes[i + 1..].iter().position(|n| matches!(n, Node::SyncIn(_))).map(|j| i + 1 + j);
                     if let Some(si) = si {
                         let always: Set = synced
@@ -377,8 +480,14 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                     .collect(),
                 Some(Node::Exit(tail, target)) => {
                     let tail = *tail;
-                    // a tail call to a function with a signature hands over its arguments only
-                    let sig = target.and_then(crate::signatures::of);
+                    // a tail call to a function with a signature hands over its arguments only (an indirect one with
+                    // a site, its site's: the marker before it has the call's path)
+                    let marker = at.and_then(|i| i.checked_sub(1)).map(|i| &nodes[i]);
+                    let sig = match (target, marker) {
+                        (Some(t), _) => crate::signatures::of(*t),
+                        (None, Some(Node::Simple(mp, ..))) => sites.get(mp).cloned(),
+                        _ => None,
+                    };
                     synced
                         .iter()
                         .filter(|v| {

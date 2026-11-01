@@ -43,6 +43,11 @@ fn proof_key(original: &Function, d: &Decompiled) -> (u32, u64) {
     let sig = crate::signatures::callee_key(original);
     let none = 0xcbf2_9ce4_8422_2325;
     let mut h: u64 = 0xcbf2_9ce4_8422_2325 ^ CHECKER_VERSION ^ if sig == none { 0 } else { sig } ^ crate::results::key(original.address);
+    // (and on which callees return their first argument, when some do)
+    let kept = crate::returns::callee_key(original);
+    if kept != crate::returns::NO_CALLEE {
+        h ^= kept;
+    }
     let text = format!("{}\n{:?}\n{:?}", crate::print::function(&d.function), d.save_slots, d.saved);
     for b in text.bytes() {
         h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);
@@ -117,6 +122,8 @@ pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn F
         saves::Saves { slots: vec![], registers: vec![] }
     };
     let (save_slots, saved) = (sv.slots, sv.registers);
+    crate::returns::keep_first_argument(&mut f);
+    after("returns::keep_first_argument", &f, &save_slots);
     for _ in 0..8 {
         let before = format!("{:?}", f.body);
         inline::inline_temporaries(&mut f);
@@ -145,6 +152,13 @@ pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn F
     after("flow::remove_dead_code", &f, &save_slots);
     simplify::simplify(&mut f);
     after("simplify::simplify", &f, &save_slots);
+    structure::structure(&mut f);
+    after("structure::structure", &f, &save_slots);
+    simplify::simplify(&mut f);
+    after("simplify::simplify", &f, &save_slots);
+    flow::remove_dead_code(&mut f);
+    after("flow::remove_dead_code", &f, &save_slots);
+    // again: simplifying joins conditions (`if (a) { if (b) goto L; }` into `if (a && b) goto L;`), which structures
     structure::structure(&mut f);
     after("structure::structure", &f, &save_slots);
     simplify::simplify(&mut f);

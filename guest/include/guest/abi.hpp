@@ -365,6 +365,13 @@ R call_address(u32 address, A... args) {
     return detail::call<R, A...>(detail::lookup(address), address, args...);
 }
 
+// The same, for a call whose callee may read any argument register (a draft's call with no known site: the
+// decompiler's sites.rs); the registers it does not pass stay as the CPU has them.
+template <typename R, typename... A>
+R call_address_any(u32 address, A... args) {
+    return call_address<R>(address, args...);
+}
+
 // A pointer to member function as the ARM C++ ABI stores it: the function, or for a virtual one its offset in the
 // vtable; `adjust` is twice the this-adjustment, plus 1 for virtual.
 struct MemberFunctionPointer {

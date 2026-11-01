@@ -494,6 +494,84 @@ fn flatten_true(list: &mut Vec<Stmt>) {
     }
 }
 
+// Gotos to a join from inside nested ifs, past a short block S that only falls into the join:
+//     if (a) { if (b) { A; goto L; } } S; L:   ->   if (a) { if (b) { A } else { S } } else { S } L:
+// S is copied to the end of every branch that falls through, and the gotos to L at the ends of branches go (the
+// control-flow graph is the same, with S's statements in each of its copies).
+const JOIN_COPY_STATEMENTS: usize = 3;
+const JOIN_COPIES: usize = 3;
+
+fn join_copies(list: &mut Vec<Stmt>) -> bool {
+    // the copies, into the ends of the branches (false: a goto to the join somewhere else)
+    fn push(list: &mut Vec<Stmt>, join: &str, tail: &[Stmt], copies: &mut usize) -> bool {
+        let n = list.len();
+        if n > 0 {
+            let mut refs = HashMap::new();
+            count_refs(&list[..n - 1], &mut refs);
+            if refs.contains_key(join) {
+                return false;
+            }
+        }
+        match list.last_mut() {
+            Some(Stmt::Goto(l)) if l == join => {
+                list.pop();
+                true
+            }
+            Some(Stmt::If(_, a, b)) => push(a, join, tail, copies) && push(b, join, tail, copies),
+            Some(s) if matches!(s, Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)) => true,
+            Some(s) => {
+                let mut refs = HashMap::new();
+                count_refs(std::slice::from_ref(s), &mut refs);
+                if refs.contains_key(join) {
+                    return false;
+                }
+                list.extend(tail.iter().cloned());
+                *copies += 1;
+                true
+            }
+            None => {
+                list.extend(tail.iter().cloned());
+                *copies += 1;
+                true
+            }
+        }
+    }
+    for i in 0..list.len() {
+        if let Stmt::If(_, a, b) = &mut list[i] {
+            if join_copies(a) || join_copies(b) {
+                return true;
+            }
+        }
+        if !matches!(list[i], Stmt::If(..)) {
+            continue;
+        }
+        // S: straight statements up to the join's label
+        let Some(k) = list[i + 1..].iter().position(|s| !matches!(s, Stmt::Assign(..) | Stmt::Store(..) | Stmt::SetCpu(..))).map(|k| i + 1 + k) else { continue };
+        let Some(Stmt::Label(join)) = list.get(k).cloned() else { continue };
+        let tail: Vec<Stmt> = list[i + 1..k].to_vec();
+        if tail.is_empty() || tail.len() > JOIN_COPY_STATEMENTS {
+            continue;
+        }
+        let mut refs = HashMap::new();
+        count_refs(std::slice::from_ref(&list[i]), &mut refs);
+        if !refs.contains_key(&join) {
+            continue;
+        }
+        let mut s = list[i].clone();
+        let mut copies = 0;
+        let ok = match &mut s {
+            Stmt::If(_, a, b) => push(a, &join, &tail, &mut copies) && push(b, &join, &tail, &mut copies),
+            _ => false,
+        };
+        if ok && copies <= JOIN_COPIES {
+            list[i] = s;
+            list.drain(i + 1..k);
+            return true;
+        }
+    }
+    false
+}
+
 fn remove_unreferenced_labels(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) {
     list.retain(|s| !matches!(s, Stmt::Label(l) if refs.get(l).copied().unwrap_or(0) == 0));
 }
@@ -523,7 +601,12 @@ pub fn structure(f: &mut Function) {
         for (_, l) in &f.entries {
             *refs.entry(l.clone()).or_default() += 1;
         }
-        if !step(&mut f.body, &refs) && !loops(&mut f.body, &refs) && !branches(&mut f.body, &refs, None) && !motions(&mut f.body, &refs) {
+        if !step(&mut f.body, &refs)
+            && !loops(&mut f.body, &refs)
+            && !branches(&mut f.body, &refs, None)
+            && !motions(&mut f.body, &refs)
+            && !join_copies(&mut f.body)
+        {
             break;
         }
     }

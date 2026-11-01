@@ -139,6 +139,8 @@ pub enum Stmt {
     GuestCall(u32, bool),
     // rt_dispatch(c, 0): a call through c->pc (tail: return rt_dispatch(c, 0))
     Dispatch(bool),
+    // the argument registers the next indirect call's callee reads (an assumption: sites.rs)
+    Site(Vec<String>),
     // switch (e) { case K: goto L; ... default: break; } (computed jumps inside the function)
     Switch(Expr, Vec<(u64, String)>),
     // rt_svc(c, n)

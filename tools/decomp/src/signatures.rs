@@ -134,11 +134,14 @@ fn non_interference(ctx: &Context, f: &Function, reads: &[String]) -> bool {
     others.iter().filter(|k| RESULTS.contains(*k)).all(|k| same_when_changed(ctx, f, &[k], Some(k)))
 }
 
-// The argument registers the calls of a function may read: a direct callee's signature (all without one), every one
-// for an indirect call or a system call.
+// The argument registers the calls of a function may read: a direct callee's signature (all without one), an
+// indirect call's site (sites.rs), every one for another indirect call or a system call.
 fn call_reads(list: &[Stmt], out: &mut Vec<String>) {
+    let mut site: Option<&Vec<String>> = None;
     for s in list {
         match s {
+            Stmt::Site(regs) => site = Some(regs),
+            Stmt::Dispatch(false) if site.is_some() => out.extend(site.take().unwrap().iter().cloned()),
             Stmt::GuestCall(t, _) => match of(*t) {
                 Some(regs) => out.extend(regs),
                 None => out.extend(ARGS.iter().map(|k| k.to_string())),

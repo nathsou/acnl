@@ -139,7 +139,7 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
                 n.ret = matches!(s, Stmt::Return);
                 out.push(n);
             }
-            Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) | Stmt::Unsupported(_) => {}
+            Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::Site(_) | Stmt::ReturnUnlessPc(_) | Stmt::Unsupported(_) => {}
         }
     }
 }

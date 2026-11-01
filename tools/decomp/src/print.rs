@@ -150,6 +150,7 @@ pub fn stmts(list: &[Stmt], indent: usize, out: &mut String) {
             Stmt::SyncOut => out.push_str(&format!("{}SO();\n", pad)),
             Stmt::SyncIn => out.push_str(&format!("{}SI();\n", pad)),
             Stmt::GuestCall(t, tail) => out.push_str(&format!("{}{}call_{:08x}();\n", pad, if *tail { "return " } else { "" }, t)),
+            Stmt::Site(regs) => out.push_str(&format!("{}// the callee reads {}\n", pad, regs.join(" "))),
             Stmt::Dispatch(tail) => out.push_str(&format!("{}{}call_indirect(c->pc);\n", pad, if *tail { "return " } else { "" })),
             Stmt::Switch(e, cases) => {
                 out.push_str(&format!("{}switch ({}) {{\n", pad, expr(e)));

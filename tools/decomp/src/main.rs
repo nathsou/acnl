@@ -12,8 +12,10 @@ mod parse;
 mod print;
 mod saves;
 mod signatures;
+mod sites;
 mod propagate;
 mod results;
+mod returns;
 mod simplify;
 mod structs;
 mod structure;
@@ -668,6 +670,53 @@ fn structs_all(outdir: &str, header: &str, threads: usize) {
 
 // The results callers observe (results.rs), to a fixed point over the program, written to OUT ("address results..."
 // per line; a function absent from it has all its results observed).
+// The functions that return their first argument (returns.rs), in rounds: each round tries the functions that call
+// one found in the round before (the first round: all of them), with the table found so far.
+fn returns_all(out: &str, threads: usize) {
+    let funcs: Vec<(u32, String)> = generated_functions();
+    let parsed: Vec<(u32, ast::Function)> =
+        funcs.iter().filter_map(|(a, t)| parse::function(t).ok().map(|f| (*a & !1, f))).collect();
+    let callees: Vec<HashSet<u32>> = parsed
+        .iter()
+        .map(|(_, f)| {
+            let mut c = Vec::new();
+            signatures::direct_callees(&f.body, &mut c);
+            c.into_iter().map(|t| t & !1).collect()
+        })
+        .collect();
+    returns::reset(HashSet::new());
+    let parsed = std::sync::Arc::new(parsed);
+    let mut todo: Vec<usize> = (0..parsed.len()).collect();
+    let mut found: HashSet<u32> = HashSet::new();
+    for round in 1.. {
+        let todo_shared = std::sync::Arc::new(todo.clone());
+        let handles: Vec<_> = (0..threads)
+            .map(|t| {
+                let (parsed, todo) = (parsed.clone(), todo_shared.clone());
+                std::thread::spawn(move || {
+                    let cfg = z3::Config::new();
+                    let ctx = z3::Context::new(&cfg);
+                    todo.iter().skip(t).step_by(threads).filter(|&&i| returns::prove(&ctx, &parsed[i].1)).map(|&i| parsed[i].0).collect::<Vec<u32>>()
+                })
+            })
+            .collect();
+        let new: HashSet<u32> = handles.into_iter().flat_map(|h| h.join().unwrap()).filter(|a| !found.contains(a)).collect();
+        println!("round {}: {} tried, {} new", round, todo.len(), new.len());
+        if new.is_empty() {
+            break;
+        }
+        for a in &new {
+            returns::insert(*a);
+        }
+        found.extend(new.iter().copied());
+        todo = (0..parsed.len()).filter(|&i| !found.contains(&parsed[i].0) && callees[i].iter().any(|c| new.contains(c))).collect();
+    }
+    let mut lines: Vec<String> = found.iter().map(|a| format!("{:08x}", a)).collect();
+    lines.sort();
+    fs::write(out, lines.join("\n") + "\n").unwrap();
+    println!("{} functions return their first argument", found.len());
+}
+
 fn results_all(out: &str, threads: usize) {
     let funcs: Vec<(u32, String)> = generated_functions();
     let mut all_observed: HashSet<u32> = HashSet::new();
@@ -1052,6 +1101,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
         Some("parse-all") => parse_all(),
+        Some("returns") => returns_all(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp_returns.txt"), args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("results") => results_all(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp_results.txt"), args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("structs") => structs_all(
             args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/types"),

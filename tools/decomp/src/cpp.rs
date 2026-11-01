@@ -853,13 +853,19 @@ impl<'a> Parser<'a> {
             self.i = save;
             return Ok(None);
         }
+        let mut any_site = false;
         let (target, ret, arg_types, by_address) = match self.peek().cloned() {
             Some(Tok::Id(n)) if self.resolve(&n, &|q| self.scope.callees.contains_key(q)).is_some() && self.peek_at(1) == Some(&Tok::P("(")) => {
                 let c = self.scope.callees[&self.resolve(&n, &|q| self.scope.callees.contains_key(q)).unwrap()].clone();
                 self.i += 2;
                 (Some(c.address), c.ret, Some(c.args), false)
             }
-            Some(Tok::Id(n)) if n == "guest" && self.peek_at(2) == Some(&Tok::Id("call_address".into())) => {
+            Some(Tok::Id(n))
+                if n == "guest"
+                    && matches!(self.peek_at(2), Some(Tok::Id(c)) if c == "call_address" || c == "call_address_any") =>
+            {
+                // (call_address_any: a call with no site, sites.rs)
+                any_site = matches!(self.peek_at(2), Some(Tok::Id(c)) if c == "call_address_any");
                 self.i += 3;
                 self.expect("<")?;
                 let r = self.try_type()?.ok_or("call_address result type")?;
@@ -947,6 +953,12 @@ impl<'a> Parser<'a> {
             }
             None => {
                 out.push(Stmt::SetCpu(CpuField::Pc, Expr::Var(temps[0].0.clone())));
+                // the registers a call through an address passes are its site (sites.rs)
+                if crate::sites::enabled() && !any_site {
+                    let mut regs: Vec<String> = (0..core).map(|k| format!("r{}", k)).collect();
+                    regs.extend((0..single).map(|k| format!("s{}", k)));
+                    out.push(Stmt::Site(regs));
+                }
                 out.push(Stmt::Dispatch(false));
             }
         }
@@ -1021,7 +1033,12 @@ impl<'a> Parser<'a> {
                 }
                 _ => self.loop_label(""),
             };
+            let exit = format!("{}_exit", top);
+            let breaks = breaks_to(&mut body, &exit);
             out.push(Stmt::While { top, test: None, body, check: vec![], cond });
+            if breaks {
+                out.push(Stmt::Label(exit));
+            }
             return Ok(());
         }
         if self.is_id("for") {
@@ -1049,7 +1066,13 @@ impl<'a> Parser<'a> {
                 Some(Stmt::Label(top)) => (top, all[k + 2..].to_vec()),
                 _ => (self.loop_label(""), all[k + 1..].to_vec()),
             };
+            let (mut body, mut check) = (body, check);
+            let exit = format!("{}_exit", top);
+            let breaks = breaks_to(&mut body, &exit) | breaks_to(&mut check, &exit);
             out.push(Stmt::While { top, test: Some(test), body, check, cond: *cond });
+            if breaks {
+                out.push(Stmt::Label(exit));
+            }
             return Ok(());
         }
         if self.is_id("switch") {
@@ -1708,6 +1731,25 @@ fn function(p: &mut Parser, address: u32) -> R<Function> {
         entries: vec![],
         body,
     })
+}
+
+// A loop's `break;` statements (not those of loops inside it, read before) as gotos to the label after it.
+fn breaks_to(list: &mut [Stmt], exit: &str) -> bool {
+    let mut any = false;
+    for s in list.iter_mut() {
+        match s {
+            Stmt::Unsupported(w) if w == "break" => {
+                *s = Stmt::Goto(exit.to_string());
+                any = true;
+            }
+            Stmt::If(_, a, b) => {
+                any |= breaks_to(a, exit);
+                any |= breaks_to(b, exit);
+            }
+            _ => {}
+        }
+    }
+    any
 }
 
 fn contains_break(s: &Stmt) -> bool {

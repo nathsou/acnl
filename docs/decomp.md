@@ -194,7 +194,11 @@ result):
   and so does a goto to the next statement; `if (a) { if (b) X }` is `if (a && b) X`; an else holding one if prints
   as `else if`. A block only one goto enters (not fallen into) moves to that goto, with a goto to the label it fell
   into; `if (c) { A } else { B; goto L; } T; L:` is `if (c) { A; T } else { B }`: together, switch-like chains of
-  `if (x == k) goto Ak` become else-if chains holding their blocks.
+  `if (x == k) goto Ak` become else-if chains holding their blocks. A goto to a join from inside nested ifs, past a
+  short straight block S that only falls into the join (`if (a) { if (b) { A; goto L; } } S; L:`), goes: S is copied
+  to the end of each branch that falls through (at most 3 statements, 3 copies). Structuring runs again after the
+  last simplification, which joins nested conditions into one (`if (a) { if (b) goto L; }` into `if (a && b)
+  goto L;`) that the patterns above then take.
 - A void function's last `return;` goes; `u32 r6 = r0;` with r0 never assigned again is r0 (loop-free functions),
   and so is `u32 r0 = arg0.addr();` (its uses read `arg0.addr()`); `(x - K) == 0` reads `x == K`; a comparison of a
   widened unsigned byte or halfword drops the widening; a sign-extended load reads `*gptr<s8>(a)`.
@@ -258,7 +262,11 @@ what the decompiled function keeps in its variable, at every header (assumed the
 `DECOMP_DEBUG=1` prints, for each segment, the obligations the simplifier cannot settle alone.
 
 A short block that ends the function (straight code ending in a return or a tail call) is written in place of each goto
-to it, an early return; labels nothing jumps to are left out.
+to it, an early return; labels nothing jumps to are left out. So is a short straight block ending in a goto (`L: r1 =
+K; goto M;`), when it is no goto's target in turn: at a goto that ends a branch of an if right before M, the copy
+leaves out its own goto (`if (c) { r1 = K; }`). A goto to the label right after the innermost loop around it (or
+after the ifs the loop ends) is `break;`, which `cpp.rs` reads back as a goto to a label after the loop. sp is written
+to the CPU before calls only in a function that moves it.
 
 Each register and temporary is split into its values (`values.rs`: definitions joined by the uses they reach), so a
 register that holds an address, then a count, then a call's result becomes three variables (`r0`, `r0_1`, `r0_2`),
