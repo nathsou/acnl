@@ -229,6 +229,25 @@ L_a024:
         assert!(matches!(prove(&text), Verdict::Proved));
     }
 
+    // a virtual call, a call through a function pointer field, and a veneer to a constant
+    const INDIRECT_CALLS: &str = "L_d000:
+  { u32 ea = r0 + 0x0u; u32 v = RD32(ea); r1 = v; }
+  { u32 ea = r1 + 0x10u; u32 v = RD32(ea); r1 = v; }
+  tpc = r1; r14 = 0xd00du; SO(); c->pc = tpc; rt_dispatch(c, 0); SI(); if (__builtin_expect(c->pc != 0xd00du, 0)) return;
+L_d00c:
+  { u32 ea = r4 + 0x8u; u32 v = RD32(ea); r1 = v; }
+  tpc = r1; r14 = 0xd015u; SO(); c->pc = tpc; rt_dispatch(c, 0); SI(); if (__builtin_expect(c->pc != 0xd015u, 0)) return;
+L_d014:
+  { u32 a = 0xd01cu; u32 b = 0x1u; u32 res = a + b; r12 = res; }
+  tpc = r12; c->pc = tpc; SO(); __attribute__((musttail)) return rt_dispatch(c, 0);";
+
+    #[test]
+    fn finds_indirect_calls_to_a_constant() {
+        let f = parse::function(&function("f_0000d000", &["r0", "r1", "r4", "r12", "r14"], INDIRECT_CALLS)).unwrap();
+        let found: Vec<u32> = crate::dispatch::constant_targets(&f).into_values().collect();
+        assert_eq!(found, vec![0xd01d]);
+    }
+
     #[test]
     fn proves_predicated_code() {
         assert!(matches!(prove(&function("f_00001000", &["r0", "r1", "r2", "r14"], PREDICATED)), Verdict::Proved));

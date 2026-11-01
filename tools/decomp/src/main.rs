@@ -3,6 +3,7 @@ mod ast;
 mod check;
 mod cpp;
 mod decompile;
+mod dispatch;
 mod emit;
 mod flow;
 mod inline;
@@ -669,6 +670,7 @@ fn structs_all(outdir: &str, header: &str, threads: usize) {
 fn results_all(out: &str, threads: usize) {
     let funcs: Vec<(u32, String)> = generated_functions();
     let mut all_observed: HashSet<u32> = HashSet::new();
+    let function_keys: HashSet<u32> = funcs.iter().map(|(a, _)| *a & !1).collect();
     // reachable through a pointer: callers unknown but for the indirect call sites, whose reads they get
     let pointed: HashSet<u32> = fs::read_to_string(format!("{}/pointed.txt", GENERATED))
         .expect("the recompiler's pointed.txt")
@@ -743,6 +745,9 @@ fn results_all(out: &str, threads: usize) {
             for (callee, set) in h.join().unwrap() {
                 if let Some(s) = next.get_mut(&callee) {
                     s.extend(set);
+                } else if !function_keys.contains(&callee) {
+                    // an indirect call to a constant that is no function's entry: some function's other entry
+                    next.get_mut(&results::INDIRECT).unwrap().extend(set);
                 }
             }
         }

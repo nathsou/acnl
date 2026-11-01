@@ -72,19 +72,25 @@ pub fn key(address: u32) -> u64 {
     RESULTS.iter().enumerate().filter(|(_, k)| u.contains(**k)).map(|(i, _)| 1u64 << (i + 48)).sum()
 }
 
-// What a function's calls contribute: for each callee (INDIRECT for calls through a pointer), the results read after
-// the call (or passed on).
+// What a function's calls contribute: for each callee (INDIRECT for calls through a pointer, the target for one to a
+// constant: dispatch.rs), the results read after the call (or passed on).
 pub fn contributions(f: &Function, mine: &HashSet<String>, out: &mut HashMap<u32, HashSet<String>>) {
     let lv = crate::flow::liveness_with(f, false);
     let field_of: HashMap<String, String> = f.synced.iter().map(|(v, fl)| (v.clone(), crate::sym::cpu_key(fl))).collect();
     let kept: HashSet<&String> = field_of.values().collect();
+    let constant = crate::dispatch::constant_targets(f);
+    #[allow(clippy::too_many_arguments)]
     fn walk(list: &[Stmt], prefix: &[usize], lv: &crate::flow::Liveness, field_of: &HashMap<String, String>,
-            kept: &HashSet<&String>, mine: &HashSet<String>, out: &mut HashMap<u32, HashSet<String>>) {
+            kept: &HashSet<&String>, mine: &HashSet<String>, constant: &HashMap<Vec<usize>, u32>,
+            out: &mut HashMap<u32, HashSet<String>>) {
         for (i, s) in list.iter().enumerate() {
             let p: Vec<usize> = [prefix, &[i]].concat();
             match s {
                 Stmt::GuestCall(_, tail) | Stmt::Dispatch(tail) => {
-                    let callee = if let Stmt::GuestCall(t, _) = s { *t & !1 } else { INDIRECT };
+                    let callee = match s {
+                        Stmt::GuestCall(t, _) => *t & !1,
+                        _ => constant.get(&p).map_or(INDIRECT, |a| *a & !1),
+                    };
                     let set = out.entry(callee).or_default();
                     if *tail {
                         set.extend(mine.iter().cloned());
@@ -113,16 +119,16 @@ pub fn contributions(f: &Function, mine: &HashSet<String>, out: &mut HashMap<u32
                     }
                 }
                 Stmt::If(_, a, b) => {
-                    walk(a, &[p.clone(), vec![0]].concat(), lv, field_of, kept, mine, out);
-                    walk(b, &[p.clone(), vec![1]].concat(), lv, field_of, kept, mine, out);
+                    walk(a, &[p.clone(), vec![0]].concat(), lv, field_of, kept, mine, constant, out);
+                    walk(b, &[p.clone(), vec![1]].concat(), lv, field_of, kept, mine, constant, out);
                 }
                 Stmt::While { body, check, .. } => {
-                    walk(body, &[p.clone(), vec![0]].concat(), lv, field_of, kept, mine, out);
-                    walk(check, &[p.clone(), vec![1]].concat(), lv, field_of, kept, mine, out);
+                    walk(body, &[p.clone(), vec![0]].concat(), lv, field_of, kept, mine, constant, out);
+                    walk(check, &[p.clone(), vec![1]].concat(), lv, field_of, kept, mine, constant, out);
                 }
                 _ => {}
             }
         }
     }
-    walk(&f.body, &[], &lv, &field_of, &kept, mine, out);
+    walk(&f.body, &[], &lv, &field_of, &kept, mine, &constant, out);
 }

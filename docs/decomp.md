@@ -88,9 +88,19 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   call sites (`rt_dispatch`) read. The rewrites' calls read what their C++ result types read (`guest::Function<A,
   R(...)>`, `call_address<R>`, a template's `R` by the types it is used with in its file); code that does not parse
   reads everything. The emitter then writes `void` functions and no write-back of an unread r1. This rests on the
-  whole program as recompiled: code that calls such a function some other way is not covered. (So far the indirect
-  call sites read all four: a callee without a signature takes r0-r3, so r1 left by an indirect call counts as read
-  when such a callee follows.)
+  whole program as recompiled: code that calls such a function some other way is not covered.
+  An indirect call to a constant (dispatch.rs: a veneer between ARM and Thumb, `add r12, pc, #1; bx r12`) is a
+  direct call of that address (14,197 of the 44,911 indirect calls), or an indirect one when the address is no
+  function's entry. The other indirect call sites read all four results: after them comes, sooner or later, a callee
+  without a signature (it takes r0-r3 and s0-s15), so about 89% of the functions have r1 observed and 99% s0.
+  Splitting the virtual calls by vtable slot was tried (2026-11-01; 22,653 calls are `*(*(p) + 4k)`, with the
+  assumption that slot k reaches the word at `t + 4k` of a table the program names, or a function whose address the
+  code forms): it changed nothing (r1 observed in 82,233 of 92,095 functions, s0 in 91,078), because each of the 191
+  slots called reads all four results too, and the functions of one slot together read every argument register
+  (classes differ in arity). Only 1,081 virtual calls are on the
+  caller's own `this`, so knowing the class there would not help much either. With the indirect calls reading r0
+  only (a measurement, not sound), r1 would be observed in 20,722 functions and s0 in 17,251: the noise in the drafts
+  comes mostly from the signatures, which list every register when a virtual call lies anywhere below.
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
 
 ## Signatures (`decomp signatures OUT [N] [THREADS]`)
