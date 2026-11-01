@@ -27,6 +27,7 @@ pub struct Values {
     entries: HashMap<(Path, String), String>, // reads of a variable's entry value (copies seen through): that variable
     held_reads: HashSet<(Path, String)>, // reads of values held in the CPU (see split)
     held_defs: HashSet<(Path, String)>,  // their definitions (a call's statement reads and defines a register)
+    offsets: HashMap<(Path, String), (String, u64)>, // reads of a value y + K left out (see split): y's name and K
 }
 
 impl Values {
@@ -472,6 +473,64 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
             copies.insert(p.clone());
         }
     }
+    // a value defined once as another plus a constant (x = y + K), where y's value stays in its C++ variable on every
+    // path to the reads of x: written y + K at each read, its definition left out (chains compose: x2 = x1 + 4,
+    // x1 = y + 4 is y + 8; `x = x + K` too when the two values have names of their own)
+    let mut offset: HashMap<usize, (String, usize, u64)> = HashMap::new(); // value -> (variable, its value, K)
+    let bases = address_bases(&f.body);
+    for i in 0..n {
+        let (Some((src, k)), Some(p), [d]) = (&nodes[i].offset, &nodes[i].path, nodes[i].defs.as_slice()) else { continue };
+        // (not a variable something accesses memory through: the emitter may make it a pointer to a struct of its own)
+        if !vars.contains(src) || !vars.contains(d) || bases.contains(d) {
+            continue;
+        }
+        let w = find(&mut parent, def_id[&(i, d.clone())]);
+        if keep.contains(&w) || constant.contains_key(&w) || alias.contains_key(&w) || defs_of.get(&w).map_or(0, |v| v.len()) != 1 {
+            continue;
+        }
+        let Some(ids) = inn[i].get(src) else { continue };
+        if ids.len() != 1 {
+            continue;
+        }
+        let s0 = find(&mut parent, *ids.iter().next().unwrap());
+        if constant.contains_key(&s0) || keep.contains(&s0) {
+            continue;
+        }
+        let (y, yv) = alias.get(&s0).cloned().unwrap_or((src.clone(), s0));
+        let (y, yv, k) = match offset.get(&yv) {
+            Some((y2, yv2, k2)) => (y2.clone(), *yv2, (*k + *k2) & 0xffff_ffff),
+            None => (y, yv, *k & 0xffff_ffff),
+        };
+        let mut state = vec![0u8; n];
+        let mut work: Vec<usize> = succ[i].clone();
+        for &t in &succ[i] {
+            state[t] = 1;
+        }
+        let clobbers = |m: usize, parent: &mut Vec<usize>| -> bool {
+            match def_id.get(&(m, y.clone())) {
+                Some(&id) => {
+                    let r = find(parent, id);
+                    r == yv || (keep.contains(&yv) && keep.contains(&r))
+                }
+                None => false,
+            }
+        };
+        while let Some(m) = work.pop() {
+            let out = if m == i { 1 } else if clobbers(m, &mut parent) { 2 } else { state[m] };
+            for &t in &succ[m] {
+                let merged = state[t].max(out);
+                if merged != state[t] {
+                    state[t] = merged;
+                    work.push(t);
+                }
+            }
+        }
+        let still = reads_of.get(&w).map_or(false, |rs| rs.iter().all(|&u| state[u] == 1));
+        if still {
+            offset.insert(w, (y, yv, k));
+            copies.insert(p.clone());
+        }
+    }
     // names: the variable's for kept values, <variable>_<k> for the others in order of first definition
     let mut value_name: HashMap<usize, String> = HashMap::new();
     let mut count: HashMap<String, usize> = HashMap::new();
@@ -529,6 +588,13 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
                     values.constants.insert((p.clone(), u.clone()), *k);
                     continue;
                 }
+                // (through a copy of one too)
+                let target = alias.get(&root).map_or(root, |(_, yv)| *yv);
+                if let Some((y, yv, k)) = offset.get(&target) {
+                    let name = value_name.get(yv).cloned().unwrap_or_else(|| y.clone());
+                    values.offsets.insert((p.clone(), u.clone()), (name, *k));
+                    continue;
+                }
                 // the entry value: exactly the entry definition reaches, or a copy of the entry value does
                 let ids = &inn[i][u];
                 if ids.len() == 1 && entry_def.get(u) == ids.iter().next() {
@@ -552,6 +618,11 @@ impl Values {
     // the constant `var` holds when statement `path` reads it (a value defined once, by a constant)
     pub fn constant(&self, path: &[usize], var: &str) -> Option<(u64, Ty)> {
         self.constants.get(&(path.to_vec(), var.to_string())).copied()
+    }
+
+    // the value `var` holds when statement `path` reads it when it is another plus a constant: that one's name, K
+    pub fn offset(&self, path: &[usize], var: &str) -> Option<&(String, u64)> {
+        self.offsets.get(&(path.to_vec(), var.to_string()))
     }
 
     // the variable whose entry value `var` holds when statement `path` reads it (copies seen through)
@@ -584,6 +655,86 @@ impl Values {
 }
 
 // every expression of the statements (top level only: the walker does not enter the expressions)
+// The variables memory is accessed through (the base of a load's or a store's address: x, or x plus a constant).
+fn address_bases(list: &[Stmt]) -> HashSet<String> {
+    fn base(a: &Expr, out: &mut HashSet<String>) {
+        match a {
+            Expr::Var(v) => {
+                out.insert(v.clone());
+            }
+            Expr::Bin(BinOp::Add | BinOp::Sub, x, k) if matches!(**k, Expr::Num(..)) => base(x, out),
+            _ => {}
+        }
+    }
+    fn loads(e: &Expr, out: &mut HashSet<String>) {
+        match e {
+            Expr::Load(_, a) => {
+                base(a, out);
+                loads(a, out);
+            }
+            Expr::Un(_, a) | Expr::Cast(_, a) => loads(a, out),
+            Expr::Bin(_, a, b) => {
+                loads(a, out);
+                loads(b, out);
+            }
+            Expr::Cond(c, a, b) => {
+                loads(c, out);
+                loads(a, out);
+                loads(b, out);
+            }
+            Expr::Call(_, args) => args.iter().for_each(|a| loads(a, out)),
+            _ => {}
+        }
+    }
+    let mut out = HashSet::new();
+    fn walk(list: &[Stmt], out: &mut HashSet<String>) {
+        for s in list {
+            match s {
+                Stmt::Store(_, a, v) => {
+                    base(a, out);
+                    loads(a, out);
+                    loads(v, out);
+                }
+                Stmt::If(c, a, b) => {
+                    loads(c, out);
+                    walk(a, out);
+                    walk(b, out);
+                }
+                Stmt::While { body, check, cond, .. } => {
+                    loads(cond, out);
+                    walk(body, out);
+                    walk(check, out);
+                }
+                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
+                    loads(e, out)
+                }
+                _ => {}
+            }
+        }
+    }
+    walk(list, &mut out);
+    out
+}
+
+// every variable an expression reads
+pub fn each_var(e: &Expr, f: &mut dyn FnMut(&str)) {
+    match e {
+        Expr::Var(v) => f(v),
+        Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => each_var(a, f),
+        Expr::Bin(_, a, b) => {
+            each_var(a, f);
+            each_var(b, f);
+        }
+        Expr::Cond(c, a, b) => {
+            each_var(c, f);
+            each_var(a, f);
+            each_var(b, f);
+        }
+        Expr::Call(_, args) => args.iter().for_each(|a| each_var(a, f)),
+        _ => {}
+    }
+}
+
 pub fn each_expr(list: &[Stmt], f: &mut dyn FnMut(&Expr)) {
     for s in list {
         match s {

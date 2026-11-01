@@ -11,6 +11,9 @@ type R<T> = Result<T, String>;
 
 const ARGS: [&str; 4] = ["r0", "r1", "r2", "r3"];
 
+// a variable name given as it is (no value lookup): the base of a value written as another plus a constant
+const NAMED: &str = "=";
+
 fn callee_saved(r: &str) -> bool {
     matches!(r, "r4" | "r5" | "r6" | "r7" | "r8" | "r9" | "r10" | "r11" | "r14")
 }
@@ -569,7 +572,14 @@ impl Emitter {
             let mut with = e.clone();
             if self.constants_in(&mut with) {
                 let mut folded = with.clone();
-                crate::simplify::fold(&mut folded, &self.var_types);
+                // (an offset value's base is a u32 variable given by name)
+                let mut types = self.var_types.clone();
+                crate::values::each_var(&with, &mut |v| {
+                    if v.starts_with(NAMED) {
+                        types.insert(v.to_string(), Ty::U32);
+                    }
+                });
+                crate::simplify::fold(&mut folded, &types);
                 if folded != with {
                     self.folding.set(true);
                     let text = self.expr(&folded, outer);
@@ -597,6 +607,16 @@ impl Emitter {
             // an address in the stack frame
             _ if sp_offset(e).is_some() => self.frame_address(sp_offset(e).unwrap()),
             Expr::Var(n) if n.starts_with("arg") => format!("{}.addr()", n),
+            // (a value that is another plus a constant, as that sum: precedence as an addition)
+            Expr::Var(n) if self.values.offset(&self.cur, n).is_some() => {
+                let (name, k) = self.values.offset(&self.cur, n).unwrap().clone();
+                let base = format!("{}{}", NAMED, name);
+                let mut sum = Expr::Bin(BinOp::Add, Box::new(Expr::Var(base.clone())), Box::new(Expr::Num(k, Ty::U32)));
+                let mut types = HashMap::new();
+                types.insert(base, Ty::U32);
+                crate::simplify::fold(&mut sum, &types);
+                return self.expr(&sum, outer);
+            }
             Expr::Var(n) => self.var_text(&self.cur, n),
             // the thread's TLS address (IPC buffers): the CPU's, it never changes
             Expr::Cpu(CpuField::Tls) => "guest::cpu()->tls".into(),
@@ -783,9 +803,13 @@ impl Emitter {
     // writes in the constants the expression's variables hold at the current statement; whether there was one
     fn constants_in(&self, e: &mut Expr) -> bool {
         match e {
-            Expr::Var(v) => match self.values.constant(&self.cur, v) {
-                Some((k, t)) if !self.values.held(&self.cur, v) => {
+            Expr::Var(v) => match (self.values.constant(&self.cur, v), self.values.offset(&self.cur, v)) {
+                (Some((k, t)), _) if !self.values.held(&self.cur, v) => {
                     *e = Expr::Num(k, t);
+                    true
+                }
+                (None, Some((name, k))) => {
+                    *e = Expr::Bin(BinOp::Add, Box::new(Expr::Var(format!("{}{}", NAMED, name))), Box::new(Expr::Num(*k, Ty::U32)));
                     true
                 }
                 _ => false,
@@ -865,6 +889,19 @@ impl Emitter {
 
     // a variable as read at `path`: its value's name there, or the constant it holds
     fn var_text(&self, path: &[usize], v: &str) -> String {
+        // (a name given as it is: an offset value's base)
+        if let Some(name) = v.strip_prefix(NAMED) {
+            return if self.typed.contains_key(name) { format!("{}.addr()", name) } else { name.to_string() };
+        }
+        // (a value that is another plus a constant, written so: values.rs)
+        if let Some((name, k)) = self.values.offset(path, v) {
+            let base = format!("{}{}", NAMED, name);
+            let mut sum = Expr::Bin(BinOp::Add, Box::new(Expr::Var(base.clone())), Box::new(Expr::Num(*k, Ty::U32)));
+            let mut types = HashMap::new();
+            types.insert(base, Ty::U32);
+            crate::simplify::fold(&mut sum, &types);
+            return self.expr(&sum, 0).unwrap_or_else(|_| format!("{} + {}", name, num(*k, Ty::U32)));
+        }
         // (a value the CPU's register holds where it is read: values.rs)
         if self.values.held(path, v) {
             return format!("guest::cpu()->{}[{}]", if v.starts_with('S') { "s" } else { "r" }, &v[1..]);
@@ -1885,6 +1922,70 @@ fn frame_struct(body: &str, address: u32, bytes: u64) -> Option<(String, String)
 // The fields of the draft's own structs (Object_, Local_, Frame_) that are only stored as a float's bits and read
 // back as a float (`x->word_8 = std::bit_cast<u32>(e);`, `std::bit_cast<float>(x->word_8)`) are floats: `x->float_8 =
 // e;`, `x->float_8`. The accesses are the same (a float field is stored and read as its bits), so is the proof.
+// `call_x(a, ...); v = a;` with call_x returning its first argument (returns.rs): `v = call_x(a, ...);` (the reloads
+// of other registers after the call may come between).
+fn kept_results(body: &str) -> String {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    let mut i = 0;
+    while i < lines.len() {
+        let l = lines[i].clone();
+        let indent = &l[..l.len() - l.trim_start().len()];
+        let (code, comment) = match l.trim_start().split_once("  //") {
+            Some((c, m)) => (c.to_string(), format!("  //{}", m)),
+            None => (l.trim_start().to_string(), String::new()),
+        };
+        let callee = code.strip_prefix("call_").and_then(|r| u32::from_str_radix(r.get(..8)?, 16).ok());
+        let Some(address) = callee.filter(|a| crate::returns::returns_first_argument(*a)) else {
+            i += 1;
+            continue;
+        };
+        let Some(args) = code.strip_suffix(");").and_then(|c| c.split_once('(').map(|(_, a)| a)) else {
+            i += 1;
+            continue;
+        };
+        // the first argument: up to the first comma outside parentheses
+        let mut depth = 0;
+        let first: String = args
+            .chars()
+            .take_while(|c| {
+                match c {
+                    '(' | '<' => depth += 1,
+                    ')' | '>' => depth -= 1,
+                    ',' if depth == 0 => return false,
+                    _ => {}
+                }
+                true
+            })
+            .collect();
+        let _ = address;
+        let mut j = i + 1;
+        while j < lines.len() && lines[j].trim_start().starts_with('r') && lines[j].contains(" = guest::cpu()->") {
+            j += 1;
+        }
+        if let Some(next) = lines.get(j) {
+            let t = next.trim_start();
+            let (decl, rest) = match t.strip_prefix("u32 ") {
+                Some(r) => ("u32 ", r),
+                None => ("", t),
+            };
+            if let Some((v, value)) = rest.strip_suffix(';').and_then(|r| r.split_once(" = ")) {
+                let reloads = lines[i + 1..j].iter().any(|r| r.trim_start().starts_with(&format!("{} =", v)));
+                if value == first && !v.contains(' ') && !reloads && !first.is_empty() {
+                    lines[i] = format!("{}{}{} = {}{}", indent, decl, v, code, comment);
+                    lines.remove(j);
+                    continue;
+                }
+            }
+        }
+        i += 1;
+    }
+    let mut out = lines.join("\n");
+    if body.ends_with('\n') {
+        out.push('\n');
+    }
+    out
+}
+
 fn float_fields(text: &str) -> String {
     let mut text = text.to_string();
     // the structs and the variable that points to each (an argument, a local, the frame)
@@ -3097,6 +3198,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     // declarations moved to the variable's first assignment where C++ allows it
     let sinkable: Vec<(String, String)> =
         sinkable.into_iter().map(|(n, t)| match e.typed.get(&n) { Some(st) => (n, format!("gptr<{}>", st)), None => (n, t) }).collect();
+    let body = kept_results(&body);
     let (body, sunk) = sink_declarations(&body, &sinkable);
     let body = fold_single_uses(&body, &e.foldable);
     // (the parameters that hold a register's entry value: S0 holds s[0], r1 r[1])

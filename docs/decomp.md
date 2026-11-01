@@ -117,6 +117,18 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   comes mostly from the signatures, which list every register when a virtual call lies anywhere below.
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
 
+## Returned first arguments (`decomp returns OUT [THREADS]`)
+
+The functions that return the r0 they were called with (the ARM C++ ABI has constructors and destructors return
+`this`), proved per function by symbolic execution (returns.rs): on every way out r0 is the entry's. A least fixed
+point: the first round proves the functions whose calls need nothing, each later round those that call a function the
+rounds before proved (sound by induction on the rounds). Functions with loops and those over 400 statements are not
+tried. With the table (`DECOMP_RETURNS`), a call of such a function gives its r0 back in the model, and the
+decompiler sets r0 again after the call to the value it passed, so later passes use that value: a constructor's
+chain of base-class constructors reads `call_x(arg0 + 0x10u); call_y(arg0 + 0x20u);` rather than threading each
+call's result into the next. 10,260 of the 91.6k functions (8 rounds, 50 minutes with 4 threads; the proof cache is
+keyed by which callees are in the table).
+
 ## Signatures (`decomp signatures OUT [N] [THREADS]`)
 
 Which argument registers (r0-r3, s0-s15) a function's behaviour depends on, proved by non-interference: the function
@@ -283,7 +295,10 @@ a callee-saved register (r4-r11) is not written back on the way out where it hol
 them to the CPU only on the way out, and callees keep them). A goto at the end of a branch to the label right after
 its if is left out (`if (c) {} else { B }` prints as `if (!c) { B }`, an if of two such branches not at all), and the
 constants variables hold are written into an expression and folded when that simplifies it (`s32(0u) < 0` is false).
-A value all of whose definitions are the same constant is that constant (`vf = 0` on both ways to a read).
+A value all of whose definitions are the same constant is that constant (`vf = 0` on both ways to a read). A value
+defined once as another plus a constant, where the other stays in its C++ variable on every path to the reads, is
+written as that sum at each read and not declared (chains compose: `call(p); call(p + 4u); call(p + 8u);` rather than
+`r0_1 = p + 4u; call(r0_1); r0_2 = r0_1 + 4u; ...`).
 
 Each register and temporary is split into its values (`values.rs`: definitions joined by the uses they reach), so a
 register that holds an address, then a count, then a call's result becomes three variables (`r0`, `r0_1`, `r0_2`),
