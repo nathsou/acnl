@@ -30,7 +30,7 @@ enum Node {
     SyncOut(Path),
     SyncIn(Path),
     Exit(bool, Option<u32>), // return (false) or tail call (true), with a direct tail call's target
-    Call(Option<u32>), // a direct call's target (its signature tells which registers it reads)
+    Call(Option<u32>, Path), // a direct call's target (its signature tells which registers it reads)
     // an SO() before a call to a function with a signature: the registers it always hands over, and the results
     // (r0, r1, s0, s1) it hands over when they are read after the call (a result may pass through: the callee's value
     // of it depends on the one before), read after the SI() at the index given
@@ -105,13 +105,13 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
             Stmt::Switch(e, cases) => out.push(Node::Switch(expr_vars(e), cases.iter().map(|(_, l)| l.clone()).collect())),
             Stmt::SyncOut => out.push(Node::SyncOut(p)),
             Stmt::SyncIn => out.push(Node::SyncIn(p)),
-            Stmt::GuestCall(t, false) => out.push(Node::Call(Some(*t))),
-            Stmt::Dispatch(false) | Stmt::Svc(_) => out.push(Node::Call(None)),
+            Stmt::GuestCall(t, false) => out.push(Node::Call(Some(*t), p.clone())),
+            Stmt::Dispatch(false) | Stmt::Svc(_) => out.push(Node::Call(None, p.clone())),
             Stmt::Return => out.push(Node::Exit(false, None)),
             Stmt::GuestCall(t, true) => out.push(Node::Exit(true, Some(*t))),
             Stmt::Dispatch(true) => out.push(Node::Exit(true, None)),
             Stmt::Preempt | Stmt::Nop => {}
-            Stmt::Unsupported(_) => out.push(Node::Call(None)),
+            Stmt::Unsupported(_) => out.push(Node::Call(None, p.clone())),
         }
     }
 }
@@ -145,6 +145,88 @@ fn collect_addr(e: &Expr, out: &mut Vec<String>) {
     }
 }
 
+// The calls whose scratch results can reach a later call through the CPU: the function leaves an argument register
+// that is no result (r2, r3, s2-s15) in the CPU (it keeps no variable for it), and a call that comes next on some path
+// (before another call writes them again) reads it (one without a signature reads them all), or a loop header comes
+// first (the proof relates the CPU there). Such a scratch result
+// depends on every argument register of the call that left it, so that call hands over all of them, signature or not
+// (liveness and the emitter both). By statement path.
+pub fn scratch_flows(f: &Function) -> HashSet<Path> {
+    let kept: HashSet<String> = f.synced.iter().map(|(_, fl)| crate::sym::cpu_key(fl)).collect();
+    let unkept: Vec<String> = ["r2", "r3"]
+        .iter()
+        .map(|r| r.to_string())
+        .chain((2..16).map(|k| format!("s{}", k)))
+        .filter(|fl| !kept.contains(fl))
+        .collect();
+    let mut out = HashSet::new();
+    if unkept.is_empty() {
+        return out;
+    }
+    let mut nodes = Vec::new();
+    let mut fresh = 0;
+    flatten(&f.body, &vec![], &mut nodes, &mut fresh);
+    let labels: HashMap<String, usize> =
+        nodes.iter().enumerate().filter_map(|(i, n)| if let Node::Label(l) = n { Some((l.clone(), i)) } else { None }).collect();
+    let n = nodes.len();
+    let succ = |i: usize| -> Vec<usize> {
+        let next = if i + 1 < n { vec![i + 1] } else { vec![] };
+        match &nodes[i] {
+            Node::Jump(l) => labels.get(l).map(|&t| vec![t]).unwrap_or_default(),
+            Node::JumpIf(_, l, _) => labels.get(l).map(|&t| vec![t]).unwrap_or_default().into_iter().chain(next).collect(),
+            Node::Switch(_, ls) => ls.iter().filter_map(|l| labels.get(l).copied()).chain(next).collect(),
+            Node::Exit(..) => vec![],
+            _ => next,
+        }
+    };
+    // whether a call node reads one of the registers left in the CPU
+    let reads = |node: &Node| -> bool {
+        let target = match node {
+            Node::Call(t, _) | Node::Exit(true, t) => t,
+            _ => return false,
+        };
+        match target.and_then(crate::signatures::of) {
+            Some(regs) => regs.iter().any(|r| unkept.contains(r)),
+            None => true,
+        }
+    };
+    // loop headers (the target of a jump from itself or below): the proof relates the whole CPU there
+    let mut headers = vec![false; n];
+    for i in 0..n {
+        for t in succ(i) {
+            if t <= i {
+                headers[t] = true;
+            }
+        }
+    }
+    for (i, node) in nodes.iter().enumerate() {
+        let Node::Call(_, p) = node else { continue };
+        let mut seen = vec![false; n];
+        let mut stack = succ(i);
+        while let Some(j) = stack.pop() {
+            if seen[j] {
+                continue;
+            }
+            seen[j] = true;
+            if headers[j] {
+                out.insert(p.clone());
+                break;
+            }
+            match &nodes[j] {
+                Node::Call(..) | Node::Exit(true, _) => {
+                    if reads(&nodes[j]) {
+                        out.insert(p.clone());
+                        break;
+                    }
+                }
+                Node::Exit(false, _) => {}
+                _ => stack.extend(succ(j)),
+            }
+        }
+    }
+    out
+}
+
 #[derive(Clone)]
 pub struct Liveness {
     pub live_out: HashMap<Path, Set>,
@@ -173,7 +255,9 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
             let next = at.map(|i| &nodes[i]);
             let p = if let Node::SyncOut(p) = &nodes[k] { p.clone() } else { unreachable!() };
             // a call with a signature: what it reads, what survives it, and its results when read after it
-            if let (Some(Node::Call(Some(t))), Some(i)) = (next, at) {
+            let scratch = scratch_flows(f);
+            let flows = matches!(next, Some(Node::Call(_, cp)) if scratch.contains(cp));
+            if let (Some(Node::Call(Some(t), _)), Some(i), false) = (next, at, flows) {
                 if let Some(sig) = crate::signatures::of(*t) {
                     let si = nodes[i + 1..].iter().position(|n| matches!(n, Node::SyncIn(_))).map(|j| i + 1 + j);
                     if let Some(si) = si {
@@ -193,7 +277,7 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                 }
             }
             let uses: Set = match next {
-                Some(Node::Call(_)) => synced
+                Some(Node::Call(..)) => synced
                     .iter()
                     .filter(|v| {
                         let fl = &field_of[*v];
@@ -294,6 +378,14 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                         after.extend(live_in[s].iter().cloned());
                     }
                     x.extend(results.iter().filter(|r| after.contains(*r)).cloned());
+                    // a scratch result read after the call (r2, r3, r12, flags...) depends on every argument register
+                    let scratch = synced.iter().any(|v| {
+                        let fl = &field_of[v];
+                        after.contains(v) && !survives_call(fl) && !crate::signatures::RESULTS.contains(&fl.as_str())
+                    });
+                    if scratch {
+                        x.extend(synced.iter().filter(|v| call_argument(&field_of[*v])).cloned());
+                    }
                     x
                 }
                 Node::SyncIn(_) => {

@@ -800,8 +800,14 @@ fn call_needs(f: &Function, lv: &crate::flow::Liveness) -> HashMap<u32, Need> {
     let mut sites = Vec::new();
     walk(&f.body, &[], &mut sites);
     let mut needs: HashMap<u32, Need> = HashMap::new();
+    // scratch results reaching later calls through the CPU: every call hands over all its arguments (flow.rs)
+    let all = crate::flow::scratch_flows(f);
     for (t, tail, p) in sites {
         let n = needs.entry(t).or_default();
+        if all.contains(&p) {
+            n.full = true;
+            continue;
+        }
         let Some(sig) = crate::signatures::of(t) else {
             n.full = true;
             continue;

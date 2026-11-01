@@ -229,6 +229,7 @@ struct Parser<'a> {
     t: &'a [Tok],
     i: usize,
     half: Option<usize>, // a '>>' at this index of which one '>' closed a template argument list
+    ns: String,          // the namespace being read (names resolve from it outwards)
     scope: &'a Scope,
     vars: HashMap<String, CType>,
     helpers: &'a HashSet<String>,
@@ -290,7 +291,27 @@ fn is_float(t: &CType) -> bool {
     matches!(t, CType::Val(ty) if ty.float())
 }
 
+// a name declared in a namespace, qualified (the file's names are keyed so: two drafts may use the same one)
+fn qualified(ns: &str, name: &str) -> String {
+    if ns.is_empty() { name.to_string() } else { format!("{}::{}", ns, name) }
+}
+
 impl<'a> Parser<'a> {
+    // `name` as declared in the namespace being read or the closest enclosing one that has it
+    fn resolve(&self, name: &str, has: &dyn Fn(&str) -> bool) -> Option<String> {
+        let mut ns = self.ns.as_str();
+        loop {
+            let q = qualified(ns, name);
+            if has(&q) {
+                return Some(q);
+            }
+            if ns.is_empty() {
+                return None;
+            }
+            ns = ns.rfind("::").map_or("", |k| &ns[..k]);
+        }
+    }
+
     fn peek(&self) -> Option<&Tok> {
         self.peek_at(0)
     }
@@ -385,11 +406,12 @@ impl<'a> Parser<'a> {
             self.close_angle()?;
             return Ok(Some(CType::Ptr(Box::new(inner))));
         }
-        if self.scope.structs.contains_key(&n) || crate::view::types().map_or(false, |db| db.has_struct(&n)) {
+        let local = self.resolve(&n, &|q| self.scope.structs.contains_key(q));
+        if local.is_some() || crate::view::types().map_or(false, |db| db.has_struct(&n)) {
             // a struct name used as a type (not a variable of that name)
             if !self.vars.contains_key(&n) {
                 self.i += 1;
-                return Ok(Some(CType::Struct(n)));
+                return Ok(Some(CType::Struct(local.unwrap_or(n))));
             }
         }
         self.i = save;
@@ -519,12 +541,12 @@ impl<'a> Parser<'a> {
                         other => return Err(format!("variable of type {:?}", other)),
                     });
                 }
-                if let Some((address, t)) = self.scope.globals.get(&n).cloned() {
+                if let Some((address, t)) = self.resolve(&n, &|q| self.scope.globals.contains_key(q)).map(|q| self.scope.globals[&q].clone()) {
                     // only as *name: the T at the address
                     return Ok(V::R(Expr::Num(address as u64, Ty::U32), CType::Ptr(Box::new(t))));
                 }
                 if self.is("(") {
-                    if self.scope.callees.contains_key(&n) || n == "guest" {
+                    if self.resolve(&n, &|q| self.scope.callees.contains_key(q)).is_some() || n == "guest" {
                         return Err(format!("call of {} inside an expression", n));
                     }
                     if !self.helpers.contains(&n) {
@@ -755,8 +777,8 @@ impl<'a> Parser<'a> {
     // lowered into `out` (None: not a call here)
     fn try_call(&mut self, out: &mut Vec<Stmt>) -> R<Option<(Expr, CType)>> {
         let (target, ret, arg_types, by_address) = match self.peek().cloned() {
-            Some(Tok::Id(n)) if self.scope.callees.contains_key(&n) && self.peek_at(1) == Some(&Tok::P("(")) => {
-                let c = self.scope.callees[&n].clone();
+            Some(Tok::Id(n)) if self.resolve(&n, &|q| self.scope.callees.contains_key(q)).is_some() && self.peek_at(1) == Some(&Tok::P("(")) => {
+                let c = self.scope.callees[&self.resolve(&n, &|q| self.scope.callees.contains_key(q)).unwrap()].clone();
                 self.i += 2;
                 (Some(c.address), c.ret, Some(c.args), false)
             }
@@ -1226,10 +1248,13 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "GUEST_EXPORT" => {
                 let (Some(Tok::P("(")), Some(Tok::Num(a, _))) = (t.get(i + 1), t.get(i + 2)) else { return Err("GUEST_EXPORT".into()) };
-                // the function: the last name before ')'
+                // the function: the (qualified) name after the address
                 let end = skip_group(&t, i + 1);
-                let name = t[i + 3..end].iter().rev().find_map(|x| if let Tok::Id(s) = x { Some(s.clone()) } else { None }).ok_or("GUEST_EXPORT name")?;
-                exports.push((*a as u32, name));
+                let parts: Vec<String> = t[i + 3..end].iter().filter_map(|x| if let Tok::Id(s) = x { Some(s.clone()) } else { None }).collect();
+                if parts.is_empty() {
+                    return Err("GUEST_EXPORT name".into());
+                }
+                exports.push((*a as u32, qualified(&ns.join("::"), &parts.join("::"))));
                 i = end;
                 if t.get(i) == Some(&Tok::P(";")) {
                     i += 1;
@@ -1254,7 +1279,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let mut fields = Vec::new();
                 let mut offset = 0u64;
                 while t.get(j) != Some(&Tok::P("}")) {
-                    let mut p = Parser { t: &t, half: None, i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
                     let ft = p.try_type()?.ok_or_else(|| format!("field type in {}", name))?;
                     let fname = p.ident()?;
                     let ft = if p.eat("[") {
@@ -1279,12 +1304,12 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                     struct_checks.push(format!("static_assert(offsetof({}, {}) == 0x{:x});", qualified, f.name, f.offset));
                     struct_checks.push(format!("static_assert(sizeof({}::{}) == 0x{:x});", qualified, f.name, size_of(&scope, &f.ty)?));
                 }
-                scope.structs.insert(name, fields);
+                scope.structs.insert(qualified, fields);
                 i = j;
             }
             Tok::Id(n) if n == "inline" && matches!(t.get(i + 1), Some(Tok::Id(g)) if g == "guest") => {
                 // inline guest::global<T, 0xADDR> name;
-                let mut p = Parser { t: &t, half: None, i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
                 p.expect_id("guest")?;
                 p.expect("::")?;
                 p.expect_id("global")?;
@@ -1299,11 +1324,11 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let name = p.ident()?;
                 p.expect(";")?;
                 i = p.i;
-                scope.globals.insert(name, (address, ty));
+                scope.globals.insert(qualified(&ns.join("::"), &name), (address, ty));
             }
             Tok::Id(n) if n == "inline" => {
                 // inline constexpr guest::Function<0xADDR, R(A...)> name;
-                let mut p = Parser { t: &t, half: None, i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
                 p.expect_id("constexpr")?;
                 p.expect_id("guest")?;
                 p.expect("::")?;
@@ -1330,11 +1355,11 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let name = p.ident()?;
                 p.expect(";")?;
                 i = p.i;
-                scope.callees.insert(name, Callee { address, ret, args });
+                scope.callees.insert(qualified(&ns.join("::"), &name), Callee { address, ret, args });
             }
             _ => {
                 // a function definition: TYPE NAME ( ... ) { ... }
-                let mut p = Parser { t: &t, half: None, i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
                 match p.try_type()? {
                     Some(_) => {
                         let name = p.ident()?;
@@ -1344,7 +1369,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                         if !p.is("(") {
                             return Err(format!("{}: not a function", name));
                         }
-                        defs.insert(name, i);
+                        defs.insert(qualified(&ns.join("::"), &name), i);
                         let j = skip_group(&t, p.i);
                         i = skip_group(&t, j);
                     }
@@ -1353,14 +1378,15 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
         }
     }
-    let _ = ns;
+
     let mut out = Vec::new();
     for (address, name) in exports {
         let Some(&at) = defs.get(&name) else {
             out.push(Export { address, function: Err(format!("no definition of {}", name)), layout: vec![] });
             continue;
         };
-        let mut p = Parser { t: &t, half: None, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+        let ns = name.rfind("::").map_or(String::new(), |k| name[..k].to_string());
+        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
         let f = function(&mut p, address);
         out.push(Export { address, function: f, layout: p.layout });
     }
