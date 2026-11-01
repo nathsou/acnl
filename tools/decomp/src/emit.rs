@@ -116,6 +116,8 @@ struct Emitter {
     needs: HashMap<u32, Need>,      // what each direct callee is handed (signatures.rs)
     has_r0: bool,                   // the function keeps r0 in a variable (else results stay in the CPU)
     pc: Option<String>,             // the target of the next indirect call (the AST sets c->pc first)
+    virtual_slot: Option<String>,   // what it is, when it is a vtable slot of an object (a comment for the call)
+    slots: HashMap<String, String>, // variables (as written) loaded from a vtable slot -> what the slot is
     fields: BTreeMap<usize, BTreeMap<u64, Ty>>,
     struct_name: HashMap<usize, String>,
     callees: BTreeMap<u32, String>, // target -> local guest::Function name
@@ -533,6 +535,27 @@ impl Emitter {
         }
     }
 
+    // `*(*(obj) + 4k)`, the k-th function of the vtable of the object at obj: "virtual function k of <obj>"
+    fn vtable_slot(&self, e: &Expr) -> Option<String> {
+        let Expr::Load(Ty::U32, slot) = e else { return None };
+        let (table, off) = match &**slot {
+            Expr::Bin(BinOp::Add, t, o) => match &**o {
+                Expr::Num(k, _) => (&**t, *k),
+                _ => return None,
+            },
+            t => (t, 0),
+        };
+        let Expr::Load(Ty::U32, obj) = table else { return None };
+        if off % 4 != 0 {
+            return None;
+        }
+        let class = match &**obj {
+            Expr::Var(v) if v.starts_with("arg") => v[3..].parse::<usize>().ok().and_then(|k| self.known.get(&k)).map(|c| format!(" ({})", c)),
+            _ => None,
+        };
+        Some(format!("virtual function {} of {}{}", off / 4, self.expr(obj, 0).ok()?, class.unwrap_or_default()))
+    }
+
     // a call argument as written: the value a kept register has at the call, or the CPU's
     fn arg_text(&self, path: &[usize], a: &str) -> String {
         if a.starts_with("guest::") { a.to_string() } else { self.var_text(path, a) }
@@ -574,6 +597,10 @@ impl Emitter {
                 Stmt::SetCpu(CpuField::Pc, e) => {
                     // (a return's c->pc = lr is bookkeeping; an indirect call's target is used below)
                     self.pc = self.expr(e, 0).ok();
+                    self.virtual_slot = match e {
+                        Expr::Var(v) => self.slots.get(&self.var_text(&path, v)).cloned(),
+                        _ => self.vtable_slot(e),
+                    };
                 }
                 Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) => {}
                 // sp moved by a constant (the frame) in a function that does not otherwise use it: the CPU's sp moves,
@@ -588,6 +615,9 @@ impl Emitter {
                 Stmt::Decl(_, _, None) => {}
                 Stmt::Decl(_, _, Some(_)) | Stmt::Assign(_, _) if self.values.left_out(&path) => {}
                 Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
+                    if let Some(what) = self.vtable_slot(e) {
+                        self.slots.insert(self.values.name(&path, n), what);
+                    }
                     let text = format!("{} = {};", self.values.name(&path, n), self.expr(e, 0)?);
                     self.line(indent, &text);
                 }
@@ -724,6 +754,9 @@ impl Emitter {
                 }
                 Stmt::Dispatch(tail) => {
                     let Some(target) = self.pc.take() else { return Err("indirect call without a target".into()) };
+                    if let Some(what) = self.virtual_slot.take() {
+                        self.line(indent, &format!("// {}", what));
+                    }
                     self.before_call(indent, None, &path);
                     let args: Vec<String> = self.args_for(None).iter().map(|a| self.arg_text(&path, a)).collect();
                     let call = format!("guest::call_address<u32>({}, {})", target, args.join(", "));
@@ -1026,7 +1059,7 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
