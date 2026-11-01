@@ -57,7 +57,8 @@ Observed after a return: r0, r1, s0, s1, r4-r11, sp, the return address, guest m
 save area) and an "effects" token for everything outside guest memory. Scratch registers and flags are not compared.
 
 - Floats are bit patterns; float arithmetic, comparisons and conversions are uninterpreted functions. The decompiler
-  never rearranges them, so equal operations on equal inputs are enough (no IEEE reasoning).
+  never rearranges them, so equal operations on equal inputs are enough (no IEEE reasoning). Negation is the one
+  exception: it flips the sign bit (exactly what IEEE negation does, NaNs included).
 - A guest call is opaque: its results (r0-r3, r12, lr, flags, s0-s15, memory, effects) are functions of its target,
   r0-r3, sp, s0-s15, the effects token and the memory it sees. Callees keep r4-r11 and sp, return normally, and do not
   read or write the caller's register save area (calling convention).
@@ -69,6 +70,12 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   thread's TLS address, the memory and the effects token; the other registers stay, and so does the caller's save area.
 - Only entry 0 of a function is decompiled (the others are the runtime resuming a function in the middle).
 - Preemption points (`rt_preempt`) only switch threads and are ignored.
+- The read-only segments (code and constants, mapped without write permission by the 3DS kernel) hold the image's
+  words at run time: a word loaded from a constant address in them is that word, and memory holds it there (image.rs,
+  from `tools/readonly.py`; a fact of the model, so a path it rules out is one the program cannot take, unlike the
+  checked assumptions such as the save area's, which must leave every way out possible),
+  as the recompiler itself folds them (`ro_read`), except the words the CRO loader patches at run time. The drafts
+  then write a float of a literal pool as its number (`2000.0f`).
 - The stack pointer is in [0x1000, 0xf0000000).
 - A tail call (a branch to another function) returns to the lr it was given.
 - Callees are functions, not fragments of one: 12.7k of the 91.6k generated functions start at a label inside
@@ -175,6 +182,9 @@ result):
   for a base class's), declared `inline constexpr u32 vtable_X = 0x...u;`. The declarations that name a constant
   (globals, callees, field offsets, vtables) carry no "(from the original)" comment; lines of code with a hex literal
   do.
+- A field of the draft's own structs (`Object_`, `Local_`, `Frame_`) that is only stored as a float's bits and read
+  back as a float is a `float` (`x->float_8 = S0;`, not `x->word_8 = std::bit_cast<u32>(S0);`). A float of a literal
+  pool reads as its number; `-1.0f` reads back as the literal it is (the sign flipped), not as a negation.
 - `if (c) { return 1u; } return 0u;` is `return c;` (`0u`, `1u`: the comparison turned around), other plain values
   `return c ? a : b;`.
 - Gotos: `if (c) { A; goto L; } S; L:` is `if (c) { A } else { S }` (also when L follows the enclosing block, and

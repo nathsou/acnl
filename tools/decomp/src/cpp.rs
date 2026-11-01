@@ -713,6 +713,10 @@ impl<'a> Parser<'a> {
                     (_, CType::Val(ty)) => CType::Val(promote(*ty)),
                     _ => return Err(format!("{} on {:?}", p, t)),
                 };
+                // (a negative float literal: the literal with its sign flipped, as IEEE negation does)
+                if let (UnOp::Neg, Expr::Float(v, ft)) = (&op, &e) {
+                    return Ok(V::R(Expr::Float(-v, *ft), rt));
+                }
                 return Ok(V::R(Expr::Un(op, Box::new(e)), rt));
             }
         }

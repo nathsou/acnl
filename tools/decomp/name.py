@@ -34,7 +34,7 @@ code. Mention what is not known yet when it matters.
 names unique, never C++ keywords. Do not rename parameters arg0..arg3, globals or callees.
 - The function's own structs (Object_<address>_<k>, the object an argument points to; Local_<address>_<variable>, the \
 object a local points to; Frame_<address>, its stack frame, whose fields are its local variables) and their fields \
-(byte_/half_/word_<offset>) may get names: structs in CamelCase, fields in snake_case. Leave other structs alone.
+(byte_/half_/word_/float_<offset>) may get names: structs in CamelCase, fields in snake_case. Leave other structs alone.
 Answer with the JSON object only."""
 
 SCHEMA = {

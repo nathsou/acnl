@@ -49,6 +49,9 @@ pub struct Sym<'c> {
     pub entry_sp: Option<BV<'c>>,
     calls: usize,
     pub assumptions: Vec<Bool<'c>>,
+    // facts of the model (the read-only words' values): asserted like the assumptions, but an exit they rule out is
+    // one the program cannot take, not a vacuous proof
+    pub facts: Vec<Bool<'c>>,
     // while set, every memory access through a pointer is assumed to stay out of the save area (compiled code never
     // reaches saved registers that way); accesses at a known distance from the entry sp are exact and need no assumption
     pub guard_save_area: bool,
@@ -178,7 +181,7 @@ pub struct Exit<'c> {
 
 impl<'c> Sym<'c> {
     pub fn new(ctx: &'c Context) -> Self {
-        Sym { ctx, save_slots: vec![], entry_sp: None, calls: 0, assumptions: vec![], guard_save_area: false }
+        Sym { ctx, save_slots: vec![], entry_sp: None, calls: 0, assumptions: vec![], facts: vec![], guard_save_area: false }
     }
 
     pub fn bv(&self, v: u64, bits: u32) -> BV<'c> {
@@ -426,7 +429,8 @@ impl<'c> Sym<'c> {
                 let (t, v) = self.eval(st, a)?;
                 if t.float() {
                     return match op {
-                        UnOp::Neg => Ok((t, self.uf(&format!("fneg_{}", t.c_name()), &[&v], t.bits()))),
+                        // IEEE negation flips the sign bit (no rounding, NaNs included)
+                        UnOp::Neg => Ok((t, v.bvxor(&self.bv(1u64 << (t.bits() - 1), t.bits())))),
                         UnOp::LNot => {
                             let z = self.uf(&format!("fiszero_{}", t.c_name()), &[&v], 1);
                             Ok((Ty::S32, z.zero_ext(31)))
@@ -513,7 +517,17 @@ impl<'c> Sym<'c> {
                 let (t, v) = self.eval(st, a)?;
                 let addr = self.resize(&v, t, Ty::U32);
                 self.guard(&addr, ty.bits() / 8);
-                (*ty, self.load_st(st, &addr, ty.bits() / 8))
+                let v = self.load_st(st, &addr, ty.bits() / 8);
+                // a word of the read-only segments (image.rs): the image's value; memory holds it too (a fact), so that
+                // a program reading it through an address the solver does not reduce sees the same word
+                if *ty == Ty::U32 {
+                    if let Some(w) = addr.simplify().as_u64().and_then(|k| crate::image::word(k as u32)) {
+                        let k = self.bv(w as u64, 32);
+                        self.facts.push(v._eq(&k));
+                        return Ok((Ty::U32, k));
+                    }
+                }
+                (*ty, v)
             }
             Expr::Call(name, args) => self.helper(st, name, args)?,
             Expr::AddrOf(n) => return Err(format!("&{} outside a helper call", n)),

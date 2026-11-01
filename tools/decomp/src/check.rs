@@ -10,6 +10,21 @@ thread_local! {
 }
 
 // a solver that gives up (unknown) after the timeout instead of running forever
+// Whether a way the solver's facts leave possible is one the assumptions rule out (a vacuous proof).
+fn excluded_by_assumptions(solver: &Solver, way: &Bool, assumptions: &[Bool]) -> bool {
+    solver.push();
+    solver.assert(way);
+    let possible = solver.check() == SatResult::Sat;
+    let excluded = possible && {
+        for a in assumptions {
+            solver.assert(a);
+        }
+        solver.check() != SatResult::Sat
+    };
+    solver.pop(1);
+    excluded
+}
+
 fn new_solver(ctx: &Context) -> Solver<'_> {
     // arrays, uninterpreted functions and bit-vectors: Z3's solver for that logic is faster than the default
     let logic = std::env::var("DECOMP_LOGIC").unwrap_or_else(|_| "QF_AUFBV".into());
@@ -75,7 +90,7 @@ pub fn equivalent_skipping(ctx: &Context, original: &Function, candidate: &Funct
     let sp = &init.cpu["r13"];
     solver.assert(&sp.bvuge(&s.bv(0x1000, 32)));
     solver.assert(&sp.bvult(&s.bv(0xf000_0000, 32)));
-    for x in &s.assumptions {
+    for x in &s.facts {
         solver.assert(x);
     }
     let mut diffs: Vec<(String, Bool)> = Vec::new();
@@ -110,16 +125,16 @@ pub fn equivalent_skipping(ctx: &Context, original: &Function, candidate: &Funct
     diffs.push(("effects".into(), wa._eq(&wb).not()));
     // the two must also leave on the same paths: any difference in observables shows up above
     // the assumptions must not rule out a way out of the candidate (that would make the proof vacuous)
+    // (an exit the facts alone rule out is one the program cannot take)
     if !s.assumptions.is_empty() {
         for (k, e) in b.iter().enumerate() {
-            solver.push();
-            solver.assert(&e.cond);
-            let r = solver.check();
-            solver.pop(1);
-            if r != SatResult::Sat {
+            if excluded_by_assumptions(&solver, &e.cond, &s.assumptions) {
                 return Verdict::Unknown(format!("assumptions exclude exit {} of the candidate", k));
             }
         }
+    }
+    for x in &s.assumptions {
+        solver.assert(x);
     }
     let any: Vec<&Bool> = diffs.iter().map(|(_, d)| d).collect();
     solver.assert(&Bool::or(ctx, &any));
@@ -421,21 +436,20 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
         solver.assert(&sp.bvult(&s.bv(0xf000_0000, 32)));
         solver.assert(&esp.bvuge(&s.bv(0x1000, 32)));
         solver.assert(&esp.bvult(&s.bv(0xf000_0000, 32)));
-        for a in &s.assumptions {
-            solver.assert(a);
+        for x in &s.facts {
+            solver.assert(x);
         }
         // the assumptions must leave every way on of the candidate possible (no vacuous proof)
         if !s.assumptions.is_empty() {
             let ways: Vec<Bool> = cexits.iter().map(|e| e.cond.clone()).chain(carr.iter().map(|a| a.1.clone())).collect();
             for (k, w) in ways.iter().enumerate() {
-                solver.push();
-                solver.assert(w);
-                let r = solver.check();
-                solver.pop(1);
-                if r != SatResult::Sat {
+                if excluded_by_assumptions(&solver, w, &s.assumptions) {
                     return Verdict::Unknown(format!("assumptions exclude way {} of the candidate", k));
                 }
             }
+        }
+        for a in &s.assumptions {
+            solver.assert(a);
         }
         // memory is compared outside the save area
         let outside = |probe: &BV<'c>| -> Bool<'c> {

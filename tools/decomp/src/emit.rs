@@ -508,6 +508,17 @@ impl Emitter {
                 },
             },
             Expr::Call(n, args) => {
+                // a float of the read-only segments (a literal pool's): the number (written so that it reads back to
+                // the same bits)
+                if let (true, [Expr::Load(Ty::U32, addr)]) = (n == "U2F", args.as_slice()) {
+                    if let Some(w) = self.constant_u32(addr).and_then(|k| crate::image::word(k as u32)) {
+                        let v = f32::from_bits(w);
+                        let text = format!("{:?}", v);
+                        if v.is_finite() && text.parse::<f64>().map_or(false, |x| (x as f32).to_bits() == w) {
+                            return Ok(format!("{}f", text));
+                        }
+                    }
+                }
                 let a: R<Vec<String>> = args.iter().map(|x| self.expr(x, 0)).collect();
                 if n == "U2F" {
                     if let [Expr::Load(Ty::U32, addr)] = args.as_slice() {
@@ -1602,6 +1613,98 @@ fn frame_struct(body: &str, address: u32, bytes: u64) -> Option<(String, String)
         out.push('\n');
     }
     Some((decl, out))
+}
+
+// The fields of the draft's own structs (Object_, Local_, Frame_) that are only stored as a float's bits and read
+// back as a float (`x->word_8 = std::bit_cast<u32>(e);`, `std::bit_cast<float>(x->word_8)`) are floats: `x->float_8 =
+// e;`, `x->float_8`. The accesses are the same (a float field is stored and read as its bits), so is the proof.
+fn float_fields(text: &str) -> String {
+    let mut text = text.to_string();
+    // the structs and the variable that points to each (an argument, a local, the frame)
+    let mut owners: Vec<(String, String)> = Vec::new();
+    for line in text.lines() {
+        for (open, close) in [("gptr<", "> "), ("guest::StackFrameOf<", "> ")] {
+            let mut rest = line;
+            while let Some(i) = rest.find(open) {
+                let after = &rest[i + open.len()..];
+                let Some(j) = after.find(close) else { break };
+                let st = &after[..j];
+                let var: String = after[j + close.len()..].chars().take_while(|c| c.is_ascii_alphanumeric() || *c == '_').collect();
+                let own = ["Object_", "Local_", "Frame_"].iter().any(|p| st.starts_with(p)) && st.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+                if own && !var.is_empty() && !owners.contains(&(st.to_string(), var.clone())) {
+                    owners.push((st.to_string(), var));
+                }
+                rest = &after[j..];
+            }
+        }
+    }
+    let pointing = |st: &str, owners: &[(String, String)]| owners.iter().filter(|(s, _)| s == st).count();
+    for (st, var) in owners.clone() {
+        if pointing(&st, &owners) != 1 {
+            continue;
+        }
+        let Some(start) = text.find(&format!("struct __attribute__((packed)) {} {{\n", st)) else { continue };
+        let Some(len) = text[start..].find("\n};\n").map(|k| k + 1) else { continue };
+        let fields: Vec<String> = text[start..start + len]
+            .lines()
+            .filter_map(|l| l.trim().strip_prefix("u32 word_").and_then(|r| r.strip_suffix(';')).map(|k| format!("word_{}", k)))
+            .collect();
+        for f in fields {
+            let place = format!("{}->{}", var, f);
+            let store = format!("{} = std::bit_cast<u32>(", place);
+            let load = format!("std::bit_cast<float>({})", place);
+            // every mention: a whole store of a float's bits, or a read as a float (and the struct used by `var` only)
+            let mut ok = true;
+            let mut any = false;
+            for (i, _) in text.match_indices(&place) {
+                let before = text[..i].chars().next_back();
+                let after = text[i + place.len()..].chars().next();
+                let id = |c: Option<char>| c.map_or(false, |c| c.is_ascii_alphanumeric() || c == '_');
+                if id(before) || id(after) {
+                    continue;
+                }
+                any = true;
+                let line_start = text[..i].rfind('\n').map_or(0, |k| k + 1);
+                let line_end = text[i..].find('\n').map_or(text.len(), |k| i + k);
+                let line = &text[line_start..line_end];
+                let code = line.split("  //").next().unwrap_or(line).trim();
+                let as_store = code.starts_with(&store) && code.ends_with(");") && text[line_start..i].trim().is_empty();
+                let as_load = text[..i].ends_with("std::bit_cast<float>(") && text[i + place.len()..].starts_with(')');
+                if !(as_store || as_load) {
+                    ok = false;
+                    break;
+                }
+            }
+            if !ok || !any {
+                continue;
+            }
+            let g = format!("float_{}", &f[5..]);
+            let new_place = format!("{}->{}", var, g);
+            let mut out = String::with_capacity(text.len());
+            for line in text.split_inclusive('\n') {
+                let (code, comment) = match line.find("  //") {
+                    Some(k) => (&line[..k], &line[k..]),
+                    None => (line.trim_end_matches('\n'), if line.ends_with('\n') { "\n" } else { "" }),
+                };
+                let t = code.trim_start();
+                let pad = &code[..code.len() - t.len()];
+                let new_code = if let Some(e) = t.strip_prefix(&store).and_then(|r| r.strip_suffix(");")) {
+                    format!("{}{} = {};", pad, new_place, e.replace(&load, &new_place))
+                } else {
+                    code.replace(&load, &new_place)
+                };
+                out.push_str(&new_code);
+                out.push_str(comment);
+            }
+            // (the declaration, in its struct)
+            let start = out.find(&format!("struct __attribute__((packed)) {} {{\n", st)).unwrap_or(0);
+            let end = start + out[start..].find("\n};\n").map_or(0, |k| k + 1);
+            let decl = out[start..end].replacen(&format!("    u32 {};\n", f), &format!("    float {};\n", g), 1);
+            text = format!("{}{}{}", &out[..start], decl, &out[end..])
+                .replacen(&format!("GUEST_OFFSET({}, {}, ", st, f), &format!("GUEST_OFFSET({}, {}, ", st, g), 1);
+        }
+    }
+    text
 }
 
 fn frame_places(body: &str) -> String {
@@ -2823,5 +2926,5 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         )),
         None => out.push_str(&format!("GUEST_EXPORT(0x{:08x}, d_{:08x}::{});\n", addr, f.address, base)),
     }
-    Ok(out)
+    Ok(float_fields(&out))
 }

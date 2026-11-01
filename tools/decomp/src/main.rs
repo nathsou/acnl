@@ -6,6 +6,7 @@ mod decompile;
 mod dispatch;
 mod emit;
 mod flow;
+mod image;
 mod inline;
 mod parse;
 mod print;
