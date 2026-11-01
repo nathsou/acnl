@@ -80,9 +80,13 @@ def rename_draft(text, addr, names):
     final = [mapping.get(w, w) for w in present]
     if len(set(final)) != len(final):
         return text, 'collision'
-    out = WORD.sub(lambda m: mapping.get(m.group(0), m.group(0)), rename_fields(text, names))
+    # (the first line, `// f_<address>: decompiled ...`, stays: it marks the draft)
+    head, rest = text.split('\n', 1)
+    out = head + '\n' + WORD.sub(lambda m: mapping.get(m.group(0), m.group(0)), rename_fields(rest, names))
     if mine.get('comment'):
-        comment = ''.join('// ' + line + '\n' for line in mine['comment'].splitlines())
+        import textwrap
+        lines = [w for line in mine['comment'].splitlines() for w in (textwrap.wrap(line, 116) or [''])]
+        comment = ''.join('// ' + line + '\n' for line in lines)
         out = out.replace('namespace d_' + addr + ' {\n', comment + 'namespace d_' + addr + ' {\n', 1)
     return out, None
 
