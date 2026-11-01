@@ -200,6 +200,35 @@ L_300c:
   { u32 a = r0; u32 b = 0x1u; u32 res = a + b; r0 = res; }
   tpc = r14; c->pc = tpc; SO(); return;";
 
+    // f(r1 = 4); f(r0 = r4, r1 = 3); f(r0 = r4, r1 = 2); g() with f reading r1 only and g reading r2: g's r2 is the
+    // third call's scratch result, which depends on its r2, the second call's scratch result, which depends on the
+    // second call's r0: the r0 = r4 before the second call stays (though no call reads r0 through its signature)
+    const SCRATCH_CHAIN: &str = "L_a000:
+  { u32 a = 0; (void)a; u32 b = r0; u32 res = b; r4 = res; }
+  { u32 a = 0; (void)a; u32 b = 0x4u; u32 res = b; r1 = res; }
+  r14 = 0xa00cu; SO(); f_0000b000(c, 0); SI(); if (__builtin_expect(c->pc != 0xa00cu, 0)) return;
+L_a00c:
+  { u32 a = 0; (void)a; u32 b = r4; u32 res = b; r0 = res; }
+  { u32 a = 0; (void)a; u32 b = 0x3u; u32 res = b; r1 = res; }
+  r14 = 0xa018u; SO(); f_0000b000(c, 0); SI(); if (__builtin_expect(c->pc != 0xa018u, 0)) return;
+L_a018:
+  { u32 a = 0; (void)a; u32 b = r4; u32 res = b; r0 = res; }
+  { u32 a = 0; (void)a; u32 b = 0x2u; u32 res = b; r1 = res; }
+  r14 = 0xa020u; SO(); f_0000b000(c, 0); SI(); if (__builtin_expect(c->pc != 0xa020u, 0)) return;
+L_a020:
+  r14 = 0xa024u; SO(); f_0000c000(c, 0); SI(); if (__builtin_expect(c->pc != 0xa024u, 0)) return;
+L_a024:
+  { u32 a = 0; (void)a; u32 b = 0x1u; u32 res = b; r0 = res; }
+  tpc = r14; c->pc = tpc; SO(); return;";
+
+    #[test]
+    fn keeps_arguments_whose_scratch_results_flow_on() {
+        crate::signatures::insert(0xb000, vec!["r1".into()]);
+        crate::signatures::insert(0xc000, vec!["r2".into()]);
+        let text = function("f_0000a000", &["r0", "r1", "r4", "r14"], SCRATCH_CHAIN);
+        assert!(matches!(prove(&text), Verdict::Proved));
+    }
+
     #[test]
     fn proves_predicated_code() {
         assert!(matches!(prove(&function("f_00001000", &["r0", "r1", "r2", "r14"], PREDICATED)), Verdict::Proved));

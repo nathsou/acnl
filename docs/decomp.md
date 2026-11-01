@@ -107,6 +107,16 @@ other, each with the signatures of those before it. With a signature, the C++ pa
 `call_0011c00c(r0)` instead of four registers. A cached proof (`decomp_proved.txt`) is keyed by the signatures of the
 function's own callees, so extending the table keeps every proof that does not depend on the change.
 
+A callee's scratch results (r2, r3, r12, s2-s15, flags) depend on every argument register, so a call keeps all of them
+when one of its scratch results is read: through a variable (liveness), or through the CPU, when a register the
+function does not keep is read by the next call (`flow::scratch_flows`). That next call reads it through its signature,
+or because its own scratch results are read later in turn (to a fixed point): `f(r1 = 4); f(r1 = 3); g(r2)` with
+`f` reading r1 only still needs the first call's r0, which its r2 result depends on, through the second call's r2.
+Missing that chain cost 59 of the 5,921 committed drafts their proof (the prover refused them; none was wrong).
+
+A function whose every argument register looks read (the float registers often only go on to a callee without a
+signature) is still tried: dropping core registers decides how many arguments its calls pass.
+
 ## C++ drafts
 
 `emit.rs` writes a proved decompilation as C++ that compiles in this repository (a namespace per function, packed

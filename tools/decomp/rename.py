@@ -35,14 +35,15 @@ def valid(name):
 
 
 def rename_fields(text, names):
-    """Fields, by struct: `argK->old` where argK is a gptr<Struct> parameter, and the draft's own struct definitions
+    """Fields, by struct: `x->old` where x is a gptr<Struct> parameter or local, and the draft's own struct definitions
     (their field declarations and GUEST_OFFSET checks)."""
     structs = names.get('structs', {})
     if not structs:
         return text
-    for st, k in re.findall(r'gptr<(\w+)> arg(\d)\b', text):
+    # (parameters and locals declared as pointers to a struct: `gptr<S> name`)
+    for st, var in set(re.findall(r'gptr<(\w+)> (\w+)\b', text)):
         for old, new in structs.get(st, {}).get('fields', {}).items():
-            text = re.sub(r'\barg%s->%s\b' % (k, re.escape(old)), 'arg%s->%s' % (k, new), text)
+            text = re.sub(r'\b%s->%s\b' % (re.escape(var), re.escape(old)), '%s->%s' % (var, new), text)
     def struct_body(m):
         fields = structs.get(m.group(2), {}).get('fields', {})
         body = m.group(3)

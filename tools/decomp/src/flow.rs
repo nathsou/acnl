@@ -179,12 +179,28 @@ pub fn scratch_flows(f: &Function) -> HashSet<Path> {
             _ => next,
         }
     };
-    // whether a call node reads one of the registers left in the CPU
-    let reads = |node: &Node| -> bool {
+    // the scratch registers the function keeps in variables (a call's scratch results: they depend on every argument)
+    let kept_scratch: HashSet<String> = f
+        .synced
+        .iter()
+        .filter(|(_, fl)| {
+            let k = crate::sym::cpu_key(fl);
+            !crate::signatures::RESULTS.contains(&k.as_str()) && !survives_call(&k) && k != "pc"
+        })
+        .map(|(v, _)| v.clone())
+        .collect();
+    // whether a call node reads one of the registers left in the CPU: through its signature, or because its own
+    // scratch results (which depend on every argument register) are read later (`flowing`: those calls, so far)
+    let reads = |node: &Node, flowing: &HashSet<Path>, after: &dyn Fn(usize) -> bool, at: usize| -> bool {
         let target = match node {
             Node::Call(t, _) | Node::Exit(true, t) => t,
             _ => return false,
         };
+        if let Node::Call(_, p) = node {
+            if flowing.contains(p) || after(at) {
+                return true;
+            }
+        }
         match target.and_then(crate::signatures::of) {
             Some(regs) => regs.iter().any(|r| unkept.contains(r)),
             None => true,
@@ -199,8 +215,8 @@ pub fn scratch_flows(f: &Function) -> HashSet<Path> {
             }
         }
     }
-    for (i, node) in nodes.iter().enumerate() {
-        let Node::Call(_, p) = node else { continue };
+    // whether a kept scratch register is read after the call at `i` before the next call (its scratch results are)
+    let scratch_read_after = |i: usize| -> bool {
         let mut seen = vec![false; n];
         let mut stack = succ(i);
         while let Some(j) = stack.pop() {
@@ -208,20 +224,47 @@ pub fn scratch_flows(f: &Function) -> HashSet<Path> {
                 continue;
             }
             seen[j] = true;
-            if headers[j] {
-                out.insert(p.clone());
-                break;
-            }
             match &nodes[j] {
-                Node::Call(..) | Node::Exit(true, _) => {
-                    if reads(&nodes[j]) {
-                        out.insert(p.clone());
-                        break;
-                    }
-                }
-                Node::Exit(false, _) => {}
+                Node::Simple(_, uses, ..) if uses.iter().any(|v| kept_scratch.contains(v)) => return true,
+                Node::Call(..) | Node::Exit(..) => {}
                 _ => stack.extend(succ(j)),
             }
+        }
+        false
+    };
+    // to a fixed point: a call whose scratch results flow on reads what the call before it left in the CPU
+    loop {
+        let before = out.len();
+        for (i, node) in nodes.iter().enumerate() {
+            let Node::Call(_, p) = node else { continue };
+            if out.contains(p) {
+                continue;
+            }
+            let mut seen = vec![false; n];
+            let mut stack = succ(i);
+            while let Some(j) = stack.pop() {
+                if seen[j] {
+                    continue;
+                }
+                seen[j] = true;
+                if headers[j] {
+                    out.insert(p.clone());
+                    break;
+                }
+                match &nodes[j] {
+                    Node::Call(..) | Node::Exit(true, _) => {
+                        if reads(&nodes[j], &out, &scratch_read_after, j) {
+                            out.insert(p.clone());
+                            break;
+                        }
+                    }
+                    Node::Exit(false, _) => {}
+                    _ => stack.extend(succ(j)),
+                }
+            }
+        }
+        if out.len() == before {
+            break;
         }
     }
     out

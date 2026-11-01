@@ -136,6 +136,8 @@ struct Emitter {
     targets: HashSet<String>,          // labels something other than such a goto still jumps to
     returns: bool,                     // the function returns r0
     var_types: HashMap<String, Ty>,    // the decompiled function's variables and their types
+    typed: HashMap<String, String>,    // locals written as pointers to a struct of their own (C++ name -> struct)
+    local_fields: HashMap<String, BTreeMap<u64, Ty>>, // their fields: offset -> type of the access
     foldable: HashMap<String, bool>,   // values defined by a pure expression of their type -> whether it reads memory
     out: String,
 }
@@ -438,6 +440,7 @@ impl Emitter {
             Expr::Cast(t, a) => format!("{}({})", t.c_name(), self.expr(a, 0)?),
             Expr::Cond(c, a, b) => format!("({} ? {} : {})", self.expr(c, 0)?, self.expr(a, 0)?, self.expr(b, 0)?),
             Expr::Load(t, a) if sp_offset(a).is_some() => self.frame_place(*t, sp_offset(a).unwrap()),
+            Expr::Load(t, a) if self.local_field(*t, a).is_some() => self.local_field(*t, a).unwrap(),
             Expr::Load(t, a) => match self.field_access(*t, a) {
                 Some(f) => f,
                 None => match self.constant_address(a) {
@@ -466,6 +469,20 @@ impl Emitter {
             }
             Expr::AddrOf(n) => format!("&{}", n),
         })
+    }
+
+    // a value stored as a T: as written when it already has the type or is a constant that fits, else converted
+    fn stored(&self, t: Ty, v: &Expr, text: String) -> String {
+        // (a constant, written or held in a variable, that fits: a plain number, no suffix to convert)
+        let konst = match v {
+            Expr::Num(k, _) => Some(*k),
+            _ => self.constant_u32(v),
+        };
+        match konst {
+            Some(k) if !t.float() && t.bits() < 64 && k < 1u64 << t.bits() => num(k, Ty::S32),
+            _ if crate::types::type_of(v, &self.var_types) == Some(t) => text,
+            _ => format!("{}({})", t.c_name(), text),
+        }
     }
 
     // the address k bytes above the frame's bottom, and the T there
@@ -569,8 +586,28 @@ impl Emitter {
     fn var_text(&self, path: &[usize], v: &str) -> String {
         match self.values.constant(path, v) {
             Some((k, t)) => num(k, t),
-            None => self.values.read(path, v),
+            None => {
+                let name = self.values.read(path, v);
+                if self.typed.contains_key(&name) { format!("{}.addr()", name) } else { name }
+            }
         }
+    }
+
+    // a load or store at a typed local's field (base + offset): the place, `local->field`
+    fn local_field(&self, t: Ty, a: &Expr) -> Option<String> {
+        let (v, off) = match a {
+            Expr::Var(v) => (v, 0),
+            Expr::Bin(BinOp::Add, b, k) => match (&**b, &**k) {
+                (Expr::Var(v), Expr::Num(k, _)) => (v, *k),
+                _ => return None,
+            },
+            _ => return None,
+        };
+        if self.values.constant(&self.cur, v).is_some() {
+            return None;
+        }
+        let name = self.values.read(&self.cur, v);
+        (self.typed.contains_key(&name) && self.local_fields.get(&name)?.get(&off) == Some(&t)).then(|| format!("{}->{}", name, field_name(t, off)))
     }
 
     // `*(*(obj) + 4k)`, the k-th function of the vtable of the object at obj: "virtual function k of <obj>"
@@ -684,6 +721,13 @@ impl Emitter {
                         }
                     }
                     let target = self.values.name(&path, n);
+                    // a typed local: the pointer to its struct
+                    if let Some(st) = self.typed.get(&target).cloned() {
+                        let text = format!("{} = gptr<{}>({});", target, st, self.expr(e, 0)?);
+                        self.line(indent, &text);
+                        i += 1;
+                        continue;
+                    }
                     // (a value its single use may take in: a pure expression of the variable's type)
                     let mut r = crate::types::Reads::default();
                     crate::types::reads(e, &mut r);
@@ -737,9 +781,13 @@ impl Emitter {
                         i += 1;
                         continue;
                     }
-                    if let Some(k) = sp_offset(a) {
-                        let value = if crate::types::type_of(v, &self.var_types) == Some(*t) { value } else { format!("{}({})", t.c_name(), value) };
-                        let text = format!("{} = {};", self.frame_place(*t, k), value);
+                    let place = match sp_offset(a) {
+                        Some(k) => Some(self.frame_place(*t, k)),
+                        None => self.local_field(*t, a),
+                    };
+                    if let Some(place) = place {
+                        let value = self.stored(*t, v, value);
+                        let text = format!("{} = {};", place, value);
                         self.line(indent, &text);
                         i += 1;
                         continue;
@@ -749,7 +797,7 @@ impl Emitter {
                         _ => None,
                     };
                     // (no conversion for a value that already has the stored type)
-                    let value = if crate::types::type_of(v, &self.var_types) == Some(*t) { value } else { format!("{}({})", t.c_name(), value) };
+                    let value = self.stored(*t, v, value);
                     let text = match (self.field_access(*t, a), global) {
                         (Some(f), _) => format!("{} = {};", f, value),
                         (None, Some(g)) => format!("*{} = {};", g, value),
@@ -1091,6 +1139,141 @@ fn tidy_masks(line: &str) -> String {
         }
     }
     out
+}
+
+// The locals (C++ variables, by name) that are the base of field accesses (`*(x + off)`, two or more, fields not
+// overlapping): each is written as a pointer to a struct of its own (`gptr<Local_<address>_<name>> x`, its fields
+// `x->word_4`), unless one of its values comes from a call, the CPU, a parameter or the entry (written `x = call(...)`
+// or initialised from the CPU, which a pointer cannot be), or its address is a constant. Its other uses read
+// `x.addr()`, its assignments `x = gptr<S>(...)`; the statements are the same.
+fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashMap<String, String>, HashMap<String, BTreeMap<u64, Ty>>) {
+    let mut fields: HashMap<String, BTreeMap<u64, Ty>> = HashMap::new();
+    let mut accesses: HashMap<String, usize> = HashMap::new();
+    let mut bad: HashSet<String> = HashSet::new();
+    let mut access = |p: &[usize], t: Ty, a: &Expr, fields: &mut HashMap<String, BTreeMap<u64, Ty>>, bad: &mut HashSet<String>| {
+        let (v, off) = match a {
+            Expr::Var(v) => (v, 0),
+            Expr::Bin(BinOp::Add, b, k) => match (&**b, &**k) {
+                (Expr::Var(v), Expr::Num(k, _)) if *k < MAX_FIELD_OFFSET => (v, *k),
+                _ => return,
+            },
+            _ => return,
+        };
+        if v.starts_with("arg") || v == SP || v == "r13" || e.values.constant(p, v).is_some() {
+            return;
+        }
+        let name = e.values.read(p, v);
+        *accesses.entry(name.clone()).or_default() += 1;
+        let fs = fields.entry(name.clone()).or_default();
+        match fs.get(&off) {
+            Some(old) if *old != t => {
+                bad.insert(name);
+            }
+            _ => {
+                fs.insert(off, t);
+            }
+        }
+    };
+    fn loads(e: &Expr, out: &mut Vec<(Ty, Expr)>) {
+        match e {
+            Expr::Load(t, a) => {
+                out.push((*t, (**a).clone()));
+                loads(a, out);
+            }
+            Expr::Un(_, a) | Expr::Cast(_, a) => loads(a, out),
+            Expr::Bin(_, a, b) => {
+                loads(a, out);
+                loads(b, out);
+            }
+            Expr::Cond(c, a, b) => {
+                loads(c, out);
+                loads(a, out);
+                loads(b, out);
+            }
+            Expr::Call(_, args) => args.iter().for_each(|x| loads(x, out)),
+            _ => {}
+        }
+    }
+    fn walk(list: &[Stmt], prefix: &[usize], visit: &mut dyn FnMut(&[usize], &Stmt)) {
+        for (i, s) in list.iter().enumerate() {
+            let p: Vec<usize> = [prefix, &[i]].concat();
+            visit(&p, s);
+            match s {
+                Stmt::If(_, a, b) => {
+                    walk(a, &[p.clone(), vec![0]].concat(), visit);
+                    walk(b, &[p.clone(), vec![1]].concat(), visit);
+                }
+                Stmt::While { body, check, .. } => {
+                    walk(body, &[p.clone(), vec![0]].concat(), visit);
+                    walk(check, &[p.clone(), vec![1]].concat(), visit);
+                }
+                _ => {}
+            }
+        }
+    }
+    walk(&f.body, &[], &mut |p, s| {
+        let mut ls = Vec::new();
+        match s {
+            Stmt::Decl(_, n, Some(x)) | Stmt::Assign(n, x) => {
+                loads(x, &mut ls);
+                let mut r = crate::types::Reads::default();
+                crate::types::reads(x, &mut r);
+                if r.cpu || r.out_params {
+                    bad.insert(e.values.name(p, n));
+                }
+            }
+            Stmt::SetCpu(_, x) | Stmt::Switch(x, _) => loads(x, &mut ls),
+            Stmt::Store(t, a, v) => {
+                access(p, *t, a, &mut fields, &mut bad);
+                loads(a, &mut ls);
+                loads(v, &mut ls);
+            }
+            Stmt::If(c, _, _) => loads(c, &mut ls),
+            Stmt::While { cond, .. } => {
+                let mut cl = Vec::new();
+                loads(cond, &mut cl);
+                let q = crate::values::loop_condition(p);
+                for (t, a) in cl {
+                    access(&q, t, &a, &mut fields, &mut bad);
+                }
+            }
+            Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) => {
+                // what a call (or system call) defines comes back from the CPU
+                for v in e.effects(s, p).1 {
+                    bad.insert(e.values.name(p, &v));
+                }
+            }
+            _ => {}
+        }
+        for (t, a) in ls {
+            access(p, t, &a, &mut fields, &mut bad);
+        }
+    });
+    let mut typed = HashMap::new();
+    let mut out = HashMap::new();
+    for (name, fs) in fields {
+        let var = name.rsplit_once('_').filter(|(_, k)| k.bytes().all(|c| c.is_ascii_digit())).map_or(name.as_str(), |(b, _)| b);
+        // (the entry's value, a parameter's: initialised from the CPU)
+        let entry = lv.at_entry.contains(&name) || ARGS.contains(&name.as_str()) || ARGS.contains(&var) && name == var;
+        if bad.contains(&name) || entry || accesses.get(&name).copied().unwrap_or(0) < 2 || name.starts_with("saved_") || name == "r14" {
+            continue;
+        }
+        // fields that overlap: not a struct
+        let mut end = 0;
+        let mut overlap = false;
+        for (off, t) in &fs {
+            if *off < end {
+                overlap = true;
+            }
+            end = off + (t.bits() / 8) as u64;
+        }
+        if overlap || fs.values().any(|t| t.float()) {
+            continue;
+        }
+        typed.insert(name.clone(), format!("Local_{:08x}_{}", f.address, name));
+        out.insert(name, fs);
+    }
+    (typed, out)
 }
 
 // whether an expression as written needs parentheses to stand for an operand (an operator outside parentheses)
@@ -1789,7 +1972,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -1797,6 +1980,9 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     crate::values::each_expr(&f.body, &mut |x| pointed.extend(crate::flow::out_params(x)));
     splittable.retain(|n| !n.starts_with("arg") && !n.starts_with("saved_") && n != "r13" && n != "r14" && !pointed.contains(n));
     e.values = crate::values::split(f, &splittable, &|s, p| e.effects(s, p));
+    let (typed, local_fields) = typed_locals(f, &e, &lv);
+    e.typed = typed;
+    e.local_fields = local_fields;
     exit_blocks(&f.body, &[], &mut e.exits);
     // (an exit block copied at many gotos makes the function longer than the gotos do)
     let mut gotos: HashMap<String, usize> = HashMap::new();
@@ -1877,6 +2063,27 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         }
         out.push('\n');
         e.struct_name.insert(*k, name);
+    }
+    let mut local_structs: Vec<(&String, &String)> = e.typed.iter().collect();
+    local_structs.sort();
+    for (local, st) in local_structs {
+        let mut pos = 0u64;
+        out.push_str(&format!("struct __attribute__((packed)) {} {{\n", st));
+        let mut offsets = Vec::new();
+        for (off, t) in &e.local_fields[local] {
+            if *off > pos {
+                out.push_str(&format!("    u8 unknown_{:x}[0x{:x}];  // (not used here)\n", pos, off - pos));
+            }
+            let fname = field_name(*t, *off);
+            out.push_str(&format!("    {} {};\n", t.c_name(), fname));
+            offsets.push((fname, *off));
+            pos = off + (t.bits() / 8) as u64;
+        }
+        out.push_str("};\n");
+        for (fname, off) in offsets {
+            out.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});  // (from the original)\n", st, fname, off));
+        }
+        out.push('\n');
     }
     for ((addr, t), n) in e.globals.borrow().iter() {
         out.push_str(&format!("inline guest::global<{}, 0x{:08x}> {};  // (from the original)\n", t.c_name(), addr, n));
@@ -1994,12 +2201,25 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         }
     }
     // declarations moved to the variable's first assignment where C++ allows it
+    let sinkable: Vec<(String, String)> =
+        sinkable.into_iter().map(|(n, t)| match e.typed.get(&n) { Some(st) => (n, format!("gptr<{}>", st)), None => (n, t) }).collect();
     let (body, sunk) = sink_declarations(&body, &sinkable);
     let body = fold_single_uses(&body, &e.foldable);
     let body = drop_unchanged_write_backs(&body);
     let body = return_values(&body);
     // (the variables the passes left unused are not declared)
     let still: HashSet<String> = body.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')).map(|w| w.to_string()).collect();
+    // (a typed local: a pointer to its struct)
+    let locals: Vec<String> = locals
+        .into_iter()
+        .map(|l| {
+            let name = l.split_whitespace().nth(1).unwrap_or("").to_string();
+            match e.typed.get(&name) {
+                Some(st) => format!("gptr<{}> {} = gptr<{}>(0u);", st, name, st),
+                None => l,
+            }
+        })
+        .collect();
     for l in locals {
         let name = l.split_whitespace().nth(1).unwrap_or("");
         if sunk.contains(name) || !still.contains(name) {
