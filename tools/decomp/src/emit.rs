@@ -1857,11 +1857,12 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
         depths: HashMap<Vec<usize>, i64>,
         calls: Vec<i64>,
         ok: bool,
+        why: &'static str,
         tails: bool, // it makes tail calls
     }
     fn goto(l: &str, cur: i64, st: &mut St) {
         match st.labels.get(l) {
-            Some(&y) if y != cur => st.ok = false,
+            Some(&y) if y != cur => { st.ok = false; st.why = "goto depth differs"; }
             Some(_) => {}
             None => {
                 st.labels.insert(l.to_string(), cur);
@@ -1874,12 +1875,12 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
             let p: Vec<usize> = [prefix, &[i]].concat();
             if let Stmt::Label(l) = s {
                 match (d, st.labels.get(l).copied()) {
-                    (Some(x), Some(y)) if x != y => st.ok = false,
+                    (Some(x), Some(y)) if x != y => { st.ok = false; st.why = "label depth differs"; }
                     (None, Some(y)) => d = Some(y),
                     (Some(x), None) => {
                         st.labels.insert(l.clone(), x);
                     }
-                    (None, None) => st.ok = false, // reached only by a jump from below: its depth is not known yet
+                    (None, None) => { st.ok = false; st.why = "label reached first from below"; } // reached only by a jump from below: its depth is not known yet
                     _ => {}
                 }
                 continue;
@@ -1890,17 +1891,19 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
                 d = Some(cur + m);
                 if cur + m < 0 {
                     st.ok = false;
+                    st.why = "sp below the entry";
                 }
                 continue;
             }
             match s {
-                Stmt::Assign(n, _) | Stmt::Decl(_, n, _) if n == "r13" => st.ok = false,
-                Stmt::SetCpu(CpuField::R(13), _) => st.ok = false,
+                Stmt::Assign(n, _) | Stmt::Decl(_, n, _) if n == "r13" => { st.ok = false; st.why = "r13 assigned otherwise"; }
+                Stmt::SetCpu(CpuField::R(13), _) => { st.ok = false; st.why = "r13 written in the CPU"; }
                 Stmt::GuestCall(_, false) | Stmt::Dispatch(false) | Stmt::Svc(_) => st.calls.push(cur),
                 // a tail call once the frame is given back (the C++ releases its StackFrame before it)
                 Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => {
                     if cur != 0 {
                         st.ok = false;
+                        st.why = "tail call inside the frame";
                     }
                     st.tails = true;
                     d = None;
@@ -1908,6 +1911,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
                 Stmt::Return => {
                     if cur != 0 {
                         st.ok = false;
+                        st.why = "return inside the frame";
                     }
                     d = None;
                 }
@@ -1926,6 +1930,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
                     d = match (da, db) {
                         (Some(x), Some(y)) if x != y => {
                             st.ok = false;
+                            st.why = "if branches end at different depths";
                             None
                         }
                         (Some(x), _) | (None, Some(x)) => Some(x),
@@ -1941,6 +1946,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
                     let dc = walk(check, &[p.clone(), vec![1]].concat(), Some(cur), st, sp_move);
                     if db.map_or(false, |x| x != cur) || dc.map_or(false, |x| x != cur) {
                         st.ok = false;
+                        st.why = "loop changes the depth";
                     }
                     d = Some(cur);
                 }
@@ -1994,9 +2000,12 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
     let mut f = f.clone();
     moves(&mut f.body);
     let f = &f;
-    let mut st = St { labels: HashMap::new(), depths: HashMap::new(), calls: vec![], ok: true, tails: false };
+    let mut st = St { labels: HashMap::new(), depths: HashMap::new(), calls: vec![], ok: true, why: "", tails: false };
     walk(&f.body, &[], Some(0), &mut st, &sp_move);
     let m = st.depths.values().copied().max().unwrap_or(0);
+    if std::env::var("DECOMP_DEBUG_FRAME").is_ok() && m > 0 && (!st.ok || st.calls.iter().any(|&c| c != m)) {
+        eprintln!("frame {:x}: {} calls {:?} max {}", f.address, if st.ok { "calls not at the deepest" } else { st.why }, st.calls, m);
+    }
     if !st.ok || m <= 0 || st.calls.iter().any(|&c| c != m) {
         return None;
     }
@@ -2084,6 +2093,9 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
         left |= format!("{:?}", e).contains("Var(\"__sp\")") && below_frame(e);
     });
     if left {
+        if std::env::var("DECOMP_DEBUG_FRAME").is_ok() {
+            eprintln!("frame {:x}: r13 left or an address below the frame", f.address);
+        }
         return None;
     }
     Some((g, m as u64, st.tails))
@@ -2513,8 +2525,14 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     let body = frame_places(&body);
     let body = propagate_copies(&body);
     // (a void function's last `return;`: it ends there anyway)
+    // (not after a frame.release() and a tail call: the release must be followed by the return)
     let body = match body.strip_suffix("    return;\n") {
-        Some(rest) if !returns && !rest.ends_with(":;\n") && !rest.trim_end().ends_with('{') => rest.to_string(),
+        Some(rest)
+            if !returns && !rest.ends_with(":;\n") && !rest.trim_end().ends_with('{')
+                && !rest.lines().rev().nth(1).map_or(false, |l| l.trim() == "frame.release();") =>
+        {
+            rest.to_string()
+        }
         _ => body,
     };
     // (a register read folded into the write-back of the same register: `guest::cpu()->r[1] = guest::cpu()->r[1];`

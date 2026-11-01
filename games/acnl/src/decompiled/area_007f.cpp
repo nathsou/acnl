@@ -59,7 +59,6 @@ void f_007f6f40(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007f6f40
@@ -118,7 +117,6 @@ void f_007f7aec(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007f7aec
@@ -177,7 +175,6 @@ void f_007f82c4(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007f82c4
@@ -236,7 +233,6 @@ void f_007f8960(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007f8960
@@ -295,7 +291,6 @@ void f_007f94f4(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007f94f4
@@ -354,7 +349,6 @@ void f_007f9f44(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007f9f44
@@ -413,7 +407,6 @@ void f_007faacc(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007faacc
@@ -472,7 +465,6 @@ void f_007fb4fc(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007fb4fc
@@ -566,7 +558,6 @@ void f_007fc258(u32 r0, u32 r1) {
     guest::cpu()->r[6] = r6_1;
     guest::cpu()->r[7] = r7_2;
     guest::cpu()->r[8] = r8_1;
-    return;
 }
 
 }  // namespace d_007fc258
@@ -661,7 +652,6 @@ void f_007fcd40(u32 r0, u32 r1) {
     guest::cpu()->r[6] = r6_1;
     guest::cpu()->r[7] = r7_2;
     guest::cpu()->r[8] = r8_1;
-    return;
 }
 
 }  // namespace d_007fcd40
@@ -732,7 +722,6 @@ void f_007fd790(u32 r0, u32 r1) {
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_2;
     guest::cpu()->r[6] = r6_1;
-    return;
 }
 
 }  // namespace d_007fd790
@@ -825,7 +814,6 @@ void f_007fe0ac(u32 r0, u32 r1) {
     guest::cpu()->r[6] = r6_1;
     guest::cpu()->r[7] = r7_2;
     guest::cpu()->r[8] = r8_1;
-    return;
 }
 
 }  // namespace d_007fe0ac
@@ -896,7 +884,6 @@ void f_007fed54(u32 r0, u32 r1) {
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_2;
     guest::cpu()->r[6] = r6_1;
-    return;
 }
 
 }  // namespace d_007fed54
@@ -955,7 +942,6 @@ void f_007ff900(u32 r0, u32 r1) {
     u32 r5_1 = ea_2->word_4;
     guest::cpu()->r[4] = r4_1;
     guest::cpu()->r[5] = r5_1;
-    return;
 }
 
 }  // namespace d_007ff900
