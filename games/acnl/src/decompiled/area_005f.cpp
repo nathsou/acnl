@@ -332,7 +332,7 @@ L_5f6de0:;
             }
         }
         u32 r2_2 = r12 - 1u;
-        if (r12 != 0 && r12 >> 0x1f == (r12 & (r12 ^ r12)) >> 0x1f) {  // (from the original)
+        if (s32(r12) > 0) {
             r0 = r4 + (r2_2 << 1) + 2u;
             if ((r2_2 & 1u) == 0) {
                 u32 ea_7 = r0 - 2u;
@@ -663,7 +663,7 @@ void f_005fc110(gptr<Object_005fc110_0> arg0, u32 r1, float S0) {
     u32 r3 = uxth(r3_2);
     u32 zf_1 = r12_2 == 0;
     u32 cf_1 = r12_2 >= 0u;
-    if (cf_1 && !zf_1) {
+    if (r12_2 >= 0u && r12_2 != 0) {
         S0 = std::bit_cast<float>(*global_005fc1e4);
     }
     u32 r12 = 0u;

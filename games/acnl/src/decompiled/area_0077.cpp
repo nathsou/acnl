@@ -17,7 +17,6 @@ inline constexpr guest::Function<0x00768da0, u32(u32, u32, u32)> call_00768da0; 
 
 u32 f_00770060(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r6 = 0;
     u32 r7 = r0;
     u32 r8 = r1;
     u32 r9 = r2;
@@ -33,7 +32,7 @@ u32 f_00770060(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
     u32 r5 = r0_3;
     if (r0_3 != 0) {
         u32 r10 = 0x172bu;  // (from the original)
-        r6 = 0u;
+        u32 r6 = 0u;
         u32 r4 = r6;
         do {
             u32 res_1 = u32(*gptr<u8>(r5 + 0x1cu)) << 0x1b;  // (from the original)
@@ -72,7 +71,19 @@ u32 f_00770060(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
         }
         if (r6 != 0) {
             if (0xe86u > r6) {  // (from the original)
-                goto L_770154;
+                float S1_3 = std::bit_cast<float>(*global_007701b4);
+                float S0_3 = float(std::bit_cast<u32>(std::bit_cast<float>(r6))) * std::bit_cast<float>(*global_007701b0) / S1_3;
+                if (s32(std::bit_cast<u32>(S0_3)) < 0x3f800000) {  // (from the original)
+                    guest::cpu()->r[1] = r1;
+                    guest::cpu()->s[0] = S0_3;
+                    guest::cpu()->s[1] = S1_3;
+                    return 1u;
+                }
+                float S0_4 = std::bit_cast<float>(vcvt_uz_f(S0_3));
+                guest::cpu()->r[1] = r1;
+                guest::cpu()->s[0] = S0_4;
+                guest::cpu()->s[1] = S1_3;
+                return std::bit_cast<u32>(S0_4);
             }
             guest::cpu()->r[1] = r1;
             guest::cpu()->s[0] = S0;
@@ -84,20 +95,6 @@ u32 f_00770060(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
     guest::cpu()->s[0] = S0;
     guest::cpu()->s[1] = S1;
     return 0u;
-L_770154:;
-    float S1_3 = std::bit_cast<float>(*global_007701b4);
-    float S0_3 = float(std::bit_cast<u32>(std::bit_cast<float>(r6))) * std::bit_cast<float>(*global_007701b0) / S1_3;
-    if (s32(std::bit_cast<u32>(S0_3)) < 0x3f800000) {  // (from the original)
-        guest::cpu()->r[1] = r1;
-        guest::cpu()->s[0] = S0_3;
-        guest::cpu()->s[1] = S1_3;
-        return 1u;
-    }
-    float S0_4 = std::bit_cast<float>(vcvt_uz_f(S0_3));
-    guest::cpu()->r[1] = r1;
-    guest::cpu()->s[0] = S0_4;
-    guest::cpu()->s[1] = S1_3;
-    return std::bit_cast<u32>(S0_4);
 }
 
 }  // namespace d_00770060
@@ -407,7 +404,7 @@ GUEST_OFFSET(Object_00770c10_0, word_4, 0x4);  // (from the original)
 
 
 u32 f_00770c10(gptr<Object_00770c10_0> arg0) {
-    return arg0->word_4 >= 0x64u ? 1u : 0u;  // (from the original)
+    return arg0->word_4 >= 0x64u;  // (from the original)
 }
 
 }  // namespace d_00770c10
@@ -464,7 +461,6 @@ namespace d_00779764 {
 
 
 void f_00779764(u32 r0, u32 r1, u32 r2) {
-    u32 r7 = guest::cpu()->r[7];
     u32 res_2 = 0;
     u32 res_3 = 0;
     u32 r6 = 0x974a7cu;  // (from the original)
@@ -473,13 +469,9 @@ void f_00779764(u32 r0, u32 r1, u32 r2) {
     if (r12_1 <= r3 + ((r1 & ~1u) + (r1 >> 7 << 1) << 2) + 8u) {
         *gptr<u32>(r6) = r12_1;
     } else {
-        u32 zf_1 = r1 == 0;
-        u32 cf_1 = r1 >= 0u;
         u32 r5 = 0u;
-        if (cf_1 && !zf_1) {
-            r7 = r5 - 0x100000u;  // (from the original)
-        }
-        if (!!cf_1 && !zf_1) {
+        if (r1 >= 0u && r1 != 0) {
+            u32 r7 = r5 - 0x100000u;  // (from the original)
             do {
                 u32 r12_2 = r2 + (r5 << 2);
                 u32 r8_1 = r1 - r5;
@@ -580,7 +572,7 @@ u32 f_0077a214(float S0, float S1) {
     }
     float S2_1 = std::bit_cast<float>(*global_0077a29c);
     float S1_1 = S0 + std::bit_cast<float>(*global_0077a298);
-    if (r1_1 >> 0x1f != (r1_1 & (r1_1 ^ r1_1)) >> 0x1f) {  // (from the original)
+    if (s32(r1_1) < 0) {
         if ((fpsr & 0xfffffffu | vfp_cmpf(S2_1, S1_1)) >> 0x1d & 1) {  // (from the original)
             float S0_1 = std::bit_cast<float>(r0_1);
             guest::cpu()->r[1] = r1_1;
@@ -588,12 +580,12 @@ u32 f_0077a214(float S0, float S1) {
             guest::cpu()->s[1] = S1_1;
             return r0_1;
         }
-        u32 nf_1 = r0_1 >> 0x1f;  // (from the original)
-        u32 vf_1 = (r0_1 & (r0_1 ^ r0_1)) >> 0x1f;  // (from the original)
-        if (r0_1 != 0 && nf_1 == vf_1) {
+        u32 res_1 = r0_1;
+        u32 vf_1 = (r0_1 & (r0_1 ^ res_1)) >> 0x1f;  // (from the original)
+        if (res_1 != 0 && s32(r0_1) >= 0) {
             r0_1 = 0x3f800000u;  // (from the original)
         }
-        if (nf_1 != vf_1) {
+        if (res_1 >> 0x1f != vf_1) {  // (from the original)
             r0_1 = 0x80000000u;  // (from the original)
         }
         float S0_2 = std::bit_cast<float>(r0_1);
@@ -666,7 +658,7 @@ u32 f_0077a2a4(u32 r0_unused, u32 r1_unused, u32 r2_unused, u32 r3, float S0) {
         u32 b_2 = r1_1 << 1;
         u32 zf_1 = r0_2 == b_2;
         u32 cf_1 = r0_2 >= b_2;
-        if (cf_1 && !zf_1) {
+        if (r0_2 > b_2) {
             r0_2 = ~0u;
         }
         if (!cf_1 || zf_1) {
@@ -693,12 +685,10 @@ u32 f_0077a2a4(u32 r0_unused, u32 r1_unused, u32 r2_unused, u32 r3, float S0) {
     float S0_2 = std::bit_cast<float>(*global_0077a400);
     if (s32(r0_3) < 0) {
         u32 r0_4 = std::bit_cast<u32>(S0) << 1;
-        u32 zf_2 = r0_4 == 0xff000000u;  // (from the original)
-        u32 cf_2 = r0_4 >= 0xff000000u;  // (from the original)
-        if (cf_2 && !zf_2) {
+        if (r0_4 > 0xff000000u) {  // (from the original)
             S0_2 = S0 + S0;
         }
-        if (!cf_2 || !zf_2) {
+        if (r0_4 < 0xff000000u || r0_4 != 0xff000000u) {  // (from the original)
             guest::cpu()->r[1] = r1_1;
             guest::cpu()->s[0] = S0_2;
             guest::cpu()->s[1] = S0;
@@ -761,7 +751,7 @@ u32 f_0077a650(float S0, float S1) {
     }
     float S2_1 = std::bit_cast<float>(*global_0077a6e0);
     float S1_1 = S0 + std::bit_cast<float>(*global_0077a6dc);
-    if (r1_1 >> 0x1f != (r1_1 & (r1_1 ^ r1_1)) >> 0x1f) {  // (from the original)
+    if (s32(r1_1) < 0) {
         if ((fpsr & 0xfffffffu | vfp_cmpf(S2_1, S1_1)) >> 0x1d & 1) {  // (from the original)
             float S0_1 = std::bit_cast<float>(r0_1);
             guest::cpu()->r[1] = r1_1;

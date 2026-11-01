@@ -2320,7 +2320,7 @@ GUEST_OFFSET(Object_002cf0c0_0, byte_2e4, 0x2e4);  // (from the original)
 
 
 u32 f_002cf0c0(gptr<Object_002cf0c0_0> arg0) {
-    return arg0->byte_2e4 >= 0xau ? 1u : 0u;  // (from the original)
+    return arg0->byte_2e4 >= 0xau;  // (from the original)
 }
 
 }  // namespace d_002cf0c0
@@ -2337,7 +2337,7 @@ GUEST_OFFSET(Object_002cf1a8_0, byte_2e4, 0x2e4);  // (from the original)
 
 
 u32 f_002cf1a8(gptr<Object_002cf1a8_0> arg0) {
-    return arg0->byte_2e4 >= 0xdu ? 1u : 0u;  // (from the original)
+    return arg0->byte_2e4 >= 0xdu;  // (from the original)
 }
 
 }  // namespace d_002cf1a8

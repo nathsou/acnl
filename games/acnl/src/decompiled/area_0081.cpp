@@ -516,15 +516,13 @@ u32 f_00812698(gptr<Object_00812698_0> arg0, gptr<Object_00812698_1> arg1, float
     float S1_3 = 0;
     float S1_1 = std::bit_cast<float>(arg1->word_0);
     u32 fpsr_1 = fpsr & 0xfffffffu | vfp_cmpf(S1_1, S0);  // (from the original)
-    u32 nf_1 = fpsr_1 >> 0x1f;  // (from the original)
-    u32 vf_1 = fpsr_1 >> 0x1c & 1;  // (from the original)
     u32 r2 = u32(s16(u32(arg0->byte_3)) * s16(0xabu)) >> 9;  // (from the original)
     u32 r0_1 = r2 - 1u;
-    if (nf_1 == vf_1) {
+    if (fpsr_1 >> 0x1f == (fpsr_1 >> 0x1c & 1)) {  // (from the original)
         S0 = std::bit_cast<float>(arg1->word_4);
     }
     u32 r0_2 = r0_1 + (r0_1 << 1);
-    if (nf_1 == vf_1) {
+    if (fpsr_1 >> 0x1f == (fpsr_1 >> 0x1c & 1)) {  // (from the original)
         guest::cpu()->s[0] = S0;
         guest::cpu()->s[1] = S1_1;
         return r0_2;
@@ -539,7 +537,7 @@ u32 f_00812698(gptr<Object_00812698_0> arg0, gptr<Object_00812698_1> arg1, float
         return r0_3.addr();
     }
     r0 = 0u;
-    if (r2 == 0 || r2 >> 0x1f != (r2 & (r2 ^ r2)) >> 0x1f) {  // (from the original)
+    if (s32(r2) <= 0) {
         float S0_2 = std::bit_cast<float>(*global_008127b0);
         guest::cpu()->s[0] = S0_2;
         guest::cpu()->s[1] = S1_2;
@@ -629,15 +627,13 @@ u32 f_00812ae8(gptr<Object_00812ae8_0> arg0, gptr<Object_00812ae8_1> arg1, float
     float S1_3 = 0;
     float S1_1 = std::bit_cast<float>(arg1->word_0);
     u32 fpsr_1 = fpsr & 0xfffffffu | vfp_cmpf(S1_1, S0);  // (from the original)
-    u32 nf_1 = fpsr_1 >> 0x1f;  // (from the original)
-    u32 vf_1 = fpsr_1 >> 0x1c & 1;  // (from the original)
     u32 r2 = u32(s16(u32(arg0->byte_3)) * s16(0xabu)) >> 9;  // (from the original)
     u32 r0_1 = r2 - 1u;
-    if (nf_1 == vf_1) {
+    if (fpsr_1 >> 0x1f == (fpsr_1 >> 0x1c & 1)) {  // (from the original)
         S0 = std::bit_cast<float>(arg1->word_4);
     }
     u32 r0_2 = r0_1 + (r0_1 << 1);
-    if (nf_1 == vf_1) {
+    if (fpsr_1 >> 0x1f == (fpsr_1 >> 0x1c & 1)) {  // (from the original)
         guest::cpu()->s[0] = S0;
         guest::cpu()->s[1] = S1_1;
         return r0_2;
@@ -652,7 +648,7 @@ u32 f_00812ae8(gptr<Object_00812ae8_0> arg0, gptr<Object_00812ae8_1> arg1, float
         return r0_3.addr();
     }
     r0 = 0u;
-    if (r2 == 0 || r2 >> 0x1f != (r2 & (r2 ^ r2)) >> 0x1f) {  // (from the original)
+    if (s32(r2) <= 0) {
         float S0_2 = std::bit_cast<float>(*global_00812c08);
         guest::cpu()->s[0] = S0_2;
         guest::cpu()->s[1] = S1_2;
