@@ -134,8 +134,14 @@ result):
 - The stack frame as one object. When sp moves only by constants (the same depth wherever paths meet, deepest at
   every call, back at every return, no tail call), the export pushes the registers the original pushes
   (`GUEST_EXPORT_FRAMED`, so callees see the same stack, saved values included) and a `guest::StackFrame frame(N)`
-  holds the rest of the frame; locals are `*frame.at<u32>(k)` and their addresses `frame.at(k).addr()`. A tail call
-  keeps the old form (the export's frame lasts until the C++ returns; the original pops before branching).
+  holds the rest of the frame; locals are `*frame.at<u32>(k)` and their addresses `frame.at(k).addr()`. A kept push
+  (`ea = sp - 4; *ea = r4; sp = ea`) counts as a constant move too. A tail call keeps the old form (the export's frame
+  lasts until the C++ returns; the original pops before branching).
+- Locals that are the base of field accesses (two or more, fields not overlapping, none of their values from a call,
+  the CPU or a parameter) are pointers to a struct of their own: `gptr<Local_<address>_<name>> x`, `x->word_4`.
+- After another call, trailing `guest::cpu()->r[k]` arguments are left out (a call writes only the arguments it is
+  given; the registers past them are what the previous call left, as in the original), as many at every call of the
+  callee as the widest needs.
 - Declarations at the first assignment (`u32 r0_1 = call_x(r1);`) when the variable's other uses follow in the same
   block and no goto jumps into that stretch; a value used once is written into its use when nothing between changes
   what it reads (and, if it reads memory, only plain variables are assigned between); `x = x + e` is `x += e`.
@@ -150,6 +156,11 @@ result):
   flip inside loops too.
 - Shifts: `lsl_r(x, n & m)` with m < 32 is `x << (n & m)` (and lsr, asr); a shift's carry nobody reads is the plain
   shift (`lsl_rc` and `lsl_r` give the same value; the model now knows that value, the carry stays opaque).
+- `if (c) { x = A; } else { x = B; }` is `x = c ? A : B;` (`c ? 1 : 0` the condition itself); a register read folded
+  into the write-back of the same register (a statement doing nothing) is left out; a write-back of a parameter's
+  own register before any call is left out (the CPU still holds the entry value).
+- `s32(x & 0x80000000) >= 0` is `s32(x) >= 0`; `s32(u32(e))` with e an s32 is `e`; a constant stored that fits the
+  field is a plain number; a conversion to the assigned variable's own type is left out (not then folded elsewhere).
 - An exit block may hold labels only exit gotos reach, and its size counts what is written (not the bookkeeping).
 
 ## Proving the C++ (`prove-cpp`)

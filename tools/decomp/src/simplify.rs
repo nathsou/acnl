@@ -29,6 +29,8 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
         }
         Expr::Cond(c, a, b) => {
             simplify_expr(c, types);
+            // (only the condition's truth matters)
+            simplify_cond(c, types);
             simplify_expr(a, types);
             simplify_expr(b, types);
         }
@@ -139,6 +141,21 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
         }
         // (T)x where x already has type T
         Expr::Cast(t, a) if type_of(a, types) == Some(*t) => Some((**a).clone()),
+        // (T)(U)x with T and U of the same width and x of type T: x (the conversions are the identity on the bits)
+        Expr::Cast(t, a) if matches!(&**a, Expr::Cast(u, x) if u.bits() == t.bits() && !t.float() && !u.float() && type_of(x, types) == Some(*t)) => {
+            let Expr::Cast(_, x) = &**a else { unreachable!() };
+            Some((**x).clone())
+        }
+        // s32(x & 0x80000000) >= 0 / < 0: the sign of x
+        Expr::Bin(op @ (BinOp::Ge | BinOp::Lt), a, z) if matches!(&**z, Expr::Num(0, _)) => match &**a {
+            Expr::Cast(Ty::S32, m) => match &**m {
+                Expr::Bin(BinOp::And, x, k) if matches!(**k, Expr::Num(0x8000_0000, _)) && type_of(x, types) == Some(Ty::U32) => {
+                    Some(Expr::Bin(*op, Box::new(Expr::Cast(Ty::S32, x.clone())), z.clone()))
+                }
+                _ => None,
+            },
+            _ => None,
+        },
         _ => None,
     };
     if let Some(r) = replacement {
@@ -482,6 +499,41 @@ fn condition_chains(list: &mut Vec<Stmt>) -> bool {
     changed
 }
 
+// if (c) { x = A; } else { x = B; }  ->  x = c ? A : B;   (and c ? 1 : 0 is the condition itself, c ? 0 : 1 its
+// negation: a condition is 0 or 1)
+fn choices(list: &mut Vec<Stmt>) -> bool {
+    let mut changed = false;
+    for s in list.iter_mut() {
+        if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = s {
+            changed |= choices(a);
+            changed |= choices(b);
+        }
+        let joined = match s {
+            Stmt::If(c, a, b) => match (a.as_slice(), b.as_slice()) {
+                ([Stmt::Assign(x, e1)], [Stmt::Assign(y, e2)]) if x == y => {
+                    let one = |e: &Expr| matches!(e, Expr::Num(1, _));
+                    let zero = |e: &Expr| matches!(e, Expr::Num(0, _));
+                    let value = if is_truth_valued(c) && one(e1) && zero(e2) {
+                        c.clone()
+                    } else if is_truth_valued(c) && zero(e1) && one(e2) {
+                        Expr::Un(UnOp::LNot, Box::new(c.clone()))
+                    } else {
+                        Expr::Cond(Box::new(c.clone()), Box::new(e1.clone()), Box::new(e2.clone()))
+                    };
+                    Some(Stmt::Assign(x.clone(), value))
+                }
+                _ => None,
+            },
+            _ => None,
+        };
+        if let Some(j) = joined {
+            *s = j;
+            changed = true;
+        }
+    }
+    changed
+}
+
 // if (A) { X } if (B) { X }  ->  if (A || B) { X }  when X does not fall through (it returns, jumps or tail-calls)
 fn merge_same_exits(list: &mut Vec<Stmt>) -> bool {
     let mut changed = false;
@@ -606,4 +658,5 @@ pub fn simplify(f: &mut Function) {
     while merge_ifs(&mut f.body) {}
     while condition_chains(&mut f.body) {}
     while merge_same_exits(&mut f.body) {}
+    while choices(&mut f.body) {}
 }

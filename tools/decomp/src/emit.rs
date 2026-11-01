@@ -441,7 +441,11 @@ impl Emitter {
                 }
             }
             Expr::Cast(t, a) => format!("{}({})", t.c_name(), self.expr(a, 0)?),
-            Expr::Cond(c, a, b) => format!("({} ? {} : {})", self.expr(c, 0)?, self.expr(a, 0)?, self.expr(b, 0)?),
+            // (parentheses unless it is a whole value: a return's, an assignment's, an argument)
+            Expr::Cond(c, a, b) => {
+                let t = format!("{} ? {} : {}", self.expr(c, 1)?, self.expr(a, 0)?, self.expr(b, 0)?);
+                if outer == 0 { t } else { format!("({})", t) }
+            }
             Expr::Load(t, a) if sp_offset(a).is_some() => self.frame_place(*t, sp_offset(a).unwrap()),
             Expr::Load(t, a) if self.local_field(*t, a).is_some() => self.local_field(*t, a).unwrap(),
             Expr::Load(t, a) => match self.field_access(*t, a) {
@@ -780,6 +784,8 @@ impl Emitter {
                             Expr::Call(n, args) if n == "F2U" && wrap.starts_with("std::bit_cast<float>") => {
                                 format!("{} = {};", place, self.expr(&args[0], 0)?)
                             }
+                            // (an integer field: a constant that fits as a plain number)
+                            _ if wrap == format!("{}({{}})", t.c_name()) => format!("{} = {};", place, self.stored(*t, v, value.clone())),
                             _ => format!("{} = {};", place, wrap.replace("{}", &value)),
                         };
                         self.line(indent, &text);
@@ -1297,6 +1303,35 @@ fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashM
     (typed, out)
 }
 
+fn frame_places(body: &str) -> String {
+    let mut out = String::with_capacity(body.len());
+    let mut rest = body;
+    while let Some(i) = rest.find("*gptr<") {
+        out.push_str(&rest[..i]);
+        let after = &rest[i + 6..];
+        let parsed = after.find(">(frame.at(").and_then(|t| {
+            let ty = &after[..t];
+            let k_start = t + ">(frame.at(".len();
+            let k_len = after[k_start..].find(").addr())")?;
+            let k = &after[k_start..k_start + k_len];
+            let simple = ty.chars().all(|c| c.is_ascii_alphanumeric()) && k.chars().all(|c| c.is_ascii_alphanumeric());
+            simple.then(|| (format!("*frame.at<{}>({})", ty, k), 6 + k_start + k_len + ").addr())".len()))
+        });
+        match parsed {
+            Some((text, used)) => {
+                out.push_str(&text);
+                rest = &rest[i + used..];
+            }
+            None => {
+                out.push_str("*gptr<");
+                rest = &rest[i + 6..];
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
 // whether an expression as written needs parentheses to stand for an operand (an operator outside parentheses)
 fn compound_text(e: &str) -> bool {
     let b = e.as_bytes();
@@ -1422,7 +1457,7 @@ fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>) -> String {
 // `guest::cpu()->r[N] = x;` where x was read from the CPU's r[N] earlier in the same block (`x = guest::cpu()->r[N];`)
 // with no call, system call, write to the CPU, loop, label or other mention of x between: the CPU still holds x, the
 // write changes nothing. Such writes are left out, then the reads nothing uses any more.
-fn drop_unchanged_write_backs(body: &str) -> String {
+fn drop_unchanged_write_backs(body: &str, params: &HashMap<String, String>) -> String {
     let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
     let indent = |l: &str| (l.len() - l.trim_start().len()) / 4;
     let field_value = |l: &str| -> Option<(String, String)> {
@@ -1443,9 +1478,10 @@ fn drop_unchanged_write_backs(body: &str) -> String {
         }
         Some((x.to_string(), rest.strip_suffix(';')?.to_string()))
     };
-    let changes_cpu = |l: &str| {
+    // (a call or system call changes every register; a write to the CPU, the field it writes)
+    let changes = |l: &str, field: &str| {
         let t = l.trim_start();
-        t.starts_with("guest::cpu()->") || t.contains("call_") || t.contains("guest::call_address") || t.contains("guest::svc")
+        t.starts_with(&format!("guest::cpu()->{} =", field)) || t.contains("call_") || t.contains("guest::call_address") || t.contains("guest::svc")
     };
     let mut i = 0;
     while i < lines.len() {
@@ -1453,22 +1489,30 @@ fn drop_unchanged_write_backs(body: &str) -> String {
             i += 1;
             continue;
         };
-        // the nearest earlier line that mentions x
-        let Some(d) = (0..i).rev().find(|&j| mentions(&lines[j], &x)) else {
-            i += 1;
-            continue;
-        };
-        let same = read_of(&lines[d]).map_or(false, |(v, f)| v == x && f == field);
-        let at = indent(&lines[d]);
         // (no loop between either: at a loop header the proof does not relate the CPU's copy of a register the
         // function keeps in a variable, so it could not see that the CPU still holds it)
-        let clear = lines[d + 1..i].iter().all(|l| {
-            let t = l.trim_start();
-            l.starts_with(' ') && indent(l) >= at && !changes_cpu(l) && !t.starts_with("do {") && !t.starts_with("for (")
-        });
-        if same && clear && indent(&lines[i]) >= at {
-            lines.remove(i);
-            continue;
+        let clear = |from: usize, at: usize, lines: &[String]| {
+            lines[from..i].iter().all(|l| {
+                let t = l.trim_start();
+                l.starts_with(' ') && indent(l) >= at && !changes(l, &field) && !t.starts_with("do {") && !t.starts_with("for (")
+            })
+        };
+        // the nearest earlier line that mentions x: x read from that register; or none, x being the parameter that
+        // holds the register's entry value (the C++ reads it so), with nothing between changing the register
+        match (0..i).rev().find(|&j| mentions(&lines[j], &x)) {
+            Some(d) => {
+                let same = read_of(&lines[d]).map_or(false, |(v, f)| v == x && f == field);
+                let at = indent(&lines[d]);
+                if same && clear(d + 1, at, &lines) && indent(&lines[i]) >= at {
+                    lines.remove(i);
+                    continue;
+                }
+            }
+            None if params.get(&x) == Some(&field) && clear(0, 0, &lines) => {
+                lines.remove(i);
+                continue;
+            }
+            None => {}
         }
         i += 1;
     }
@@ -1745,6 +1789,51 @@ fn frame_mode(f: &Function) -> Option<(Function, u64)> {
         }
         d
     }
+    // a kept push (`ea = r13 - 4; *ea = r4; r13 = ea;`): r13 = ea is the move r13 = r13 - 4 (ea still holds r13 - 4)
+    fn moves(list: &mut [Stmt]) {
+        let mut at: HashMap<String, i64> = HashMap::new(); // variables holding r13 + k
+        for s in list.iter_mut() {
+            match s {
+                Stmt::Decl(_, x, Some(e)) | Stmt::Assign(x, e) if x != "r13" => {
+                    let off = match e {
+                        Expr::Var(v) if v == "r13" => Some(0),
+                        Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b) => match (&**a, &**b) {
+                            (Expr::Var(v), Expr::Num(k, _)) if v == "r13" => Some(if *op == BinOp::Add { *k as i64 } else { -(*k as i64) }),
+                            _ => None,
+                        },
+                        _ => None,
+                    };
+                    match off {
+                        Some(o) => {
+                            at.insert(x.clone(), o);
+                        }
+                        None => {
+                            at.remove(x);
+                        }
+                    }
+                }
+                Stmt::Assign(x, Expr::Var(v)) if x == "r13" && at.contains_key(v) => {
+                    let o = at[v];
+                    *s = Stmt::Assign(
+                        "r13".into(),
+                        Expr::Bin(if o < 0 { BinOp::Sub } else { BinOp::Add }, Box::new(Expr::Var("r13".into())), Box::new(Expr::Num(o.unsigned_abs(), Ty::U32))),
+                    );
+                    at.clear();
+                }
+                Stmt::Assign(x, _) if x == "r13" => at.clear(),
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    moves(a);
+                    moves(b);
+                    at.clear();
+                }
+                Stmt::Store(..) | Stmt::Nop | Stmt::Preempt => {}
+                _ => at.clear(),
+            }
+        }
+    }
+    let mut f = f.clone();
+    moves(&mut f.body);
+    let f = &f;
     let mut st = St { labels: HashMap::new(), depths: HashMap::new(), calls: vec![], ok: true };
     walk(&f.body, &[], Some(0), &mut st, &sp_move);
     let m = st.depths.values().copied().max().unwrap_or(0);
@@ -2244,8 +2333,30 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         sinkable.into_iter().map(|(n, t)| match e.typed.get(&n) { Some(st) => (n, format!("gptr<{}>", st)), None => (n, t) }).collect();
     let (body, sunk) = sink_declarations(&body, &sinkable);
     let body = fold_single_uses(&body, &e.foldable);
-    let body = drop_unchanged_write_backs(&body);
+    // (the parameters that hold a register's entry value: S0 holds s[0], r1 r[1])
+    let entry_params: HashMap<String, String> = sig
+        .iter()
+        .filter_map(|p| {
+            let name = p.split_whitespace().last()?;
+            let field = match name.as_bytes().first()? {
+                b'r' => format!("r[{}]", name[1..].parse::<u32>().ok()?),
+                b'S' => format!("s[{}]", name[1..].parse::<u32>().ok()?),
+                _ => return None,
+            };
+            Some((name.to_string(), field))
+        })
+        .collect();
+    let body = drop_unchanged_write_backs(&body, &entry_params);
     let body = return_values(&body);
+    // (`*gptr<T>(frame.at(k).addr())`, a frame address folded into an access: `*frame.at<T>(k)`)
+    let body = frame_places(&body);
+    // (a register read folded into the write-back of the same register: `guest::cpu()->r[1] = guest::cpu()->r[1];`
+    // does nothing)
+    let body: String = body
+        .lines()
+        .filter(|l| !matches!(l.trim_start().strip_suffix(';').and_then(|t| t.split_once(" = ")), Some((a, b)) if a == b && a.starts_with("guest::cpu()->")))
+        .map(|l| format!("{}\n", l))
+        .collect();
     // (the variables the passes left unused are not declared)
     let still: HashSet<String> = body.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')).map(|w| w.to_string()).collect();
     // (a typed local: a pointer to its struct)
