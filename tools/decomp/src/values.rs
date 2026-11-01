@@ -25,6 +25,8 @@ pub struct Values {
     copies: HashSet<Path>,                  // copies left out: their value is the source's wherever it is read
     constants: HashMap<(Path, String), (u64, Ty)>, // reads of a value defined once, by a constant: the constant
     entries: HashMap<(Path, String), String>, // reads of a variable's entry value (copies seen through): that variable
+    held_reads: HashSet<(Path, String)>, // reads of values held in the CPU (see split)
+    held_defs: HashSet<(Path, String)>,  // their definitions (a call's statement reads and defines a register)
 }
 
 impl Values {
@@ -41,6 +43,9 @@ struct Node {
     jump: Jump,
     copy: Option<String>, // the variable a plain copy (x = y) reads
     constant: Option<(u64, Ty)>, // the constant a definition x = K writes
+    offset: Option<(String, u64)>, // a definition x = y + K (K wrapping, as u32): y and K
+    call: bool, // a call (its uses: the arguments it is handed; its definitions: the registers read back after it)
+    ret: bool,  // a return (its uses: the results written back)
 }
 
 enum Jump {
@@ -62,9 +67,18 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
            fresh: &mut usize) {
     for (i, s) in list.iter().enumerate() {
         let p: Path = [prefix, &[i]].concat();
-        let node = |uses: Vec<String>, defs: Vec<String>, jump: Jump| Node { path: Some(p.clone()), uses, defs, jump, copy: None, constant: None };
+        let node = |uses: Vec<String>, defs: Vec<String>, jump: Jump| Node { path: Some(p.clone()), uses, defs, jump, copy: None, constant: None, offset: None, call: false, ret: false };
         let copy_of = |e: &Expr| if let Expr::Var(y) = e { Some(y.clone()) } else { None };
         let constant_of = |e: &Expr| if let Expr::Num(v, t) = e { Some((*v, *t)) } else { None };
+        let offset_of = |e: &Expr| match e {
+            Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b) => match (&**a, &**b) {
+                (Expr::Var(y), Expr::Num(k, Ty::U32)) => {
+                    Some((y.clone(), if *op == BinOp::Add { *k } else { (*k as u32).wrapping_neg() as u64 }))
+                }
+                _ => None,
+            },
+            _ => None,
+        };
         // what the C++ does not write: the saved copies of registers and their restoring (calling-convention
         // bookkeeping: the C++ leaves those registers alone), the arguments' copies
         let bookkeeping = match s {
@@ -80,12 +94,14 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
                 let mut n = node(e.as_ref().map(vars_of).unwrap_or_default(), vec![x.clone()], Jump::Next);
                 n.copy = e.as_ref().and_then(copy_of);
                 n.constant = e.as_ref().and_then(constant_of);
+                n.offset = e.as_ref().and_then(offset_of);
                 out.push(n);
             }
             Stmt::Assign(x, e) => {
                 let mut n = node(vars_of(e), vec![x.clone()], Jump::Next);
                 n.copy = copy_of(e);
                 n.constant = constant_of(e);
+                n.offset = offset_of(e);
                 out.push(n);
             }
             Stmt::Store(_, a, v) => out.push(node([vars_of(a), vars_of(v)].concat(), vec![], Jump::Next)),
@@ -95,22 +111,22 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
                 let (el, end) = (format!("__e{}", fresh), format!("__n{}", fresh));
                 out.push(node(vars_of(c), vec![], Jump::Either(el.clone())));
                 flatten(a, &[p.clone(), vec![0]].concat(), effects, out, fresh);
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::To(end.clone()) });
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(el) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::To(end.clone()) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(el) });
                 flatten(b, &[p.clone(), vec![1]].concat(), effects, out, fresh);
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(end) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(end) });
             }
             Stmt::While { top, test, body, check, cond } => {
                 if let Some(t) = test {
-                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::To(t.clone()) });
+                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::To(t.clone()) });
                 }
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(top.clone()) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(top.clone()) });
                 flatten(body, &[p.clone(), vec![0]].concat(), effects, out, fresh);
                 if let Some(t) = test {
-                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, jump: Jump::Label(t.clone()) });
+                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(t.clone()) });
                 }
                 flatten(check, &[p.clone(), vec![1]].concat(), effects, out, fresh);
-                out.push(Node { path: Some(loop_condition(&p)), uses: vars_of(cond), defs: vec![], copy: None, constant: None, jump: Jump::Either(top.clone()) });
+                out.push(Node { path: Some(loop_condition(&p)), uses: vars_of(cond), defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Either(top.clone()) });
             }
             Stmt::Goto(l) => out.push(node(vec![], vec![], Jump::To(l.clone()))),
             Stmt::Label(l) => out.push(node(vec![], vec![], Jump::Label(l.clone()))),
@@ -118,7 +134,10 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
             Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::Return => {
                 let (uses, defs) = effects(s, &p);
                 let exits = matches!(s, Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true));
-                out.push(node(uses, defs, if exits { Jump::Exit } else { Jump::Next }));
+                let mut n = node(uses, defs, if exits { Jump::Exit } else { Jump::Next });
+                n.call = matches!(s, Stmt::GuestCall(..) | Stmt::Dispatch(_));
+                n.ret = matches!(s, Stmt::Return);
+                out.push(n);
             }
             Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) | Stmt::Unsupported(_) => {}
         }
@@ -151,7 +170,7 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         v.sort();
         v
     };
-    nodes.push(Node { path: None, uses: vec![], defs: entry.clone(), copy: None, constant: None, jump: Jump::Next });
+    nodes.push(Node { path: None, uses: vec![], defs: entry.clone(), copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Next });
     flatten(&f.body, &[], effects, &mut nodes, &mut fresh);
     let n = nodes.len();
     let labels: HashMap<String, usize> =
@@ -307,6 +326,21 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
             }
         }
     }
+    // held in the CPU: a value of r1-r3 or s0-s15 (S0-S15) defined only by reading the register back after calls (no call between:
+    // every call is followed by such a reading) and read only by calls (as their argument, in that register) and
+    // returns (its write-back): wherever it is read, the CPU's register still holds it (not for a value a header
+    // relates)
+    let mut held: HashSet<usize> = HashSet::new();
+    for (w, ds) in &defs_of {
+        let var = &def_var[*w];
+        let float = var.strip_prefix('S').map_or(false, |k| k.parse::<u32>().map_or(false, |k| k < 16));
+        if !(matches!(var.as_str(), "r1" | "r2" | "r3") || float) || keep.contains(w) || !ds.iter().all(|&i| nodes[i].call) {
+            continue;
+        }
+        if reads_of.get(w).map_or(false, |rs| rs.iter().all(|&i| nodes[i].call || nodes[i].ret)) {
+            held.insert(*w);
+        }
+    }
     let mut alias: HashMap<usize, (String, usize)> = HashMap::new(); // value -> (variable, value) it stands for
     let mut copies: HashSet<Path> = HashSet::new();
     // the entry definitions, and the copies of an entry value (value -> the variable whose entry value it is)
@@ -326,6 +360,33 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         }
         constant.insert(w, *k);
         copies.insert(p.clone());
+    }
+    // a constant plus a constant (x = y + K, y one constant value): to a fixed point, for chains of them
+    loop {
+        let mut more = false;
+        for i in 0..n {
+            let (Some((src, k)), Some(p), [d]) = (&nodes[i].offset, &nodes[i].path, nodes[i].defs.as_slice()) else { continue };
+            if !vars.contains(src) || !vars.contains(d) {
+                continue;
+            }
+            let w = find(&mut parent, def_id[&(i, d.clone())]);
+            if constant.contains_key(&w) || keep.contains(&w) || defs_of.get(&w).map_or(0, |v| v.len()) != 1 {
+                continue;
+            }
+            let Some(ids) = inn[i].get(src) else { continue };
+            if ids.len() != 1 {
+                continue;
+            }
+            let s0 = find(&mut parent, *ids.iter().next().unwrap());
+            if let Some((c, Ty::U32)) = constant.get(&s0).copied() {
+                constant.insert(w, ((c as u32).wrapping_add(*k as u32) as u64, Ty::U32));
+                copies.insert(p.clone());
+                more = true;
+            }
+        }
+        if !more {
+            break;
+        }
     }
     for i in 0..n {
         let (Some(src), Some(p), [d]) = (&nodes[i].copy, &nodes[i].path, nodes[i].defs.as_slice()) else { continue };
@@ -420,6 +481,21 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
     for (i, x) in nodes.iter().enumerate() {
         let Some(p) = &x.path else { continue };
         for d in x.defs.iter().filter(|d| vars.contains(*d)) {
+            if held.contains(&find(&mut parent, def_id[&(i, d.clone())])) {
+                values.held_defs.insert((p.clone(), d.clone()));
+            }
+        }
+        for u in x.uses.iter().filter(|u| vars.contains(*u)) {
+            if let Some(&id) = inn[i].get(u).and_then(|s| s.iter().next()) {
+                if held.contains(&find(&mut parent, id)) {
+                    values.held_reads.insert((p.clone(), u.clone()));
+                }
+            }
+        }
+    }
+    for (i, x) in nodes.iter().enumerate() {
+        let Some(p) = &x.path else { continue };
+        for d in x.defs.iter().filter(|d| vars.contains(*d)) {
             let root = find(&mut parent, def_id[&(i, d.clone())]);
             if let Some(name) = value_name.get(&root) {
                 values.names.insert((p.clone(), d.clone()), name.clone());
@@ -460,6 +536,16 @@ impl Values {
     // the variable whose entry value `var` holds when statement `path` reads it (copies seen through)
     pub fn entry_value(&self, path: &[usize], var: &str) -> Option<&String> {
         self.entries.get(&(path.to_vec(), var.to_string()))
+    }
+
+    // whether `var`'s value read at statement `path` is held in the CPU's register of the same name
+    pub fn held(&self, path: &[usize], var: &str) -> bool {
+        self.held_reads.contains(&(path.to_vec(), var.to_string()))
+    }
+
+    // whether the value of `var` the call at `path` defines (reading the register back) is held in the CPU
+    pub fn held_def(&self, path: &[usize], var: &str) -> bool {
+        self.held_defs.contains(&(path.to_vec(), var.to_string()))
     }
 
     // whether the statement at `path` is a copy left out

@@ -178,3 +178,43 @@ pub fn constant_targets(f: &Function) -> HashMap<Vec<usize>, u32> {
     walk(&f.body, &[], f, &jumped, &mut Env::new(), &mut out);
     out
 }
+
+// the functions of the program (the recompiler's funcs.txt: addresses, bit 0 for Thumb)
+fn functions() -> &'static HashSet<u32> {
+    static FUNCS: std::sync::OnceLock<HashSet<u32>> = std::sync::OnceLock::new();
+    FUNCS.get_or_init(|| {
+        std::fs::read_to_string("build/acnl/generated/funcs.txt")
+            .unwrap_or_default()
+            .lines()
+            .filter_map(|l| u32::from_str_radix(l.trim(), 16).ok())
+            .collect()
+    })
+}
+
+// The function with its indirect calls to a constant that is a function's entry written as direct calls of it (the
+// same call: the model calls the target either way).
+pub fn as_direct_calls(f: &Function) -> Function {
+    fn rewrite(list: &mut [Stmt], prefix: &[usize], targets: &HashMap<Vec<usize>, u32>) {
+        for (i, s) in list.iter_mut().enumerate() {
+            let p: Vec<usize> = [prefix, &[i]].concat();
+            match s {
+                Stmt::Dispatch(tail) => {
+                    if let Some(t) = targets.get(&p).filter(|t| functions().contains(t)) {
+                        *s = Stmt::GuestCall(*t, *tail);
+                    }
+                }
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    rewrite(a, &[p.clone(), vec![0]].concat(), targets);
+                    rewrite(b, &[p.clone(), vec![1]].concat(), targets);
+                }
+                _ => {}
+            }
+        }
+    }
+    let targets = constant_targets(f);
+    let mut g = f.clone();
+    if !targets.is_empty() {
+        rewrite(&mut g.body, &[], &targets);
+    }
+    g
+}

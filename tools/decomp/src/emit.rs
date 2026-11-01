@@ -131,6 +131,7 @@ struct Emitter {
     labels: HashSet<String>,           // the labels written so far (a goto to one is a loop's back edge)
     values: crate::values::Values,     // each variable split into its values (values.rs)
     globals: std::cell::RefCell<BTreeMap<(u64, Ty), String>>, // accesses at a constant address: their guest::global
+    vtables: std::cell::RefCell<BTreeMap<u64, String>>,       // the vtable addresses written by name
     cur: Vec<usize>,                   // the path of the statement being written (which value a variable is there)
     exits: HashMap<String, Exit>,      // short blocks that end the function, written in place of a goto to them
     targets: HashSet<String>,          // labels something other than such a goto still jumps to
@@ -220,8 +221,27 @@ fn jump_targets(list: &[Stmt], exits: &HashMap<String, Exit>, out: &mut HashSet<
     }
 }
 
+// The vtables of the RTTI's classes (DECOMP_RTTI, default build/acnl/rtti.json), by address: `vtable_<class>`, or
+// `vtable_<class>_at_<offset>` for the one of a base class at that offset; the constants written by those names.
+fn vtable_names() -> &'static HashMap<u64, String> {
+    static NAMES: std::sync::OnceLock<HashMap<u64, String>> = std::sync::OnceLock::new();
+    NAMES.get_or_init(|| {
+        let taken = crate::structs::taken_names("games/acnl/src");
+        let classes = crate::structs::classes(&std::env::var("DECOMP_RTTI").unwrap_or("build/acnl/rtti.json".into()), &taken);
+        let mut out = HashMap::new();
+        for c in classes {
+            for (address, top) in c.vtables {
+                let name = if top == 0 { format!("vtable_{}", c.name) } else { format!("vtable_{}_at_{:x}", c.name, -top) };
+                out.entry(address).or_insert(name);
+            }
+        }
+        out
+    })
+}
+
 fn num(v: u64, t: Ty) -> String {
-    // hex literals need a comment on their line (repository lint): the emitter adds "// (from the original)"
+    // a hex literal in a statement gets a comment on its line (no magic numbers): the emitter adds "// (from the
+    // original)"; the declarations that name one (globals, callees, field offsets) need none
     let suffix = match t {
         Ty::U32 => "u",
         Ty::U64 => "ull",
@@ -407,6 +427,11 @@ impl Emitter {
             return Ok(c);
         }
         Ok(match e {
+            Expr::Num(v, Ty::U32) if vtable_names().contains_key(v) => {
+                let name = vtable_names()[v].clone();
+                self.vtables.borrow_mut().insert(*v, name.clone());
+                name
+            }
             Expr::Num(v, t) => num(*v, *t),
             Expr::Float(v, t) => {
                 if !v.is_finite() {
@@ -428,6 +453,10 @@ impl Emitter {
             }, self.expr(a, 11)?),
             // arithmetic on constants (a value folded to its constant meets another): its result
             Expr::Bin(..) if self.constant_u32(e).is_some() => num(self.constant_u32(e).unwrap(), Ty::U32),
+            // K + x as x + K (an address: base, then offset)
+            Expr::Bin(BinOp::Add, a, b) if self.constant_u32(a).is_some() && self.constant_u32(b).is_none() => {
+                return self.expr(&Expr::Bin(BinOp::Add, b.clone(), a.clone()), outer);
+            }
             // a comparison of an unsigned narrow value widened to u32 with an unsigned value or a constant: without the
             // widening (both sides are non-negative either way, the truth is the same)
             Expr::Bin(op @ (BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge), a, b)
@@ -517,6 +546,8 @@ impl Emitter {
             _ => self.constant_u32(v),
         };
         match konst {
+            // (a vtable's address by its name)
+            Some(k) if t == Ty::U32 && vtable_names().contains_key(&k) => self.expr(&Expr::Num(k, Ty::U32), 0).unwrap_or(text),
             Some(k) if !t.float() && t.bits() < 64 && k < 1u64 << t.bits() => num(k, Ty::S32),
             _ if crate::types::type_of(v, &self.var_types) == Some(t) => text,
             _ => format!("{}({})", t.c_name(), text),
@@ -543,9 +574,15 @@ impl Emitter {
     }
 
     fn line(&mut self, indent: usize, text: &str) {
+        // (writing back a value the register holds: nothing to do)
+        if let Some((a, b)) = text.strip_suffix(';').and_then(|t| t.split_once(" = ")) {
+            if a == b && a.starts_with("guest::cpu()->") {
+                return;
+            }
+        }
         self.out.push_str(&"    ".repeat(indent));
         self.out.push_str(text);
-        // the repository's lint wants a comment on every line with a hex literal
+        // no magic numbers: a comment on every line with a hex literal
         if text.contains("0x") && !text.contains("//") {
             self.out.push_str("  // (from the original)");
         }
@@ -553,13 +590,23 @@ impl Emitter {
     }
 
     // the variables of `reload` live after the SI() that follows the statement at `path` (all when unknown)
+    // `x = value;`, a typed local's value converted to the pointer to its struct
+    fn assignment(&self, x: &str, value: &str) -> String {
+        match self.typed.get(x) {
+            Some(st) => format!("{} = gptr<{}>({});", x, st, value),
+            None => format!("{} = {};", x, value),
+        }
+    }
+
     fn reloads_after(&self, path: &[usize]) -> Vec<(String, String)> {
         let mut next = path.to_vec();
         *next.last_mut().unwrap() += 1;
-        match self.live.live_out.get(&next) {
+        let read: Vec<(String, String)> = match self.live.live_out.get(&next) {
             Some(live) => self.reload.iter().filter(|(v, _)| live.contains(v)).cloned().collect(),
             None => self.reload.clone(),
-        }
+        };
+        // (not a value the CPU's register holds wherever it is read)
+        read.into_iter().filter(|(v, _)| !self.values.held_def(path, v)).collect()
     }
 
     // the value of a 32-bit unsigned expression made of constants (and variables holding one), wrapping as the guest
@@ -622,6 +669,10 @@ impl Emitter {
 
     // a variable as read at `path`: its value's name there, or the constant it holds
     fn var_text(&self, path: &[usize], v: &str) -> String {
+        // (a value the CPU's register holds where it is read: values.rs)
+        if self.values.held(path, v) {
+            return format!("guest::cpu()->{}[{}]", if v.starts_with('S') { "s" } else { "r" }, &v[1..]);
+        }
         match self.values.constant(path, v) {
             Some((k, t)) => num(k, t),
             None => {
@@ -962,10 +1013,10 @@ impl Emitter {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};\n{}return;", call, "    ".repeat(indent)) });
                     } else {
                         let r0 = self.values.name(&path, "r0");
-                        self.line(indent, &if self.result_read(&path) { format!("{} = {};", r0, call) } else { format!("{};", call) });
+                        self.line(indent, &if self.result_read(&path) { self.assignment(&r0, &call) } else { format!("{};", call) });
                         // the registers the callee may have changed that are read later, as the original reads them back
                         for (v, field) in self.reloads_after(&path) {
-                            let text = format!("{} = {};", self.values.name(&path, &v), field);
+                            let text = self.assignment(&self.values.name(&path, &v), &field);
                             self.line(indent, &text);
                         }
                     }
@@ -1024,9 +1075,9 @@ impl Emitter {
                         }
                     } else {
                         let r0 = self.values.name(&path, "r0");
-                        self.line(indent, &if self.result_read(&path) { format!("{} = {};", r0, call) } else { format!("{};", call) });
+                        self.line(indent, &if self.result_read(&path) { self.assignment(&r0, &call) } else { format!("{};", call) });
                         for (v, field) in self.reloads_after(&path) {
-                            let text = format!("{} = {};", self.values.name(&path, &v), field);
+                            let text = self.assignment(&self.values.name(&path, &v), &field);
                             self.line(indent, &text);
                         }
                     }
@@ -1042,7 +1093,7 @@ impl Emitter {
                     }
                     self.line(indent, &format!("guest::svc(0x{:x});", n));
                     for (v, k) in self.svc_regs.clone() {
-                        let text = format!("{} = guest::cpu()->r[{}];", self.values.name(&path, &v), k);
+                        let text = self.assignment(&self.values.name(&path, &v), &format!("guest::cpu()->r[{}]", k));
                         self.line(indent, &text);
                     }
                 }
@@ -1253,11 +1304,13 @@ fn tidy_masks(line: &str) -> String {
 
 // The locals (C++ variables, by name) that are the base of field accesses (`*(x + off)`, two or more, fields not
 // overlapping): each is written as a pointer to a struct of its own (`gptr<Local_<address>_<name>> x`, its fields
-// `x->word_4`), unless one of its values comes from a call, the CPU, a parameter or the entry (written `x = call(...)`
-// or initialised from the CPU, which a pointer cannot be), or its address is a constant. Its other uses read
-// `x.addr()`, its assignments `x = gptr<S>(...)`; the statements are the same.
-fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashMap<String, String>, HashMap<String, BTreeMap<u64, Ty>>) {
+// `x->word_4`), unless it holds the entry value (initialised from the CPU in its declaration, which a pointer cannot
+// be; but a parameter given as the register itself and never assigned is declared by the signature, as
+// `gptr<Object_<address>_<k>> rk`), or its address is a constant. Its other uses read `x.addr()`, its assignments
+// `x = gptr<S>(...)` (a call's result `x = gptr<S>(call(...))`); the statements are the same.
+fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness, plain: &HashSet<String>) -> (HashMap<String, String>, HashMap<String, BTreeMap<u64, Ty>>) {
     let mut fields: HashMap<String, BTreeMap<u64, Ty>> = HashMap::new();
+    let mut assigned: HashSet<String> = HashSet::new();
     let mut accesses: HashMap<String, usize> = HashMap::new();
     let mut bad: HashSet<String> = HashSet::new();
     let mut access = |p: &[usize], t: Ty, a: &Expr, fields: &mut HashMap<String, BTreeMap<u64, Ty>>, bad: &mut HashSet<String>| {
@@ -1326,9 +1379,10 @@ fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashM
         match s {
             Stmt::Decl(_, n, Some(x)) | Stmt::Assign(n, x) => {
                 loads(x, &mut ls);
+                assigned.insert(e.values.name(p, n));
                 let mut r = crate::types::Reads::default();
                 crate::types::reads(x, &mut r);
-                if r.cpu || r.out_params {
+                if r.out_params {
                     bad.insert(e.values.name(p, n));
                 }
             }
@@ -1347,12 +1401,7 @@ fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashM
                     access(&q, t, &a, &mut fields, &mut bad);
                 }
             }
-            Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) => {
-                // what a call (or system call) defines comes back from the CPU
-                for v in e.effects(s, p).1 {
-                    bad.insert(e.values.name(p, &v));
-                }
-            }
+            // (what a call or system call defines comes back from the CPU, converted: `x = gptr<S>(call(...))`)
             _ => {}
         }
         for (t, a) in ls {
@@ -1364,8 +1413,10 @@ fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashM
     for (name, fs) in fields {
         let var = name.rsplit_once('_').filter(|(_, k)| k.bytes().all(|c| c.is_ascii_digit())).map_or(name.as_str(), |(b, _)| b);
         // (the entry's value, a parameter's: initialised from the CPU)
+        // (but a parameter given as the register itself and never assigned: the signature declares the pointer)
+        let param = plain.contains(&name) && !assigned.contains(&name);
         let entry = lv.at_entry.contains(&name) || ARGS.contains(&name.as_str()) || ARGS.contains(&var) && name == var;
-        if bad.contains(&name) || entry || accesses.get(&name).copied().unwrap_or(0) < 2 || name.starts_with("saved_") || name == "r14" {
+        if bad.contains(&name) || entry && !param || accesses.get(&name).copied().unwrap_or(0) < 2 || name.starts_with("saved_") || name == "r14" {
             continue;
         }
         // fields that overlap: not a struct
@@ -1380,7 +1431,8 @@ fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashM
         if overlap || fs.values().any(|t| t.float()) {
             continue;
         }
-        typed.insert(name.clone(), format!("Local_{:08x}_{}", f.address, name));
+        let st = if param { format!("Object_{:08x}_{}", f.address, &name[1..]) } else { format!("Local_{:08x}_{}", f.address, name) };
+        typed.insert(name.clone(), st);
         out.insert(name, fs);
     }
     (typed, out)
@@ -1456,6 +1508,100 @@ fn propagate_copies(body: &str) -> String {
     let mut out = lines.join("\n");
     out.push('\n');
     out
+}
+
+// The frame's slots read and written in place (`*frame.at<T>(k)`), each at one offset with one type and none
+// overlapping another, as the fields of a struct the size of the frame (`frame->word_k`, guest::StackFrameOf); its
+// declaration and the body. None when there is no such slot. The places are the same, so the proof is unchanged.
+fn frame_struct(body: &str, address: u32, bytes: u64) -> Option<(String, String)> {
+    const AT: &str = "*frame.at<";
+    // (offset, type) of each place, in order
+    let place = |rest: &str| -> Option<(Ty, u64, usize)> {
+        let close = rest.find(">(")?;
+        let t = Ty::from_name(&rest[..close])?;
+        let k_text = &rest[close + 2..rest[close + 2..].find(')')? + close + 2];
+        let k = match k_text.strip_prefix("0x") {
+            Some(h) => u64::from_str_radix(h.trim_end_matches('u'), 16).ok()?,
+            None => k_text.trim_end_matches('u').parse().ok()?,
+        };
+        Some((t, k, close + 2 + k_text.len() + 1))
+    };
+    let mut seen: BTreeMap<u64, Option<Ty>> = BTreeMap::new();
+    for (i, _) in body.match_indices(AT) {
+        match place(&body[i + AT.len()..]) {
+            Some((t, k, _)) => {
+                let e = seen.entry(k).or_insert(Some(t));
+                if *e != Some(t) {
+                    *e = None;
+                }
+            }
+            None => return None,
+        }
+    }
+    // (not the bool type, nor a slot that overlaps another or runs past the frame)
+    let mut fields: BTreeMap<u64, Ty> = BTreeMap::new();
+    let all: Vec<(u64, Option<Ty>)> = seen.iter().map(|(k, t)| (*k, *t)).collect();
+    for (j, (k, t)) in all.iter().enumerate() {
+        let Some(t) = t else { continue };
+        let end = k + (t.bits() / 8) as u64;
+        let next = all.get(j + 1).map_or(u64::MAX, |(n, _)| *n);
+        let prev_end = if j > 0 { all[j - 1].0 + all[j - 1].1.map_or(1, |p| (p.bits() / 8) as u64) } else { 0 };
+        if *t == Ty::Bool || t.bits() == 64 || end > bytes || end > next || prev_end > *k {
+            continue;
+        }
+        fields.insert(*k, *t);
+    }
+    if fields.is_empty() {
+        return None;
+    }
+    let name = format!("Frame_{:08x}", address);
+    let mut decl = format!("struct __attribute__((packed)) {} {{\n", name);
+    let mut pos = 0u64;
+    for (k, t) in &fields {
+        if *k > pos {
+            decl.push_str(&format!("    u8 unknown_{:x}[0x{:x}];  // (not read or written by name)\n", pos, k - pos));
+        }
+        decl.push_str(&format!("    {} {};\n", t.c_name(), field_name(*t, *k)));
+        pos = k + (t.bits() / 8) as u64;
+    }
+    if bytes > pos {
+        decl.push_str(&format!("    u8 unknown_{:x}[0x{:x}];  // (not read or written by name)\n", pos, bytes - pos));
+    }
+    decl.push_str("};\n");
+    for (k, t) in &fields {
+        decl.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});\n", name, field_name(*t, *k), k));
+    }
+    decl.push_str(&format!("GUEST_SIZE({}, 0x{:x});\n\n", name, bytes));
+    // the body, the places by name (a line left without a hex literal loses its comment)
+    let mut out = String::with_capacity(body.len());
+    for line in body.lines() {
+        let mut l = String::new();
+        let mut rest = line;
+        while let Some(i) = rest.find(AT) {
+            l.push_str(&rest[..i]);
+            let after = &rest[i + AT.len()..];
+            match place(after) {
+                Some((t, k, used)) if fields.get(&k) == Some(&t) => {
+                    l.push_str(&format!("frame->{}", field_name(t, k)));
+                    rest = &after[used..];
+                }
+                _ => {
+                    l.push_str(AT);
+                    rest = after;
+                }
+            }
+        }
+        l.push_str(rest);
+        let tag = "  // (from the original)";
+        if let Some(code) = l.strip_suffix(tag) {
+            if !code.contains("0x") {
+                l = code.to_string();
+            }
+        }
+        out.push_str(&l);
+        out.push('\n');
+    }
+    Some((decl, out))
 }
 
 fn frame_places(body: &str) -> String {
@@ -1681,6 +1827,51 @@ fn drop_unchanged_write_backs(body: &str, params: &HashMap<String, String>) -> S
             }
         }
         k += 1;
+    }
+    let mut out = lines.join("\n");
+    out.push('\n');
+    out
+}
+
+// `if (c) { return a; } return b;` as one return: `return c;` for 1 and 0, `return !c;` (the comparison turned
+// around) for 0 and 1, `return c ? a : b;` for other plain values. The statements are the same.
+fn return_choices(body: &str) -> String {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    let plain = |t: &str| !t.is_empty() && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.' || c == '(' || c == ')');
+    let invert = |c: &str| -> String {
+        let top = !c.contains("&&") && !c.contains("||") && !c.contains('?');
+        for (op, not) in [(" == ", " != "), (" != ", " == "), (" <= ", " > "), (" >= ", " < "), (" < ", " >= "), (" > ", " <= ")] {
+            if top && c.matches(op).count() == 1 && [" == ", " != ", " <= ", " >= ", " < ", " > "].iter().filter(|o| c.contains(*o)).count() == 1 {
+                return c.replacen(op, not, 1);
+            }
+        }
+        format!("!({})", c)
+    };
+    let mut i = 0;
+    while i + 3 < lines.len() {
+        let pad = &lines[i][..lines[i].len() - lines[i].trim_start().len()];
+        let inner = format!("{}    ", pad);
+        let cond = lines[i].strip_prefix(pad).and_then(|t| t.strip_prefix("if (")).and_then(|t| t.strip_suffix(") {"));
+        let a = lines[i + 1].strip_prefix(&inner).and_then(|t| t.strip_prefix("return ")).and_then(|t| t.strip_suffix(';'));
+        let closed = lines[i + 2] == format!("{}}}", pad);
+        let b = lines[i + 3].strip_prefix(pad).and_then(|t| t.strip_prefix("return ")).and_then(|t| t.strip_suffix(';'));
+        let (Some(c), Some(a), true, Some(b)) = (cond, a, closed, b) else {
+            i += 1;
+            continue;
+        };
+        if a.contains("//") || b.contains("//") || !plain(a) || !plain(b) {
+            i += 1;
+            continue;
+        }
+        let value = match (a, b) {
+            ("1u", "0u") => c.to_string(),
+            ("0u", "1u") => invert(c),
+            _ => format!("{} ? {} : {}", c, a, b),
+        };
+        let text = format!("{}return {};", pad, value);
+        let text = if text.contains("0x") { format!("{}  // (from the original)", text) } else { text };
+        lines.splice(i..i + 4, [text]);
+        i += 1;
     }
     let mut out = lines.join("\n");
     out.push('\n');
@@ -2151,6 +2342,8 @@ fn register_list(mask: u32) -> String {
 pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     // accesses through an argument register that still holds the argument read as its fields
     let f = &crate::values::arguments_in_addresses(&d.function);
+    // (an indirect call to a function's address: a call of that function)
+    let f = &crate::dispatch::as_direct_calls(f);
     let addr = f.address | f.thumb as u32;
     // the stack frame as one object (the push by the export, the rest by a guest::StackFrame), when it can be
     let framed = frame_mode(f);
@@ -2264,7 +2457,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), arities: HashMap::new(), fixed: false, out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), vtables: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), arities: HashMap::new(), fixed: false, out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -2272,7 +2465,10 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     crate::values::each_expr(&f.body, &mut |x| pointed.extend(crate::flow::out_params(x)));
     splittable.retain(|n| !n.starts_with("arg") && !n.starts_with("saved_") && n != "r13" && n != "r14" && !pointed.contains(n));
     e.values = crate::values::split(f, &splittable, &|s, p| e.effects(s, p));
-    let (typed, local_fields) = typed_locals(f, &e, &lv);
+    // (the parameters the signature gives as the register itself: no argK copy)
+    let plain: HashSet<String> =
+        params.iter().filter(|p| !vars.contains_key(&format!("arg{}", &p[1..]))).map(|p| p.to_string()).collect();
+    let (typed, local_fields) = typed_locals(f, &e, &lv, &plain);
     e.typed = typed;
     e.local_fields = local_fields;
     exit_blocks(&f.body, &[], &mut e.exits);
@@ -2360,7 +2556,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         out.push_str("};\n");
         for (fname, off) in offsets {
             // natural alignment of the fields (GUEST_OFFSET checks the layout)
-            out.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});  // (from the original)\n", name, fname, off));
+            out.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});\n", name, fname, off));
         }
         out.push('\n');
         e.struct_name.insert(*k, name);
@@ -2382,17 +2578,20 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         }
         out.push_str("};\n");
         for (fname, off) in offsets {
-            out.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});  // (from the original)\n", st, fname, off));
+            out.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});\n", st, fname, off));
         }
         out.push('\n');
     }
+    for (addr, n) in e.vtables.borrow().iter() {
+        out.push_str(&format!("inline constexpr u32 {} = 0x{:08x}u;\n", n, addr));
+    }
     for ((addr, t), n) in e.globals.borrow().iter() {
-        out.push_str(&format!("inline guest::global<{}, 0x{:08x}> {};  // (from the original)\n", t.c_name(), addr, n));
+        out.push_str(&format!("inline guest::global<{}, 0x{:08x}> {};\n", t.c_name(), addr, n));
     }
     for (t, n) in &e.callees {
         let arity = e.arities.get(t).copied().unwrap_or_else(|| e.needs.get(t).map_or(4, |n| if n.full { 4 } else { n.arity }));
         let args = vec!["u32"; arity].join(", ");
-        out.push_str(&format!("inline constexpr guest::Function<0x{:08x}, u32({})> {};  // (from the original)\n", t, args, n));
+        out.push_str(&format!("inline constexpr guest::Function<0x{:08x}, u32({})> {};\n", t, args, n));
     }
     out.push('\n');
     let mut sig = Vec::new();
@@ -2409,7 +2608,11 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         match e.struct_name.get(&k) {
             Some(s) => sig.push(format!("gptr<{}> arg{}", s, k)),
             None if copies.contains(&k) => sig.push(format!("u32 arg{}_value", k)),
-            None => sig.push(format!("u32 {}", p)), // the register itself is the parameter
+            // the register itself is the parameter (a pointer to its struct when it is typed)
+            None => sig.push(match e.typed.get(p) {
+                Some(st) => format!("gptr<{}> {}", st, p),
+                None => format!("u32 {}", p),
+            }),
         }
     }
     for k in 0..last_float.map_or(0, |m| m + 1) {
@@ -2420,6 +2623,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
             sig.push(format!("float {}_unused", s));
         }
     }
+    let signature_at = out.len();
     out.push_str(&format!("{} {}({}) {{\n", if returns { "u32" } else { "void" }, base, sig.join(", ")));
     if locals_bytes > 0 {
         out.push_str(&format!("    guest::StackFrame frame(0x{:x});  // the original's stack frame\n", locals_bytes));
@@ -2521,6 +2725,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         .collect();
     let body = drop_unchanged_write_backs(&body, &entry_params);
     let body = return_values(&body);
+    let body = return_choices(&body);
     // (`*gptr<T>(frame.at(k).addr())`, a frame address folded into an access: `*frame.at<T>(k)`)
     let body = frame_places(&body);
     let body = propagate_copies(&body);
@@ -2598,6 +2803,16 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         }
         out.push_str(&format!("    {}\n", l));
     }
+    // the frame's slots read and written in place as the fields of a struct
+    let body = match frame_struct(&body, f.address, locals_bytes) {
+        Some((decl, b)) => {
+            let line = format!("    guest::StackFrame frame(0x{:x});  // the original's stack frame\n", locals_bytes);
+            out = out.replacen(&line, &format!("    guest::StackFrameOf<Frame_{:08x}> frame;  // the original's stack frame\n", f.address), 1);
+            out.insert_str(signature_at, &decl);
+            b
+        }
+        None => body,
+    };
     out.push_str(&body);
     out.push_str("}\n");
     out.push_str(&format!("\n}}  // namespace d_{:08x}\n", f.address));

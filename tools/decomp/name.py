@@ -33,8 +33,8 @@ code. Mention what is not known yet when it matters.
 - Variables to rename are the locals the function declares (r0_1, r4, res_1, ...) and its labels (L_<address>); keep \
 names unique, never C++ keywords. Do not rename parameters arg0..arg3, globals or callees.
 - The function's own structs (Object_<address>_<k>, the object an argument points to; Local_<address>_<variable>, the \
-object a local points to) and their fields (byte_/half_/word_<offset>) may get names: structs in CamelCase, fields in \
-snake_case. Leave other structs alone.
+object a local points to; Frame_<address>, its stack frame, whose fields are its local variables) and their fields \
+(byte_/half_/word_<offset>) may get names: structs in CamelCase, fields in snake_case. Leave other structs alone.
 Answer with the JSON object only."""
 
 SCHEMA = {
@@ -165,7 +165,7 @@ def main():
                  'vars': {p['from']: p['to'] for p in answer['vars']}, 'labels': {p['from']: p['to'] for p in answer['labels']}}
         trial = json.loads(json.dumps(names))
         trial['functions'][a] = entry
-        own = ('Object_%s_' % a, 'Local_%s_' % a)
+        own = ('Object_%s_' % a, 'Local_%s_' % a, 'Frame_%s' % a)
         structs = {}
         for p in answer['structs']:
             if p['from'].startswith(own):

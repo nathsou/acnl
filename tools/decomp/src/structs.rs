@@ -98,6 +98,7 @@ pub struct Class {
     pub bases: Vec<usize>, // indices of the base classes (at offset 0 first)
     pub vtable: Option<u64>,
     pub functions: Vec<u32>,
+    pub vtables: Vec<(u64, i64)>, // every vtable of the class: its address (function 0) and offset to the top
 }
 
 // The struct names the repository's sources (games/acnl/src, the recovered header aside) and the type database
@@ -172,6 +173,12 @@ pub fn classes(path: &str, taken: &std::collections::HashSet<String>) -> Vec<Cla
                 .into_iter()
                 .flatten()
                 .filter_map(|f| f.as_u64().map(|a| a as u32 & !1))
+                .collect(),
+            vtables: v["vtables"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|t| Some((t["address"].as_u64()?, t["offset_to_top"].as_i64()?)))
                 .collect(),
         });
     }
@@ -444,7 +451,7 @@ pub fn header(r: &Recovered) -> String {
         }
         out.push_str("} __attribute__((packed));\n");
         for (off, t) in fields {
-            out.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});  // (from the original)\n", name, field_name(*t, *off), off));
+            out.push_str(&format!("GUEST_OFFSET({}, {}, 0x{:x});\n", name, field_name(*t, *off), off));
         }
         out.push('\n');
     }

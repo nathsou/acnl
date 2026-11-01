@@ -421,6 +421,15 @@ private:
     bool released_ = false;
 };
 
+// A StackFrame laid out as a struct (the original's local variables): `frame->field` is that field, counted from the
+// stack pointer like `at`.
+template <typename T>
+class StackFrameOf : public StackFrame {
+public:
+    StackFrameOf() : StackFrame(u32(sizeof(T))) {}
+    T *operator->() const { return at<T>(0).get(); }
+};
+
 // Space on the guest stack for the duration of a scope, for objects whose address is passed to guest code.
 template <typename T>
 class StackObject {

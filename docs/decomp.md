@@ -147,8 +147,14 @@ result):
   holds the rest of the frame; locals are `*frame.at<u32>(k)` and their addresses `frame.at(k).addr()`. A kept push
   (`ea = sp - 4; *ea = r4; sp = ea`) counts as a constant move too. A tail call keeps the old form (the export's frame
   lasts until the C++ returns; the original pops before branching).
-- Locals that are the base of field accesses (two or more, fields not overlapping, none of their values from a call,
-  the CPU or a parameter) are pointers to a struct of their own: `gptr<Local_<address>_<name>> x`, `x->word_4`.
+- The frame's slots read and written in place, each at one offset with one type and none overlapping another, are
+  the fields of a struct the size of the frame: `guest::StackFrameOf<Frame_<address>> frame;`, `frame->word_10`
+  (`StackFrameOf<T>` is a `StackFrame` of `sizeof(T)` bytes whose `->` is the T at sp). Addresses of slots stay
+  `frame.at(k).addr()`.
+- Locals that are the base of field accesses (two or more, fields not overlapping, not the entry value of a register)
+  are pointers to a struct of their own: `gptr<Local_<address>_<name>> x`, `x->word_4`; a call's result too, as
+  `x = gptr<S>(call(...))`. A parameter given as the register itself and never assigned is one as well
+  (`gptr<Object_<address>_<k>> rk` in the signature).
 - After another call, trailing `guest::cpu()->r[k]` arguments are left out (a call writes only the arguments it is
   given; the registers past them are what the previous call left, as in the original), as many at every call of the
   callee as the widest needs.
@@ -157,6 +163,20 @@ result):
   what it reads (and, if it reads memory, only plain variables are assigned between); `x = x + e` is `x += e`.
 - `guest::cpu()->r[N] = x;` before a return is left out when x was read from that register in the same block with
   no call or CPU write between (the CPU still holds it), and so is the read once nothing else uses it.
+- Values the CPU holds (values.rs): a value of r1-r3 or s0-s15 defined only by reading the register back after calls
+  and read only by calls (as their argument in that register) and returns (its write-back) is still in the register
+  wherever it is read (every call is followed by such a reading, so no call comes between). It is not read back, the
+  calls take `guest::cpu()->r[k]` (and leave it out when it trails), and its write-back goes; not for a value a loop
+  header relates.
+- An indirect call to a function's address (an ARM/Thumb veneer: `add r12, pc, #1; bx r12`, dispatch.rs) is a call
+  of that function, with its signature: `return call_00100834(...)` rather than `call_address<u32>(0x100835u, ...)`.
+- Constants: a value defined as a constant plus a constant (`r0_32 = r0_31 - 0x2c`, r0_31 a constant) is a constant
+  too; `K + x` is written `x + K`; a vtable's address (the RTTI's) is `vtable_<class>` (`vtable_<class>_at_<offset>`
+  for a base class's), declared `inline constexpr u32 vtable_X = 0x...u;`. The declarations that name a constant
+  (globals, callees, field offsets, vtables) carry no "(from the original)" comment; lines of code with a hex literal
+  do.
+- `if (c) { return 1u; } return 0u;` is `return c;` (`0u`, `1u`: the comparison turned around), other plain values
+  `return c ? a : b;`.
 - Gotos: `if (c) { A; goto L; } S; L:` is `if (c) { A } else { S }` (also when L follows the enclosing block, and
   with other gotos to L inside S); `L: B; if (c) { A } E` with A jumping back to L and A, E not falling through is
   `L: B; if (!c) { E } A`, so the back edge reaches the top level and becomes a loop (`do { } while (1)` when it is

@@ -17,7 +17,10 @@
 //   field at 0xfffffff8 is 8 bytes before the object in the guest, but 4 GiB after it on the host), and below it the
 //   sum cannot wrap because guest addresses are below 0x80000000 (3DS user space);
 // - shifts: by constants below the width, or by x & m with m below it (C++ leaves larger amounts open; the model
-//   defines them).
+//   defines them);
+// - guest::StackFrame frame(N) lowers sp by N until the function returns (frame.release() earlier), and
+//   guest::StackFrameOf<T> frame by sizeof(T), `frame->field` being T's field at sp;
+// - `inline constexpr u32 name = K;` is the constant K.
 use crate::ast::*;
 use crate::typedb::PathStep;
 use std::collections::{HashMap, HashSet};
@@ -210,6 +213,7 @@ struct Scope {
     structs: HashMap<String, Vec<Field>>, // packed structs of the file
     callees: HashMap<String, Callee>,
     globals: HashMap<String, (u32, CType)>, // guest::global<T, address>: a pointer to a T at that address
+    constants: HashMap<String, u32>,        // inline constexpr u32 name = value;
 }
 
 // ---- places and values
@@ -241,6 +245,7 @@ struct Parser<'a> {
     frame: u32, // GUEST_EXPORT_FRAMED's mask: the registers pushed before the function runs (bit n: register n)
     loops: usize, // the loops read so far (names for the labels a loop leaves out)
     stack_frame: u64, // the bytes a guest::StackFrame at the top of the function lowers sp by (restored at returns)
+    frame_struct: Option<String>, // a guest::StackFrameOf<T>'s T (`frame->field`: T's field at sp)
     released: bool, // frame.release() just ran: the next return (a tail call) does not restore sp again
     depth: usize, // blocks open
     pub layout: Vec<LayoutAssumption>,
@@ -487,6 +492,13 @@ impl<'a> Parser<'a> {
             }
             Some(Tok::Id(n)) => {
                 // frame.at<T>(k) / frame.at(k): the guest pointer sp + k (StackFrame::at reads the CPU's sp)
+                // frame->field: the frame struct's field at sp
+                if n == "frame" && self.peek_at(1) == Some(&Tok::P("->")) {
+                    if let Some(st) = self.frame_struct.clone() {
+                        self.i += 1;
+                        return Ok(V::R(Expr::Cpu(CpuField::R(13)), CType::Ptr(Box::new(CType::Struct(st)))));
+                    }
+                }
                 if n == "frame" && self.stack_frame != 0 && self.peek_at(1) == Some(&Tok::P(".")) && self.peek_at(2) == Some(&Tok::Id("at".into())) {
                     self.i += 3;
                     let t = if self.eat("<") {
@@ -564,6 +576,9 @@ impl<'a> Parser<'a> {
                         CType::Ptr(_) | CType::Val(_) => V::Pl(Place::Var(n)),
                         other => return Err(format!("variable of type {:?}", other)),
                     });
+                }
+                if let Some(v) = self.resolve(&n, &|q| self.scope.constants.contains_key(q)).map(|q| self.scope.constants[&q]) {
+                    return Ok(V::R(Expr::Num(v as u64, Ty::U32), CType::Val(Ty::U32)));
                 }
                 if let Some((address, t)) = self.resolve(&n, &|q| self.scope.globals.contains_key(q)).map(|q| self.scope.globals[&q].clone()) {
                     // only as *name: the T at the address
@@ -817,6 +832,23 @@ impl<'a> Parser<'a> {
     // NAME(args) for a guest::Function, or guest::call_address<R>(target, args): Some(result) after the call is
     // lowered into `out` (None: not a call here)
     fn try_call(&mut self, out: &mut Vec<Stmt>) -> R<Option<(Expr, CType)>> {
+        // gptr<T>(call): the call's result as a pointer (a typed local)
+        if self.is_id("gptr") && self.peek_at(1) == Some(&Tok::P("<")) {
+            let save = self.i;
+            if let Some(t @ CType::Ptr(_)) = self.try_type()? {
+                if self.eat("(") {
+                    if let Some((e, rt)) = self.try_call(out)? {
+                        if !matches!(rt, CType::Val(Ty::U32) | CType::Ptr(_)) {
+                            return Err(format!("a pointer from a call returning {:?}", rt));
+                        }
+                        self.expect(")")?;
+                        return Ok(Some((e, t)));
+                    }
+                }
+            }
+            self.i = save;
+            return Ok(None);
+        }
         let (target, ret, arg_types, by_address) = match self.peek().cloned() {
             Some(Tok::Id(n)) if self.resolve(&n, &|q| self.scope.callees.contains_key(q)).is_some() && self.peek_at(1) == Some(&Tok::P("(")) => {
                 let c = self.scope.callees[&self.resolve(&n, &|q| self.scope.callees.contains_key(q)).unwrap()].clone();
@@ -1052,6 +1084,28 @@ impl<'a> Parser<'a> {
             let (e, _) = self.expr()?;
             self.expect(";")?;
             return self.epilogue(Some(e), out);
+        }
+        // guest::StackFrameOf<T> frame; at the top of the function: a StackFrame of sizeof(T) bytes, laid out as T
+        if self.is_id("guest") && self.peek_at(2) == Some(&Tok::Id("StackFrameOf".into())) {
+            if self.depth != 1 || self.stack_frame != 0 {
+                return Err("a StackFrame not at the top of the function, or a second one".into());
+            }
+            self.i += 3;
+            self.expect("<")?;
+            let name = self.ident()?;
+            self.close_angle()?;
+            self.expect_id("frame")?;
+            self.expect(";")?;
+            let q = self.resolve(&name, &|q| self.scope.structs.contains_key(q)).ok_or("StackFrameOf of an unknown struct")?;
+            let n = size_of(self.scope, &CType::Struct(q.clone()))?;
+            if n == 0 || n % 4 != 0 || n >= 1 << 20 {
+                return Err(format!("a StackFrame of {} bytes", n));
+            }
+            self.stack_frame = n;
+            self.frame_struct = Some(q);
+            let sp = Expr::Bin(BinOp::Sub, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(n, Ty::U32)));
+            out.push(Stmt::SetCpu(CpuField::R(13), sp));
+            return Ok(());
         }
         // a declaration
         let save = self.i;
@@ -1403,7 +1457,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let mut fields = Vec::new();
                 let mut offset = 0u64;
                 while t.get(j) != Some(&Tok::P("}")) {
-                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
+                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
                     let ft = p.try_type()?.ok_or_else(|| format!("field type in {}", name))?;
                     let fname = p.ident()?;
                     let ft = if p.eat("[") {
@@ -1433,7 +1487,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" && matches!(t.get(i + 1), Some(Tok::Id(g)) if g == "guest") => {
                 // inline guest::global<T, 0xADDR> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
                 p.expect_id("guest")?;
                 p.expect("::")?;
                 p.expect_id("global")?;
@@ -1450,9 +1504,21 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 i = p.i;
                 scope.globals.insert(qualified(&ns.join("::"), &name), (address, ty));
             }
+            Tok::Id(n) if n == "inline" && matches!(t.get(i + 2), Some(Tok::Id(u)) if u == "u32") => {
+                // inline constexpr u32 name = 0xVALUE;
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
+                p.expect_id("constexpr")?;
+                p.expect_id("u32")?;
+                let name = p.ident()?;
+                p.expect("=")?;
+                let v = p.number()?;
+                p.expect(";")?;
+                i = p.i;
+                scope.constants.insert(qualified(&ns.join("::"), &name), u32::try_from(v).map_err(|_| "a u32 constant out of range")?);
+            }
             Tok::Id(n) if n == "inline" => {
                 // inline constexpr guest::Function<0xADDR, R(A...)> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
                 p.expect_id("constexpr")?;
                 p.expect_id("guest")?;
                 p.expect("::")?;
@@ -1483,7 +1549,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             _ => {
                 // a function definition: TYPE NAME ( ... ) { ... }
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
                 match p.try_type()? {
                     Some(_) => {
                         let name = p.ident()?;
@@ -1510,7 +1576,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             continue;
         };
         let ns = name.rfind("::").map_or(String::new(), |k| name[..k].to_string());
-        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
+        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
         let f = function(&mut p, address);
         out.push(Export { address, function: f, layout: p.layout });
     }
