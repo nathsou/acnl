@@ -24,6 +24,15 @@ All 90,344 generated functions, 5 s per solver query, 10 threads, 1 h 40 min: 80
 timeouts (most prove with 60 s: `DECOMP_RETRY_MS`), about 720 with system calls or rare statements (not handled), 6 that
 differ (decompiler bugs the checker caught; a decompilation that is not proved is never used).
 
+Round trip (C++ read back and proved, `prove-cpp`), on the batch of 6,249 drafts (2026-11-01): 5,933 proved (95 %);
+201 of the others are fragments of other functions (jump table targets, shared epilogues), which the draft of their
+function covers. 5,921 drafts are in `games/acnl/src/decompiled`, and with all of them enabled the game reaches the
+title screen and a new game reaches the town hall.
+
+Naming pilot (13 functions, Claude Opus 5.5 at low effort): $0.09, about $0.007 a function; every renamed draft proves
+again. Names are good where the code or its callees say what it does, mechanical for thin wrappers of unnamed callees:
+naming goes callees first over the whole program, starting from the 18,979 names already known (`seed_names.py`).
+
 ## How it works
 
 - `parse.rs` reads the generated C subset (register copies, flags, `RD`/`WR` memory macros, labels and gotos, the
