@@ -151,6 +151,53 @@ fn collect_addr(e: &Expr, out: &mut Vec<String>) {
 // first (the proof relates the CPU there). Such a scratch result
 // depends on every argument register of the call that left it, so that call hands over all of them, signature or not
 // (liveness and the emitter both). By statement path.
+// The calls (by statement path) that every path from the entry reaches through another call or system call: there the
+// argument registers the function does not keep hold what that call left, not the caller's arguments.
+pub fn after_calls(f: &Function) -> HashSet<Path> {
+    let mut nodes = Vec::new();
+    let mut fresh = 0;
+    flatten(&f.body, &vec![], &mut nodes, &mut fresh);
+    let labels: HashMap<String, usize> =
+        nodes.iter().enumerate().filter_map(|(i, n)| if let Node::Label(l) = n { Some((l.clone(), i)) } else { None }).collect();
+    let n = nodes.len();
+    let succ = |i: usize| -> Vec<usize> {
+        let next = if i + 1 < n { vec![i + 1] } else { vec![] };
+        match &nodes[i] {
+            Node::Jump(l) => labels.get(l).map(|&t| vec![t]).unwrap_or_default(),
+            Node::JumpIf(_, l, _) => labels.get(l).map(|&t| vec![t]).unwrap_or_default().into_iter().chain(next).collect(),
+            Node::Switch(_, ls) => ls.iter().filter_map(|l| labels.get(l).copied()).chain(next).collect(),
+            Node::Exit(..) => vec![],
+            _ => next,
+        }
+    };
+    // a forward "must" analysis: before[i] = every path to node i went through a call (None: not reached yet)
+    let mut before: Vec<Option<bool>> = vec![None; n];
+    if n == 0 {
+        return HashSet::new();
+    }
+    before[0] = Some(false);
+    let mut work = vec![0usize];
+    while let Some(i) = work.pop() {
+        let Some(b) = before[i] else { continue };
+        let out = b || matches!(nodes[i], Node::Call(..));
+        for j in succ(i) {
+            let new = Some(before[j].map_or(out, |x| x && out));
+            if new != before[j] {
+                before[j] = new;
+                work.push(j);
+            }
+        }
+    }
+    nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, node)| match node {
+            Node::Call(_, p) if before[i] == Some(true) => Some(p.clone()),
+            _ => None,
+        })
+        .collect()
+}
+
 pub fn scratch_flows(f: &Function) -> HashSet<Path> {
     let kept: HashSet<String> = f.synced.iter().map(|(_, fl)| crate::sym::cpu_key(fl)).collect();
     let unkept: Vec<String> = ["r2", "r3"]

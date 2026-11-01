@@ -758,26 +758,57 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     }
     let mut written = HashSet::new();
     cpu_writes(&cpp.body, &mut written);
-    // (a declaration's value counts, unless it is the CPU's register: the entry value)
-    fn assigns(list: &[Stmt], out: &mut HashSet<String>) {
+    // (a declaration's value counts, unless it is the variable's own register's entry value: that register from the
+    // CPU, or the parameter that holds it; `u32 r6 = r0;` is an assignment of r6)
+    let register_of = |n: &str| -> String {
+        match n.rsplit_once('_') {
+            Some((b, k)) if !k.is_empty() && k.bytes().all(|c| c.is_ascii_digit()) => b.to_string(),
+            _ => n.to_string(),
+        }
+    };
+    let params: HashMap<String, String> = cpp
+        .body
+        .iter()
+        .filter_map(|s| if let Stmt::Decl(_, n, Some(Expr::Cpu(f))) = s { Some((n.clone(), crate::sym::cpu_key(f))) } else { None })
+        .collect();
+    let mut entry_values: HashSet<String> = HashSet::new();
+    fn entry_decls(list: &[Stmt], params: &HashMap<String, String>, register_of: &dyn Fn(&str) -> String, out: &mut HashSet<String>) {
+        for s in list {
+            match s {
+                Stmt::Decl(_, n, Some(Expr::Cpu(f))) if crate::sym::cpu_key(f) == register_of(n) => {
+                    out.insert(n.clone());
+                }
+                Stmt::Decl(_, n, Some(Expr::Var(p))) if params.get(p).map_or(false, |k| *k == register_of(n)) => {
+                    out.insert(n.clone());
+                }
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    entry_decls(a, params, register_of, out);
+                    entry_decls(b, params, register_of, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    entry_decls(&cpp.body, &params, &register_of, &mut entry_values);
+    fn assigns(list: &[Stmt], entry: &HashSet<String>, out: &mut HashSet<String>) {
         for s in list {
             match s {
                 Stmt::Assign(n, _) => {
                     out.insert(n.clone());
                 }
-                Stmt::Decl(_, n, Some(e)) if !matches!(e, Expr::Cpu(_)) && !n.starts_with("__") => {
+                Stmt::Decl(_, n, Some(_)) if !entry.contains(n) && !n.starts_with("__") => {
                     out.insert(n.clone());
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
-                    assigns(a, out);
-                    assigns(b, out);
+                    assigns(a, entry, out);
+                    assigns(b, entry, out);
                 }
                 _ => {}
             }
         }
     }
     let mut assigned = HashSet::new();
-    assigns(&cpp.body, &mut assigned);
+    assigns(&cpp.body, &entry_values, &mut assigned);
     // a value split off a register (values.rs: rN_k) is a variable for that register
     let base = |n: &String| match n.rsplit_once('_') {
         Some((b, k)) if !k.is_empty() && k.bytes().all(|c| c.is_ascii_digit()) => b.to_string(),

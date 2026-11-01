@@ -135,6 +135,9 @@ struct Emitter {
     exits: HashMap<String, Exit>,      // short blocks that end the function, written in place of a goto to them
     targets: HashSet<String>,          // labels something other than such a goto still jumps to
     returns: bool,                     // the function returns r0
+    after_calls: HashSet<Vec<usize>>,  // calls every path reaches through another call (flow::after_calls)
+    arities: HashMap<u32, usize>,      // the arguments each direct callee is written with (at most)
+    fixed: bool,                       // the second pass: every call to a callee writes arities[callee] arguments
     var_types: HashMap<String, Ty>,    // the decompiled function's variables and their types
     typed: HashMap<String, String>,    // locals written as pointers to a struct of their own (C++ name -> struct)
     local_fields: HashMap<String, BTreeMap<u64, Ty>>, // their fields: offset -> type of the access
@@ -732,7 +735,9 @@ impl Emitter {
                     let mut r = crate::types::Reads::default();
                     crate::types::reads(e, &mut r);
                     // (helpers in expressions are pure functions; guest calls are statements)
-                    if !r.cpu && !r.out_params && crate::types::type_of(e, &self.var_types) == self.var_types.get(n).copied() {
+                    // (not one written without its conversion to the variable's type, below: the text has another type)
+                    let converted = matches!(e, Expr::Cast(t, _) if self.var_types.get(n) == Some(t));
+                    if !r.cpu && !r.out_params && !converted && crate::types::type_of(e, &self.var_types) == self.var_types.get(n).copied() {
                         self.foldable.insert(target.clone(), r.memory);
                     }
                     // x = x + e as x += e (the same statement once read)
@@ -876,7 +881,23 @@ impl Emitter {
                 Stmt::GuestCall(t, tail) => {
                     self.before_call(indent, Some(*t), &path);
                     let name = self.callees.entry(*t).or_insert_with(|| format!("call_{:08x}", t & !1)).clone();
-                    let args: Vec<String> = self.args_for(Some(*t)).iter().map(|a| self.arg_text(&path, a)).collect();
+                    let all: Vec<String> = self.args_for(Some(*t)).iter().map(|a| self.arg_text(&path, a)).collect();
+                    let mut args = all.clone();
+                    // after another call, the registers left in the CPU are that call's leftovers: a guest::Function
+                    // call leaves the CPU's registers past its arguments alone, so trailing ones need not be written
+                    // (as many at every call of the callee: the second pass writes the most any call needs)
+                    if self.after_calls.contains(&path) {
+                        while args.last().map_or(false, |a| a.starts_with("guest::cpu()->r[")) {
+                            args.pop();
+                        }
+                    }
+                    if self.fixed {
+                        let want = self.arities.get(t).copied().unwrap_or(all.len());
+                        args = all[..want.max(args.len()).min(all.len())].to_vec();
+                    } else {
+                        let arity = self.arities.entry(*t).or_insert(0);
+                        *arity = (*arity).max(args.len());
+                    }
                     let call = format!("{}({})", name, args.join(", "));
                     if *tail {
                         self.tail_write_back(indent, &path);
@@ -1399,7 +1420,7 @@ fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>) -> String {
 }
 
 // `guest::cpu()->r[N] = x;` where x was read from the CPU's r[N] earlier in the same block (`x = guest::cpu()->r[N];`)
-// with no call, system call, write to the CPU, label or other mention of x between: the CPU still holds x, the
+// with no call, system call, write to the CPU, loop, label or other mention of x between: the CPU still holds x, the
 // write changes nothing. Such writes are left out, then the reads nothing uses any more.
 fn drop_unchanged_write_backs(body: &str) -> String {
     let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
@@ -1416,6 +1437,10 @@ fn drop_unchanged_write_backs(body: &str) -> String {
         let t = l.trim_start();
         let t = t.split_once(' ').filter(|(ty, _)| matches!(*ty, "u32" | "float")).map_or(t, |(_, r)| r);
         let (x, rest) = t.split_once(" = guest::cpu()->")?;
+        // (a variable only: `*gptr<u32>(a) = guest::cpu()->r[1];` is a store)
+        if !x.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') || x.starts_with(|c: char| c.is_ascii_digit()) {
+            return None;
+        }
         Some((x.to_string(), rest.strip_suffix(';')?.to_string()))
     };
     let changes_cpu = |l: &str| {
@@ -1435,7 +1460,12 @@ fn drop_unchanged_write_backs(body: &str) -> String {
         };
         let same = read_of(&lines[d]).map_or(false, |(v, f)| v == x && f == field);
         let at = indent(&lines[d]);
-        let clear = lines[d + 1..i].iter().all(|l| l.starts_with(' ') && indent(l) >= at && !changes_cpu(l));
+        // (no loop between either: at a loop header the proof does not relate the CPU's copy of a register the
+        // function keeps in a variable, so it could not see that the CPU still holds it)
+        let clear = lines[d + 1..i].iter().all(|l| {
+            let t = l.trim_start();
+            l.starts_with(' ') && indent(l) >= at && !changes_cpu(l) && !t.starts_with("do {") && !t.starts_with("for (")
+        });
         if same && clear && indent(&lines[i]) >= at {
             lines.remove(i);
             continue;
@@ -1972,7 +2002,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), arities: HashMap::new(), fixed: false, out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -2019,7 +2049,16 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         jump_targets(&f.body, &e.exits, &mut e.targets);
     }
     let returns = assigned.contains("r0") && crate::results::observed(f.address, "r0");
-    // the body first (it decides the callees)
+    // the body first (it decides the callees), twice: the first time finds how many arguments each callee's calls need
+    e.stmts(&f.body, 1, returns, &[])?;
+    e.out.clear();
+    e.labels.clear();
+    e.slots.clear();
+    e.tables.clear();
+    e.foldable.clear();
+    e.pc = None;
+    e.virtual_slot = None;
+    e.fixed = true;
     e.stmts(&f.body, 1, returns, &[])?;
     let body = std::mem::take(&mut e.out);
     // a register's saved copy used beyond saving and restoring (a second push of it): not written yet
@@ -2089,7 +2128,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         out.push_str(&format!("inline guest::global<{}, 0x{:08x}> {};  // (from the original)\n", t.c_name(), addr, n));
     }
     for (t, n) in &e.callees {
-        let arity = e.needs.get(t).map_or(4, |n| if n.full { 4 } else { n.arity });
+        let arity = e.arities.get(t).copied().unwrap_or_else(|| e.needs.get(t).map_or(4, |n| if n.full { 4 } else { n.arity }));
         let args = vec!["u32"; arity].join(", ");
         out.push_str(&format!("inline constexpr guest::Function<0x{:08x}, u32({})> {};  // (from the original)\n", t, args, n));
     }
