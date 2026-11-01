@@ -428,6 +428,29 @@ impl Emitter {
             }, self.expr(a, 11)?),
             // arithmetic on constants (a value folded to its constant meets another): its result
             Expr::Bin(..) if self.constant_u32(e).is_some() => num(self.constant_u32(e).unwrap(), Ty::U32),
+            // a comparison of an unsigned narrow value widened to u32 with an unsigned value or a constant: without the
+            // widening (both sides are non-negative either way, the truth is the same)
+            Expr::Bin(op @ (BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge), a, b)
+                if self.narrow_widened(a).is_some() || self.narrow_widened(b).is_some() =>
+            {
+                let unsigned = |x: &Expr| matches!(x, Expr::Num(k, _) if *k < 1 << 31) || matches!(crate::types::type_of(x, &self.var_types), Some(Ty::U32 | Ty::U16 | Ty::U8));
+                let (x, y) = (self.narrow_widened(a).unwrap_or(a), self.narrow_widened(b).unwrap_or(b));
+                if !(unsigned(a) && unsigned(b)) {
+                    let p = prec(*op);
+                    let s = format!("{} {} {}", self.expr(a, p - 1)?, op_text(*op), self.expr(b, p)?);
+                    return Ok(if p <= outer { format!("({})", s) } else { s });
+                }
+                let p = prec(*op);
+                let s = format!("{} {} {}", self.expr(x, p - 1)?, op_text(*op), self.expr(y, p)?);
+                if p <= outer { format!("({})", s) } else { s }
+            }
+            // s32(x) of a signed byte or halfword: C++ promotes it to int (s32) anyway
+            Expr::Cast(Ty::S32, x) if matches!(crate::types::type_of(x, &self.var_types), Some(Ty::S8 | Ty::S16)) => self.expr(x, outer)?,
+            // a byte or halfword loaded and taken as signed: the signed load
+            Expr::Cast(t @ (Ty::S8 | Ty::S16), a) if matches!(&**a, Expr::Load(lt, addr) if lt.bits() == t.bits() && sp_offset(addr).is_none() && self.local_field(*lt, addr).is_none() && self.field_access(*lt, addr).is_none() && self.constant_address(addr).is_none()) => {
+                let Expr::Load(_, addr) = &**a else { unreachable!() };
+                format!("*gptr<{}>({})", t.c_name(), self.expr(addr, 0)?)
+            }
             Expr::Bin(op, a, b) => {
                 let p = prec(*op);
                 // (a right operand with the same associative operator needs no parentheses: a || b || c)
@@ -476,6 +499,14 @@ impl Emitter {
             }
             Expr::AddrOf(n) => format!("&{}", n),
         })
+    }
+
+    // u32(x) with x an unsigned narrow value (a u8 or u16 load or variable): x
+    fn narrow_widened<'e>(&self, e: &'e Expr) -> Option<&'e Expr> {
+        match e {
+            Expr::Cast(Ty::U32, x) if matches!(crate::types::type_of(x, &self.var_types), Some(Ty::U8 | Ty::U16)) => Some(&**x),
+            _ => None,
+        }
     }
 
     // a value stored as a T: as written when it already has the type or is a constant that fits, else converted
@@ -819,8 +850,24 @@ impl Emitter {
                 Stmt::If(c, a, b) => {
                     let text = format!("if ({}) {{", self.expr(c, 0)?);
                     self.line(indent, &text);
-                    let (pa, pb) = ([path.clone(), vec![0]].concat(), [path.clone(), vec![1]].concat());
-                    self.stmts(a, indent + 1, returns, &pa)?;
+                    let (mut pa, mut pb) = ([path.clone(), vec![0]].concat(), [path.clone(), vec![1]].concat());
+                    let (mut a, mut b) = (a, b);
+                    loop {
+                        self.stmts(a, indent + 1, returns, &pa)?;
+                        // an else that is a single if: `} else if (...) {`
+                        if let [Stmt::If(c2, a2, b2)] = b.as_slice() {
+                            let inner = [pb.clone(), vec![0]].concat();
+                            self.cur = inner.clone();
+                            let text = format!("}} else if ({}) {{", self.expr(c2, 0)?);
+                            self.line(indent, &text);
+                            pa = [inner.clone(), vec![0]].concat();
+                            pb = [inner, vec![1]].concat();
+                            a = a2;
+                            b = b2;
+                            continue;
+                        }
+                        break;
+                    }
                     if b.is_empty() {
                         self.line(indent, "}");
                     } else {
@@ -907,6 +954,9 @@ impl Emitter {
                     let call = format!("{}({})", name, args.join(", "));
                     if *tail {
                         self.tail_write_back(indent, &path);
+                        if self.frame_object {
+                            self.line(indent, "frame.release();");
+                        }
                     }
                     if *tail {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};\n{}return;", call, "    ".repeat(indent)) });
@@ -949,10 +999,23 @@ impl Emitter {
                         self.line(indent, &format!("// {}", what));
                     }
                     self.before_call(indent, None, &path);
-                    let args: Vec<String> = self.args_for(None).iter().map(|a| self.arg_text(&path, a)).collect();
-                    let call = format!("guest::call_address<u32>({}, {})", target, args.join(", "));
+                    let mut args: Vec<String> = self.args_for(None).iter().map(|a| self.arg_text(&path, a)).collect();
+                    // (after another call, the registers left in the CPU need not be written: see GuestCall)
+                    if self.after_calls.contains(&path) {
+                        while args.last().map_or(false, |a| a.starts_with("guest::cpu()->r[")) {
+                            args.pop();
+                        }
+                    }
+                    let call = if args.is_empty() {
+                        format!("guest::call_address<u32>({})", target)
+                    } else {
+                        format!("guest::call_address<u32>({}, {})", target, args.join(", "))
+                    };
                     if *tail {
                         self.tail_write_back(indent, &path);
+                        if self.frame_object {
+                            self.line(indent, "frame.release();");
+                        }
                     }
                     if *tail {
                         self.line(indent, &if returns { format!("return {};", call) } else { format!("{};", call) });
@@ -1145,6 +1208,26 @@ fn tidy_masks(line: &str) -> String {
         let tail = tail.strip_prefix('u').unwrap_or(tail);
         out = format!("{}{} & 0x{:x}{}{}", &out[..open], inner, a & b, suffix, tail);
     }
+    // (x - K) == 0 / != 0  ->  x == K / x != K   (x a name, K a constant: wrapping subtraction is 0 exactly then)
+    for op in ["==", "!="] {
+        loop {
+            let pat = format!(") {} 0", op);
+            let Some(end) = out.find(&pat) else { break };
+            let after = &out[end + pat.len()..];
+            if after.starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_' || c == 'x') {
+                break;
+            }
+            let Some(open) = out[..end].rfind('(') else { break };
+            let inner = &out[open + 1..end];
+            let Some((x, k)) = inner.split_once(" - ") else { break };
+            let name = |t: &str| !t.is_empty() && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && !t.starts_with(|c: char| c.is_ascii_digit());
+            let konst = |t: &str| t.starts_with(|c: char| c.is_ascii_digit()) && t.chars().all(|c| c.is_ascii_hexdigit() || c == 'x' || c == 'u');
+            if !name(x) || !konst(k) {
+                break;
+            }
+            out = format!("{}{} {} {}{}", &out[..open], x, op, k, &out[end + pat.len()..]);
+        }
+    }
     // lsl_r(a, x & 0xNu) with N < 32 -> (a << (x & 0xNu)), and lsr_r likewise (a a name or a number)
     for (helper, op) in [("lsl_r(", "<<"), ("lsr_r(", ">>")] {
         while let Some(i) = out.find(helper) {
@@ -1301,6 +1384,78 @@ fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness) -> (HashM
         out.insert(name, fs);
     }
     (typed, out)
+}
+
+// `T x = y;` with y a variable never assigned in the function (a parameter, or one assigned only where declared before)
+// and x assigned nowhere else: x's uses read y, and the copy goes. Only without loops (at a loop header the proof
+// relates the programs' registers by name, and x may be one of them).
+fn propagate_copies(body: &str) -> String {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    if lines.iter().any(|l| {
+        let t = l.trim_start();
+        t.starts_with("do {") || t.starts_with("for (") || t.ends_with(":;")
+    }) {
+        return body.to_string();
+    }
+    let assigned = |lines: &[String], v: &str, skip: usize| {
+        lines.iter().enumerate().any(|(j, l)| {
+            if j == skip {
+                return false;
+            }
+            let t = l.trim_start();
+            let t = t.split_once(' ').filter(|(ty, _)| matches!(*ty, "u8" | "u16" | "u32" | "s8" | "s16" | "s32" | "float")).map_or(t, |(_, r)| r);
+            ["=", "+=", "-=", "|=", "&=", "^=", "<<=", ">>="].iter().any(|op| t.starts_with(&format!("{} {} ", v, op))) || t.contains(&format!("&{}", v))
+        })
+    };
+    let ident = |t: &str| !t.is_empty() && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && !t.starts_with(|c: char| c.is_ascii_digit());
+    let mut d = 0;
+    while d < lines.len() {
+        let t = lines[d].trim_start().to_string();
+        let parsed = t.split_once(' ').and_then(|(ty, rest)| {
+            if !matches!(ty, "u32" | "u16" | "u8" | "s32" | "s16" | "s8") {
+                return None;
+            }
+            let (x, y) = rest.strip_suffix(';')?.split_once(" = ")?;
+            // (or a struct argument's address: `u32 r0 = arg0.addr();`, the parameter is never assigned)
+            let arg_addr = y.strip_suffix(".addr()").map_or(false, |a| a.starts_with("arg") && a[3..].chars().all(|c| c.is_ascii_digit()));
+            (ident(x) && (ident(y) || arg_addr)).then(|| (ty.to_string(), x.to_string(), y.to_string()))
+        });
+        let Some((ty, x, y)) = parsed else {
+            d += 1;
+            continue;
+        };
+        // y: declared before d (or a parameter) and never assigned after its declaration; x: assigned only here
+        let y_decl = (0..d).find(|&j| lines[j].trim_start().split_once(' ').map_or(false, |(_, r)| r.starts_with(&format!("{} = ", y))));
+        let y_type_ok = match y_decl {
+            Some(j) => lines[j].trim_start().starts_with(&format!("{} ", ty)),
+            None => true, // a parameter (u32 or the argument structs' .addr())
+        };
+        let y_assigned = !y.ends_with(".addr()") && (0..lines.len()).any(|j| Some(j) != y_decl && assigned(&lines[j..j + 1], &y, usize::MAX));
+        if !y_type_ok || y_assigned || assigned(&lines, &x, d) || ty != "u32" {
+            d += 1;
+            continue;
+        }
+        lines.remove(d);
+        for l in lines.iter_mut() {
+            let mut out = String::new();
+            let mut last = 0;
+            for (i, _) in l.match_indices(x.as_str()) {
+                let before = l[..i].chars().next_back();
+                let after = l[i + x.len()..].chars().next();
+                let id = |c: Option<char>| c.map_or(false, |c| c.is_ascii_alphanumeric() || c == '_');
+                if !id(before) && !id(after) {
+                    out.push_str(&l[last..i]);
+                    out.push_str(&y);
+                    last = i + x.len();
+                }
+            }
+            out.push_str(&l[last..]);
+            *l = out;
+        }
+    }
+    let mut out = lines.join("\n");
+    out.push('\n');
+    out
 }
 
 fn frame_places(body: &str) -> String {
@@ -1686,7 +1841,7 @@ fn sp_offset(a: &Expr) -> Option<u64> {
 // entry - M at every call: a guest::StackFrame of M bytes (with the export's push, GUEST_EXPORT_FRAMED, for the pushed
 // registers) gives callees the same stack, and every address relative to sp becomes one relative to the frame's
 // bottom (SP, written frame.at(k)). Returns the function so rewritten (its sp moves left out) and M.
-fn frame_mode(f: &Function) -> Option<(Function, u64)> {
+fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
     let sp_move = |s: &Stmt| -> Option<i64> {
         match s {
             Stmt::Assign(n, Expr::Bin(op, a, b)) if n == "r13" && **a == Expr::Var("r13".into()) => match (op, &**b) {
@@ -1702,6 +1857,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64)> {
         depths: HashMap<Vec<usize>, i64>,
         calls: Vec<i64>,
         ok: bool,
+        tails: bool, // it makes tail calls
     }
     fn goto(l: &str, cur: i64, st: &mut St) {
         match st.labels.get(l) {
@@ -1741,8 +1897,12 @@ fn frame_mode(f: &Function) -> Option<(Function, u64)> {
                 Stmt::Assign(n, _) | Stmt::Decl(_, n, _) if n == "r13" => st.ok = false,
                 Stmt::SetCpu(CpuField::R(13), _) => st.ok = false,
                 Stmt::GuestCall(_, false) | Stmt::Dispatch(false) | Stmt::Svc(_) => st.calls.push(cur),
+                // a tail call once the frame is given back (the C++ releases its StackFrame before it)
                 Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => {
-                    st.ok = false;
+                    if cur != 0 {
+                        st.ok = false;
+                    }
+                    st.tails = true;
                     d = None;
                 }
                 Stmt::Return => {
@@ -1834,7 +1994,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64)> {
     let mut f = f.clone();
     moves(&mut f.body);
     let f = &f;
-    let mut st = St { labels: HashMap::new(), depths: HashMap::new(), calls: vec![], ok: true };
+    let mut st = St { labels: HashMap::new(), depths: HashMap::new(), calls: vec![], ok: true, tails: false };
     walk(&f.body, &[], Some(0), &mut st, &sp_move);
     let m = st.depths.values().copied().max().unwrap_or(0);
     if !st.ok || m <= 0 || st.calls.iter().any(|&c| c != m) {
@@ -1926,7 +2086,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64)> {
     if left {
         return None;
     }
-    Some((g, m as u64))
+    Some((g, m as u64, st.tails))
 }
 
 // an address SP + k with k wrapped past 2^31 (below the frame)
@@ -1982,9 +2142,9 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     let addr = f.address | f.thumb as u32;
     // the stack frame as one object (the push by the export, the rest by a guest::StackFrame), when it can be
     let framed = frame_mode(f);
-    let (f, frame_bytes) = match &framed {
-        Some((g, m)) => (g, *m),
-        None => (f, 0),
+    let (f, frame_bytes, tails) = match &framed {
+        Some((g, m, t)) => (g, *m, *t),
+        None => (f, 0, false),
     };
     let stack = frame_bytes == 0 && reads_stack(&f.body);
     let pushed: Option<u32> = {
@@ -1995,7 +2155,8 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
                 _ => mask = None,
             }
         }
-        mask.filter(|m| *m != 0 && 4 * m.count_ones() as u64 <= frame_bytes)
+        // (not with tail calls: the export's push lasts until the C++ returns, the StackFrame can be given back)
+        mask.filter(|m| *m != 0 && 4 * m.count_ones() as u64 <= frame_bytes && !tails)
     };
     let mask = if frame_bytes > 0 { pushed } else { push_mask(f, &d.saved, stack) };
     // the bytes the StackFrame lowers sp by (the frame less the export's push)
@@ -2350,6 +2511,12 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     let body = return_values(&body);
     // (`*gptr<T>(frame.at(k).addr())`, a frame address folded into an access: `*frame.at<T>(k)`)
     let body = frame_places(&body);
+    let body = propagate_copies(&body);
+    // (a void function's last `return;`: it ends there anyway)
+    let body = match body.strip_suffix("    return;\n") {
+        Some(rest) if !returns && !rest.ends_with(":;\n") && !rest.trim_end().ends_with('{') => rest.to_string(),
+        _ => body,
+    };
     // (a register read folded into the write-back of the same register: `guest::cpu()->r[1] = guest::cpu()->r[1];`
     // does nothing)
     let body: String = body
@@ -2357,6 +2524,42 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         .filter(|l| !matches!(l.trim_start().strip_suffix(';').and_then(|t| t.split_once(" = ")), Some((a, b)) if a == b && a.starts_with("guest::cpu()->")))
         .map(|l| format!("{}\n", l))
         .collect();
+    // (a register declared as a struct argument's address and never assigned, in a function without loops: its uses
+    // read the argument's address, as propagate_copies does in the body)
+    let loopless = !body.lines().any(|l| {
+        let t = l.trim_start();
+        t.starts_with("do {") || t.starts_with("for (") || t.ends_with(":;")
+    });
+    let mut body = body;
+    if loopless {
+        for l in &locals {
+            let Some((x, y)) = l.strip_prefix("u32 ").and_then(|r| r.strip_suffix(';')).and_then(|r| r.split_once(" = ")) else { continue };
+            if !(y.starts_with("arg") && y.ends_with(".addr()")) {
+                continue;
+            }
+            let written = body.lines().any(|b| {
+                let t = b.trim_start();
+                ["=", "+=", "-=", "|=", "&=", "^=", "<<=", ">>="].iter().any(|op| t.starts_with(&format!("{} {} ", x, op)))
+            });
+            if written {
+                continue;
+            }
+            let mut out = String::new();
+            let mut last = 0;
+            for (i, _) in body.match_indices(x) {
+                let before = body[..i].chars().next_back();
+                let after = body[i + x.len()..].chars().next();
+                let id = |c: Option<char>| c.map_or(false, |c| c.is_ascii_alphanumeric() || c == '_');
+                if !id(before) && !id(after) {
+                    out.push_str(&body[last..i]);
+                    out.push_str(y);
+                    last = i + x.len();
+                }
+            }
+            out.push_str(&body[last..]);
+            body = out;
+        }
+    }
     // (the variables the passes left unused are not declared)
     let still: HashSet<String> = body.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')).map(|w| w.to_string()).collect();
     // (a typed local: a pointer to its struct)

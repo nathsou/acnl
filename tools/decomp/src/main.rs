@@ -548,7 +548,12 @@ fn signatures_all(out: &str, n: usize, threads: usize) {
             }
         }
     }
-    signatures::reset(HashMap::new());
+    // DECOMP_SIG_EXTEND=1: keep the table read (DECOMP_SIGNATURES) and prove only the functions it lacks (its
+    // signatures were proved callee-first too, with the signatures of their own callees)
+    let extend = std::env::var("DECOMP_SIG_EXTEND").is_ok();
+    if !extend {
+        signatures::reset(HashMap::new());
+    }
     let ready: VecDeque<usize> = (0..comps.len()).filter(|&c| waits[c] == 0).collect();
     struct Queue {
         ready: VecDeque<usize>,
@@ -582,7 +587,8 @@ fn signatures_all(out: &str, n: usize, threads: usize) {
                     };
                     for &v in &comps[c] {
                         let Some(f) = &parsed[v] else { continue };
-                        if let Some(regs) = signatures::prove(&ctx, f) {
+                        let known = signatures::of(funcs[v].0 & !1);
+                        if let Some(regs) = known.or_else(|| signatures::prove(&ctx, f)) {
                             let a = funcs[v].0 & !1;
                             signatures::insert(a, regs.clone());
                             use std::io::Write;

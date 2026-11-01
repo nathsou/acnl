@@ -241,6 +241,7 @@ struct Parser<'a> {
     frame: u32, // GUEST_EXPORT_FRAMED's mask: the registers pushed before the function runs (bit n: register n)
     loops: usize, // the loops read so far (names for the labels a loop leaves out)
     stack_frame: u64, // the bytes a guest::StackFrame at the top of the function lowers sp by (restored at returns)
+    released: bool, // frame.release() just ran: the next return (a tail call) does not restore sp again
     depth: usize, // blocks open
     pub layout: Vec<LayoutAssumption>,
 }
@@ -802,8 +803,9 @@ impl<'a> Parser<'a> {
             (t, v) => return Err(format!("return of {:?} from a function returning {:?}", v.is_some(), t)),
         }
         // the StackFrame's and PushedFrame's destructors: sp back to the entry's (calls leave sp as it was)
-        if self.frame != 0 || self.stack_frame != 0 {
-            let bytes = 4 * self.frame.count_ones() as u64 + self.stack_frame;
+        let frame_bytes = if std::mem::take(&mut self.released) { 0 } else { self.stack_frame };
+        if self.frame != 0 || frame_bytes != 0 {
+            let bytes = 4 * self.frame.count_ones() as u64 + frame_bytes;
             let sp = Expr::Bin(BinOp::Add, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(bytes, Ty::U32)));
             out.push(Stmt::SetCpu(CpuField::R(13), sp));
         }
@@ -1103,6 +1105,23 @@ impl<'a> Parser<'a> {
             out.push(Stmt::SetCpu(CpuField::R(13), sp));
             return Ok(());
         }
+        // frame.release(); right before a return: sp back to the entry's (the frame given back before a tail call)
+        if self.stack_frame != 0 && self.is_id("frame") && self.peek_at(2) == Some(&Tok::Id("release".into())) {
+            self.i += 3;
+            self.expect("(")?;
+            self.expect(")")?;
+            self.expect(";")?;
+            // (or before a call statement and a return: a void function's tail call)
+            let next_return = |p: &Self, at: usize| matches!(p.t.get(at), Some(Tok::Id(r)) if r == "return");
+            let after_call = (self.i..self.t.len()).find(|&k| matches!(self.t[k], Tok::P(";" | "{" | "}"))).filter(|&k| self.t[k] == Tok::P(";"));
+            if !self.is_id("return") && !after_call.map_or(false, |k| next_return(self, k + 1)) {
+                return Err("frame.release() not right before a return".into());
+            }
+            let sp = Expr::Bin(BinOp::Add, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(self.stack_frame, Ty::U32)));
+            out.push(Stmt::SetCpu(CpuField::R(13), sp));
+            self.released = true;
+            return Ok(());
+        }
         // a preemption point: only lets other threads run (ignored, as in the original)
         if self.is_id("guest") && self.peek_at(2) == Some(&Tok::Id("preempt".into())) {
             self.i += 3;
@@ -1384,7 +1403,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let mut fields = Vec::new();
                 let mut offset = 0u64;
                 while t.get(j) != Some(&Tok::P("}")) {
-                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
+                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
                     let ft = p.try_type()?.ok_or_else(|| format!("field type in {}", name))?;
                     let fname = p.ident()?;
                     let ft = if p.eat("[") {
@@ -1414,7 +1433,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" && matches!(t.get(i + 1), Some(Tok::Id(g)) if g == "guest") => {
                 // inline guest::global<T, 0xADDR> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
                 p.expect_id("guest")?;
                 p.expect("::")?;
                 p.expect_id("global")?;
@@ -1433,7 +1452,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" => {
                 // inline constexpr guest::Function<0xADDR, R(A...)> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
                 p.expect_id("constexpr")?;
                 p.expect_id("guest")?;
                 p.expect("::")?;
@@ -1464,7 +1483,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             _ => {
                 // a function definition: TYPE NAME ( ... ) { ... }
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
                 match p.try_type()? {
                     Some(_) => {
                         let name = p.ident()?;
@@ -1491,7 +1510,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             continue;
         };
         let ns = name.rfind("::").map_or(String::new(), |k| name[..k].to_string());
-        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
+        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame, loops: 0, stack_frame: 0, released: false, depth: 0, layout: vec![] };
         let f = function(&mut p, address);
         out.push(Export { address, function: f, layout: p.layout });
     }

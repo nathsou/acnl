@@ -90,7 +90,11 @@ fn flatten(stmts: &[Stmt], out: &mut Vec<Ins>, fresh: &mut usize) {
                     out.push(Ins::Label(t.clone()));
                 }
                 flatten(check, out, fresh);
-                out.push(Ins::JumpIf(cond.clone(), top.clone()));
+                // (a loop whose condition is a non-zero constant is left only by returns and jumps: no way past it)
+                match cond {
+                    Expr::Num(k, _) if *k != 0 => out.push(Ins::Jump(top.clone())),
+                    _ => out.push(Ins::JumpIf(cond.clone(), top.clone())),
+                }
             }
             other => out.push(Ins::Do(other.clone())),
         }

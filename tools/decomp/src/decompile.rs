@@ -401,7 +401,7 @@ L_8004:
 
     #[test]
     fn round_trip_call_and_saves() {
-        round_trip("f_00005000", &["r0", "r4", "r13", "r14"], SAVES, ("r0 + 1u", "r0 + 2u"));
+        round_trip("f_00005000", &["r0", "r4", "r13", "r14"], SAVES, ("arg0.addr() + 1u", "arg0.addr() + 2u"));
     }
 
     #[test]

@@ -95,19 +95,23 @@ fn step(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
             },
             _ => continue,
         };
-        if refs.get(&l1) != Some(&1) {
-            continue;
-        }
         let Some(j) = list[i + 1..].iter().position(|s| matches!(s, Stmt::Label(l) if *l == l1)).map(|p| p + i + 1) else {
             continue;
         };
         let a: Vec<Stmt> = list[i + 1..j].to_vec();
+        // (other gotos to the label from inside A still land right after the new if)
+        let mut inside = HashMap::new();
+        count_refs(&a, &mut inside);
+        if refs.get(&l1).copied().unwrap_or(0) != 1 + inside.get(&l1).copied().unwrap_or(0) {
+            continue;
+        }
         if has_label(&a, refs) {
             continue;
         }
         // if-else: A ends with goto L2, and L2 follows B
         if let Some(Stmt::Goto(l2)) = a.last() {
-            if refs.get(l2) == Some(&1) {
+            // (this removes the first label too: only when nothing inside A still jumps to it)
+            if refs.get(l2) == Some(&1) && inside.get(&l1).copied().unwrap_or(0) == 0 {
                 if let Some(k) = list[j + 1..].iter().position(|s| matches!(s, Stmt::Label(l) if l == l2)).map(|p| p + j + 1) {
                     let b: Vec<Stmt> = list[j + 1..k].to_vec();
                     if !has_label(&b, refs) {
@@ -120,13 +124,116 @@ fn step(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
             }
         }
         let new = Stmt::If(negate(&c), a, vec![]);
-        list.splice(i..j + 1, std::iter::once(new));
+        // (the label stays while gotos inside still use it)
+        let end = if inside.get(&l1).copied().unwrap_or(0) > 0 { j } else { j + 1 };
+        list.splice(i..end, std::iter::once(new));
         return true;
     }
     false
 }
 
+// whether control can run past the end of the statements (their last one does not return, jump or tail-call)
+fn falls_through(list: &[Stmt]) -> bool {
+    !matches!(list.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)))
+}
+
+// Gotos out of an if whose other way does not fall through:
+//     if (c) { A; goto L; } S; L:      ->  if (c) { A } else { S } L:
+//     L: B; if (c) { A } E             ->  L: B; if (!c) { E } A             (A and E, the rest, do not fall
+//                                                                            through; A jumps back to L)
+// The second brings the back edge to the top level, where `loops` sees it. The control-flow graph is the same.
+// (`follow`: the label control reaches when it runs past the end of the list, the one right after the enclosing if:
+// a goto to it from the end of the list, or before a rest that does not fall through, leaves the block anyway)
+fn branches(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>, follow: Option<&str>) -> bool {
+    let n = list.len();
+    for i in 0..n {
+        let after: Option<String> = match list.get(i + 1) {
+            Some(Stmt::Label(x)) => Some(x.clone()),
+            None => follow.map(|f| f.to_string()),
+            Some(_) => None,
+        };
+        match &mut list[i] {
+            Stmt::If(_, a, b) => {
+                if branches(a, refs, after.as_deref()) || branches(b, refs, after.as_deref()) {
+                    return true;
+                }
+            }
+            Stmt::While { body, check, .. } => {
+                if branches(body, refs, None) || branches(check, refs, None) {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+    }
+    // statements after a return, goto or tail call, up to the next label, never run
+    if let Some(k) = (0..list.len().saturating_sub(1)).find(|&k| !falls_through(&list[..=k]) && !matches!(list[k + 1], Stmt::Label(_))) {
+        list.remove(k + 1);
+        return true;
+    }
+    // goto L; L:  (a jump to the next statement)
+    if let Some(k) = (0..list.len().saturating_sub(1)).find(|&k| matches!((&list[k], &list[k + 1]), (Stmt::Goto(a), Stmt::Label(b)) if a == b)) {
+        list.remove(k);
+        return true;
+    }
+    // goto <the label after the block> as the last statement: the block ends there anyway
+    if let (Some(Stmt::Goto(l)), Some(f)) = (list.last(), follow) {
+        if l == f {
+            list.pop();
+            return true;
+        }
+    }
+    // the gotos anywhere in the statements
+    fn gotos(list: &[Stmt], out: &mut Vec<String>) {
+        for s in list {
+            match s {
+                Stmt::Goto(l) => out.push(l.clone()),
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    gotos(a, out);
+                    gotos(b, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    for i in 0..list.len() {
+        let (c, a) = match &list[i] {
+            Stmt::If(c, a, b) if b.is_empty() && !a.is_empty() => (c.clone(), a.clone()),
+            _ => continue,
+        };
+        // the label right after a tail that does not fall through (in this list, or after the block)
+        if let Some(Stmt::Goto(l)) = a.last() {
+            let at = list[i + 1..].iter().position(|s| matches!(s, Stmt::Label(x) if x == l)).map(|p| p + i + 1);
+            let at = at.or_else(|| (follow == Some(l.as_str())).then_some(list.len()));
+            if let Some(j) = at {
+                let tail: Vec<Stmt> = list[i + 1..j].to_vec();
+                // (the tail reaches the label too when it falls through: either way, the if-else is the same)
+                if !tail.is_empty() && !has_label(&tail, refs) {
+                    let then = a[..a.len() - 1].to_vec();
+                    let new = if then.is_empty() { Stmt::If(negate(&c), tail, vec![]) } else { Stmt::If(c, then, tail) };
+                    list.splice(i..j, std::iter::once(new));
+                    return true;
+                }
+                continue;
+            }
+        }
+        // a back edge inside (to a label before it in this list), with a rest that does not fall through
+        let mut inside = Vec::new();
+        gotos(&a, &mut inside);
+        let back = inside.iter().any(|l| list[..i].iter().any(|s| matches!(s, Stmt::Label(x) if x == l)));
+        let rest: Vec<Stmt> = list[i + 1..].to_vec();
+        if back && !falls_through(&a) && !rest.is_empty() && !falls_through(&rest) && !has_label(&rest, refs) && !has_label(&a, refs) {
+            let mut new = vec![Stmt::If(negate(&c), rest, vec![])];
+            new.extend(a);
+            list.splice(i.., new);
+            return true;
+        }
+    }
+    false
+}
+
 // top: B; if (c) goto top;                       -> do { B } while (c)
+// top: B; goto top;                               -> do { B } while (1)
 // goto t; top: B; t: T; if (c) goto top;          -> while / for (;;)
 // when the labels have no other reference and nothing outside B, T jumps into them
 fn loops(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
@@ -142,13 +249,20 @@ fn loops(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
             Stmt::Label(l) if refs.get(l) == Some(&1) => l.clone(),
             _ => continue,
         };
-        // the back edge
-        let Some(j) = list[i + 1..].iter().position(|s| matches!(s, Stmt::If(_, a, b) if b.is_empty() && matches!(a.as_slice(), [Stmt::Goto(l)] if *l == top))).map(|p| p + i + 1) else {
+        // the back edge (conditional, or a plain goto: a loop left only by return or jumps)
+        let Some(j) = list[i + 1..]
+            .iter()
+            .position(|s| {
+                matches!(s, Stmt::If(_, a, b) if b.is_empty() && matches!(a.as_slice(), [Stmt::Goto(l)] if *l == top))
+                    || matches!(s, Stmt::Goto(l) if *l == top)
+            })
+            .map(|p| p + i + 1)
+        else {
             continue;
         };
         let cond = match &list[j] {
             Stmt::If(c, _, _) => c.clone(),
-            _ => unreachable!(),
+            _ => Expr::Num(1, Ty::S32),
         };
         let inner: Vec<Stmt> = list[i + 1..j].to_vec();
         // rotated: "goto t" right before top, and t inside
@@ -296,7 +410,7 @@ pub fn structure(f: &mut Function) {
         for (_, l) in &f.entries {
             *refs.entry(l.clone()).or_default() += 1;
         }
-        if !step(&mut f.body, &refs) && !loops(&mut f.body, &refs) {
+        if !step(&mut f.body, &refs) && !loops(&mut f.body, &refs) && !branches(&mut f.body, &refs, None) {
             break;
         }
     }

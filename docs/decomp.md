@@ -147,6 +147,17 @@ result):
   what it reads (and, if it reads memory, only plain variables are assigned between); `x = x + e` is `x += e`.
 - `guest::cpu()->r[N] = x;` before a return is left out when x was read from that register in the same block with
   no call or CPU write between (the CPU still holds it), and so is the read once nothing else uses it.
+- Gotos: `if (c) { A; goto L; } S; L:` is `if (c) { A } else { S }` (also when L follows the enclosing block, and
+  with other gotos to L inside S); `L: B; if (c) { A } E` with A jumping back to L and A, E not falling through is
+  `L: B; if (!c) { E } A`, so the back edge reaches the top level and becomes a loop (`do { } while (1)` when it is
+  unconditional: the checker lowers a constant-true condition to a jump); unreachable statements after a jump go,
+  and so does a goto to the next statement; `if (a) { if (b) X }` is `if (a && b) X`; an else holding one if prints
+  as `else if`.
+- A void function's last `return;` goes; `u32 r6 = r0;` with r0 never assigned again is r0 (loop-free functions),
+  and so is `u32 r0 = arg0.addr();` (its uses read `arg0.addr()`); `(x - K) == 0` reads `x == K`; a comparison of a
+  widened unsigned byte or halfword drops the widening; a sign-extended load reads `*gptr<s8>(a)`.
+- A tail call after the frame: `frame.release();` gives the StackFrame back first (the original pops before
+  branching); the export then pushes nothing, the StackFrame holds the whole frame.
 - Loops: a label only when something besides the loop jumps to it (`prove-cpp` pairs label-less loops with the
   decompiled function's in order); structuring keeps a loop, or a label only its own statements jump to, inside an
   `if` or a loop body, and looks inside loop bodies.

@@ -399,16 +399,26 @@ R call_member(const MemberFunctionPointer &pointer, gptr<void> object, A... args
 // Lowers the guest stack pointer by `bytes` for the duration of a scope, like the frame of the original function
 // (its pushes and locals): guest code called from the scope, and uninitialised locals in the frame, then sit at the
 // addresses they had in the original. `at(offset)` is an address inside the frame, counted from the new stack pointer.
+// `release()` gives the frame back early, before a tail call (the original pops its frame before branching on).
 class StackFrame {
 public:
     explicit StackFrame(u32 bytes) : saved_sp_(cpu()->r[13]) { cpu()->r[13] = saved_sp_ - bytes; }
-    ~StackFrame() { cpu()->r[13] = saved_sp_; }
+    ~StackFrame() {
+        if (!released_) {
+            cpu()->r[13] = saved_sp_;
+        }
+    }
     StackFrame(const StackFrame &) = delete;
     StackFrame &operator=(const StackFrame &) = delete;
     template <typename T = void> gptr<T> at(u32 offset) const { return gptr<T>(cpu()->r[13] + offset); }
+    void release() {
+        cpu()->r[13] = saved_sp_;
+        released_ = true;
+    }
 
 private:
     u32 saved_sp_;
+    bool released_ = false;
 };
 
 // Space on the guest stack for the duration of a scope, for objects whose address is passed to guest code.

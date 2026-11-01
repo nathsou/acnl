@@ -508,6 +508,17 @@ fn choices(list: &mut Vec<Stmt>) -> bool {
             changed |= choices(a);
             changed |= choices(b);
         }
+        // if (a) { if (b) { X } }  ->  if (a && b) { X }
+        if let Stmt::If(c, a, b) = s {
+            if let ([Stmt::If(c2, a2, b2)], true) = (a.as_slice(), b.is_empty()) {
+                if b2.is_empty() {
+                    let new = Stmt::If(Expr::Bin(BinOp::LAnd, Box::new(c.clone()), Box::new(c2.clone())), a2.clone(), vec![]);
+                    *s = new;
+                    changed = true;
+                    continue;
+                }
+            }
+        }
         let joined = match s {
             Stmt::If(c, a, b) => match (a.as_slice(), b.as_slice()) {
                 ([Stmt::Assign(x, e1)], [Stmt::Assign(y, e2)]) if x == y => {
