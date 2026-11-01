@@ -84,12 +84,22 @@ pub fn decompile_and_prove(ctx: &z3::Context, original: &Function) -> (Decompile
         };
         eprintln!("{:x}: saves removed: {:?} -> {}", original.address, first.save_slots, w);
     }
-    if matches!(v, crate::check::Verdict::Proved) || first.save_slots.is_empty() {
-        return (first, v);
+    let (d, v) = if matches!(v, crate::check::Verdict::Proved) || first.save_slots.is_empty() {
+        (first, v)
+    } else {
+        let second = decompile_with(original, false, &mut |_, _, _| {});
+        let v2 = verify_cached(ctx, original, &second);
+        (second, v2)
+    };
+    // the multiplications the compiler wrote as shifts and adds can make the solver time out: once more without
+    let timed_out = matches!(&v, crate::check::Verdict::Unknown(_));
+    if !timed_out || !crate::simplify::MULTIPLY.with(|m| m.get()) {
+        return (d, v);
     }
-    let second = decompile_with(original, false, &mut |_, _, _| {});
-    let v2 = verify_cached(ctx, original, &second);
-    (second, v2)
+    crate::simplify::MULTIPLY.with(|m| m.set(false));
+    let r = decompile_and_prove(ctx, original);
+    crate::simplify::MULTIPLY.with(|m| m.set(true));
+    if matches!(r.1, crate::check::Verdict::Proved) { r } else { (d, v) }
 }
 
 // The same, retrying once with a longer solver timeout (DECOMP_RETRY_MS) when the first try timed out.

@@ -52,8 +52,23 @@ pub fn callee_key(f: &Function) -> u64 {
     h
 }
 
-// Whether `f` leaves r0 as it was called with on every way out (loops: not tried).
+// the statements of a function above which it is not tried (symbolic execution of the largest ones takes gigabytes)
+const MAX_STATEMENTS: usize = 400;
+
+fn size(list: &[Stmt]) -> usize {
+    list.iter()
+        .map(|s| match s {
+            Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => 1 + size(a) + size(b),
+            _ => 1,
+        })
+        .sum()
+}
+
+// Whether `f` leaves r0 as it was called with on every way out (loops, and the largest functions: not tried).
 pub fn prove(ctx: &Context, f: &Function) -> bool {
+    if size(&f.body) > MAX_STATEMENTS {
+        return false;
+    }
     let mut s = Sym::new(ctx);
     let mut init = s.initial("in_");
     s.entry_sp = Some(init.cpu["r13"].clone());

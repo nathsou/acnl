@@ -709,6 +709,10 @@ fn returns_all(out: &str, threads: usize) {
             returns::insert(*a);
         }
         found.extend(new.iter().copied());
+        // (the table so far, after every round)
+        let mut lines: Vec<String> = found.iter().map(|a| format!("{:08x}", a)).collect();
+        lines.sort();
+        fs::write(out, lines.join("\n") + "\n").unwrap();
         todo = (0..parsed.len()).filter(|&i| !found.contains(&parsed[i].0) && callees[i].iter().any(|c| new.contains(c))).collect();
     }
     let mut lines: Vec<String> = found.iter().map(|a| format!("{:08x}", a)).collect();

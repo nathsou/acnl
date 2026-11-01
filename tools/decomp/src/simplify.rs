@@ -20,6 +20,28 @@ fn num_any(e: &Expr) -> Option<u64> {
     }
 }
 
+thread_local! {
+    // whether shifts and adds are written as multiplications (off for a second try: they can make a proof time out)
+    pub static MULTIPLY: std::cell::Cell<bool> = std::cell::Cell::new(true);
+}
+
+fn multiply() -> bool {
+    MULTIPLY.with(|m| m.get())
+}
+
+// m when e is x << k (m = 2^k) or x * m, for the same x (u32)
+fn times(e: &Expr, x: &Expr) -> Option<u64> {
+    match e {
+        Expr::Bin(BinOp::Shl, y, k) if **y == *x => num_any(k).filter(|k| *k < 32).map(|k| 1u64 << k),
+        Expr::Bin(BinOp::Mul, y, m) if **y == *x => num_u32(m),
+        _ => None,
+    }
+}
+
+fn product(x: &Expr, m: u64) -> Expr {
+    Expr::Bin(BinOp::Mul, Box::new(x.clone()), Box::new(Expr::Num(m & 0xffff_ffff, Ty::U32)))
+}
+
 // An expression simplified on its own (the emitter's, once the values a variable holds are written in).
 pub fn fold(e: &mut Expr, types: &HashMap<String, Ty>) {
     simplify_expr(e, types);
@@ -69,6 +91,29 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
                     }
                     _ => None,
                 },
+                _ => None,
+            }
+        }
+        // multiplications by constants the compiler wrote as shifts and adds (u32, wrapping like the guest):
+        // x + (x << k) -> x * (1 + 2^k), (x << k) - x -> x * (2^k - 1), (x * c) << k -> x * (c << k)
+        Expr::Bin(BinOp::Add, a, b) if multiply() && whole == Some(Ty::U32) && times(b, a).is_some() => {
+            Some(product(a, 1 + times(b, a).unwrap()))
+        }
+        Expr::Bin(BinOp::Add, a, b) if multiply() && whole == Some(Ty::U32) && times(a, b).is_some() => {
+            Some(product(b, 1 + times(a, b).unwrap()))
+        }
+        Expr::Bin(BinOp::Sub, a, b) if multiply() && whole == Some(Ty::U32) && times(a, b).is_some() && times(a, b).unwrap() > 1 => {
+            Some(product(b, times(a, b).unwrap() - 1))
+        }
+        Expr::Bin(BinOp::Shl, a, k) if multiply() && whole == Some(Ty::U32) && matches!(&**a, Expr::Bin(BinOp::Mul, _, c) if num_u32(c).is_some()) => {
+            match (&**a, num_any(k)) {
+                (Expr::Bin(BinOp::Mul, x, c), Some(k)) if k < 32 => Some(product(x, (num_u32(c).unwrap() << k) & 0xffff_ffff)),
+                _ => None,
+            }
+        }
+        Expr::Bin(BinOp::Shl, a, k) if multiply() && whole == Some(Ty::U32) && matches!(&**a, Expr::Bin(BinOp::Add, x, y) if times(y, x).is_some()) => {
+            match (&**a, num_any(k)) {
+                (Expr::Bin(BinOp::Add, x, y), Some(k)) if k < 32 => Some(product(x, ((1 + times(y, x).unwrap()) << k) & 0xffff_ffff)),
                 _ => None,
             }
         }
@@ -657,6 +702,17 @@ fn merge_same_exits(list: &mut Vec<Stmt>) -> bool {
         }
     }
     let leaves = |x: &[Stmt]| matches!(x.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
+    // if (c) { X } X, X leaving: X (conditions have no effects)
+    let mut i = 0;
+    while i < list.len() {
+        let same = matches!(&list[i], Stmt::If(_, a, b) if b.is_empty() && leaves(a) && a.as_slice() == &list[i + 1..]);
+        if same {
+            list.remove(i);
+            changed = true;
+        } else {
+            i += 1;
+        }
+    }
     let mut i = 0;
     while i + 1 < list.len() {
         let merged = match (&list[i], &list[i + 1]) {

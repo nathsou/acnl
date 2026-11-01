@@ -203,6 +203,11 @@ result):
   to the end of each branch that falls through (at most 3 statements, 3 copies). Structuring runs again after the
   last simplification, which joins nested conditions into one (`if (a) { if (b) goto L; }` into `if (a && b)
   goto L;`) that the patterns above then take.
+- `if (c) { X } X` with X leaving the function (a return, a jump) is `X`.
+- Multiplications by a constant that the compiler wrote as shifts and adds are multiplications (`x + (x << 1)` is
+  `x * 3u`, `(x + (x << 1)) << 1` is `x * 6u`, `(x << 4) - x` is `x * 0xfu`, `(x * c) << k` is `x * (c << k)`): the
+  size of an array's elements. Multiplications can make the solver time out where the shifts did not, so a function
+  whose proof does not go through is decompiled once more without them.
 - A void function's last `return;` goes; `u32 r6 = r0;` with r0 never assigned again is r0 (loop-free functions),
   and so is `u32 r0 = arg0.addr();` (its uses read `arg0.addr()`); `(x - K) == 0` reads `x == K`; a comparison of a
   widened unsigned byte or halfword drops the widening; a sign-extended load reads `*gptr<s8>(a)`.
@@ -272,7 +277,10 @@ leaves out its own goto (`if (c) { r1 = K; }`). A goto to the label right after 
 after the ifs the loop ends) is `break;` (rather than a copy of an exit block into the loop), which `cpp.rs` reads
 back as a goto to a label after the loop. sp is written to the CPU before calls only in a function that moves it, and
 a callee-saved register (r4-r11) is not written back on the way out where it holds its entry value (the C++ writes
-them to the CPU only on the way out, and callees keep them).
+them to the CPU only on the way out, and callees keep them). A goto at the end of a branch to the label right after
+its if is left out (`if (c) {} else { B }` prints as `if (!c) { B }`, an if of two such branches not at all), and the
+constants variables hold are written into an expression and folded when that simplifies it (`s32(0u) < 0` is false).
+A value all of whose definitions are the same constant is that constant (`vf = 0` on both ways to a read).
 
 Each register and temporary is split into its values (`values.rs`: definitions joined by the uses they reach), so a
 register that holds an address, then a count, then a call's result becomes three variables (`r0`, `r0_1`, `r0_2`),

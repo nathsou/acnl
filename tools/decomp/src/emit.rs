@@ -284,6 +284,7 @@ fn jump_targets(list: &[Stmt], prefix: &[usize], exits: &HashMap<String, Exit>, 
                     skip_to = Some(i + x.list.len());
                 }
             }
+            Stmt::Goto(l) if fallthrough.get(&path) == Some(l) => {}
             Stmt::Goto(l) => match exits.get(l) {
                 None => {
                     if !breaks.contains(&path) {
@@ -774,6 +775,11 @@ impl Emitter {
         read.into_iter().filter(|(v, _)| !self.values.held_def(path, v)).collect()
     }
 
+    // whether a branch is only a goto to the label right after its if (fallthrough_gotos)
+    fn only_falls(&self, list: &[Stmt], prefix: &[usize]) -> bool {
+        matches!(list, [Stmt::Goto(l)] if self.fallthrough.get(&[prefix, &[0]].concat()) == Some(l))
+    }
+
     // writes in the constants the expression's variables hold at the current statement; whether there was one
     fn constants_in(&self, e: &mut Expr) -> bool {
         match e {
@@ -1089,9 +1095,25 @@ impl Emitter {
                     self.line(indent, &text);
                 }
                 Stmt::If(c, a, b) => {
+                    let (mut pa, mut pb) = ([path.clone(), vec![0]].concat(), [path.clone(), vec![1]].concat());
+                    // a branch that only goes to the label right after the if does nothing (conditions have no
+                    // effects): `if (c) {} else { B }` is `if (!c) { B }`, and nothing is left of an if of two
+                    let (skip_a, skip_b) = (self.only_falls(a, &pa), self.only_falls(b, &pb));
+                    let empty: &Vec<Stmt> = &Vec::new();
+                    let (c, a, b) = match (skip_a || a.is_empty(), skip_b || b.is_empty()) {
+                        (true, true) => {
+                            i += 1;
+                            continue;
+                        }
+                        (true, false) => {
+                            std::mem::swap(&mut pa, &mut pb);
+                            (&Expr::Un(UnOp::LNot, Box::new(c.clone())), b, empty)
+                        }
+                        (false, true) => (c, a, empty),
+                        (false, false) => (c, a, b),
+                    };
                     let text = format!("if ({}) {{", self.expr(c, 0)?);
                     self.line(indent, &text);
-                    let (mut pa, mut pb) = ([path.clone(), vec![0]].concat(), [path.clone(), vec![1]].concat());
                     let (mut a, mut b) = (a, b);
                     loop {
                         self.stmts(a, indent + 1, returns, &pa)?;
@@ -1156,6 +1178,8 @@ impl Emitter {
                         }
                     }
                 }
+                // (a goto to the label right after its if, at the end of a branch: nothing to do)
+                Stmt::Goto(l) if self.fallthrough.get(&path) == Some(l) => {}
                 // (a goto out of the innermost loop: break, before copying an exit block into the loop)
                 Stmt::Goto(_) if self.breaks.contains(&path) => self.line(indent, "break;"),
                 Stmt::Goto(l) if self.exits.contains_key(l) => {

@@ -363,6 +363,25 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         constant.insert(w, *k);
         copies.insert(p.clone());
     }
+    // and a value every one of whose definitions is the same constant (`vf = 0` on both ways to a read)
+    for (w, ds) in &defs_of {
+        if ds.len() < 2 || keep.contains(w) || constant.contains_key(w) {
+            continue;
+        }
+        let ks: Vec<Option<(u64, Ty)>> = ds
+            .iter()
+            .map(|&i| match (&nodes[i].constant, &nodes[i].path, nodes[i].defs.as_slice()) {
+                (Some(k), Some(_), [d]) if vars.contains(d) => Some(*k),
+                _ => None,
+            })
+            .collect();
+        if ks.iter().all(|k| k.is_some() && *k == ks[0]) {
+            constant.insert(*w, ks[0].unwrap());
+            for &i in ds {
+                copies.insert(nodes[i].path.clone().unwrap());
+            }
+        }
+    }
     // a constant plus a constant (x = y + K, y one constant value): to a fixed point, for chains of them
     loop {
         let mut more = false;
