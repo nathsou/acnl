@@ -196,6 +196,33 @@ fn branches(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>, follow: Option<
             }
         }
     }
+    // if (c) { A } else { B; goto L; } T; L:  ->  if (c) { A; T } else { B } L:   (and with A ending in the goto)
+    for i in 0..list.len() {
+        let Stmt::If(c, a, b) = &list[i] else { continue };
+        if a.is_empty() || b.is_empty() {
+            continue;
+        }
+        let (c, a, b) = (c.clone(), a.clone(), b.clone());
+        let (goto_in_b, l) = match (a.last(), b.last()) {
+            (_, Some(Stmt::Goto(l))) if falls_through(&a) => (true, l.clone()),
+            (Some(Stmt::Goto(l)), _) if falls_through(&b) => (false, l.clone()),
+            _ => continue,
+        };
+        let at = list[i + 1..].iter().position(|s| matches!(s, Stmt::Label(x) if *x == l)).map(|p| p + i + 1);
+        let at = at.or_else(|| (follow == Some(l.as_str())).then_some(list.len()));
+        let Some(j) = at else { continue };
+        let tail: Vec<Stmt> = list[i + 1..j].to_vec();
+        if has_label(&tail, refs) {
+            continue;
+        }
+        let new = if goto_in_b {
+            Stmt::If(c, [a, tail].concat(), b[..b.len() - 1].to_vec())
+        } else {
+            Stmt::If(c, a[..a.len() - 1].to_vec(), [b, tail].concat())
+        };
+        list.splice(i..j, std::iter::once(new));
+        return true;
+    }
     for i in 0..list.len() {
         let (c, a) = match &list[i] {
             Stmt::If(c, a, b) if b.is_empty() && !a.is_empty() => (c.clone(), a.clone()),
@@ -230,6 +257,92 @@ fn branches(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>, follow: Option<
         }
     }
     false
+}
+
+// A block only one goto enters (a label with one reference, after a statement that does not fall through) moves to
+// that goto, ending with a goto to the label that followed it if it fell into it:
+//     if (c) goto A; ... return; A: S; B:      ->  if (c) { S; goto B; } ... return; B:
+// (switch-like chains of `if (x == k) goto Ak` become ifs holding their blocks). The control-flow graph is the same.
+fn motions(body: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
+    // the goto to `l` anywhere in the statements, replaced by `with`
+    fn replace(list: &mut Vec<Stmt>, l: &str, with: &[Stmt]) -> bool {
+        for i in 0..list.len() {
+            match &mut list[i] {
+                Stmt::Goto(x) if x == l => {
+                    list.splice(i..i + 1, with.iter().cloned());
+                    return true;
+                }
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    if replace(a, l, with) || replace(b, l, with) {
+                        return true;
+                    }
+                }
+                _ => {}
+            }
+        }
+        false
+    }
+    fn contains_goto(list: &[Stmt], l: &str) -> bool {
+        list.iter().any(|s| match s {
+            Stmt::Goto(x) => x == l,
+            Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => contains_goto(a, l) || contains_goto(b, l),
+            _ => false,
+        })
+    }
+    // a candidate in this list (or a nested one): (label, the block to move, where it sat)
+    fn find(list: &[Stmt], refs: &HashMap<String, usize>, top: &[Stmt]) -> Option<(String, Vec<Stmt>, usize)> {
+        for j in 1..list.len() {
+            let Stmt::Label(a) = &list[j] else { continue };
+            if refs.get(a) != Some(&1) || falls_through(&list[..j]) {
+                continue;
+            }
+            let k = list[j + 1..].iter().position(|s| matches!(s, Stmt::Label(_))).map_or(list.len(), |p| p + j + 1);
+            let mut block: Vec<Stmt> = list[j + 1..k].to_vec();
+            let sat = block.len();
+            if block.is_empty() || has_label(&block, refs) || contains_goto(&block, a) {
+                continue;
+            }
+            if falls_through(&block) {
+                match list.get(k) {
+                    Some(Stmt::Label(b)) => block.push(Stmt::Goto(b.clone())),
+                    _ => continue,
+                }
+            }
+            // the goto must be somewhere (not a switch case or the entry table)
+            if !contains_goto(top, a) {
+                continue;
+            }
+            return Some((a.clone(), block, sat));
+        }
+        for s in list {
+            if let Stmt::If(_, x, y) | Stmt::While { body: x, check: y, .. } = s {
+                if let Some(r) = find(x, refs, top).or_else(|| find(y, refs, top)) {
+                    return Some(r);
+                }
+            }
+        }
+        None
+    }
+    let Some((a, block, sat)) = find(body, refs, body) else { return false };
+    // take the label and its block out (wherever it is), then put the block at the goto
+    fn remove(list: &mut Vec<Stmt>, a: &str, len: usize) -> bool {
+        if let Some(j) = list.iter().position(|s| matches!(s, Stmt::Label(x) if x == a)) {
+            list.drain(j..j + 1 + len);
+            return true;
+        }
+        for s in list.iter_mut() {
+            if let Stmt::If(_, x, y) | Stmt::While { body: x, check: y, .. } = s {
+                if remove(x, a, len) || remove(y, a, len) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+    if !remove(body, &a, sat) {
+        return false;
+    }
+    replace(body, &a, &block)
 }
 
 // top: B; if (c) goto top;                       -> do { B } while (c)
@@ -410,7 +523,7 @@ pub fn structure(f: &mut Function) {
         for (_, l) in &f.entries {
             *refs.entry(l.clone()).or_default() += 1;
         }
-        if !step(&mut f.body, &refs) && !loops(&mut f.body, &refs) && !branches(&mut f.body, &refs, None) {
+        if !step(&mut f.body, &refs) && !loops(&mut f.body, &refs) && !branches(&mut f.body, &refs, None) && !motions(&mut f.body, &refs) {
             break;
         }
     }

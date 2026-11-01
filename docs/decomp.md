@@ -152,7 +152,9 @@ result):
   `L: B; if (!c) { E } A`, so the back edge reaches the top level and becomes a loop (`do { } while (1)` when it is
   unconditional: the checker lowers a constant-true condition to a jump); unreachable statements after a jump go,
   and so does a goto to the next statement; `if (a) { if (b) X }` is `if (a && b) X`; an else holding one if prints
-  as `else if`.
+  as `else if`. A block only one goto enters (not fallen into) moves to that goto, with a goto to the label it fell
+  into; `if (c) { A } else { B; goto L; } T; L:` is `if (c) { A; T } else { B }`: together, switch-like chains of
+  `if (x == k) goto Ak` become else-if chains holding their blocks.
 - A void function's last `return;` goes; `u32 r6 = r0;` with r0 never assigned again is r0 (loop-free functions),
   and so is `u32 r0 = arg0.addr();` (its uses read `arg0.addr()`); `(x - K) == 0` reads `x == K`; a comparison of a
   widened unsigned byte or halfword drops the widening; a sign-extended load reads `*gptr<s8>(a)`.
