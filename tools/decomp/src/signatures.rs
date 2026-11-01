@@ -172,13 +172,9 @@ pub fn prove(ctx: &Context, f: &Function) -> Option<Vec<String>> {
         .collect();
     reads.sort_by_key(|k| ARGS.iter().position(|x| x == k));
     let debug = std::env::var("DECOMP_DEBUG").is_ok();
-    if reads.len() == ARGS.len() {
-        if debug {
-            eprintln!("{:x}: reads every argument register", f.address);
-        }
-        return None;
-    }
-    if non_interference(ctx, f, &reads) {
+    // (every register: still worth trying to drop core ones, which decide how many arguments a call passes; the float
+    // registers often only go on to a callee without a signature)
+    if reads.len() == ARGS.len() || non_interference(ctx, f, &reads) {
         // liveness over-approximates (a register written on every branch looks read): drop core registers that
         // are not needed, one at a time (they decide how many arguments a call passes)
         for k in ["r3", "r2", "r1", "r0"] {

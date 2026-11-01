@@ -526,6 +526,11 @@ impl<'c> Sym<'c> {
 
     // the runtime's helper functions (runtime/cpu.h)
     fn helper(&mut self, st: &mut State<'c>, name: &str, args: &[Expr]) -> Result<(Ty, BV<'c>)> {
+        // a shift with its carry out (lsl_rc ...): its value is the plain shift's (runtime/cpu.h), the carry opaque
+        let shift_value = match name.strip_suffix('c') {
+            Some(plain @ ("lsl_r" | "lsr_r" | "asr_r" | "ror_r")) if args.len() == 3 => Some(self.helper(st, plain, &args[..2])?),
+            _ => None,
+        };
         let mut vals = Vec::new();
         let mut outs = Vec::new();
         for a in args {
@@ -546,6 +551,9 @@ impl<'c> Sym<'c> {
                 r.push(&ov);
                 let nv = self.uf(&format!("{}_out{}", name, k), &r, ot.bits());
                 st.vars.insert(o.clone(), (ot, nv));
+            }
+            if let Some(v) = shift_value {
+                return Ok(v);
             }
             let mut r = refs.clone();
             let old: Vec<BV> = outs.iter().map(|o| st.vars[o].1.clone()).collect();

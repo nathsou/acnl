@@ -16,7 +16,8 @@
 //   g_mem + address + offset, without the guest's 32-bit wrap: offsets of MAX_FIELD_OFFSET or more are refused (a
 //   field at 0xfffffff8 is 8 bytes before the object in the guest, but 4 GiB after it on the host), and below it the
 //   sum cannot wrap because guest addresses are below 0x80000000 (3DS user space);
-// - shifts: by constants below the width only (C++ leaves larger or variable amounts open; the model defines them).
+// - shifts: by constants below the width, or by x & m with m below it (C++ leaves larger amounts open; the model
+//   defines them).
 use crate::ast::*;
 use crate::typedb::PathStep;
 use std::collections::{HashMap, HashSet};
@@ -25,6 +26,8 @@ type R<T> = Result<T, String>;
 
 pub const RETURN_TO_HOST: u64 = 0xFFFF_1000;
 pub const LR: &str = "__lr"; // the return address at the entry
+pub const FRAME: &str = "__frame";
+pub const LOOP_LABEL: &str = "__loop"; // the labels of loops written without theirs // declared (holding the mask) when GUEST_EXPORT_FRAMED pushes registers first
 pub const MAX_FIELD_OFFSET: u64 = 0x8000_0000;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -35,8 +38,8 @@ enum Tok {
     P(&'static str),
 }
 
-const PUNCT: [&str; 36] = [
-    "::", "->", "+=", "-=", "<<", ">>", "<=", ">=", "==", "!=", "&&", "||", "(", ")", "{", "}", "[", "]", "<", ">", ";", ",", ":",
+const PUNCT: [&str; 41] = [
+    "<<=", ">>=", "::", "->", "+=", "-=", "|=", "&=", "^=", "<<", ">>", "<=", ">=", "==", "!=", "&&", "||", "(", ")", "{", "}", "[", "]", "<", ">", ";", ",", ":",
     "=", "+", "-", "*", "/", "%", "&", "|", "^", "~", "!", "?", ".",
 ];
 
@@ -235,6 +238,10 @@ struct Parser<'a> {
     helpers: &'a HashSet<String>,
     fresh: usize,
     ret: CType,
+    frame: u32, // GUEST_EXPORT_FRAMED's mask: the registers pushed before the function runs (bit n: register n)
+    loops: usize, // the loops read so far (names for the labels a loop leaves out)
+    stack_frame: u64, // the bytes a guest::StackFrame at the top of the function lowers sp by (restored at returns)
+    depth: usize, // blocks open
     pub layout: Vec<LayoutAssumption>,
 }
 
@@ -478,6 +485,22 @@ impl<'a> Parser<'a> {
                 Ok(V::R(v.0, v.1))
             }
             Some(Tok::Id(n)) => {
+                // frame.at<T>(k) / frame.at(k): the guest pointer sp + k (StackFrame::at reads the CPU's sp)
+                if n == "frame" && self.stack_frame != 0 && self.peek_at(1) == Some(&Tok::P(".")) && self.peek_at(2) == Some(&Tok::Id("at".into())) {
+                    self.i += 3;
+                    let t = if self.eat("<") {
+                        let t = self.try_type()?.ok_or("frame.at<T>: the type")?;
+                        self.close_angle()?;
+                        t
+                    } else {
+                        CType::Void
+                    };
+                    self.expect("(")?;
+                    let k = self.number()?;
+                    self.expect(")")?;
+                    let a = Expr::Bin(BinOp::Add, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(k, Ty::U32)));
+                    return Ok(V::R(a, CType::Ptr(Box::new(t))));
+                }
                 if n == "guest" && self.peek_at(2) == Some(&Tok::Id("cpu".into())) {
                     self.i += 3;
                     self.expect("(")?;
@@ -719,9 +742,11 @@ impl<'a> Parser<'a> {
             };
             if matches!(op, BinOp::Shl | BinOp::Shr) {
                 // C++ leaves a shift by the width or more undefined (the model's shift gives 0 or the sign)
-                match rhs {
-                    Expr::Num(k, _) if k < t.bits() as u64 => {}
-                    _ => return Err(format!("a shift by {:?} (only constants below the width are defined in C++)", rhs)),
+                // (or by x & m, m below the width: the amount is then too)
+                match &rhs {
+                    Expr::Num(k, _) if *k < t.bits() as u64 => {}
+                    Expr::Bin(BinOp::And, _, m) if matches!(**m, Expr::Num(k, _) if k < t.bits() as u64) => {}
+                    _ => return Err(format!("a shift by {:?} (only constants below the width, or x & m, are defined in C++)", rhs)),
                 }
             }
             lhs = Expr::Bin(op, Box::new(lhs), Box::new(rhs));
@@ -750,6 +775,7 @@ impl<'a> Parser<'a> {
 
     fn block(&mut self) -> R<Vec<Stmt>> {
         self.expect("{")?;
+        self.depth += 1;
         let mut out = Vec::new();
         while !self.eat("}") {
             if self.peek().is_none() {
@@ -757,7 +783,14 @@ impl<'a> Parser<'a> {
             }
             self.stmt(&mut out)?;
         }
+        self.depth -= 1;
         Ok(out)
+    }
+
+    // a name for a label a loop leaves out (LOOP_LABEL, a number, suffix)
+    fn loop_label(&mut self, suffix: &str) -> String {
+        self.loops += 1;
+        format!("{}{}{}", LOOP_LABEL, self.loops, suffix)
     }
 
     fn epilogue(&mut self, value: Option<Expr>, out: &mut Vec<Stmt>) -> R<()> {
@@ -767,6 +800,12 @@ impl<'a> Parser<'a> {
             (CType::Val(ty), Some(e)) if !ty.float() && ty.bits() <= 32 => out.push(Stmt::SetCpu(CpuField::R(0), Expr::Cast(Ty::U32, Box::new(e)))),
             (CType::Ptr(_), Some(e)) => out.push(Stmt::SetCpu(CpuField::R(0), e)),
             (t, v) => return Err(format!("return of {:?} from a function returning {:?}", v.is_some(), t)),
+        }
+        // the StackFrame's and PushedFrame's destructors: sp back to the entry's (calls leave sp as it was)
+        if self.frame != 0 || self.stack_frame != 0 {
+            let bytes = 4 * self.frame.count_ones() as u64 + self.stack_frame;
+            let sp = Expr::Bin(BinOp::Add, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(bytes, Ty::U32)));
+            out.push(Stmt::SetCpu(CpuField::R(13), sp));
         }
         out.push(Stmt::SetCpu(CpuField::Pc, Expr::Var(LR.into())));
         out.push(Stmt::Return);
@@ -936,8 +975,14 @@ impl<'a> Parser<'a> {
             let (cond, _) = self.expr()?;
             self.expect(")")?;
             self.expect(";")?;
-            let Some(Stmt::Label(top)) = body.first().cloned() else { return Err("do loop without a label".into()) };
-            body.remove(0);
+            // (a loop nothing else jumps into may leave its label out: verify_cpp pairs loops by their order)
+            let top = match body.first().cloned() {
+                Some(Stmt::Label(top)) => {
+                    body.remove(0);
+                    top
+                }
+                _ => self.loop_label(""),
+            };
             out.push(Stmt::While { top, test: None, body, check: vec![], cond });
             return Ok(());
         }
@@ -949,16 +994,23 @@ impl<'a> Parser<'a> {
             self.expect(")")?;
             let mut all = self.block()?;
             // the emitter's shape: test: check; if (!(cond)) { break; } top: body
-            let Some(Stmt::Label(test)) = all.first().cloned() else { return Err("for loop without a label".into()) };
-            all.remove(0);
+            let test = match all.first().cloned() {
+                Some(Stmt::Label(test)) => {
+                    all.remove(0);
+                    test
+                }
+                _ => self.loop_label("_test"),
+            };
             let k = all
                 .iter()
                 .position(|s| matches!(s, Stmt::If(_, a, b) if b.is_empty() && a.len() == 1 && a[0] == Stmt::Unsupported("break".into())))
                 .ok_or("for loop without its exit test")?;
             let Stmt::If(Expr::Un(UnOp::LNot, cond), _, _) = all[k].clone() else { return Err("for loop exit test".into()) };
             let check: Vec<Stmt> = all[..k].to_vec();
-            let Some(Stmt::Label(top)) = all.get(k + 1).cloned() else { return Err("for loop without its body label".into()) };
-            let body: Vec<Stmt> = all[k + 2..].to_vec();
+            let (top, body) = match all.get(k + 1).cloned() {
+                Some(Stmt::Label(top)) => (top, all[k + 2..].to_vec()),
+                _ => (self.loop_label(""), all[k + 1..].to_vec()),
+            };
             out.push(Stmt::While { top, test: Some(test), body, check, cond: *cond });
             return Ok(());
         }
@@ -1013,7 +1065,11 @@ impl<'a> Parser<'a> {
                     other => return Err(format!("local of type {:?}", other)),
                 };
                 let init = if self.eat("=") {
-                    let (e, et) = self.expr()?;
+                    let (e, et) = match self.try_call(out)? {
+                        Some((e, CType::Void)) => return Err(format!("void result used: {:?}", e)),
+                        Some(x) => x,
+                        None => self.expr()?,
+                    };
                     if is_float(&et) != ty.float() && !matches!(e, Expr::Num(0, _)) {
                         return Err(format!("{} initialised with a {:?}", n, et));
                     }
@@ -1027,6 +1083,25 @@ impl<'a> Parser<'a> {
                 return Ok(());
             }
             self.i = save;
+        }
+        // guest::StackFrame frame(N); at the top of the function: sp lowered by N until the function returns
+        if self.is_id("guest") && self.peek_at(2) == Some(&Tok::Id("StackFrame".into())) {
+            if self.depth != 1 || self.stack_frame != 0 {
+                return Err("a StackFrame not at the top of the function, or a second one".into());
+            }
+            self.i += 3;
+            self.expect_id("frame")?;
+            self.expect("(")?;
+            let n = self.number()?;
+            self.expect(")")?;
+            self.expect(";")?;
+            if n == 0 || n % 4 != 0 || n >= 1 << 20 {
+                return Err(format!("a StackFrame of {} bytes", n));
+            }
+            self.stack_frame = n;
+            let sp = Expr::Bin(BinOp::Sub, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(n, Ty::U32)));
+            out.push(Stmt::SetCpu(CpuField::R(13), sp));
+            return Ok(());
         }
         // a preemption point: only lets other threads run (ignored, as in the original)
         if self.is_id("guest") && self.peek_at(2) == Some(&Tok::Id("preempt".into())) {
@@ -1055,11 +1130,21 @@ impl<'a> Parser<'a> {
         // an assignment
         let target = self.unary()?;
         let V::Pl(place) = target else { return Err("assignment to a value".into()) };
-        // x += e / x -= e
+        // x += e / x -= e / x |= e / x &= e / x ^= e
         let compound = if self.eat("+=") {
             Some(BinOp::Add)
         } else if self.eat("-=") {
             Some(BinOp::Sub)
+        } else if self.eat("|=") {
+            Some(BinOp::Or)
+        } else if self.eat("&=") {
+            Some(BinOp::And)
+        } else if self.eat("^=") {
+            Some(BinOp::Xor)
+        } else if self.eat("<<=") {
+            Some(BinOp::Shl)
+        } else if self.eat(">>=") {
+            Some(BinOp::Shr)
         } else {
             self.expect("=")?;
             None
@@ -1071,6 +1156,18 @@ impl<'a> Parser<'a> {
             let (CType::Val(a), CType::Val(b)) = (&ct, &et) else { return Err("compound assignment of a non-integer".into()) };
             if a.float() || b.float() {
                 return Err("compound assignment of a float".into());
+            }
+            // (a shift: by an amount C++ defines, as for << and >>)
+            if matches!(op, BinOp::Shl | BinOp::Shr) {
+                let bits = promote(*a).bits() as u64;
+                let defined = match &e {
+                    Expr::Num(k, _) => *k < bits,
+                    Expr::Bin(BinOp::And, _, m) => matches!(**m, Expr::Num(k, _) if k < bits),
+                    _ => false,
+                };
+                if !defined {
+                    return Err(format!("a shift by {:?} (only constants below the width, or x & m, are defined in C++)", e));
+                }
             }
             let value = Expr::Bin(op, Box::new(cur), Box::new(e));
             match place {
@@ -1216,7 +1313,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
     // first pass: structs, guest functions, function definitions (by name) and exports
     let mut scope = Scope::default();
     let mut defs: HashMap<String, usize> = HashMap::new(); // function name -> index of its return type
-    let mut exports: Vec<(u32, String)> = Vec::new();
+    let mut exports: Vec<(u32, String, u32)> = Vec::new();
     let mut ns: Vec<String> = Vec::new();
     let mut struct_checks = Vec::new();
     let mut i = 0;
@@ -1246,15 +1343,23 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                     i += 1;
                 }
             }
-            Tok::Id(n) if n == "GUEST_EXPORT" => {
+            Tok::Id(n) if n == "GUEST_EXPORT" || n == "GUEST_EXPORT_FRAMED" => {
                 let (Some(Tok::P("(")), Some(Tok::Num(a, _))) = (t.get(i + 1), t.get(i + 2)) else { return Err("GUEST_EXPORT".into()) };
-                // the function: the (qualified) name after the address
+                // the function: the (qualified) name after the address; GUEST_EXPORT_FRAMED's mask, a number, last
                 let end = skip_group(&t, i + 1);
                 let parts: Vec<String> = t[i + 3..end].iter().filter_map(|x| if let Tok::Id(s) = x { Some(s.clone()) } else { None }).collect();
                 if parts.is_empty() {
                     return Err("GUEST_EXPORT name".into());
                 }
-                exports.push((*a as u32, qualified(&ns.join("::"), &parts.join("::"))));
+                let mask = if n == "GUEST_EXPORT_FRAMED" {
+                    match t.get(end - 2) {
+                        Some(Tok::Num(m, _)) if *m < 1 << 15 && *m & (1 << 13) == 0 => *m as u32,
+                        _ => return Err("GUEST_EXPORT_FRAMED mask (a number, r0-r14 without sp)".into()),
+                    }
+                } else {
+                    0
+                };
+                exports.push((*a as u32, qualified(&ns.join("::"), &parts.join("::")), mask));
                 i = end;
                 if t.get(i) == Some(&Tok::P(";")) {
                     i += 1;
@@ -1279,7 +1384,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let mut fields = Vec::new();
                 let mut offset = 0u64;
                 while t.get(j) != Some(&Tok::P("}")) {
-                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
                     let ft = p.try_type()?.ok_or_else(|| format!("field type in {}", name))?;
                     let fname = p.ident()?;
                     let ft = if p.eat("[") {
@@ -1309,7 +1414,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" && matches!(t.get(i + 1), Some(Tok::Id(g)) if g == "guest") => {
                 // inline guest::global<T, 0xADDR> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
                 p.expect_id("guest")?;
                 p.expect("::")?;
                 p.expect_id("global")?;
@@ -1328,7 +1433,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" => {
                 // inline constexpr guest::Function<0xADDR, R(A...)> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
                 p.expect_id("constexpr")?;
                 p.expect_id("guest")?;
                 p.expect("::")?;
@@ -1359,7 +1464,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             _ => {
                 // a function definition: TYPE NAME ( ... ) { ... }
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
                 match p.try_type()? {
                     Some(_) => {
                         let name = p.ident()?;
@@ -1380,13 +1485,13 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
     }
 
     let mut out = Vec::new();
-    for (address, name) in exports {
+    for (address, name, frame) in exports {
         let Some(&at) = defs.get(&name) else {
             out.push(Export { address, function: Err(format!("no definition of {}", name)), layout: vec![] });
             continue;
         };
         let ns = name.rfind("::").map_or(String::new(), |k| name[..k].to_string());
-        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, layout: vec![] };
+        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame, loops: 0, stack_frame: 0, depth: 0, layout: vec![] };
         let f = function(&mut p, address);
         out.push(Export { address, function: f, layout: p.layout });
     }
@@ -1484,6 +1589,18 @@ fn function(p: &mut Parser, address: u32) -> R<Function> {
         }
     }
     p.expect(")")?;
+    // detail::invoke's PushedFrame: the masked registers stored below sp as a push stores them, sp lowered past them
+    if p.frame != 0 {
+        body.push(Stmt::Decl(Ty::U32, FRAME.into(), Some(Expr::Num(p.frame as u64, Ty::U32))));
+        let mut below = 0u64;
+        for r in (0..15).rev().filter(|r| p.frame >> r & 1 != 0) {
+            below += 4;
+            let at = Expr::Bin(BinOp::Sub, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(below, Ty::U32)));
+            body.push(Stmt::Store(Ty::U32, at, Expr::Cpu(CpuField::R(r))));
+        }
+        let sp = Expr::Bin(BinOp::Sub, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(below, Ty::U32)));
+        body.push(Stmt::SetCpu(CpuField::R(13), sp));
+    }
     let stmts = p.block()?;
     if stmts.iter().any(|s| contains_break(s)) {
         return Err("break outside the emitter's for loop".into());

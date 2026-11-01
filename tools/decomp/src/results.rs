@@ -9,6 +9,25 @@ use std::collections::{HashMap, HashSet};
 
 pub const RESULTS: [&str; 4] = ["r0", "r1", "s0", "s1"];
 
+// The table's entry for the indirect calls (through a pointer, `rt_dispatch`): what some indirect call site reads.
+// A function a pointer reaches has these observed (with what its direct callers read).
+pub const INDIRECT: u32 = 0xffff_fffe;
+
+// The results a C++ caller reads of a guest function returning `ty` (guest::detail::read_result: by the type's slot);
+// a type not known here: all of them.
+pub fn read_by_type(ty: &str) -> Vec<&'static str> {
+    let t = ty.trim();
+    match t {
+        "void" => vec![],
+        "u64" | "s64" => vec!["r0", "r1"],
+        "float" => vec!["s0"],
+        "double" => vec!["s0", "s1"],
+        "u8" | "u16" | "u32" | "s8" | "s16" | "s32" | "bool" | "char" | "int" => vec!["r0"],
+        _ if t.starts_with("gptr<") || t.ends_with('*') || t.ends_with('&') => vec!["r0"],
+        _ => RESULTS.to_vec(),
+    }
+}
+
 // function address (bit 0 clear) -> the results its callers observe (functions not listed: all of them)
 static TABLE: std::sync::OnceLock<std::sync::RwLock<HashMap<u32, HashSet<String>>>> = std::sync::OnceLock::new();
 
@@ -53,7 +72,8 @@ pub fn key(address: u32) -> u64 {
     RESULTS.iter().enumerate().filter(|(_, k)| u.contains(**k)).map(|(i, _)| 1u64 << (i + 48)).sum()
 }
 
-// What a function's calls contribute: for each callee, the results read after the call (or passed on).
+// What a function's calls contribute: for each callee (INDIRECT for calls through a pointer), the results read after
+// the call (or passed on).
 pub fn contributions(f: &Function, mine: &HashSet<String>, out: &mut HashMap<u32, HashSet<String>>) {
     let lv = crate::flow::liveness_with(f, false);
     let field_of: HashMap<String, String> = f.synced.iter().map(|(v, fl)| (v.clone(), crate::sym::cpu_key(fl))).collect();
@@ -63,8 +83,9 @@ pub fn contributions(f: &Function, mine: &HashSet<String>, out: &mut HashMap<u32
         for (i, s) in list.iter().enumerate() {
             let p: Vec<usize> = [prefix, &[i]].concat();
             match s {
-                Stmt::GuestCall(t, tail) => {
-                    let set = out.entry(*t & !1).or_default();
+                Stmt::GuestCall(_, tail) | Stmt::Dispatch(tail) => {
+                    let callee = if let Stmt::GuestCall(t, _) = s { *t & !1 } else { INDIRECT };
+                    let set = out.entry(callee).or_default();
                     if *tail {
                         set.extend(mine.iter().cloned());
                         continue;

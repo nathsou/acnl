@@ -456,6 +456,20 @@ fn remove_dead(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, keep_decls: &
             changed |= remove_dead(b, &pb, lv, keep_decls);
             continue;
         }
+        // a shift whose carry out nobody reads: the shift alone (lsl_rc and lsl_r give the same value; so for lsr, asr
+        // and ror)
+        if let Stmt::Assign(_, e) | Stmt::Decl(_, _, Some(e)) = &mut list[i] {
+            if let Expr::Call(n, args) = e {
+                if let (Some(plain), [_, _, Expr::AddrOf(c)]) = (n.strip_suffix('c'), args.as_slice()) {
+                    let unread = lv.live_out.get(&p).map_or(false, |s| !s.contains(c));
+                    if matches!(plain, "lsl_r" | "lsr_r" | "asr_r" | "ror_r") && unread {
+                        *n = plain.to_string();
+                        args.pop();
+                        changed = true;
+                    }
+                }
+            }
+        }
         let dead = match &list[i] {
             Stmt::Assign(x, _) => lv.live_out.get(&p).map_or(false, |s| !s.contains(x)),
             Stmt::Decl(_, x, _) if !keep_decls.contains(x) => lv.live_out.get(&p).map_or(false, |s| !s.contains(x)),

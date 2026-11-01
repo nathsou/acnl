@@ -386,7 +386,7 @@ fn emit_drafts(addrs: &[String]) {
             println!("// {:x}: not proved, no draft", addr);
             continue;
         }
-        match emit::emit(&dd.function) {
+        match emit::emit(&dd) {
             Ok(code) => println!("{}", code),
             Err(e) => println!("// {:x}: no draft: {}", addr, e),
         }
@@ -418,7 +418,7 @@ fn emit_batch(list: &str, out: &str, threads: usize) {
                         Ok(orig) => {
                             let (dd, v) = decompile::decompile_and_prove_retrying(&ctx, &orig);
                             match v {
-                                check::Verdict::Proved => emit::emit(&dd.function),
+                                check::Verdict::Proved => emit::emit(&dd),
                                 check::Verdict::Differs(w) => Err(format!("not proved: differs {}", w)),
                                 check::Verdict::Unknown(w) => Err(format!("not proved: {}", w)),
                             }
@@ -663,18 +663,30 @@ fn structs_all(outdir: &str, header: &str, threads: usize) {
 fn results_all(out: &str, threads: usize) {
     let funcs: Vec<(u32, String)> = generated_functions();
     let mut all_observed: HashSet<u32> = HashSet::new();
-    // reachable through a pointer (callers unknown), or called by code not analysed here: everything observed
-    let pointed = fs::read_to_string(format!("{}/pointed.txt", GENERATED)).expect("the recompiler's pointed.txt");
-    all_observed.extend(pointed.lines().filter_map(|l| u32::from_str_radix(l.trim(), 16).ok()).map(|a| a & !1));
+    // reachable through a pointer: callers unknown but for the indirect call sites, whose reads they get
+    let pointed: HashSet<u32> = fs::read_to_string(format!("{}/pointed.txt", GENERATED))
+        .expect("the recompiler's pointed.txt")
+        .lines()
+        .filter_map(|l| u32::from_str_radix(l.trim(), 16).ok())
+        .map(|a| a & !1)
+        .collect();
+    // what callers outside the analysed code read: by callee (INDIRECT for calls through a pointer)
+    let mut outside: HashMap<u32, HashSet<String>> = HashMap::new();
+    let every: HashSet<String> = results::RESULTS.iter().map(|k| k.to_string()).collect();
     let call = regex_lite_calls();
     let mut parsed: Vec<(u32, ast::Function)> = Vec::new();
     for (a, text) in &funcs {
         match parse::function(text) {
             Ok(f) => parsed.push((*a & !1, f)),
-            Err(_) => all_observed.extend(call(text)),
+            Err(_) => {
+                all_observed.extend(call(text));
+                if text.contains("rt_dispatch(") {
+                    outside.entry(results::INDIRECT).or_default().extend(every.iter().cloned());
+                }
+            }
         }
     }
-    // the rewrites call guest functions through the C++ ABI (results read as they like)
+    // the rewrites call guest functions through the C++ ABI: the results their declared result types read
     let mut stack = vec![std::path::PathBuf::from("games/acnl/src")];
     while let Some(d) = stack.pop() {
         for e in fs::read_dir(&d).into_iter().flatten().flatten() {
@@ -684,19 +696,17 @@ fn results_all(out: &str, threads: usize) {
                     stack.push(p);
                 }
             } else if let Ok(text) = fs::read_to_string(&p) {
-                for (i, _) in text.match_indices("Function<0x") {
-                    let hex: String = text[i + 11..].chars().take_while(|c| c.is_ascii_hexdigit()).collect();
-                    if let Ok(a) = u32::from_str_radix(&hex, 16) {
-                        all_observed.insert(a & !1);
-                    }
-                }
+                rewrite_reads(&text, &mut outside);
             }
         }
     }
-    let every: HashSet<String> = results::RESULTS.iter().map(|k| k.to_string()).collect();
     let parsed = std::sync::Arc::new(parsed);
     let mut table: HashMap<u32, HashSet<String>> =
         parsed.iter().filter(|(a, _)| !all_observed.contains(a)).map(|(a, _)| (*a, HashSet::new())).collect();
+    table.insert(results::INDIRECT, HashSet::new());
+    if std::env::var("DECOMP_DEBUG").is_ok() {
+        eprintln!("outside the analysed code, through a pointer: {:?}", outside.get(&results::INDIRECT));
+    }
     for round in 1.. {
         results::reset(table.clone());
         let handles: Vec<_> = (0..threads)
@@ -706,6 +716,16 @@ fn results_all(out: &str, threads: usize) {
                     let mut out: HashMap<u32, HashSet<String>> = HashMap::new();
                     for (a, f) in parsed.iter().skip(t).step_by(threads) {
                         let mine: HashSet<String> = results::RESULTS.iter().filter(|k| results::observed(*a, k)).map(|k| k.to_string()).collect();
+                        if std::env::var("DECOMP_DEBUG").is_ok() {
+                            // who makes the indirect calls read r1 / s0
+                            let mut one = HashMap::new();
+                            results::contributions(f, &mine, &mut one);
+                            if let Some(s) = one.get(&results::INDIRECT) {
+                                if s.contains("r1") || s.contains("s0") {
+                                    eprintln!("indirect {:08x}: {:?} (mine {:?})", a, s, mine);
+                                }
+                            }
+                        }
                         results::contributions(f, &mine, &mut out);
                     }
                     out
@@ -718,6 +738,18 @@ fn results_all(out: &str, threads: usize) {
                 if let Some(s) = next.get_mut(&callee) {
                     s.extend(set);
                 }
+            }
+        }
+        for (callee, set) in &outside {
+            if let Some(s) = next.get_mut(callee) {
+                s.extend(set.iter().cloned());
+            }
+        }
+        // a function a pointer reaches: what the indirect call sites read too
+        let indirect = next[&results::INDIRECT].clone();
+        for a in &pointed {
+            if let Some(s) = next.get_mut(a) {
+                s.extend(indirect.iter().cloned());
             }
         }
         let changed = next != table;
@@ -739,6 +771,78 @@ fn results_all(out: &str, threads: usize) {
         .collect();
     lines.sort();
     fs::write(out, lines.join("\n") + "\n").unwrap();
+}
+
+// What a rewrite's calls into guest code read: `guest::Function<0xADDR, R(...)>` by its result type, and
+// `call_address<R>` / `call_member<R>` (through a pointer: INDIRECT).
+fn rewrite_reads(text: &str, out: &mut HashMap<u32, HashSet<String>>) {
+    for (i, _) in text.match_indices("Function<0x") {
+        let rest = &text[i + 11..];
+        let hex: String = rest.chars().take_while(|c| c.is_ascii_hexdigit()).collect();
+        let Ok(a) = u32::from_str_radix(&hex, 16) else { continue };
+        // the result type: from the comma after the address to the parameter list's '(' (templates nest no '(')
+        let after = &rest[hex.len()..];
+        let ty = after.strip_prefix(',').and_then(|t| t.find('(').map(|k| &t[..k]));
+        let reads = match ty {
+            Some(t) => results::read_by_type(t),
+            None => results::RESULTS.to_vec(),
+        };
+        out.entry(a & !1).or_default().extend(reads.iter().map(|k| k.to_string()));
+    }
+    for name in ["call_address<", "call_member<"] {
+        for (i, _) in text.match_indices(name) {
+            let rest = &text[i + name.len()..];
+            // the template argument: up to the '>' that closes it
+            let mut depth = 0;
+            let mut end = None;
+            for (k, ch) in rest.char_indices() {
+                match ch {
+                    '<' => depth += 1,
+                    '>' if depth == 0 => {
+                        end = Some(k);
+                        break;
+                    }
+                    '>' => depth -= 1,
+                    _ => {}
+                }
+            }
+            let reads = match end {
+                Some(k) => template_reads(text, i, &rest[..k]),
+                None => results::RESULTS.to_vec(),
+            };
+            out.entry(results::INDIRECT).or_default().extend(reads.iter().map(|k| k.to_string()));
+        }
+    }
+}
+
+// The results a call with result type `ty` reads; for a template's own parameter (`template <typename R, ...> R
+// name(...)` around the call at `at`), those of the types `name<T>(` is used with in the file.
+fn template_reads(text: &str, at: usize, ty: &str) -> Vec<&'static str> {
+    let ty = ty.trim();
+    let is_param = ty.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && text[..at].contains(&format!("template <typename {}", ty));
+    if !is_param {
+        return results::read_by_type(ty);
+    }
+    // the function the template declares: `R name(` after the last `template <typename R`
+    let decl = text[..at].rfind(&format!("template <typename {}", ty)).unwrap();
+    let after = &text[decl..at];
+    let Some(k) = after.find(&format!("\n    {} ", ty)).or_else(|| after.find(&format!("\n{} ", ty))) else { return results::RESULTS.to_vec() };
+    let head = &after[k..];
+    let name: String = head.trim_start().splitn(2, ' ').nth(1).unwrap_or("").chars().take_while(|c| c.is_ascii_alphanumeric() || *c == '_').collect();
+    if name.is_empty() {
+        return results::RESULTS.to_vec();
+    }
+    let mut reads: Vec<&'static str> = Vec::new();
+    for (i, _) in text.match_indices(&format!("{}<", name)) {
+        let rest = &text[i + name.len() + 1..];
+        let Some(close) = rest.find(">(") else { continue };
+        for r in results::read_by_type(&rest[..close]) {
+            if !reads.contains(&r) {
+                reads.push(r);
+            }
+        }
+    }
+    reads
 }
 
 // the targets of the guest calls in a generated function's text (f_XXXXXXXX(c / t_XXXXXXXX(c)
@@ -803,7 +907,14 @@ fn prove_export(ctx: &z3::Context, e: &cpp::Export, p: &Program) -> Result<(), S
         check::Verdict::Differs(w) => return Err(format!("the decompiled function is not proved: differs {}", w)),
         check::Verdict::Unknown(w) => return Err(format!("the decompiled function is not proved: {}", w)),
     }
-    let v = check::verify_cpp(ctx, &orig, &dd, f);
+    let mut v = check::verify_cpp(ctx, &orig, &dd, f);
+    // a proof that ran out of time: once more with four times the solver's time (DECOMP_TIMEOUT_MS, default 20 s)
+    if matches!(&v, check::Verdict::Unknown(w) if w.contains("timeout") || w.contains("canceled") || w.contains("budget")) {
+        let ms: u32 = std::env::var("DECOMP_TIMEOUT_MS").ok().and_then(|x| x.parse().ok()).unwrap_or(20_000);
+        check::TIMEOUT_OVERRIDE.with(|t| t.set(Some(ms.saturating_mul(4))));
+        v = check::verify_cpp(ctx, &orig, &dd, f);
+        check::TIMEOUT_OVERRIDE.with(|t| t.set(None));
+    }
     match v {
         check::Verdict::Proved => Ok(()),
         check::Verdict::Differs(w) => Err(format!("differs: {}", w)),
@@ -952,6 +1063,18 @@ fn main() {
         Some("emit-batch") => emit_batch(&args[2], &args[3], args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("check-list") => check_list(&args[2], args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("selftest") => selftest(&args[2..]),
+        // the signature of each function given, with the table's signatures for its callees (DECOMP_DEBUG=1: why not)
+        Some("signature") => {
+            let cfg = z3::Config::new();
+            let ctx = z3::Context::new(&cfg);
+            for a in &args[2..] {
+                let addr = u32::from_str_radix(a.trim_start_matches("0x"), 16).unwrap();
+                match find(addr) {
+                    Some(f) => println!("{:08x}: {:?}", addr, signatures::prove(&ctx, &f)),
+                    None => println!("{:08x}: not found", addr),
+                }
+            }
+        }
         Some("signatures") => signatures_all(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp_signatures.txt"),
                                              args.get(3).and_then(|s| s.parse().ok()).unwrap_or(usize::MAX),
                                              args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),

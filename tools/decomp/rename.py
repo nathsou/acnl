@@ -26,7 +26,7 @@ typename union unsigned using virtual void volatile while xor u8 u16 u32 u64 s8 
 # the runtime helpers drafts may call (decomp's HELPERS)
 KEYWORDS |= set('''vfp_cmpf ror32 lsl_r lsr_r asr_r ror_r lsl_rc lsr_rc asr_rc ror_rc sat32 qadd qsub qdadd qdsub smlaxy smlaxy_add ssat usat ssat16 usat16 sxtb sxth uxtb uxth sxtb16 uxtb16 add16x rev16 sel usad8 pas_lane pas16 pas8 vfp_cmpd cvt_s32 cvt_u32 vfp_round vcvt_sz_f vcvt_uz_f vcvt_sz_d vcvt_uz_d vcvt_sr_f vcvt_ur_f vcvt_sr_d vcvt_ur_d D2F sqrtf sqrt fabsf fabs __builtin_clz clz'''.split())
 IDENT = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
-DRAFT = re.compile(r'(// f_([0-9a-f]{8}): decompiled.*?\nGUEST_EXPORT\(0x[0-9a-f]{8},[^\n]*\n)', re.S)
+DRAFT = re.compile(r'(// f_([0-9a-f]{8}): decompiled.*?\nGUEST_EXPORT(?:_FRAMED)?\(0x[0-9a-f]{8},[^\n]*\n)', re.S)
 WORD = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 
 

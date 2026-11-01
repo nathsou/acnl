@@ -15,7 +15,7 @@ HEADER = '''// Functions decompiled by tools/decomp (docs/decomp.md), each prove
 #include "guest/guest.hpp"
 '''
 
-DRAFT = re.compile(r'((?:#include "[^"]+"\n)*)(// f_([0-9a-f]{8}): decompiled.*?\nGUEST_EXPORT\(0x[0-9a-f]{8},[^\n]*\n)', re.S)
+DRAFT = re.compile(r'((?:#include "[^"]+"\n)*)(// f_([0-9a-f]{8}): decompiled.*?\nGUEST_EXPORT(?:_FRAMED)?\(0x[0-9a-f]{8},[^\n]*\n)', re.S)
 
 
 def exported(src, skip):

@@ -81,12 +81,16 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   convention: compiled code never reads saved registers through a pointer). With it, removing the saves proves in
   a fraction of a second. `DECOMP_FRAME=0` uses one memory with an assumption per access through a pointer instead,
   checked not to rule out any way out of the function (much slower).
-- Results no caller reads are not compared (`decomp results`, results.rs): for a function no pointer reaches (the
-  recompiler's `pointed.txt`: its address appears nowhere as a value), every caller is a direct call or branch of the
-  program, and r0, r1, s0 or s1 is observed only when some caller reads it after the call or passes it on (a tail
-  call, a register it does not keep), to a fixed point. Functions called by code that does not parse, or by the
-  rewrites, have all their results observed. The emitter then writes `void` functions and no write-back of an unread
-  r1. This rests on the whole program as recompiled: code that calls such a function some other way is not covered.
+- Results no caller reads are not compared (`decomp results`, results.rs): r0, r1, s0 or s1 is observed only when
+  some caller reads it after the call or passes it on (a tail call, a register it does not keep), to a fixed point.
+  Every caller of a function no pointer reaches (the recompiler's `pointed.txt`: its address appears nowhere as a
+  value) is a direct call or branch of the program; a function a pointer reaches also gets what the program's indirect
+  call sites (`rt_dispatch`) read. The rewrites' calls read what their C++ result types read (`guest::Function<A,
+  R(...)>`, `call_address<R>`, a template's `R` by the types it is used with in its file); code that does not parse
+  reads everything. The emitter then writes `void` functions and no write-back of an unread r1. This rests on the
+  whole program as recompiled: code that calls such a function some other way is not covered. (So far the indirect
+  call sites read all four: a callee without a signature takes r0-r3, so r1 left by an indirect call counts as read
+  when such a callee follows.)
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
 
 ## Signatures (`decomp signatures OUT [N] [THREADS]`)
@@ -114,6 +118,30 @@ using its stack frame keeps sp in step with the CPU, and before a plain return t
 function changed (r1, s0, s1, r4-r11, sp) go back to the CPU. What it cannot write that way yet is refused with the
 reason.
 
+What makes it read like code rather than registers (each step keeps the statements' meaning; `prove-cpp` proves the
+result):
+
+- The stack frame as one object. When sp moves only by constants (the same depth wherever paths meet, deepest at
+  every call, back at every return, no tail call), the export pushes the registers the original pushes
+  (`GUEST_EXPORT_FRAMED`, so callees see the same stack, saved values included) and a `guest::StackFrame frame(N)`
+  holds the rest of the frame; locals are `*frame.at<u32>(k)` and their addresses `frame.at(k).addr()`. A tail call
+  keeps the old form (the export's frame lasts until the C++ returns; the original pops before branching).
+- Declarations at the first assignment (`u32 r0_1 = call_x(r1);`) when the variable's other uses follow in the same
+  block and no goto jumps into that stretch; a value used once is written into its use when nothing between changes
+  what it reads (and, if it reads memory, only plain variables are assigned between); `x = x + e` is `x += e`.
+- `guest::cpu()->r[N] = x;` before a return is left out when x was read from that register in the same block with
+  no call or CPU write between (the CPU still holds it), and so is the read once nothing else uses it.
+- Loops: a label only when something besides the loop jumps to it (`prove-cpp` pairs label-less loops with the
+  decompiled function's in order); structuring keeps a loop, or a label only its own statements jump to, inside an
+  `if` or a loop body, and looks inside loop bodies.
+- Conditions: `res = a - 0` compares (`cmp r0, #0`) as `s32(a) < 0`; `x = A; if (!x) x = B;` is `A || B` (and `&&`
+  for `if (x)`); `if (A) X; if (B) X;` with X returning is `if (A || B) X`; a copy `x = t` right before a condition
+  that reads t lets it read x (so `t = r1 >> 1; r1 = t; while (t)` is `r1 >>= ...; while (r1)`); negated comparisons
+  flip inside loops too.
+- Shifts: `lsl_r(x, n & m)` with m < 32 is `x << (n & m)` (and lsr, asr); a shift's carry nobody reads is the plain
+  shift (`lsl_rc` and `lsl_r` give the same value; the model now knows that value, the carry stays opaque).
+- An exit block may hold labels only exit gotos reach, and its size counts what is written (not the bookkeeping).
+
 ## Proving the C++ (`prove-cpp`)
 
 `cpp.rs` reads the C++ back into the AST, with the meaning it has in the game, and `prove-cpp` proves it equal to the
@@ -133,7 +161,13 @@ edit. The reading spells out what runs around the C++ (guest/include/guest/abi.h
   0x80000000 or more are refused (the emitter writes such an access as `*gptr<T>(address + offset)` instead): a
   field at 0xfffffff8 is 8 bytes before the object in the game but 4 GiB after it on the host. That one read past the
   guest memory and crashed the game at random moments, with no proof failing;
-- shifts are by constants below the width only (C++ leaves the others undefined, the model defines them);
+- shifts are by constants below the width, or by `x & m` with m below it (C++ leaves the others undefined, the model
+  defines them);
+- `GUEST_EXPORT_FRAMED(A, f, mask)` is `detail::invoke`'s `PushedFrame`: the masked registers stored below sp as a
+  push stores them and sp lowered past them before the function runs, sp back at its return; the proof then counts
+  those bytes as the save area (the decompiled function, with the saves removed, leaves them alone);
+- `guest::StackFrame frame(N)`, at the top of the function only: sp lowered by N, back at every return;
+  `frame.at<T>(k)` is a pointer to the CPU's sp + k;
 - the build compiles the C++ with `-fwrapv -fno-strict-aliasing -ffp-contract=off` (CMakeLists.txt): signed
   arithmetic wraps, memory is bytes whatever the type of the pointer, and float operations round one at a time, as
   the model assumes.

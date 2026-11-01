@@ -343,8 +343,13 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
                 cinit.vars.insert(v.clone(), (*t, BV::new_const(ctx, name, t.bits())));
             }
             for (v, t) in &otypes {
-                let name = if related.contains(v) && ctypes.get(v) == Some(t) { format!("v_{}", v) } else { format!("o_{}", v) };
+                let shared_sp = v == "r13" && !ctypes.contains_key(v) && (!saved.is_empty() || !slots.is_empty());
+                let name = if related.contains(v) && (ctypes.get(v) == Some(t) || shared_sp) { format!("v_{}", v) } else { format!("o_{}", v) };
                 oinit.vars.insert(v.clone(), (*t, BV::new_const(ctx, name, t.bits())));
+            }
+            // a candidate that keeps sp in the CPU (GUEST_EXPORT_FRAMED): the CPU's sp is the related one
+            if !ctypes.contains_key("r13") && (!saved.is_empty() || !slots.is_empty()) {
+                cinit.cpu.insert("r13".into(), BV::new_const(ctx, "v_r13", 32));
             }
             let _ = &olive;
             // invariant: an argument register nothing writes still holds the argument
@@ -480,7 +485,10 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
             todo.push(Some(n.clone()));
             // the sp invariant: r13 = entry sp - delta at the header
             if !saved.is_empty() || !slots.is_empty() {
-                let sp_at: Vec<(Bool, BV)> = ca.iter().filter_map(|x| x.2.vars.get("r13").map(|y| (x.1.clone(), y.1.clone()))).collect();
+                let sp_at: Vec<(Bool, BV)> = ca
+                    .iter()
+                    .filter_map(|x| x.2.vars.get("r13").map(|y| y.1.clone()).or_else(|| x.2.cpu.get("r13").cloned()).map(|y| (x.1.clone(), y)))
+                    .collect();
                 if sp_at.len() != ca.len() {
                     return Verdict::Unknown(format!("r13 at {}", n));
                 }
@@ -570,7 +578,15 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
             }
             for v in related.iter().filter(|v| !(v.starts_with("saved_") && !otypes.contains_key(*v))) {
                 let a: Option<Vec<(Bool, BV)>> = oa.iter().map(|x| x.2.vars.get(v).map(|y| (x.1.clone(), y.1.clone()))).collect();
-                let b: Option<Vec<(Bool, BV)>> = ca.iter().map(|x| x.2.vars.get(v).map(|y| (x.1.clone(), y.1.clone()))).collect();
+                // (sp: the CPU's, for a candidate that keeps it there)
+                let b: Option<Vec<(Bool, BV)>> = ca
+                    .iter()
+                    .map(|x| match x.2.vars.get(v) {
+                        Some(y) => Some((x.1.clone(), y.1.clone())),
+                        None if v == "r13" => x.2.cpu.get("r13").map(|y| (x.1.clone(), y.clone())),
+                        None => None,
+                    })
+                    .collect();
                 match (a, b) {
                     (Some(a), Some(b)) if a[0].1.get_size() == b[0].1.get_size() => {
                         diffs.push((format!("{} at {}", v, n), Bool::and(ctx, &[&oreach, &merge_bv(&a)._eq(&merge_bv(&b)).not()])))
@@ -603,6 +619,9 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
             SatResult::Unknown => return Verdict::Unknown(solver.get_reason_unknown().unwrap_or_default()),
             SatResult::Sat => {
                 let m = solver.get_model().unwrap();
+                if std::env::var("DECOMP_DEBUG_MODEL").is_ok() {
+                    eprintln!("{}", m);
+                }
                 let which: Vec<String> = diffs
                     .iter()
                     .filter(|(_, d)| m.eval(d, true).and_then(|v| v.as_bool()).unwrap_or(false))
@@ -642,7 +661,7 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     // a renamed draft: its variables and labels get the draft's names back, paired by their order (the proof relates
     // variables at loop headers by name)
     let mut cpp = cpp.clone();
-    if let Some(draft) = crate::emit::emit(&d.function)
+    if let Some(draft) = crate::emit::emit(d)
         .ok()
         .and_then(|t| crate::cpp::read(&t, &HashSet::new()).ok())
         .and_then(|mut f| f.exports.pop())
@@ -655,6 +674,33 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
             crate::cpp::rename(&mut cpp, &map);
         }
     }
+    // loops written without their labels: the decompiled function's, by their order (the proof relates the programs at
+    // loop headers by label; a wrong pairing fails it)
+    fn loop_labels(list: &[Stmt], out: &mut Vec<String>) {
+        for s in list {
+            match s {
+                Stmt::If(_, a, b) => {
+                    loop_labels(a, out);
+                    loop_labels(b, out);
+                }
+                Stmt::While { top, test, body, check, .. } => {
+                    out.push(top.clone());
+                    out.push(test.clone().unwrap_or_default());
+                    loop_labels(body, out);
+                    loop_labels(check, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    let (mut dl, mut cl) = (Vec::new(), Vec::new());
+    loop_labels(&d.function.body, &mut dl);
+    loop_labels(&cpp.body, &mut cl);
+    if dl.len() == cl.len() {
+        let map: HashMap<String, String> =
+            cl.into_iter().zip(dl).filter(|(c, d)| c.starts_with(crate::cpp::LOOP_LABEL) && !d.is_empty()).collect();
+        crate::cpp::rename(&mut cpp, &map);
+    }
     let cpp = &cpp;
     // the decompiled function gets the C++'s copy of the return address (unused there), to relate them at loops
     let mut df = d.function.clone();
@@ -664,7 +710,15 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     let mut free: HashSet<String> = df.synced.iter().map(|(_, f)| crate::sym::cpu_key(f)).collect();
     free.insert("pc".into());
     // with the pushes kept, both return through the saved lr; the save area is the pushed slots
-    let (slots, lr_slot) = if d.save_slots.is_empty() { crate::saves::pushed_slots(original) } else { (vec![], None) };
+    // (a C++ export that pushes as the original did, GUEST_EXPORT_FRAMED, writes the removed save area: its region)
+    let framed = cpp.body.iter().any(|s| matches!(s, Stmt::Decl(_, n, _) if n == crate::cpp::FRAME));
+    let (slots, lr_slot) = if d.save_slots.is_empty() {
+        crate::saves::pushed_slots(original)
+    } else if framed {
+        (d.save_slots.clone(), None)
+    } else {
+        (vec![], None)
+    };
     let restored = d.saved.iter().map(|(r, _)| r.clone()).collect();
     // the registers the C++ leaves in the CPU (it declares no variable for them)
     let mut declared: HashSet<String> = cpp.locals.iter().map(|(_, n, _)| n.clone()).collect();
@@ -704,10 +758,14 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     }
     let mut written = HashSet::new();
     cpu_writes(&cpp.body, &mut written);
+    // (a declaration's value counts, unless it is the CPU's register: the entry value)
     fn assigns(list: &[Stmt], out: &mut HashSet<String>) {
         for s in list {
             match s {
                 Stmt::Assign(n, _) => {
+                    out.insert(n.clone());
+                }
+                Stmt::Decl(_, n, Some(e)) if !matches!(e, Expr::Cpu(_)) && !n.starts_with("__") => {
                     out.insert(n.clone());
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {

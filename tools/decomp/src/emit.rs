@@ -109,6 +109,8 @@ fn field_name(t: Ty, off: u64) -> String {
 struct Emitter {
     known: HashMap<usize, String>, // arguments whose struct the repository already has (k -> C++ name)
     stack: bool, // the function uses its stack frame: r13 is the guest's sp, kept in step with the CPU at calls
+    framed: bool, // the export pushes the saved registers (GUEST_EXPORT_FRAMED): the push's sp moves are not written
+    frame_object: bool, // a guest::StackFrame holds the frame (else addresses in it are from the CPU's sp)
     reload: Vec<(String, String)>, // after a call: variable <- CPU field (what SI() reads back)
     has_sp: bool,                  // the function keeps r13 in a variable
     float_args: Vec<(String, u32)>, // float registers to hand over before a call (variable, s index)
@@ -133,6 +135,8 @@ struct Emitter {
     exits: HashMap<String, Exit>,      // short blocks that end the function, written in place of a goto to them
     targets: HashSet<String>,          // labels something other than such a goto still jumps to
     returns: bool,                     // the function returns r0
+    var_types: HashMap<String, Ty>,    // the decompiled function's variables and their types
+    foldable: HashMap<String, bool>,   // values defined by a pure expression of their type -> whether it reads memory
     out: String,
 }
 
@@ -143,9 +147,12 @@ struct Exit {
     list: Vec<Stmt>, // the list holding it, from its first statement (path numbering continues from `first`)
     prefix: Vec<usize>,
     first: usize,
+    written: usize, // the statements a copy writes
 }
 
 const EXIT_BLOCK_STATEMENTS: usize = 8;
+// the statements all the copies of an exit block may add (its size times the gotos to it)
+const EXIT_COPIES_STATEMENTS: usize = 16;
 
 fn exit_blocks(list: &[Stmt], prefix: &[usize], out: &mut HashMap<String, Exit>) {
     for (i, s) in list.iter().enumerate() {
@@ -155,15 +162,21 @@ fn exit_blocks(list: &[Stmt], prefix: &[usize], out: &mut HashMap<String, Exit>)
                 let rest = &list[i + 1..];
                 let end = rest.iter().position(|x| matches!(x, Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
                 if let Some(k) = end {
+                    // (labels inside are fine while only gotos to exit blocks reach them: see exits_and_targets)
                     let straight = rest[..k].iter().all(|x| {
                         !matches!(
                             x,
-                            Stmt::Label(_) | Stmt::If(..) | Stmt::While { .. } | Stmt::Switch(..) | Stmt::Goto(_)
+                            Stmt::If(..) | Stmt::While { .. } | Stmt::Switch(..) | Stmt::Goto(_)
                                 | Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::Unsupported(_)
                         )
                     });
-                    if straight && k < EXIT_BLOCK_STATEMENTS {
-                        out.insert(l.clone(), Exit { list: rest[..=k].to_vec(), prefix: prefix.to_vec(), first: i + 1 });
+                    // (counting what is written: not the calling-convention bookkeeping)
+                    let written = rest[..k]
+                        .iter()
+                        .filter(|x| !stack_bookkeeping(x) && !matches!(x, Stmt::Label(_) | Stmt::Nop | Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::SetCpu(CpuField::Pc, _)))
+                        .count();
+                    if straight && written < EXIT_BLOCK_STATEMENTS {
+                        out.insert(l.clone(), Exit { list: rest[..=k].to_vec(), prefix: prefix.to_vec(), first: i + 1, written });
                     }
                 }
             }
@@ -192,9 +205,8 @@ fn jump_targets(list: &[Stmt], exits: &HashMap<String, Exit>, out: &mut HashSet<
                 jump_targets(a, exits, out);
                 jump_targets(b, exits, out);
             }
-            Stmt::While { top, test, body, check, .. } => {
-                out.insert(top.clone());
-                out.extend(test.iter().cloned());
+            // (a loop's own labels: only when something else jumps to them)
+            Stmt::While { body, check, .. } => {
                 jump_targets(body, exits, out);
                 jump_targets(check, exits, out);
             }
@@ -397,6 +409,8 @@ impl Emitter {
                 }
                 format!("{:?}{}", v, if *t == Ty::F32 { "f" } else { "" })
             }
+            // an address in the stack frame
+            _ if sp_offset(e).is_some() => self.frame_address(sp_offset(e).unwrap()),
             Expr::Var(n) if n.starts_with("arg") => format!("{}.addr()", n),
             Expr::Var(n) => self.var_text(&self.cur, n),
             // the thread's TLS address (IPC buffers): the CPU's, it never changes
@@ -411,7 +425,10 @@ impl Emitter {
             Expr::Bin(..) if self.constant_u32(e).is_some() => num(self.constant_u32(e).unwrap(), Ty::U32),
             Expr::Bin(op, a, b) => {
                 let p = prec(*op);
-                let s = format!("{} {} {}", self.expr(a, p - 1)?, op_text(*op), self.expr(b, p)?);
+                // (a right operand with the same associative operator needs no parentheses: a || b || c)
+                let assoc = matches!(op, BinOp::LOr | BinOp::LAnd | BinOp::Or | BinOp::And | BinOp::Xor)
+                    && matches!(&**b, Expr::Bin(o, _, _) if o == op);
+                let s = format!("{} {} {}", self.expr(a, p - 1)?, op_text(*op), self.expr(b, if assoc { p - 1 } else { p })?);
                 if p <= outer {
                     format!("({})", s)
                 } else {
@@ -420,6 +437,7 @@ impl Emitter {
             }
             Expr::Cast(t, a) => format!("{}({})", t.c_name(), self.expr(a, 0)?),
             Expr::Cond(c, a, b) => format!("({} ? {} : {})", self.expr(c, 0)?, self.expr(a, 0)?, self.expr(b, 0)?),
+            Expr::Load(t, a) if sp_offset(a).is_some() => self.frame_place(*t, sp_offset(a).unwrap()),
             Expr::Load(t, a) => match self.field_access(*t, a) {
                 Some(f) => f,
                 None => match self.constant_address(a) {
@@ -448,6 +466,25 @@ impl Emitter {
             }
             Expr::AddrOf(n) => format!("&{}", n),
         })
+    }
+
+    // the address k bytes above the frame's bottom, and the T there
+    fn frame_address(&self, k: u64) -> String {
+        if self.frame_object {
+            format!("frame.at({}).addr()", num(k, Ty::S32))
+        } else if k == 0 {
+            "guest::cpu()->r[13]".into()
+        } else {
+            format!("guest::cpu()->r[13] + {}", num(k, Ty::U32))
+        }
+    }
+
+    fn frame_place(&self, t: Ty, k: u64) -> String {
+        if self.frame_object {
+            format!("*frame.at<{}>({})", t.c_name(), num(k, Ty::S32))
+        } else {
+            format!("*gptr<{}>({})", t.c_name(), self.frame_address(k))
+        }
     }
 
     fn line(&mut self, indent: usize, text: &str) {
@@ -624,6 +661,8 @@ impl Emitter {
                 Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::ReturnUnlessPc(_) => {}
                 // sp moved by a constant (the frame) in a function that does not otherwise use it: the CPU's sp moves,
                 // so the functions it calls see the stack where the original's callees did
+                Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b))
+                    if self.framed && n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => {}
                 Stmt::Assign(n, Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b))
                     if !self.stack && n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) =>
                 {
@@ -644,7 +683,43 @@ impl Emitter {
                             self.tables.insert(self.values.name(&path, n), o);
                         }
                     }
-                    let text = format!("{} = {};", self.values.name(&path, n), self.expr(e, 0)?);
+                    let target = self.values.name(&path, n);
+                    // (a value its single use may take in: a pure expression of the variable's type)
+                    let mut r = crate::types::Reads::default();
+                    crate::types::reads(e, &mut r);
+                    // (helpers in expressions are pure functions; guest calls are statements)
+                    if !r.cpu && !r.out_params && crate::types::type_of(e, &self.var_types) == self.var_types.get(n).copied() {
+                        self.foldable.insert(target.clone(), r.memory);
+                    }
+                    // x = x + e as x += e (the same statement once read)
+                    let compound = match e {
+                        Expr::Bin(op @ (BinOp::Add | BinOp::Sub | BinOp::Or | BinOp::And | BinOp::Xor | BinOp::Shl | BinOp::Shr), a, b)
+                            if matches!(&**a, Expr::Var(v) if !v.starts_with("arg") && self.var_text(&path, v) == target)
+                                && self.var_types.get(n).map_or(false, |t| !t.float())
+                                // (a shift only by a constant: x >>= 1)
+                                && (!matches!(op, BinOp::Shl | BinOp::Shr) || matches!(&**b, Expr::Num(k, _) if *k < 32))
+                                && self.var_types.get(n) == Some(&Ty::U32)
+                                && self.constant_u32(e).is_none() =>
+                        {
+                            Some(format!("{} {}= {};", target, op_text(*op), self.expr(b, prec(*op))?))
+                        }
+                        _ => None,
+                    };
+                    // (a conversion to the variable's own type is what the assignment does anyway)
+                    let value = match e {
+                        Expr::Cast(t, inner)
+                            if self.var_types.get(n) == Some(t)
+                                && !t.float()
+                                && crate::types::type_of(inner, &self.var_types).map_or(false, |it| !it.float()) =>
+                        {
+                            &**inner
+                        }
+                        _ => e,
+                    };
+                    let text = match compound {
+                        Some(c) => c,
+                        None => format!("{} = {};", target, self.expr(value, 0)?),
+                    };
                     self.line(indent, &text);
                 }
                 Stmt::SetCpu(f, _) => return Err(format!("writes {}", cpu(f))),
@@ -662,14 +737,23 @@ impl Emitter {
                         i += 1;
                         continue;
                     }
+                    if let Some(k) = sp_offset(a) {
+                        let value = if crate::types::type_of(v, &self.var_types) == Some(*t) { value } else { format!("{}({})", t.c_name(), value) };
+                        let text = format!("{} = {};", self.frame_place(*t, k), value);
+                        self.line(indent, &text);
+                        i += 1;
+                        continue;
+                    }
                     let global = match self.constant_address(a) {
                         Some(addr) if !t.float() => Some(self.global(addr, *t)),
                         _ => None,
                     };
+                    // (no conversion for a value that already has the stored type)
+                    let value = if crate::types::type_of(v, &self.var_types) == Some(*t) { value } else { format!("{}({})", t.c_name(), value) };
                     let text = match (self.field_access(*t, a), global) {
-                        (Some(f), _) => format!("{} = {}({});", f, t.c_name(), value),
-                        (None, Some(g)) => format!("*{} = {}({});", g, t.c_name(), value),
-                        (None, None) => format!("*gptr<{}>({}) = {}({});", t.c_name(), self.expr(a, 0)?, t.c_name(), value),
+                        (Some(f), _) => format!("{} = {};", f, value),
+                        (None, Some(g)) => format!("*{} = {};", g, value),
+                        (None, None) => format!("*gptr<{}>({}) = {};", t.c_name(), self.expr(a, 0)?, value),
                     };
                     self.line(indent, &text);
                 }
@@ -687,12 +771,14 @@ impl Emitter {
                     }
                 }
                 Stmt::While { top, test, body, check, cond } => {
-                    // labels kept: other gotos may still use them
+                    // (the labels only when something besides the loop jumps to them)
                     let (pa, pb) = ([path.clone(), vec![0]].concat(), [path.clone(), vec![1]].concat());
                     match test {
                         None => {
                             self.line(indent, "do {");
-                            self.out.push_str(&format!("{}:;\n", top));
+                            if self.targets.contains(top) {
+                                self.out.push_str(&format!("{}:;\n", top));
+                            }
                             self.labels.insert(top.clone());
                             self.stmts(body, indent + 1, returns, &pa)?;
                             self.stmts(check, indent + 1, returns, &pb)?;
@@ -703,7 +789,9 @@ impl Emitter {
                         }
                         Some(t) => {
                             self.line(indent, "for (;;) {");
-                            self.out.push_str(&format!("{}:;\n", t));
+                            if self.targets.contains(t) {
+                                self.out.push_str(&format!("{}:;\n", t));
+                            }
                             self.labels.insert(t.clone());
                             self.labels.insert(top.clone());
                             self.stmts(check, indent + 1, returns, &pb)?;
@@ -712,7 +800,9 @@ impl Emitter {
                             self.line(indent + 1, &text);
                             self.line(indent + 2, "break;");
                             self.line(indent + 1, "}");
-                            self.out.push_str(&format!("{}:;\n", top));
+                            if self.targets.contains(top) {
+                                self.out.push_str(&format!("{}:;\n", top));
+                            }
                             self.stmts(body, indent + 1, returns, &pa)?;
                             self.line(indent + 1, "guest::preempt();");
                             self.line(indent, "}");
@@ -903,6 +993,336 @@ fn call_needs(f: &Function, lv: &crate::flow::Liveness) -> HashMap<u32, Need> {
     needs
 }
 
+fn mentions(line: &str, name: &str) -> bool {
+    line.match_indices(name).any(|(i, _)| {
+        let before = line[..i].chars().next_back();
+        let after = line[i + name.len()..].chars().next();
+        let ident = |c: Option<char>| c.map_or(false, |c| c.is_ascii_alphanumeric() || c == '_');
+        !ident(before) && !ident(after)
+    })
+}
+
+// Each variable declared at the top only to start at 0 (`u32 r0_1 = 0;`) is declared at its first assignment instead,
+// when that is a plain `name = value;` (the value not reading it) and every other use of the variable follows it in
+// the same block, with no goto from outside that stretch to a label inside it (C++: a jump may not skip an
+// initialisation). The statements are the same, so the proof is unchanged. (The emitted body: one statement or
+// brace per line, four spaces per level, labels at the start of their line.)
+fn sink_declarations(body: &str, candidates: &[(String, String)]) -> (String, HashSet<String>) {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    let indent = |l: &str| (l.len() - l.trim_start().len()) / 4;
+    let is_label = |l: &str| !l.starts_with(' ') && l.trim_end().ends_with(":;");
+    let mut sunk = HashSet::new();
+    for (name, ty) in candidates {
+        let uses: Vec<usize> = (0..lines.len()).filter(|&i| mentions(&lines[i], name)).collect();
+        let Some(&first) = uses.first() else { continue };
+        let line = lines[first].clone();
+        let code = line.trim_start();
+        let Some(rhs) = code.strip_prefix(&format!("{} = ", name)) else { continue };
+        let rhs_code = rhs.split("  //").next().unwrap_or(rhs);
+        if mentions(rhs_code, name) || !rhs_code.trim_end().ends_with(';') || is_label(&line) {
+            continue;
+        }
+        let d = indent(&line);
+        // the stretch: up to the first later line at a shallower level (a closing brace)
+        let end = (first + 1..lines.len()).find(|&j| !is_label(&lines[j]) && !lines[j].trim().is_empty() && indent(&lines[j]) < d).unwrap_or(lines.len());
+        if uses.iter().any(|&u| u >= end) {
+            continue;
+        }
+        let inside: HashSet<String> =
+            (first + 1..end).filter(|&j| is_label(&lines[j])).map(|j| lines[j].trim_end().trim_end_matches(":;").to_string()).collect();
+        let jumped_into = (0..lines.len()).filter(|&j| j <= first || j >= end).any(|j| {
+            lines[j].split("goto ").skip(1).any(|t| inside.contains(t.split(';').next().unwrap_or("").trim()))
+        });
+        if jumped_into {
+            continue;
+        }
+        lines[first] = format!("{}{} {}", &line[..line.len() - code.len()], ty, code);
+        sunk.insert(name.clone());
+    }
+    let mut out = lines.join("\n");
+    out.push('\n');
+    (out, sunk)
+}
+
+// Two masks a fold brings together: `(x & 0xAu) & 0xB` is `x & 0xCu` (C = A & B), and a register shift by `x & m`
+// with m below 32 (lsl_r(a, x & 0x1fu)) is the plain shift. Text in, text out: the C++ is proved as written.
+fn tidy_masks(line: &str) -> String {
+    let mut out = line.to_string();
+    // (x & 0xA[u]) & 0xB[u]  ->  x & 0xC[u]   (x a name, x's mask and the other's in hex)
+    loop {
+        let Some(start) = out.find(" & 0x") else { break };
+        let open = out[..start].rfind('(');
+        let Some(open) = open else { break };
+        let inner = &out[open + 1..start];
+        if !inner.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+            break;
+        }
+        let rest = &out[start + 5..];
+        let a_len = rest.find(|c: char| !c.is_ascii_hexdigit()).unwrap_or(rest.len());
+        let Ok(a) = u64::from_str_radix(&rest[..a_len], 16) else { break };
+        let after = &rest[a_len..];
+        let suffix = if after.starts_with('u') { "u" } else { "" };
+        let after = &after[suffix.len()..];
+        let Some(tail) = after.strip_prefix(") & 0x") else { break };
+        let b_len = tail.find(|c: char| !c.is_ascii_hexdigit()).unwrap_or(tail.len());
+        let Ok(b) = u64::from_str_radix(&tail[..b_len], 16) else { break };
+        let tail = &tail[b_len..];
+        let tail = tail.strip_prefix('u').unwrap_or(tail);
+        out = format!("{}{} & 0x{:x}{}{}", &out[..open], inner, a & b, suffix, tail);
+    }
+    // lsl_r(a, x & 0xNu) with N < 32 -> (a << (x & 0xNu)), and lsr_r likewise (a a name or a number)
+    for (helper, op) in [("lsl_r(", "<<"), ("lsr_r(", ">>")] {
+        while let Some(i) = out.find(helper) {
+            if i > 0 && out[..i].ends_with(|c: char| c.is_ascii_alphanumeric() || c == '_') {
+                break;
+            }
+            let args = &out[i + helper.len()..];
+            let Some(close) = args.find(')') else { break };
+            let parts: Vec<&str> = args[..close].split(", ").collect();
+            let [a, n] = parts.as_slice() else { break };
+            let Some((x, m)) = n.split_once(" & 0x") else { break };
+            let m = m.trim_end_matches('u');
+            let small = u64::from_str_radix(m, 16).map_or(false, |m| m < 32);
+            let plain = |t: &str| t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+            if !small || !plain(a) || !plain(x) {
+                break;
+            }
+            out = format!("{}({} {} ({})){}", &out[..i], a, op, n, &args[close + 1..]);
+        }
+    }
+    out
+}
+
+// whether an expression as written needs parentheses to stand for an operand (an operator outside parentheses)
+fn compound_text(e: &str) -> bool {
+    let b = e.as_bytes();
+    let mut depth = 0i32;
+    if matches!(b.first(), Some(b'-' | b'~' | b'!')) {
+        return true;
+    }
+    for (i, c) in e.char_indices() {
+        match c {
+            '(' | '[' => depth += 1,
+            ')' | ']' => depth -= 1,
+            ' ' if depth == 0 => {
+                // a space at the top level separates an operator (casts and names have none)
+                let next = &e[i + 1..];
+                if next.starts_with(|c: char| "+-*/%&|^<>=!?".contains(c)) {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
+// A value its single use takes in: `T x = e;` with x read on one later line only, once, in the same block, with no
+// loop start, label or shallower line between, none of e's variables assigned between, and (when e reads memory) only
+// assignments to plain variables between. The statements compute the same (the C++ is proved anyway).
+fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>) -> String {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    let indent = |l: &str| (l.len() - l.trim_start().len()) / 4;
+    let words = |t: &str| -> Vec<String> {
+        t.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')).filter(|w| !w.is_empty() && !w.starts_with(|c: char| c.is_ascii_digit())).map(|w| w.to_string()).collect()
+    };
+    let assigns = |l: &str, w: &str| {
+        let c = l.trim_start();
+        let c = c.split_once(' ').filter(|(t, _)| matches!(*t, "u8" | "u16" | "u32" | "u64" | "s8" | "s16" | "s32" | "s64" | "float" | "double")).map_or(c, |(_, r)| r);
+        ["=", "+=", "-=", "|=", "&=", "^="].iter().any(|op| c.starts_with(&format!("{} {} ", w, op)))
+    };
+    loop {
+        let mut changed = false;
+        for d in 0..lines.len() {
+            let line = lines[d].clone();
+            let code = line.trim_start();
+            let Some((ty, rest)) = code.split_once(' ') else { continue };
+            if !matches!(ty, "u8" | "u16" | "u32" | "u64" | "s8" | "s16" | "s32" | "s64") {
+                continue;
+            }
+            let Some((name, rhs)) = rest.split_once(" = ") else { continue };
+            let rhs = rhs.split("  //").next().unwrap_or(rhs).trim_end();
+            let Some(rhs) = rhs.strip_suffix(';') else { continue };
+            // (a register read back from the CPU after a call: while nothing changes the CPU)
+            let cpu_read = rhs.starts_with("guest::cpu()->") && rhs.ends_with(']') && !rhs.contains(' ');
+            let memory = match foldable.get(name) {
+                Some(&m) => m,
+                None if cpu_read => false,
+                None => continue,
+            };
+            let uses: Vec<usize> = (0..lines.len()).filter(|&i| i != d && mentions(&lines[i], name)).collect();
+            let [u] = uses.as_slice() else { continue };
+            let u = *u;
+            let at = indent(&line);
+            let use_code = lines[u].split("  //").next().unwrap_or(&lines[u]).to_string();
+            if u < d || use_code.matches(name).count() != 1 || indent(&lines[u]) < at || use_code.trim_start().starts_with('}') {
+                continue;
+            }
+            let operands = words(rhs);
+            let between = &lines[d + 1..u];
+            let blocked = between.iter().any(|l| {
+                let t = l.trim_start();
+                indent(l) < at
+                    || !l.starts_with(' ')
+                    || t.starts_with("do {")
+                    || t.starts_with("for (")
+                    || t.starts_with("} while")
+                    || operands.iter().any(|w| assigns(l, w))
+                    || (cpu_read && (t.starts_with("guest::cpu()->") || t.contains("call_") || t.contains("guest::call_address") || t.contains("guest::svc")))
+                    || (memory && !(words(t).first().map_or(false, |w| assigns(l, w)) && !t.contains("call_") && !t.contains("guest::") && !t.starts_with('*') && !t.contains("->")))
+            });
+            if blocked || lines[u].trim_start().starts_with(&format!("{} =", name)) {
+                continue;
+            }
+            // the use, with x replaced (whole words only); parentheses unless x is a whole operand there (a return's
+            // value, an assignment's, an argument, a condition)
+            let mut out = String::new();
+            let mut last = 0;
+            for (i, _) in use_code.match_indices(name) {
+                let before = use_code[..i].chars().next_back();
+                let after = use_code[i + name.len()..].chars().next();
+                let ident = |c: Option<char>| c.map_or(false, |c| c.is_ascii_alphanumeric() || c == '_');
+                if !ident(before) && !ident(after) {
+                    let left = use_code[..i].trim_end();
+                    let whole_left = left.ends_with('(') || left.ends_with(',') || left.ends_with("return")
+                        || (left.ends_with(" =") || left.ends_with("[")) && !left.ends_with("==");
+                    let right = use_code[i + name.len()..].trim_start();
+                    let whole = whole_left && (right.starts_with(')') || right.starts_with(',') || right.starts_with(';') || right.starts_with(']'));
+                    let value = if compound_text(rhs) && !whole { format!("({})", rhs) } else { rhs.to_string() };
+                    out.push_str(&use_code[last..i]);
+                    out.push_str(&value);
+                    last = i + name.len();
+                }
+            }
+            out.push_str(&use_code[last..]);
+            let out = tidy_masks(&out);
+            if out.trim().len() > 110 {
+                continue;
+            }
+            let comment = lines[u][use_code.len()..].to_string();
+            let comment = if comment.is_empty() && out.contains("0x") { "  // (from the original)".to_string() } else { comment };
+            lines[u] = out + &comment;
+            lines.remove(d);
+            changed = true;
+            break;
+        }
+        if !changed {
+            break;
+        }
+    }
+    let mut out = lines.join("\n");
+    out.push('\n');
+    out
+}
+
+// `guest::cpu()->r[N] = x;` where x was read from the CPU's r[N] earlier in the same block (`x = guest::cpu()->r[N];`)
+// with no call, system call, write to the CPU, label or other mention of x between: the CPU still holds x, the
+// write changes nothing. Such writes are left out, then the reads nothing uses any more.
+fn drop_unchanged_write_backs(body: &str) -> String {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    let indent = |l: &str| (l.len() - l.trim_start().len()) / 4;
+    let field_value = |l: &str| -> Option<(String, String)> {
+        // `guest::cpu()->r[N] = x;` -> (r[N], x)
+        let t = l.trim_start().strip_prefix("guest::cpu()->")?;
+        let (field, v) = t.split_once(" = ")?;
+        let v = v.strip_suffix(';')?;
+        (v.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && !v.starts_with(|c: char| c.is_ascii_digit())).then(|| (field.to_string(), v.to_string()))
+    };
+    let read_of = |l: &str| -> Option<(String, String)> {
+        // `[T ]x = guest::cpu()->r[N];` -> (x, r[N])
+        let t = l.trim_start();
+        let t = t.split_once(' ').filter(|(ty, _)| matches!(*ty, "u32" | "float")).map_or(t, |(_, r)| r);
+        let (x, rest) = t.split_once(" = guest::cpu()->")?;
+        Some((x.to_string(), rest.strip_suffix(';')?.to_string()))
+    };
+    let changes_cpu = |l: &str| {
+        let t = l.trim_start();
+        t.starts_with("guest::cpu()->") || t.contains("call_") || t.contains("guest::call_address") || t.contains("guest::svc")
+    };
+    let mut i = 0;
+    while i < lines.len() {
+        let Some((field, x)) = field_value(&lines[i]) else {
+            i += 1;
+            continue;
+        };
+        // the nearest earlier line that mentions x
+        let Some(d) = (0..i).rev().find(|&j| mentions(&lines[j], &x)) else {
+            i += 1;
+            continue;
+        };
+        let same = read_of(&lines[d]).map_or(false, |(v, f)| v == x && f == field);
+        let at = indent(&lines[d]);
+        let clear = lines[d + 1..i].iter().all(|l| l.starts_with(' ') && indent(l) >= at && !changes_cpu(l));
+        if same && clear && indent(&lines[i]) >= at {
+            lines.remove(i);
+            continue;
+        }
+        i += 1;
+    }
+    // reads of the CPU nothing uses any more
+    let mut k = 0;
+    while k < lines.len() {
+        if let Some((x, _)) = read_of(&lines[k]) {
+            if !(0..lines.len()).any(|j| j != k && mentions(&lines[j], &x)) {
+                lines.remove(k);
+                continue;
+            }
+        }
+        k += 1;
+    }
+    let mut out = lines.join("\n");
+    out.push('\n');
+    out
+}
+
+// `x = E; ... return x;` with only plain statements between (no block, label, goto or call, none mentioning x, and
+// none writing memory when E reads it) is `... return E;` (E not reading the CPU, nor calling).
+fn return_values(body: &str) -> String {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    let indent = |l: &str| (l.len() - l.trim_start().len()) / 4;
+    let mut i = 0;
+    while i < lines.len() {
+        let t = lines[i].trim_start().to_string();
+        let Some(x) = t.strip_prefix("return ").and_then(|r| r.strip_suffix(';')) else {
+            i += 1;
+            continue;
+        };
+        if !x.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') || x.starts_with(|c: char| c.is_ascii_digit()) {
+            i += 1;
+            continue;
+        }
+        let x = x.to_string();
+        let Some(d) = (0..i).rev().find(|&j| mentions(&lines[j], &x)) else {
+            i += 1;
+            continue;
+        };
+        let code = lines[d].split("  //").next().unwrap_or(&lines[d]).trim_start().to_string();
+        let code = code.split_once(' ').filter(|(ty, _)| matches!(*ty, "u8" | "u16" | "u32" | "s8" | "s16" | "s32")).map_or(code.clone(), |(_, r)| r.to_string());
+        let Some(e) = code.strip_prefix(&format!("{} = ", x)).and_then(|r| r.strip_suffix(';')) else {
+            i += 1;
+            continue;
+        };
+        let memory = e.contains('*') || e.contains("->");
+        let plain = lines[d + 1..i].iter().all(|l| {
+            let t = l.trim_start();
+            l.starts_with(' ') && indent(l) == indent(&lines[i]) && !t.ends_with('{') && !t.starts_with('}') && !t.starts_with("goto ")
+                && !t.contains("call_") && !t.contains("guest::call_address") && !t.contains("guest::svc")
+                && !(memory && (t.starts_with('*') || t.contains("->")))
+        });
+        if !plain || indent(&lines[d]) != indent(&lines[i]) || mentions(e, &x) || e.contains("guest::") || e.contains("call_") {
+            i += 1;
+            continue;
+        }
+        let comment = if e.contains("0x") { "  // (from the original)" } else { "" };
+        lines[i] = format!("{}return {};{}", " ".repeat(4 * indent(&lines[i])), e, comment);
+        lines.remove(d);
+        i = d;
+    }
+    let mut out = lines.join("\n");
+    out.push('\n');
+    out
+}
+
 // what the emitter leaves out: the registers the decompiler unsaved (saved_* copies and their restores)
 fn stack_bookkeeping(s: &Stmt) -> bool {
     match s {
@@ -989,11 +1409,295 @@ fn uses_call_clobbers(f: &Function) -> Option<String> {
     None
 }
 
-pub fn emit(f: &Function) -> R<String> {
+// the bottom of the stack frame in a function written with one (frame_mode): frame.at(k) is SP + k
+const SP: &str = "__sp";
+
+// sp + k for an address relative to the frame's bottom
+fn sp_offset(a: &Expr) -> Option<u64> {
+    match a {
+        Expr::Var(v) if v == SP => Some(0),
+        Expr::Bin(BinOp::Add, b, k) => match (&**b, &**k) {
+            (Expr::Var(v), Expr::Num(k, _)) if v == SP => Some(*k),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+// The stack frame as one object. When the function moves sp only by constants, with the same depth wherever paths
+// meet, at its deepest at every call and system call and at the entry's at every return, and makes no tail call, sp is
+// entry - M at every call: a guest::StackFrame of M bytes (with the export's push, GUEST_EXPORT_FRAMED, for the pushed
+// registers) gives callees the same stack, and every address relative to sp becomes one relative to the frame's
+// bottom (SP, written frame.at(k)). Returns the function so rewritten (its sp moves left out) and M.
+fn frame_mode(f: &Function) -> Option<(Function, u64)> {
+    let sp_move = |s: &Stmt| -> Option<i64> {
+        match s {
+            Stmt::Assign(n, Expr::Bin(op, a, b)) if n == "r13" && **a == Expr::Var("r13".into()) => match (op, &**b) {
+                (BinOp::Sub, Expr::Num(k, _)) => Some(*k as i64),
+                (BinOp::Add, Expr::Num(k, _)) => Some(-(*k as i64)),
+                _ => None,
+            },
+            _ => None,
+        }
+    };
+    struct St {
+        labels: HashMap<String, i64>,
+        depths: HashMap<Vec<usize>, i64>,
+        calls: Vec<i64>,
+        ok: bool,
+    }
+    fn goto(l: &str, cur: i64, st: &mut St) {
+        match st.labels.get(l) {
+            Some(&y) if y != cur => st.ok = false,
+            Some(_) => {}
+            None => {
+                st.labels.insert(l.to_string(), cur);
+            }
+        }
+    }
+    // the depth (bytes below the entry sp) before each statement; returns the depth after the list (None: not reached)
+    fn walk(list: &[Stmt], prefix: &[usize], mut d: Option<i64>, st: &mut St, sp_move: &dyn Fn(&Stmt) -> Option<i64>) -> Option<i64> {
+        for (i, s) in list.iter().enumerate() {
+            let p: Vec<usize> = [prefix, &[i]].concat();
+            if let Stmt::Label(l) = s {
+                match (d, st.labels.get(l).copied()) {
+                    (Some(x), Some(y)) if x != y => st.ok = false,
+                    (None, Some(y)) => d = Some(y),
+                    (Some(x), None) => {
+                        st.labels.insert(l.clone(), x);
+                    }
+                    (None, None) => st.ok = false, // reached only by a jump from below: its depth is not known yet
+                    _ => {}
+                }
+                continue;
+            }
+            let Some(cur) = d else { continue };
+            st.depths.insert(p.clone(), cur);
+            if let Some(m) = sp_move(s) {
+                d = Some(cur + m);
+                if cur + m < 0 {
+                    st.ok = false;
+                }
+                continue;
+            }
+            match s {
+                Stmt::Assign(n, _) | Stmt::Decl(_, n, _) if n == "r13" => st.ok = false,
+                Stmt::SetCpu(CpuField::R(13), _) => st.ok = false,
+                Stmt::GuestCall(_, false) | Stmt::Dispatch(false) | Stmt::Svc(_) => st.calls.push(cur),
+                Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => {
+                    st.ok = false;
+                    d = None;
+                }
+                Stmt::Return => {
+                    if cur != 0 {
+                        st.ok = false;
+                    }
+                    d = None;
+                }
+                Stmt::Goto(l) => {
+                    goto(l, cur, st);
+                    d = None;
+                }
+                Stmt::Switch(_, cases) => {
+                    for (_, l) in cases {
+                        goto(l, cur, st);
+                    }
+                }
+                Stmt::If(_, a, b) => {
+                    let da = walk(a, &[p.clone(), vec![0]].concat(), Some(cur), st, sp_move);
+                    let db = walk(b, &[p.clone(), vec![1]].concat(), Some(cur), st, sp_move);
+                    d = match (da, db) {
+                        (Some(x), Some(y)) if x != y => {
+                            st.ok = false;
+                            None
+                        }
+                        (Some(x), _) | (None, Some(x)) => Some(x),
+                        (None, None) => None,
+                    };
+                }
+                Stmt::While { top, test, body, check, .. } => {
+                    goto(top, cur, st);
+                    if let Some(t) = test {
+                        goto(t, cur, st);
+                    }
+                    let db = walk(body, &[p.clone(), vec![0]].concat(), Some(cur), st, sp_move);
+                    let dc = walk(check, &[p.clone(), vec![1]].concat(), Some(cur), st, sp_move);
+                    if db.map_or(false, |x| x != cur) || dc.map_or(false, |x| x != cur) {
+                        st.ok = false;
+                    }
+                    d = Some(cur);
+                }
+                _ => {}
+            }
+        }
+        d
+    }
+    let mut st = St { labels: HashMap::new(), depths: HashMap::new(), calls: vec![], ok: true };
+    walk(&f.body, &[], Some(0), &mut st, &sp_move);
+    let m = st.depths.values().copied().max().unwrap_or(0);
+    if !st.ok || m <= 0 || st.calls.iter().any(|&c| c != m) {
+        return None;
+    }
+    // r13 at depth d is SP + (M - d)
+    fn fold(e: Expr) -> Expr {
+        match e {
+            Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b) => {
+                let (a, b) = (fold(*a), fold(*b));
+                match (&a, &b, op) {
+                    (Expr::Bin(BinOp::Add, x, k1), Expr::Num(k2, _), _) if matches!(&**x, Expr::Var(v) if v == SP) => {
+                        let Expr::Num(k1, _) = **k1 else { return Expr::Bin(op, Box::new(a), Box::new(b)) };
+                        let k = if op == BinOp::Add { k1.wrapping_add(*k2) } else { k1.wrapping_sub(*k2) } & 0xffff_ffff;
+                        Expr::Bin(BinOp::Add, x.clone(), Box::new(Expr::Num(k, Ty::U32)))
+                    }
+                    _ => Expr::Bin(op, Box::new(a), Box::new(b)),
+                }
+            }
+            Expr::Un(o, a) => Expr::Un(o, Box::new(fold(*a))),
+            Expr::Cast(t, a) => Expr::Cast(t, Box::new(fold(*a))),
+            Expr::Load(t, a) => Expr::Load(t, Box::new(fold(*a))),
+            Expr::Bin(o, a, b) => Expr::Bin(o, Box::new(fold(*a)), Box::new(fold(*b))),
+            Expr::Cond(c, a, b) => Expr::Cond(Box::new(fold(*c)), Box::new(fold(*a)), Box::new(fold(*b))),
+            Expr::Call(n, args) => Expr::Call(n, args.into_iter().map(fold).collect()),
+            other => other,
+        }
+    }
+    fn subst(e: &mut Expr, by: &Expr) {
+        match e {
+            Expr::Var(v) if v == "r13" => *e = by.clone(),
+            Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => subst(a, by),
+            Expr::Bin(_, a, b) => {
+                subst(a, by);
+                subst(b, by);
+            }
+            Expr::Cond(c, a, b) => {
+                subst(c, by);
+                subst(a, by);
+                subst(b, by);
+            }
+            Expr::Call(_, args) => args.iter_mut().for_each(|x| subst(x, by)),
+            _ => {}
+        }
+    }
+    fn rewrite(list: &mut [Stmt], prefix: &[usize], st: &St, m: i64, sp_move: &dyn Fn(&Stmt) -> Option<i64>) {
+        for (i, s) in list.iter_mut().enumerate() {
+            let p: Vec<usize> = [prefix, &[i]].concat();
+            let Some(&d) = st.depths.get(&p) else { continue };
+            if sp_move(s).is_some() {
+                *s = Stmt::Nop;
+                continue;
+            }
+            let by = Expr::Bin(BinOp::Add, Box::new(Expr::Var(SP.into())), Box::new(Expr::Num((m - d) as u64, Ty::U32)));
+            let one = |e: &mut Expr| {
+                subst(e, &by);
+                *e = fold(std::mem::replace(e, Expr::Num(0, Ty::U32)));
+            };
+            match s {
+                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => one(e),
+                Stmt::Store(_, a, v) => {
+                    one(a);
+                    one(v);
+                }
+                Stmt::If(c, a, b) => {
+                    one(c);
+                    rewrite(a, &[p.clone(), vec![0]].concat(), st, m, sp_move);
+                    rewrite(b, &[p.clone(), vec![1]].concat(), st, m, sp_move);
+                }
+                Stmt::While { cond, body, check, .. } => {
+                    one(cond);
+                    rewrite(body, &[p.clone(), vec![0]].concat(), st, m, sp_move);
+                    rewrite(check, &[p.clone(), vec![1]].concat(), st, m, sp_move);
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut g = f.clone();
+    rewrite(&mut g.body, &[], &st, m, &sp_move);
+    // nothing left of r13, and no address below the frame
+    let mut left = false;
+    crate::values::each_expr(&g.body, &mut |e| {
+        let mut r = crate::types::Reads::default();
+        crate::types::reads(e, &mut r);
+        left |= r.vars.iter().any(|v| v == "r13");
+        left |= format!("{:?}", e).contains("Var(\"__sp\")") && below_frame(e);
+    });
+    if left {
+        return None;
+    }
+    Some((g, m as u64))
+}
+
+// an address SP + k with k wrapped past 2^31 (below the frame)
+fn below_frame(e: &Expr) -> bool {
+    match e {
+        Expr::Bin(BinOp::Add, a, k) => {
+            matches!((&**a, &**k), (Expr::Var(v), Expr::Num(k, _)) if v == SP && *k >= 1 << 31) || below_frame(a) || below_frame(k)
+        }
+        Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => below_frame(a),
+        Expr::Bin(_, a, b) => below_frame(a) || below_frame(b),
+        Expr::Cond(c, a, b) => below_frame(c) || below_frame(a) || below_frame(b),
+        Expr::Call(_, args) => args.iter().any(below_frame),
+        _ => false,
+    }
+}
+
+// The push the export can do (GUEST_EXPORT_FRAMED's mask) when the function's only sp moves are the push's (the
+// saved registers' bytes, down at the entry, up before each return) and it makes no tail call (the export's frame
+// lasts until the C++ returns, and the original pops before branching).
+fn push_mask(f: &Function, saved: &[(String, u32)], stack: bool) -> Option<u32> {
+    if stack || saved.is_empty() {
+        return None;
+    }
+    let mut mask = 0u32;
+    for (r, _) in saved {
+        let k: u32 = r.strip_prefix('r')?.parse().ok()?;
+        if !(4..=14).contains(&k) || k == 13 {
+            return None;
+        }
+        mask |= 1 << k;
+    }
+    let bytes = 4 * saved.len() as u64;
+    fn ok(list: &[Stmt], bytes: u64) -> bool {
+        list.iter().all(|s| match s {
+            Stmt::Decl(_, n, _) if n == "r13" => false,
+            Stmt::Assign(n, e) if n == "r13" => matches!(e, Expr::Bin(BinOp::Add | BinOp::Sub, a, b)
+                if **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(k, _) if k == bytes)),
+            Stmt::GuestCall(_, true) | Stmt::Dispatch(true) | Stmt::SetCpu(CpuField::R(13), _) => false,
+            Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => ok(a, bytes) && ok(b, bytes),
+            _ => true,
+        })
+    }
+    if ok(&f.body, bytes) { Some(mask) } else { None }
+}
+
+fn register_list(mask: u32) -> String {
+    (0..15).filter(|r| mask >> r & 1 != 0).map(|r| if r == 14 { "lr".to_string() } else { format!("r{}", r) }).collect::<Vec<_>>().join(", ")
+}
+
+pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     // accesses through an argument register that still holds the argument read as its fields
-    let f = &crate::values::arguments_in_addresses(f);
+    let f = &crate::values::arguments_in_addresses(&d.function);
     let addr = f.address | f.thumb as u32;
-    let stack = reads_stack(&f.body);
+    // the stack frame as one object (the push by the export, the rest by a guest::StackFrame), when it can be
+    let framed = frame_mode(f);
+    let (f, frame_bytes) = match &framed {
+        Some((g, m)) => (g, *m),
+        None => (f, 0),
+    };
+    let stack = frame_bytes == 0 && reads_stack(&f.body);
+    let pushed: Option<u32> = {
+        let mut mask = Some(0u32);
+        for (r, _) in &d.saved {
+            match r.strip_prefix('r').and_then(|k| k.parse::<u32>().ok()) {
+                Some(k) if (4..=14).contains(&k) && k != 13 => mask = mask.map(|m| m | 1 << k),
+                _ => mask = None,
+            }
+        }
+        mask.filter(|m| *m != 0 && 4 * m.count_ones() as u64 <= frame_bytes)
+    };
+    let mask = if frame_bytes > 0 { pushed } else { push_mask(f, &d.saved, stack) };
+    // the bytes the StackFrame lowers sp by (the frame less the export's push)
+    let locals_bytes = frame_bytes - mask.filter(|_| frame_bytes > 0).map_or(0, |m| 4 * m.count_ones() as u64);
     if let Some(v) = uses_call_clobbers(f) {
         return Err(format!("reads {} after a call", v));
     }
@@ -1085,7 +1789,7 @@ pub fn emit(f: &Function) -> R<String> {
             _ => None,
         })
         .collect();
-    let mut e = Emitter { known: known.clone(), stack, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -1094,7 +1798,40 @@ pub fn emit(f: &Function) -> R<String> {
     splittable.retain(|n| !n.starts_with("arg") && !n.starts_with("saved_") && n != "r13" && n != "r14" && !pointed.contains(n));
     e.values = crate::values::split(f, &splittable, &|s, p| e.effects(s, p));
     exit_blocks(&f.body, &[], &mut e.exits);
+    // (an exit block copied at many gotos makes the function longer than the gotos do)
+    let mut gotos: HashMap<String, usize> = HashMap::new();
+    fn count_gotos(list: &[Stmt], out: &mut HashMap<String, usize>) {
+        for s in list {
+            match s {
+                Stmt::Goto(l) => *out.entry(l.clone()).or_default() += 1,
+                Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
+                    count_gotos(a, out);
+                    count_gotos(b, out);
+                }
+                _ => {}
+            }
+        }
+    }
+    count_gotos(&f.body, &mut gotos);
+    e.exits.retain(|l, x| x.written * gotos.get(l).copied().unwrap_or(0) <= EXIT_COPIES_STATEMENTS);
     jump_targets(&f.body, &e.exits, &mut e.targets);
+    // an exit block holding a label something else jumps to is not copied (the copy would define it again)
+    loop {
+        let holding: Vec<String> = e
+            .exits
+            .iter()
+            .filter(|(_, x)| x.list.iter().any(|s| matches!(s, Stmt::Label(l) if e.targets.contains(l))))
+            .map(|(l, _)| l.clone())
+            .collect();
+        if holding.is_empty() {
+            break;
+        }
+        for l in holding {
+            e.exits.remove(&l);
+        }
+        e.targets.clear();
+        jump_targets(&f.body, &e.exits, &mut e.targets);
+    }
     let returns = assigned.contains("r0") && crate::results::observed(f.address, "r0");
     // the body first (it decides the callees)
     e.stmts(&f.body, 1, returns, &[])?;
@@ -1176,17 +1913,38 @@ pub fn emit(f: &Function) -> R<String> {
         }
     }
     out.push_str(&format!("{} {}({}) {{\n", if returns { "u32" } else { "void" }, base, sig.join(", ")));
+    if locals_bytes > 0 {
+        out.push_str(&format!("    guest::StackFrame frame(0x{:x});  // the original's stack frame\n", locals_bytes));
+    }
     // the registers and temporaries, all declared first (so gotos jump over no initialisation); only those used
     let used: HashSet<String> = body
         .split(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
         .map(|w| w.to_string())
         .collect();
     let mut locals: Vec<String> = Vec::new();
+    let mut sinkable: Vec<(String, String)> = Vec::new(); // declared `= 0` only so that gotos skip no initialisation
+    // what the function itself reads of the entry values (saving a callee-saved register for the caller is not a read)
+    let used_at_entry = {
+        // (without the saved copies and their restores, which the C++ leaves out)
+        fn strip(list: &mut Vec<Stmt>) {
+            list.retain(|s| !stack_bookkeeping(s));
+            for s in list.iter_mut() {
+                if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = s {
+                    strip(a);
+                    strip(b);
+                }
+            }
+        }
+        let mut g = f.clone();
+        strip(&mut g.body);
+        crate::flow::liveness_with(&g, false).at_entry
+    };
     for (n, t) in &vars {
         if n.starts_with("saved_") || n.starts_with("arg") || !used.contains(n) {
             continue;
         }
         locals.push(format!("{} {} = 0;", t.c_name(), n));
+        sinkable.push((n.clone(), t.c_name().to_string()));
     }
     for (t, n, _) in &f.locals {
         if vars.contains_key(n) || !used.contains(n) {
@@ -1203,8 +1961,10 @@ pub fn emit(f: &Function) -> R<String> {
             }
         } else if floats.contains(n) {
             continue; // the parameter
-        } else if !lv.at_entry.contains(n) {
-            "0".into() // its value at the entry is never read
+        } else if !lv.at_entry.contains(n) || (callee_saved(n) && !used_at_entry.contains(n)) {
+            // its value at the entry is never read (a callee-saved register's only by the save the C++ leaves out)
+            sinkable.push((n.clone(), t.c_name().to_string()));
+            "0".into()
         } else {
             // as the generated code's prologue: the register's value in the guest CPU
             match f.synced.iter().find(|(v, _)| v == n) {
@@ -1225,6 +1985,7 @@ pub fn emit(f: &Function) -> R<String> {
         let t = vars.get(var).copied().or_else(|| f.locals.iter().find(|(_, n, _)| n == var).map(|(t, _, _)| *t));
         let Some(t) = t else { return Err(format!("no type for {}", var)) };
         locals.push(format!("{} {} = 0;", t.c_name(), name));
+        sinkable.push((name.clone(), t.c_name().to_string()));
     }
     for k in &copies {
         if !e.struct_name.contains_key(k) && !e.known.contains_key(k) {
@@ -1232,13 +1993,29 @@ pub fn emit(f: &Function) -> R<String> {
             locals.push(format!("gptr<u8> arg{} = gptr<u8>(arg{}_value);", k, k));
         }
     }
+    // declarations moved to the variable's first assignment where C++ allows it
+    let (body, sunk) = sink_declarations(&body, &sinkable);
+    let body = fold_single_uses(&body, &e.foldable);
+    let body = drop_unchanged_write_backs(&body);
+    let body = return_values(&body);
+    // (the variables the passes left unused are not declared)
+    let still: HashSet<String> = body.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')).map(|w| w.to_string()).collect();
     for l in locals {
+        let name = l.split_whitespace().nth(1).unwrap_or("");
+        if sunk.contains(name) || !still.contains(name) {
+            continue;
+        }
         out.push_str(&format!("    {}\n", l));
     }
     out.push_str(&body);
     out.push_str("}\n");
-    let _ = callee_saved;
     out.push_str(&format!("\n}}  // namespace d_{:08x}\n", f.address));
-    out.push_str(&format!("GUEST_EXPORT(0x{:08x}, d_{:08x}::{});\n", addr, f.address, base));
+    match mask {
+        Some(m) => out.push_str(&format!(
+            "GUEST_EXPORT_FRAMED(0x{:08x}, d_{:08x}::{}, 0x{:x});  // pushes {{{}}} first, as the original\n",
+            addr, f.address, base, m, register_list(m)
+        )),
+        None => out.push_str(&format!("GUEST_EXPORT(0x{:08x}, d_{:08x}::{});\n", addr, f.address, base)),
+    }
     Ok(out)
 }

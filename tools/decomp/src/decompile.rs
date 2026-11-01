@@ -269,7 +269,7 @@ L_5014:
         let ctx = z3::Context::new(&cfg);
         let (d, v) = decompile_and_prove(&ctx, &f);
         assert!(matches!(v, Verdict::Proved));
-        let text = crate::emit::emit(&d.function).expect("emits");
+        let text = crate::emit::emit(&d).expect("emits");
         let helpers = std::collections::HashSet::new();
         let read = |t: &str| crate::cpp::read(t, &helpers).unwrap().exports.remove(0).function.unwrap();
         match crate::check::verify_cpp(&ctx, &f, &d, &read(&text)) {
@@ -298,7 +298,7 @@ L_5014:
         let cfg = z3::Config::new();
         let ctx = z3::Context::new(&cfg);
         let (d, _) = decompile_and_prove(&ctx, &f);
-        assert!(!crate::emit::emit(&d.function).unwrap().contains("unknown_0[0xfffffff8]"));
+        assert!(!crate::emit::emit(&d).unwrap().contains("unknown_0[0xfffffff8]"));
         let helpers = std::collections::HashSet::new();
         let hand = |offset: &str| {
             format!("struct __attribute__((packed)) Before {{\n    u8 unknown_0[{}];\n    u32 word;\n}};\n\nu32 f_00006000(gptr<Before> arg0) {{\n    return arg0->word;\n}}\nGUEST_EXPORT(0x00006000, f_00006000);\n", offset)
@@ -337,7 +337,7 @@ L_8004:
 
     #[test]
     fn round_trip_loop_keeping_arguments() {
-        round_trip("f_00008000", &["r0", "r1", "r2", "r14"], LOOP_KEEPING_ARGUMENTS, ("r2 + 1u", "r2 + 2u"));
+        round_trip("f_00008000", &["r0", "r1", "r2", "r14"], LOOP_KEEPING_ARGUMENTS, ("r2 += 1u", "r2 += 2u"));
     }
 
     #[test]
@@ -347,7 +347,7 @@ L_8004:
         let cfg = z3::Config::new();
         let ctx = z3::Context::new(&cfg);
         let (d, _) = decompile_and_prove(&ctx, &f);
-        let text = crate::emit::emit(&d.function).unwrap();
+        let text = crate::emit::emit(&d).unwrap();
         let mut renamed = text.clone();
         for (a, b) in [("r0", "sum"), ("r1", "count"), ("res", "left"), ("L_2004", "next"), ("f_00002000", "sum_down")] {
             renamed = renamed.replace(a, b);
@@ -367,7 +367,7 @@ L_8004:
 
     #[test]
     fn round_trip_loop() {
-        round_trip("f_00002000", &["r0", "r1", "r14"], LOOP, ("r0 + r1", "r0 - r1"));
+        round_trip("f_00002000", &["r0", "r1", "r14"], LOOP, ("r0 += r1", "r0 -= r1"));
     }
 
     #[test]

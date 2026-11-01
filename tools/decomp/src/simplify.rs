@@ -125,6 +125,18 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
             }
             _ => None,
         },
+        // lsl_r(x, a & m) / lsr_r / asr_r with m < 32: the amount is below 32, a plain shift (u32 x)
+        Expr::Call(n, args) if matches!(n.as_str(), "lsl_r" | "lsr_r" | "asr_r") && args.len() == 2
+            && matches!(&args[1], Expr::Bin(BinOp::And, _, m) if matches!(**m, Expr::Num(k, _) if k < 32))
+            && type_of(&args[0], types) == Some(Ty::U32) =>
+        {
+            let (x, a) = (Box::new(args[0].clone()), Box::new(args[1].clone()));
+            Some(match n.as_str() {
+                "lsl_r" => Expr::Bin(BinOp::Shl, x, a),
+                "lsr_r" => Expr::Bin(BinOp::Shr, x, a),
+                _ => Expr::Cast(Ty::U32, Box::new(Expr::Bin(BinOp::Shr, Box::new(Expr::Cast(Ty::S32, x)), a))),
+            })
+        }
         // (T)x where x already has type T
         Expr::Cast(t, a) if type_of(a, types) == Some(*t) => Some((**a).clone()),
         _ => None,
@@ -214,7 +226,8 @@ fn is_v(e: &Expr, res: &str, a: &Expr, b: &Expr) -> bool {
             return false;
         }
         if let Expr::Bin(BinOp::And, p, q) = &**x {
-            let ab = |t: &Expr| matches!(t, Expr::Bin(BinOp::Xor, l, r) if **l == *a && **r == *b);
+            // (a ^ 0 is a once simplified: a comparison with 0)
+            let ab = |t: &Expr| matches!(t, Expr::Bin(BinOp::Xor, l, r) if **l == *a && **r == *b) || (*b == Expr::Num(0, Ty::U32) && *t == *a);
             let ar = |t: &Expr| matches!(t, Expr::Bin(BinOp::Xor, l, r) if **l == *a && var(r, res));
             return (ab(p) && ar(q)) || (ar(p) && ab(q));
         }
@@ -241,7 +254,11 @@ fn is_nonzero(e: &Expr, res: &str) -> bool {
 // The flag tests of a signed comparison of a and b (res = a - b) as the comparison itself.
 fn signed_compare(c: &Expr, res: &str, a: &Expr, b: &Expr) -> Option<Expr> {
     let sa = || Box::new(Expr::Cast(Ty::S32, Box::new(a.clone())));
-    let sb = || Box::new(Expr::Cast(Ty::S32, Box::new(b.clone())));
+    // (a constant below 2^31 as a signed one: s32(x) < 0)
+    let sb = || match b {
+        Expr::Num(k, _) if *k < 1 << 31 => Box::new(Expr::Num(*k, Ty::S32)),
+        _ => Box::new(Expr::Cast(Ty::S32, Box::new(b.clone()))),
+    };
     let nv = |e: &Expr, op: BinOp| matches!(e, Expr::Bin(o, n, v) if *o == op
         && ((is_n(n, res) && is_v(v, res, a, b)) || (is_n(v, res) && is_v(n, res, a, b))));
     if nv(c, BinOp::Ne) {
@@ -282,7 +299,7 @@ fn compares_in(c: &mut Expr, res: &str, a: &Expr, b: &Expr) {
 // u32 res = a - b; if (<flags of res>) ...  ->  the comparison in the if (res is then dead)
 fn signed_compares(list: &mut [Stmt]) {
     for i in 0..list.len() {
-        if let Stmt::If(_, a, b) = &mut list[i] {
+        if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = &mut list[i] {
             signed_compares(a);
             signed_compares(b);
         }
@@ -316,6 +333,8 @@ fn signed_compares(list: &mut [Stmt]) {
             Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Sub, a, b))) | Stmt::Assign(r, Expr::Bin(BinOp::Sub, a, b)) => {
                 (r.clone(), (**a).clone(), (**b).clone())
             }
+            // a comparison with 0: res = a - 0, simplified to a copy
+            Stmt::Decl(Ty::U32, r, Some(a @ Expr::Var(_))) => (r.clone(), a.clone(), Expr::Num(0, Ty::U32)),
             _ => continue,
         };
         // (not when the subtraction reads res itself: the condition's res is the new value)
@@ -353,9 +372,144 @@ fn simplify_list(list: &mut [Stmt], types: &mut HashMap<String, Ty>) {
                 simplify_list(a, types);
                 simplify_list(b, types);
             }
+            Stmt::While { cond, body, check, .. } => {
+                simplify_list(body, types);
+                simplify_list(check, types);
+                simplify_expr(cond, types);
+                simplify_cond(cond, types);
+            }
             _ => {}
         }
     }
+}
+
+// x = t; if (<reads t>) ...  ->  if (<reads x>) ...  for a temporary t (not a register): the condition reads the
+// register, and t is left with fewer uses (often one, which inlining folds: t = r1 >> 1; r1 = t; -> r1 = r1 >> 1).
+// The same for a loop's condition after the body's last statement.
+fn copies_in_conditions(list: &mut [Stmt], temporary: &dyn Fn(&str) -> bool) {
+    for i in 0..list.len() {
+        match &mut list[i] {
+            Stmt::If(_, a, b) => {
+                copies_in_conditions(a, temporary);
+                copies_in_conditions(b, temporary);
+            }
+            Stmt::While { body, check, cond, .. } => {
+                copies_in_conditions(body, temporary);
+                copies_in_conditions(check, temporary);
+                let last = if check.is_empty() { body.last() } else { check.last() };
+                if let Some(Stmt::Assign(x, Expr::Var(t))) = last {
+                    if temporary(t) && x != t {
+                        let (x, t) = (x.clone(), t.clone());
+                        let mut w = Stmt::If(cond.clone(), vec![], vec![]);
+                        crate::inline::subst_stmt(&mut w, &t, &Expr::Var(x));
+                        if let Stmt::If(c, _, _) = w {
+                            *cond = c;
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+        if i == 0 {
+            continue;
+        }
+        let (x, t) = match &list[i - 1] {
+            Stmt::Assign(x, Expr::Var(t)) if temporary(t) && x != t => (x.clone(), t.clone()),
+            _ => continue,
+        };
+        if let Stmt::If(c, _, _) = &mut list[i] {
+            let mut w = Stmt::If(c.clone(), vec![], vec![]);
+            crate::inline::subst_stmt(&mut w, &t, &Expr::Var(x));
+            if let Stmt::If(nc, _, _) = w {
+                *c = nc;
+            }
+        }
+    }
+}
+
+// x = A; if (!x) { x = B; }  ->  x = A || B   and   x = A; if (x) { x = B; }  ->  x = A && B
+// (A and B conditions, 0 or 1; B not reading x): the predicated compares of `cmp; cmpne` (a or b) and `cmp; cmpeq`.
+fn condition_chains(list: &mut Vec<Stmt>) -> bool {
+    let mut changed = false;
+    for s in list.iter_mut() {
+        if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = s {
+            changed |= condition_chains(a);
+            changed |= condition_chains(b);
+        }
+    }
+    let mut i = 0;
+    while i + 1 < list.len() {
+        let (x, first) = match &list[i] {
+            Stmt::Assign(x, e) | Stmt::Decl(_, x, Some(e)) if is_truth_valued(e) => (x.clone(), e.clone()),
+            _ => {
+                i += 1;
+                continue;
+            }
+        };
+        let joined = match &list[i + 1] {
+            Stmt::If(c, a, b) if b.is_empty() && a.len() == 1 => {
+                let op = match c {
+                    Expr::Un(UnOp::LNot, v) if matches!(&**v, Expr::Var(n) if *n == x) => Some(BinOp::LOr),
+                    Expr::Var(n) if *n == x => Some(BinOp::LAnd),
+                    _ => None,
+                };
+                match (op, &a[0]) {
+                    (Some(op), Stmt::Assign(y, second)) if *y == x && is_truth_valued(second) => {
+                        let mut r = Reads::default();
+                        reads(second, &mut r);
+                        if r.vars.contains(&x) || r.out_params {
+                            None
+                        } else {
+                            Some(Expr::Bin(op, Box::new(first.clone()), Box::new(second.clone())))
+                        }
+                    }
+                    _ => None,
+                }
+            }
+            _ => None,
+        };
+        if let Some(e) = joined {
+            match &mut list[i] {
+                Stmt::Assign(_, v) | Stmt::Decl(_, _, Some(v)) => *v = e,
+                _ => unreachable!(),
+            }
+            list.remove(i + 1);
+            changed = true;
+            continue;
+        }
+        i += 1;
+    }
+    changed
+}
+
+// if (A) { X } if (B) { X }  ->  if (A || B) { X }  when X does not fall through (it returns, jumps or tail-calls)
+fn merge_same_exits(list: &mut Vec<Stmt>) -> bool {
+    let mut changed = false;
+    for s in list.iter_mut() {
+        if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = s {
+            changed |= merge_same_exits(a);
+            changed |= merge_same_exits(b);
+        }
+    }
+    let leaves = |x: &[Stmt]| matches!(x.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
+    let mut i = 0;
+    while i + 1 < list.len() {
+        let merged = match (&list[i], &list[i + 1]) {
+            (Stmt::If(c1, a1, b1), Stmt::If(c2, a2, b2)) if b1.is_empty() && b2.is_empty() && a1 == a2 && leaves(a1) => {
+                Some(Stmt::If(Expr::Bin(BinOp::LOr, Box::new(c1.clone()), Box::new(c2.clone())), a1.clone(), vec![]))
+            }
+            _ => None,
+        };
+        match merged {
+            Some(m) => {
+                list[i] = m;
+                list.remove(i + 1);
+                changed = true;
+            }
+            None => i += 1,
+        }
+    }
+    changed
 }
 
 // whether running the statements may change what the condition reads
@@ -385,7 +539,7 @@ fn has_control(list: &[Stmt]) -> bool {
 fn merge_ifs(list: &mut Vec<Stmt>) -> bool {
     let mut changed = false;
     for s in list.iter_mut() {
-        if let Stmt::If(_, a, b) = s {
+        if let Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } = s {
             changed |= merge_ifs(a);
             changed |= merge_ifs(b);
         }
@@ -444,6 +598,12 @@ pub fn simplify(f: &mut Function) {
     let mut types: HashMap<String, Ty> = f.locals.iter().map(|(t, n, _)| (n.clone(), *t)).collect();
     types.insert("entry".into(), Ty::U32);
     simplify_list(&mut f.body, &mut types);
+    let synced: std::collections::HashSet<String> = f.synced.iter().map(|(v, _)| v.clone()).collect();
+    let locals: std::collections::HashSet<String> = f.locals.iter().map(|(_, n, _)| n.clone()).collect();
+    // (after the flag patterns, which read the temporary)
     signed_compares(&mut f.body);
+    copies_in_conditions(&mut f.body, &|t| !synced.contains(t) && !locals.contains(t) && !t.starts_with("arg") && !t.starts_with("saved_"));
     while merge_ifs(&mut f.body) {}
+    while condition_chains(&mut f.body) {}
+    while merge_same_exits(&mut f.body) {}
 }
