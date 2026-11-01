@@ -25,6 +25,18 @@ pub fn facts(f: &Function) -> Facts {
     if crate::emit::fields(&f.body, &mut out.fields).is_err() {
         out.fields.clear();
     }
+    // the 32-bit fields only ever read as a float or written from one (their bits): floats
+    let mut uses: HashMap<(usize, u64), (usize, usize)> = HashMap::new(); // (float accesses, others)
+    float_uses(&f.body, &mut uses);
+    for ((k, off), (floats, others)) in uses {
+        if floats > 0 && others == 0 {
+            if let Some(t) = out.fields.get_mut(&k).and_then(|fs| fs.get_mut(&off)) {
+                if *t == Ty::U32 {
+                    *t = Ty::F32;
+                }
+            }
+        }
+    }
     // the arguments' copies (argN) and the registers are the same values at the entry
     let vars: std::collections::HashSet<String> = f.synced.iter().map(|(v, _)| v.clone()).filter(|v| v != "r13" && v != "r14").collect();
     let regs: Vec<&str> = ARGS.iter().copied().filter(|r| vars.contains(*r)).collect();
@@ -90,6 +102,77 @@ pub fn facts(f: &Function) -> Facts {
     }
     stores(&f.body, &[], &values, &mut out.vptrs);
     out
+}
+
+// The accesses through an argument (argN + offset), counted as float ones (`U2F(load)`, a store of `F2U(x)`) or not.
+fn float_uses(list: &[Stmt], out: &mut HashMap<(usize, u64), (usize, usize)>) {
+    fn expr(e: &Expr, out: &mut HashMap<(usize, u64), (usize, usize)>) {
+        match e {
+            Expr::Call(n, args) if n == "U2F" && matches!(args.as_slice(), [Expr::Load(Ty::U32, _)]) => {
+                let Expr::Load(_, a) = &args[0] else { unreachable!() };
+                if let Some(key) = crate::emit::arg_off_of(a) {
+                    out.entry(key).or_default().0 += 1;
+                }
+                expr(a, out);
+            }
+            Expr::Load(_, a) => {
+                if let Some(key) = crate::emit::arg_off_of(a) {
+                    out.entry(key).or_default().1 += 1;
+                }
+                expr(a, out);
+            }
+            Expr::Un(_, a) | Expr::Cast(_, a) => expr(a, out),
+            Expr::Bin(_, a, b) => {
+                expr(a, out);
+                expr(b, out);
+            }
+            Expr::Cond(c, a, b) => {
+                expr(c, out);
+                expr(a, out);
+                expr(b, out);
+            }
+            Expr::Call(_, args) => args.iter().for_each(|x| expr(x, out)),
+            _ => {}
+        }
+    }
+    for s in list {
+        match s {
+            Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => expr(e, out),
+            Stmt::Store(t, a, v) => {
+                if let Some(key) = crate::emit::arg_off_of(a) {
+                    let float = *t == Ty::U32 && matches!(v, Expr::Call(n, _) if n == "F2U");
+                    let e = out.entry(key).or_default();
+                    if float {
+                        e.0 += 1;
+                    } else {
+                        e.1 += 1;
+                    }
+                }
+                expr(a, out);
+                expr(v, out);
+            }
+            Stmt::If(c, a, b) => {
+                expr(c, out);
+                float_uses(a, out);
+                float_uses(b, out);
+            }
+            Stmt::While { cond, body, check, .. } => {
+                expr(cond, out);
+                float_uses(body, out);
+                float_uses(check, out);
+            }
+            _ => {}
+        }
+    }
+}
+
+// One field's type from two functions' accesses: a float where both read it as one, the 32-bit integer where one of
+// them does not (the first type otherwise, as before).
+fn merged(old: Ty, new: Ty) -> Ty {
+    match (old, new) {
+        (Ty::F32, Ty::U32) | (Ty::U32, Ty::F32) => Ty::U32,
+        _ => old,
+    }
 }
 
 // The classes of the program's RTTI (build/acnl/rtti.json): name, base classes, primary vtable and its functions.
@@ -265,7 +348,8 @@ pub fn by_class(all: &HashMap<u32, Facts>, classes: &[Class], skip: &dyn Fn(u32,
     for ((a, k), c) in &ty {
         if let Some(fs) = all.get(a).and_then(|f| f.fields.get(k)) {
             for (off, t) in fs {
-                own[*c].entry(*off).or_insert(*t);
+                let e = own[*c].entry(*off).or_insert(*t);
+                *e = merged(*e, *t);
             }
         }
     }
@@ -282,7 +366,8 @@ pub fn by_class(all: &HashMap<u32, Facts>, classes: &[Class], skip: &dyn Fn(u32,
             let mut fields: BTreeMap<u64, Ty> = BTreeMap::new();
             for x in chain(classes, c).into_iter().rev() {
                 for (off, t) in &own[x] {
-                    fields.entry(*off).or_insert(*t);
+                    let e = fields.entry(*off).or_insert(*t);
+                    *e = merged(*e, *t);
                 }
             }
             // overlapping fields: the earlier one stays
@@ -366,7 +451,10 @@ pub fn unify(all: &HashMap<u32, Facts>, skip: &dyn Fn(u32, usize) -> bool) -> Re
                 Some(old) if old.bits() != t.bits() => {
                     broken.insert(root);
                 }
-                Some(_) => {}
+                Some(old) => {
+                    let m = merged(*old, *t);
+                    class.insert(*off, m);
+                }
                 None => {
                     class.insert(*off, *t);
                 }
@@ -425,6 +513,7 @@ fn db_type(t: Ty) -> &'static str {
 
 fn field_name(t: Ty, off: u64) -> String {
     let kind = match t.bits() {
+        _ if t == Ty::F32 => "float",
         8 => "byte",
         16 => "half",
         32 => "word",

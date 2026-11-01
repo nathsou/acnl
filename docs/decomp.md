@@ -283,7 +283,10 @@ offset 0 (vtables) and the arguments passed on unchanged (entry values, copies s
 receive `this` of its class, a function storing a vtable at its argument's offset 0 builds or destroys one, and an
 argument passed on makes the callee's argument at least that class (the closest common ancestor of all it receives),
 until nothing changes. A class's struct holds the fields its typed arguments access and its primary bases' fields, at
-their offsets (packed). First run: 3705 class structs for 25392 arguments of 25229 functions. The header goes to
+their offsets (packed). A 32-bit field that every function only reads as a float or writes from one is a `float`
+(`float_<offset>`); one that some function uses as an integer stays `u32`. First run: 3705 class structs for 25392
+arguments of 25229 functions; with floats (2026-11-01): 3701 structs, 4649 float fields, for 25522 arguments of 25346
+functions (run with `DECOMP_SIGNATURES=build/tools/sig_38k.txt`, `DECOMP_TYPES` unset, about 17 minutes). The header goes to
 `games/acnl/src/recovered/structs.hpp` and the type database (structs, parameter types) to OUTDIR; with
 `DECOMP_TYPES=OUTDIR` the emitter writes the class instead of a per-function struct. The facts are hints: each draft
 that uses a struct still has its layout checked by the compiler and is proved as usual. Without RTTI, arguments are

@@ -66,7 +66,7 @@ pub(crate) fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>
 }
 
 // (a field only below MAX_FIELD_OFFSET: the host does not wrap g_mem + address + offset as the guest does)
-fn arg_off_of(a: &Expr) -> Option<(usize, u64)> {
+pub(crate) fn arg_off_of(a: &Expr) -> Option<(usize, u64)> {
     match a {
         Expr::Var(v) if v.starts_with("arg") => Some((v[3..].parse().ok()?, 0)),
         Expr::Bin(BinOp::Add, b, o) => match (&**b, &**o) {
