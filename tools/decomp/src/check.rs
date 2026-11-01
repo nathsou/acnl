@@ -67,6 +67,8 @@ pub fn equivalent(ctx: &Context, original: &Function, candidate: &Function, save
 
 // The same, not comparing the observed registers in `skip`.
 pub fn equivalent_skipping(ctx: &Context, original: &Function, candidate: &Function, save_slots: &[u32], skip: &HashSet<String>) -> Verdict {
+    // (calls to a constant address as direct calls on both sides: the call model decides by the statement)
+    let (original, candidate) = (&crate::dispatch::as_direct_calls(original), &crate::dispatch::as_direct_calls(candidate));
     let mut s = Sym::new(ctx);
     let mut init: State = s.initial("in_");
     s.entry_sp = Some(init.cpu["r13"].clone());
@@ -227,6 +229,7 @@ pub struct Relations {
 // Each relation is assumed at a header and proved on arrival.
 pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, candidate: &Function, slots: &[u32],
                                   saved: &[(String, u32)], rel: &Relations) -> Verdict {
+    let (original, candidate) = (&crate::dispatch::as_direct_calls(original), &crate::dispatch::as_direct_calls(candidate));
     let (free, lr_slot) = (&rel.free, rel.lr_slot);
     let (_, olabels, oheaders) = Sym::graph(original);
     if oheaders.is_empty() {

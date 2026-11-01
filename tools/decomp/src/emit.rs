@@ -142,6 +142,7 @@ struct Emitter {
     synced: Vec<(String, CpuField)>,
     fallthrough: HashMap<Vec<usize>, String>, // gotos at the end of an if right before a label (fallthrough_gotos)
     breaks: HashSet<Vec<usize>>, // gotos out of the innermost loop (loop_breaks)
+    folding: std::cell::Cell<bool>, // printing an expression with its constants written in (expr)
     arities: HashMap<u32, usize>,      // the arguments each direct callee is written with (at most)
     fixed: bool,                       // the second pass: every call to a callee writes arities[callee] arguments
     var_types: HashMap<String, Ty>,    // the decompiled function's variables and their types
@@ -388,8 +389,19 @@ impl Emitter {
     // what SO() hands over to a callee besides r0-r3: the stack pointer and the float arguments
     // before a tail call: the callee-saved registers the function changed (a fragment of a function hands them on;
     // the callee keeps them, so they are what the caller sees)
+    // Whether writing back callee-saved register `field` from `v` at `path` changes nothing: `v` holds the register's
+    // entry value there, which the CPU still has (the C++ writes r4-r11 to the CPU only on the way out, and callees
+    // keep them; a system call's are read back into new values).
+    fn unchanged(&self, path: &[usize], field: &str, v: &str) -> bool {
+        let kept = (4..12).any(|k| field == format!("guest::cpu()->r[{}]", k));
+        kept && self.values.entry_value(path, v).map_or(false, |e| e == v)
+    }
+
     fn tail_write_back(&mut self, indent: usize, path: &[usize]) {
         for (field, v) in self.tail_writes() {
+            if self.unchanged(path, &field, &v) {
+                continue;
+            }
             let text = format!("{} = {};", field, self.var_text(path, &v));
             self.line(indent, &text);
         }
@@ -551,6 +563,20 @@ impl Emitter {
     }
 
     fn expr(&self, e: &Expr, outer: u32) -> R<String> {
+        // the constants variables hold written in, when that simplifies the expression (`s32(0u) < 0` is false)
+        if !self.folding.get() {
+            let mut with = e.clone();
+            if self.constants_in(&mut with) {
+                let mut folded = with.clone();
+                crate::simplify::fold(&mut folded, &self.var_types);
+                if folded != with {
+                    self.folding.set(true);
+                    let text = self.expr(&folded, outer);
+                    self.folding.set(false);
+                    return text;
+                }
+            }
+        }
         if let Some(c) = self.float_compare(e)? {
             return Ok(c);
         }
@@ -746,6 +772,31 @@ impl Emitter {
         };
         // (not a value the CPU's register holds wherever it is read)
         read.into_iter().filter(|(v, _)| !self.values.held_def(path, v)).collect()
+    }
+
+    // writes in the constants the expression's variables hold at the current statement; whether there was one
+    fn constants_in(&self, e: &mut Expr) -> bool {
+        match e {
+            Expr::Var(v) => match self.values.constant(&self.cur, v) {
+                Some((k, t)) if !self.values.held(&self.cur, v) => {
+                    *e = Expr::Num(k, t);
+                    true
+                }
+                _ => false,
+            },
+            Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => self.constants_in(a),
+            Expr::Bin(_, a, b) => {
+                let x = self.constants_in(a);
+                self.constants_in(b) || x
+            }
+            Expr::Cond(c, a, b) => {
+                let x = self.constants_in(c);
+                let y = self.constants_in(a);
+                self.constants_in(b) || x || y
+            }
+            Expr::Call(_, args) => args.iter_mut().fold(false, |any, a| self.constants_in(a) || any),
+            _ => false,
+        }
     }
 
     // the value of a 32-bit unsigned expression made of constants (and variables holding one), wrapping as the guest
@@ -1105,6 +1156,8 @@ impl Emitter {
                         }
                     }
                 }
+                // (a goto out of the innermost loop: break, before copying an exit block into the loop)
+                Stmt::Goto(_) if self.breaks.contains(&path) => self.line(indent, "break;"),
                 Stmt::Goto(l) if self.exits.contains_key(l) => {
                     let x = self.exits[l].clone();
                     // (a jump block's goto to the label right after this if: falling through)
@@ -1112,7 +1165,6 @@ impl Emitter {
                     let n = if falls { x.list.len() - 1 } else { x.list.len() };
                     self.stmts_from(&x.list[..n], x.first, indent, returns, &x.prefix)?;
                 }
-                Stmt::Goto(_) if self.breaks.contains(&path) => self.line(indent, "break;"),
                 Stmt::Goto(l) => {
                     if self.labels.contains(l) {
                         self.line(indent, "guest::preempt();"); // a back edge
@@ -1166,6 +1218,9 @@ impl Emitter {
                 }
                 Stmt::Return => {
                     for (field, v) in self.write_back.clone() {
+                        if self.unchanged(&path, &field, &v) {
+                            continue;
+                        }
                         let text = format!("{} = {};", field, self.var_text(&path, &v));
                         self.line(indent, &text);
                     }
@@ -2750,7 +2805,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         .collect();
     // (sp written to the CPU before calls only when the function moves it: otherwise the CPU's is the same)
     let has_sp = has_sp && assigned.contains("r13");
-    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), vtables: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), sites: crate::sites::at_calls(f), site_extras: site_extras(f, &lv), synced: f.synced.clone(), fallthrough: HashMap::new(), breaks: HashSet::new(), arities: HashMap::new(), fixed: false, out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), vtables: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), sites: crate::sites::at_calls(f), site_extras: site_extras(f, &lv), synced: f.synced.clone(), fallthrough: HashMap::new(), breaks: HashSet::new(), folding: std::cell::Cell::new(false), arities: HashMap::new(), fixed: false, out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();

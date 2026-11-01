@@ -93,12 +93,20 @@ pub fn remove_saves(f: &mut Function) -> Saves {
         Some(i) => i + 1,
         None => return none(),
     };
-    // the push may be scheduled after other instructions of the entry block
+    // the push may be scheduled after other instructions of the entry block, and after early exits (a shrink-wrapped
+    // prologue: a branch that leaves before the push saves nothing); sp stays as it entered until the push
     let mut start = entry;
     loop {
         match f.body.get(start) {
             Some(Stmt::Decl(Ty::U32, n, Some(Expr::Bin(BinOp::Sub, a, _)))) if n == "ea" && **a == Expr::Var("r13".into()) => break,
+            Some(Stmt::Decl(_, n, _)) | Some(Stmt::Assign(n, _)) if n == "r13" => return none(),
             Some(Stmt::Decl(..)) | Some(Stmt::Assign(..)) | Some(Stmt::Store(..)) | Some(Stmt::Nop) | Some(Stmt::Preempt) => start += 1,
+            Some(Stmt::If(_, a, b))
+                if b.is_empty()
+                    && matches!(a.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true))) =>
+            {
+                start += 1
+            }
             _ => return none(),
         }
     }

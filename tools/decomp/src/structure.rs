@@ -504,6 +504,22 @@ const JOIN_COPIES: usize = 3;
 fn join_copies(list: &mut Vec<Stmt>) -> bool {
     // the copies, into the ends of the branches (false: a goto to the join somewhere else)
     fn push(list: &mut Vec<Stmt>, join: &str, tail: &[Stmt], copies: &mut usize) -> bool {
+        // `if (c) goto L; R` inside: `if (!c) { R }`, R getting the copies
+        let goes = |s: &Stmt| matches!(s, Stmt::If(_, a, b) if b.is_empty() && matches!(a.as_slice(), [Stmt::Goto(l)] if l == join));
+        if let Some(k) = list.iter().position(|s| goes(s)).filter(|&k| k + 1 < list.len()) {
+            let mut before = HashMap::new();
+            count_refs(&list[..k], &mut before);
+            if before.contains_key(join) {
+                return false;
+            }
+            let mut rest: Vec<Stmt> = list.split_off(k + 1);
+            let Some(Stmt::If(c, _, _)) = list.pop() else { return false };
+            if !push(&mut rest, join, tail, copies) {
+                return false;
+            }
+            list.push(Stmt::If(negate(&c), rest, vec![]));
+            return true;
+        }
         let n = list.len();
         if n > 0 {
             let mut refs = HashMap::new();

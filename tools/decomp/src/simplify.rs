@@ -20,6 +20,11 @@ fn num_any(e: &Expr) -> Option<u64> {
     }
 }
 
+// An expression simplified on its own (the emitter's, once the values a variable holds are written in).
+pub fn fold(e: &mut Expr, types: &HashMap<String, Ty>) {
+    simplify_expr(e, types);
+}
+
 fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
     match e {
         Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => simplify_expr(a, types),
@@ -66,6 +71,35 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
                 },
                 _ => None,
             }
+        }
+        // 0 & x -> 0; 0 | x, 0 ^ x, 0 + x -> x (the same type)
+        Expr::Bin(BinOp::And, a, _) if matches!(&**a, Expr::Num(0, _)) && whole.map_or(false, |t| !t.float()) => {
+            Some(Expr::Num(0, whole.unwrap()))
+        }
+        Expr::Bin(BinOp::Or | BinOp::Xor | BinOp::Add, a, b) if matches!(&**a, Expr::Num(0, _)) && type_of(b, types) == whole => {
+            Some((**b).clone())
+        }
+        // (T)0 -> 0 of type T (an integer type)
+        Expr::Cast(t, a) if matches!(&**a, Expr::Num(0, _)) && !t.float() => Some(Expr::Num(0, *t)),
+        // a comparison of two small constants (the same value signed or unsigned)
+        Expr::Bin(op @ (BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge), a, b)
+            if matches!((&**a, &**b), (Expr::Num(x, _), Expr::Num(y, _)) if *x < 0x8000_0000 && *y < 0x8000_0000) =>
+        {
+            let (Expr::Num(x, _), Expr::Num(y, _)) = (&**a, &**b) else { unreachable!() };
+            let truth = match op {
+                BinOp::Eq => x == y,
+                BinOp::Ne => x != y,
+                BinOp::Lt => x < y,
+                BinOp::Le => x <= y,
+                BinOp::Gt => x > y,
+                _ => x >= y,
+            };
+            Some(Expr::Num(truth as u64, whole.unwrap_or(Ty::S32)))
+        }
+        // c ? a : b with a constant condition
+        Expr::Cond(c, a, b) if matches!(&**c, Expr::Num(..)) => {
+            let Expr::Num(k, _) = &**c else { unreachable!() };
+            Some(if *k != 0 { (**a).clone() } else { (**b).clone() })
         }
         // x ^ x -> 0, x - x -> 0 (expressions have no side effects: both sides are the same value)
         Expr::Bin(BinOp::Xor | BinOp::Sub, a, b) if a == b && whole.map_or(false, |t| !t.float()) => Some(Expr::Num(0, whole.unwrap())),
@@ -185,6 +219,13 @@ fn simplify_cond(e: &mut Expr, types: &HashMap<String, Ty>) {
                     }
                     (BinOp::LOr, Expr::Bin(BinOp::Lt, x, y), Expr::Bin(BinOp::Eq, _, _)) if same(a, b) && int(x) && int(y) => {
                         Some(Expr::Bin(BinOp::Le, x.clone(), y.clone()))
+                    }
+                    // x != k1 && x == k2 (k1, k2 different constants): x == k2
+                    (BinOp::LAnd, Expr::Bin(BinOp::Ne, x, k1), Expr::Bin(BinOp::Eq, y, k2))
+                    | (BinOp::LAnd, Expr::Bin(BinOp::Eq, y, k2), Expr::Bin(BinOp::Ne, x, k1))
+                        if x == y && matches!((&**k1, &**k2), (Expr::Num(p, _), Expr::Num(q, _)) if p != q) =>
+                    {
+                        Some(Expr::Bin(BinOp::Eq, y.clone(), k2.clone()))
                     }
                     _ => None,
                 }

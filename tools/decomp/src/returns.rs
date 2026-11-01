@@ -58,6 +58,7 @@ pub fn prove(ctx: &Context, f: &Function) -> bool {
     let mut init = s.initial("in_");
     s.entry_sp = Some(init.cpu["r13"].clone());
     s.init_frame(&mut init);
+    let f = &crate::dispatch::as_direct_calls(f);
     let Ok(exits) = s.run(f, &init) else { return false };
     if exits.is_empty() {
         return false;

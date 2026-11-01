@@ -25,6 +25,9 @@ pub struct State<'c> {
     pub frame: BTreeMap<u32, BV<'c>>,
 }
 
+const DIRECT: bool = true;
+const INDIRECT: bool = false;
+
 pub fn cpu_key(f: &CpuField) -> String {
     match f {
         CpuField::R(n) => format!("r{}", n),
@@ -654,8 +657,9 @@ impl<'c> Sym<'c> {
         }
     }
 
-    // an opaque guest call: the calling convention's view of what changes
-    pub fn call(&mut self, st: &mut State<'c>, target: &BV<'c>) {
+    // an opaque guest call (`direct`: a call of a function's address; otherwise through c->pc): the calling convention's
+    // view of what changes
+    pub fn call(&mut self, st: &mut State<'c>, target: &BV<'c>, direct: bool) {
         self.calls += 1;
         // the caller's save area is not the callee's business: it sees a canonical content, which is put back after
         let saved: Vec<(BV, BV)> = match &self.entry_sp {
@@ -686,13 +690,11 @@ impl<'c> Sym<'c> {
         // a callee with a proved signature (signatures.rs): memory, effects and the results a caller observes depend on
         // its argument registers only (each result also on its own value: a register it leaves alone passes through)
         // an indirect call's site (sites.rs): its callee is a callee with that signature (an assumption)
-        // (the site wins over a target the solver finds constant on one path only: both sides have the site)
+        // (decided by the statement, never by what the solver finds the target to be: one side's target may simplify
+        // to a constant on a path where the other's is a choice of constants; calls to a constant are direct calls on
+        // both sides, dispatch.rs)
         let site = self.site.take();
-        let sig = match (site, target.simplify().as_u64()) {
-            (Some(regs), _) => Some(regs),
-            (None, Some(t)) => crate::signatures::of(t as u32),
-            (None, None) => None,
-        };
+        let sig = if direct { target.simplify().as_u64().and_then(|t| crate::signatures::of(t as u32)) } else { site };
         let few: Option<Vec<BV>> = sig.map(|regs| regs.iter().map(|k| st.cpu[k].clone()).collect());
         let mut fewer: Vec<&BV> = vec![target];
         if let Some(v) = &few {
@@ -741,7 +743,7 @@ impl<'c> Sym<'c> {
         };
         // a callee that returns its first argument (returns.rs) gives r0 back
         let kept = match target.simplify().as_u64() {
-            Some(t) if crate::returns::returns_first_argument(t as u32) => Some(st.cpu["r0"].clone()),
+            Some(t) if direct && crate::returns::returns_first_argument(t as u32) => Some(st.cpu["r0"].clone()),
             _ => None,
         };
         for (k, v) in out {
@@ -910,13 +912,13 @@ impl<'c> Sym<'c> {
                                 self.sync_out(&mut st, &f.synced);
                                 let target = self.bv(*t as u64, 32);
                                 let lr = st.cpu["r14"].clone();
-                                self.call(&mut st, &target);
+                                self.call(&mut st, &target, DIRECT);
                                 st.cpu.insert("pc".into(), lr);
                             }
                             if let Stmt::Dispatch(true) = s {
                                 let target = st.cpu["pc"].clone();
                                 let lr = st.cpu["r14"].clone();
-                                self.call(&mut st, &target);
+                                self.call(&mut st, &target, INDIRECT);
                                 st.cpu.insert("pc".into(), lr);
                             }
                             exits.push(Exit { cond: pc.clone(), state: st.clone() });
@@ -1087,12 +1089,12 @@ impl<'c> Sym<'c> {
             Stmt::SyncIn => self.sync_in(st, &f.synced),
             Stmt::GuestCall(t, false) => {
                 let target = self.bv(*t as u64, 32);
-                self.call(st, &target);
+                self.call(st, &target, DIRECT);
                 // calls return normally (to the return address the caller set up)
             }
             Stmt::Dispatch(false) => {
                 let target = st.cpu["pc"].clone();
-                self.call(st, &target);
+                self.call(st, &target, INDIRECT);
             }
             Stmt::ReturnUnlessPc(expected) => {
                 // assumption: the callee came back normally

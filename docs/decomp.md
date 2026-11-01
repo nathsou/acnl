@@ -40,7 +40,7 @@ naming goes callees first over the whole program, starting from the 18,979 names
 - The decompiled function is built in the same language, by passes that each keep the meaning: `inline.rs` (block
   temporaries), `flow.rs` (liveness under the calling convention, dead code), `propagate.rs` (register values into
   their single use), `simplify.rs` (constant folding, conditions, predicated ifs into if/else), `saves.rs` (removes the
-  saving of callee-saved registers), `structure.rs` (gotos into ifs, duplicated return tails, the entry table).
+  saving of callee-saved registers, also when the push comes after early exits: a shrink-wrapped prologue), `structure.rs` (gotos into ifs, duplicated return tails, the entry table).
 - `sym.rs` gives both programs one meaning by symbolic execution: values are bit-vectors, guest memory is an array of
   bytes, paths are merged at joins. `check.rs` asks Z3 for an input where the original and the decompiled function
   differ in what a caller can observe; none means proved. Functions with loops are proved segment by segment between
@@ -66,6 +66,10 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   memory and effects depend on its argument registers only, sp, the memory and the effects token (and each result on
   its own value: a register it leaves alone passes through); its scratch results still depend on every argument
   register. Without a table (`DECOMP_SIGNATURES`, default `build/acnl/decomp_signatures.txt`) every callee takes them all.
+  Whether a call has a signature is decided by the statement, never by what the solver simplifies its target to (one
+  side's target may be a constant on a path where the other's is a choice of constants): a direct call uses its
+  callee's, an indirect call to a constant address (dispatch.rs) is a direct call on both sides of every proof, and
+  another indirect call uses its site (sites.rs) or none.
 - A system call (`rt_svc`) is opaque too: r0-r7, memory and effects become functions of its number, r0-r7, sp, the
   thread's TLS address, the memory and the effects token; the other registers stay, and so does the caller's save area.
 - Only entry 0 of a function is decompiled (the others are the runtime resuming a function in the middle).
@@ -265,8 +269,10 @@ A short block that ends the function (straight code ending in a return or a tail
 to it, an early return; labels nothing jumps to are left out. So is a short straight block ending in a goto (`L: r1 =
 K; goto M;`), when it is no goto's target in turn: at a goto that ends a branch of an if right before M, the copy
 leaves out its own goto (`if (c) { r1 = K; }`). A goto to the label right after the innermost loop around it (or
-after the ifs the loop ends) is `break;`, which `cpp.rs` reads back as a goto to a label after the loop. sp is written
-to the CPU before calls only in a function that moves it.
+after the ifs the loop ends) is `break;` (rather than a copy of an exit block into the loop), which `cpp.rs` reads
+back as a goto to a label after the loop. sp is written to the CPU before calls only in a function that moves it, and
+a callee-saved register (r4-r11) is not written back on the way out where it holds its entry value (the C++ writes
+them to the CPU only on the way out, and callees keep them).
 
 Each register and temporary is split into its values (`values.rs`: definitions joined by the uses they reach), so a
 register that holds an address, then a count, then a call's result becomes three variables (`r0`, `r0_1`, `r0_2`),
