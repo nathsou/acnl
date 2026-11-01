@@ -7111,33 +7111,11 @@ GUEST_EXPORT_FRAMED(0x0011e760, d_0011e760::f_0011e760, 0x4010);  // pushes {r4,
 // f_0011e790: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0011e790 {
 
-struct __attribute__((packed)) Object_0011e790_0 {
-    u32 word_0;
-    u8 byte_4;
-    u8 unknown_5[0x3];  // (not used here)
-    u32 word_8;
-    u32 word_c;
-    u32 word_10;
-    u32 word_14;
-    u32 word_18;
-    u32 word_1c;
-    u32 word_20;
-};
-GUEST_OFFSET(Object_0011e790_0, word_0, 0x0);
-GUEST_OFFSET(Object_0011e790_0, byte_4, 0x4);
-GUEST_OFFSET(Object_0011e790_0, word_8, 0x8);
-GUEST_OFFSET(Object_0011e790_0, word_c, 0xc);
-GUEST_OFFSET(Object_0011e790_0, word_10, 0x10);
-GUEST_OFFSET(Object_0011e790_0, word_14, 0x14);
-GUEST_OFFSET(Object_0011e790_0, word_18, 0x18);
-GUEST_OFFSET(Object_0011e790_0, word_1c, 0x1c);
-GUEST_OFFSET(Object_0011e790_0, word_20, 0x20);
-
 inline constexpr u32 vtable_sead__DefaultGfxMemoryMgrCtr = 0x009055b4u;
 inline constexpr guest::Function<0x00121824, u32(u32)> call_00121824;
 inline constexpr guest::Function<0x00121860, u32(u32)> call_00121860;
 
-u32 f_0011e790(gptr<Object_0011e790_0> arg0, u32 r1) {
+u32 f_0011e790(gptr<sead__DefaultGfxMemoryMgrCtr> arg0, u32 r1) {
     arg0->byte_4 = 0;
     arg0->word_c = 0;
     arg0->word_8 = r1;

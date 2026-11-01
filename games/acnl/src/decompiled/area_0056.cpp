@@ -559,11 +559,11 @@ inline constexpr guest::Function<0x00561264, u32(u32, u32, u32, u32)> call_00561
 
 void f_00561310(gptr<sead__Viewport> arg0) {
     float S0_1 = 3.4028235e38f;
-    arg0->word_4 = std::bit_cast<u32>(S0_1);
-    arg0->word_8 = std::bit_cast<u32>(S0_1);
+    arg0->float_4 = S0_1;
+    arg0->float_8 = S0_1;
     float S0_2 = -3.4028235e38f;
-    arg0->word_c = std::bit_cast<u32>(S0_2);
-    arg0->word_10 = std::bit_cast<u32>(S0_2);
+    arg0->float_c = S0_2;
+    arg0->float_10 = S0_2;
     arg0->word_0 = vtable_sead__Viewport;
     arg0->byte_14 = u8(u32(*global_00975328));
     guest::cpu()->s[0] = S0_2;
@@ -3164,28 +3164,13 @@ GUEST_EXPORT(0x0056daa8, d_0056daa8::f_0056daa8);
 // f_0056e5c4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0056e5c4 {
 
-struct __attribute__((packed)) Object_0056e5c4_0 {
-    u8 unknown_0[0x2e];  // (not used here)
-    u16 half_2e;
-    u8 unknown_30[0x5bc];  // (not used here)
-    u8 byte_5ec;
-    u8 unknown_5ed[0x3];  // (not used here)
-    u32 word_5f0;
-    u8 unknown_5f4[0x209];  // (not used here)
-    u8 byte_7fd;
-};
-GUEST_OFFSET(Object_0056e5c4_0, half_2e, 0x2e);
-GUEST_OFFSET(Object_0056e5c4_0, byte_5ec, 0x5ec);
-GUEST_OFFSET(Object_0056e5c4_0, word_5f0, 0x5f0);
-GUEST_OFFSET(Object_0056e5c4_0, byte_7fd, 0x7fd);
-
 inline guest::global<u32, 0x0094edd8> global_0094edd8;
 inline guest::global<u32, 0x00952a18> global_00952a18;
 inline constexpr guest::Function<0x0068eaf0, u32(u32, u32)> call_0068eaf0;
 inline constexpr guest::Function<0x0068ec3c, u32(u32, u32)> call_0068ec3c;
 inline constexpr guest::Function<0x00748534, u32(u32, u32)> call_00748534;
 
-u32 f_0056e5c4(gptr<Object_0056e5c4_0> arg0, u32 r1, float S0) {
+u32 f_0056e5c4(gptr<AcFtr> arg0, u32 r1, float S0) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r5_1 = r1;
     if (arg0->byte_5ec != 2u && *global_0094edd8 != 0) {
@@ -3253,27 +3238,6 @@ GUEST_EXPORT(0x0056e6a8, d_0056e6a8::f_0056e6a8);
 // f_0056f1b8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0056f1b8 {
 
-struct __attribute__((packed)) Object_0056f1b8_0 {
-    u8 unknown_0[0x2e];  // (not used here)
-    u16 half_2e;
-    u8 unknown_30[0x594];  // (not used here)
-    u32 word_5c4;
-    u8 unknown_5c8[0x28];  // (not used here)
-    u32 word_5f0;
-    u8 unknown_5f4[0x4];  // (not used here)
-    u8 byte_5f8;
-    u8 unknown_5f9[0x16b];  // (not used here)
-    u16 half_764;
-    u8 unknown_766[0x97];  // (not used here)
-    u8 byte_7fd;
-};
-GUEST_OFFSET(Object_0056f1b8_0, half_2e, 0x2e);
-GUEST_OFFSET(Object_0056f1b8_0, word_5c4, 0x5c4);
-GUEST_OFFSET(Object_0056f1b8_0, word_5f0, 0x5f0);
-GUEST_OFFSET(Object_0056f1b8_0, byte_5f8, 0x5f8);
-GUEST_OFFSET(Object_0056f1b8_0, half_764, 0x764);
-GUEST_OFFSET(Object_0056f1b8_0, byte_7fd, 0x7fd);
-
 struct __attribute__((packed)) Local_0056f1b8_r0_4 {
     u8 unknown_0[0x1b8];  // (not used here)
     float float_1b8;
@@ -3293,7 +3257,7 @@ struct __attribute__((packed)) Frame_0056f1b8 {
 GUEST_OFFSET(Frame_0056f1b8, word_0, 0x0);
 GUEST_SIZE(Frame_0056f1b8, 0x10);
 
-void f_0056f1b8(gptr<Object_0056f1b8_0> arg0, u32 r1, u32 r2_unused, u32 r3, float S0, float S1) {
+void f_0056f1b8(gptr<AcFtr> arg0, u32 r1, u32 r2_unused, u32 r3, float S0, float S1) {
     guest::StackFrameOf<Frame_0056f1b8> frame;  // the original's stack frame
     u32 r0 = arg0.addr();
     u32 r12_1 = 0;

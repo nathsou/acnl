@@ -1271,32 +1271,13 @@ GUEST_EXPORT(0x004f3068, d_004f3068::f_004f3068);
 // f_004f33dc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_004f33dc {
 
-struct __attribute__((packed)) Object_004f33dc_0 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u8 byte_c;
-    u8 unknown_d[0x3];  // (not used here)
-    u32 word_10;
-    u8 byte_14;
-    u8 unknown_15[0x3];  // (not used here)
-    u32 word_18;
-};
-GUEST_OFFSET(Object_004f33dc_0, word_0, 0x0);
-GUEST_OFFSET(Object_004f33dc_0, word_4, 0x4);
-GUEST_OFFSET(Object_004f33dc_0, word_8, 0x8);
-GUEST_OFFSET(Object_004f33dc_0, byte_c, 0xc);
-GUEST_OFFSET(Object_004f33dc_0, word_10, 0x10);
-GUEST_OFFSET(Object_004f33dc_0, byte_14, 0x14);
-GUEST_OFFSET(Object_004f33dc_0, word_18, 0x18);
-
 inline constexpr u32 vtable_gui__ButtonBase = 0x00902bc8u;
 inline constexpr u32 vtable_gui__Widget = 0x00903054u;
 inline guest::global<u32, 0x00ad6630> global_00ad6630;
 inline constexpr guest::Function<0x0013e7d8, u32(u32, u32, u32)> call_0013e7d8;
 inline constexpr guest::Function<0x002f825c, u32(u32, u32)> call_002f825c;
 
-u32 f_004f33dc(gptr<Object_004f33dc_0> arg0) {
+u32 f_004f33dc(gptr<gui__ButtonBase> arg0) {
     arg0->word_0 = vtable_gui__Widget;
     arg0->word_4 = 0;
     arg0->word_8 = 0;

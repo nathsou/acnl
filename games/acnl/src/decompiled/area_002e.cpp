@@ -3335,26 +3335,11 @@ GUEST_EXPORT_FRAMED(0x002e9044, d_002e9044::f_002e9044, 0x4010);  // pushes {r4,
 // f_002e9118: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002e9118 {
 
-struct __attribute__((packed)) Object_002e9118_0 {
-    u8 unknown_0[0x34];  // (not used here)
-    u8 byte_34;
-    u8 unknown_35[0x7];  // (not used here)
-    u32 word_3c;
-    u8 unknown_40[0x68];  // (not used here)
-    u32 word_a8;
-    u8 unknown_ac[0x20];  // (not used here)
-    u32 word_cc;
-};
-GUEST_OFFSET(Object_002e9118_0, byte_34, 0x34);
-GUEST_OFFSET(Object_002e9118_0, word_3c, 0x3c);
-GUEST_OFFSET(Object_002e9118_0, word_a8, 0xa8);
-GUEST_OFFSET(Object_002e9118_0, word_cc, 0xcc);
-
 inline constexpr guest::Function<0x0020a4cc, u32(u32, u32, u32)> call_0020a4cc;
 inline constexpr guest::Function<0x002f74c8, u32(u32, u32, u32, u32)> call_002f74c8;
 inline constexpr guest::Function<0x002f74e0, u32(u32, u32)> call_002f74e0;
 
-u32 f_002e9118(gptr<Object_002e9118_0> arg0, u32 r1, u32 r2) {
+u32 f_002e9118(gptr<SoundObjWithMelody> arg0, u32 r1, u32 r2) {
     u32 r0_1 = arg0->byte_34;
     if (r0_1 == 0) {
         u32 r0_2 = call_002f74c8(r0_1, r1, r2, guest::cpu()->r[3]);
@@ -3378,24 +3363,12 @@ GUEST_EXPORT_FRAMED(0x002e9118, d_002e9118::f_002e9118, 0x4070);  // pushes {r4,
 // f_002e9268: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002e9268 {
 
-struct __attribute__((packed)) Object_002e9268_0 {
-    u8 unknown_0[0x34];  // (not used here)
-    u8 byte_34;
-    u8 unknown_35[0x73];  // (not used here)
-    u32 word_a8;
-    u8 unknown_ac[0x20];  // (not used here)
-    u32 word_cc;
-};
-GUEST_OFFSET(Object_002e9268_0, byte_34, 0x34);
-GUEST_OFFSET(Object_002e9268_0, word_a8, 0xa8);
-GUEST_OFFSET(Object_002e9268_0, word_cc, 0xcc);
-
 inline constexpr guest::Function<0x00136cc8, u32(u32)> call_00136cc8;
 inline constexpr guest::Function<0x0020aedc, u32(u32, u32)> call_0020aedc;
 inline constexpr guest::Function<0x0032c348, u32(u32, u32, u32, u32)> call_0032c348;
 inline constexpr guest::Function<0x00342ed0, u32(u32)> call_00342ed0;
 
-u32 f_002e9268(gptr<Object_002e9268_0> arg0) {
+u32 f_002e9268(gptr<SoundObjWithMelody> arg0) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r0_1 = arg0->byte_34;
     if (r0_1 != 0) {
@@ -3440,23 +3413,6 @@ GUEST_EXPORT_FRAMED(0x002e92b0, d_002e92b0::f_002e92b0, 0x4010);  // pushes {r4,
 // f_002e9328: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002e9328 {
 
-struct __attribute__((packed)) Object_002e9328_0 {
-    u32 word_0;
-    u8 unknown_4[0x30];  // (not used here)
-    u8 byte_34;
-    u8 unknown_35[0x73];  // (not used here)
-    u32 word_a8;
-    u8 unknown_ac[0xc];  // (not used here)
-    u32 word_b8;
-    u8 unknown_bc[0x10];  // (not used here)
-    u32 word_cc;
-};
-GUEST_OFFSET(Object_002e9328_0, word_0, 0x0);
-GUEST_OFFSET(Object_002e9328_0, byte_34, 0x34);
-GUEST_OFFSET(Object_002e9328_0, word_a8, 0xa8);
-GUEST_OFFSET(Object_002e9328_0, word_b8, 0xb8);
-GUEST_OFFSET(Object_002e9328_0, word_cc, 0xcc);
-
 inline constexpr u32 vtable_SoundObjWithMelody = 0x008f3ae4u;
 inline constexpr u32 vtable_SoundMelodyPlayerOneSeqBase = 0x008f701cu;
 inline constexpr u32 vtable_SoundObj_1_ = 0x008f8d88u;
@@ -3467,7 +3423,7 @@ inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> call_002f7
 inline constexpr guest::Function<0x0032c348, u32(u32, u32, u32, u32)> call_0032c348;
 inline constexpr guest::Function<0x00342ed0, u32(u32)> call_00342ed0;
 
-u32 f_002e9328(gptr<Object_002e9328_0> arg0, u32 r1, u32 r2, u32 r3) {
+u32 f_002e9328(gptr<SoundObjWithMelody> arg0, u32 r1, u32 r2, u32 r3) {
     arg0->word_0 = vtable_SoundObjWithMelody;
     if (arg0->byte_34 != 0) {
         arg0->word_a8 = 0;

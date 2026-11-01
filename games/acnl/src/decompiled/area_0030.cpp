@@ -1815,47 +1815,6 @@ GUEST_EXPORT(0x00304830, d_00304830::f_00304830);
 // f_00304868: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00304868 {
 
-struct __attribute__((packed)) Object_00304868_0 {
-    u8 unknown_0[0x8];  // (not used here)
-    u32 word_8;
-    u8 unknown_c[0x8];  // (not used here)
-    u32 word_14;
-    u8 unknown_18[0x6c];  // (not used here)
-    u32 word_84;
-    u8 unknown_88[0x8];  // (not used here)
-    float float_90;
-    float float_94;
-    float float_98;
-    float float_9c;
-    float float_a0;
-    float float_a4;
-    float float_a8;
-    float float_ac;
-    u32 word_b0;
-    u32 word_b4;
-    u32 word_b8;
-    u32 word_bc;
-    u32 word_c0;
-    u32 word_c4;
-};
-GUEST_OFFSET(Object_00304868_0, word_8, 0x8);
-GUEST_OFFSET(Object_00304868_0, word_14, 0x14);
-GUEST_OFFSET(Object_00304868_0, word_84, 0x84);
-GUEST_OFFSET(Object_00304868_0, float_90, 0x90);
-GUEST_OFFSET(Object_00304868_0, float_94, 0x94);
-GUEST_OFFSET(Object_00304868_0, float_98, 0x98);
-GUEST_OFFSET(Object_00304868_0, float_9c, 0x9c);
-GUEST_OFFSET(Object_00304868_0, float_a0, 0xa0);
-GUEST_OFFSET(Object_00304868_0, float_a4, 0xa4);
-GUEST_OFFSET(Object_00304868_0, float_a8, 0xa8);
-GUEST_OFFSET(Object_00304868_0, float_ac, 0xac);
-GUEST_OFFSET(Object_00304868_0, word_b0, 0xb0);
-GUEST_OFFSET(Object_00304868_0, word_b4, 0xb4);
-GUEST_OFFSET(Object_00304868_0, word_b8, 0xb8);
-GUEST_OFFSET(Object_00304868_0, word_bc, 0xbc);
-GUEST_OFFSET(Object_00304868_0, word_c0, 0xc0);
-GUEST_OFFSET(Object_00304868_0, word_c4, 0xc4);
-
 struct __attribute__((packed)) Local_00304868_ea_1 {
     u32 word_0;
     u32 word_4;
@@ -1900,7 +1859,7 @@ GUEST_OFFSET(Frame_00304868, word_4, 0x4);
 GUEST_OFFSET(Frame_00304868, byte_c, 0xc);
 GUEST_SIZE(Frame_00304868, 0x130);
 
-u32 f_00304868(gptr<Object_00304868_0> arg0) {
+u32 f_00304868(gptr<BsLightHemiSphereFix> arg0) {
     guest::StackFrameOf<Frame_00304868> frame;  // the original's stack frame
     u32 r0 = arg0.addr();
     u32 r6_1 = r0 + 0xb0u;  // (from the original)
@@ -1913,13 +1872,13 @@ u32 f_00304868(gptr<Object_00304868_0> arg0) {
     float S6_1 = std::bit_cast<float>(*global_008474d0);
     float S7_1 = std::bit_cast<float>(*global_008474d4);
     arg0->float_90 = S0_1;
-    arg0->float_94 = S1_1;
-    arg0->float_98 = S2_1;
-    arg0->float_9c = S3_1;
-    arg0->float_a0 = S4_1;
-    arg0->float_a4 = S5_1;
-    arg0->float_a8 = S6_1;
-    arg0->float_ac = S7_1;
+    arg0->word_94 = std::bit_cast<u32>(S1_1);
+    arg0->word_98 = std::bit_cast<u32>(S2_1);
+    arg0->word_9c = std::bit_cast<u32>(S3_1);
+    arg0->word_a0 = std::bit_cast<u32>(S4_1);
+    arg0->word_a4 = std::bit_cast<u32>(S5_1);
+    arg0->word_a8 = std::bit_cast<u32>(S6_1);
+    arg0->word_ac = std::bit_cast<u32>(S7_1);
     u32 r5_1 = *global_008474e8;
     u32 r1_1 = *global_008474d8;
     u32 r2_1 = *global_008474dc;

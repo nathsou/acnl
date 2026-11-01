@@ -3410,8 +3410,8 @@ void f_005a9054(gptr<imgdb__ImageFileWriter> arg0, u32 r1, u32 r2, u32 r3) {
     arg0->byte_10 = u8(r2);
     arg0->word_14 = r3;
     arg0->byte_18 = u8(r12_1);
-    arg0->word_1c = std::bit_cast<u32>(S0_1);
-    arg0->word_20 = std::bit_cast<u32>(S1_1);
+    arg0->float_1c = S0_1;
+    arg0->float_20 = S1_1;
     guest::cpu()->r[1] = 0x907df8u;  // (from the original)
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;

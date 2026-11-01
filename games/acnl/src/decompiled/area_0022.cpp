@@ -1509,9 +1509,9 @@ inline constexpr guest::Function<0x001a113c, u32(u32, u32)> call_001a113c;
 
 u32 f_0022ba54(gptr<CameraCatalog> arg0) {
     float S0_1 = 0.0f;
-    arg0->word_4 = std::bit_cast<u32>(S0_1);
-    arg0->word_8 = std::bit_cast<u32>(S0_1);
-    arg0->word_c = std::bit_cast<u32>(S0_1);
+    arg0->float_4 = S0_1;
+    arg0->float_8 = S0_1;
+    arg0->float_c = S0_1;
     arg0->word_10 = std::bit_cast<u32>(S0_1);
     arg0->word_14 = std::bit_cast<u32>(S0_1);
     arg0->word_18 = std::bit_cast<u32>(S0_1);

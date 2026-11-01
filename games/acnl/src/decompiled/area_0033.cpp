@@ -387,25 +387,9 @@ GUEST_EXPORT(0x00331d0c, d_00331d0c::f_00331d0c);
 // f_003324bc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_003324bc {
 
-struct __attribute__((packed)) Object_003324bc_0 {
-    u8 unknown_0[0x90];  // (not used here)
-    u32 word_90;
-    u32 word_94;
-    u32 word_98;
-    u32 word_9c;
-    u32 word_a0;
-    u32 word_a4;
-};
-GUEST_OFFSET(Object_003324bc_0, word_90, 0x90);
-GUEST_OFFSET(Object_003324bc_0, word_94, 0x94);
-GUEST_OFFSET(Object_003324bc_0, word_98, 0x98);
-GUEST_OFFSET(Object_003324bc_0, word_9c, 0x9c);
-GUEST_OFFSET(Object_003324bc_0, word_a0, 0xa0);
-GUEST_OFFSET(Object_003324bc_0, word_a4, 0xa4);
-
 inline constexpr guest::Function<0x00136e58, u32(u32, u32, u32, u32)> call_00136e58;
 
-u32 f_003324bc(gptr<Object_003324bc_0> arg0, u32 r1) {
+u32 f_003324bc(gptr<SoundObjFurnitureOrgel> arg0, u32 r1) {
     u32 r0_1 = arg0->word_90;
     if (r0_1 == 0) {
         return r0_1;
@@ -503,30 +487,12 @@ GUEST_EXPORT_FRAMED(0x0033254c, d_0033254c::f_0033254c, 0x4010);  // pushes {r4,
 // f_00332628: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00332628 {
 
-struct __attribute__((packed)) Object_00332628_0 {
-    u32 word_0;
-    u8 unknown_4[0x8c];  // (not used here)
-    u32 word_90;
-    u32 word_94;
-    u32 word_98;
-    u32 word_9c;
-    u32 word_a0;
-    u32 word_a4;
-};
-GUEST_OFFSET(Object_00332628_0, word_0, 0x0);
-GUEST_OFFSET(Object_00332628_0, word_90, 0x90);
-GUEST_OFFSET(Object_00332628_0, word_94, 0x94);
-GUEST_OFFSET(Object_00332628_0, word_98, 0x98);
-GUEST_OFFSET(Object_00332628_0, word_9c, 0x9c);
-GUEST_OFFSET(Object_00332628_0, word_a0, 0xa0);
-GUEST_OFFSET(Object_00332628_0, word_a4, 0xa4);
-
 inline constexpr u32 vtable_SoundObjFurnitureOrgel = 0x008f5bf8u;
 inline constexpr guest::Function<0x00136cc8, u32(u32, u32, u32, u32)> call_00136cc8;
 inline constexpr guest::Function<0x00136e58, u32(u32, u32, u32, u32)> call_00136e58;
 inline constexpr guest::Function<0x002d2b90, u32(u32, u32, u32, u32)> call_002d2b90;
 
-u32 f_00332628(gptr<Object_00332628_0> arg0, u32 r1) {
+u32 f_00332628(gptr<SoundObjFurnitureOrgel> arg0, u32 r1) {
     guest::StackFrame frame(0x8);  // the original's stack frame
     arg0->word_0 = vtable_SoundObjFurnitureOrgel;
     if (arg0->word_90 != 0) {

@@ -4979,28 +4979,6 @@ GUEST_EXPORT(0x0058dc54, d_0058dc54::f_0058dc54);
 // f_0058e1ac: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0058e1ac {
 
-struct __attribute__((packed)) Object_0058e1ac_0 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u32 word_c;
-    u32 word_10;
-    u32 word_14;
-    u32 word_18;
-    u16 half_1c;
-    u8 unknown_1e[0x1e];  // (not used here)
-    u32 word_3c;
-};
-GUEST_OFFSET(Object_0058e1ac_0, word_0, 0x0);
-GUEST_OFFSET(Object_0058e1ac_0, word_4, 0x4);
-GUEST_OFFSET(Object_0058e1ac_0, word_8, 0x8);
-GUEST_OFFSET(Object_0058e1ac_0, word_c, 0xc);
-GUEST_OFFSET(Object_0058e1ac_0, word_10, 0x10);
-GUEST_OFFSET(Object_0058e1ac_0, word_14, 0x14);
-GUEST_OFFSET(Object_0058e1ac_0, word_18, 0x18);
-GUEST_OFFSET(Object_0058e1ac_0, half_1c, 0x1c);
-GUEST_OFFSET(Object_0058e1ac_0, word_3c, 0x3c);
-
 struct __attribute__((packed)) Object_0058e1ac_1 {
     u8 unknown_0[0x8];  // (not used here)
     u32 word_8;
@@ -5051,7 +5029,7 @@ inline constexpr u32 vtable_event__EventEveryDate = 0x0090788cu;
 inline constexpr u32 vtable_event__EventBase = 0x009078f0u;
 inline constexpr guest::Function<0x007795ec, u32(u32, u32)> call_007795ec;
 
-void f_0058e1ac(gptr<Object_0058e1ac_0> arg0, gptr<Object_0058e1ac_1> arg1, u32 r2) {
+void f_0058e1ac(gptr<event__EventEveryDate> arg0, gptr<Object_0058e1ac_1> arg1, u32 r2) {
     arg0->word_0 = vtable_event__EventBase;
     arg0->word_4 = 0;
     arg0->word_8 = arg1->word_8;
@@ -5697,28 +5675,6 @@ GUEST_EXPORT(0x0058ec08, d_0058ec08::f_0058ec08);
 // f_0058ed38: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0058ed38 {
 
-struct __attribute__((packed)) Object_0058ed38_0 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u32 word_c;
-    u32 word_10;
-    u32 word_14;
-    u32 word_18;
-    u16 half_1c;
-    u8 unknown_1e[0x1e];  // (not used here)
-    u32 word_3c;
-};
-GUEST_OFFSET(Object_0058ed38_0, word_0, 0x0);
-GUEST_OFFSET(Object_0058ed38_0, word_4, 0x4);
-GUEST_OFFSET(Object_0058ed38_0, word_8, 0x8);
-GUEST_OFFSET(Object_0058ed38_0, word_c, 0xc);
-GUEST_OFFSET(Object_0058ed38_0, word_10, 0x10);
-GUEST_OFFSET(Object_0058ed38_0, word_14, 0x14);
-GUEST_OFFSET(Object_0058ed38_0, word_18, 0x18);
-GUEST_OFFSET(Object_0058ed38_0, half_1c, 0x1c);
-GUEST_OFFSET(Object_0058ed38_0, word_3c, 0x3c);
-
 struct __attribute__((packed)) Object_0058ed38_1 {
     u8 unknown_0[0x8];  // (not used here)
     u32 word_8;
@@ -5769,7 +5725,7 @@ inline constexpr u32 vtable_event__EventMonthlyWeekday = 0x009078c8u;
 inline constexpr u32 vtable_event__EventBase = 0x009078f0u;
 inline constexpr guest::Function<0x007795ec, u32(u32, u32)> call_007795ec;
 
-void f_0058ed38(gptr<Object_0058ed38_0> arg0, gptr<Object_0058ed38_1> arg1, u32 r2) {
+void f_0058ed38(gptr<event__EventMonthlyWeekday> arg0, gptr<Object_0058ed38_1> arg1, u32 r2) {
     arg0->word_0 = vtable_event__EventBase;
     arg0->word_4 = 0;
     arg0->word_8 = arg1->word_8;
@@ -6128,28 +6084,6 @@ GUEST_EXPORT_FRAMED(0x0058f464, d_0058f464::f_0058f464, 0x41f0);  // pushes {r4,
 // f_0058f4cc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0058f4cc {
 
-struct __attribute__((packed)) Object_0058f4cc_0 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u32 word_c;
-    u32 word_10;
-    u32 word_14;
-    u32 word_18;
-    u16 half_1c;
-    u8 unknown_1e[0x1e];  // (not used here)
-    u16 half_3c;
-};
-GUEST_OFFSET(Object_0058f4cc_0, word_0, 0x0);
-GUEST_OFFSET(Object_0058f4cc_0, word_4, 0x4);
-GUEST_OFFSET(Object_0058f4cc_0, word_8, 0x8);
-GUEST_OFFSET(Object_0058f4cc_0, word_c, 0xc);
-GUEST_OFFSET(Object_0058f4cc_0, word_10, 0x10);
-GUEST_OFFSET(Object_0058f4cc_0, word_14, 0x14);
-GUEST_OFFSET(Object_0058f4cc_0, word_18, 0x18);
-GUEST_OFFSET(Object_0058f4cc_0, half_1c, 0x1c);
-GUEST_OFFSET(Object_0058f4cc_0, half_3c, 0x3c);
-
 struct __attribute__((packed)) Object_0058f4cc_1 {
     u8 unknown_0[0x8];  // (not used here)
     u32 word_8;
@@ -6200,7 +6134,7 @@ inline constexpr u32 vtable_event__EventBase = 0x009078f0u;
 inline constexpr u32 vtable_event__EventDate = 0x00907904u;
 inline constexpr guest::Function<0x007795ec, u32(u32, u32)> call_007795ec;
 
-void f_0058f4cc(gptr<Object_0058f4cc_0> arg0, gptr<Object_0058f4cc_1> arg1, u32 r2) {
+void f_0058f4cc(gptr<event__EventDate> arg0, gptr<Object_0058f4cc_1> arg1, u32 r2) {
     arg0->word_0 = vtable_event__EventBase;
     arg0->word_4 = 0;
     arg0->word_8 = arg1->word_8;

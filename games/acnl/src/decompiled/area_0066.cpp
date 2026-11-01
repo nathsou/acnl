@@ -2,7 +2,6 @@
 // names are generated (d_<address>::f_<address>, Object_<address>_<argument>, word_<offset>) and still to be chosen.
 #include "guest/guest.hpp"
 #include "player/slot_object.hpp"
-#include "recovered/structs.hpp"
 
 #include <bit>
 
@@ -812,6 +811,12 @@ GUEST_EXPORT(0x00665130, d_00665130::f_00665130);
 // f_006651b4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_006651b4 {
 
+struct __attribute__((packed)) Object_006651b4_0 {
+    u8 unknown_0[0x174];  // (not used here)
+    u8 byte_174;
+};
+GUEST_OFFSET(Object_006651b4_0, byte_174, 0x174);
+
 inline constexpr guest::Function<0x002f74c8, u32(u32, u32, u32, u32)> call_002f74c8;
 inline constexpr guest::Function<0x002f74e0, u32(u32, u32)> call_002f74e0;
 inline constexpr guest::Function<0x005d41b8, u32(u32, u32)> call_005d41b8;
@@ -828,7 +833,7 @@ struct __attribute__((packed)) Frame_006651b4 {
 GUEST_OFFSET(Frame_006651b4, half_c, 0xc);
 GUEST_SIZE(Frame_006651b4, 0x10);
 
-u32 f_006651b4(gptr<AcPlayer_rec> arg0, u32 r1, u32 r2, u32 r3, float S0) {
+u32 f_006651b4(gptr<Object_006651b4_0> arg0, u32 r1, u32 r2, u32 r3, float S0) {
     guest::StackFrameOf<Frame_006651b4> frame;  // the original's stack frame
     u32 r0_1 = arg0->byte_174;
     if ((r0_1 & 1u) == 0) {

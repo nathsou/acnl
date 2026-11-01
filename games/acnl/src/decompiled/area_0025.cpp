@@ -2587,15 +2587,6 @@ GUEST_EXPORT(0x0025ca5c, d_0025ca5c::f_0025ca5c);
 // f_0025cdf8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0025cdf8 {
 
-struct __attribute__((packed)) Object_0025cdf8_0 {
-    u8 unknown_0[0x7e13];  // (not used here)
-    u8 byte_7e13;
-    u8 unknown_7e14[0x1];  // (not used here)
-    u8 byte_7e15;
-};
-GUEST_OFFSET(Object_0025cdf8_0, byte_7e13, 0x7e13);
-GUEST_OFFSET(Object_0025cdf8_0, byte_7e15, 0x7e15);
-
 struct __attribute__((packed)) Local_0025cdf8_r0_7 {
     u8 unknown_0[0x585];  // (not used here)
     u8 byte_585;
@@ -2617,7 +2608,7 @@ inline constexpr guest::Function<0x005c6cac, u32(u32, u32)> call_005c6cac;
 inline constexpr guest::Function<0x007237e0, u32(u32, u32)> call_007237e0;
 inline constexpr guest::Function<0x007240f8, u32(u32)> call_007240f8;
 
-void f_0025cdf8(gptr<Object_0025cdf8_0> arg0, u32 r1) {
+void f_0025cdf8(gptr<BsMenuReaction> arg0, u32 r1) {
     u32 r0 = arg0.addr();
     u32 r5 = 0;
     u32 r4 = r0 + 0x7e00u;  // (from the original)

@@ -1811,13 +1811,13 @@ u32 f_006ee264(gptr<NpcAction> arg0, u32 r1, float S0_unused, float S1, float S2
     float S0_1 = std::bit_cast<float>(*gptr<u32>(r14 + 8u));
     arg0->word_4 = ea_1->word_0;
     arg0->word_8 = r12_1;
-    arg0->word_c = std::bit_cast<u32>(S0_1);
+    arg0->float_c = S0_1;
     arg0->byte_10 = 0;
     float S0_2 = 0.0f;
     u32 r3_1 = *global_008806c0;
     arg0->word_14 = *global_008806bc;
     arg0->word_18 = r3_1;
-    arg0->word_1c = std::bit_cast<u32>(S0_2);
+    arg0->float_1c = S0_2;
     arg0->half_20 = 0;
     arg0->half_22 = 0;
     arg0->half_24 = 0;

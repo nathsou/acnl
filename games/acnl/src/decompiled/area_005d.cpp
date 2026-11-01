@@ -981,30 +981,6 @@ GUEST_EXPORT(0x005d60d4, d_005d60d4::f_005d60d4);
 // f_005d6168: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005d6168 {
 
-struct __attribute__((packed)) Object_005d6168_0 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    float float_c;
-    float float_10;
-    u32 word_14;
-    u8 unknown_18[0x4];  // (not used here)
-    u32 word_1c;
-    u32 word_20;
-    u32 word_24;
-    u32 word_28;
-};
-GUEST_OFFSET(Object_005d6168_0, word_0, 0x0);
-GUEST_OFFSET(Object_005d6168_0, word_4, 0x4);
-GUEST_OFFSET(Object_005d6168_0, word_8, 0x8);
-GUEST_OFFSET(Object_005d6168_0, float_c, 0xc);
-GUEST_OFFSET(Object_005d6168_0, float_10, 0x10);
-GUEST_OFFSET(Object_005d6168_0, word_14, 0x14);
-GUEST_OFFSET(Object_005d6168_0, word_1c, 0x1c);
-GUEST_OFFSET(Object_005d6168_0, word_20, 0x20);
-GUEST_OFFSET(Object_005d6168_0, word_24, 0x24);
-GUEST_OFFSET(Object_005d6168_0, word_28, 0x28);
-
 struct __attribute__((packed)) Local_005d6168_ea_1 {
     u32 word_0;
     u32 word_4;
@@ -1026,7 +1002,7 @@ inline constexpr guest::Function<0x00301d0d, u32(u32, u32, u32, u32)> call_00301
 inline constexpr guest::Function<0x005d60d4, u32(u32)> call_005d60d4;
 inline constexpr guest::Function<0x00779500, u32(u32, u32, u32, u32)> call_00779500;
 
-u32 f_005d6168(gptr<Object_005d6168_0> arg0, u32 r1, u32 r2, u32 r3) {
+u32 f_005d6168(gptr<script__RenderBase> arg0, u32 r1, u32 r2, u32 r3) {
     u32 r7 = guest::cpu()->r[7];
     arg0->word_0 = vtable_script__RenderBase;
     arg0->word_4 = 0xff000000;  // (from the original)

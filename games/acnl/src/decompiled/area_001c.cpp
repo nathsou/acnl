@@ -703,14 +703,6 @@ GUEST_EXPORT_FRAMED(0x001c55b0, d_001c55b0::f_001c55b0, 0x4070);  // pushes {r4,
 // f_001c6748: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001c6748 {
 
-struct __attribute__((packed)) Object_001c6748_0 {
-    u32 word_0;
-    u8 unknown_4[0xabc];  // (not used here)
-    u32 word_ac0;
-};
-GUEST_OFFSET(Object_001c6748_0, word_0, 0x0);
-GUEST_OFFSET(Object_001c6748_0, word_ac0, 0xac0);
-
 struct __attribute__((packed)) Local_001c6748_r4_2 {
     u32 word_0;
     u8 unknown_4[0x220];  // (not used here)
@@ -730,7 +722,7 @@ inline constexpr guest::Function<0x00567ef0, u32(u32)> call_00567ef0;
 inline constexpr guest::Function<0x0056988c, u32(u32)> call_0056988c;
 inline constexpr guest::Function<0x005bf744, u32(u32)> call_005bf744;
 
-u32 f_001c6748(gptr<Object_001c6748_0> arg0) {
+u32 f_001c6748(gptr<CatalogList> arg0) {
     arg0->word_0 = vtable_CatalogList;
     call_002f76ac(arg0.addr() + 0xa44cu, 0x3009ccu, 0x2cu, 0x21u);  // (from the original)
     call_002f76ac(arg0.addr() + 0x92c4u, 0x3009ccu, 0x2cu, 0x66u);  // (from the original)

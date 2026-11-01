@@ -2899,11 +2899,20 @@ GUEST_EXPORT(0x00765e04, d_00765e04::f_00765e04);
 // f_00765e28: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00765e28 {
 
+struct __attribute__((packed)) Object_00765e28_0 {
+    u8 unknown_0[0x171];  // (not used here)
+    u8 byte_171;
+    u8 unknown_172[0x3a];  // (not used here)
+    u8 byte_1ac;
+};
+GUEST_OFFSET(Object_00765e28_0, byte_171, 0x171);
+GUEST_OFFSET(Object_00765e28_0, byte_1ac, 0x1ac);
+
 inline constexpr guest::Function<0x0027ab40, u32(u32)> call_0027ab40;
 inline constexpr guest::Function<0x002ff8b0, u32(u32, u32)> call_002ff8b0;
 inline constexpr guest::Function<0x005c2c80, u32(u32, u32)> call_005c2c80;
 
-u32 f_00765e28(gptr<AcPlayer_rec> arg0) {
+u32 f_00765e28(gptr<Object_00765e28_0> arg0) {
     guest::StackFrame frame(0x8);  // the original's stack frame
     u32 r1_1 = u32(arg0->byte_171) >> 5u & 1u;
     if (r1_1 != 0) {

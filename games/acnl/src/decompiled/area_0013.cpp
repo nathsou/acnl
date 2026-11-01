@@ -110,8 +110,8 @@ void f_00130c70(gptr<nw__lyt__Layout> arg0) {
     arg0->word_10 = 0;
     arg0->word_c = r3_1;
     arg0->word_14 = 0;
-    arg0->word_18 = std::bit_cast<u32>(S0_1);
-    arg0->word_1c = std::bit_cast<u32>(S0_1);
+    arg0->float_18 = S0_1;
+    arg0->float_1c = S0_1;
     guest::cpu()->s[0] = S0_1;
 }
 
@@ -1589,7 +1589,7 @@ void f_00134f70(gptr<SoundFaderEx> arg0) {
     float S0_1 = 0.0f;
     arg0->word_4 = std::bit_cast<u32>(S0_1);
     arg0->word_8 = std::bit_cast<u32>(S0_1);
-    arg0->word_c = std::bit_cast<u32>(S0_1);
+    arg0->float_c = S0_1;
     arg0->word_10 = ~0u;
     arg0->word_14 = 0;
     arg0->word_0 = vtable_SoundFaderEx;
@@ -4438,20 +4438,6 @@ GUEST_EXPORT_FRAMED(0x0013a414, d_0013a414::f_0013a414, 0x4070);  // pushes {r4,
 // f_0013a63c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013a63c {
 
-struct __attribute__((packed)) Object_0013a63c_0 {
-    u8 unknown_0[0x4];  // (not used here)
-    u32 word_4;
-    u8 byte_8;
-    u8 unknown_9[0x39f];  // (not used here)
-    u32 word_3a8;
-    u8 unknown_3ac[0x1ac];  // (not used here)
-    u32 word_558;
-};
-GUEST_OFFSET(Object_0013a63c_0, word_4, 0x4);
-GUEST_OFFSET(Object_0013a63c_0, byte_8, 0x8);
-GUEST_OFFSET(Object_0013a63c_0, word_3a8, 0x3a8);
-GUEST_OFFSET(Object_0013a63c_0, word_558, 0x558);
-
 inline guest::global<u8, 0x00974b99> global_00974b99;
 inline guest::global<u8, 0x00974b9a> global_00974b9a;
 inline guest::global<u8, 0x00974b9c> global_00974b9c;
@@ -4462,7 +4448,7 @@ inline constexpr guest::Function<0x0013e360, u32(u32, u32, u32, u32)> call_0013e
 inline constexpr guest::Function<0x001400b4, u32(u32)> call_001400b4;
 inline constexpr guest::Function<0x001402b0, u32(u32)> call_001402b0;
 
-void f_0013a63c(gptr<Object_0013a63c_0> arg0, u32 r1) {
+void f_0013a63c(gptr<nn__cec__CTR__MessageBox> arg0, u32 r1) {
     arg0->word_4 = 0;
     if (*global_00974b99 != 0) {
         call_0013e360(arg0.addr(), 0u, guest::cpu()->r[2], guest::cpu()->r[3]);
@@ -6395,14 +6381,6 @@ GUEST_EXPORT(0x0013d6d0, d_0013d6d0::f_0013d6d0);
 // f_0013d73c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013d73c {
 
-struct __attribute__((packed)) Object_0013d73c_0 {
-    u32 word_0;
-    u8 unknown_4[0x8];  // (not used here)
-    u8 byte_c;
-};
-GUEST_OFFSET(Object_0013d73c_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013d73c_0, byte_c, 0xc);
-
 struct __attribute__((packed)) Local_0013d73c_r1_1 {
     u32 word_0;
     u32 word_4;
@@ -6415,7 +6393,7 @@ inline constexpr guest::Function<0x00135740, u32(u32)> call_00135740;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> call_00137e84;
 inline constexpr guest::Function<0x0013f000, u32(u32, u32)> call_0013f000;
 
-u32 f_0013d73c(gptr<Object_0013d73c_0> arg0) {
+u32 f_0013d73c(gptr<SoundDataLoadRequest> arg0) {
     u32 r0 = arg0.addr();
     arg0->word_0 = vtable_SoundDataLoadRequest;
     call_00135740(0x982870u);  // (from the original)
@@ -7187,7 +7165,7 @@ namespace d_0013ef18 {
 
 inline constexpr guest::Function<0x00136e58, u32(u32, u32, u32, u32)> call_00136e58;
 
-void f_0013ef18(gptr<SoundMelodyPlayerOneSeqTimeTone> arg0) {
+void f_0013ef18(gptr<SoundMelodyPlayerOneSeqBase> arg0) {
     u32 r0_1 = arg0->word_8;
     if (r0_1 == 0) {
         guest::cpu()->r[1] = 0u;

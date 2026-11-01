@@ -192,22 +192,6 @@ GUEST_EXPORT(0x00570adc, d_00570adc::f_00570adc);
 // f_00571d28: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00571d28 {
 
-struct __attribute__((packed)) Object_00571d28_0 {
-    u8 unknown_0[0x14];  // (not used here)
-    u32 word_14;
-    u32 word_18;
-    u32 word_1c;
-    u8 unknown_20[0xe];  // (not used here)
-    u16 half_2e;
-    u8 unknown_30[0x784];  // (not used here)
-    u8 byte_7b4;
-};
-GUEST_OFFSET(Object_00571d28_0, word_14, 0x14);
-GUEST_OFFSET(Object_00571d28_0, word_18, 0x18);
-GUEST_OFFSET(Object_00571d28_0, word_1c, 0x1c);
-GUEST_OFFSET(Object_00571d28_0, half_2e, 0x2e);
-GUEST_OFFSET(Object_00571d28_0, byte_7b4, 0x7b4);
-
 struct __attribute__((packed)) Local_00571d28_r0_5 {
     u8 unknown_0[0x18];  // (not used here)
     float float_18;
@@ -274,7 +258,7 @@ GUEST_OFFSET(Frame_00571d28, word_60, 0x60);
 GUEST_OFFSET(Frame_00571d28, half_68, 0x68);
 GUEST_SIZE(Frame_00571d28, 0x70);
 
-u32 f_00571d28(gptr<Object_00571d28_0> arg0, u32 r1, u32 r2_unused, u32 r3, float S0, float S1) {
+u32 f_00571d28(gptr<AcFtr> arg0, u32 r1, u32 r2_unused, u32 r3, float S0, float S1) {
     guest::StackFrameOf<Frame_00571d28> frame;  // the original's stack frame
     float S0_5 = 0;
     u32 r0_1 = arg0->byte_7b4;
@@ -446,26 +430,6 @@ GUEST_EXPORT_FRAMED(0x00572624, d_00572624::f_00572624, 0x40f0);  // pushes {r4,
 // f_00572fb4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00572fb4 {
 
-struct __attribute__((packed)) Object_00572fb4_0 {
-    u8 unknown_0[0x78];  // (not used here)
-    u8 byte_78;
-    u8 unknown_79[0x267];  // (not used here)
-    float float_2e0;
-    u8 unknown_2e4[0x4];  // (not used here)
-    float float_2e8;
-    u8 unknown_2ec[0x300];  // (not used here)
-    u8 byte_5ec;
-    u8 unknown_5ed[0x3];  // (not used here)
-    u32 word_5f0;
-    u32 word_5f4;
-};
-GUEST_OFFSET(Object_00572fb4_0, byte_78, 0x78);
-GUEST_OFFSET(Object_00572fb4_0, float_2e0, 0x2e0);
-GUEST_OFFSET(Object_00572fb4_0, float_2e8, 0x2e8);
-GUEST_OFFSET(Object_00572fb4_0, byte_5ec, 0x5ec);
-GUEST_OFFSET(Object_00572fb4_0, word_5f0, 0x5f0);
-GUEST_OFFSET(Object_00572fb4_0, word_5f4, 0x5f4);
-
 struct __attribute__((packed)) Local_00572fb4_r0_2 {
     u8 unknown_0[0x24];  // (not used here)
     float float_24;
@@ -480,7 +444,7 @@ inline constexpr guest::Function<0x002f74b0, u32(u32, u32)> call_002f74b0;
 inline constexpr guest::Function<0x005761c8, u32(u32, u32, u32, u32)> call_005761c8;
 inline constexpr guest::Function<0x00748534, u32(u32)> call_00748534;
 
-void f_00572fb4(gptr<Object_00572fb4_0> arg0, float S0, float S1) {
+void f_00572fb4(gptr<AcFtr> arg0, float S0, float S1) {
     guest::StackFrame frame(0x8);  // the original's stack frame
     u32 fpsr = guest::cpu()->fpscr;
     u32 r0_1 = *global_0094edd8;
@@ -996,29 +960,6 @@ GUEST_EXPORT_FRAMED(0x005757d4, d_005757d4::f_005757d4, 0x4010);  // pushes {r4,
 // f_005761c8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005761c8 {
 
-struct __attribute__((packed)) Object_005761c8_0 {
-    u8 unknown_0[0x554];  // (not used here)
-    u32 word_554;
-    u8 unknown_558[0xc];  // (not used here)
-    u32 word_564;
-    u8 unknown_568[0xc];  // (not used here)
-    u32 word_574;
-    u8 unknown_578[0x3c];  // (not used here)
-    float float_5b4;
-    u8 unknown_5b8[0x34];  // (not used here)
-    u8 byte_5ec;
-    u8 unknown_5ed[0x3];  // (not used here)
-    u32 word_5f0;
-    u32 word_5f4;
-};
-GUEST_OFFSET(Object_005761c8_0, word_554, 0x554);
-GUEST_OFFSET(Object_005761c8_0, word_564, 0x564);
-GUEST_OFFSET(Object_005761c8_0, word_574, 0x574);
-GUEST_OFFSET(Object_005761c8_0, float_5b4, 0x5b4);
-GUEST_OFFSET(Object_005761c8_0, byte_5ec, 0x5ec);
-GUEST_OFFSET(Object_005761c8_0, word_5f0, 0x5f0);
-GUEST_OFFSET(Object_005761c8_0, word_5f4, 0x5f4);
-
 struct __attribute__((packed)) Local_005761c8_ea_2 {
     u32 word_0;
     u32 word_4;
@@ -1048,7 +989,7 @@ GUEST_OFFSET(Frame_005761c8, word_14, 0x14);
 GUEST_OFFSET(Frame_005761c8, float_1c, 0x1c);
 GUEST_SIZE(Frame_005761c8, 0x28);
 
-void f_005761c8(gptr<Object_005761c8_0> arg0, u32 r1, u32 r2, u32 r3, float S0) {
+void f_005761c8(gptr<AcFtr> arg0, u32 r1, u32 r2, u32 r3, float S0) {
     guest::StackFrameOf<Frame_005761c8> frame;  // the original's stack frame
     u32 r0_1 = arg0->word_5f0;
     if (r0_1 != 0) {
@@ -1219,32 +1160,6 @@ GUEST_EXPORT(0x00578018, d_00578018::f_00578018);
 // f_00578158: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00578158 {
 
-struct __attribute__((packed)) Object_00578158_0 {
-    u8 unknown_0[0x5d8];  // (not used here)
-    u32 word_5d8;
-    u32 word_5dc;
-    u32 word_5e0;
-    u8 unknown_5e4[0x78];  // (not used here)
-    u8 byte_65c;
-    u8 unknown_65d[0x237];  // (not used here)
-    u32 word_894;
-    u8 unknown_898[0x90];  // (not used here)
-    u32 word_928;
-    u32 word_92c;
-    u32 word_930;
-    u8 unknown_934[0x18];  // (not used here)
-    u8 byte_94c;
-};
-GUEST_OFFSET(Object_00578158_0, word_5d8, 0x5d8);
-GUEST_OFFSET(Object_00578158_0, word_5dc, 0x5dc);
-GUEST_OFFSET(Object_00578158_0, word_5e0, 0x5e0);
-GUEST_OFFSET(Object_00578158_0, byte_65c, 0x65c);
-GUEST_OFFSET(Object_00578158_0, word_894, 0x894);
-GUEST_OFFSET(Object_00578158_0, word_928, 0x928);
-GUEST_OFFSET(Object_00578158_0, word_92c, 0x92c);
-GUEST_OFFSET(Object_00578158_0, word_930, 0x930);
-GUEST_OFFSET(Object_00578158_0, byte_94c, 0x94c);
-
 struct __attribute__((packed)) Local_00578158_r0_3 {
     u8 byte_0;
     u8 byte_1;
@@ -1311,7 +1226,7 @@ GUEST_OFFSET(Local_00578158_r1_1, half_24, 0x24);
 
 inline constexpr guest::Function<0x001ccf5c, u32(u32, u32, u32, u32)> call_001ccf5c;
 
-u32 f_00578158(gptr<Object_00578158_0> arg0) {
+u32 f_00578158(gptr<AcNpc_rec> arg0) {
     u32 r2_1 = arg0->word_5d8;
     gptr<Local_00578158_r1_1> r1_1 = gptr<Local_00578158_r1_1>(arg0->word_5dc);
     u32 r3_1 = arg0->word_5e0;
@@ -1812,21 +1727,6 @@ GUEST_EXPORT_FRAMED(0x00579514, d_00579514::f_00579514, 0x4010);  // pushes {r4,
 // f_00579b98: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00579b98 {
 
-struct __attribute__((packed)) Object_00579b98_0 {
-    u8 unknown_0[0x68];  // (not used here)
-    u32 word_68;
-    u8 unknown_6c[0x8f8];  // (not used here)
-    u32 word_964;
-    u8 unknown_968[0x19f];  // (not used here)
-    u8 byte_b07;
-    u8 unknown_b08[0x1];  // (not used here)
-    u8 byte_b09;
-};
-GUEST_OFFSET(Object_00579b98_0, word_68, 0x68);
-GUEST_OFFSET(Object_00579b98_0, word_964, 0x964);
-GUEST_OFFSET(Object_00579b98_0, byte_b07, 0xb07);
-GUEST_OFFSET(Object_00579b98_0, byte_b09, 0xb09);
-
 struct __attribute__((packed)) Local_00579b98_r0_1 {
     u8 unknown_0[0xfa];  // (not used here)
     u16 half_fa;
@@ -1855,7 +1755,7 @@ struct __attribute__((packed)) Frame_00579b98 {
 GUEST_OFFSET(Frame_00579b98, word_0, 0x0);
 GUEST_SIZE(Frame_00579b98, 0x4);
 
-u32 f_00579b98(gptr<Object_00579b98_0> arg0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2) {
+u32 f_00579b98(gptr<AcNpc_rec> arg0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2) {
     guest::StackFrameOf<Frame_00579b98> frame;  // the original's stack frame
     frame->word_0 = r3;
     u32 r6_1 = r1;

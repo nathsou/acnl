@@ -1447,36 +1447,6 @@ GUEST_EXPORT_FRAMED(0x00298ed8, d_00298ed8::f_00298ed8, 0x4070);  // pushes {r4,
 // f_00298f2c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00298f2c {
 
-struct __attribute__((packed)) Object_00298f2c_0 {
-    u8 unknown_0[0x70c];  // (not used here)
-    float float_70c;
-    float float_710;
-    float float_714;
-    u8 unknown_718[0x4];  // (not used here)
-    u32 word_71c;
-    u8 unknown_720[0x4];  // (not used here)
-    float float_724;
-    u8 unknown_728[0x14];  // (not used here)
-    float float_73c;
-    u8 unknown_740[0x8];  // (not used here)
-    float float_748;
-    u8 unknown_74c[0xc];  // (not used here)
-    u32 word_758;
-    u8 unknown_75c[0x4];  // (not used here)
-    u32 word_760;
-    u32 word_764;
-};
-GUEST_OFFSET(Object_00298f2c_0, float_70c, 0x70c);
-GUEST_OFFSET(Object_00298f2c_0, float_710, 0x710);
-GUEST_OFFSET(Object_00298f2c_0, float_714, 0x714);
-GUEST_OFFSET(Object_00298f2c_0, word_71c, 0x71c);
-GUEST_OFFSET(Object_00298f2c_0, float_724, 0x724);
-GUEST_OFFSET(Object_00298f2c_0, float_73c, 0x73c);
-GUEST_OFFSET(Object_00298f2c_0, float_748, 0x748);
-GUEST_OFFSET(Object_00298f2c_0, word_758, 0x758);
-GUEST_OFFSET(Object_00298f2c_0, word_760, 0x760);
-GUEST_OFFSET(Object_00298f2c_0, word_764, 0x764);
-
 struct __attribute__((packed)) Local_00298f2c_r4_1 {
     u8 unknown_0[0x32c];  // (not used here)
     float float_32c;
@@ -1501,7 +1471,7 @@ GUEST_OFFSET(Local_00298f2c_r4_2, float_4, 0x4);
 inline constexpr guest::Function<0x005833b0, u32(u32)> call_005833b0;
 inline constexpr guest::Function<0x006aa944, u32(u32, u32, u32, u32)> call_006aa944;
 
-void f_00298f2c(gptr<Object_00298f2c_0> arg0, u32 r1) {
+void f_00298f2c(gptr<CommonScrollBar> arg0, u32 r1) {
     guest::StackFrame frame(0x18);  // the original's stack frame
     u32 fpsr = guest::cpu()->fpscr;
     float S1_1 = 0;
@@ -1739,24 +1709,6 @@ GUEST_EXPORT_FRAMED(0x002991f4, d_002991f4::f_002991f4, 0x4070);  // pushes {r4,
 // f_002993ac: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002993ac {
 
-struct __attribute__((packed)) Object_002993ac_0 {
-    u8 unknown_0[0x6f9];  // (not used here)
-    u8 byte_6f9;
-    u8 unknown_6fa[0x5];  // (not used here)
-    u8 byte_6ff;
-    u8 unknown_700[0x44];  // (not used here)
-    u8 byte_744;
-    u8 unknown_745[0x1f];  // (not used here)
-    u32 word_764;
-    u8 unknown_768[0x24];  // (not used here)
-    u32 word_78c;
-};
-GUEST_OFFSET(Object_002993ac_0, byte_6f9, 0x6f9);
-GUEST_OFFSET(Object_002993ac_0, byte_6ff, 0x6ff);
-GUEST_OFFSET(Object_002993ac_0, byte_744, 0x744);
-GUEST_OFFSET(Object_002993ac_0, word_764, 0x764);
-GUEST_OFFSET(Object_002993ac_0, word_78c, 0x78c);
-
 inline constexpr guest::Function<0x00568630, u32(u32, u32, u32, u32)> call_00568630;
 inline constexpr guest::Function<0x00568984, u32(u32, u32, u32, u32)> call_00568984;
 inline constexpr guest::Function<0x00568c10, u32(u32)> call_00568c10;
@@ -1764,7 +1716,7 @@ inline constexpr guest::Function<0x005697e0, u32(u32)> call_005697e0;
 inline constexpr guest::Function<0x0058d3b4, u32(u32)> call_0058d3b4;
 inline constexpr guest::Function<0x006aa944, u32(u32)> call_006aa944;
 
-u32 f_002993ac(gptr<Object_002993ac_0> arg0, u32 r1, float S0) {
+u32 f_002993ac(gptr<CommonScrollBar> arg0, u32 r1, float S0) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r0_1 = s8(arg0->byte_6f9);
     if (r0_1 != r1) {

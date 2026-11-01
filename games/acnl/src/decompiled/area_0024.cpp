@@ -1109,8 +1109,8 @@ void f_002458e4(gptr<SoundDJPlayer> arg0) {
     u32 fpsr_1 = fpsr & 0xfffffffu | vfp_cmpf(S1_1, S0_1);  // (from the original)
     if (fpsr_1 >> 0x1e & 1) {  // (from the original)
         arg0->word_bc = r1_1;
-        arg0->word_94 = std::bit_cast<u32>(S2_1);
-        arg0->word_98 = std::bit_cast<u32>(S2_1);
+        arg0->float_94 = S2_1;
+        arg0->float_98 = S2_1;
         guest::cpu()->s[0] = S0_1;
         guest::cpu()->s[1] = S1_1;
         return;
@@ -1120,8 +1120,8 @@ void f_002458e4(gptr<SoundDJPlayer> arg0) {
         r1_1 += 1u;
     }
     arg0->word_bc = r1_1;
-    arg0->word_94 = std::bit_cast<u32>(S2_1);
-    arg0->word_98 = std::bit_cast<u32>(S2_1);
+    arg0->float_94 = S2_1;
+    arg0->float_98 = S2_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
 }

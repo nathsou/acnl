@@ -2904,56 +2904,6 @@ GUEST_EXPORT_FRAMED(0x00518edc, d_00518edc::f_00518edc, 0x4000);  // pushes {lr}
 // f_005196cc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005196cc {
 
-struct __attribute__((packed)) Object_005196cc_0 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u32 word_c;
-    u32 word_10;
-    u8 unknown_14[0x8];  // (not used here)
-    u32 word_1c;
-    u32 word_20;
-    u32 word_24;
-    u8 byte_28;
-    u8 unknown_29[0x7];  // (not used here)
-    u8 byte_30;
-    u8 unknown_31[0x7];  // (not used here)
-    u32 word_38;
-    u32 word_3c;
-    u32 word_40;
-    u32 word_44;
-    u32 word_48;
-    u32 word_4c;
-    u32 word_50;
-    u32 word_54;
-    u32 word_58;
-    u32 word_5c;
-    u8 byte_60;
-    u8 byte_61;
-};
-GUEST_OFFSET(Object_005196cc_0, word_0, 0x0);
-GUEST_OFFSET(Object_005196cc_0, word_4, 0x4);
-GUEST_OFFSET(Object_005196cc_0, word_8, 0x8);
-GUEST_OFFSET(Object_005196cc_0, word_c, 0xc);
-GUEST_OFFSET(Object_005196cc_0, word_10, 0x10);
-GUEST_OFFSET(Object_005196cc_0, word_1c, 0x1c);
-GUEST_OFFSET(Object_005196cc_0, word_20, 0x20);
-GUEST_OFFSET(Object_005196cc_0, word_24, 0x24);
-GUEST_OFFSET(Object_005196cc_0, byte_28, 0x28);
-GUEST_OFFSET(Object_005196cc_0, byte_30, 0x30);
-GUEST_OFFSET(Object_005196cc_0, word_38, 0x38);
-GUEST_OFFSET(Object_005196cc_0, word_3c, 0x3c);
-GUEST_OFFSET(Object_005196cc_0, word_40, 0x40);
-GUEST_OFFSET(Object_005196cc_0, word_44, 0x44);
-GUEST_OFFSET(Object_005196cc_0, word_48, 0x48);
-GUEST_OFFSET(Object_005196cc_0, word_4c, 0x4c);
-GUEST_OFFSET(Object_005196cc_0, word_50, 0x50);
-GUEST_OFFSET(Object_005196cc_0, word_54, 0x54);
-GUEST_OFFSET(Object_005196cc_0, word_58, 0x58);
-GUEST_OFFSET(Object_005196cc_0, word_5c, 0x5c);
-GUEST_OFFSET(Object_005196cc_0, byte_60, 0x60);
-GUEST_OFFSET(Object_005196cc_0, byte_61, 0x61);
-
 struct __attribute__((packed)) Local_005196cc_ea_1 {
     u32 word_0;
     u32 word_4;
@@ -3000,7 +2950,7 @@ inline constexpr guest::Function<0x00137878, u32(u32, u32, u32, u32)> call_00137
 inline constexpr guest::Function<0x00301d0d, u32(u32, u32, u32, u32)> call_00301d0c;
 inline constexpr guest::Function<0x0051b0e4, u32(u32)> call_0051b0e4;
 
-u32 f_005196cc(gptr<Object_005196cc_0> arg0, u32 r1_unused, u32 r2, u32 r3) {
+u32 f_005196cc(gptr<sead__Delegate2_net__nex__Framework__sead__Thread___int_> arg0, u32 r1_unused, u32 r2, u32 r3) {
     u32 r1_1 = *global_0087bdf8;
     arg0->word_8 = *global_0087bdf4;
     arg0->word_c = r1_1;
@@ -4479,8 +4429,8 @@ void f_0051c170(gptr<nfp__Framework__Step> arg0, u32 r1) {
     arg0->word_8 = 0;
     float S0_1 = 0.0f;
     float S1_1 = std::bit_cast<float>(*global_0087c118);
-    arg0->word_14 = std::bit_cast<u32>(S0_1);
-    arg0->word_18 = std::bit_cast<u32>(S1_1);
+    arg0->float_14 = S0_1;
+    arg0->float_18 = S1_1;
     arg0->word_1c = 0;
     arg0->word_c = vtable_nfp__Framework__Delegate;
     arg0->word_20 = 0;

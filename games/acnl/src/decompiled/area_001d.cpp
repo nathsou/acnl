@@ -880,19 +880,10 @@ GUEST_EXPORT_FRAMED(0x001d9a08, d_001d9a08::f_001d9a08, 0x4070);  // pushes {r4,
 // f_001d9c9c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001d9c9c {
 
-struct __attribute__((packed)) Object_001d9c9c_0 {
-    u8 unknown_0[0x34];  // (not used here)
-    u8 byte_34;
-    u8 unknown_35[0x5b];  // (not used here)
-    u32 word_90;
-};
-GUEST_OFFSET(Object_001d9c9c_0, byte_34, 0x34);
-GUEST_OFFSET(Object_001d9c9c_0, word_90, 0x90);
-
 inline constexpr guest::Function<0x0020a4cc, u32(u32, u32, u32)> call_0020a4cc;
 inline constexpr guest::Function<0x002a5fa8, u32(u32, u32, u32, u32)> call_002a5fa8;
 
-u32 f_001d9c9c(gptr<Object_001d9c9c_0> arg0, u32 r1, u32 r2) {
+u32 f_001d9c9c(gptr<SoundObjNpc> arg0, u32 r1, u32 r2) {
     u32 r0_1 = arg0->byte_34;
     if (r0_1 == 0) {
         call_002a5fa8(arg0.addr() + 0x74u, arg0.addr(), r2, guest::cpu()->r[3]);  // (from the original)
@@ -1118,7 +1109,7 @@ u32 f_001db650(gptr<SoundTvBase> arg0, u32 r1, u32 r2, u32 r3, float S0) {
         if (arg0->byte_b5 != 0) {
             S0 = 0.0f;
             u32 r6 = 0u;
-            arg0->word_18 = std::bit_cast<u32>(S0);
+            arg0->float_18 = S0;
             r1 = arg0->byte_38;
             if (r1 == 0) {
             } else {

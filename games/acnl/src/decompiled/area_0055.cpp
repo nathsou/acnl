@@ -683,7 +683,7 @@ u32 f_00554de0(gptr<sead__ptcl__PtclProject> arg0, u32 r1, u32 r2, u32 r3) {
     arg0->word_108 = r2;
     arg0->word_10c = r3;
     r2 = 0u;
-    arg0->word_2f4 = std::bit_cast<u32>(S0);
+    arg0->float_2f4 = S0;
     r1 = r2;
     r3 = r2;
     do {
@@ -732,22 +732,11 @@ GUEST_EXPORT_FRAMED(0x00554fbc, d_00554fbc::f_00554fbc, 0x4010);  // pushes {r4,
 // f_00555024: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00555024 {
 
-struct __attribute__((packed)) Object_00555024_0 {
-    u32 word_0;
-    u8 unknown_4[0x10];  // (not used here)
-    u32 word_14;
-    u8 unknown_18[0x8];  // (not used here)
-    u8 byte_20;
-};
-GUEST_OFFSET(Object_00555024_0, word_0, 0x0);
-GUEST_OFFSET(Object_00555024_0, word_14, 0x14);
-GUEST_OFFSET(Object_00555024_0, byte_20, 0x20);
-
 inline constexpr u32 vtable_sead__ptcl__TextureData = 0x009059c4u;
 inline constexpr guest::Function<0x002ffb64, u32(u32, u32, u32, u32)> call_002ffb64;
 inline constexpr guest::Function<0x0053f6bc, u32(u32)> call_0053f6bc;
 
-u32 f_00555024(gptr<Object_00555024_0> arg0) {
+u32 f_00555024(gptr<sead__ptcl__TextureData> arg0) {
     arg0->word_0 = vtable_sead__ptcl__TextureData;
     u32 r0_1 = arg0->word_14;
     if (r0_1 != 0) {
@@ -2678,25 +2667,6 @@ GUEST_EXPORT(0x0055cabc, d_0055cabc::f_0055cabc);
 // f_0055cd54: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0055cd54 {
 
-struct __attribute__((packed)) Object_0055cd54_0 {
-    u8 unknown_0[0x54];  // (not used here)
-    u32 word_54;
-    u8 unknown_58[0x20];  // (not used here)
-    u32 word_78;
-    u32 word_7c;
-    u32 word_80;
-    u32 word_84;
-    float float_88;
-    float float_8c;
-};
-GUEST_OFFSET(Object_0055cd54_0, word_54, 0x54);
-GUEST_OFFSET(Object_0055cd54_0, word_78, 0x78);
-GUEST_OFFSET(Object_0055cd54_0, word_7c, 0x7c);
-GUEST_OFFSET(Object_0055cd54_0, word_80, 0x80);
-GUEST_OFFSET(Object_0055cd54_0, word_84, 0x84);
-GUEST_OFFSET(Object_0055cd54_0, float_88, 0x88);
-GUEST_OFFSET(Object_0055cd54_0, float_8c, 0x8c);
-
 struct __attribute__((packed)) Local_0055cd54_r0_1 {
     float float_0;
     float float_4;
@@ -2730,12 +2700,12 @@ GUEST_OFFSET(Frame_0055cd54, word_28, 0x28);
 GUEST_OFFSET(Frame_0055cd54, word_2c, 0x2c);
 GUEST_SIZE(Frame_0055cd54, 0x34);
 
-u32 f_0055cd54(gptr<Object_0055cd54_0> arg0, u32 r1, float S0, float S1) {
+u32 f_0055cd54(gptr<sead__Thread> arg0, u32 r1, float S0, float S1) {
     guest::StackFrameOf<Frame_0055cd54> frame;  // the original's stack frame
     if (arg0->word_7c == 0) {
         u32 r12_1 = arg0->word_80;
         frame->word_14 = arg0.addr();
-        float S0_1 = arg0->float_88;
+        float S0_1 = std::bit_cast<float>(arg0->word_88);
         float S1_1 = arg0->float_8c;
         frame->word_20 = 4;
         frame->word_24 = 0x1394e4;  // (from the original)

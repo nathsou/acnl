@@ -2263,7 +2263,7 @@ inline constexpr guest::Function<0x00567ef0, u32(u32)> call_00567ef0;
 inline constexpr guest::Function<0x0056988c, u32(u32)> call_0056988c;
 inline constexpr guest::Function<0x005bf744, u32(u32)> call_005bf744;
 
-u32 f_001aca90(gptr<InstSelect_8_> arg0) {
+u32 f_001aca90(gptr<SelectBase> arg0) {
     arg0->word_0 = vtable_InstSelect_8_;
     call_002f76ac(arg0.addr() + 0xbccu, 0x2b6ef8u, 0xe0u, 8u);  // (from the original)
     call_002f76ac(arg0.addr() + 0xaecu, 0x1c81ccu, 0x1cu, 8u);  // (from the original)

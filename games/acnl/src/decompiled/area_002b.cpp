@@ -1644,22 +1644,6 @@ GUEST_EXPORT(0x002bcde0, d_002bcde0::f_002bcde0);
 // f_002bcdfc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002bcdfc {
 
-struct __attribute__((packed)) Object_002bcdfc_0 {
-    u8 unknown_0[0x34];  // (not used here)
-    u8 byte_34;
-    u8 unknown_35[0x27];  // (not used here)
-    u8 byte_5c;
-    u8 unknown_5d[0x3];  // (not used here)
-    u32 word_60;
-    u32 word_64;
-    u32 word_68;
-};
-GUEST_OFFSET(Object_002bcdfc_0, byte_34, 0x34);
-GUEST_OFFSET(Object_002bcdfc_0, byte_5c, 0x5c);
-GUEST_OFFSET(Object_002bcdfc_0, word_60, 0x60);
-GUEST_OFFSET(Object_002bcdfc_0, word_64, 0x64);
-GUEST_OFFSET(Object_002bcdfc_0, word_68, 0x68);
-
 struct __attribute__((packed)) Local_002bcdfc_r0_1 {
     u8 unknown_0[0xd11];  // (not used here)
     u8 byte_d11;
@@ -1686,7 +1670,7 @@ GUEST_OFFSET(Frame_002bcdfc, float_4, 0x4);
 GUEST_OFFSET(Frame_002bcdfc, float_8, 0x8);
 GUEST_SIZE(Frame_002bcdfc, 0x10);
 
-u32 f_002bcdfc(gptr<Object_002bcdfc_0> arg0, u32 r1, u32 r2, float S0, float S1) {
+u32 f_002bcdfc(gptr<SoundObjFieldObj> arg0, u32 r1, u32 r2, float S0, float S1) {
     guest::StackFrameOf<Frame_002bcdfc> frame;  // the original's stack frame
     u32 r0 = arg0.addr();
     gptr<Local_002bcdfc_r0_1> r0_1 = gptr<Local_002bcdfc_r0_1>(u32(arg0->byte_34));

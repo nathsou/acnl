@@ -2002,25 +2002,6 @@ GUEST_EXPORT_FRAMED(0x0053b844, d_0053b844::f_0053b844, 0x4010);  // pushes {r4,
 // f_0053bb14: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0053bb14 {
 
-struct __attribute__((packed)) Object_0053bb14_0 {
-    u8 unknown_0[0x50];  // (not used here)
-    u32 word_50;
-    u8 unknown_54[0x1c];  // (not used here)
-    u32 word_70;
-    u32 word_74;
-    u32 word_78;
-    u32 word_7c;
-    float float_80;
-    float float_84;
-};
-GUEST_OFFSET(Object_0053bb14_0, word_50, 0x50);
-GUEST_OFFSET(Object_0053bb14_0, word_70, 0x70);
-GUEST_OFFSET(Object_0053bb14_0, word_74, 0x74);
-GUEST_OFFSET(Object_0053bb14_0, word_78, 0x78);
-GUEST_OFFSET(Object_0053bb14_0, word_7c, 0x7c);
-GUEST_OFFSET(Object_0053bb14_0, float_80, 0x80);
-GUEST_OFFSET(Object_0053bb14_0, float_84, 0x84);
-
 struct __attribute__((packed)) Local_0053bb14_r0_1 {
     float float_0;
     float float_4;
@@ -2054,12 +2035,12 @@ GUEST_OFFSET(Frame_0053bb14, word_28, 0x28);
 GUEST_OFFSET(Frame_0053bb14, word_2c, 0x2c);
 GUEST_SIZE(Frame_0053bb14, 0x34);
 
-u32 f_0053bb14(gptr<Object_0053bb14_0> arg0, u32 r1, float S0, float S1) {
+u32 f_0053bb14(gptr<pead__Thread> arg0, u32 r1, float S0, float S1) {
     guest::StackFrameOf<Frame_0053bb14> frame;  // the original's stack frame
     if (arg0->word_74 == 0) {
         u32 r12_1 = arg0->word_78;
         frame->word_14 = arg0.addr();
-        float S0_1 = arg0->float_80;
+        float S0_1 = std::bit_cast<float>(arg0->word_80);
         float S1_1 = arg0->float_84;
         frame->word_20 = 4;
         frame->word_24 = 0x1394e4;  // (from the original)
@@ -3290,19 +3271,19 @@ void f_0053f608(gptr<sead__TextWriter> arg0) {
         r2_1 = *global_00981eb8;
     }
     arg0->word_10 = r2_1;
-    arg0->word_14 = std::bit_cast<u32>(S1_1);
-    arg0->word_18 = std::bit_cast<u32>(S1_1);
-    arg0->word_1c = std::bit_cast<u32>(S0_1);
-    arg0->word_20 = std::bit_cast<u32>(S0_1);
-    arg0->word_24 = std::bit_cast<u32>(S0_1);
-    arg0->word_28 = std::bit_cast<u32>(S0_1);
-    arg0->word_2c = std::bit_cast<u32>(S0_1);
-    arg0->word_30 = std::bit_cast<u32>(S0_1);
-    arg0->word_34 = std::bit_cast<u32>(S1_1);
+    arg0->float_14 = S1_1;
+    arg0->float_18 = S1_1;
+    arg0->float_1c = S0_1;
+    arg0->float_20 = S0_1;
+    arg0->float_24 = S0_1;
+    arg0->float_28 = S0_1;
+    arg0->float_2c = S0_1;
+    arg0->float_30 = S0_1;
+    arg0->float_34 = S1_1;
     float S0_2 = std::bit_cast<float>(*global_0053f69c);
-    arg0->word_38 = std::bit_cast<u32>(S1_1);
+    arg0->float_38 = S1_1;
     arg0->word_3c = 0;
-    arg0->word_40 = std::bit_cast<u32>(S0_2);
+    arg0->float_40 = S0_2;
     arg0->word_44 = 0;
     arg0->word_48 = 0;
     arg0->byte_4c = 1;

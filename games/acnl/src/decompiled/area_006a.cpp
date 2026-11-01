@@ -2901,18 +2901,6 @@ GUEST_EXPORT_FRAMED(0x006ac088, d_006ac088::f_006ac088, 0x4010);  // pushes {r4,
 // f_006ac35c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_006ac35c {
 
-struct __attribute__((packed)) Object_006ac35c_0 {
-    u8 unknown_0[0x281];  // (not used here)
-    u8 byte_281;
-    u8 unknown_282[0xde];  // (not used here)
-    u32 word_360;
-    u8 unknown_364[0x168];  // (not used here)
-    u32 word_4cc;
-};
-GUEST_OFFSET(Object_006ac35c_0, byte_281, 0x281);
-GUEST_OFFSET(Object_006ac35c_0, word_360, 0x360);
-GUEST_OFFSET(Object_006ac35c_0, word_4cc, 0x4cc);
-
 struct __attribute__((packed)) Local_006ac35c_r6_1 {
     u8 byte_0;
 };
@@ -2921,7 +2909,7 @@ GUEST_OFFSET(Local_006ac35c_r6_1, byte_0, 0x0);
 inline constexpr guest::Function<0x002052f8, u32(u32, u32, u32, u32)> call_002052f8;
 inline constexpr guest::Function<0x002132d0, u32(u32, u32)> call_002132d0;
 
-u32 f_006ac35c(gptr<Object_006ac35c_0> arg0, u32 r1) {
+u32 f_006ac35c(gptr<NpcModel> arg0, u32 r1) {
     arg0->word_360 = r1;
     u32 r0_1 = call_002052f8(arg0.addr(), r1, guest::cpu()->r[2], 0u);
     if (r0_1 != 0) {

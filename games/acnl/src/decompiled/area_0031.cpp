@@ -5543,7 +5543,7 @@ inline constexpr guest::Function<0x005694c8, u32(u32, u32, u32, u32)> call_00569
 inline constexpr guest::Function<0x00569774, u32(u32, u32)> call_00569774;
 inline constexpr guest::Function<0x0056988c, u32(u32)> call_0056988c;
 
-u32 f_0031c92c(gptr<ButtonActionCstmNode> arg0, u32 r1) {
+u32 f_0031c92c(gptr<ButtonActionNode_rec> arg0, u32 r1) {
     arg0->word_0 = vtable_ButtonActionCstmNode;
     call_005694c8(arg0.addr() + 0x20u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     call_005694c8(arg0.addr() + 0x48u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)

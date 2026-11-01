@@ -242,14 +242,6 @@ GUEST_EXPORT_FRAMED(0x00236d18, d_00236d18::f_00236d18, 0x41f0);  // pushes {r4,
 // f_00236f78: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00236f78 {
 
-struct __attribute__((packed)) Object_00236f78_0 {
-    u8 unknown_0[0x21c];  // (not used here)
-    u32 word_21c;
-    u16 half_220;
-};
-GUEST_OFFSET(Object_00236f78_0, word_21c, 0x21c);
-GUEST_OFFSET(Object_00236f78_0, half_220, 0x220);
-
 inline constexpr guest::Function<0x002bfadc, u32(u32, u32)> call_002bfadc;
 inline constexpr guest::Function<0x002bfcfc, u32(u32, u32)> call_002bfcfc;
 inline constexpr guest::Function<0x002fb94c, u32(u32, u32, u32, u32)> call_002fb94c;
@@ -257,7 +249,7 @@ inline constexpr guest::Function<0x002fd068, u32(u32)> call_002fd068;
 inline constexpr guest::Function<0x006b7380, u32(u32, u32)> call_006b7380;
 inline constexpr guest::Function<0x006b8918, u32(u32, u32)> call_006b8918;
 
-u32 f_00236f78(gptr<Object_00236f78_0> arg0, u32 r1) {
+u32 f_00236f78(gptr<NpcTalkRecept> arg0, u32 r1) {
     u32 r6 = guest::cpu()->r[6];
     u32 r0_1 = arg0->half_220;
     if (r0_1 == 1u) {
@@ -329,14 +321,6 @@ GUEST_EXPORT(0x00237008, d_00237008::f_00237008);
 // f_00237a1c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00237a1c {
 
-struct __attribute__((packed)) Object_00237a1c_0 {
-    u8 unknown_0[0x21c];  // (not used here)
-    u32 word_21c;
-    u16 half_220;
-};
-GUEST_OFFSET(Object_00237a1c_0, word_21c, 0x21c);
-GUEST_OFFSET(Object_00237a1c_0, half_220, 0x220);
-
 inline constexpr guest::Function<0x002bfadc, u32(u32, u32)> call_002bfadc;
 inline constexpr guest::Function<0x002bfcfc, u32(u32, u32)> call_002bfcfc;
 inline constexpr guest::Function<0x002fb94c, u32(u32, u32, u32, u32)> call_002fb94c;
@@ -344,7 +328,7 @@ inline constexpr guest::Function<0x002fd068, u32(u32)> call_002fd068;
 inline constexpr guest::Function<0x006b7380, u32(u32, u32)> call_006b7380;
 inline constexpr guest::Function<0x006b8918, u32(u32, u32)> call_006b8918;
 
-u32 f_00237a1c(gptr<Object_00237a1c_0> arg0, u32 r1) {
+u32 f_00237a1c(gptr<NpcTalkRecept> arg0, u32 r1) {
     u32 r6 = guest::cpu()->r[6];
     u32 r0_1 = arg0->half_220;
     if (r0_1 == 0) {
@@ -984,7 +968,7 @@ struct __attribute__((packed)) Frame_0023930c {
 GUEST_OFFSET(Frame_0023930c, word_0, 0x0);
 GUEST_SIZE(Frame_0023930c, 0x30);
 
-u32 f_0023930c(gptr<AcNpcSpMaiko__TalkRecept> arg0, u32 r1, u32 r2) {
+u32 f_0023930c(gptr<NpcTalkRecept> arg0, u32 r1, u32 r2) {
     guest::StackFrameOf<Frame_0023930c> frame;  // the original's stack frame
     u32 r0_1 = arg0->word_4;
     if (r0_1 != 0) {

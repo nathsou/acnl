@@ -804,21 +804,6 @@ GUEST_EXPORT(0x007525fc, d_007525fc::f_007525fc);
 // f_007526bc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_007526bc {
 
-struct __attribute__((packed)) Object_007526bc_0 {
-    u8 unknown_0[0x1c];  // (not used here)
-    float float_1c;
-    u8 unknown_20[0x48];  // (not used here)
-    u32 word_68;
-    u8 unknown_6c[0xa78];  // (not used here)
-    u32 word_ae4;
-    u8 unknown_ae8[0x20];  // (not used here)
-    u8 byte_b08;
-};
-GUEST_OFFSET(Object_007526bc_0, float_1c, 0x1c);
-GUEST_OFFSET(Object_007526bc_0, word_68, 0x68);
-GUEST_OFFSET(Object_007526bc_0, word_ae4, 0xae4);
-GUEST_OFFSET(Object_007526bc_0, byte_b08, 0xb08);
-
 struct __attribute__((packed)) Local_007526bc_r0_1 {
     u32 word_0;
     u32 word_4;
@@ -848,7 +833,7 @@ GUEST_OFFSET(Frame_007526bc, word_8, 0x8);
 GUEST_OFFSET(Frame_007526bc, float_c, 0xc);
 GUEST_SIZE(Frame_007526bc, 0x20);
 
-u32 f_007526bc(gptr<Object_007526bc_0> arg0, float S0, float S1, float S2_unused, float S3) {
+u32 f_007526bc(gptr<AcNpc_rec> arg0, float S0, float S1, float S2_unused, float S3) {
     guest::StackFrameOf<Frame_007526bc> frame;  // the original's stack frame
     u32 r0_5 = 0;
     u32 r0_6 = 0;
@@ -888,7 +873,7 @@ u32 f_007526bc(gptr<Object_007526bc_0> arg0, float S0, float S1, float S2_unused
 L_752760:;
         float S2_2 = -616.0f;
         S1 = -496.0f;
-        S0 = arg0->float_1c - std::bit_cast<float>(*gptr<u32>(*gptr<u32>(r5_1 + 0x1a4u) + 0x2cu));  // (from the original)
+        S0 = std::bit_cast<float>(arg0->word_1c) - std::bit_cast<float>(*gptr<u32>(*gptr<u32>(r5_1 + 0x1a4u) + 0x2cu));  // (from the original)
         if (r0_6 != 0) {
             S1 = S2_2;
         }

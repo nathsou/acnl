@@ -2120,11 +2120,11 @@ GUEST_OFFSET(Object_006f80dc_1, float_8, 0x8);
 
 
 u32 f_006f80dc(gptr<collision__Sphere> arg0, gptr<Object_006f80dc_1> arg1) {
-    arg0->word_8 = std::bit_cast<u32>(std::bit_cast<float>(arg0->word_8) + arg1->float_0);
-    arg0->word_c = std::bit_cast<u32>(std::bit_cast<float>(arg0->word_c) + arg1->float_4);
+    arg0->float_8 = arg0->float_8 + arg1->float_0;
+    arg0->float_c = arg0->float_c + arg1->float_4;
     float S1_1 = arg1->float_8;
-    float S0_1 = std::bit_cast<float>(arg0->word_10) + S1_1;
-    arg0->word_10 = std::bit_cast<u32>(S0_1);
+    float S0_1 = arg0->float_10 + S1_1;
+    arg0->float_10 = S0_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
     return arg0.addr() + 8u;
@@ -2181,10 +2181,10 @@ void f_006f8134(gptr<collision__Sphere> arg0, gptr<Float3> arg1, float S0) {
     float S1_1 = arg1->v[0];
     float S2_1 = arg1->v[1];
     float S3_1 = arg1->v[2];
-    arg0->word_8 = std::bit_cast<u32>(S1_1);
-    arg0->word_c = std::bit_cast<u32>(S2_1);
-    arg0->word_10 = std::bit_cast<u32>(S3_1);
-    arg0->word_14 = std::bit_cast<u32>(S0);
+    arg0->float_8 = S1_1;
+    arg0->float_c = S2_1;
+    arg0->float_10 = S3_1;
+    arg0->float_14 = S0;
     guest::cpu()->s[1] = S1_1;
 }
 
@@ -2244,7 +2244,7 @@ void f_006f8228(gptr<collision__Capsule> arg0) {
     arg0->byte_4 = 3;
     float S0_1 = 0.0f;
     arg0->word_0 = vtable_collision__Capsule;
-    arg0->word_20 = std::bit_cast<u32>(S0_1);
+    arg0->float_20 = S0_1;
 }
 
 }  // namespace d_006f8228
@@ -2264,11 +2264,11 @@ GUEST_OFFSET(Object_006f8368_1, float_8, 0x8);
 
 
 u32 f_006f8368(gptr<collision__Cylinder> arg0, gptr<Object_006f8368_1> arg1) {
-    arg0->word_8 = std::bit_cast<u32>(std::bit_cast<float>(arg0->word_8) + arg1->float_0);
-    arg0->word_c = std::bit_cast<u32>(std::bit_cast<float>(arg0->word_c) + arg1->float_4);
+    arg0->float_8 = arg0->float_8 + arg1->float_0;
+    arg0->float_c = arg0->float_c + arg1->float_4;
     float S1_1 = arg1->float_8;
-    float S0_1 = std::bit_cast<float>(arg0->word_10) + S1_1;
-    arg0->word_10 = std::bit_cast<u32>(S0_1);
+    float S0_1 = arg0->float_10 + S1_1;
+    arg0->float_10 = S0_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
     return arg0.addr() + 8u;
@@ -2319,11 +2319,11 @@ void f_006f83cc(gptr<collision__Cylinder> arg0, gptr<Float3> arg1, float S0, flo
     arg0->word_0 = vtable_collision__Cylinder;
     float S3_1 = arg1->v[1];
     float S4_1 = arg1->v[2];
-    arg0->word_8 = std::bit_cast<u32>(arg1->v[0]);
-    arg0->word_c = std::bit_cast<u32>(S3_1);
-    arg0->word_10 = std::bit_cast<u32>(S4_1);
-    arg0->word_14 = std::bit_cast<u32>(S0);
-    arg0->word_18 = std::bit_cast<u32>(S1);
+    arg0->float_8 = arg1->v[0];
+    arg0->float_c = S3_1;
+    arg0->float_10 = S4_1;
+    arg0->float_14 = S0;
+    arg0->float_18 = S1;
 }
 
 }  // namespace d_006f83cc
@@ -2338,8 +2338,8 @@ void f_006f83f8(gptr<collision__Cylinder> arg0) {
     arg0->byte_4 = 2;
     float S0_1 = 0.0f;
     arg0->word_0 = vtable_collision__Cylinder;
-    arg0->word_14 = std::bit_cast<u32>(S0_1);
-    arg0->word_18 = std::bit_cast<u32>(S0_1);
+    arg0->float_14 = S0_1;
+    arg0->float_18 = S0_1;
     guest::cpu()->r[1] = 0x90b1a0u;  // (from the original)
     guest::cpu()->s[0] = S0_1;
 }

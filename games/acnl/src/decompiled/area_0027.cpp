@@ -1092,8 +1092,8 @@ void f_002762c4(gptr<SoundConductor> arg0) {
     float S0_1 = 120.0f;
     float S1_1 = 1.0f;
     arg0->word_28 = 0;
-    arg0->word_2c = std::bit_cast<u32>(S0_1);
-    arg0->word_30 = std::bit_cast<u32>(S1_1);
+    arg0->float_2c = S0_1;
+    arg0->float_30 = S1_1;
     arg0->half_34 = u16(r12_1);
     arg0->half_36 = u16(r12_1);
     arg0->word_38 = 0;

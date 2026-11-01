@@ -2073,7 +2073,7 @@ void f_0020a418(gptr<SoundFaderEx> arg0, float S0_unused, float S1) {
         guest::cpu()->s[0] = S0_3;
         return;
     }
-    float S1_1 = std::bit_cast<float>(arg0->word_c);
+    float S1_1 = arg0->float_c;
     arg0->word_4 = std::bit_cast<u32>(std::bit_cast<float>(arg0->word_4) + S1_1);
     float S0_4 = std::bit_cast<float>(arg0->word_4);
     guest::cpu()->r[1] = res_2;
@@ -2311,7 +2311,7 @@ void f_0020ae2c(gptr<SoundObjBase> arg0, gptr<Object_0020ae2c_1> r1, gptr<Object
     float S0_2 = S0_1 + S2_1;
     u32 fpsr_1 = fpsr & 0xfffffffu | vfp_cmpf(S0_2, S1_1);  // (from the original)
     if (fpsr_1 >> 0x1f == (fpsr_1 >> 0x1c & 1)) {  // (from the original)
-        arg0->word_c = std::bit_cast<u32>(S0_2);
+        arg0->float_c = S0_2;
         u32 r1_1 = r1->word_4;
         arg0->word_10 = r1_1;
         guest::cpu()->r[1] = r1_1;
@@ -2319,9 +2319,9 @@ void f_0020ae2c(gptr<SoundObjBase> arg0, gptr<Object_0020ae2c_1> r1, gptr<Object
         guest::cpu()->s[1] = S1_1;
         return;
     }
-    float S1_2 = std::bit_cast<float>(arg0->word_30);
+    float S1_2 = arg0->float_30;
     float S0_3 = S1_2 * S0_2;
-    arg0->word_c = std::bit_cast<u32>(S0_3);
+    arg0->float_c = S0_3;
     u32 r1_2 = r1->word_4;
     arg0->word_10 = r1_2;
     guest::cpu()->r[1] = r1_2;
@@ -2361,19 +2361,19 @@ void f_0020af18(gptr<SoundObjBase> arg0) {
     float S0_1 = 2000.0f;
     arg0->word_0 = vtable_SoundObjBase;
     arg0->word_8 = std::bit_cast<u32>(S0_1);
-    arg0->word_c = std::bit_cast<u32>(S0_1);
+    arg0->float_c = S0_1;
     float S1_1 = 1.0f;
     float S0_2 = 0.0f;
     arg0->word_10 = std::bit_cast<u32>(100.0f);
-    arg0->word_14 = std::bit_cast<u32>(S1_1);
-    arg0->word_18 = std::bit_cast<u32>(S0_2);
-    arg0->word_1c = std::bit_cast<u32>(S0_2);
-    arg0->word_20 = std::bit_cast<u32>(S0_2);
-    arg0->word_24 = std::bit_cast<u32>(S1_1);
+    arg0->float_14 = S1_1;
+    arg0->float_18 = S0_2;
+    arg0->float_1c = S0_2;
+    arg0->float_20 = S0_2;
+    arg0->float_24 = S1_1;
     float S0_3 = -1.0f;
     arg0->word_28 = 0;
-    arg0->word_2c = std::bit_cast<u32>(S0_3);
-    arg0->word_30 = std::bit_cast<u32>(S1_1);
+    arg0->float_2c = S0_3;
+    arg0->float_30 = S1_1;
     arg0->byte_34 = 0;
     arg0->byte_35 = 0;
     arg0->byte_36 = 0;
@@ -2412,27 +2412,6 @@ GUEST_EXPORT_FRAMED(0x0020afb8, d_0020afb8::f_0020afb8, 0x4070);  // pushes {r4,
 
 // f_0020b0d4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0020b0d4 {
-
-struct __attribute__((packed)) Object_0020b0d4_0 {
-    u8 unknown_0[0x34];  // (not used here)
-    u8 byte_34;
-    u8 unknown_35[0x7];  // (not used here)
-    u32 word_3c;
-    u8 unknown_40[0x1c];  // (not used here)
-    u32 word_5c;
-    u8 byte_60;
-    u8 unknown_61[0x3];  // (not used here)
-    float float_64;
-    u32 word_68;
-    u32 word_6c;
-};
-GUEST_OFFSET(Object_0020b0d4_0, byte_34, 0x34);
-GUEST_OFFSET(Object_0020b0d4_0, word_3c, 0x3c);
-GUEST_OFFSET(Object_0020b0d4_0, word_5c, 0x5c);
-GUEST_OFFSET(Object_0020b0d4_0, byte_60, 0x60);
-GUEST_OFFSET(Object_0020b0d4_0, float_64, 0x64);
-GUEST_OFFSET(Object_0020b0d4_0, word_68, 0x68);
-GUEST_OFFSET(Object_0020b0d4_0, word_6c, 0x6c);
 
 struct __attribute__((packed)) Object_0020b0d4_2 {
     float float_0;
@@ -2479,7 +2458,7 @@ GUEST_OFFSET(Frame_0020b0d4, float_4, 0x4);
 GUEST_OFFSET(Frame_0020b0d4, float_8, 0x8);
 GUEST_SIZE(Frame_0020b0d4, 0x10);
 
-u32 f_0020b0d4(gptr<Object_0020b0d4_0> arg0, u32 r1, gptr<Object_0020b0d4_2> arg2, float S0, float S1) {
+u32 f_0020b0d4(gptr<SoundObjHold> arg0, u32 r1, gptr<Object_0020b0d4_2> arg2, float S0, float S1) {
     guest::StackFrameOf<Frame_0020b0d4> frame;  // the original's stack frame
     u32 r0 = arg0.addr();
     u32 r2 = arg2.addr();

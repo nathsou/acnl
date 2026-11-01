@@ -1396,7 +1396,7 @@ u32 f_0050c800(gptr<lyt__AnmObject> arg0, u32 r1, u32 r2, u32 r3) {
     arg0->word_4 = std::bit_cast<u32>(S0_1);
     arg0->word_8 = std::bit_cast<u32>(S1_1);
     arg0->word_c = std::bit_cast<u32>(S1_1);
-    arg0->word_10 = std::bit_cast<u32>(S0_1);
+    arg0->float_10 = S0_1;
     arg0->word_14 = 0;
     arg0->word_18 = 0;
     arg0->byte_1c = 0;
