@@ -301,11 +301,13 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
             }
         }
     }
+    let mut at_header: HashSet<usize> = HashSet::new();
     for &h in &headers {
         for v in &live_in[h] {
             if let Some(ids) = inn[h].get(v) {
                 for &id in ids {
                     keep.insert(find(&mut parent, id));
+                    at_header.insert(find(&mut parent, id));
                 }
             }
         }
@@ -326,15 +328,15 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
             }
         }
     }
-    // held in the CPU: a value of r1-r3 or s0-s15 (S0-S15) defined only by reading the register back after calls (no call between:
-    // every call is followed by such a reading) and read only by calls (as their argument, in that register) and
-    // returns (its write-back): wherever it is read, the CPU's register still holds it (not for a value a header
-    // relates)
+    // held in the CPU: a value of r1-r3 or s0-s15 (S0-S15) defined only by reading the register back after calls (no
+    // call between: every call is followed by such a reading) and read only by calls (as their argument, in that
+    // register) and returns (its write-back): wherever it is read, the CPU's register still holds it (not for a value
+    // a loop header relates; nor for the entry's value, whose parameter reads better than the CPU)
     let mut held: HashSet<usize> = HashSet::new();
     for (w, ds) in &defs_of {
         let var = &def_var[*w];
         let float = var.strip_prefix('S').map_or(false, |k| k.parse::<u32>().map_or(false, |k| k < 16));
-        if !(matches!(var.as_str(), "r1" | "r2" | "r3") || float) || keep.contains(w) || !ds.iter().all(|&i| nodes[i].call) {
+        if !(matches!(var.as_str(), "r1" | "r2" | "r3") || float) || at_header.contains(w) || !ds.iter().all(|&i| nodes[i].call) {
             continue;
         }
         if reads_of.get(w).map_or(false, |rs| rs.iter().all(|&i| nodes[i].call || nodes[i].ret)) {
