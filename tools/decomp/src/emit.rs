@@ -628,6 +628,14 @@ impl Emitter {
             }, self.expr(a, 11)?),
             // arithmetic on constants (a value folded to its constant meets another): its result
             Expr::Bin(..) if self.constant_u32(e).is_some() => num(self.constant_u32(e).unwrap(), Ty::U32),
+            // x + K with K a negative 32-bit offset (2^32 - k): x - k (the same in wrapping u32 arithmetic)
+            Expr::Bin(BinOp::Add, a, b)
+                if matches!(&**b, Expr::Num(k, Ty::U32) if *k >= 0xffff_0000 && *k <= 0xffff_ffff) && self.constant_u32(a).is_none() =>
+            {
+                let Expr::Num(k, _) = &**b else { unreachable!() };
+                let minus = Expr::Bin(BinOp::Sub, a.clone(), Box::new(Expr::Num(0x1_0000_0000 - *k, Ty::U32)));
+                return self.expr(&minus, outer);
+            }
             // K + x as x + K (an address: base, then offset)
             Expr::Bin(BinOp::Add, a, b) if self.constant_u32(a).is_some() && self.constant_u32(b).is_none() => {
                 return self.expr(&Expr::Bin(BinOp::Add, b.clone(), a.clone()), outer);

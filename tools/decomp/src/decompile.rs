@@ -361,7 +361,8 @@ L_5014:
     #[test]
     fn round_trip_field_before_the_object() {
         // no field at 0xfffffff8: on the host, g_mem + address + 0xfffffff8 is 4 GiB past the object
-        round_trip("f_00006000", &["r0", "r14"], BEFORE, ("0xfffffff8u", "0xfffffff4u"));
+        // (written `arg0.addr() - 8u`; a changed offset is caught)
+        round_trip("f_00006000", &["r0", "r14"], BEFORE, ("- 8u", "- 0xcu"));
     }
 
     #[test]

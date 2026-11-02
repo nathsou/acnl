@@ -212,11 +212,24 @@ pub fn prove(ctx: &Context, f: &Function) -> Option<Vec<String>> {
                 }
             }
         }
-        // the float registers a callee without a signature is passed look read: none of them, at once
+        // the float registers a callee without a signature is passed look read: none of them, at once; or else from
+        // the highest down, one at a time, while the rest suffices (float arguments are s0 up)
         if reads.iter().any(|r| r.starts_with('s')) {
             let fewer: Vec<String> = reads.iter().filter(|r| !r.starts_with('s')).cloned().collect();
             if non_interference(ctx, f, &fewer) {
                 reads = fewer;
+            } else {
+                for k in (0..16).rev() {
+                    let s = format!("s{}", k);
+                    if !reads.contains(&s) {
+                        continue;
+                    }
+                    let fewer: Vec<String> = reads.iter().filter(|r| **r != s).cloned().collect();
+                    if !non_interference(ctx, f, &fewer) {
+                        break;
+                    }
+                    reads = fewer;
+                }
             }
         }
         Some(reads)
