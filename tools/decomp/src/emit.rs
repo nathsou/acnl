@@ -99,6 +99,17 @@ fn base_c(b: &str) -> &'static str {
     }
 }
 
+// A field of type `rec` accessed with type t: (read, place, wrap of a stored value); a float access of a word (or the
+// other way round) through its bits, other mismatches not at all.
+fn retyped(t: Ty, rec: Ty, place: String) -> Option<(String, String, String)> {
+    match (rec, t) {
+        _ if rec == t => Some((place.clone(), place, "{}".into())),
+        (Ty::U32, Ty::F32) => Some((format!("std::bit_cast<float>({})", place), place, "std::bit_cast<u32>({})".into())),
+        (Ty::F32, Ty::U32) => Some((format!("std::bit_cast<u32>({})", place), place, "std::bit_cast<float>({})".into())),
+        _ => None,
+    }
+}
+
 fn field_name(t: Ty, off: u64) -> String {
     let kind = match t.bits() {
         32 if t == Ty::F32 => "float",
@@ -534,7 +545,7 @@ impl Emitter {
             "ptr" => (format!("{}.addr()", place), place, "gptr<void>(u32({}))".into()),
             // (a float access of an integer field: its bits)
             _ if t == Ty::F32 => match base_c(&base) {
-                b @ ("u32" | "s32") => (format!("std::bit_cast<float>({})", place), place, format!("std::bit_cast<{}>({{}})", b)),
+                "u32" => (format!("std::bit_cast<float>({})", place), place, "std::bit_cast<u32>({})".into()),
                 _ => return None,
             },
             // (no conversion when the field already has the access's type)
@@ -547,12 +558,15 @@ impl Emitter {
         if let Some((read, _, _)) = self.known_field(t, a) {
             return Some(read);
         }
+        self.own_field(t, a).map(|(read, _, _)| read)
+    }
+
+    // an access of type t of a field of the struct of an argument the draft declares: (read, place, how a stored value
+    // is written, `{}` standing for it); a float access of a word field (or the other way round) through its bits
+    fn own_field(&self, t: Ty, a: &Expr) -> Option<(String, String, String)> {
         let (k, off) = arg_off_of(a)?;
-        if self.fields.get(&k)?.get(&off) == Some(&t) {
-            Some(format!("arg{}->{}", k, field_name(t, off)))
-        } else {
-            None
-        }
+        let rec = *self.fields.get(&k)?.get(&off)?;
+        retyped(t, rec, format!("arg{}->{}", k, field_name(rec, off)))
     }
 
     // the Z / N flag of a VFP comparison as the comparison (exact: Z is a == b, N is a < b, both false for NaN)
@@ -965,6 +979,11 @@ impl Emitter {
 
     // a load or store at a typed local's field (base + offset): the place, `local->field`
     fn local_field(&self, t: Ty, a: &Expr) -> Option<String> {
+        self.local_place(t, a).map(|(read, _, _)| read)
+    }
+
+    // the same for a typed local's field: (read, place, wrap)
+    fn local_place(&self, t: Ty, a: &Expr) -> Option<(String, String, String)> {
         let (v, off) = match a {
             Expr::Var(v) => (v, 0),
             Expr::Bin(BinOp::Add, b, k) => match (&**b, &**k) {
@@ -977,7 +996,11 @@ impl Emitter {
             return None;
         }
         let name = self.values.read(&self.cur, v);
-        (self.typed.contains_key(&name) && self.local_fields.get(&name)?.get(&off) == Some(&t)).then(|| format!("{}->{}", name, field_name(t, off)))
+        if !self.typed.contains_key(&name) {
+            return None;
+        }
+        let rec = *self.local_fields.get(&name)?.get(&off)?;
+        retyped(t, rec, format!("{}->{}", name, field_name(rec, off)))
     }
 
     // `*(*(obj) + 4k)`, the k-th function of the vtable of the object at obj: "virtual function k of <obj>"
@@ -1156,12 +1179,12 @@ impl Emitter {
                         continue;
                     }
                     let place = match sp_offset(a) {
-                        Some(k) => Some(self.frame_place(*t, k)),
-                        None => self.local_field(*t, a),
+                        Some(k) => Some((self.frame_place(*t, k), "{}".to_string())),
+                        None => self.local_place(*t, a).or_else(|| self.own_field(*t, a)).map(|(_, place, wrap)| (place, wrap)),
                     };
-                    if let Some(place) = place {
+                    if let Some((place, wrap)) = place {
                         let value = self.stored(*t, v, value);
-                        let text = format!("{} = {};", place, value);
+                        let text = format!("{} = {};", place, wrap.replace("{}", &value));
                         self.line(indent, &text);
                         i += 1;
                         continue;

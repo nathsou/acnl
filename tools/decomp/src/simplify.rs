@@ -113,15 +113,6 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
                 _ => None,
             }
         }
-        // U2F(*(u32 *)a) -> *(float *)a: a word loaded and taken as a float is a float load (the same bits), except a
-        // word of the read-only image at a constant address, which the emitter writes as its number
-        Expr::Call(n, args)
-            if n == "U2F" && args.len() == 1 && matches!(&args[0], Expr::Load(Ty::U32, a)
-                if !matches!(&**a, Expr::Num(k, _) if crate::image::word(*k as u32).is_some())) =>
-        {
-            let Expr::Load(_, a) = &args[0] else { unreachable!() };
-            Some(Expr::Load(Ty::F32, a.clone()))
-        }
         // F2U(U2F(x)) -> x, U2F(F2U(x)) -> x: a bit pattern taken as a float and back (the model's floats are bits)
         Expr::Call(n, args)
             if args.len() == 1
@@ -540,18 +531,9 @@ fn simplify_list(list: &mut [Stmt], types: &mut HashMap<String, Ty>) {
             Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
                 simplify_expr(e, types)
             }
-            Stmt::Store(t, a, v) => {
+            Stmt::Store(_, a, v) => {
                 simplify_expr(a, types);
                 simplify_expr(v, types);
-                // *(u32 *)a = F2U(x): a float store (the same bits)
-                if *t == Ty::U32 {
-                    if let Expr::Call(n, args) = v {
-                        if n == "F2U" && args.len() == 1 && type_of(&args[0], types) == Some(Ty::F32) {
-                            *v = args[0].clone();
-                            *t = Ty::F32;
-                        }
-                    }
-                }
             }
             Stmt::If(c, a, b) => {
                 simplify_expr(c, types);
