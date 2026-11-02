@@ -156,10 +156,10 @@ fn call_reads(list: &[Stmt], out: &mut Vec<String>) {
     }
 }
 
-// The argument registers `f` reads, proved (None: not proved, so it takes them all).
-pub fn prove(ctx: &Context, f: &Function) -> Option<Vec<String>> {
-    // the guess: the registers it keeps in variables that are read before being written, and the ones it does not
-    // keep that its calls read (the CPU's values go to its callees)
+// The guess of the argument registers `f` reads: the registers it keeps in variables that are read before being
+// written, and the ones it does not keep that its calls read (the CPU's values go to its callees), with the table's
+// signatures for its callees.
+pub fn guess(f: &Function) -> Vec<String> {
     let lv = crate::flow::liveness(f);
     let field: HashMap<&str, String> = f.synced.iter().map(|(v, fl)| (v.as_str(), crate::sym::cpu_key(fl))).collect();
     let kept: Vec<&String> = field.values().collect();
@@ -174,6 +174,12 @@ pub fn prove(ctx: &Context, f: &Function) -> Option<Vec<String>> {
         .map(|k| k.to_string())
         .collect();
     reads.sort_by_key(|k| ARGS.iter().position(|x| x == k));
+    reads
+}
+
+// The argument registers `f` reads, proved (None: not proved, so it takes them all).
+pub fn prove(ctx: &Context, f: &Function) -> Option<Vec<String>> {
+    let mut reads = guess(f);
     let debug = std::env::var("DECOMP_DEBUG").is_ok();
     // (every register: still worth trying to drop core ones, which decide how many arguments a call passes; the float
     // registers often only go on to a callee without a signature)

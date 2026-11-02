@@ -670,6 +670,73 @@ fn structs_all(outdir: &str, header: &str, threads: usize) {
 
 // The results callers observe (results.rs), to a fixed point over the program, written to OUT ("address results..."
 // per line; a function absent from it has all its results observed).
+// Assumed signatures for the functions the table (DECOMP_SIGNATURES) has no proved one for: the least fixed point of
+// the guess (signatures::guess: the registers a function reads, and those its calls read, with the table's
+// signatures for its callees), starting from none. An assumption, not a proof (docs/decomp.md); OUT gets the proved
+// signatures and the assumed ones, ASSUMED_OUT the assumed ones alone.
+fn assume_signatures(out: &str, assumed_out: &str, threads: usize) {
+    let funcs: Vec<(u32, String)> = generated_functions();
+    let proved: HashSet<u32> = funcs.iter().map(|(a, _)| *a & !1).filter(|a| signatures::of(*a).is_some()).collect();
+    let parsed: Vec<(u32, ast::Function)> = funcs
+        .iter()
+        .filter(|(a, _)| !proved.contains(&(*a & !1)))
+        .filter_map(|(a, t)| parse::function(t).ok().map(|f| (*a & !1, f)))
+        .collect();
+    for (a, _) in &parsed {
+        signatures::insert(*a, vec![]);
+    }
+    let parsed = std::sync::Arc::new(parsed);
+    for round in 1.. {
+        let handles: Vec<_> = (0..threads)
+            .map(|t| {
+                let parsed = parsed.clone();
+                std::thread::spawn(move || {
+                    parsed.iter().skip(t).step_by(threads).map(|(a, f)| (*a, signatures::guess(f))).collect::<Vec<_>>()
+                })
+            })
+            .collect();
+        let guesses: Vec<(u32, Vec<String>)> = handles.into_iter().flat_map(|h| h.join().unwrap()).collect();
+        let mut changed = 0;
+        for (a, mut regs) in guesses {
+            // (only ever growing: the union with what the rounds before found)
+            let old = signatures::of(a).unwrap_or_default();
+            for r in old.iter() {
+                if !regs.contains(r) {
+                    regs.push(r.clone());
+                }
+            }
+            regs.sort_by_key(|k| signatures::ARGS.iter().position(|x| x == k));
+            if regs != old {
+                changed += 1;
+                signatures::insert(a, regs);
+            }
+        }
+        println!("round {}: {} changed", round, changed);
+        if changed == 0 {
+            break;
+        }
+    }
+    let mut all = Vec::new();
+    let mut assumed = Vec::new();
+    for (a, _) in &funcs {
+        let a = *a & !1;
+        if let Some(regs) = signatures::of(a) {
+            let line = format!("{:08x} {}", a, regs.join(" "));
+            if !proved.contains(&a) {
+                assumed.push(line.clone());
+            }
+            all.push(line);
+        }
+    }
+    all.sort();
+    all.dedup();
+    assumed.sort();
+    assumed.dedup();
+    fs::write(out, all.join("\n") + "\n").unwrap();
+    fs::write(assumed_out, assumed.join("\n") + "\n").unwrap();
+    println!("{} signatures, {} of them assumed", all.len(), assumed.len());
+}
+
 // The functions that return their first argument (returns.rs), in rounds: each round tries the functions that call
 // one found in the round before (the first round: all of them), with the table found so far.
 fn returns_all(out: &str, threads: usize) {
@@ -1105,6 +1172,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
         Some("parse-all") => parse_all(),
+        Some("assume-signatures") => assume_signatures(&args[2], &args[3], args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("returns") => returns_all(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp_returns.txt"), args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("results") => results_all(args.get(2).map(|s| s.as_str()).unwrap_or("build/acnl/decomp_results.txt"), args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("structs") => structs_all(

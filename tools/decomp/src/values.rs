@@ -488,6 +488,10 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         if keep.contains(&w) || constant.contains_key(&w) || alias.contains_key(&w) || defs_of.get(&w).map_or(0, |v| v.len()) != 1 {
             continue;
         }
+        // (nor a value a copy of which memory is accessed through)
+        if alias.iter().any(|(c, (_, yv))| *yv == w && bases.contains(&def_var[*c])) {
+            continue;
+        }
         let Some(ids) = inn[i].get(src) else { continue };
         if ids.len() != 1 {
             continue;
