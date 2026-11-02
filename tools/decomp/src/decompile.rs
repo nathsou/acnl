@@ -7,6 +7,7 @@ pub struct Decompiled {
     pub function: Function,
     pub save_slots: Vec<u32>,             // the removed register save area (bytes below the entry sp)
     pub saved: Vec<(String, u32)>,        // the saved registers and their slots (offset below the entry sp)
+    pub private: Vec<(String, u32)>,      // the private frame words kept in variables (private.rs), by distance
 }
 
 pub fn decompile(original: &Function) -> Decompiled {
@@ -48,7 +49,10 @@ fn proof_key(original: &Function, d: &Decompiled) -> (u32, u64) {
     if kept != crate::returns::NO_CALLEE {
         h ^= kept;
     }
-    let text = format!("{}\n{:?}\n{:?}", crate::print::function(&d.function), d.save_slots, d.saved);
+    let mut text = format!("{}\n{:?}\n{:?}", crate::print::function(&d.function), d.save_slots, d.saved);
+    if !d.private.is_empty() {
+        text.push_str(&format!("\n{:?}", d.private));
+    }
     for b in text.bytes() {
         h = (h ^ b as u64).wrapping_mul(0x100_0000_01b3);
     }
@@ -78,8 +82,23 @@ thread_local! {
     pub static FULL: std::cell::Cell<bool> = std::cell::Cell::new(true);
 }
 
-// Decompiles and proves; when removing the register saves does not give a proof, tries again keeping them.
+// Decompiles and proves; when removing the register saves does not give a proof, tries again keeping them; when the
+// private frame words (private.rs) do not, tries again without them.
 pub fn decompile_and_prove(ctx: &z3::Context, original: &Function) -> (Decompiled, crate::check::Verdict) {
+    let (d, v) = decompile_and_prove_full(ctx, original);
+    if matches!(v, crate::check::Verdict::Proved) || d.private.is_empty() {
+        return (d, v);
+    }
+    crate::private::ENABLED.with(|e| {
+        let was = e.get();
+        e.set(Some(false));
+        let r = decompile_and_prove_full(ctx, original);
+        e.set(was);
+        if matches!(r.1, crate::check::Verdict::Proved) { r } else { (d, v) }
+    })
+}
+
+fn decompile_and_prove_full(ctx: &z3::Context, original: &Function) -> (Decompiled, crate::check::Verdict) {
     let first = decompile_with(original, true, &mut |_, _, _| {});
     let v = verify_cached(ctx, original, &first);
     if std::env::var("DECOMP_DEBUG").is_ok() {
@@ -103,7 +122,7 @@ pub fn decompile_and_prove(ctx: &z3::Context, original: &Function) -> (Decompile
         return (d, v);
     }
     FULL.with(|m| m.set(false));
-    let r = decompile_and_prove(ctx, original);
+    let r = decompile_and_prove_full(ctx, original);
     FULL.with(|m| m.set(true));
     if matches!(r.1, crate::check::Verdict::Proved) { r } else { (d, v) }
 }
@@ -143,6 +162,13 @@ pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn F
         crate::returns::keep_first_argument(&mut f);
     }
     after("returns::keep_first_argument", &f, &save_slots);
+    // the private frame words in variables (an assumption, opt-in)
+    let private = if crate::private::enabled() {
+        let words = crate::private::private_words(original, &save_slots);
+        crate::private::keep_in_variables(&mut f, &words, &save_slots)
+    } else {
+        vec![]
+    };
     for _ in 0..8 {
         let before = format!("{:?}", f.body);
         inline::inline_temporaries(&mut f);
@@ -186,7 +212,7 @@ pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn F
         flow::remove_dead_code(&mut f);
         after("flow::remove_dead_code", &f, &save_slots);
     }
-    Decompiled { function: f, save_slots, saved }
+    Decompiled { function: f, save_slots, saved, private }
 }
 
 #[cfg(test)]
@@ -307,6 +333,51 @@ L_d014:
 L_5014:
   { u32 a = 0; (void)a; u32 b = r4; u32 res = b; r0 = res; }
   { u32 ea = r13 + 0; u32 nb = r13 + 8; r13 = nb; r4 = RD32(ea + 0); tpc = RD32(ea + 4); } c->pc = tpc; SO(); return;";
+
+    // push {r4, lr}; sub sp, #8; a local stored before a call and read after it; ARGUMENT: more before the call (its
+    // address passed). The callee's reach is set by each test (a callee of its own for each: the tests share the table).
+    const LOCAL: &str = "L_6000:
+  { u32 ea = r13 - 8; WR32(ea + 0, r4); WR32(ea + 4, r14); r13 = r13 - 8; }
+  r13 = r13 - 0x8u;
+  { u32 a = r0; u32 b = 0x1u; u32 res = a + b; r0 = res; }
+  WR32(r13 + 0x4u, r0);
+  ARGUMENT
+  r14 = 0x6014u; SO(); f_CALLEE(c, 0); SI(); if (__builtin_expect(c->pc != 0x6014u, 0)) return;
+L_6014:
+  r0 = RD32(r13 + 0x4u);
+  r13 = r13 + 0x8u;
+  { u32 ea = r13 + 0; u32 nb = r13 + 8; r13 = nb; r4 = RD32(ea + 0); tpc = RD32(ea + 4); } c->pc = tpc; SO(); return;";
+
+    fn private_local(callee: u32, argument: &str, reach: crate::private::Stack) -> (super::Decompiled, Verdict) {
+        crate::private::insert_reach(callee, reach);
+        crate::private::ENABLED.with(|e| e.set(Some(true)));
+        let text = function("f_00006000", &["r0", "r1", "r4", "r13", "r14"], &LOCAL.replace("ARGUMENT", argument).replace("CALLEE", &format!("{:08x}", callee)));
+        let f = parse::function(&text).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let r = decompile_and_prove(&ctx, &f);
+        crate::private::ENABLED.with(|e| e.set(None));
+        r
+    }
+
+    #[test]
+    fn keeps_a_private_word_in_a_variable() {
+        let (d, v) = private_local(0x4000, "", crate::private::Stack::Bytes(0));
+        assert!(matches!(v, Verdict::Proved));
+        assert_eq!(d.private, vec![("local_c".to_string(), 0xc)]);
+        let text = crate::print::function(&d.function);
+        assert!(!text.contains("RD32(r13"), "the word is read back without a load:\n{}", text);
+    }
+
+    #[test]
+    fn a_word_handed_out_or_a_stack_argument_is_not_private() {
+        let (d, _) = private_local(0x4100, "r1 = r13 + 0x4u;", crate::private::Stack::Bytes(0));
+        assert!(d.private.is_empty(), "its address is passed");
+        let (d, _) = private_local(0x4200, "", crate::private::Stack::Bytes(8));
+        assert!(d.private.is_empty(), "the callee reads it");
+        let (d, _) = private_local(0x4300, "", crate::private::Stack::Any);
+        assert!(d.private.is_empty(), "a callee whose reach is not known");
+    }
 
     #[test]
     fn removes_the_register_saves() {

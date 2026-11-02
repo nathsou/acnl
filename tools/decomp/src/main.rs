@@ -10,6 +10,7 @@ mod image;
 mod inline;
 mod parse;
 mod print;
+mod private;
 mod saves;
 mod signatures;
 mod sites;
@@ -212,6 +213,67 @@ fn check_list(list: &str, threads: usize) {
     check_functions(funcs, threads);
 }
 
+// The private frame words of the functions listed (DECOMP_PRIVATE's analysis, private.rs), without decompiling:
+// a line per function, and a summary.
+fn private_list(list: &str) {
+    let wanted: std::collections::HashSet<u32> = std::fs::read_to_string(list)
+        .unwrap()
+        .lines()
+        .filter_map(|l| l.split_whitespace().next().and_then(|w| u32::from_str_radix(w.trim_start_matches("0x"), 16).ok()))
+        .map(|a| a & !1)
+        .collect();
+    let (mut functions, mut with, mut words) = (0, 0, 0);
+    for (addr, text) in generated_functions().into_iter().filter(|(a, _)| wanted.contains(&(a & !1))) {
+        let Ok(orig) = parse::function(&text) else { continue };
+        let mut f = orig.clone();
+        let sv = saves::remove_saves(&mut f);
+        let w = private::private_words(&orig, &sv.slots);
+        functions += 1;
+        if !w.is_empty() {
+            with += 1;
+            words += w.len();
+        }
+        println!("{:08x} {:?}", addr, w);
+    }
+    println!("{} functions, {} with private words, {} words", functions, with, words);
+}
+
+// The stack arguments each function reaches (private.rs), for DECOMP_STACK_ARGS: "address bytes", or "address -"
+// for any number.
+fn stack_args_all(out: &str) {
+    let mut own = std::collections::HashMap::new();
+    for (addr, text) in generated_functions() {
+        let Ok(f) = parse::function(&text) else { continue };
+        own.insert(addr & !1, private::own_reach(&f));
+    }
+    let functions: std::collections::HashMap<u32, String> = generated_functions().into_iter().map(|(a, t)| (a & !1, t)).collect();
+    let fragments = fragments(&functions);
+    // (a tail call to a fragment: any)
+    // (a call of a fragment: not known)
+    for (_, calls) in own.values_mut() {
+        for c in calls.iter_mut() {
+            if c.target.map_or(false, |t| fragments.contains_key(&(t & !1))) {
+                c.sp = None;
+            }
+        }
+    }
+    let reach = private::reach_table(&own);
+    let mut lines: Vec<String> = reach
+        .iter()
+        .map(|(a, r)| {
+            let v = if fragments.contains_key(a) { private::FRAGMENT.to_string() } else { r.text() };
+            format!("{:08x} {}", a, v)
+        })
+        .collect();
+    lines.sort();
+    std::fs::write(out, lines.join("\n") + "\n").unwrap();
+    let known = reach.values().filter(|r| matches!(r, private::Stack::Bytes(_))).count();
+    let passed = reach.values().filter(|r| matches!(r, private::Stack::Passed(_))).count();
+    let none = reach.values().filter(|r| **r == private::Stack::Bytes(0)).count();
+    println!("{} functions: {} with a known reach ({} without stack arguments), {} passing them on, {} any", reach.len(), known, none,
+             passed, reach.len() - known - passed);
+}
+
 fn check_functions(funcs: Vec<(u32, String)>, threads: usize) {
     let chunks: Vec<Vec<(u32, String)>> = (0..threads)
         .map(|t| funcs.iter().skip(t).step_by(threads).cloned().collect())
@@ -315,7 +377,7 @@ fn bisect(addr: u32) {
         if broken {
             return;
         }
-        let d = decompile::Decompiled { function: f.clone(), save_slots: slots.to_vec(), saved: vec![] };
+        let d = decompile::Decompiled { function: f.clone(), save_slots: slots.to_vec(), saved: vec![], private: vec![] };
         let v = check::verify(&ctx, &orig, &d);
         let text = match v {
             check::Verdict::Proved => "proved".to_string(),
@@ -1200,6 +1262,8 @@ fn main() {
                              args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("emit") => emit_drafts(&args[2..]),
         Some("emit-batch") => emit_batch(&args[2], &args[3], args.get(4).and_then(|s| s.parse().ok()).unwrap_or(8)),
+        Some("private") => private_list(&args[2]),
+        Some("stack-args") => stack_args_all(&args[2]),
         Some("check-list") => check_list(&args[2], args.get(3).and_then(|s| s.parse().ok()).unwrap_or(8)),
         Some("selftest") => selftest(&args[2..]),
         // the signature of each function given, with the table's signatures for its callees (DECOMP_DEBUG=1: why not)

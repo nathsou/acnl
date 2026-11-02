@@ -172,6 +172,16 @@ pub fn remove_saves(f: &mut Function) -> Saves {
 // changing them (any shape of push, after other pushes such as a varargs function's arguments), and the offset of
 // lr's slot. A function that keeps its pushes returns through these slots; callees leave them alone.
 pub fn pushed_slots(f: &Function) -> (Vec<u32>, Option<u32>) {
+    pushed_slots_of(f, callee_saved)
+}
+
+// The same for the pushes of any register (r0-r3 and r12 are pushed too, to keep sp 8-byte aligned or for a
+// varargs function's arguments).
+pub fn push_area(f: &Function) -> Vec<u32> {
+    pushed_slots_of(f, |r| r.strip_prefix('r').and_then(|k| k.parse::<u32>().ok()).map_or(false, |k| k <= 14 && k != 13)).0
+}
+
+fn pushed_slots_of(f: &Function, pushed: fn(&str) -> bool) -> (Vec<u32>, Option<u32>) {
     let mut slots = Vec::new();
     let mut lr = None;
     let Some(entry) = entry_label(f) else { return (slots, lr) };
@@ -205,7 +215,7 @@ pub fn pushed_slots(f: &Function) -> (Vec<u32>, Option<u32>) {
                 }
                 changed.insert(n.clone());
             }
-            Stmt::Store(Ty::U32, a, Expr::Var(r)) if callee_saved(r) && !changed.contains(r) => {
+            Stmt::Store(Ty::U32, a, Expr::Var(r)) if pushed(r) && !changed.contains(r) => {
                 if let Some(o) = offset(a, &at) {
                     if o < 0 {
                         let below = (-o) as u32;

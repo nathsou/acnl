@@ -415,7 +415,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
             }
             // invariant: the original's save area holds the registers the candidate keeps in saved_*
             for (reg, off) in saved {
-                if let Some((_, v)) = cinit.vars.get(&format!("saved_{}", reg)) {
+                if let Some((_, v)) = cinit.vars.get(&slot_variable(reg)) {
                     let a = esp.bvsub(&s.bv(*off as u64, 32));
                     s.store_st(&mut oinit, &a, v);
                 }
@@ -581,7 +581,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
             }
             // the save area invariant at the header
             for (reg, off) in saved {
-                let name = format!("saved_{}", reg);
+                let name = slot_variable(reg);
                 if !related.contains(&name) {
                     continue;
                 }
@@ -593,7 +593,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
                     None => return Verdict::Unknown(format!("{} at {} not in the candidate", name, n)),
                 }
             }
-            for v in related.iter().filter(|v| !(v.starts_with("saved_") && !otypes.contains_key(*v))) {
+            for v in related.iter().filter(|v| !((v.starts_with("saved_") || v.starts_with("local_")) && !otypes.contains_key(*v))) {
                 let a: Option<Vec<(Bool, BV)>> = oa.iter().map(|x| x.2.vars.get(v).map(|y| (x.1.clone(), y.1.clone()))).collect();
                 // (sp: the CPU's, for a candidate that keeps it there)
                 let b: Option<Vec<(Bool, BV)>> = ca
@@ -652,6 +652,11 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
     Verdict::Proved
 }
 
+// the candidate's variable for a word of the save area: a saved register's copy, or a private word's variable
+fn slot_variable(reg: &str) -> String {
+    if reg.starts_with("local_") { reg.to_string() } else { format!("saved_{}", reg) }
+}
+
 // The proof for a decompilation: with the save area when registers were unsaved, by segments when it has loops.
 pub fn verify(ctx: &Context, original: &Function, d: &crate::decompile::Decompiled) -> Verdict {
     // the candidate's copies of its arguments (argN = rN, first thing): the original gets the same unread copies,
@@ -669,7 +674,15 @@ pub fn verify(ctx: &Context, original: &Function, d: &crate::decompile::Decompil
     o.body = body;
     // the results no caller reads are not compared (results.rs)
     let rel = Relations { unobserved: crate::results::unobserved(original.address), ..Default::default() };
-    equivalent_with_loops_free(ctx, &o, &d.function, &d.save_slots, &d.saved, &rel)
+    // the private frame words kept in variables (private.rs): a region of the frame like the save area, related to
+    // their variables at loop headers like the saved registers
+    let mut slots = d.save_slots.clone();
+    let mut saved = d.saved.clone();
+    for (v, k) in &d.private {
+        slots.extend((0..4).map(|i| k - i));
+        saved.push((v.clone(), *k));
+    }
+    equivalent_with_loops_free(ctx, &o, &d.function, &slots, &saved, &rel)
 }
 
 // The C++ of a decompiled function, read back (cpp.rs), against the decompiled function `d` of `original` (itself

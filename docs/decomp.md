@@ -138,6 +138,51 @@ Measured on the 800-function sample (2026-11-01): with the old tables, 1% fewer 
 re-proving the signatures under the sites adds 14,702 signatures and narrows 1,778 (53.7k merged with the old
 table). The results analysis does not change (next section).
 
+## Private frame words (`DECOMP_PRIVATE=1`, opt-in; `decomp stack-args OUT`, `decomp private LIST`)
+
+An assumption about the program (private.rs): a callee reads and writes its caller's stack frame only through
+addresses it is given and in its stack arguments. A word of the frame that is neither is the function's own; the
+model then keeps it in a region of its own, like the register save area (callees neither see nor change it, and the
+memory compared at the exits leaves it out), and the decompiler keeps it in a variable (`local_24`, the word 0x24
+bytes below the entry sp): a value stored before a call is read after it with no load, and the loop-header relations
+pair the variable with its word as they pair `saved_rX` with its slot. The C++ proof needs nothing more (neither the
+decompiled function nor the C++ touches those words).
+
+Which words are private comes from a forward analysis of the original (every value is plain, a constant, the entry
+sp plus a constant, an element of an object at sp plus a constant, or some other value derived from sp):
+
+- every value derived from sp is followed (constants through the recompiler's block temporaries, addresses spilled
+  to the frame and read back): an address at an unknown offset loses the function;
+- the word lies below every address the function hands out (stored to memory, passed to a callee or the kernel in a
+  register, left in a register at a return or a tail call) and below every object indexed by a variable: an object
+  extends upward from its address;
+- every access to it is a 32-bit access at its own address, and it is not in the prologue's push;
+- it is none of a call's stack arguments. For a direct call, they are what the callee reaches (`decomp stack-args`,
+  DECOMP_STACK_ARGS: the bytes above its entry sp its own code accesses, with its callees' from their sp to a fixed
+  point; a callee that hands out such an address, loses sp, calls a function whose reach is not known or a fragment
+  reaches any). A direct call to a callee whose reach is not known, to a fragment of another function (an epilogue
+  pops its caller's frame), or an indirect call, leaves no word private.
+
+`DECOMP_PRIVATE_RULE=1` gives indirect calls (and callees ending in an indirect tail call, which pass their stack
+arguments on) a rule instead: the words from the call's sp up that the caller wrote since its previous call, one gap
+allowed (the padding before an 8-byte argument), as a callee may overwrite its stack arguments, so a caller writes
+them again before every call. Tried on the 6,889 direct calls with stack arguments and a known reach, the rule
+missed 316; nearly all call pieces of a function (`bl` to code that reads the caller's whole frame, which a known
+reach catches), but 5 are real (a caller that wrote the first stack argument before an earlier call and passes it
+again, a callee reading more arguments than its caller wrote), so the rule is off by default.
+
+Measured (2026-11-02): 61.7k of the 91.6k functions have a known reach (56k take no stack arguments), 8.3k pass them
+on, 21.6k any (fragments included). Of the 68.3k frame words outside the prologue's push that the analysis follows,
+3,369 are private (in 1,114 functions, 1.2%; 4,034 with the rule); 45k are in functions that call a callee of
+unknown reach or make an indirect call, 10.6k in objects whose address is handed out, 4.1k in functions that hand
+out an address not followed, 2.7k accessed with other sizes, 2.3k stack arguments. `decomp private
+LIST` (with DECOMP_STATS_PRIVATE=1, the reasons) prints each function's words without decompiling. The sample has 6
+such functions, the committed drafts 24; on the 20 of those 30 with a proved draft both ways, 1,395 lines -> 1,326
+(-5%) and 102 frame accesses -> 43 (a struct round trip through the stack becomes plain values; values kept across
+calls in `local_N`). Three timed out in the proof with the words kept; a draft whose proof does not go through is
+decompiled once more without them. What it rests on is not checked in the game. It changes 1% of the program, which
+is not worth an assumption for the committed drafts: they do not use it.
+
 ## Assumed signatures (`decomp assume-signatures OUT ASSUMED_OUT [THREADS]`, an experiment)
 
 For the functions without a proved signature, the least fixed point of the signature guess (signatures::guess),
