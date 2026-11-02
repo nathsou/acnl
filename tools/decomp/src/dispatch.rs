@@ -16,7 +16,11 @@ fn cpu(fl: &CpuField) -> String {
     format!("cpu:{}", crate::sym::cpu_key(fl))
 }
 
-fn value(e: &Expr, env: &Env) -> Option<u32> {
+// (`pool`: a load from a constant address of the read-only image is that word; only where the target itself is
+// loaded so, `tpc = RD32(K)` (a jump through a literal pool) or a C++ call's target: a variable loaded from memory
+// before a loop is known on one side of a proof and not on the other)
+fn value_with(e: &Expr, env: &Env, pool: bool) -> Option<u32> {
+    let value = |e: &Expr, env: &Env| value_with(e, env, pool);
     match e {
         Expr::Num(k, _) => u32::try_from(*k).ok(),
         Expr::Var(v) => env.get(v).copied(),
@@ -25,7 +29,7 @@ fn value(e: &Expr, env: &Env) -> Option<u32> {
         Expr::Bin(BinOp::Add, x, y) => Some(value(x, env)?.wrapping_add(value(y, env)?)),
         Expr::Bin(BinOp::Sub, x, y) => Some(value(x, env)?.wrapping_sub(value(y, env)?)),
         // a word of the read-only image (a literal pool: `ldr pc, [pc, #-4]` jumps to the address stored after it)
-        Expr::Load(Ty::U32, a) => crate::image::word(value(a, env)?),
+        Expr::Load(Ty::U32, a) if pool => crate::image::word(value_with(a, env, false)?),
         _ => None,
     }
 }
@@ -111,14 +115,14 @@ fn walk(list: &[Stmt], prefix: &[usize], f: &Function, jumped: &HashSet<String>,
         let p: Vec<usize> = [prefix, &[i]].concat();
         match s {
             Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
-                let v = value(e, env);
+                let v = value_with(e, env, n == "tpc" || n.starts_with("__call"));
                 set(env, n.clone(), v);
             }
             Stmt::Decl(_, n, None) => {
                 env.remove(n);
             }
             Stmt::SetCpu(fl, e) => {
-                let v = value(e, env);
+                let v = value_with(e, env, *fl == CpuField::Pc);
                 set(env, cpu(fl), v);
             }
             Stmt::SyncOut => {

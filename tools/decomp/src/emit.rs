@@ -233,9 +233,11 @@ fn loop_breaks(list: &[Stmt], prefix: &[usize], exit: Option<&str>, follow: Opti
                 loop_breaks(a, &[path.clone(), vec![0]].concat(), exit, after, out);
                 loop_breaks(b, &[path.clone(), vec![1]].concat(), exit, after, out);
             }
-            Stmt::While { body, check, .. } => {
+            Stmt::While { body, check, test, .. } => {
                 loop_breaks(body, &[path.clone(), vec![0]].concat(), after, None, out);
-                loop_breaks(check, &[path.clone(), vec![1]].concat(), after, None, out);
+                // (a for loop's check comes before its exit test, which cpp.rs finds as the first `if (...) break;`)
+                let exit = if test.is_some() { None } else { after };
+                loop_breaks(check, &[path.clone(), vec![1]].concat(), exit, None, out);
             }
             _ => {}
         }
@@ -1779,7 +1781,7 @@ fn propagate_copies(body: &str) -> String {
             }
             let t = l.trim_start();
             let t = t.split_once(' ').filter(|(ty, _)| matches!(*ty, "u8" | "u16" | "u32" | "s8" | "s16" | "s32" | "float")).map_or(t, |(_, r)| r);
-            ["=", "+=", "-=", "|=", "&=", "^=", "<<=", ">>="].iter().any(|op| t.starts_with(&format!("{} {} ", v, op))) || t.contains(&format!("&{}", v))
+            ["=", "+=", "-=", "|=", "&=", "^=", "<<=", ">>=", "*=", "/=", "%="].iter().any(|op| t.starts_with(&format!("{} {} ", v, op))) || t.contains(&format!("&{}", v))
         })
     };
     let ident = |t: &str| !t.is_empty() && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && !t.starts_with(|c: char| c.is_ascii_digit());
@@ -2148,7 +2150,7 @@ fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>) -> String {
     let assigns = |l: &str, w: &str| {
         let c = l.trim_start();
         let c = c.split_once(' ').filter(|(t, _)| matches!(*t, "u8" | "u16" | "u32" | "u64" | "s8" | "s16" | "s32" | "s64" | "float" | "double")).map_or(c, |(_, r)| r);
-        ["=", "+=", "-=", "|=", "&=", "^="].iter().any(|op| c.starts_with(&format!("{} {} ", w, op)))
+        ["=", "+=", "-=", "|=", "&=", "^=", "<<=", ">>=", "*=", "/=", "%="].iter().any(|op| c.starts_with(&format!("{} {} ", w, op)))
     };
     loop {
         let mut changed = false;
@@ -3261,7 +3263,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
             }
             let written = body.lines().any(|b| {
                 let t = b.trim_start();
-                ["=", "+=", "-=", "|=", "&=", "^=", "<<=", ">>="].iter().any(|op| t.starts_with(&format!("{} {} ", x, op)))
+                ["=", "+=", "-=", "|=", "&=", "^=", "<<=", ">>=", "*=", "/=", "%="].iter().any(|op| t.starts_with(&format!("{} {} ", x, op)))
             });
             if written {
                 continue;

@@ -96,6 +96,7 @@ pub fn remove_saves(f: &mut Function) -> Saves {
     // the push may be scheduled after other instructions of the entry block, and after early exits (a shrink-wrapped
     // prologue: a branch that leaves before the push saves nothing); sp stays as it entered until the push
     let mut start = entry;
+    let mut shrink_wrapped = false;
     loop {
         match f.body.get(start) {
             Some(Stmt::Decl(Ty::U32, n, Some(Expr::Bin(BinOp::Sub, a, _)))) if n == "ea" && **a == Expr::Var("r13".into()) => break,
@@ -105,6 +106,7 @@ pub fn remove_saves(f: &mut Function) -> Saves {
                 if b.is_empty()
                     && matches!(a.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true))) =>
             {
+                shrink_wrapped = true;
                 start += 1
             }
             _ => return none(),
@@ -122,6 +124,8 @@ pub fn remove_saves(f: &mut Function) -> Saves {
     while let Some(Stmt::Store(Ty::U32, a, Expr::Var(r))) = f.body.get(i) {
         match ea_plus(a) {
             Some(k) if callee_saved(r) => saved.push((r.clone(), k)),
+            // (after early exits, only a push of callee-saved registers: the frame of the C++ is laid out without it)
+            Some(_) if shrink_wrapped => return none(),
             Some(_) => {}
             None => return none(),
         }
