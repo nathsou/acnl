@@ -113,6 +113,15 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
                 _ => None,
             }
         }
+        // F2U(U2F(x)) -> x, U2F(F2U(x)) -> x: a bit pattern taken as a float and back (the model's floats are bits)
+        Expr::Call(n, args)
+            if args.len() == 1
+                && matches!(&args[0], Expr::Call(m, inner) if inner.len() == 1
+                    && ((n == "F2U" && m == "U2F") || (n == "U2F" && m == "F2U"))) =>
+        {
+            let Expr::Call(_, inner) = &args[0] else { unreachable!() };
+            Some(inner[0].clone())
+        }
         // 0 & x -> 0; 0 | x, 0 ^ x, 0 + x -> x (the same type)
         Expr::Bin(BinOp::And, a, _) if matches!(&**a, Expr::Num(0, _)) && whole.map_or(false, |t| !t.float()) => {
             Some(Expr::Num(0, whole.unwrap()))
