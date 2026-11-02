@@ -244,8 +244,8 @@ void f_00250b58(u32 r0, u32 r1, u32 r2, u32 r3, float S0) {
         if (r0_17 != 0) {
             gptr<Local_00250b58_r5_1> r5_1 = gptr<Local_00250b58_r5_1>(r6 + (r4 << 2));
             u32 r2_10 = r5_1->byte_139;
-            frame->word_4 = std::bit_cast<u32>(float(std::bit_cast<u32>(std::bit_cast<float>((u32(r5_1->byte_138) >> 6) + (r2_10 << 2) << 2))));
-            float S0_10 = float(std::bit_cast<u32>(std::bit_cast<float>(u32(r5_1->byte_13a) + ((u32(r5_1->byte_13b) & 3u) << 8) << 2)));
+            frame->word_4 = std::bit_cast<u32>(float((u32(r5_1->byte_138) >> 6) + (r2_10 << 2) << 2));
+            float S0_10 = float(u32(r5_1->byte_13a) + ((u32(r5_1->byte_13b) & 3u) << 8) << 2);
             frame->word_c = std::bit_cast<u32>(S0_10);
             if ((u32(r5_1->byte_138) >> 2u & 0xfu) == 0) {  // (from the original)
                 guest::cpu()->s[0] = S0_10;
@@ -1468,65 +1468,6 @@ GUEST_EXPORT_FRAMED(0x0025654c, d_0025654c::f_0025654c, 0x4010);  // pushes {r4,
 // f_00256588: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00256588 {
 
-struct __attribute__((packed)) Object_00256588_0 {
-    u32 word_0;
-    u8 unknown_4[0x14];  // (not used here)
-    u32 word_18;
-    u16 half_1c;
-    u8 byte_1e;
-    u8 byte_1f;
-    u8 unknown_20[0x30];  // (not used here)
-    u16 half_50;
-    u16 half_52;
-    u32 word_54;
-    u8 byte_58;
-    u8 byte_59;
-    u8 unknown_5a[0x2];  // (not used here)
-    u32 word_5c;
-    u8 unknown_60[0x124];  // (not used here)
-    float float_184;
-    float float_188;
-    float float_18c;
-    float float_190;
-    float float_194;
-    float float_198;
-    float float_19c;
-    float float_1a0;
-    float float_1a4;
-    float float_1a8;
-    float float_1ac;
-    float float_1b0;
-    float float_1b4;
-    float float_1b8;
-    float float_1bc;
-};
-GUEST_OFFSET(Object_00256588_0, word_0, 0x0);
-GUEST_OFFSET(Object_00256588_0, word_18, 0x18);
-GUEST_OFFSET(Object_00256588_0, half_1c, 0x1c);
-GUEST_OFFSET(Object_00256588_0, byte_1e, 0x1e);
-GUEST_OFFSET(Object_00256588_0, byte_1f, 0x1f);
-GUEST_OFFSET(Object_00256588_0, half_50, 0x50);
-GUEST_OFFSET(Object_00256588_0, half_52, 0x52);
-GUEST_OFFSET(Object_00256588_0, word_54, 0x54);
-GUEST_OFFSET(Object_00256588_0, byte_58, 0x58);
-GUEST_OFFSET(Object_00256588_0, byte_59, 0x59);
-GUEST_OFFSET(Object_00256588_0, word_5c, 0x5c);
-GUEST_OFFSET(Object_00256588_0, float_184, 0x184);
-GUEST_OFFSET(Object_00256588_0, float_188, 0x188);
-GUEST_OFFSET(Object_00256588_0, float_18c, 0x18c);
-GUEST_OFFSET(Object_00256588_0, float_190, 0x190);
-GUEST_OFFSET(Object_00256588_0, float_194, 0x194);
-GUEST_OFFSET(Object_00256588_0, float_198, 0x198);
-GUEST_OFFSET(Object_00256588_0, float_19c, 0x19c);
-GUEST_OFFSET(Object_00256588_0, float_1a0, 0x1a0);
-GUEST_OFFSET(Object_00256588_0, float_1a4, 0x1a4);
-GUEST_OFFSET(Object_00256588_0, float_1a8, 0x1a8);
-GUEST_OFFSET(Object_00256588_0, float_1ac, 0x1ac);
-GUEST_OFFSET(Object_00256588_0, float_1b0, 0x1b0);
-GUEST_OFFSET(Object_00256588_0, float_1b4, 0x1b4);
-GUEST_OFFSET(Object_00256588_0, float_1b8, 0x1b8);
-GUEST_OFFSET(Object_00256588_0, float_1bc, 0x1bc);
-
 inline constexpr u32 vtable_BsLightFixBase = 0x008eeca4u;
 inline constexpr u32 vtable_BsLightFixBase__FixLightHioNode = 0x008fa388u;
 inline constexpr u32 vtable_g3d__DirectionalFragmentLight = 0x00902a8cu;
@@ -1546,7 +1487,7 @@ inline guest::global<u32, 0x0084739c> global_0084739c;
 inline constexpr guest::Function<0x001c2764, u32(u32, u32, u32, u32)> call_001c2764;
 inline constexpr guest::Function<0x004ed3fc, u32(u32)> call_004ed3fc;
 
-u32 f_00256588(gptr<Object_00256588_0> arg0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2, float S3, float S4, float S5, float S6, float S7) {
+u32 f_00256588(gptr<BsLightFixBase> arg0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2, float S3, float S4, float S5, float S6, float S7) {
     call_001c2764(arg0.addr(), r1, r2, r3);
     arg0->word_0 = vtable_BsLightFixBase;
     arg0->word_18 = vtable_BsLightFixBase__FixLightHioNode;
@@ -1569,13 +1510,13 @@ u32 f_00256588(gptr<Object_00256588_0> arg0, u32 r1, u32 r2, u32 r3, float S0, f
     float S6_1 = std::bit_cast<float>(*global_0084737c);
     float S7_1 = std::bit_cast<float>(*global_00847380);
     arg0->float_184 = S0_1;
-    arg0->float_188 = S1_1;
-    arg0->float_18c = S2_1;
-    arg0->float_190 = S3_1;
-    arg0->float_194 = S4_1;
-    arg0->float_198 = S5_1;
-    arg0->float_19c = S6_1;
-    arg0->float_1a0 = S7_1;
+    arg0->word_188 = std::bit_cast<u32>(S1_1);
+    arg0->word_18c = std::bit_cast<u32>(S2_1);
+    arg0->word_190 = std::bit_cast<u32>(S3_1);
+    arg0->word_194 = std::bit_cast<u32>(S4_1);
+    arg0->word_198 = std::bit_cast<u32>(S5_1);
+    arg0->word_19c = std::bit_cast<u32>(S6_1);
+    arg0->word_1a0 = std::bit_cast<u32>(S7_1);
     float S0_2 = 1.0f;
     float S1_2 = std::bit_cast<float>(*global_00847388);
     float S2_2 = std::bit_cast<float>(*global_0084738c);
@@ -1583,11 +1524,11 @@ u32 f_00256588(gptr<Object_00256588_0> arg0, u32 r1, u32 r2, u32 r3, float S0, f
     float S4_2 = std::bit_cast<float>(*global_00847394);
     float S5_2 = std::bit_cast<float>(*global_00847398);
     float S6_2 = std::bit_cast<float>(*global_0084739c);
-    arg0->float_1a4 = S0_2;
-    arg0->float_1a8 = S1_2;
-    arg0->float_1ac = S2_2;
-    arg0->float_1b0 = S3_2;
-    arg0->float_1b4 = S4_2;
+    arg0->word_1a4 = std::bit_cast<u32>(S0_2);
+    arg0->word_1a8 = std::bit_cast<u32>(S1_2);
+    arg0->word_1ac = std::bit_cast<u32>(S2_2);
+    arg0->word_1b0 = std::bit_cast<u32>(S3_2);
+    arg0->word_1b4 = std::bit_cast<u32>(S4_2);
     arg0->float_1b8 = S5_2;
     arg0->float_1bc = S6_2;
     guest::cpu()->s[0] = S0_2;
@@ -1615,7 +1556,7 @@ void f_00256664(gptr<Object_00256664_0> arg0, u32 r1, float S0_unused, float S1)
         guest::cpu()->s[0] = S0_1;
         return;
     }
-    float S1_1 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1))));
+    float S1_1 = float(s32(r1));
     arg0->float_2b4 = S0_1 / S1_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
@@ -1645,7 +1586,7 @@ void f_0025668c(gptr<Object_0025668c_0> arg0, u32 r1, u32 r2) {
     if (s32(r1) <= 0) {
         arg0->float_2b4 = S0_1;
     } else {
-        arg0->float_2b4 = S0_1 / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1))));
+        arg0->float_2b4 = S0_1 / float(s32(r1));
     }
     float S1_1 = 0.0f;
     arg0->float_2b0 = S1_1;
@@ -1656,7 +1597,7 @@ void f_0025668c(gptr<Object_0025668c_0> arg0, u32 r1, u32 r2) {
         guest::cpu()->s[1] = S1_1;
         return;
     }
-    arg0->float_2bc = S0_1 / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r2))));
+    arg0->float_2bc = S0_1 / float(s32(r2));
     arg0->float_2b8 = S1_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;

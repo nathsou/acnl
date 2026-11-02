@@ -1801,7 +1801,7 @@ void f_0068aa1c(u32 r0, gptr<Object_0068aa1c_1> arg1, u32 r2, u32 r3, float S0, 
     *gptr<u8>(r0_1 + 0x14u) = u8(r3);  // (from the original)
     ea_2->byte_7 = u8(r2);
     ea_2->byte_8 = u8(r5_1);
-    u32 r0_2 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(r6_1->float_0 * S1_1)));
+    u32 r0_2 = vcvt_sz_f(r6_1->float_0 * S1_1);
     frame->half_0 = u16(r0_2);
     *gptr<u16>(r0_1 + 0x17u) = u16(r0_2);  // (from the original)
     float S0_1 = std::bit_cast<float>(vcvt_sz_f(r6_1->float_8 * S1_1));

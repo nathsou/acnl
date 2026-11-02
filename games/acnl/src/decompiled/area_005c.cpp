@@ -3150,7 +3150,7 @@ void f_005c6878(gptr<Object_005c6878_0> arg0, u32 r1, u32 r2, gptr<Float3> arg3,
     call_002f8574(arg0.addr(), r0_1, 0x26u);  // (from the original)
     arg0->byte_0 = u8(r2);
     float S1_2 = 4.0f;
-    u32 r1_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg3->v[0] * S1_2)));
+    u32 r1_1 = vcvt_sz_f(arg3->v[0] * S1_2);
     *frame.at<u16>(0) = u16(r1_1);
     arg0->half_2 = u16(r1_1);
     float S0_2 = std::bit_cast<float>(vcvt_sz_f(arg3->v[2] * S1_2));
@@ -4609,7 +4609,7 @@ u32 f_005ca1d4(u32 r0, u32 r1) {
     if (r0 >= 0xfcu) {  // (from the original)
         return 0u;
     }
-    u32 r1_1 = *gptr<u16>((r0 << 1) + 0x88bf34u);  // (from the original)
+    u32 r1_1 = gptr<u16>(0x88bf34u)[r0];  // (from the original)
     guest::cpu()->r[1] = r1_1;
     return r1_1 * 0x64u;  // (from the original)
 }
@@ -4681,7 +4681,7 @@ void f_005ca2ac(gptr<Object_005ca2ac_0> arg0, gptr<Object_005ca2ac_1> arg1, gptr
     float S1_1 = 182.0f;
     arg0->float_4 = r0_1 == 0 ? 0.0f : -488.0f;
     arg0->word_8 = r4_1->word_4;
-    arg1->half_0 = u16(std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(r4_1->float_8 * S1_1))));
+    arg1->half_0 = u16(vcvt_sz_f(r4_1->float_8 * S1_1));
     arg2->word_0 = r4_1->word_c;
 }
 
@@ -4754,7 +4754,7 @@ u32 f_005ca478(u32 r0, u32 r1) {
     if (r0 >= 0xfcu) {  // (from the original)
         return 0u;
     }
-    u32 r0_1 = call_002fa90c(0x5ca4acu, *gptr<u32>((r0 << 2) + 0x95bae0u));  // (from the original)
+    u32 r0_1 = call_002fa90c(0x5ca4acu, gptr<u32>(0x95bae0u)[r0]);  // (from the original)
     return r0_1 == 0;
 }
 
@@ -4770,7 +4770,7 @@ u32 f_005ca4b4(u32 r0, u32 r1) {
     if (r0 >= 0xfcu) {  // (from the original)
         return 0u;
     }
-    u32 r0_1 = call_002fa90c(0x5ca4e8u, *gptr<u32>((r0 << 2) + 0x95bae0u));  // (from the original)
+    u32 r0_1 = call_002fa90c(0x5ca4e8u, gptr<u32>(0x95bae0u)[r0]);  // (from the original)
     return r0_1 == 0;
 }
 
@@ -4786,7 +4786,7 @@ u32 f_005ca4f0(u32 r0, u32 r1) {
     if (r0 >= 0xfcu) {  // (from the original)
         return 0u;
     }
-    u32 r0_1 = call_002fa90c(0x5ca524u, *gptr<u32>((r0 << 2) + 0x95bae0u));  // (from the original)
+    u32 r0_1 = call_002fa90c(0x5ca524u, gptr<u32>(0x95bae0u)[r0]);  // (from the original)
     return r0_1 == 0;
 }
 
@@ -4802,7 +4802,7 @@ u32 f_005ca530(u32 r0, u32 r1) {
     if (r0 >= 0xfcu) {  // (from the original)
         return 0u;
     }
-    u32 r0_1 = call_002fa90c(0x5ca564u, *gptr<u32>((r0 << 2) + 0x95bae0u));  // (from the original)
+    u32 r0_1 = call_002fa90c(0x5ca564u, gptr<u32>(0x95bae0u)[r0]);  // (from the original)
     return r0_1 == 0;
 }
 
@@ -4837,7 +4837,7 @@ u32 f_005ca584(u32 r0, u32 r1) {
     if (r0 >= 0xfcu) {  // (from the original)
         return 0u;
     }
-    u32 r0_1 = call_002fa90c(0x5ca5b8u, *gptr<u32>((r0 << 2) + 0x95bae0u));  // (from the original)
+    u32 r0_1 = call_002fa90c(0x5ca5b8u, gptr<u32>(0x95bae0u)[r0]);  // (from the original)
     return r0_1 == 0;
 }
 

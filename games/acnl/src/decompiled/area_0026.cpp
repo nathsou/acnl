@@ -579,7 +579,7 @@ void f_0026876c(gptr<Object_0026876c_0> arg0, u32 r1, u32 r2) {
     }
     do {
         u32 r2_1 = r1 * 0xa3u;  // (from the original)
-        u32 r12_1 = *gptr<u32>(r3 + (r1 << 2));
+        u32 r12_1 = gptr<u32>(r3)[r1];
         r1 += 1u;
         gptr<Local_0026876c_r2_2> r2_2 = gptr<Local_0026876c_r2_2>(arg0->word_108 + (r2_1 << 3));
         r2_2->word_cc = r12_1;
@@ -638,7 +638,7 @@ void f_00268818(gptr<Object_00268818_0> arg0, u32 r1, u32 r2) {
     }
     do {
         u32 r5_1 = r1 * 0xa3u;  // (from the original)
-        u32 r4_1 = *gptr<u32>(r12 + (r1 << 2));
+        u32 r4_1 = gptr<u32>(r12)[r1];
         r1 += 1u;
         gptr<Local_00268818_r2_1> r2_1 = gptr<Local_00268818_r2_1>(arg0->word_108 + (r5_1 << 3));
         r2_1->word_d0 = r4_1;
@@ -685,7 +685,7 @@ void f_00268878(gptr<Object_00268878_0> arg0, u32 r1, u32 r2) {
     }
     do {
         u32 r4_1 = r1 * 0xa3u;  // (from the original)
-        u32 r12_1 = *gptr<u32>(r3 + (r1 << 2));
+        u32 r12_1 = gptr<u32>(r3)[r1];
         r1 += 1u;
         *gptr<u32>(arg0->word_108 + (r4_1 << 3) + 0xc4u) = r12_1;  // (from the original)
         guest::preempt();
@@ -744,7 +744,7 @@ void f_00268a08(gptr<Object_00268a08_0> arg0, u32 r1, u32 r2, u32 r3) {
     }
     do {
         u32 r2_2 = r1 * 0xa3u;  // (from the original)
-        u32 r12_1 = *gptr<u32>(r3 + (r1 << 2));
+        u32 r12_1 = gptr<u32>(r3)[r1];
         r1 += 1u;
         gptr<Local_00268a08_r2_3> r2_3 = gptr<Local_00268a08_r2_3>(arg0->word_108 + (r2_2 << 3));
         r2_3->word_cc = r12_1;
@@ -791,7 +791,7 @@ void f_00268ab8(gptr<Object_00268ab8_0> arg0, u32 r1, u32 r2, u32 r3) {
     }
     do {
         u32 r4_1 = r1 * 0xa3u;  // (from the original)
-        u32 r12_1 = *gptr<u32>(r3 + (r1 << 2));
+        u32 r12_1 = gptr<u32>(r3)[r1];
         r1 += 1u;
         *gptr<u32>(arg0->word_108 + (r4_1 << 3) + 0xc4u) = r12_1;  // (from the original)
         guest::preempt();

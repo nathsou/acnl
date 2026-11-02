@@ -38,7 +38,7 @@ void f_005601b8(gptr<Object_005601b8_0> arg0, float S0, float S1, float S2, floa
     }
     float S6_1 = 255.0f;
     float S0_1 = S1;
-    arg0->byte_3 = u8(std::bit_cast<u32>(std::bit_cast<float>(vcvt_uz_f(S0 * S6_1))));
+    arg0->byte_3 = u8(vcvt_uz_f(S0 * S6_1));
     u32 fpsr_2 = fpsr_1 & 0xfffffffu | vfp_cmpf(S0_1, S5_1);  // (from the original)
     if (fpsr_2 >> 0x1d & 1) {  // (from the original)
         S1 = S4_1;
@@ -50,7 +50,7 @@ void f_005601b8(gptr<Object_005601b8_0> arg0, float S0, float S1, float S2, floa
         S0_1 = S5_1;
     }
     float S0_2 = S2;
-    arg0->byte_2 = u8(std::bit_cast<u32>(std::bit_cast<float>(vcvt_uz_f(S0_1 * S6_1))));
+    arg0->byte_2 = u8(vcvt_uz_f(S0_1 * S6_1));
     u32 fpsr_3 = fpsr_2 & 0xfffffffu | vfp_cmpf(S0_2, S5_1);  // (from the original)
     if (fpsr_3 >> 0x1d & 1) {  // (from the original)
         S1 = S4_1;
@@ -62,7 +62,7 @@ void f_005601b8(gptr<Object_005601b8_0> arg0, float S0, float S1, float S2, floa
         S0_2 = S5_1;
     }
     float S0_3 = S3;
-    arg0->byte_1 = u8(std::bit_cast<u32>(std::bit_cast<float>(vcvt_uz_f(S0_2 * S6_1))));
+    arg0->byte_1 = u8(vcvt_uz_f(S0_2 * S6_1));
     u32 fpsr_4 = fpsr_3 & 0xfffffffu | vfp_cmpf(S0_3, S5_1);  // (from the original)
     if (!(fpsr_4 >> 0x1d & 1)) {  // (from the original)
         float S0_4 = std::bit_cast<float>(vcvt_uz_f(S5_1 * S6_1));
@@ -1449,7 +1449,7 @@ void f_00567fe4(gptr<Object_00567fe4_0> arg0, gptr<Object_00567fe4_1> arg1, gptr
     float S5 = arg2->float_4 - std::bit_cast<float>(arg1->word_4);
     float S6 = arg2->float_8 - std::bit_cast<float>(arg1->word_8);
     float S1 = 0.0f;
-    u32 r12 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(sqrtf(S7 * S7 + S5 * S5 + S6 * S6) / S0)));
+    u32 r12 = vcvt_sz_f(sqrtf(S7 * S7 + S5 * S5 + S6 * S6) / S0);
     S0 = S1;
     if ((r12 - r3) != 0 && s32(r12) >= s32(r3)) {
         r12 = r3;
@@ -1462,7 +1462,7 @@ void f_00567fe4(gptr<Object_00567fe4_0> arg0, gptr<Object_00567fe4_1> arg1, gptr
         r1 = 0u;
         if ((r4 & 1u) != 0) {
             r1 = 1u;
-            S0 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r4)))) + S0;
+            S0 = float(s32(r4)) + S0;
         }
         r2 = s32(r4) >> 1;
         if (r2 != 0) {
@@ -1471,15 +1471,15 @@ void f_00567fe4(gptr<Object_00567fe4_0> arg0, gptr<Object_00567fe4_1> arg1, gptr
                 res_2 = r2 - 1u;
                 r2 = res_2;
                 r1 += 2u;
-                S0 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r3_1)))) + S0;
-                S1 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r3_1 - 1u)))) + S1;
+                S0 = float(s32(r3_1)) + S0;
+                S1 = float(s32(r3_1 - 1u)) + S1;
                 guest::preempt();
             } while (res_2 != 0);
         }
         S0 = S0 + S1;
     }
     gptr<Local_00567fe4_r0_1> r0_1 = gptr<Local_00567fe4_r0_1>(r0 + 0xcu);  // (from the original)
-    float S1_1 = 1.0f / (float(s32(std::bit_cast<u32>(std::bit_cast<float>(r12 - r4)))) + S0 / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r4 + 1u)))));
+    float S1_1 = 1.0f / (float(s32(r12 - r4)) + S0 / float(s32(r4 + 1u)));
     float S0_1 = S7 * S1_1;
     float S2_1 = S5 * S1_1;
     float S1_2 = S6 * S1_1;
@@ -1621,7 +1621,7 @@ u32 f_00569774(gptr<Object_00569774_0> arg0, u32 r1, float S0, float S1, float S
         S0 = 1.0f;
         float S2_1 = 0.0f;
         arg0->float_10 = S0;
-        S1 = float(std::bit_cast<u32>(std::bit_cast<float>(r0_4)));
+        S1 = float(r0_4);
         arg0->float_4 = S1;
         arg0->word_8 = std::bit_cast<u32>(S2_1);
         arg0->byte_14 = u8(r5_1);
@@ -1754,6 +1754,7 @@ GUEST_OFFSET(Local_00569ebc_r0_1, float_10, 0x10);
 GUEST_OFFSET(Local_00569ebc_r0_1, float_14, 0x14);
 
 inline guest::global<u32, 0x008ae294> global_008ae294;
+inline guest::global<u32, 0x008ae3d8> global_008ae3d8;
 inline guest::global<u32, 0x008ae3dc> global_008ae3dc;
 inline guest::global<u32, 0x008ae3e0> global_008ae3e0;
 inline guest::global<u32, 0x008ae3e4> global_008ae3e4;
@@ -1807,7 +1808,7 @@ void f_00569ebc(u32 r0_unused, u32 r1, u32 r2) {
     float S6_1 = std::bit_cast<float>(*global_008ae3f0);
     float S7_1 = std::bit_cast<float>(*global_008ae3f4);
     u32 r1_1 = *global_008ae294;
-    frame->word_0 = std::bit_cast<u32>(0.0f);
+    frame->word_0 = *global_008ae3d8;
     frame->float_4 = S1_1;
     frame->word_8 = std::bit_cast<u32>(S2_1);
     frame->word_c = std::bit_cast<u32>(S3_1);
@@ -1829,7 +1830,7 @@ void f_00569ebc(u32 r0_unused, u32 r1, u32 r2) {
     r0_1->float_10 = S4_2;
     r0_1->float_14 = S5_2;
     float S1_3 = 0.5f;
-    u32 r0_2 = std::bit_cast<u32>(float(std::bit_cast<u32>(std::bit_cast<float>(r3_1))) * S1_3);
+    u32 r0_2 = std::bit_cast<u32>(float(r3_1) * S1_3);
     u32 r12_1 = r0_2 & 0x80000000u;  // (from the original)
     if (r12_1 != 0) {
         r12_1 = 0x800000u;  // (from the original)
@@ -1853,7 +1854,7 @@ void f_00569ebc(u32 r0_unused, u32 r1, u32 r2) {
     }
     float S2_3 = 2.0f;
     frame->word_0 = r12_1;
-    float S3_3 = float(std::bit_cast<u32>(std::bit_cast<float>(r3_1)));
+    float S3_3 = float(r3_1);
     u32 r0_3 = std::bit_cast<u32>(S2_3 / S3_3);
     u32 res_4 = r0_3 & 0x80000000u;  // (from the original)
     u32 r3_2 = res_4;
@@ -1873,7 +1874,7 @@ void f_00569ebc(u32 r0_unused, u32 r1, u32 r2) {
         r3_2 = r12_3 | r3_2 | (res_5 & 0x7fu) << 0x17;  // (from the original)
     }
     frame->word_8 = r3_2 << 1;
-    u32 r0_5 = std::bit_cast<u32>(float(std::bit_cast<u32>(std::bit_cast<float>(r2_1))) * S1_3);
+    u32 r0_5 = std::bit_cast<u32>(float(r2_1) * S1_3);
     u32 r3_3 = r0_5 & 0x80000000u;  // (from the original)
     if (r3_3 != 0) {
         r3_3 = 0x800000u;  // (from the original)
@@ -1890,7 +1891,7 @@ void f_00569ebc(u32 r0_unused, u32 r1, u32 r2) {
         }
     }
     frame->word_c = r3_3;
-    u32 r0_6 = std::bit_cast<u32>(S2_3 / float(std::bit_cast<u32>(std::bit_cast<float>(r2_1))));
+    u32 r0_6 = std::bit_cast<u32>(S2_3 / float(r2_1));
     u32 res_9 = r0_6 & 0x80000000u;  // (from the original)
     u32 r2_2 = res_9;
     if (res_9 != 0) {
@@ -1909,7 +1910,7 @@ void f_00569ebc(u32 r0_unused, u32 r1, u32 r2) {
     frame->word_10 = r2_2 << 1;
     frame->word_28 = 0xbf0000;  // (from the original)
     float S1_4 = 0.0f;
-    float S2_4 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(lsl_r(1u, ((r1_1 & 0xffu) == 0 ? 0x10u : 0x18u) & 0xff) - 1u))));  // (from the original)
+    float S2_4 = float(s32(lsl_r(1u, ((r1_1 & 0xffu) == 0 ? 0x10u : 0x18u) & 0xff) - 1u));  // (from the original)
     float S0_2 = S1_4 / S2_4;
     u32 r0_8 = std::bit_cast<u32>(S0_2);
     u32 res_11 = r0_8 & 0x80000000u;  // (from the original)

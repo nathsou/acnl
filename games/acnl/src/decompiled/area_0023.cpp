@@ -2333,15 +2333,14 @@ void f_0023c730(gptr<Object_0023c730_0> arg0, u32 r1, u32 r2_unused, u32 r3, flo
     if (r0_1 <= 2u) {
         u32 r0_2 = r0_1 & 0xffu;  // (from the original)
         arg0->byte_3e0 = u8(r0_2);
-        u32 r1_1 = *gptr<u32>((r0_2 << 2) + 0x953f0cu);  // (from the original)
+        u32 r1_1 = gptr<u32>(0x953f0cu)[r0_2];  // (from the original)
         u32 r0_4 = call_004b4fc0(arg0.addr() + 0x24u, r1_1, 1u, r3);  // (from the original)
         call_00568630(arg0.addr() + 0x24u, arg0.addr() + 0x3b8u, r0_4, 0u);  // (from the original)
         float S0_2 = 1.0f;
         guest::cpu()->s[0] = S0_2;
         call_005697e0(arg0.addr() + 0x3b8u);  // (from the original)
         call_00568c10(arg0.addr() + 0x24u);  // (from the original)
-        u32 r1_5 = *gptr<u32>((u32(arg0->byte_3e0) << 2) + 0x953f0cu);  // (from the original)
-        u32 r0_9 = call_004b4fc0(arg0.addr() + 0x24u, r1_5, 1u, guest::cpu()->r[3]);  // (from the original)
+        u32 r0_9 = call_004b4fc0(arg0.addr() + 0x24u, gptr<u32>(0x953f0cu)[u32(arg0->byte_3e0)], 1u, guest::cpu()->r[3]);  // (from the original)
         frame.release();
         call_00568984(r0_9, arg0.addr() + 0x3b8u, r0_9, 0u);
         return;  // (from the original)
@@ -2668,48 +2667,6 @@ GUEST_EXPORT_FRAMED(0x0023f704, d_0023f704::f_0023f704, 0x43f0);  // pushes {r4,
 // f_0023f820: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0023f820 {
 
-struct __attribute__((packed)) Local_0023f820_ea_1 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u32 word_c;
-    u32 word_10;
-    u32 word_14;
-    u32 word_18;
-    u32 word_1c;
-    u32 word_20;
-};
-GUEST_OFFSET(Local_0023f820_ea_1, word_0, 0x0);
-GUEST_OFFSET(Local_0023f820_ea_1, word_4, 0x4);
-GUEST_OFFSET(Local_0023f820_ea_1, word_8, 0x8);
-GUEST_OFFSET(Local_0023f820_ea_1, word_c, 0xc);
-GUEST_OFFSET(Local_0023f820_ea_1, word_10, 0x10);
-GUEST_OFFSET(Local_0023f820_ea_1, word_14, 0x14);
-GUEST_OFFSET(Local_0023f820_ea_1, word_18, 0x18);
-GUEST_OFFSET(Local_0023f820_ea_1, word_1c, 0x1c);
-GUEST_OFFSET(Local_0023f820_ea_1, word_20, 0x20);
-
-struct __attribute__((packed)) Local_0023f820_ea_4 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u32 word_c;
-    u32 word_10;
-    u32 word_14;
-    u32 word_18;
-    u32 word_1c;
-    u32 word_20;
-};
-GUEST_OFFSET(Local_0023f820_ea_4, word_0, 0x0);
-GUEST_OFFSET(Local_0023f820_ea_4, word_4, 0x4);
-GUEST_OFFSET(Local_0023f820_ea_4, word_8, 0x8);
-GUEST_OFFSET(Local_0023f820_ea_4, word_c, 0xc);
-GUEST_OFFSET(Local_0023f820_ea_4, word_10, 0x10);
-GUEST_OFFSET(Local_0023f820_ea_4, word_14, 0x14);
-GUEST_OFFSET(Local_0023f820_ea_4, word_18, 0x18);
-GUEST_OFFSET(Local_0023f820_ea_4, word_1c, 0x1c);
-GUEST_OFFSET(Local_0023f820_ea_4, word_20, 0x20);
-
 struct __attribute__((packed)) Local_0023f820_r0_4 {
     u8 unknown_0[0x18];  // (not used here)
     u32 word_18;
@@ -2733,44 +2690,25 @@ inline constexpr guest::Function<0x0070bcdc, u32(u32, u32, u32, u32)> call_0070b
 inline constexpr guest::Function<0x0070d904, u32(u32, u32, u32, u32)> call_0070d904;
 
 void f_0023f820(u32 r0, u32 r1, u32 r2, u32 r3) {
-    guest::StackFrame frame(0x40);  // the original's stack frame
-    u32 r4 = guest::cpu()->r[4];
-    u32 r5 = guest::cpu()->r[5];
-    u32 r6 = guest::cpu()->r[6];
-    u32 r7 = guest::cpu()->r[7];
-    u32 r8 = guest::cpu()->r[8];
-    u32 r9 = guest::cpu()->r[9];
-    u32 r10 = guest::cpu()->r[10];
-    u32 r11 = guest::cpu()->r[11];
-    u32 r14 = guest::cpu()->r[14];
+    guest::StackFrame frame(0x1c);  // the original's stack frame
     u32 r3_4 = 0;
     u32 r2_3 = 0;
     u32 r1_5 = 0;
     u32 r0_14 = 0;
-    gptr<Local_0023f820_ea_1> ea_1 = gptr<Local_0023f820_ea_1>(frame.at(0x1c).addr());  // (from the original)
-    ea_1->word_0 = r4;
-    ea_1->word_4 = r5;
-    ea_1->word_8 = r6;
-    ea_1->word_c = r7;
-    ea_1->word_10 = r8;
-    ea_1->word_14 = r9;
-    ea_1->word_18 = r10;
-    ea_1->word_1c = r11;
-    ea_1->word_20 = r14;
-    r8 = r1;
-    r9 = r2;
+    u32 r8 = r1;
+    u32 r9 = r2;
     u32 r0_1 = call_0070bcdc(0x98b2b8u, 0u, r2, r3);  // (from the original)
-    r11 = r0_1;
-    u32 ea_2 = r0 + r8 * 0x21u * 0x14u + 0x7f4u;  // (from the original)
-    r7 = ea_2;
-    call_001c4c14(frame.at(0).addr(), *gptr<u32>(ea_2));
-    u32 ea_3 = r0 + r9 * 0x21u * 0x14u + 0x7f4u;  // (from the original)
-    r6 = ea_3;
-    call_001c4c14(frame.at(0xc).addr(), *gptr<u32>(ea_3));  // (from the original)
+    u32 r11 = r0_1;
+    u32 ea_1 = r0 + r8 * 0x21u * 0x14u + 0x7f4u;  // (from the original)
+    u32 r7 = ea_1;
+    call_001c4c14(frame.at(0).addr(), *gptr<u32>(ea_1));
+    u32 ea_2 = r0 + r9 * 0x21u * 0x14u + 0x7f4u;  // (from the original)
+    u32 r6 = ea_2;
+    call_001c4c14(frame.at(0xc).addr(), *gptr<u32>(ea_2));  // (from the original)
     r3 = guest::cpu()->r[3];
-    r5 = 0u;
+    u32 r5 = 0u;
     do {
-        r4 = 0u;
+        u32 r4 = 0u;
         do {
             gptr<Local_0023f820_r0_4> r0_4 = gptr<Local_0023f820_r0_4>(*gptr<u32>(r7));
             u32 r1_3 = r0_4->word_1c;
@@ -2830,27 +2768,10 @@ L_23f93c:;
     } while (r5 < 0x20u);  // (from the original)
     call_001b3300(0x98b2b8u, *gptr<u32>(r7), r8 & 0xffu, r3);  // (from the original)
     call_001b3300(0x98b2b8u, *gptr<u32>(r6), r9 & 0xffu, guest::cpu()->r[3]);  // (from the original)
-    gptr<Local_0023f820_ea_4> ea_4 = gptr<Local_0023f820_ea_4>(frame.at(0x1c).addr());  // (from the original)
-    u32 r4_1 = ea_4->word_0;
-    u32 r5_1 = ea_4->word_4;
-    u32 r6_1 = ea_4->word_8;
-    u32 r7_1 = ea_4->word_c;
-    u32 r8_1 = ea_4->word_10;
-    u32 r9_1 = ea_4->word_14;
-    u32 r10_1 = ea_4->word_18;
-    u32 r11_1 = ea_4->word_1c;
-    guest::cpu()->r[4] = r4_1;
-    guest::cpu()->r[5] = r5_1;
-    guest::cpu()->r[6] = r6_1;
-    guest::cpu()->r[7] = r7_1;
-    guest::cpu()->r[8] = r8_1;
-    guest::cpu()->r[9] = r9_1;
-    guest::cpu()->r[10] = r10_1;
-    guest::cpu()->r[11] = r11_1;
 }
 
 }  // namespace d_0023f820
-GUEST_EXPORT(0x0023f820, d_0023f820::f_0023f820);
+GUEST_EXPORT_FRAMED(0x0023f820, d_0023f820::f_0023f820, 0x4ff0);  // pushes {r4, r5, r6, r7, r8, r9, r10, r11, lr} first, as the original
 
 // f_0023fa30: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0023fa30 {

@@ -937,7 +937,7 @@ namespace d_00605534 {
 
 
 u32 f_00605534(u32 r0, u32 r1) {
-    u32 r2_1 = *gptr<u32>((r0 << 2) + 0x84531cu);  // (from the original)
+    u32 r2_1 = gptr<u32>(0x84531cu)[r0];  // (from the original)
     return guest::call_address<u32>(r2_1, r1, r1, r2_1, guest::cpu()->r[3]);
 }
 
@@ -992,9 +992,8 @@ namespace d_006055e0 {
 
 
 u32 f_006055e0(u32 r0) {
-    u32 r0_1 = *gptr<u32>((r0 << 2) + 0x94e4c4u);  // (from the original)
     guest::cpu()->r[1] = 0x94e4c4u;  // (from the original)
-    return r0_1;
+    return gptr<u32>(0x94e4c4u)[r0];  // (from the original)
 }
 
 }  // namespace d_006055e0

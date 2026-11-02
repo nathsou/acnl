@@ -524,10 +524,10 @@ u32 f_002c44d8() {
     u32 r0_2 = *global_0094d774;
     if (*global_0094d76c != 0) {
         u32 r0_3 = call_007017a8(r0_2);
-        return *gptr<u8>(*gptr<u32>(*gptr<u32>(r0_3 + 4u) + (u32(*gptr<u8>(*global_0094d770 + 0xe1u)) << 2)));  // (from the original)
+        return *gptr<u8>(gptr<u32>(*gptr<u32>(r0_3 + 4u))[u32(*gptr<u8>(*global_0094d770 + 0xe1u))]);  // (from the original)
     }
     u32 r0_5 = call_006165c4(r0_2);
-    return *gptr<u8>(*gptr<u32>(*gptr<u32>(r0_5 + 4u) + (u32(*gptr<u8>(*global_0094d770 + 0xe1u)) << 2)));  // (from the original)
+    return *gptr<u8>(gptr<u32>(*gptr<u32>(r0_5 + 4u))[u32(*gptr<u8>(*global_0094d770 + 0xe1u))]);  // (from the original)
 }
 
 }  // namespace d_002c44d8
@@ -565,7 +565,7 @@ void f_002c4544(u32 r0, u32 r1, u32 r2) {
         if (r1_1 != 0) {
             u32 r0_2 = call_007017a8(r0_1, r1_1, r2, guest::cpu()->r[3]);
             u32 r1_2 = *gptr<u8>(*global_0094d770 + 0xe1u);  // (from the original)
-            u32 r0_3 = *gptr<u32>(*gptr<u32>(*gptr<u32>(r0_2 + 4u) + (r1_2 << 2)) + 4u);
+            u32 r0_3 = *gptr<u32>(gptr<u32>(*gptr<u32>(r0_2 + 4u))[r1_2] + 4u);
             u32 r4_1 = *gptr<u8>(r0_3 + r1);
             u32 r0_4 = call_002fb328(r0_3, r1_2);
             u32 r0_6 = call_0076c808(r0_4 + 0x6aeb8u, 0x24u, r4_1);  // (from the original)
@@ -579,7 +579,7 @@ void f_002c4544(u32 r0, u32 r1, u32 r2) {
             return;
         }
         u32 r0_7 = call_006165c4(r0_1, r1_1, r2, guest::cpu()->r[3]);
-        u32 r4_2 = *gptr<u8>(*gptr<u32>(*gptr<u32>(*gptr<u32>(r0_7 + 4u) + (u32(*gptr<u8>(*global_0094d770 + 0xe1u)) << 2)) + 4u) + r1);  // (from the original)
+        u32 r4_2 = *gptr<u8>(*gptr<u32>(gptr<u32>(*gptr<u32>(r0_7 + 4u))[u32(*gptr<u8>(*global_0094d770 + 0xe1u))] + 4u) + r1);  // (from the original)
         frame->word_0 = 0;
         frame->word_4 = 0x27;  // (from the original)
         u32 r0_8 = frame.at(0).addr();
@@ -1349,7 +1349,7 @@ void f_002cb8e4(gptr<Object_002cb8e4_0> arg0, float S0, float S1) {
     float S1_1 = r1_3->float_324;
     float S2_1 = r1_3->float_348;
     gptr<Local_002cb8e4_r1_4> r1_4 = gptr<Local_002cb8e4_r1_4>(r2_1->word_0);
-    float S1_2 = S1_1 + float(s32(std::bit_cast<u32>(std::bit_cast<float>(*gptr<u32>(arg0.addr() + 0x1504u))))) * S2_1;  // (from the original)
+    float S1_2 = S1_1 + float(s32(*gptr<u32>(arg0.addr() + 0x1504u))) * S2_1;  // (from the original)
     float S2_2 = arg0->float_1644;
     gptr<Local_002cb8e4_r0_2> r0_2 = gptr<Local_002cb8e4_r0_2>(r2_1->word_0);
     float S0_1 = r1_4->float_28;

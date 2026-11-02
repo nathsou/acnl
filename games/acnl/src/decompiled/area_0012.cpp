@@ -622,7 +622,7 @@ void f_00123344(u32 r0, u32 r1) {
         gptr<Local_00123344_r5_1> r5_1 = gptr<Local_00123344_r5_1>(r6 + (r4 << 2));
         if (r5_1->word_14 == 0) {
             u32 r0_1 = call_002fd108(0x30u, r7, 0x20u, guest::cpu()->r[3]);  // (from the original)
-            r5_1->word_14 = call_0012c048(r0_1, *gptr<u32>(r8 + (r4 << 2)), r7);
+            r5_1->word_14 = call_0012c048(r0_1, gptr<u32>(r8)[r4], r7);
         }
         r4 += 1u;
         guest::preempt();
@@ -2604,11 +2604,11 @@ L_126d08:;
     if (!zf_43) {
         r3 = r14 + 0x104u;  // (from the original)
         do {
-            u32 r12_8 = *gptr<u32>(r2 + (r0 << 2));
+            u32 r12_8 = gptr<u32>(r2)[r0];
             r0 += 1u;
             u32 r1_9 = s32(r12_8) >> 5;
-            *gptr<u32>(r3 + (r1_9 << 2)) = *gptr<u32>(r3 + (r1_9 << 2)) | (r5 << (r12_8 & 0x1fu));  // (from the original)
-            zf_44 = *gptr<u32>(r2 + (r0 << 2)) == 0xbdu;  // (from the original)
+            *gptr<u32>(r3 + (r1_9 << 2)) = gptr<u32>(r3)[r1_9] | (r5 << (r12_8 & 0x1fu));  // (from the original)
+            zf_44 = gptr<u32>(r2)[r0] == 0xbdu;  // (from the original)
             guest::preempt();
         } while (!zf_44);
     }
@@ -2625,11 +2625,11 @@ L_126d08:;
     zf_45 = r2_14 == 0xbdu;  // (from the original)
     if (!zf_45) {
         do {
-            u32 r3_17 = *gptr<u32>(r12 + (r1 << 2));
+            u32 r3_17 = gptr<u32>(r12)[r1];
             r1 += 1u;
             u32 r2_15 = s32(r3_17) >> 5;
-            *gptr<u32>(r0 + (r2_15 << 2)) = *gptr<u32>(r0 + (r2_15 << 2)) | (r5 << (r3_17 & 0x1fu));  // (from the original)
-            zf_46 = *gptr<u32>(r12 + (r1 << 2)) == 0xbdu;  // (from the original)
+            *gptr<u32>(r0 + (r2_15 << 2)) = gptr<u32>(r0)[r2_15] | (r5 << (r3_17 & 0x1fu));  // (from the original)
+            zf_46 = gptr<u32>(r12)[r1] == 0xbdu;  // (from the original)
             guest::preempt();
         } while (!zf_46);
     }
@@ -2639,11 +2639,11 @@ L_126d08:;
     zf_47 = r3_20 == 0xbdu;  // (from the original)
     if (!zf_47) {
         do {
-            u32 r12_11 = *gptr<u32>(r2 + (r1 << 2));
+            u32 r12_11 = gptr<u32>(r2)[r1];
             r1 += 1u;
             u32 r3_21 = s32(r12_11) >> 5;
-            *gptr<u32>(r0 + (r3_21 << 2)) = *gptr<u32>(r0 + (r3_21 << 2)) | (r5 << (r12_11 & 0x1fu));  // (from the original)
-            zf_48 = *gptr<u32>(r2 + (r1 << 2)) == 0xbdu;  // (from the original)
+            *gptr<u32>(r0 + (r3_21 << 2)) = gptr<u32>(r0)[r3_21] | (r5 << (r12_11 & 0x1fu));  // (from the original)
+            zf_48 = gptr<u32>(r2)[r1] == 0xbdu;  // (from the original)
             guest::preempt();
         } while (!zf_48);
     }
@@ -2660,12 +2660,12 @@ L_126d08:;
     if (!zf_49) {
         r2 = 0xae822cu;  // (from the original)
         do {
-            u32 r3_23 = *gptr<u32>(r1 + (r0 << 2));
+            u32 r3_23 = gptr<u32>(r1)[r0];
             r0 += 1u;
             u32 r12_14 = s32(r3_23) >> 5;
-            r14 = *gptr<u32>(r2 + (r12_14 << 2));
+            r14 = gptr<u32>(r2)[r12_14];
             *gptr<u32>(r2 + (r12_14 << 2)) = r14 | (r5 << (r3_23 & 0x1fu));  // (from the original)
-            zf_50 = *gptr<u32>(r1 + (r0 << 2)) == 0xbdu;  // (from the original)
+            zf_50 = gptr<u32>(r1)[r0] == 0xbdu;  // (from the original)
             guest::preempt();
         } while (!zf_50);
     }
@@ -3184,12 +3184,12 @@ u32 f_00128608(gptr<SoundDoubutsugoMgr> arg0, float S0, float S1, float S2) {
     *gptr<u8>(r4_1.addr() + 0xa3u) = 0;  // (from the original)
     *gptr<u8>(r4_1.addr() + 0xa4u) = 0;  // (from the original)
     gptr<Local_00128608_ea_23> ea_23 = gptr<Local_00128608_ea_23>(r4_1.addr() + 0x24u);  // (from the original)
-    gptr<Local_00128608_r5_1> r5_1 = gptr<Local_00128608_r5_1>(*gptr<u32>(ea_23->word_4 * 0x18u + 0x94cd34u + (ea_23->word_0 << 2)));  // (from the original)
+    gptr<Local_00128608_r5_1> r5_1 = gptr<Local_00128608_r5_1>(gptr<u32>(ea_23->word_4 * 0x18u + 0x94cd34u)[ea_23->word_0]);  // (from the original)
     r4_1->word_70 = r5_1.addr();
     u32 r0_7 = call_002f86c0(0xcu, u32(r5_1->byte_21) + 1u, 0x94cd34u);  // (from the original)
     r4_1->word_88 = r0_7;
     u32 r0_8 = r5_1->byte_21;
-    float S2_4 = float(std::bit_cast<u32>(std::bit_cast<float>(r0_8)));
+    float S2_4 = float(r0_8);
     float S0_4 = std::bit_cast<float>(r0_8 + 1u);
     float S0_5 = float(std::bit_cast<u32>(S0_4));
     float S1_4 = S2_4 * 12.0f;
@@ -5241,7 +5241,7 @@ namespace d_0012e8e8 {
 
 
 void f_0012e8e8(gptr<SoundFaderEx> arg0, float S0) {
-    arg0->word_4 = std::bit_cast<u32>(S0);
+    arg0->float_4 = S0;
     arg0->word_8 = std::bit_cast<u32>(S0);
     arg0->word_10 = ~0u;
     arg0->word_14 = 0;

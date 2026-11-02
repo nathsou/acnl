@@ -2383,7 +2383,7 @@ struct AcFsMuEel {
     u16 half_3a;
     u16 half_3c;
     u8 unknown_3e[0x2];  // (not used yet)
-    u32 word_40;
+    float float_40;
     u8 byte_44;
     u8 unknown_45[0x3];  // (not used yet)
     u32 word_48;
@@ -2507,7 +2507,7 @@ GUEST_OFFSET(AcFsMuEel, half_36, 0x36);
 GUEST_OFFSET(AcFsMuEel, half_38, 0x38);
 GUEST_OFFSET(AcFsMuEel, half_3a, 0x3a);
 GUEST_OFFSET(AcFsMuEel, half_3c, 0x3c);
-GUEST_OFFSET(AcFsMuEel, word_40, 0x40);
+GUEST_OFFSET(AcFsMuEel, float_40, 0x40);
 GUEST_OFFSET(AcFsMuEel, byte_44, 0x44);
 GUEST_OFFSET(AcFsMuEel, word_48, 0x48);
 GUEST_OFFSET(AcFsMuEel, word_4c, 0x4c);
@@ -21169,7 +21169,7 @@ struct AcIsFdDragonfly {
     u32 word_58;
     u32 word_5c;
     float float_60;
-    u32 word_64;
+    float float_64;
     float float_68;
     u32 word_6c;
     u32 word_70;
@@ -21292,7 +21292,7 @@ GUEST_OFFSET(AcIsFdDragonfly, word_54, 0x54);
 GUEST_OFFSET(AcIsFdDragonfly, word_58, 0x58);
 GUEST_OFFSET(AcIsFdDragonfly, word_5c, 0x5c);
 GUEST_OFFSET(AcIsFdDragonfly, float_60, 0x60);
-GUEST_OFFSET(AcIsFdDragonfly, word_64, 0x64);
+GUEST_OFFSET(AcIsFdDragonfly, float_64, 0x64);
 GUEST_OFFSET(AcIsFdDragonfly, float_68, 0x68);
 GUEST_OFFSET(AcIsFdDragonfly, word_6c, 0x6c);
 GUEST_OFFSET(AcIsFdDragonfly, word_70, 0x70);
@@ -23279,7 +23279,7 @@ struct AcIsFdMoleCricket {
     u16 half_3a;
     u16 half_3c;
     u8 unknown_3e[0x2];  // (not used yet)
-    u32 word_40;
+    float float_40;
     u8 byte_44;
     u8 unknown_45[0x3];  // (not used yet)
     u32 word_48;
@@ -23355,7 +23355,7 @@ struct AcIsFdMoleCricket {
     u8 unknown_1ce[0x2];  // (not used yet)
     u32 word_1d0;
     u8 unknown_1d4[0x4];  // (not used yet)
-    u32 word_1d8;
+    float float_1d8;
     u32 word_1dc;
     u8 unknown_1e0[0x48];  // (not used yet)
     u32 word_228;
@@ -23393,7 +23393,7 @@ GUEST_OFFSET(AcIsFdMoleCricket, half_36, 0x36);
 GUEST_OFFSET(AcIsFdMoleCricket, half_38, 0x38);
 GUEST_OFFSET(AcIsFdMoleCricket, half_3a, 0x3a);
 GUEST_OFFSET(AcIsFdMoleCricket, half_3c, 0x3c);
-GUEST_OFFSET(AcIsFdMoleCricket, word_40, 0x40);
+GUEST_OFFSET(AcIsFdMoleCricket, float_40, 0x40);
 GUEST_OFFSET(AcIsFdMoleCricket, byte_44, 0x44);
 GUEST_OFFSET(AcIsFdMoleCricket, word_48, 0x48);
 GUEST_OFFSET(AcIsFdMoleCricket, word_4c, 0x4c);
@@ -23454,7 +23454,7 @@ GUEST_OFFSET(AcIsFdMoleCricket, byte_1cb, 0x1cb);
 GUEST_OFFSET(AcIsFdMoleCricket, byte_1cc, 0x1cc);
 GUEST_OFFSET(AcIsFdMoleCricket, byte_1cd, 0x1cd);
 GUEST_OFFSET(AcIsFdMoleCricket, word_1d0, 0x1d0);
-GUEST_OFFSET(AcIsFdMoleCricket, word_1d8, 0x1d8);
+GUEST_OFFSET(AcIsFdMoleCricket, float_1d8, 0x1d8);
 GUEST_OFFSET(AcIsFdMoleCricket, word_1dc, 0x1dc);
 GUEST_OFFSET(AcIsFdMoleCricket, word_228, 0x228);
 GUEST_OFFSET(AcIsFdMoleCricket, word_230, 0x230);
@@ -23914,7 +23914,7 @@ struct AcIsFdPillBug {
     u16 half_3a;
     u16 half_3c;
     u8 unknown_3e[0x2];  // (not used yet)
-    u32 word_40;
+    float float_40;
     u8 byte_44;
     u8 unknown_45[0x3];  // (not used yet)
     u32 word_48;
@@ -23990,7 +23990,7 @@ struct AcIsFdPillBug {
     u8 unknown_1ce[0x2];  // (not used yet)
     u32 word_1d0;
     u8 unknown_1d4[0x4];  // (not used yet)
-    u32 word_1d8;
+    float float_1d8;
     u32 word_1dc;
     u8 unknown_1e0[0x48];  // (not used yet)
     u32 word_228;
@@ -24028,7 +24028,7 @@ GUEST_OFFSET(AcIsFdPillBug, half_36, 0x36);
 GUEST_OFFSET(AcIsFdPillBug, half_38, 0x38);
 GUEST_OFFSET(AcIsFdPillBug, half_3a, 0x3a);
 GUEST_OFFSET(AcIsFdPillBug, half_3c, 0x3c);
-GUEST_OFFSET(AcIsFdPillBug, word_40, 0x40);
+GUEST_OFFSET(AcIsFdPillBug, float_40, 0x40);
 GUEST_OFFSET(AcIsFdPillBug, byte_44, 0x44);
 GUEST_OFFSET(AcIsFdPillBug, word_48, 0x48);
 GUEST_OFFSET(AcIsFdPillBug, word_4c, 0x4c);
@@ -24089,7 +24089,7 @@ GUEST_OFFSET(AcIsFdPillBug, byte_1cb, 0x1cb);
 GUEST_OFFSET(AcIsFdPillBug, byte_1cc, 0x1cc);
 GUEST_OFFSET(AcIsFdPillBug, byte_1cd, 0x1cd);
 GUEST_OFFSET(AcIsFdPillBug, word_1d0, 0x1d0);
-GUEST_OFFSET(AcIsFdPillBug, word_1d8, 0x1d8);
+GUEST_OFFSET(AcIsFdPillBug, float_1d8, 0x1d8);
 GUEST_OFFSET(AcIsFdPillBug, word_1dc, 0x1dc);
 GUEST_OFFSET(AcIsFdPillBug, word_228, 0x228);
 GUEST_OFFSET(AcIsFdPillBug, word_230, 0x230);
@@ -25665,7 +25665,7 @@ struct AcIsFdWaterBeetle {
     u8 unknown_238[0x8];  // (not used yet)
     u8 byte_240;
     u8 unknown_241[0x3];  // (not used yet)
-    u32 word_244;
+    float float_244;
 } __attribute__((packed));
 GUEST_OFFSET(AcIsFdWaterBeetle, word_0, 0x0);
 GUEST_OFFSET(AcIsFdWaterBeetle, word_4, 0x4);
@@ -25757,7 +25757,7 @@ GUEST_OFFSET(AcIsFdWaterBeetle, word_1e0, 0x1e0);
 GUEST_OFFSET(AcIsFdWaterBeetle, word_22c, 0x22c);
 GUEST_OFFSET(AcIsFdWaterBeetle, word_234, 0x234);
 GUEST_OFFSET(AcIsFdWaterBeetle, byte_240, 0x240);
-GUEST_OFFSET(AcIsFdWaterBeetle, word_244, 0x244);
+GUEST_OFFSET(AcIsFdWaterBeetle, float_244, 0x244);
 
 struct AcIsFdWaterStrider {
     u32 word_0;
@@ -26811,7 +26811,7 @@ struct AcIsMuDragonfly {
     u8 unknown_2cc[0x4];  // (not used yet)
     u32 word_2d0;
     u8 unknown_2d4[0x10];  // (not used yet)
-    u32 word_2e4;
+    float float_2e4;
     u32 word_2e8;
     u32 word_2ec;
     float float_2f0;
@@ -26895,7 +26895,7 @@ GUEST_OFFSET(AcIsMuDragonfly, float_114, 0x114);
 GUEST_OFFSET(AcIsMuDragonfly, float_118, 0x118);
 GUEST_OFFSET(AcIsMuDragonfly, word_2c8, 0x2c8);
 GUEST_OFFSET(AcIsMuDragonfly, word_2d0, 0x2d0);
-GUEST_OFFSET(AcIsMuDragonfly, word_2e4, 0x2e4);
+GUEST_OFFSET(AcIsMuDragonfly, float_2e4, 0x2e4);
 GUEST_OFFSET(AcIsMuDragonfly, word_2e8, 0x2e8);
 GUEST_OFFSET(AcIsMuDragonfly, word_2ec, 0x2ec);
 GUEST_OFFSET(AcIsMuDragonfly, float_2f0, 0x2f0);
@@ -73356,7 +73356,8 @@ struct AcStrcModelHouse {
     u8 unknown_8b[0x519];  // (not used yet)
     u32 word_5a4;
     u8 unknown_5a8[0x18];  // (not used yet)
-    u32 word_5c0;
+    u8 byte_5c0;
+    u8 unknown_5c1[0x3];  // (not used yet)
     u32 word_5c4;
     u8 byte_5c8;
     u8 unknown_5c9[0x3];  // (not used yet)
@@ -73409,7 +73410,7 @@ GUEST_OFFSET(AcStrcModelHouse, byte_87, 0x87);
 GUEST_OFFSET(AcStrcModelHouse, byte_88, 0x88);
 GUEST_OFFSET(AcStrcModelHouse, byte_8a, 0x8a);
 GUEST_OFFSET(AcStrcModelHouse, word_5a4, 0x5a4);
-GUEST_OFFSET(AcStrcModelHouse, word_5c0, 0x5c0);
+GUEST_OFFSET(AcStrcModelHouse, byte_5c0, 0x5c0);
 GUEST_OFFSET(AcStrcModelHouse, word_5c4, 0x5c4);
 GUEST_OFFSET(AcStrcModelHouse, byte_5c8, 0x5c8);
 GUEST_OFFSET(AcStrcModelHouse, word_5cc, 0x5cc);
@@ -76699,13 +76700,17 @@ GUEST_OFFSET(BingoMassNormal, word_430, 0x430);
 
 struct BiquadNwAdaptor {
     u32 word_0;
-    u32 word_4;
-    u32 word_8;
+    u16 half_4;
+    u16 half_6;
+    u16 half_8;
+    u16 half_a;
     u16 half_c;
 } __attribute__((packed));
 GUEST_OFFSET(BiquadNwAdaptor, word_0, 0x0);
-GUEST_OFFSET(BiquadNwAdaptor, word_4, 0x4);
-GUEST_OFFSET(BiquadNwAdaptor, word_8, 0x8);
+GUEST_OFFSET(BiquadNwAdaptor, half_4, 0x4);
+GUEST_OFFSET(BiquadNwAdaptor, half_6, 0x6);
+GUEST_OFFSET(BiquadNwAdaptor, half_8, 0x8);
+GUEST_OFFSET(BiquadNwAdaptor, half_a, 0xa);
 GUEST_OFFSET(BiquadNwAdaptor, half_c, 0xc);
 
 struct BkUnitSearchCandCb {
@@ -78391,10 +78396,10 @@ struct BsLightAmbientCatalog {
     u32 word_24;
     u8 unknown_28[0x4];  // (not used yet)
     float float_2c;
-    u32 word_30;
-    u32 word_34;
-    u32 word_38;
-    u32 word_3c;
+    float float_30;
+    float float_34;
+    float float_38;
+    float float_3c;
     float float_40;
 } __attribute__((packed));
 GUEST_OFFSET(BsLightAmbientCatalog, word_0, 0x0);
@@ -78411,10 +78416,10 @@ GUEST_OFFSET(BsLightAmbientCatalog, word_14, 0x14);
 GUEST_OFFSET(BsLightAmbientCatalog, word_20, 0x20);
 GUEST_OFFSET(BsLightAmbientCatalog, word_24, 0x24);
 GUEST_OFFSET(BsLightAmbientCatalog, float_2c, 0x2c);
-GUEST_OFFSET(BsLightAmbientCatalog, word_30, 0x30);
-GUEST_OFFSET(BsLightAmbientCatalog, word_34, 0x34);
-GUEST_OFFSET(BsLightAmbientCatalog, word_38, 0x38);
-GUEST_OFFSET(BsLightAmbientCatalog, word_3c, 0x3c);
+GUEST_OFFSET(BsLightAmbientCatalog, float_30, 0x30);
+GUEST_OFFSET(BsLightAmbientCatalog, float_34, 0x34);
+GUEST_OFFSET(BsLightAmbientCatalog, float_38, 0x38);
+GUEST_OFFSET(BsLightAmbientCatalog, float_3c, 0x3c);
 GUEST_OFFSET(BsLightAmbientCatalog, float_40, 0x40);
 
 struct BsLightAmbientClub {
@@ -78723,8 +78728,7 @@ struct BsLightDiffuseCatalog {
     u32 word_1ac;
     u32 word_1b0;
     u32 word_1b4;
-    u16 half_1b8;
-    u16 half_1ba;
+    float float_1b8;
     float float_1bc;
     u8 unknown_1c0[0x889481];  // (not used yet)
     u8 byte_889641;
@@ -78768,8 +78772,7 @@ GUEST_OFFSET(BsLightDiffuseCatalog, word_1a8, 0x1a8);
 GUEST_OFFSET(BsLightDiffuseCatalog, word_1ac, 0x1ac);
 GUEST_OFFSET(BsLightDiffuseCatalog, word_1b0, 0x1b0);
 GUEST_OFFSET(BsLightDiffuseCatalog, word_1b4, 0x1b4);
-GUEST_OFFSET(BsLightDiffuseCatalog, half_1b8, 0x1b8);
-GUEST_OFFSET(BsLightDiffuseCatalog, half_1ba, 0x1ba);
+GUEST_OFFSET(BsLightDiffuseCatalog, float_1b8, 0x1b8);
 GUEST_OFFSET(BsLightDiffuseCatalog, float_1bc, 0x1bc);
 GUEST_OFFSET(BsLightDiffuseCatalog, byte_889641, 0x889641);
 
@@ -78818,8 +78821,7 @@ struct BsLightDiffuseClub {
     u32 word_1ac;
     u32 word_1b0;
     u32 word_1b4;
-    u16 half_1b8;
-    u16 half_1ba;
+    float float_1b8;
     float float_1bc;
     float float_1c0;
     float float_1c4;
@@ -78954,8 +78956,7 @@ GUEST_OFFSET(BsLightDiffuseClub, word_1a8, 0x1a8);
 GUEST_OFFSET(BsLightDiffuseClub, word_1ac, 0x1ac);
 GUEST_OFFSET(BsLightDiffuseClub, word_1b0, 0x1b0);
 GUEST_OFFSET(BsLightDiffuseClub, word_1b4, 0x1b4);
-GUEST_OFFSET(BsLightDiffuseClub, half_1b8, 0x1b8);
-GUEST_OFFSET(BsLightDiffuseClub, half_1ba, 0x1ba);
+GUEST_OFFSET(BsLightDiffuseClub, float_1b8, 0x1b8);
 GUEST_OFFSET(BsLightDiffuseClub, float_1bc, 0x1bc);
 GUEST_OFFSET(BsLightDiffuseClub, float_1c0, 0x1c0);
 GUEST_OFFSET(BsLightDiffuseClub, float_1c4, 0x1c4);
@@ -79089,8 +79090,7 @@ struct BsLightDiffuseDarkroom {
     u32 word_1ac;
     u32 word_1b0;
     u32 word_1b4;
-    u16 half_1b8;
-    u16 half_1ba;
+    float float_1b8;
     float float_1bc;
     u8 unknown_1c0[0x889481];  // (not used yet)
     u8 byte_889641;
@@ -79134,8 +79134,7 @@ GUEST_OFFSET(BsLightDiffuseDarkroom, word_1a8, 0x1a8);
 GUEST_OFFSET(BsLightDiffuseDarkroom, word_1ac, 0x1ac);
 GUEST_OFFSET(BsLightDiffuseDarkroom, word_1b0, 0x1b0);
 GUEST_OFFSET(BsLightDiffuseDarkroom, word_1b4, 0x1b4);
-GUEST_OFFSET(BsLightDiffuseDarkroom, half_1b8, 0x1b8);
-GUEST_OFFSET(BsLightDiffuseDarkroom, half_1ba, 0x1ba);
+GUEST_OFFSET(BsLightDiffuseDarkroom, float_1b8, 0x1b8);
 GUEST_OFFSET(BsLightDiffuseDarkroom, float_1bc, 0x1bc);
 GUEST_OFFSET(BsLightDiffuseDarkroom, byte_889641, 0x889641);
 
@@ -79650,8 +79649,7 @@ struct BsLightDiffuseShowroom {
     u32 word_1ac;
     u32 word_1b0;
     u32 word_1b4;
-    u16 half_1b8;
-    u16 half_1ba;
+    float float_1b8;
     float float_1bc;
     u8 unknown_1c0[0x889481];  // (not used yet)
     u8 byte_889641;
@@ -79695,8 +79693,7 @@ GUEST_OFFSET(BsLightDiffuseShowroom, word_1a8, 0x1a8);
 GUEST_OFFSET(BsLightDiffuseShowroom, word_1ac, 0x1ac);
 GUEST_OFFSET(BsLightDiffuseShowroom, word_1b0, 0x1b0);
 GUEST_OFFSET(BsLightDiffuseShowroom, word_1b4, 0x1b4);
-GUEST_OFFSET(BsLightDiffuseShowroom, half_1b8, 0x1b8);
-GUEST_OFFSET(BsLightDiffuseShowroom, half_1ba, 0x1ba);
+GUEST_OFFSET(BsLightDiffuseShowroom, float_1b8, 0x1b8);
 GUEST_OFFSET(BsLightDiffuseShowroom, float_1bc, 0x1bc);
 GUEST_OFFSET(BsLightDiffuseShowroom, byte_889641, 0x889641);
 
@@ -79745,8 +79742,7 @@ struct BsLightFixBase {
     u32 word_1ac;
     u32 word_1b0;
     u32 word_1b4;
-    u16 half_1b8;
-    u16 half_1ba;
+    float float_1b8;
     float float_1bc;
     u8 unknown_1c0[0x889481];  // (not used yet)
     u8 byte_889641;
@@ -79790,8 +79786,7 @@ GUEST_OFFSET(BsLightFixBase, word_1a8, 0x1a8);
 GUEST_OFFSET(BsLightFixBase, word_1ac, 0x1ac);
 GUEST_OFFSET(BsLightFixBase, word_1b0, 0x1b0);
 GUEST_OFFSET(BsLightFixBase, word_1b4, 0x1b4);
-GUEST_OFFSET(BsLightFixBase, half_1b8, 0x1b8);
-GUEST_OFFSET(BsLightFixBase, half_1ba, 0x1ba);
+GUEST_OFFSET(BsLightFixBase, float_1b8, 0x1b8);
 GUEST_OFFSET(BsLightFixBase, float_1bc, 0x1bc);
 GUEST_OFFSET(BsLightFixBase, byte_889641, 0x889641);
 
@@ -79840,8 +79835,7 @@ struct BsLightFixDemo {
     u32 word_1ac;
     u32 word_1b0;
     u32 word_1b4;
-    u16 half_1b8;
-    u16 half_1ba;
+    float float_1b8;
     float float_1bc;
     u8 unknown_1c0[0xf0];  // (not used yet)
     float float_2b0;
@@ -79891,8 +79885,7 @@ GUEST_OFFSET(BsLightFixDemo, word_1a8, 0x1a8);
 GUEST_OFFSET(BsLightFixDemo, word_1ac, 0x1ac);
 GUEST_OFFSET(BsLightFixDemo, word_1b0, 0x1b0);
 GUEST_OFFSET(BsLightFixDemo, word_1b4, 0x1b4);
-GUEST_OFFSET(BsLightFixDemo, half_1b8, 0x1b8);
-GUEST_OFFSET(BsLightFixDemo, half_1ba, 0x1ba);
+GUEST_OFFSET(BsLightFixDemo, float_1b8, 0x1b8);
 GUEST_OFFSET(BsLightFixDemo, float_1bc, 0x1bc);
 GUEST_OFFSET(BsLightFixDemo, float_2b0, 0x2b0);
 GUEST_OFFSET(BsLightFixDemo, float_2b4, 0x2b4);
@@ -79946,8 +79939,7 @@ struct BsLightFixParam {
     u32 word_1ac;
     u32 word_1b0;
     u32 word_1b4;
-    u16 half_1b8;
-    u16 half_1ba;
+    float float_1b8;
     float float_1bc;
     u8 unknown_1c0[0x889481];  // (not used yet)
     u8 byte_889641;
@@ -79991,8 +79983,7 @@ GUEST_OFFSET(BsLightFixParam, word_1a8, 0x1a8);
 GUEST_OFFSET(BsLightFixParam, word_1ac, 0x1ac);
 GUEST_OFFSET(BsLightFixParam, word_1b0, 0x1b0);
 GUEST_OFFSET(BsLightFixParam, word_1b4, 0x1b4);
-GUEST_OFFSET(BsLightFixParam, half_1b8, 0x1b8);
-GUEST_OFFSET(BsLightFixParam, half_1ba, 0x1ba);
+GUEST_OFFSET(BsLightFixParam, float_1b8, 0x1b8);
 GUEST_OFFSET(BsLightFixParam, float_1bc, 0x1bc);
 GUEST_OFFSET(BsLightFixParam, byte_889641, 0x889641);
 
@@ -88512,7 +88503,7 @@ struct BsVrboxSky {
     u32 word_3e4;
     float float_3e8;
     u8 unknown_3ec[0x4];  // (not used yet)
-    u32 word_3f0;
+    float float_3f0;
     u32 word_3f4;
     u32 word_3f8;
     u32 word_3fc;
@@ -88536,7 +88527,7 @@ GUEST_OFFSET(BsVrboxSky, word_3d0, 0x3d0);
 GUEST_OFFSET(BsVrboxSky, word_3d8, 0x3d8);
 GUEST_OFFSET(BsVrboxSky, word_3e4, 0x3e4);
 GUEST_OFFSET(BsVrboxSky, float_3e8, 0x3e8);
-GUEST_OFFSET(BsVrboxSky, word_3f0, 0x3f0);
+GUEST_OFFSET(BsVrboxSky, float_3f0, 0x3f0);
 GUEST_OFFSET(BsVrboxSky, word_3f4, 0x3f4);
 GUEST_OFFSET(BsVrboxSky, word_3f8, 0x3f8);
 GUEST_OFFSET(BsVrboxSky, word_3fc, 0x3fc);
@@ -109577,7 +109568,7 @@ struct SoundBgmMgr {
     u8 unknown_9d[0x3];  // (not used yet)
     u32 word_a0;
     float float_a4;
-    u32 word_a8;
+    float float_a8;
     float float_ac;
     u32 word_b0;
     u8 byte_b4;
@@ -109635,7 +109626,7 @@ GUEST_OFFSET(SoundBgmMgr, word_98, 0x98);
 GUEST_OFFSET(SoundBgmMgr, byte_9c, 0x9c);
 GUEST_OFFSET(SoundBgmMgr, word_a0, 0xa0);
 GUEST_OFFSET(SoundBgmMgr, float_a4, 0xa4);
-GUEST_OFFSET(SoundBgmMgr, word_a8, 0xa8);
+GUEST_OFFSET(SoundBgmMgr, float_a8, 0xa8);
 GUEST_OFFSET(SoundBgmMgr, float_ac, 0xac);
 GUEST_OFFSET(SoundBgmMgr, word_b0, 0xb0);
 GUEST_OFFSET(SoundBgmMgr, byte_b4, 0xb4);
@@ -109951,14 +109942,14 @@ GUEST_OFFSET(SoundEnvMgr, word_94, 0x94);
 
 struct SoundFaderEx {
     u32 word_0;
-    u32 word_4;
+    float float_4;
     u32 word_8;
     float float_c;
     u32 word_10;
     u32 word_14;
 } __attribute__((packed));
 GUEST_OFFSET(SoundFaderEx, word_0, 0x0);
-GUEST_OFFSET(SoundFaderEx, word_4, 0x4);
+GUEST_OFFSET(SoundFaderEx, float_4, 0x4);
 GUEST_OFFSET(SoundFaderEx, word_8, 0x8);
 GUEST_OFFSET(SoundFaderEx, float_c, 0xc);
 GUEST_OFFSET(SoundFaderEx, word_10, 0x10);
@@ -109966,7 +109957,7 @@ GUEST_OFFSET(SoundFaderEx, word_14, 0x14);
 
 struct SoundFaderPlayer {
     u32 word_0;
-    u32 word_4;
+    float float_4;
     u32 word_8;
     float float_c;
     u32 word_10;
@@ -109974,7 +109965,7 @@ struct SoundFaderPlayer {
     u32 word_18;
 } __attribute__((packed));
 GUEST_OFFSET(SoundFaderPlayer, word_0, 0x0);
-GUEST_OFFSET(SoundFaderPlayer, word_4, 0x4);
+GUEST_OFFSET(SoundFaderPlayer, float_4, 0x4);
 GUEST_OFFSET(SoundFaderPlayer, word_8, 0x8);
 GUEST_OFFSET(SoundFaderPlayer, float_c, 0xc);
 GUEST_OFFSET(SoundFaderPlayer, word_10, 0x10);
@@ -109983,13 +109974,13 @@ GUEST_OFFSET(SoundFaderPlayer, word_18, 0x18);
 
 struct SoundFader_rec {
     u32 word_0;
-    u32 word_4;
+    float float_4;
     u32 word_8;
     float float_c;
     u32 word_10;
 } __attribute__((packed));
 GUEST_OFFSET(SoundFader_rec, word_0, 0x0);
-GUEST_OFFSET(SoundFader_rec, word_4, 0x4);
+GUEST_OFFSET(SoundFader_rec, float_4, 0x4);
 GUEST_OFFSET(SoundFader_rec, word_8, 0x8);
 GUEST_OFFSET(SoundFader_rec, float_c, 0xc);
 GUEST_OFFSET(SoundFader_rec, word_10, 0x10);
@@ -112140,7 +112131,7 @@ struct SoundTv11Talk {
     u8 byte_b4;
     u8 byte_b5;
     u8 unknown_b6[0x2e];  // (not used yet)
-    u32 word_e4;
+    float float_e4;
     u8 byte_e8;
 } __attribute__((packed));
 GUEST_OFFSET(SoundTv11Talk, word_0, 0x0);
@@ -112152,7 +112143,7 @@ GUEST_OFFSET(SoundTv11Talk, word_4c, 0x4c);
 GUEST_OFFSET(SoundTv11Talk, word_b0, 0xb0);
 GUEST_OFFSET(SoundTv11Talk, byte_b4, 0xb4);
 GUEST_OFFSET(SoundTv11Talk, byte_b5, 0xb5);
-GUEST_OFFSET(SoundTv11Talk, word_e4, 0xe4);
+GUEST_OFFSET(SoundTv11Talk, float_e4, 0xe4);
 GUEST_OFFSET(SoundTv11Talk, byte_e8, 0xe8);
 
 struct SoundTv12Anime {
@@ -112203,7 +112194,7 @@ struct SoundTv13Cooking {
     u8 byte_b4;
     u8 byte_b5;
     u8 unknown_b6[0x2e];  // (not used yet)
-    u32 word_e4;
+    float float_e4;
     u8 byte_e8;
 } __attribute__((packed));
 GUEST_OFFSET(SoundTv13Cooking, word_0, 0x0);
@@ -112215,7 +112206,7 @@ GUEST_OFFSET(SoundTv13Cooking, word_4c, 0x4c);
 GUEST_OFFSET(SoundTv13Cooking, word_b0, 0xb0);
 GUEST_OFFSET(SoundTv13Cooking, byte_b4, 0xb4);
 GUEST_OFFSET(SoundTv13Cooking, byte_b5, 0xb5);
-GUEST_OFFSET(SoundTv13Cooking, word_e4, 0xe4);
+GUEST_OFFSET(SoundTv13Cooking, float_e4, 0xe4);
 GUEST_OFFSET(SoundTv13Cooking, byte_e8, 0xe8);
 
 struct SoundTv14Exercize {
@@ -113129,7 +113120,7 @@ struct TakeOtherDelegate {
     u16 half_4;
     u8 unknown_6[0x2];  // (not used yet)
     u32 word_8;
-    u32 word_c;
+    float float_c;
     u32 word_10;
     u32 word_14;
     u32 word_18;
@@ -113137,7 +113128,7 @@ struct TakeOtherDelegate {
 } __attribute__((packed));
 GUEST_OFFSET(TakeOtherDelegate, half_4, 0x4);
 GUEST_OFFSET(TakeOtherDelegate, word_8, 0x8);
-GUEST_OFFSET(TakeOtherDelegate, word_c, 0xc);
+GUEST_OFFSET(TakeOtherDelegate, float_c, 0xc);
 GUEST_OFFSET(TakeOtherDelegate, word_10, 0x10);
 GUEST_OFFSET(TakeOtherDelegate, word_14, 0x14);
 GUEST_OFFSET(TakeOtherDelegate, word_18, 0x18);
@@ -118752,7 +118743,7 @@ struct esc__BsEscUkiModel {
     u8 unknown_208[0xc];  // (not used yet)
     u32 word_214;
     u8 unknown_218[0x60];  // (not used yet)
-    u32 word_278;
+    float float_278;
     u32 word_27c;
     u32 word_280;
     float float_284;
@@ -118801,7 +118792,7 @@ GUEST_OFFSET(esc__BsEscUkiModel, byte_1e4, 0x1e4);
 GUEST_OFFSET(esc__BsEscUkiModel, word_1f4, 0x1f4);
 GUEST_OFFSET(esc__BsEscUkiModel, word_204, 0x204);
 GUEST_OFFSET(esc__BsEscUkiModel, word_214, 0x214);
-GUEST_OFFSET(esc__BsEscUkiModel, word_278, 0x278);
+GUEST_OFFSET(esc__BsEscUkiModel, float_278, 0x278);
 GUEST_OFFSET(esc__BsEscUkiModel, word_27c, 0x27c);
 GUEST_OFFSET(esc__BsEscUkiModel, word_280, 0x280);
 GUEST_OFFSET(esc__BsEscUkiModel, float_284, 0x284);
@@ -119807,7 +119798,7 @@ struct escape__ActionChainModelFall {
     u32 word_4c;
     u32 word_50;
     u32 word_54;
-    u32 word_58;
+    float float_58;
     u32 word_5c;
     u32 word_60;
     float float_64;
@@ -119857,7 +119848,7 @@ GUEST_OFFSET(escape__ActionChainModelFall, word_48, 0x48);
 GUEST_OFFSET(escape__ActionChainModelFall, word_4c, 0x4c);
 GUEST_OFFSET(escape__ActionChainModelFall, word_50, 0x50);
 GUEST_OFFSET(escape__ActionChainModelFall, word_54, 0x54);
-GUEST_OFFSET(escape__ActionChainModelFall, word_58, 0x58);
+GUEST_OFFSET(escape__ActionChainModelFall, float_58, 0x58);
 GUEST_OFFSET(escape__ActionChainModelFall, word_5c, 0x5c);
 GUEST_OFFSET(escape__ActionChainModelFall, word_60, 0x60);
 GUEST_OFFSET(escape__ActionChainModelFall, float_64, 0x64);
@@ -120163,8 +120154,8 @@ struct escape__ActionChainVillaggerMove {
     float float_40;
     u32 word_44;
     u32 word_48;
-    u32 word_4c;
-    u32 word_50;
+    float float_4c;
+    float float_50;
     float float_54;
     float float_58;
     float float_5c;
@@ -120206,8 +120197,8 @@ GUEST_OFFSET(escape__ActionChainVillaggerMove, word_3c, 0x3c);
 GUEST_OFFSET(escape__ActionChainVillaggerMove, float_40, 0x40);
 GUEST_OFFSET(escape__ActionChainVillaggerMove, word_44, 0x44);
 GUEST_OFFSET(escape__ActionChainVillaggerMove, word_48, 0x48);
-GUEST_OFFSET(escape__ActionChainVillaggerMove, word_4c, 0x4c);
-GUEST_OFFSET(escape__ActionChainVillaggerMove, word_50, 0x50);
+GUEST_OFFSET(escape__ActionChainVillaggerMove, float_4c, 0x4c);
+GUEST_OFFSET(escape__ActionChainVillaggerMove, float_50, 0x50);
 GUEST_OFFSET(escape__ActionChainVillaggerMove, float_54, 0x54);
 GUEST_OFFSET(escape__ActionChainVillaggerMove, float_58, 0x58);
 GUEST_OFFSET(escape__ActionChainVillaggerMove, float_5c, 0x5c);
@@ -120252,9 +120243,9 @@ struct escape__ActionChainVillaggerTurn {
     u32 word_50;
     u32 word_54;
     u32 word_58;
-    u32 word_5c;
-    u32 word_60;
-    u32 word_64;
+    float float_5c;
+    float float_60;
+    float float_64;
     u8 byte_68;
     u8 unknown_69[0x3];  // (not used yet)
     float float_6c;
@@ -120290,9 +120281,9 @@ GUEST_OFFSET(escape__ActionChainVillaggerTurn, float_4c, 0x4c);
 GUEST_OFFSET(escape__ActionChainVillaggerTurn, word_50, 0x50);
 GUEST_OFFSET(escape__ActionChainVillaggerTurn, word_54, 0x54);
 GUEST_OFFSET(escape__ActionChainVillaggerTurn, word_58, 0x58);
-GUEST_OFFSET(escape__ActionChainVillaggerTurn, word_5c, 0x5c);
-GUEST_OFFSET(escape__ActionChainVillaggerTurn, word_60, 0x60);
-GUEST_OFFSET(escape__ActionChainVillaggerTurn, word_64, 0x64);
+GUEST_OFFSET(escape__ActionChainVillaggerTurn, float_5c, 0x5c);
+GUEST_OFFSET(escape__ActionChainVillaggerTurn, float_60, 0x60);
+GUEST_OFFSET(escape__ActionChainVillaggerTurn, float_64, 0x64);
 GUEST_OFFSET(escape__ActionChainVillaggerTurn, byte_68, 0x68);
 GUEST_OFFSET(escape__ActionChainVillaggerTurn, float_6c, 0x6c);
 GUEST_OFFSET(escape__ActionChainVillaggerTurn, float_70, 0x70);
@@ -124209,7 +124200,7 @@ struct escape__BsPitfallModel {
     float float_9c;
     u8 unknown_a0[0x4];  // (not used yet)
     u32 word_a4;
-    u32 word_a8;
+    float float_a8;
 } __attribute__((packed));
 GUEST_OFFSET(escape__BsPitfallModel, word_0, 0x0);
 GUEST_OFFSET(escape__BsPitfallModel, word_4, 0x4);
@@ -124234,7 +124225,7 @@ GUEST_OFFSET(escape__BsPitfallModel, word_60, 0x60);
 GUEST_OFFSET(escape__BsPitfallModel, byte_95, 0x95);
 GUEST_OFFSET(escape__BsPitfallModel, float_9c, 0x9c);
 GUEST_OFFSET(escape__BsPitfallModel, word_a4, 0xa4);
-GUEST_OFFSET(escape__BsPitfallModel, word_a8, 0xa8);
+GUEST_OFFSET(escape__BsPitfallModel, float_a8, 0xa8);
 
 struct escape__BsPlayerBase {
     u32 word_0;
@@ -134136,7 +134127,8 @@ struct event__EventEveryDate {
     u32 word_c;
     u32 word_10;
     u32 word_14;
-    u32 word_18;
+    u16 half_18;
+    u8 unknown_1a[0x2];  // (not used yet)
     u16 half_1c;
     u8 unknown_1e[0x6];  // (not used yet)
     u32 word_24;
@@ -134153,7 +134145,7 @@ GUEST_OFFSET(event__EventEveryDate, word_8, 0x8);
 GUEST_OFFSET(event__EventEveryDate, word_c, 0xc);
 GUEST_OFFSET(event__EventEveryDate, word_10, 0x10);
 GUEST_OFFSET(event__EventEveryDate, word_14, 0x14);
-GUEST_OFFSET(event__EventEveryDate, word_18, 0x18);
+GUEST_OFFSET(event__EventEveryDate, half_18, 0x18);
 GUEST_OFFSET(event__EventEveryDate, half_1c, 0x1c);
 GUEST_OFFSET(event__EventEveryDate, word_24, 0x24);
 GUEST_OFFSET(event__EventEveryDate, word_28, 0x28);
@@ -135903,9 +135895,9 @@ struct fgobj__ObjectLeaf {
     u8 byte_140;
     u8 byte_141;
     u8 unknown_142[0x2];  // (not used yet)
-    u32 word_144;
-    u32 word_148;
-    u32 word_14c;
+    float float_144;
+    float float_148;
+    float float_14c;
     u8 byte_150;
 } __attribute__((packed));
 GUEST_OFFSET(fgobj__ObjectLeaf, word_0, 0x0);
@@ -135978,9 +135970,9 @@ GUEST_OFFSET(fgobj__ObjectLeaf, word_138, 0x138);
 GUEST_OFFSET(fgobj__ObjectLeaf, float_13c, 0x13c);
 GUEST_OFFSET(fgobj__ObjectLeaf, byte_140, 0x140);
 GUEST_OFFSET(fgobj__ObjectLeaf, byte_141, 0x141);
-GUEST_OFFSET(fgobj__ObjectLeaf, word_144, 0x144);
-GUEST_OFFSET(fgobj__ObjectLeaf, word_148, 0x148);
-GUEST_OFFSET(fgobj__ObjectLeaf, word_14c, 0x14c);
+GUEST_OFFSET(fgobj__ObjectLeaf, float_144, 0x144);
+GUEST_OFFSET(fgobj__ObjectLeaf, float_148, 0x148);
+GUEST_OFFSET(fgobj__ObjectLeaf, float_14c, 0x14c);
 GUEST_OFFSET(fgobj__ObjectLeaf, byte_150, 0x150);
 
 struct fgobj__ObjectList {
@@ -136484,7 +136476,7 @@ struct fgobj__ObjectPresent {
     u32 word_134;
     u32 word_138;
     float float_13c;
-    u32 word_140;
+    float float_140;
     u8 unknown_144[0x2];  // (not used yet)
     u8 byte_146;
 } __attribute__((packed));
@@ -136556,7 +136548,7 @@ GUEST_OFFSET(fgobj__ObjectPresent, word_130, 0x130);
 GUEST_OFFSET(fgobj__ObjectPresent, word_134, 0x134);
 GUEST_OFFSET(fgobj__ObjectPresent, word_138, 0x138);
 GUEST_OFFSET(fgobj__ObjectPresent, float_13c, 0x13c);
-GUEST_OFFSET(fgobj__ObjectPresent, word_140, 0x140);
+GUEST_OFFSET(fgobj__ObjectPresent, float_140, 0x140);
 GUEST_OFFSET(fgobj__ObjectPresent, byte_146, 0x146);
 
 struct fgobj__ObjectScale {
@@ -138032,7 +138024,7 @@ struct g3d__MorphTransformAnimEvaluator {
     u32 word_2c;
     u32 word_30;
     u32 word_34;
-    u32 word_38;
+    float float_38;
     u32 word_3c;
     float float_40;
     float float_44;
@@ -138066,7 +138058,7 @@ GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, word_28, 0x28);
 GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, word_2c, 0x2c);
 GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, word_30, 0x30);
 GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, word_34, 0x34);
-GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, word_38, 0x38);
+GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, float_38, 0x38);
 GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, word_3c, 0x3c);
 GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, float_40, 0x40);
 GUEST_OFFSET(g3d__MorphTransformAnimEvaluator, float_44, 0x44);
@@ -141321,7 +141313,7 @@ struct minigame0__CstmCamera {
     float float_b4;
     u8 unknown_b8[0x4];  // (not used yet)
     float float_bc;
-    u32 word_c0;
+    float float_c0;
     u8 unknown_c4[0x4];  // (not used yet)
     u32 word_c8;
     u8 unknown_cc[0x8];  // (not used yet)
@@ -141410,7 +141402,7 @@ GUEST_OFFSET(minigame0__CstmCamera, float_a4, 0xa4);
 GUEST_OFFSET(minigame0__CstmCamera, float_b0, 0xb0);
 GUEST_OFFSET(minigame0__CstmCamera, float_b4, 0xb4);
 GUEST_OFFSET(minigame0__CstmCamera, float_bc, 0xbc);
-GUEST_OFFSET(minigame0__CstmCamera, word_c0, 0xc0);
+GUEST_OFFSET(minigame0__CstmCamera, float_c0, 0xc0);
 GUEST_OFFSET(minigame0__CstmCamera, word_c8, 0xc8);
 GUEST_OFFSET(minigame0__CstmCamera, byte_d4, 0xd4);
 GUEST_OFFSET(minigame0__CstmCamera, byte_d6, 0xd6);
@@ -142888,7 +142880,10 @@ GUEST_OFFSET(nn__fnd__ExpHeapBase, word_34, 0x34);
 GUEST_OFFSET(nn__fnd__ExpHeapBase, word_54, 0x54);
 
 struct nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock_ {
+    u8 unknown_0[0x54];  // (not used yet)
+    u32 word_54;
 } __attribute__((packed));
+GUEST_OFFSET(nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock_, word_54, 0x54);
 
 struct nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection__ {
     u32 word_0;
@@ -156198,8 +156193,7 @@ struct nn__pia__local__UdsBackgroundProcessJob {
     u32 word_220;
     u32 word_224;
     u32 word_228;
-    u8 byte_22c;
-    u8 unknown_22d[0x3];  // (not used yet)
+    float float_22c;
     u32 word_230;
     u32 word_234;
     u32 word_238;
@@ -156234,7 +156228,7 @@ GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, byte_154, 0x154);
 GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, word_220, 0x220);
 GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, word_224, 0x224);
 GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, word_228, 0x228);
-GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, byte_22c, 0x22c);
+GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, float_22c, 0x22c);
 GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, word_230, 0x230);
 GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, word_234, 0x234);
 GUEST_OFFSET(nn__pia__local__UdsBackgroundProcessJob, word_238, 0x238);
@@ -159895,7 +159889,7 @@ struct nw__gfx__AnimEvaluator {
     u32 word_2c;
     u32 word_30;
     u32 word_34;
-    u32 word_38;
+    float float_38;
     u32 word_3c;
     float float_40;
     float float_44;
@@ -159928,7 +159922,7 @@ GUEST_OFFSET(nw__gfx__AnimEvaluator, word_28, 0x28);
 GUEST_OFFSET(nw__gfx__AnimEvaluator, word_2c, 0x2c);
 GUEST_OFFSET(nw__gfx__AnimEvaluator, word_30, 0x30);
 GUEST_OFFSET(nw__gfx__AnimEvaluator, word_34, 0x34);
-GUEST_OFFSET(nw__gfx__AnimEvaluator, word_38, 0x38);
+GUEST_OFFSET(nw__gfx__AnimEvaluator, float_38, 0x38);
 GUEST_OFFSET(nw__gfx__AnimEvaluator, word_3c, 0x3c);
 GUEST_OFFSET(nw__gfx__AnimEvaluator, float_40, 0x40);
 GUEST_OFFSET(nw__gfx__AnimEvaluator, float_44, 0x44);
@@ -160031,7 +160025,7 @@ struct nw__gfx__BaseAnimEvaluator {
     u8 unknown_2c[0x4];  // (not used yet)
     u32 word_30;
     u8 unknown_34[0x4];  // (not used yet)
-    u32 word_38;
+    float float_38;
     u32 word_3c;
     float float_40;
     float float_44;
@@ -160056,7 +160050,7 @@ GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, word_20, 0x20);
 GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, word_24, 0x24);
 GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, word_28, 0x28);
 GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, word_30, 0x30);
-GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, word_38, 0x38);
+GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, float_38, 0x38);
 GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, word_3c, 0x3c);
 GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, float_40, 0x40);
 GUEST_OFFSET(nw__gfx__BaseAnimEvaluator, float_44, 0x44);
@@ -161309,7 +161303,7 @@ struct nw__gfx__TransformAnimEvaluator {
     u32 word_2c;
     u32 word_30;
     u32 word_34;
-    u32 word_38;
+    float float_38;
     u32 word_3c;
     float float_40;
     float float_44;
@@ -161341,7 +161335,7 @@ GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, word_28, 0x28);
 GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, word_2c, 0x2c);
 GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, word_30, 0x30);
 GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, word_34, 0x34);
-GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, word_38, 0x38);
+GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, float_38, 0x38);
 GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, word_3c, 0x3c);
 GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, float_40, 0x40);
 GUEST_OFFSET(nw__gfx__TransformAnimEvaluator, float_44, 0x44);
@@ -161443,12 +161437,13 @@ GUEST_OFFSET(nw__lyt__AnimTransformBasic, half_1c, 0x1c);
 
 struct nw__lyt__ArcResourceAccessor {
     u32 word_0;
-    u16 half_4;
-    u16 half_6;
-    u32 word_8;
-    u32 word_c;
-    u16 half_10;
-    u8 unknown_12[0xe];  // (not used yet)
+    u32 word_4;
+    u16 half_8;
+    u16 half_a;
+    u16 half_c;
+    u16 half_e;
+    u32 word_10;
+    u8 unknown_14[0xc];  // (not used yet)
     u32 word_20;
     u32 word_24;
     u32 word_28;
@@ -161458,11 +161453,12 @@ struct nw__lyt__ArcResourceAccessor {
     u32 word_38;
 } __attribute__((packed));
 GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_0, 0x0);
-GUEST_OFFSET(nw__lyt__ArcResourceAccessor, half_4, 0x4);
-GUEST_OFFSET(nw__lyt__ArcResourceAccessor, half_6, 0x6);
-GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_8, 0x8);
-GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_c, 0xc);
-GUEST_OFFSET(nw__lyt__ArcResourceAccessor, half_10, 0x10);
+GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_4, 0x4);
+GUEST_OFFSET(nw__lyt__ArcResourceAccessor, half_8, 0x8);
+GUEST_OFFSET(nw__lyt__ArcResourceAccessor, half_a, 0xa);
+GUEST_OFFSET(nw__lyt__ArcResourceAccessor, half_c, 0xc);
+GUEST_OFFSET(nw__lyt__ArcResourceAccessor, half_e, 0xe);
+GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_10, 0x10);
 GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_20, 0x20);
 GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_24, 0x24);
 GUEST_OFFSET(nw__lyt__ArcResourceAccessor, word_28, 0x28);
@@ -161754,18 +161750,20 @@ GUEST_OFFSET(nw__lyt__Picture, word_154, 0x154);
 
 struct nw__lyt__ResourceAccessor {
     u32 word_0;
-    u16 half_4;
-    u16 half_6;
-    u32 word_8;
-    u32 word_c;
-    u16 half_10;
+    u32 word_4;
+    u16 half_8;
+    u16 half_a;
+    u16 half_c;
+    u16 half_e;
+    u32 word_10;
 } __attribute__((packed));
 GUEST_OFFSET(nw__lyt__ResourceAccessor, word_0, 0x0);
-GUEST_OFFSET(nw__lyt__ResourceAccessor, half_4, 0x4);
-GUEST_OFFSET(nw__lyt__ResourceAccessor, half_6, 0x6);
-GUEST_OFFSET(nw__lyt__ResourceAccessor, word_8, 0x8);
-GUEST_OFFSET(nw__lyt__ResourceAccessor, word_c, 0xc);
-GUEST_OFFSET(nw__lyt__ResourceAccessor, half_10, 0x10);
+GUEST_OFFSET(nw__lyt__ResourceAccessor, word_4, 0x4);
+GUEST_OFFSET(nw__lyt__ResourceAccessor, half_8, 0x8);
+GUEST_OFFSET(nw__lyt__ResourceAccessor, half_a, 0xa);
+GUEST_OFFSET(nw__lyt__ResourceAccessor, half_c, 0xc);
+GUEST_OFFSET(nw__lyt__ResourceAccessor, half_e, 0xe);
+GUEST_OFFSET(nw__lyt__ResourceAccessor, word_10, 0x10);
 
 struct nw__lyt__TextBox {
     u32 word_0;
@@ -163732,6 +163730,16 @@ struct nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask {
     u32 word_1c;
     u8 unknown_20[0x18];  // (not used yet)
     u16 half_38;
+    u8 unknown_3a[0x132];  // (not used yet)
+    u32 word_16c;
+    u32 word_170;
+    u32 word_174;
+    u8 unknown_178[0x4];  // (not used yet)
+    u32 word_17c;
+    u32 word_180;
+    u32 word_184;
+    u32 word_188;
+    u8 byte_18c;
 } __attribute__((packed));
 GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_0, 0x0);
 GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_4, 0x4);
@@ -163742,6 +163750,14 @@ GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask,
 GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_18, 0x18);
 GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_1c, 0x1c);
 GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, half_38, 0x38);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_16c, 0x16c);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_170, 0x170);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_174, 0x174);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_17c, 0x17c);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_180, 0x180);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_184, 0x184);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, word_188, 0x188);
+GUEST_OFFSET(nw__snd__internal__driver__StreamSoundLoader__StreamHeaderLoadTask, byte_18c, 0x18c);
 
 struct nw__snd__internal__driver__StreamSoundPlayer {
     u32 word_0;
@@ -166230,8 +166246,8 @@ struct script__RenderMain {
     u32 word_0;
     u32 word_4;
     u32 word_8;
-    u32 word_c;
-    u32 word_10;
+    float float_c;
+    float float_10;
     u32 word_14;
     u32 word_18;
     u32 word_1c;
@@ -166243,8 +166259,8 @@ struct script__RenderMain {
     u32 word_34;
     u8 byte_38;
     u8 unknown_39[0x3];  // (not used yet)
-    u32 word_3c;
-    u32 word_40;
+    float float_3c;
+    float float_40;
     u32 word_44;
     u8 unknown_48[0x20];  // (not used yet)
     u32 word_68;
@@ -166264,8 +166280,8 @@ struct script__RenderMain {
 GUEST_OFFSET(script__RenderMain, word_0, 0x0);
 GUEST_OFFSET(script__RenderMain, word_4, 0x4);
 GUEST_OFFSET(script__RenderMain, word_8, 0x8);
-GUEST_OFFSET(script__RenderMain, word_c, 0xc);
-GUEST_OFFSET(script__RenderMain, word_10, 0x10);
+GUEST_OFFSET(script__RenderMain, float_c, 0xc);
+GUEST_OFFSET(script__RenderMain, float_10, 0x10);
 GUEST_OFFSET(script__RenderMain, word_14, 0x14);
 GUEST_OFFSET(script__RenderMain, word_18, 0x18);
 GUEST_OFFSET(script__RenderMain, word_1c, 0x1c);
@@ -166276,8 +166292,8 @@ GUEST_OFFSET(script__RenderMain, word_2c, 0x2c);
 GUEST_OFFSET(script__RenderMain, word_30, 0x30);
 GUEST_OFFSET(script__RenderMain, word_34, 0x34);
 GUEST_OFFSET(script__RenderMain, byte_38, 0x38);
-GUEST_OFFSET(script__RenderMain, word_3c, 0x3c);
-GUEST_OFFSET(script__RenderMain, word_40, 0x40);
+GUEST_OFFSET(script__RenderMain, float_3c, 0x3c);
+GUEST_OFFSET(script__RenderMain, float_40, 0x40);
 GUEST_OFFSET(script__RenderMain, word_44, 0x44);
 GUEST_OFFSET(script__RenderMain, word_68, 0x68);
 GUEST_OFFSET(script__RenderMain, word_78, 0x78);
@@ -177094,17 +177110,7 @@ struct sead__AudioSoundDataMgrCtr {
     u32 word_4;
     u32 word_8;
     u32 word_c;
-    u8 unknown_10[0x15c];  // (not used yet)
-    u32 word_16c;
-    u32 word_170;
-    u32 word_174;
-    u8 unknown_178[0x4];  // (not used yet)
-    u32 word_17c;
-    u32 word_180;
-    u32 word_184;
-    u32 word_188;
-    u8 byte_18c;
-    u8 unknown_18d[0x8b];  // (not used yet)
+    u8 unknown_10[0x208];  // (not used yet)
     u32 word_218;
     u32 word_21c;
     u32 word_220;
@@ -177116,14 +177122,6 @@ GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_0, 0x0);
 GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_4, 0x4);
 GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_8, 0x8);
 GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_c, 0xc);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_16c, 0x16c);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_170, 0x170);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_174, 0x174);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_17c, 0x17c);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_180, 0x180);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_184, 0x184);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_188, 0x188);
-GUEST_OFFSET(sead__AudioSoundDataMgrCtr, byte_18c, 0x18c);
 GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_218, 0x218);
 GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_21c, 0x21c);
 GUEST_OFFSET(sead__AudioSoundDataMgrCtr, word_220, 0x220);
@@ -179610,7 +179608,7 @@ struct sead__FaderTaskBase {
     u8 unknown_180[0x4];  // (not used yet)
     u32 word_184;
     u8 unknown_188[0x4c];  // (not used yet)
-    u32 word_1d4;
+    float float_1d4;
     u32 word_1d8;
     u32 word_1dc;
     u32 word_1e0;
@@ -179648,7 +179646,7 @@ GUEST_OFFSET(sead__FaderTaskBase, byte_130, 0x130);
 GUEST_OFFSET(sead__FaderTaskBase, word_134, 0x134);
 GUEST_OFFSET(sead__FaderTaskBase, word_17c, 0x17c);
 GUEST_OFFSET(sead__FaderTaskBase, word_184, 0x184);
-GUEST_OFFSET(sead__FaderTaskBase, word_1d4, 0x1d4);
+GUEST_OFFSET(sead__FaderTaskBase, float_1d4, 0x1d4);
 GUEST_OFFSET(sead__FaderTaskBase, word_1d8, 0x1d8);
 GUEST_OFFSET(sead__FaderTaskBase, word_1dc, 0x1dc);
 GUEST_OFFSET(sead__FaderTaskBase, word_1e0, 0x1e0);
@@ -182844,7 +182842,7 @@ struct sead__NullFaderTask {
     u8 unknown_180[0x4];  // (not used yet)
     u32 word_184;
     u8 unknown_188[0x4c];  // (not used yet)
-    u32 word_1d4;
+    float float_1d4;
     u32 word_1d8;
     u32 word_1dc;
     u32 word_1e0;
@@ -182882,7 +182880,7 @@ GUEST_OFFSET(sead__NullFaderTask, byte_130, 0x130);
 GUEST_OFFSET(sead__NullFaderTask, word_134, 0x134);
 GUEST_OFFSET(sead__NullFaderTask, word_17c, 0x17c);
 GUEST_OFFSET(sead__NullFaderTask, word_184, 0x184);
-GUEST_OFFSET(sead__NullFaderTask, word_1d4, 0x1d4);
+GUEST_OFFSET(sead__NullFaderTask, float_1d4, 0x1d4);
 GUEST_OFFSET(sead__NullFaderTask, word_1d8, 0x1d8);
 GUEST_OFFSET(sead__NullFaderTask, word_1dc, 0x1dc);
 GUEST_OFFSET(sead__NullFaderTask, word_1e0, 0x1e0);
@@ -184743,12 +184741,13 @@ GUEST_OFFSET(ssys__ma__lyt__ArcResAcc, word_14c, 0x14c);
 
 struct ssys__ma__lyt__ArcResourceAccessorVRAM {
     u32 word_0;
-    u16 half_4;
-    u16 half_6;
-    u32 word_8;
-    u32 word_c;
-    u16 half_10;
-    u8 unknown_12[0xe];  // (not used yet)
+    u32 word_4;
+    u16 half_8;
+    u16 half_a;
+    u16 half_c;
+    u16 half_e;
+    u32 word_10;
+    u8 unknown_14[0xc];  // (not used yet)
     u32 word_20;
     u32 word_24;
     u32 word_28;
@@ -184762,11 +184761,12 @@ struct ssys__ma__lyt__ArcResourceAccessorVRAM {
     u32 word_144;
 } __attribute__((packed));
 GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_0, 0x0);
-GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, half_4, 0x4);
-GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, half_6, 0x6);
-GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_8, 0x8);
-GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_c, 0xc);
-GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, half_10, 0x10);
+GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_4, 0x4);
+GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, half_8, 0x8);
+GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, half_a, 0xa);
+GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, half_c, 0xc);
+GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, half_e, 0xe);
+GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_10, 0x10);
 GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_20, 0x20);
 GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_24, 0x24);
 GUEST_OFFSET(ssys__ma__lyt__ArcResourceAccessorVRAM, word_28, 0x28);

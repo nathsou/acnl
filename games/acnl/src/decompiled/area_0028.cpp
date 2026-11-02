@@ -200,7 +200,7 @@ void f_00280ea0(gptr<Object_00280ea0_0> arg0, u32 r1, float S0, float S1, float 
             S1 = 0.05f;
             *gptr<u32>(r1) = r0_1 + 1u;
             r1 = arg0.addr() + 0x800u;  // (from the original)
-            S2 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r0_1 + 1u)))) * S1;
+            S2 = float(s32(r0_1 + 1u)) * S1;
             S0 = std::bit_cast<float>(*gptr<u32>(r1 + 0x2e0u)) * S2;  // (from the original)
             *gptr<u32>(r1 + 0x2dcu) = std::bit_cast<u32>(S0);  // (from the original)
             if (r2_1 != 0) {
@@ -2140,7 +2140,7 @@ void f_0028ac60(u32 r0, float S0, float S1, float S2, float S3, float S4, float 
             r0_4->float_18 = S6;
             r0_4->float_1c = S7;
             do {
-                u32 r1_4 = *gptr<u32>(r8 + (r4 << 2));
+                u32 r1_4 = gptr<u32>(r8)[r4];
                 guest::cpu()->s[0] = S0;
                 guest::cpu()->s[1] = S1;
                 guest::cpu()->s[2] = S2;
@@ -2150,7 +2150,7 @@ void f_0028ac60(u32 r0, float S0, float S1, float S2, float S3, float S4, float 
                 guest::cpu()->s[6] = S6;
                 guest::cpu()->s[7] = S7;
                 u32 r0_6 = call_0056878c(r5 + 0x294u, r1_4, r2, r3);  // (from the original)
-                u32 r0_8 = call_0056878c(r5 + 0x294u, *gptr<u32>(r7 + (r4 << 2)), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+                u32 r0_8 = call_0056878c(r5 + 0x294u, gptr<u32>(r7)[r4], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
                 call_0028aae4(r5, r0_8, r0_6);
                 r2 = guest::cpu()->r[2];
                 r3 = guest::cpu()->r[3];
@@ -2190,7 +2190,7 @@ void f_0028ac60(u32 r0, float S0, float S1, float S2, float S3, float S4, float 
     r0_9->float_18 = S6;
     r0_9->float_1c = S7;
     do {
-        u32 r1_6 = *gptr<u32>(r8 + (r4 << 2));
+        u32 r1_6 = gptr<u32>(r8)[r4];
         guest::cpu()->s[0] = S0;
         guest::cpu()->s[1] = S1;
         guest::cpu()->s[2] = S2;
@@ -2200,7 +2200,7 @@ void f_0028ac60(u32 r0, float S0, float S1, float S2, float S3, float S4, float 
         guest::cpu()->s[6] = S6;
         guest::cpu()->s[7] = S7;
         u32 r0_11 = call_0056878c(r5 + 0x294u, r1_6, r2, r3);  // (from the original)
-        u32 r0_13 = call_0056878c(r5 + 0x294u, *gptr<u32>(r7 + (r4 << 2)), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        u32 r0_13 = call_0056878c(r5 + 0x294u, gptr<u32>(r7)[r4], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
         call_0028aae4(r5, r0_13, r0_11);
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
@@ -3141,7 +3141,7 @@ u32 f_0028f8bc(gptr<Object_0028f8bc_0> arg0, gptr<Object_0028f8bc_1> arg1) {
     } else {
         S0_3 = S1_2;
     }
-    u32 r2_1 = *gptr<u32>((u32(*global_00995644) << 2) + 0x97534cu);  // (from the original)
+    u32 r2_1 = gptr<u32>(0x97534cu)[u32(*global_00995644)];  // (from the original)
     u32 r1_1 = *global_00995640;
     guest::cpu()->s[0] = S0_3;
     guest::cpu()->s[1] = S1_2;

@@ -84,12 +84,12 @@ u32 f_00631cc0(u32 r0_unused, gptr<Object_00631cc0_1> arg1, u32 r2) {
         guest::cpu()->r[1] = r1;
         return 0u;
     }
-    u32 r1_1 = *gptr<u16>((r2 << 1) + 0x842614u);  // (from the original)
+    u32 r1_1 = gptr<u16>(0x842614u)[r2];  // (from the original)
     if (r1_1 == r0) {
         guest::cpu()->r[1] = r1_1;
         return 1u;
     }
-    u32 r1_2 = *gptr<u16>((r2 << 1) + 0x842622u);  // (from the original)
+    u32 r1_2 = gptr<u16>(0x842622u)[r2];  // (from the original)
     if (r1_2 != r0) {
         guest::cpu()->r[1] = r1_2;
         return 0u;
@@ -937,7 +937,7 @@ void f_0063da4c(gptr<Object_0063da4c_0> arg0, u32 r1, gptr<Object_0063da4c_2> ar
     if (r0_3 >= 5u) {
         return;
     }
-    u32 r1_3 = *gptr<u16>((r0_3 << 1) + 0x841980u);  // (from the original)
+    u32 r1_3 = gptr<u16>(0x841980u)[r0_3];  // (from the original)
     u32 r0_4 = frame.at(0xc).addr();  // (from the original)
     arg0->half_270 = u16(r1_3);
     call_002fcbb0(r0_4, r1_3);

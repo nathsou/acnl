@@ -448,11 +448,11 @@ void f_00673ac4(u32 r0, gptr<Object_00673ac4_1> arg1, gptr<Object_00673ac4_2> ar
     ea_1->word_14 = r14;
     u32 r0_1 = call_00656c20(r0, arg1.addr(), arg2.addr(), r3);
     float S0_1 = 4.0f;
-    u32 r1_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg1->float_0 * S0_1)));
+    u32 r1_1 = vcvt_sz_f(arg1->float_0 * S0_1);
     frame->half_0 = u16(r1_1);
     gptr<Local_00673ac4_ea_3> ea_3 = gptr<Local_00673ac4_ea_3>(r0_1 + 0xeu);  // (from the original)
     ea_3->half_0 = u16(r1_1);
-    u32 r3_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg1->float_4 * S0_1)));
+    u32 r3_1 = vcvt_sz_f(arg1->float_4 * S0_1);
     frame->half_0 = u16(r3_1);
     *gptr<u16>(ea_3.addr() + 2u) = u16(r3_1);
     float S1_1 = arg1->float_8;
@@ -977,9 +977,10 @@ GUEST_EXPORT_FRAMED(0x0067bda8, d_0067bda8::f_0067bda8, 0x4030);  // pushes {r4,
 // f_0067be68: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0067be68 {
 
+inline guest::global<u32, 0x00886c44> global_00886c44;
 
 u32 f_0067be68() {
-    float S0_1 = float(std::bit_cast<u32>(1.1e-44f));
+    float S0_1 = float(*global_00886c44);
     guest::cpu()->s[0] = S0_1;
     return 0x886c44u;  // (from the original)
 }
@@ -990,9 +991,10 @@ GUEST_EXPORT(0x0067be68, d_0067be68::f_0067be68);
 // f_0067be7c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0067be7c {
 
+inline guest::global<u32, 0x00886c48> global_00886c48;
 
 u32 f_0067be7c() {
-    float S0_1 = float(std::bit_cast<u32>(8e-45f));
+    float S0_1 = float(*global_00886c48);
     guest::cpu()->s[0] = S0_1;
     return 0x886c48u;  // (from the original)
 }
@@ -1018,9 +1020,10 @@ GUEST_EXPORT(0x0067be90, d_0067be90::f_0067be90);
 // f_0067beac: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0067beac {
 
+inline guest::global<u32, 0x00886c48> global_00886c48;
 
 u32 f_0067beac() {
-    float S0_1 = float(std::bit_cast<u32>(8e-45f));
+    float S0_1 = float(*global_00886c48);
     guest::cpu()->s[0] = S0_1;
     return 0x886c48u;  // (from the original)
 }
@@ -1409,10 +1412,10 @@ void f_0067f0c8(u32 r0, u32 r1, u32 r2, gptr<Object_0067f0c8_3> arg3, float S0, 
     r0_2->byte_0 = u8(r2);
     gptr<Local_0067f0c8_r0_3> r0_3 = gptr<Local_0067f0c8_r0_3>(r0_2.addr() + 2u);
     if (arg3.addr() != 0) {
-        u32 r1_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg3->float_0 * S0_1)));
+        u32 r1_1 = vcvt_sz_f(arg3->float_0 * S0_1);
         frame->half_0 = u16(r1_1);
         r0_3->half_0 = u16(r1_1);
-        u32 r3_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg3->float_4 * S0_1)));
+        u32 r3_1 = vcvt_sz_f(arg3->float_4 * S0_1);
         frame->half_0 = u16(r3_1);
         r0_3->half_2 = u16(r3_1);
         S1_1 = arg3->float_8;
@@ -1421,10 +1424,10 @@ void f_0067f0c8(u32 r0, u32 r1, u32 r2, gptr<Object_0067f0c8_3> arg3, float S0, 
         frame->half_0 = u16(r1_2);
         r0_3->half_4 = u16(r1_2);
     } else {
-        u32 r1_3 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(std::bit_cast<float>(*global_00ae5658) * S0_1)));
+        u32 r1_3 = vcvt_sz_f(std::bit_cast<float>(*global_00ae5658) * S0_1);
         frame->half_0 = u16(r1_3);
         r0_3->half_0 = u16(r1_3);
-        u32 r12_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(std::bit_cast<float>(*global_00ae565c) * S0_1)));
+        u32 r12_1 = vcvt_sz_f(std::bit_cast<float>(*global_00ae565c) * S0_1);
         frame->half_0 = u16(r12_1);
         r0_3->half_2 = u16(r12_1);
         S1_1 = std::bit_cast<float>(*global_00ae5660);
@@ -1564,10 +1567,10 @@ u32 f_0067f208(u32 r0, u32 r1, gptr<Object_0067f208_2> arg2, u32 r3, float S0, f
     u32 r5_1 = r0_1 + 0xeu;  // (from the original)
     call_005d41b8(r0_1 + 0x14u, r1);  // (from the original)
     float S0_2 = 4.0f;
-    u32 r0_3 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg2->float_0 * S0_2)));
+    u32 r0_3 = vcvt_sz_f(arg2->float_0 * S0_2);
     frame->half_0 = u16(r0_3);
     *gptr<u16>(r5_1) = u16(r0_3);
-    u32 r1_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg2->float_4 * S0_2)));
+    u32 r1_1 = vcvt_sz_f(arg2->float_4 * S0_2);
     frame->half_0 = u16(r1_1);
     *gptr<u16>(r5_1 + 2u) = u16(r1_1);
     float S1_2 = arg2->float_8;

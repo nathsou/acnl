@@ -623,7 +623,7 @@ u32 f_001a40e8(gptr<Object_001a40e8_0> arg0, gptr<Float3> arg1, float S0, float 
     u32 r0_3 = call_002f74c8(r0_2.addr());
     u32 r0_4 = call_002f74e0(8u, r0_3);
     if (r0_4 != 0) {
-        float S0_5 = std::bit_cast<float>(vcvt_sz_f(float(std::bit_cast<u32>(std::bit_cast<float>(u32(arg0->byte_1a8)))) * 30.0f * 182.04445f));
+        float S0_5 = std::bit_cast<float>(vcvt_sz_f(float(u32(arg0->byte_1a8)) * 30.0f * 182.04445f));
         *frame.at<u16>(0) = u16(0u - std::bit_cast<u32>(S0_5));
         u32 r1_3 = *frame.at<u32>(0);
         guest::cpu()->s[0] = S0_5;
@@ -1119,10 +1119,10 @@ void f_001a77a0(gptr<Object_001a77a0_0> arg0, u32 r1, u32 r2, u32 r3) {
                 }
                 u32 r0_7 = call_0076880c(r1, r1_2, r2_4, r3_4);
                 u32 r0_8 = call_007689a4(r1);
-                r1_1 = *gptr<u32>(arg0.addr() + (r0_7 << 2)) + 1u;
+                r1_1 = gptr<u32>(arg0.addr())[r0_7] + 1u;
                 *gptr<u32>(arg0.addr() + (r0_7 << 2)) = r1_1;
                 if (r0_7 != r0_8) {
-                    r1_1 = *gptr<u32>(arg0.addr() + (r0_8 << 2)) + 1u;
+                    r1_1 = gptr<u32>(arg0.addr())[r0_8] + 1u;
                     *gptr<u32>(arg0.addr() + (r0_8 << 2)) = r1_1;
                 }
             }
@@ -2476,7 +2476,7 @@ void f_001acf0c(u32 r0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2) {
     if (r6_1 != 0) {
         S2_1 = 3.0f;
         gptr<Local_001acf0c_r0_4> r0_4 = gptr<Local_001acf0c_r0_4>(*gptr<u32>(r0 + 0x150u));  // (from the original)
-        S1_1 = float(std::bit_cast<u32>(std::bit_cast<float>(r1)));
+        S1_1 = float(r1);
         S0_1 = std::bit_cast<float>(*gptr<u32>(r0 + 0x3ccu)) + S1_1 * S2_1;  // (from the original)
         r0_4->float_2c = S0_1;
         r0_4->byte_b7 = u8(u32(r0_4->byte_b7) & 0xcfu);  // (from the original)
@@ -2485,11 +2485,11 @@ void f_001acf0c(u32 r0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2) {
     guest::cpu()->s[1] = S1_1;
     guest::cpu()->s[2] = S2_1;
     call_004b9b64(r0 + 4u, r0 + 0x21cu, r2_1, r3_1);  // (from the original)
-    float S0_2 = float(std::bit_cast<u32>(std::bit_cast<float>(u32(*gptr<u8>(r0 + 0x3d8u)))));  // (from the original)
+    float S0_2 = float(u32(*gptr<u8>(r0 + 0x3d8u)));  // (from the original)
     guest::cpu()->s[0] = S0_2;
     call_005697e0(r0 + 0x21cu);  // (from the original)
     call_004b9b64(r0 + 4u, r0 + 0x244u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    float S0_4 = float(std::bit_cast<u32>(std::bit_cast<float>(u32(*gptr<u8>(r0 + 0x3d8u)))));  // (from the original)
+    float S0_4 = float(u32(*gptr<u8>(r0 + 0x3d8u)));  // (from the original)
     guest::cpu()->s[0] = S0_4;
     call_005697e0(r0 + 0x244u);  // (from the original)
     call_00568c10(r0 + 4u);
@@ -2794,17 +2794,17 @@ void f_001aede0(gptr<Object_001aede0_0> arg0, u32 r1, u32 r2, u32 r3) {
     u32 r3_1 = r3 + 1u;
     u32 r12_1 = *frame.at<u32>(0x28);  // (from the original)
     u32 r14 = frame.at(8).addr();
-    frame->float_0 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1)))) * S0_1;
-    frame->float_4 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r2)))) * S0_1;
+    frame->float_0 = float(s32(r1)) * S0_1;
+    frame->float_4 = float(s32(r2)) * S0_1;
     float S1_1 = std::bit_cast<float>(r2);
-    *gptr<u32>(r14) = std::bit_cast<u32>(float(s32(std::bit_cast<u32>(std::bit_cast<float>(r3_1)))) * S0_1);
+    *gptr<u32>(r14) = std::bit_cast<u32>(float(s32(r3_1)) * S0_1);
     *gptr<u32>(r14 + 4) = std::bit_cast<u32>(float(s32(std::bit_cast<u32>(S1_1))) * S0_1);
     float S1_2 = std::bit_cast<float>(r1);
     r14 = frame.at(0x10).addr();  // (from the original)
     *gptr<u32>(r14) = std::bit_cast<u32>(float(s32(std::bit_cast<u32>(S1_2))) * S0_1);
-    *gptr<u32>(r14 + 4) = std::bit_cast<u32>(float(s32(std::bit_cast<u32>(std::bit_cast<float>(r12_1 + 1u)))) * S0_1);
+    *gptr<u32>(r14 + 4) = std::bit_cast<u32>(float(s32(r12_1 + 1u)) * S0_1);
     float S2_1 = std::bit_cast<float>(r12_1 + 1u);
-    float S1_3 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r3_1)))) * S0_1;
+    float S1_3 = float(s32(r3_1)) * S0_1;
     float S0_2 = float(s32(std::bit_cast<u32>(S2_1))) * S0_1;
     frame->float_18 = S1_3;
     frame->float_1c = S0_2;
@@ -3024,7 +3024,7 @@ u32 f_001aff90(u32 r0_unused, u32 r1, u32 r2, u32 r3) {
         u32 r0_1 = call_002fe7dc(0x953394u, r1, r2, r3);  // (from the original)
         if (r0_1 != 0) {
             u32 r0_2 = call_005d46dc(r0_1);
-            *global_00953398 = *gptr<u32>((r0_2 << 2) + 0x95339cu);  // (from the original)
+            *global_00953398 = gptr<u32>(0x95339cu)[r0_2];  // (from the original)
         }
     }
     frame->word_4 = *global_00953398;

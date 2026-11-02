@@ -2272,7 +2272,7 @@ void f_001df14c(gptr<Object_001df14c_0> arg0, u32 r1) {
     } else {
         r2 = 5u;
 L_1df18c:;
-        if (*gptr<u32>(r4 + (r2 << 2)) <= r1) {
+        if (gptr<u32>(r4)[r2] <= r1) {
             r12 = r2 & 0xffu;  // (from the original)
         } else {
             r2 -= 1u;
@@ -2287,7 +2287,7 @@ L_1df18c:;
         return;
     }
 L_1df1bc:;
-    if (*gptr<u32>(r4 + (r2 << 2)) <= r1) {
+    if (gptr<u32>(r4)[r2] <= r1) {
         r12 = r2 & 0xffu;  // (from the original)
     } else {
         r2 -= 1u;

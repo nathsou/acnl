@@ -328,7 +328,7 @@ u32 f_008266bc(u32 r0, u32 r1, u32 r2, gptr<Object_008266bc_3> arg3) {
     }
     u32 r0_2 = r8 + u32(s32(r11) >> 1);
     if (!(r0_2 >> 0x1f)) {  // (from the original)
-        r12 = u32(*gptr<u16>(r6 + (r0_2 << 1))) ^ ror32(r12, 5);
+        r12 = u32(gptr<u16>(r6)[r0_2]) ^ ror32(r12, 5);
     }
     frame->word_8 = r14 << 1;
     frame->word_4 = r6;
@@ -365,7 +365,7 @@ u32 f_008266bc(u32 r0, u32 r1, u32 r2, gptr<Object_008266bc_3> arg3) {
         }
         u32 r1_1 = r8 + u32(s32(r6) >> 1);
         if (!(r1_1 >> 0x1f)) {  // (from the original)
-            r0 = u32(*gptr<u16>(r3 + (r1_1 << 1))) ^ ror32(r0, 5);
+            r0 = u32(gptr<u16>(r3)[r1_1]) ^ ror32(r0, 5);
         }
         frame->word_8 = r5 << 1;
         frame->word_0 = r0;

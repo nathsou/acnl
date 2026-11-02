@@ -637,9 +637,9 @@ void f_00213930(gptr<Object_00213930_0> arg0) {
     float S4_1 = r1_2->float_4;
     float S5_1 = r1_2->float_8;
     gptr<Local_00213930_r1_3> r1_3 = gptr<Local_00213930_r1_3>(frame.at(4).addr());
-    float S2_3 = S3_3 - float(s32(std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg0->float_3b8 * S0_3)))));
-    float S1_3 = S5_1 - float(s32(std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg0->float_3c0 * S0_3)))));
-    float S0_4 = S4_1 - float(s32(std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(arg0->float_3bc * S0_3)))));
+    float S2_3 = S3_3 - float(s32(vcvt_sz_f(arg0->float_3b8 * S0_3)));
+    float S1_3 = S5_1 - float(s32(vcvt_sz_f(arg0->float_3c0 * S0_3)));
+    float S0_4 = S4_1 - float(s32(vcvt_sz_f(arg0->float_3bc * S0_3)));
     frame->float_0 = S2_3;
     r1_3->float_0 = S0_4;
     r1_3->float_4 = S1_3;
@@ -1068,7 +1068,7 @@ u32 f_002198b4(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2, float S3) {
     u32 r0_1 = call_002f74c8(r0, r1, r2, guest::cpu()->r[3]);
     u32 r0_2 = call_002f74e0(4u, r0_1);
     u32 zf_1 = r0_2 == 0;
-    u32 r0_3 = r2 + (r2 << 1);
+    u32 r0_3 = r2 * 3u;
     gptr<Local_002198b4_r4_1> r4_1 = gptr<Local_002198b4_r4_1>(r0 + (r2 << 2));
     u32 r1_1 = r0 + (r0_3 << 2) + 0x59cu;  // (from the original)
     u32 r5_1 = r0 + (r0_3 << 5) + 0x5e4u;  // (from the original)
@@ -1527,7 +1527,7 @@ inline constexpr guest::Function<0x00568984, u32(u32, u32, u32, u32)> call_00568
 u32 f_0021fe04(gptr<Object_0021fe04_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r6_1 = arg0.addr() + 0xb000u;  // (from the original)
-    u32 r0_2 = call_004b4fc0(arg0->word_b2f4, *gptr<u32>((r1 << 2) + 0x94fc50u), 1u, r3);  // (from the original)
+    u32 r0_2 = call_004b4fc0(arg0->word_b2f4, gptr<u32>(0x94fc50u)[r1], 1u, r3);  // (from the original)
     u32 r0_3 = arg0->word_b2f4;
     frame.release();
     return call_00568984(r0_3, (arg0.addr() + r1 * 0x28u) + 0xb2fcu, r0_2, 0u);  // (from the original)

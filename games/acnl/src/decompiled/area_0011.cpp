@@ -2776,9 +2776,8 @@ namespace d_00117808 {
 
 
 u32 f_00117808(u32 r0) {
-    u32 r0_1 = *gptr<u32>((r0 << 2) + 0x95029cu);  // (from the original)
     guest::cpu()->r[1] = 0x95029cu;  // (from the original)
-    return r0_1;
+    return gptr<u32>(0x95029cu)[r0];  // (from the original)
 }
 
 }  // namespace d_00117808
@@ -5317,7 +5316,7 @@ void f_0011bcfc(u32 r0, u32 r1, u32 r2) {
         } else {
             r5_1 = 0u;
         }
-        u32 r0_2 = call_00307760(0u, 0u, *gptr<u32>((r5_1 << 2) + 0x8c8428u), r2);  // (from the original)
+        u32 r0_2 = call_00307760(0u, 0u, gptr<u32>(0x8c8428u)[r5_1], r2);  // (from the original)
         r4_1 = r0_2;
     }
     u32 r0_3 = *gptr<u32>(r0 + 4u);
@@ -7122,7 +7121,7 @@ void f_0011e6f4(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r4 = 0u;
     if (r5 >= 0u && r5 != 0) {
         do {
-            call_00121304(*gptr<u32>(r6 + (r4 << 2)), r1, r2, r3);
+            call_00121304(gptr<u32>(r6)[r4], r1, r2, r3);
             call_001214f4(r10, r7, r8, r9);
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];

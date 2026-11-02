@@ -641,7 +641,7 @@ namespace d_00324934 {
 
 
 u32 f_00324934(u32 r0_unused, u32 r1) {
-    u32 r1_1 = *gptr<u32>((r1 << 2) + 0x845304u);  // (from the original)
+    u32 r1_1 = gptr<u32>(0x845304u)[r1];  // (from the original)
     return guest::call_address<u32>(r1_1, guest::cpu()->r[0], r1_1, 0x845304u, guest::cpu()->r[3]);  // (from the original)
 }
 
@@ -1641,7 +1641,7 @@ u32 f_0032bd68(gptr<Object_0032bd68_0> arg0, u32 r1) {
             }
             goto L_32be08;
         }
-        r1 = *gptr<u32>((arg0->word_28 << 2) + 0x83b32cu);  // (from the original)
+        r1 = gptr<u32>(0x83b32cu)[arg0->word_28];  // (from the original)
         if (s32(arg0->word_2c) < s32(r1)) {
             goto L_32be08;
         }

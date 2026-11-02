@@ -560,7 +560,7 @@ void f_007407a0(gptr<Object_007407a0_0> arg0, float S0_unused, float S1) {
         return;
     }
     float S1_1 = arg0->float_4;
-    float S0_2 = (S0_1 - S1_1) * float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1)))) / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r2_1)))) + S1_1;
+    float S0_2 = (S0_1 - S1_1) * float(s32(r1_1)) / float(s32(r2_1)) + S1_1;
     guest::cpu()->r[1] = r1_1;
     guest::cpu()->s[0] = S0_2;
     guest::cpu()->s[1] = S1_1;
@@ -948,7 +948,7 @@ void f_007421f8(gptr<Object_007421f8_0> arg0) {
         guest::preempt();
     } while (res_1 != 0);
     if (r12 != 0 && r0 != 0) {
-        float S0_1 = std::bit_cast<float>(*gptr<u32>(r6 + (r0 << 2)));
+        float S0_1 = std::bit_cast<float>(gptr<u32>(r6)[r0]);
         guest::cpu()->r[1] = r1;
         guest::cpu()->s[0] = S0_1;
         return;
@@ -1912,7 +1912,7 @@ u32 f_00745448(u32 r0, u32 r1, u32 r2, u32 r3) {
     r0 = 0u;
     if (r2 >= 0u && r2 != 0) {
         do {
-            if (*gptr<u32>(r5 + (r0 << 2)) == r4) {
+            if (gptr<u32>(r5)[r0] == r4) {
                 goto L_7454bc;
             }
             r0 += 1u;
@@ -1925,7 +1925,7 @@ u32 f_00745448(u32 r0, u32 r1, u32 r2, u32 r3) {
         return 0u;
     }
 L_74549c:;
-    if (*gptr<u32>(r5 + (r0 << 2)) != r4) {
+    if (gptr<u32>(r5)[r0] != r4) {
         if (*gptr<u32>(r5 + (r0 << 2) + 4u) != r4) {
             goto L_7454ec;
         }
@@ -1978,7 +1978,7 @@ u32 f_007455cc(u32 r0, u32 r1, u32 r2, u32 r3) {
             goto L_745618;
         }
 L_7455f8:;
-        if (*gptr<u32>(r4 + (r2 << 2)) != r5) {
+        if (gptr<u32>(r4)[r2] != r5) {
             r2 += 1u;
             if (r0 > r2) {
                 guest::preempt();
@@ -1991,7 +1991,7 @@ L_7455f8:;
 L_745618:;
         if (r0 < r1) {
             do {
-                if (*gptr<u32>(r4 + (r0 << 2)) == r5) {
+                if (gptr<u32>(r4)[r0] == r5) {
                     guest::cpu()->r[1] = r1;
                     return r0;
                 }
@@ -2027,7 +2027,7 @@ u32 f_00745784(gptr<Object_00745784_0> arg0, u32 r1) {
         r0_2 = 0u;
     } else {
         r1 = 0x9529fcu;  // (from the original)
-        r0_2 = *gptr<u8>(*gptr<u32>(r1 + (r0_1 << 2)) + 0x10u);  // (from the original)
+        r0_2 = *gptr<u8>(gptr<u32>(r1)[r0_1] + 0x10u);  // (from the original)
     }
     guest::cpu()->r[1] = r1;
     return r0_2;
@@ -2479,7 +2479,7 @@ GUEST_OFFSET(Object_00746e4c_0, word_190, 0x190);
 
 
 u32 f_00746e4c(gptr<Object_00746e4c_0> arg0, u32 r1) {
-    return arg0->word_190 > r1 ? *gptr<u32>(arg0.addr() + (r1 << 2)) : 0u;
+    return arg0->word_190 > r1 ? gptr<u32>(arg0.addr())[r1] : 0u;
 }
 
 }  // namespace d_00746e4c
@@ -3061,7 +3061,7 @@ u32 f_00747cb0(gptr<Object_00747cb0_0> arg0, u32 r1) {
                     zf_1 = r0_3 == 0;
                 }
                 if (((zf_1 || nf_1 != 0u) ? ~0u : r0_3 - 1u) != r5_1) {
-                    u32 r0_4 = *gptr<u16>(arg0->word_10 + (r5_1 << 1));
+                    u32 r0_4 = gptr<u16>(arg0->word_10)[r5_1];
                     if (r0_4 != 0xau) {  // (from the original)
                         u32 r1_1 = arg0->word_8c;
                         if (s32(r1_1) > 0) {

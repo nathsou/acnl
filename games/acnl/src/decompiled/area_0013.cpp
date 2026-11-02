@@ -1422,7 +1422,7 @@ u32 f_00134318(u32 r0) {
     u32 r2 = r1;
     u32 r3 = r1;
 L_134328:;
-    u32 r12_1 = *gptr<u16>(r0 + (r3 << 1));
+    u32 r12_1 = gptr<u16>(r0)[r3];
     if (r12_1 != 0x3au) {  // (from the original)
         u32 r12_2 = sxtb(r12_1);
         r3 += 1u;
@@ -1515,7 +1515,7 @@ void f_00134440(gptr<Object_00134440_0> arg0, float S0_unused, float S1) {
         return;
     }
     float S1_1 = arg0->float_0;
-    float S0_2 = (S0_1 - S1_1) * float(s32(std::bit_cast<u32>(std::bit_cast<float>(r2_1)))) / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1)))) + S1_1;
+    float S0_2 = (S0_1 - S1_1) * float(s32(r2_1)) / float(s32(r1_1)) + S1_1;
     guest::cpu()->r[1] = r1_1;
     guest::cpu()->s[0] = S0_2;
     guest::cpu()->s[1] = S1_1;
@@ -1562,7 +1562,7 @@ inline constexpr u32 vtable_SoundFaderEx = 0x008ed7f4u;
 
 void f_00134f70(gptr<SoundFaderEx> arg0) {
     float S0_1 = 0.0f;
-    arg0->word_4 = std::bit_cast<u32>(S0_1);
+    arg0->float_4 = S0_1;
     arg0->word_8 = std::bit_cast<u32>(S0_1);
     arg0->float_c = S0_1;
     arg0->word_10 = ~0u;
@@ -3704,7 +3704,7 @@ GUEST_OFFSET(Object_00138c78_0, word_0, 0x0);
 
 u32 f_00138c78(gptr<Object_00138c78_0> arg0) {
     u32 r1_1 = guest::cpu()->tls;
-    u32 r0_1 = *gptr<u32>(r1_1 + (arg0->word_0 << 2));
+    u32 r0_1 = gptr<u32>(r1_1)[arg0->word_0];
     guest::cpu()->r[1] = r1_1;
     return r0_1;
 }
@@ -5334,7 +5334,7 @@ void f_0013c4e8(gptr<Object_0013c4e8_0> arg0) {
         guest::preempt();
     } while (res_1 != 0);
     if (r12 != 0 && r0 != 0) {
-        float S0_1 = std::bit_cast<float>(*gptr<u32>(r6 + (r0 << 2)));
+        float S0_1 = std::bit_cast<float>(gptr<u32>(r6)[r0]);
         guest::cpu()->r[1] = r1;
         guest::cpu()->s[0] = S0_1;
         return;
@@ -6749,7 +6749,7 @@ void f_0013e274(gptr<Object_0013e274_0> arg0, u32 r1_unused, u32 r2_unused, u32 
     }
     if (s32(r3) > 0) {
         do {
-            gptr<Local_0013e274_r0_6> r0_6 = gptr<Local_0013e274_r0_6>(r12 + (r1 + (r1 << 1) << 2));
+            gptr<Local_0013e274_r0_6> r0_6 = gptr<Local_0013e274_r0_6>(r12 + r1 * 0xcu);  // (from the original)
             if (r0_6->byte_8 == 2u) {
                 r5 = r0_6->word_0;
                 break;
@@ -6770,7 +6770,7 @@ namespace d_0013e560 {
 
 inline constexpr guest::Function<0x0013e580, u32(u32, u32, u32, u32)> call_0013e580;
 
-u32 f_0013e560(gptr<nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection__> arg0) {
+u32 f_0013e560(gptr<nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock_> arg0) {
     call_0013e580(arg0.addr() + 0x18u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     u32 r0_2 = arg0->word_54 - 1u;
     arg0->word_54 = r0_2;

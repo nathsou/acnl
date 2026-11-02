@@ -562,6 +562,7 @@ struct __attribute__((packed)) Local_005022e0_ea_1 {
 GUEST_OFFSET(Local_005022e0_ea_1, word_0, 0x0);
 GUEST_OFFSET(Local_005022e0_ea_1, word_4, 0x4);
 
+inline guest::global<u32, 0x005023c4> global_005023c4;
 inline constexpr guest::Function<0x004b71c8, u32(u32, u32)> call_004b71c8;
 inline constexpr guest::Function<0x00501f84, u32(u32, u32, u32, u32)> call_00501f84;
 
@@ -600,7 +601,7 @@ void f_005022e0(gptr<Object_005022e0_0> arg0) {
             S1_1 = guest::cpu()->s[1];
         } else if (r0_2 == 2u) {
             float S0_3 = S0_2 - S1_1;
-            frame->word_0 = std::bit_cast<u32>(-33.0f);
+            frame->word_0 = *global_005023c4;
             frame->word_4 = std::bit_cast<u32>(S0_3);
             guest::cpu()->s[0] = S0_3;
             guest::cpu()->s[1] = S1_1;
@@ -664,8 +665,7 @@ void f_005023c8(u32 r0, u32 r1, u32 r2) {
     u32 r6 = 0x95e1c0u;  // (from the original)
     u32 r4 = 0u;
     do {
-        u32 r1_1 = *gptr<u32>(r6 + (r4 << 2));
-        gptr<Local_005023c8_r0_2> r0_2 = gptr<Local_005023c8_r0_2>(call_00568a80(r5 + 0x28u, r1_1, r2));  // (from the original)
+        gptr<Local_005023c8_r0_2> r0_2 = gptr<Local_005023c8_r0_2>(call_00568a80(r5 + 0x28u, gptr<u32>(r6)[r4], r2));  // (from the original)
         r2 = r5 + (r4 << 2);
         *gptr<u32>(r2 + 0xe48u) = r0_2.addr();  // (from the original)
         r4 += 1u;
@@ -739,7 +739,7 @@ void f_00504a34(u32 r0, u32 r1_unused, u32 r2) {
     u32 r6 = 0x95e1e0u;  // (from the original)
     do {
         u32 r0_1 = r5 + 0x28u;  // (from the original)
-        u32 r1_1 = *gptr<u32>(r6 + (r4 << 2));
+        u32 r1_1 = gptr<u32>(r6)[r4];
         gptr<Local_00504a34_r0_2> r0_2 = gptr<Local_00504a34_r0_2>(call_00568a80(r0_1, r1_1, r2, guest::cpu()->r[3]));
         r2 = r5 + (r4 << 2);
         *gptr<u32>(r2 + 0xc10u) = r0_2.addr();  // (from the original)

@@ -735,7 +735,7 @@ void f_0061402c(u32 r0, u32 r1, u32 r2, u32 r3) {
     r3 = r1_1->word_eb58 - r2;
     do {
         if (r0 < u32(s32(r3) >> 2)) {
-            u32 r1_2 = *gptr<u32>(r2 + (r0 << 2));
+            u32 r1_2 = gptr<u32>(r2)[r0];
             if (r1_2 != 0 && *gptr<u8>(r1_2 + 0x9a8u) == 0) {  // (from the original)
                 u32 r0_2 = *gptr<u32>(r1_2 + 0x1030u);  // (from the original)
                 frame.release();
@@ -1216,10 +1216,10 @@ namespace d_00615b2c {
 struct __attribute__((packed)) Local_00615b2c_r2_1 {
     u8 unknown_0[0x24];  // (not used here)
     u32 word_24;
-    float float_28;
+    u32 word_28;
 };
 GUEST_OFFSET(Local_00615b2c_r2_1, word_24, 0x24);
-GUEST_OFFSET(Local_00615b2c_r2_1, float_28, 0x28);
+GUEST_OFFSET(Local_00615b2c_r2_1, word_28, 0x28);
 
 
 void f_00615b2c(u32 r0, u32 r1, float S0_unused, float S1) {
@@ -1229,7 +1229,7 @@ void f_00615b2c(u32 r0, u32 r1, float S0_unused, float S1) {
         return;
     }
     gptr<Local_00615b2c_r2_1> r2_1 = gptr<Local_00615b2c_r2_1>((r1 * 3u + (r1 << 4) << 2) + 0x86a2c8u);  // (from the original)
-    float S1_1 = float(s32(std::bit_cast<u32>(r2_1->float_28)));
+    float S1_1 = float(s32(r2_1->word_28));
     u32 r1_1 = uxth(r2_1->word_24);
     if (u32(S1_1 == 0.0f)) {
         guest::cpu()->s[0] = S0_1;
@@ -1237,7 +1237,7 @@ void f_00615b2c(u32 r0, u32 r1, float S0_unused, float S1) {
         return;
     }
     float S2_1 = S1_1 * 10.0f;
-    float S1_2 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r0 - r1_1))));
+    float S1_2 = float(s32(r0 - r1_1));
     float S0_2 = S1_2 / S2_1 + S0_1;
     if (s32(0x3f333333u) > s32(std::bit_cast<u32>(S0_2))) {  // (from the original)
         float S0_3 = 0.7f;
@@ -1502,7 +1502,7 @@ namespace d_006165c4 {
 inline guest::global<u32, 0x00952880> global_00952880;
 
 u32 f_006165c4(u32 r0) {
-    u32 r0_1 = r0 >= 3u ? *global_00952880 : *gptr<u32>((r0 << 2) + 0x952880u);  // (from the original)
+    u32 r0_1 = r0 >= 3u ? *global_00952880 : gptr<u32>(0x952880u)[r0];  // (from the original)
     guest::cpu()->r[1] = 0x952880u;  // (from the original)
     return r0_1;
 }
@@ -4836,7 +4836,7 @@ void f_0061f6a0(gptr<Object_0061f6a0_0> arg0, gptr<Object_0061f6a0_1> arg1, u32 
                 u32 r6 = 0u;
                 frame->word_0 = *global_0095362c + 0xb0u;  // (from the original)
 L_61f71c:;
-                u32 r5 = *gptr<u32>(r7 + (r6 << 2));
+                u32 r5 = gptr<u32>(r7)[r6];
                 if (!(r5 == 0)) {
                     u32 r4 = 0u;
                     do {

@@ -1257,7 +1257,7 @@ void f_00335ecc(gptr<Object_00335ecc_0> arg0, u32 r1, float S0_unused, float S1)
         guest::cpu()->s[0] = S0_1;
         return;
     }
-    float S1_1 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1))));
+    float S1_1 = float(s32(r1));
     arg0->float_1ac = S0_1 / S1_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
@@ -1287,7 +1287,7 @@ void f_00335ef4(gptr<Object_00335ef4_0> arg0, u32 r1, u32 r2) {
     if (s32(r1) <= 0) {
         arg0->float_1ac = S0_1;
     } else {
-        arg0->float_1ac = S0_1 / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1))));
+        arg0->float_1ac = S0_1 / float(s32(r1));
     }
     float S1_1 = 0.0f;
     arg0->float_1a8 = S1_1;
@@ -1298,7 +1298,7 @@ void f_00335ef4(gptr<Object_00335ef4_0> arg0, u32 r1, u32 r2) {
         guest::cpu()->s[1] = S1_1;
         return;
     }
-    arg0->float_1b4 = S0_1 / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r2))));
+    arg0->float_1b4 = S0_1 / float(s32(r2));
     arg0->float_1b0 = S1_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;

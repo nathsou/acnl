@@ -1583,7 +1583,7 @@ u32 f_001e6df4(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r2_1 = guest::cpu()->r[2];
     if (r0_1 == r2) {
         r2_1 = 0x9ab688u;  // (from the original)
-        r0_1 = *gptr<u32>(r2_1 + (r0 << 2));
+        r0_1 = gptr<u32>(r2_1)[r0];
         if (s32(r0_1) > 0) {
             *global_009b2b84 = *global_009b2bb4;
             *global_009b2b88 = *global_009b2bb8;
@@ -1598,7 +1598,7 @@ u32 f_001e6df4(u32 r0, u32 r1, u32 r2, u32 r3) {
             u32 r3_2 = *global_009b2bdc;
             *global_009b2bac = r3_2;
             *global_009b2bb0 = *global_009b2be0;
-            *gptr<u32>(r2_1 + (r0 << 2)) = *gptr<u32>(r2_1 + (r0 << 2)) - 1u;
+            *gptr<u32>(r2_1 + (r0 << 2)) = gptr<u32>(r2_1)[r0] - 1u;
             u32 r0_2 = call_006a9a40(0x9b2b68u, r1 ^ 1u, r2_1, r3_2);  // (from the original)
             r0_1 = call_001e6fb8(r0_2);
             r2_1 = guest::cpu()->r[2];
@@ -1704,7 +1704,7 @@ void f_001e74d4(u32 r0) {
     float S1_1 = 0.003921569f;
     *global_009520bf = 1;
     *global_009520c0 = u8(r0);
-    float S0_1 = float(std::bit_cast<u32>(std::bit_cast<float>(r0))) * S1_1;
+    float S0_1 = float(r0) * S1_1;
     *global_009520d8 = std::bit_cast<u32>(S0_1);
     guest::cpu()->r[1] = 0x9520bcu;  // (from the original)
     guest::cpu()->s[0] = S0_1;
@@ -1828,22 +1828,22 @@ GUEST_OFFSET(Object_001e83e4_0, byte_2, 0x2);
 GUEST_OFFSET(Object_001e83e4_0, byte_3, 0x3);
 
 struct __attribute__((packed)) Local_001e83e4_r0_1 {
-    float float_0;
+    u32 word_0;
     float float_4;
     float float_8;
     float float_c;
 };
-GUEST_OFFSET(Local_001e83e4_r0_1, float_0, 0x0);
+GUEST_OFFSET(Local_001e83e4_r0_1, word_0, 0x0);
 GUEST_OFFSET(Local_001e83e4_r0_1, float_4, 0x4);
 GUEST_OFFSET(Local_001e83e4_r0_1, float_8, 0x8);
 GUEST_OFFSET(Local_001e83e4_r0_1, float_c, 0xc);
 
 struct __attribute__((packed)) Local_001e83e4_r1_1 {
-    float float_0;
+    u32 word_0;
     float float_4;
     float float_8;
 };
-GUEST_OFFSET(Local_001e83e4_r1_1, float_0, 0x0);
+GUEST_OFFSET(Local_001e83e4_r1_1, word_0, 0x0);
 GUEST_OFFSET(Local_001e83e4_r1_1, float_4, 0x4);
 GUEST_OFFSET(Local_001e83e4_r1_1, float_8, 0x8);
 
@@ -1879,7 +1879,7 @@ void f_001e83e4(gptr<Object_001e83e4_0> arg0, u32 r1, u32 r2) {
     float S2_1 = r1_1->float_8;
     gptr<Local_001e83e4_r0_1> r0_1 = gptr<Local_001e83e4_r0_1>(frame.at(8).addr());
     float S3_1 = 1.0f;
-    r0_1->float_0 = r1_1->float_0;
+    r0_1->word_0 = r1_1->word_0;
     r0_1->float_4 = S1_1;
     r0_1->float_8 = S2_1;
     r0_1->float_c = S3_1;
@@ -2079,7 +2079,7 @@ GUEST_OFFSET(Object_001eb754_1, word_4, 0x4);
 GUEST_OFFSET(Object_001eb754_1, word_8, 0x8);
 
 struct __attribute__((packed)) Local_001eb754_ea_1 {
-    float float_0;
+    u32 word_0;
     float float_4;
     float float_8;
     float float_c;
@@ -2088,7 +2088,7 @@ struct __attribute__((packed)) Local_001eb754_ea_1 {
     float float_18;
     float float_1c;
 };
-GUEST_OFFSET(Local_001eb754_ea_1, float_0, 0x0);
+GUEST_OFFSET(Local_001eb754_ea_1, word_0, 0x0);
 GUEST_OFFSET(Local_001eb754_ea_1, float_4, 0x4);
 GUEST_OFFSET(Local_001eb754_ea_1, float_8, 0x8);
 GUEST_OFFSET(Local_001eb754_ea_1, float_c, 0xc);
@@ -2115,6 +2115,7 @@ GUEST_OFFSET(Local_001eb754_r3_1, word_0, 0x0);
 GUEST_OFFSET(Local_001eb754_r3_1, word_4, 0x4);
 GUEST_OFFSET(Local_001eb754_r3_1, word_8, 0x8);
 
+inline guest::global<u32, 0x0083e5e4> global_0083e5e4;
 inline guest::global<u32, 0x0083e5e8> global_0083e5e8;
 inline guest::global<u32, 0x0083e5ec> global_0083e5ec;
 inline guest::global<u32, 0x0083e5f0> global_0083e5f0;
@@ -2167,7 +2168,7 @@ u32 f_001eb754(gptr<Object_001eb754_0> arg0, gptr<Object_001eb754_1> arg1, u32 r
     float S6_3 = std::bit_cast<float>(*global_0083e5fc);
     float S7_3 = std::bit_cast<float>(*global_0083e600);
     gptr<Local_001eb754_ea_1> ea_1 = gptr<Local_001eb754_ea_1>(frame.at(0x10).addr());  // (from the original)
-    ea_1->float_0 = 1.0f;
+    ea_1->word_0 = *global_0083e5e4;
     ea_1->float_4 = S1_3;
     ea_1->float_8 = S2_3;
     ea_1->float_c = S3_3;
@@ -2175,7 +2176,7 @@ u32 f_001eb754(gptr<Object_001eb754_0> arg0, gptr<Object_001eb754_1> arg1, u32 r
     ea_1->float_14 = S5_3;
     ea_1->float_18 = S6_3;
     ea_1->float_1c = S7_3;
-    float S0_3 = std::bit_cast<float>(*gptr<u32>(frame.at(0x10).addr() + (r0_5 << 2)));  // (from the original)
+    float S0_3 = std::bit_cast<float>(gptr<u32>(frame.at(0x10).addr())[r0_5]);  // (from the original)
     gptr<Local_001eb754_r0_6> r0_6 = gptr<Local_001eb754_r0_6>(frame.at(0x3c).addr());  // (from the original)
     r0_6->float_0 = S0_3;
     r0_6->float_4 = S0_3;

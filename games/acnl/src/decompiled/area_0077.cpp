@@ -46,7 +46,7 @@ u32 f_00770060(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
                 if (s32(r0_6) >= 0) {
                     r1 = s32(r0_6) >> 5;
                     if (r1 < 0xbau) {  // (from the original)
-                        r1 = *gptr<u32>(r7 + (r1 << 2));
+                        r1 = gptr<u32>(r7)[r1];
                         if (((r1 >> (r0_6 & 0x1fu)) & 1u) != 0) {  // (from the original)
                             r6 += 1u;
                         }
@@ -66,7 +66,7 @@ u32 f_00770060(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
         if (r6 != 0) {
             if (0xe86u > r6) {  // (from the original)
                 float S1_3 = 3718.0f;
-                float S0_3 = float(std::bit_cast<u32>(std::bit_cast<float>(r6))) * 100.0f / S1_3;
+                float S0_3 = float(r6) * 100.0f / S1_3;
                 if (s32(std::bit_cast<u32>(S0_3)) < 0x3f800000) {  // (from the original)
                     guest::cpu()->r[1] = r1;
                     guest::cpu()->s[0] = S0_3;
@@ -279,7 +279,7 @@ u32 f_007709b4(gptr<Object_007709b4_0> arg0) {
     float S3_1 = 0.003921569f;
     float S4_1 = 0.5f;
     float S2_1 = 1.25f - S4_1;
-    float S1_1 = S2_1 * float(std::bit_cast<u32>(std::bit_cast<float>(u32(arg0->byte_9))));
+    float S1_1 = S2_1 * float(u32(arg0->byte_9));
     float S0_1 = S4_1 + S1_1 * S3_1;
     if (std::bit_cast<u32>(S0_1) + 0xc0a66665u > 0x266665u) {  // (from the original)
         guest::cpu()->r[1] = 0x88f97cu;  // (from the original)
@@ -288,7 +288,7 @@ u32 f_007709b4(gptr<Object_007709b4_0> arg0) {
         return 0u;
     }
     float S1_2 = 0.5f;
-    float S1_3 = S1_2 + S2_1 * float(std::bit_cast<u32>(std::bit_cast<float>(u32(arg0->byte_8)))) * S3_1;
+    float S1_3 = S1_2 + S2_1 * float(u32(arg0->byte_8)) * S3_1;
     if (0x4ccccdu >= std::bit_cast<u32>(S1_3 / S0_1) + 0xc0cccccdu) {  // (from the original)
         guest::cpu()->r[1] = 0xc0cccccdu;  // (from the original)
         guest::cpu()->s[0] = S0_1;
@@ -636,7 +636,7 @@ u32 f_0077a2a4(u32 r0_unused, u32 r1_unused, u32 r2_unused, u32 r3, float S0) {
         float S1_2 = (r1_1 & 0x80000000u) == 0 ? S2_1 + S1_1 - S1_1 : S2_1 - S1_1 + S1_1;  // (from the original)
         float S0_1 = S0 - S1_2 * 1.5703125f;
         float S2_2 = 7.5495336e-8f;
-        frame->word_0 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f(S1_2))) & 3u;
+        frame->word_0 = vcvt_sz_f(S1_2) & 3u;
         S0 = S0_1 - S1_2 * S4_1 - S1_2 * S2_2 - S1_2 * S3_1;
     } else {
         guest::cpu()->s[0] = S0;

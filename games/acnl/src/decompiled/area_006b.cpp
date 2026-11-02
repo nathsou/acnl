@@ -1246,7 +1246,7 @@ void f_006b4aa8(u32 r0, u32 r1, u32 r2, float S0, float S1) {
     float S2_1 = S1 - S0;
     float S1_1 = std::bit_cast<float>(r0 - r1);
     u32 r1_1 = r2 - r1;
-    float S1_2 = float(s32(std::bit_cast<u32>(S1_1))) * S2_1 / float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1))));
+    float S1_2 = float(s32(std::bit_cast<u32>(S1_1))) * S2_1 / float(s32(r1_1));
     float S0_1 = S1_2 + S0;
     guest::cpu()->r[1] = r1_1;
     guest::cpu()->s[0] = S0_1;
@@ -1267,8 +1267,8 @@ u32 f_006b4adc(u32 r0, u32 r1, float S0, float S1, float S2) {
     }
     u32 r1_1 = r1 - r0;
     float S2_1 = S2 - S1;
-    float S1_1 = (S0 - S1) * float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1))));
-    float S0_1 = std::bit_cast<float>(vcvt_sz_f(S1_1 / S2_1 + float(s32(std::bit_cast<u32>(std::bit_cast<float>(r0))))));
+    float S1_1 = (S0 - S1) * float(s32(r1_1));
+    float S0_1 = std::bit_cast<float>(vcvt_sz_f(S1_1 / S2_1 + float(s32(r0))));
     guest::cpu()->r[1] = r1_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
@@ -4040,7 +4040,7 @@ void f_006bf18c(u32 r0, u32 r1) {
         guest::cpu()->s[0] = S0_2;
         return;
     }
-    float S0_3 = std::bit_cast<float>(*gptr<u32>((r0_2 << 2) + 0x890300u));  // (from the original)
+    float S0_3 = std::bit_cast<float>(gptr<u32>(0x890300u)[r0_2]);  // (from the original)
     guest::cpu()->r[1] = 0x890300u;  // (from the original)
     guest::cpu()->s[0] = S0_3;
 }

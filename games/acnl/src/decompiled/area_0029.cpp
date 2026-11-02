@@ -1281,11 +1281,11 @@ void f_00298a6c(gptr<Object_00298a6c_0> arg0, float S0) {
     ea_10->word_0 = r0_3;
     ea_10->word_4 = r1_3;
     do {
-        u32 r1_4 = *gptr<u32>(r10 + (r4 << 2));
+        u32 r1_4 = gptr<u32>(r10)[r4];
         guest::cpu()->s[0] = S0;
         u32 r0_5 = call_0056878c(r5 + 0x24cu, r1_4, r2, r3);  // (from the original)
         frame->word_0 = r0_5;
-        u32 r0_7 = call_004b4fc0(r5 + 0x24cu, *gptr<u32>(r11 + (r4 << 2)), 1u);  // (from the original)
+        u32 r0_7 = call_004b4fc0(r5 + 0x24cu, gptr<u32>(r11)[r4], 1u);  // (from the original)
         frame->word_4 = r0_7;
         gptr<Local_00298a6c_r6_2> r6_2 = gptr<Local_00298a6c_r6_2>(r5 + r4 * 0xe0u);  // (from the original)
         frame->word_14 = r4;
@@ -1455,10 +1455,10 @@ void f_00298f2c(gptr<CommonScrollBar> arg0, u32 r1) {
     u32 r6_1 = arg0->word_71c;
     float S0_1 = (arg0->float_714 - std::bit_cast<float>(*gptr<u32>(arg0->word_764 + 0x2cu))) * arg0->float_70c;  // (from the original)
     float S3_1 = 0.0f;
-    u32 r0_1 = std::bit_cast<u32>(std::bit_cast<float>(vcvt_sz_f((S0_1 + 1.0f) / arg0->float_748)));
+    u32 r0_1 = vcvt_sz_f((S0_1 + 1.0f) / arg0->float_748);
     arg0->word_71c = r0_1;
     float S2_1 = arg0->float_748;
-    float S4_1 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r0_1))));
+    float S4_1 = float(s32(r0_1));
     arg0->float_724 = S0_1 - S4_1 * S2_1;
     u32 fpsr_1 = fpsr & 0xfffffffu | vfp_cmpf(arg0->float_710, S3_1);  // (from the original)
     if (fpsr_1 >> 0x1d & 1) {  // (from the original)
@@ -1781,7 +1781,7 @@ void f_002999ac(gptr<Object_002999ac_0> arg0, u32 r1, u32 r2_unused, u32 r3, flo
     call_00568630(arg0.addr() + 0x24cu, arg0.addr() + 0x3e8u, r0_5, 0u);  // (from the original)
     u32 r0_8 = call_004b4fc0(arg0.addr() + 0x24cu, 0x857bf8u, 1u, guest::cpu()->r[3]);  // (from the original)
     call_00568630(arg0.addr() + 0x24cu, arg0.addr() + 0x3e8u, r0_8, 0u);  // (from the original)
-    float S0_6 = float(std::bit_cast<u32>(std::bit_cast<float>(u32(arg0->byte_444))));
+    float S0_6 = float(u32(arg0->byte_444));
     guest::cpu()->s[0] = S0_6;
     call_005697e0(arg0.addr() + 0x3e8u);  // (from the original)
     call_00568c10(arg0.addr() + 0x24cu);  // (from the original)
@@ -2226,10 +2226,10 @@ void f_0029bfa4(u32 r0, u32 r1) {
     call_002fc8e8(r0_4 + 0x10u, r0 + 0x10u);  // (from the original)
     call_002fc8e8(r0_4 + 0x14u, r0 + 0x14u);  // (from the original)
     u32 r4_1 = *gptr<u8>(r0 + 0x18u);  // (from the original)
-    u32 r0_10 = *gptr<u32>((r4_1 << 2) + 0x9845b8u);  // (from the original)
+    u32 r0_10 = gptr<u32>(0x9845b8u)[r4_1];  // (from the original)
     if (r0_10 != 0) {
         call_0014f914(r0_10);
-        u32 r0_11 = *gptr<u32>((r4_1 << 2) + 0x9845b8u);  // (from the original)
+        u32 r0_11 = gptr<u32>(0x9845b8u)[r4_1];  // (from the original)
         frame.release();
         guest::call_address<u32>(*global_0014f928, r0_11, 0x1000583u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
         return;

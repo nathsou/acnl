@@ -326,7 +326,7 @@ void f_005f6dcc(u32 r0, u32 r1) {
     u32 r4 = 0xad59acu;  // (from the original)
     u32 r2 = 0u;
 L_5f6de0:;
-    if (*gptr<u16>(r4 + (r2 << 1)) == *gptr<u16>(r3)) {
+    if (gptr<u16>(r4)[r2] == *gptr<u16>(r3)) {
         r6 = r2;
     } else {
         r2 += 1u;
@@ -701,7 +701,7 @@ void f_005fc110(gptr<Object_005fc110_0> arg0, u32 r1, float S0) {
         return;
     }
     r1 = *gptr<u32>(r2 + 0x14u);  // (from the original)
-    u32 r3_2 = s32(*gptr<u32>(*gptr<u32>(r2 + 0x20u) + (r3_1 - 1u << 2)) - r1) >> 1;  // (from the original)
+    u32 r3_2 = s32(gptr<u32>(*gptr<u32>(r2 + 0x20u))[r3_1 - 1u] - r1) >> 1;  // (from the original)
     if (s32(r3_2) < 0) {
         r3_2 = 0u;
     } else {

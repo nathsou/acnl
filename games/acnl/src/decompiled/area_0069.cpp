@@ -1843,7 +1843,7 @@ u32 f_0069a764(u32 r0, u32 r1, u32 r2) {
         u32 r0_1 = *gptr<u32>(r5);
         r1_1 = s32(*gptr<u32>(r5 + 4) - r0_1) >> 2;
         if (r4 < r1_1) {
-            u32 r6_1 = *gptr<u32>(r0_1 + (r4 << 2));
+            u32 r6_1 = gptr<u32>(r0_1)[r4];
             if (r6_1 != 0 && *gptr<u16>(r6_1 + 0xcu) == r7) {  // (from the original)
                 r0_2 = r6_1;
                 r1_1 = *gptr<u32>(r6_1 + 0x1030u);  // (from the original)

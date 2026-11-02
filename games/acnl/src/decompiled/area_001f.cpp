@@ -969,7 +969,7 @@ u32 f_001f9a08(u32 r0) {
     u32 r6 = frame.at(0).addr();
     u32 r4 = 0u;
     do {
-        u32 r1_1 = *gptr<u32>(r6 + (r4 << 2));
+        u32 r1_1 = gptr<u32>(r6)[r4];
         if (*gptr<u8>(r1_1 + 0x1cu) != 0) {  // (from the original)
             call_00569420(r5 + 0x38u, r1_1, r2, r3);  // (from the original)
             r2 = guest::cpu()->r[2];
@@ -1068,7 +1068,7 @@ u32 f_001f9b08(u32 r0, u32 r1) {
     u32 r7 = frame.at(0).addr();
     u32 r4 = 0u;
     do {
-        u32 r1_1 = *gptr<u32>(r7 + (r4 << 2));
+        u32 r1_1 = gptr<u32>(r7)[r4];
         if (*gptr<u8>(r1_1 + 0x1cu) != 0) {  // (from the original)
             call_00569420(r5 + 0x38u, r1_1, r2, r3);  // (from the original)
             r2 = guest::cpu()->r[2];
@@ -1146,7 +1146,7 @@ u32 f_001fa354(gptr<Object_001fa354_0> arg0) {
     u32 r4 = r7;
     u32 r8 = frame.at(0).addr();
     do {
-        r1_1 = *gptr<u32>(r8 + (r4 << 2));
+        r1_1 = gptr<u32>(r8)[r4];
         r0_1 = *gptr<u8>(r1_1 + 0x1cu);  // (from the original)
         if (r0_1 != 0) {
             r0_1 = call_00569420(r5 + 0x38u, r1_1, r2, r3);  // (from the original)
@@ -1292,7 +1292,7 @@ void f_001fbec8(u32 r0, u32 r1_unused, u32 r2) {
     u32 r4 = 0u;
     u32 r6 = 0x94fba0u;  // (from the original)
     do {
-        u32 r0_2 = call_00568a80(r5 + 0x4cu, *gptr<u32>(r6 + (r4 << 2)), r2, guest::cpu()->r[3]);  // (from the original)
+        u32 r0_2 = call_00568a80(r5 + 0x4cu, gptr<u32>(r6)[r4], r2, guest::cpu()->r[3]);  // (from the original)
         r2 = guest::cpu()->r[2];
         u32 r1_2 = r5 + (r4 << 2);
         r4 += 1u;

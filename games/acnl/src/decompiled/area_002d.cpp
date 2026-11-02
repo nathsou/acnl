@@ -2384,7 +2384,7 @@ void f_002d5848() {
     frame->word_8 = r2;
     frame->word_c = r3;
     do {
-        u32 r1_2 = *gptr<u16>(r6 + (r4 << 1));
+        u32 r1_2 = gptr<u16>(r6)[r4];
         u32 r0_1 = frame.at(0x10).addr();  // (from the original)
         call_002fcbb0(r0_1, r1_2, r2, r3);
         u32 r2_1 = r5 + (r4 << 2);
@@ -2610,7 +2610,7 @@ struct __attribute__((packed)) Object_002d70b8_0 {
     u8 byte_69;
     u8 byte_6a;
     u8 byte_6b;
-    float float_6c;
+    u32 word_6c;
     float float_70;
     float float_74;
     float float_78;
@@ -2643,7 +2643,7 @@ GUEST_OFFSET(Object_002d70b8_0, byte_68, 0x68);
 GUEST_OFFSET(Object_002d70b8_0, byte_69, 0x69);
 GUEST_OFFSET(Object_002d70b8_0, byte_6a, 0x6a);
 GUEST_OFFSET(Object_002d70b8_0, byte_6b, 0x6b);
-GUEST_OFFSET(Object_002d70b8_0, float_6c, 0x6c);
+GUEST_OFFSET(Object_002d70b8_0, word_6c, 0x6c);
 GUEST_OFFSET(Object_002d70b8_0, float_70, 0x70);
 GUEST_OFFSET(Object_002d70b8_0, float_74, 0x74);
 GUEST_OFFSET(Object_002d70b8_0, float_78, 0x78);
@@ -2664,6 +2664,7 @@ GUEST_OFFSET(Object_002d70b8_0, byte_1d0, 0x1d0);
 inline constexpr u32 vtable_BsLightDiffuseBase = 0x008f2fc0u;
 inline constexpr u32 vtable_BsLightDiffuseBase__DiffuseLightHioNode = 0x008faa14u;
 inline constexpr u32 vtable_g3d__DirectionalFragmentLight = 0x00902a8cu;
+inline guest::global<u32, 0x00847248> global_00847248;
 inline guest::global<u32, 0x0084724c> global_0084724c;
 inline guest::global<u32, 0x00847250> global_00847250;
 inline guest::global<u32, 0x00847254> global_00847254;
@@ -2704,7 +2705,7 @@ u32 f_002d70b8(gptr<Object_002d70b8_0> arg0, u32 r1, u32 r2, float S0, float S1,
     float S5_1 = std::bit_cast<float>(*global_0084725c);
     float S6_1 = std::bit_cast<float>(*global_00847260);
     float S7_1 = std::bit_cast<float>(*global_00847264);
-    arg0->float_6c = 2.3418052e-38f;
+    arg0->word_6c = *global_00847248;
     arg0->float_70 = S1_1;
     arg0->float_74 = S2_1;
     arg0->float_78 = S3_1;
@@ -3115,13 +3116,13 @@ void f_002d7d7c(gptr<Object_002d7d7c_0> arg0, float S0, float S1) {
     ea_11->word_0 = r0_4;
     ea_11->word_4 = r1_5;
     do {
-        u32 r1_6 = *gptr<u32>(r10 + (r4 << 2));
+        u32 r1_6 = gptr<u32>(r10)[r4];
         u32 r0_5 = frame->word_0;
         guest::cpu()->s[0] = S0;
         guest::cpu()->s[1] = S1;
         u32 r0_6 = call_0056878c(r0_5, r1_6, r2, r3);
         frame->word_10 = r0_6;
-        u32 r0_8 = call_004b4fc0(frame->word_0, *gptr<u32>(r11 + (r4 << 2)), 1u);
+        u32 r0_8 = call_004b4fc0(frame->word_0, gptr<u32>(r11)[r4], 1u);
         frame->word_14 = r0_8;
         u32 r6_2 = r5 + r4 * 0xe0u + 0x2354u;  // (from the original)
         frame->word_24 = r4;

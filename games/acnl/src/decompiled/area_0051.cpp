@@ -4795,7 +4795,7 @@ u32 f_0051dbbc(u32 r0, u32 r1, float S0) {
                         r9 = 0u;
                     } else if (r8 != 0 && r0_8 == r8) {
                         r9 += 1u;
-                        float S0_3 = float(std::bit_cast<u32>(std::bit_cast<float>(r9)));
+                        float S0_3 = float(r9);
                         guest::cpu()->s[0] = S0_3;
                         call_00565c10(r0_8, r1_2);
                         r1_2 = guest::cpu()->r[1];
@@ -5287,7 +5287,7 @@ L_51fb5c:;
                 r8 = 0u;
             } else if (r7 + 1u != 0 && r0_9 == r7) {
                 r8 += 1u;
-                float S0_3 = float(std::bit_cast<u32>(std::bit_cast<float>(r8)));
+                float S0_3 = float(r8);
                 guest::cpu()->r[13] = r13;
                 guest::cpu()->s[0] = S0_3;
                 call_00565c10(r0_9, r1_2);

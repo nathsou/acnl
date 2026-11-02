@@ -456,7 +456,7 @@ namespace d_005d1f84 {
 
 
 void f_005d1f84(u32 r0) {
-    float S0_1 = float(std::bit_cast<u32>(std::bit_cast<float>(r0))) * 0.05f;
+    float S0_1 = float(r0) * 0.05f;
     guest::cpu()->s[0] = S0_1;
 }
 
@@ -468,7 +468,7 @@ namespace d_005d1f9c {
 
 
 void f_005d1f9c(u32 r0) {
-    float S0_1 = float(std::bit_cast<u32>(std::bit_cast<float>(r0))) * 0.12699999f;
+    float S0_1 = float(r0) * 0.12699999f;
     guest::cpu()->s[0] = S0_1;
 }
 
@@ -480,7 +480,7 @@ namespace d_005d205c {
 
 
 void f_005d205c(u32 r0) {
-    float S0_1 = float(std::bit_cast<u32>(std::bit_cast<float>(r0))) * 0.127f;
+    float S0_1 = float(r0) * 0.127f;
     guest::cpu()->s[0] = S0_1;
 }
 
@@ -599,7 +599,7 @@ void f_005d4608(u32 r0, float S0, float S1, float S2) {
     float S4 = S3;
     if (r0 == 0) {
         float S3_1 = S1 - S3;
-        float S1_1 = float(std::bit_cast<u32>(std::bit_cast<float>(r0)));
+        float S1_1 = float(r0);
         float S0_1 = (S3_1 - S0) / S1_1;
         guest::cpu()->s[0] = S0_1;
         guest::cpu()->s[1] = S1_1;
@@ -623,7 +623,7 @@ void f_005d4608(u32 r0, float S0, float S1, float S2) {
     }
     float S3_2 = S3 + S5;
     float S3_3 = S1 - S3_2;
-    float S1_2 = float(std::bit_cast<u32>(std::bit_cast<float>(r0)));
+    float S1_2 = float(r0);
     float S0_2 = (S3_3 - S0) / S1_2;
     guest::cpu()->s[0] = S0_2;
     guest::cpu()->s[1] = S1_2;
@@ -1097,8 +1097,8 @@ u32 f_005d6868(gptr<script__RenderMain> arg0, u32 r1, u32 r2, u32 r3, float S0) 
     u32 r4 = r0;
     arg0->byte_38 = 0;
     S0 = -1.0f;
-    arg0->word_3c = std::bit_cast<u32>(S0);
-    arg0->word_40 = std::bit_cast<u32>(S0);
+    arg0->float_3c = S0;
+    arg0->float_40 = S0;
     if (b_1 != 0) {
         guest::cpu()->s[0] = S0;
         u32 r0_2 = call_00779500(b_1 << 3, 0x908854u, b_1);  // (from the original)
@@ -1232,7 +1232,7 @@ u32 f_005d72a4(gptr<script__RenderRuby> arg0, u32 r1, gptr<Object_005d72a4_2> ar
     gptr<Local_005d72a4_r0_1> r0_1 = gptr<Local_005d72a4_r0_1>(arg0->word_2c);
     u32 r1_1 = arg0->word_30;
     u32 r2_1 = r0_1->word_2c;
-    float S2_1 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(sxth(u32(*gptr<u16>(arg2->word_10)))))));
+    float S2_1 = float(s32(sxth(u32(*gptr<u16>(arg2->word_10)))));
     float S1_1 = 0.5f;
     u32 r3_1 = r0_1->word_34;
     u32 fpsr_1 = fpsr & 0xfffffffu | vfp_cmpf(S2_1, S0_1);  // (from the original)

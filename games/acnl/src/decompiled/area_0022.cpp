@@ -614,7 +614,7 @@ inline constexpr guest::Function<0x00568984, u32(u32, u32, u32, u32)> call_00568
 
 u32 f_00223778(gptr<Object_00223778_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 r0_2 = call_004b4fc0(arg0->word_4, *gptr<u32>((r1 << 2) + 0x94fcc4u), 1u, r3);  // (from the original)
+    u32 r0_2 = call_004b4fc0(arg0->word_4, gptr<u32>(0x94fcc4u)[r1], 1u, r3);  // (from the original)
     u32 r0_3 = arg0->word_4;
     frame.release();
     return call_00568984(r0_3, (arg0.addr() + r1 * 0x28u) + 0xcu, r0_2, 0u);  // (from the original)
@@ -978,7 +978,7 @@ u32 f_00225948(u32 r0) {
         guest::cpu()->r[1] = r1_1;
         return r0;
     }
-    u32 r0_1 = *gptr<u32>((r0 << 2) + 0x997c30u);  // (from the original)
+    u32 r0_1 = gptr<u32>(0x997c30u)[r0];  // (from the original)
     if (r0_1 == 0) {
         guest::cpu()->r[1] = 0x997c30u;  // (from the original)
         return r0_1;
@@ -1198,7 +1198,7 @@ u32 f_00226750() {
     u32 r2 = 0x997c30u;  // (from the original)
     u32 r0 = 0u;
     do {
-        r1_1 = gptr<Local_00226750_r1_1>(*gptr<u32>(r2 + (r0 << 2)));
+        r1_1 = gptr<Local_00226750_r1_1>(gptr<u32>(r2)[r0]);
         if (r1_1.addr() != 0) {
             r1_1 = gptr<Local_00226750_r1_1>(r1_1.addr() + 0x5adu);  // (from the original)
             r1_1->byte_2 = u8(u32(r1_1->byte_2) & ~0x10u);  // (from the original)
@@ -1708,7 +1708,7 @@ u32 f_0022bc80(gptr<Object_0022bc80_0> arg0, u32 r1) {
     arg0->byte_10 = 0x9b;  // (from the original)
     call_002ccfd4(arg0.addr() + 0x398u);  // (from the original)
     arg0->word_3a4 = arg0.addr() + 4u;
-    u32 r0_4 = call_0056878c(arg0.addr() + 4u, *gptr<u32>((r1 << 2) + 0x951658u));  // (from the original)
+    u32 r0_4 = call_0056878c(arg0.addr() + 4u, gptr<u32>(0x951658u)[r1]);  // (from the original)
     call_002e0374(arg0.addr() + 0x398u, r0_4);  // (from the original)
     return 1u;
 }
@@ -1762,7 +1762,7 @@ inline constexpr guest::Function<0x00568c10, u32(u32, u32, u32, u32)> call_00568
 
 u32 f_0022be5c(u32 r0, u32 r1, u32 r2) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r0_2 = call_0056878c(r0 + 4u, *gptr<u32>((r1 << 2) + 0x951658u), r2, guest::cpu()->r[3]);  // (from the original)
+    u32 r0_2 = call_0056878c(r0 + 4u, gptr<u32>(0x951658u)[r1], r2, guest::cpu()->r[3]);  // (from the original)
     call_00268928(r0 + 0x398u, 0u, r0_2);  // (from the original)
     call_002cd3d0(r0 + 0x398u, 1u);  // (from the original)
     frame.release();

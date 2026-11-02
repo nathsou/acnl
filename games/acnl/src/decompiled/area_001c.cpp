@@ -339,14 +339,14 @@ GUEST_EXPORT_FRAMED(0x001c2074, d_001c2074::f_001c2074, 0x4070);  // pushes {r4,
 namespace d_001c23b0 {
 
 struct __attribute__((packed)) Object_001c23b0_0 {
-    float float_0;
+    u32 word_0;
     u32 word_4;
     u32 word_8;
     u32 word_c;
     u32 word_10;
     float float_14;
 };
-GUEST_OFFSET(Object_001c23b0_0, float_0, 0x0);
+GUEST_OFFSET(Object_001c23b0_0, word_0, 0x0);
 GUEST_OFFSET(Object_001c23b0_0, word_4, 0x4);
 GUEST_OFFSET(Object_001c23b0_0, word_8, 0x8);
 GUEST_OFFSET(Object_001c23b0_0, word_c, 0xc);
@@ -354,14 +354,14 @@ GUEST_OFFSET(Object_001c23b0_0, word_10, 0x10);
 GUEST_OFFSET(Object_001c23b0_0, float_14, 0x14);
 
 struct __attribute__((packed)) Object_001c23b0_1 {
-    float float_0;
+    u32 word_0;
     float float_4;
     float float_8;
     float float_c;
     float float_10;
     float float_14;
 };
-GUEST_OFFSET(Object_001c23b0_1, float_0, 0x0);
+GUEST_OFFSET(Object_001c23b0_1, word_0, 0x0);
 GUEST_OFFSET(Object_001c23b0_1, float_4, 0x4);
 GUEST_OFFSET(Object_001c23b0_1, float_8, 0x8);
 GUEST_OFFSET(Object_001c23b0_1, float_c, 0xc);
@@ -370,23 +370,23 @@ GUEST_OFFSET(Object_001c23b0_1, float_14, 0x14);
 
 struct __attribute__((packed)) Object_001c23b0_2 {
     u8 unknown_0[0x4];  // (not used here)
-    float float_4;
+    u32 word_4;
     float float_8;
     float float_c;
     float float_10;
 };
-GUEST_OFFSET(Object_001c23b0_2, float_4, 0x4);
+GUEST_OFFSET(Object_001c23b0_2, word_4, 0x4);
 GUEST_OFFSET(Object_001c23b0_2, float_8, 0x8);
 GUEST_OFFSET(Object_001c23b0_2, float_c, 0xc);
 GUEST_OFFSET(Object_001c23b0_2, float_10, 0x10);
 
 struct __attribute__((packed)) Local_001c23b0_r0_1 {
-    float float_0;
+    u32 word_0;
     float float_4;
     float float_8;
     float float_c;
 };
-GUEST_OFFSET(Local_001c23b0_r0_1, float_0, 0x0);
+GUEST_OFFSET(Local_001c23b0_r0_1, word_0, 0x0);
 GUEST_OFFSET(Local_001c23b0_r0_1, float_4, 0x4);
 GUEST_OFFSET(Local_001c23b0_r0_1, float_8, 0x8);
 GUEST_OFFSET(Local_001c23b0_r0_1, float_c, 0xc);
@@ -426,7 +426,7 @@ u32 f_001c23b0(gptr<Object_001c23b0_0> arg0, gptr<Object_001c23b0_1> arg1, gptr<
     float S4_1 = arg1->float_c;
     float S5_1 = arg1->float_10;
     float S6_1 = arg1->float_14;
-    arg0->float_0 = arg1->float_0;
+    arg0->word_0 = arg1->word_0;
     arg0->word_4 = std::bit_cast<u32>(S2_1);
     arg0->word_8 = std::bit_cast<u32>(S3_1);
     arg0->word_c = std::bit_cast<u32>(S4_1);
@@ -441,7 +441,7 @@ u32 f_001c23b0(gptr<Object_001c23b0_0> arg0, gptr<Object_001c23b0_1> arg1, gptr<
     float S2_2 = arg2->float_8;
     float S3_2 = arg2->float_c;
     float S4_2 = arg2->float_10;
-    r0_1->float_0 = arg2->float_4;
+    r0_1->word_0 = arg2->word_4;
     r0_1->float_4 = S2_2;
     r0_1->float_8 = S3_2;
     r0_1->float_c = S4_2;
@@ -1136,7 +1136,7 @@ u32 f_001c9f88(gptr<Object_001c9f88_0> arg0, float S0, float S1) {
     }
     float S0_1 = 1.125f;
     if (s32(r1_1) <= 0xe) {  // (from the original)
-        float S1_1 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1)))) * 0.071428575f;
+        float S1_1 = float(s32(r1_1)) * 0.071428575f;
         float S0_2 = 0.0f + std::bit_cast<float>(arg0->word_40) * S0_1 * S1_1;
         arg0->word_24 = std::bit_cast<u32>(S0_2);
         arg0->word_28 = std::bit_cast<u32>(S0_2);
@@ -1150,7 +1150,7 @@ u32 f_001c9f88(gptr<Object_001c9f88_0> arg0, float S0, float S1) {
     float S1_2 = 0.33333334f;
     float S3_1 = 0.875f;
     if (s32(r1_1) <= 0x11) {  // (from the original)
-        float S1_3 = (float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1)))) - 14.0f) * S1_2;
+        float S1_3 = (float(s32(r1_1)) - 14.0f) * S1_2;
         float S2_1 = std::bit_cast<float>(arg0->word_40);
         float S0_3 = S2_1 * S0_1;
         float S0_4 = S0_3 + (S2_1 * S3_1 - S0_3) * S1_3;
@@ -1165,7 +1165,7 @@ u32 f_001c9f88(gptr<Object_001c9f88_0> arg0, float S0, float S1) {
     }
     if (s32(r1_1) <= 0x14) {  // (from the original)
         float S2_2 = std::bit_cast<float>(arg0->word_40);
-        float S1_4 = (float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1)))) - 17.0f) * S1_2;
+        float S1_4 = (float(s32(r1_1)) - 17.0f) * S1_2;
         float S0_5 = S2_2 * S3_1;
         float S0_6 = S0_5 + (S2_2 - S0_5) * S1_4;
         arg0->word_24 = std::bit_cast<u32>(S0_6);
@@ -1221,7 +1221,7 @@ u32 f_001ca2c0(gptr<Object_001ca2c0_0> arg0, float S0, float S1) {
         guest::cpu()->r[1] = r1_1;
         return 1u;
     }
-    float S1_1 = float(s32(std::bit_cast<u32>(std::bit_cast<float>(r1_1)))) * 0.11111111f;
+    float S1_1 = float(s32(r1_1)) * 0.11111111f;
     float S0_1 = arg0->float_40;
     float S0_2 = S0_1 + -S0_1 * S1_1;
     arg0->float_24 = S0_2;
