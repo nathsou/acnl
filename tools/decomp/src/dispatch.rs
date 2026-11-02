@@ -1,5 +1,6 @@
 // The indirect calls (`rt_dispatch`) whose target is a constant: the veneers that switch between ARM and Thumb
-// (`add r12, pc, #1; bx r12`) and the like. They are direct calls of that address.
+// (`add r12, pc, #1; bx r12`), the jumps through a literal pool of the read-only image (`ldr pc, [pc, #-4]`), and the
+// like. They are direct calls of that address.
 use crate::ast::{BinOp, CpuField, Expr, Function, Stmt, Ty};
 use std::collections::{HashMap, HashSet};
 
@@ -23,6 +24,8 @@ fn value(e: &Expr, env: &Env) -> Option<u32> {
         Expr::Cast(Ty::U32, x) => value(x, env),
         Expr::Bin(BinOp::Add, x, y) => Some(value(x, env)?.wrapping_add(value(y, env)?)),
         Expr::Bin(BinOp::Sub, x, y) => Some(value(x, env)?.wrapping_sub(value(y, env)?)),
+        // a word of the read-only image (a literal pool: `ldr pc, [pc, #-4]` jumps to the address stored after it)
+        Expr::Load(Ty::U32, a) => crate::image::word(value(a, env)?),
         _ => None,
     }
 }
@@ -74,6 +77,8 @@ fn targets(list: &[Stmt], out: &mut HashSet<String>) {
             Stmt::Goto(l) => {
                 out.insert(l.clone());
             }
+            // (not the runtime's re-entry table: its entries are handled in constant_targets)
+            Stmt::Switch(Expr::Var(v), _) if v == "entry" => {}
             Stmt::Switch(_, cases) => out.extend(cases.iter().map(|(_, l)| l.clone())),
             Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                 targets(a, out);

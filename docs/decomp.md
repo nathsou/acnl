@@ -117,6 +117,24 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   comes mostly from the signatures, which list every register when a virtual call lies anywhere below.
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
 
+## Assumed signatures (`decomp assume-signatures OUT ASSUMED_OUT [THREADS]`, an experiment)
+
+For the functions without a proved signature, the least fixed point of the signature guess (signatures::guess),
+starting from none: an assumption, for measuring how far calling-convention prototypes would go. With
+`flow::ARGUMENTS_SET_UP` (set by this command only), a call that every path reaches through another call reads only
+the argument registers written since that call (and its results r0, s0): the others hold what the call before left,
+which no compiled caller hands over (r0-r3 and s0-s15 are the caller's to save). 2026-11-02, with sites and the 53.7k
+proved signatures: 37,925 assumed in 9 rounds (100 s), 10,626 of them still every register; with them the results
+analysis is unchanged (r1 observed in 82k functions): what remains comes from the proved signatures that list every
+register, proved from a guess that liveness had saturated (next paragraph).
+
+Liveness (flow.rs) and the constant targets (dispatch.rs) used to count the runtime's re-entry table (`switch
+(entry)`, in the body until structuring removes it) as jumps from the start of the function to the label after every
+call: whatever is live after any call was live on entry, so the signature guess listed nearly every register (30,535
+of the 37,925 assumed signatures were all 20). Only entry 0 is decompiled and proved; the table is now left out.
+Liveness also computed the scratch flows once per SO() (quadratic); a guess over the whole program now takes 100 s.
+Jumps through a literal pool (`ldr pc, [pc, #-4]`: a constant of the read-only image) are direct calls.
+
 ## Returned first arguments (`decomp returns OUT [THREADS]`)
 
 The functions that return the r0 they were called with (the ARM C++ ABI has constructors and destructors return

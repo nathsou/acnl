@@ -102,6 +102,9 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
             }
             Stmt::Goto(l) => out.push(Node::Jump(l.clone())),
             Stmt::Label(l) => out.push(Node::Label(l.clone())),
+            // (the runtime's re-entry table is no jump: only entry 0 is decompiled, and proved; counting it would make
+            // what is live after every call live on entry)
+            Stmt::Switch(Expr::Var(v), _) if v == "entry" => {}
             Stmt::Switch(e, cases) => out.push(Node::Switch(expr_vars(e), cases.iter().map(|(_, l)| l.clone()).collect())),
             Stmt::SyncOut => out.push(Node::SyncOut(p)),
             Stmt::SyncIn => out.push(Node::SyncIn(p)),
@@ -220,6 +223,18 @@ fn stmt_at<'a>(list: &'a [Stmt], p: &[usize]) -> Option<&'a Stmt> {
 // At each indirect call: the argument registers (r0-r3, s0-s15) written on some path since the
 // function's entry or the last call (sites.rs).
 pub fn written_since_call(f: &Function) -> HashMap<Path, Set> {
+    written_before_calls(f, true)
+}
+
+thread_local! {
+    // the calling convention's view of a call's arguments (assume-signatures only): after another call on every path,
+    // a call reads only the argument registers written since (and the results r0, s0 of the call before); the
+    // others hold what that call left, which no compiled caller hands over
+    pub static ARGUMENTS_SET_UP: std::cell::Cell<bool> = std::cell::Cell::new(false);
+}
+
+// the same at every call (direct ones too: `indirect_only` false)
+fn written_before_calls(f: &Function, indirect_only: bool) -> HashMap<Path, Set> {
     let mut nodes = Vec::new();
     let mut fresh = 0;
     flatten(&f.body, &vec![], &mut nodes, &mut fresh);
@@ -284,6 +299,7 @@ pub fn written_since_call(f: &Function) -> HashMap<Path, Set> {
             Node::Call(None, p) | Node::Simple(p, ..) if matches!(stmt_at(&f.body, p), Some(Stmt::Dispatch(_))) => {
                 Some((p.clone(), before[i].clone().unwrap_or_default()))
             }
+            Node::Call(Some(_), p) if !indirect_only => Some((p.clone(), before[i].clone().unwrap_or_default())),
             _ => None,
         })
         .collect()
@@ -429,6 +445,8 @@ pub fn liveness(f: &Function) -> Liveness {
 // function, which keeps them anyway, needs to know).
 pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
     let sites = crate::sites::at_calls(f);
+    let set_up = ARGUMENTS_SET_UP.with(|a| a.get());
+    let (after, written) = if set_up { (after_calls(f), written_before_calls(f, false)) } else { (HashSet::new(), HashMap::new()) };
     let mut nodes = Vec::new();
     let mut fresh = 0;
     flatten(&f.body, &vec![], &mut nodes, &mut fresh);
@@ -436,13 +454,13 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
         f.synced.iter().map(|(v, fl)| (v.clone(), crate::sym::cpu_key(fl))).collect();
     let synced: Vec<String> = f.synced.iter().map(|(v, _)| v.clone()).collect();
     // what an SO() reads depends on what follows it
+    let scratch = scratch_flows(f);
     for k in 0..nodes.len() {
         if let Node::SyncOut(_) = &nodes[k] {
             let at = nodes[k + 1..].iter().position(|n| !matches!(n, Node::Simple(_, _, None, _) | Node::Label(_))).map(|i| k + 1 + i);
             let next = at.map(|i| &nodes[i]);
             let p = if let Node::SyncOut(p) = &nodes[k] { p.clone() } else { unreachable!() };
             // a call with a signature: what it reads, what survives it, and its results when read after it
-            let scratch = scratch_flows(f);
             let flows = matches!(next, Some(Node::Call(_, cp)) if scratch.contains(cp));
             let sig = match next {
                 Some(Node::Call(Some(t), _)) => crate::signatures::of(*t),
@@ -454,11 +472,15 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                 if let Some(sig) = sig {
                     let si = nodes[i + 1..].iter().position(|n| matches!(n, Node::SyncIn(_))).map(|j| i + 1 + j);
                     if let Some(si) = si {
+                        let cp = if let Some(Node::Call(_, cp)) = next { cp.clone() } else { vec![] };
+                        let handed = |fl: &String| {
+                            !set_up || !after.contains(&cp) || fl == "r0" || fl == "s0" || written.get(&cp).map_or(true, |w| w.contains(fl))
+                        };
                         let always: Set = synced
                             .iter()
                             .filter(|v| {
                                 let fl = &field_of[*v];
-                                sig.contains(fl) || fl == "r13" || (preserve && survives_call(fl))
+                                (sig.contains(fl) && handed(fl)) || fl == "r13" || (preserve && survives_call(fl))
                             })
                             .cloned()
                             .collect();

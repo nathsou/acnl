@@ -137,8 +137,22 @@ fn non_interference(ctx: &Context, f: &Function, reads: &[String]) -> bool {
 // The argument registers the calls of a function may read: a direct callee's signature (all without one), an
 // indirect call's site (sites.rs), every one for another indirect call or a system call.
 fn call_reads(list: &[Stmt], out: &mut Vec<String>) {
+    call_reads_at(list, &[], None, out)
+}
+
+// (`after`: with the calling convention's view of arguments, flow::ARGUMENTS_SET_UP, the calls every path reaches
+// through another call: a register the function never touches holds what that call left there, handed over by no
+// compiled caller)
+fn call_reads_at(list: &[Stmt], prefix: &[usize], after: Option<&std::collections::HashSet<Vec<usize>>>, out: &mut Vec<String>) {
     let mut site: Option<&Vec<String>> = None;
-    for s in list {
+    for (i, s) in list.iter().enumerate() {
+        let p: Vec<usize> = [prefix, &[i]].concat();
+        if after.map_or(false, |a| a.contains(&p)) {
+            if let Stmt::Site(_) = s {
+                site = None;
+            }
+            continue;
+        }
         match s {
             Stmt::Site(regs) => site = Some(regs),
             Stmt::Dispatch(false) if site.is_some() => out.extend(site.take().unwrap().iter().cloned()),
@@ -148,8 +162,8 @@ fn call_reads(list: &[Stmt], out: &mut Vec<String>) {
             },
             Stmt::Dispatch(_) | Stmt::Svc(_) => out.extend(ARGS.iter().map(|k| k.to_string())),
             Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
-                call_reads(a, out);
-                call_reads(b, out);
+                call_reads_at(a, &[p.clone(), vec![0]].concat(), after, out);
+                call_reads_at(b, &[p.clone(), vec![1]].concat(), after, out);
             }
             _ => {}
         }
@@ -164,7 +178,11 @@ pub fn guess(f: &Function) -> Vec<String> {
     let field: HashMap<&str, String> = f.synced.iter().map(|(v, fl)| (v.as_str(), crate::sym::cpu_key(fl))).collect();
     let kept: Vec<&String> = field.values().collect();
     let mut passed = Vec::new();
-    call_reads(&f.body, &mut passed);
+    if crate::flow::ARGUMENTS_SET_UP.with(|a| a.get()) {
+        call_reads_at(&f.body, &[], Some(&crate::flow::after_calls(f)), &mut passed);
+    } else {
+        call_reads(&f.body, &mut passed);
+    }
     let mut reads: Vec<String> = ARGS
         .iter()
         .filter(|k| {

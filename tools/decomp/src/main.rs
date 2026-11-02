@@ -691,6 +691,7 @@ fn assume_signatures(out: &str, assumed_out: &str, threads: usize) {
             .map(|t| {
                 let parsed = parsed.clone();
                 std::thread::spawn(move || {
+                    flow::ARGUMENTS_SET_UP.with(|a| a.set(true));
                     parsed.iter().skip(t).step_by(threads).map(|(a, f)| (*a, signatures::guess(f))).collect::<Vec<_>>()
                 })
             })
