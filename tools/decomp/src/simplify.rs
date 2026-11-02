@@ -20,13 +20,9 @@ fn num_any(e: &Expr) -> Option<u64> {
     }
 }
 
-thread_local! {
-    // whether shifts and adds are written as multiplications (off for a second try: they can make a proof time out)
-    pub static MULTIPLY: std::cell::Cell<bool> = std::cell::Cell::new(true);
-}
-
+// whether shifts and adds are written as multiplications (off for a second try: decompile::FULL)
 fn multiply() -> bool {
-    MULTIPLY.with(|m| m.get())
+    crate::decompile::FULL.with(|m| m.get())
 }
 
 // m when e is x << k (m = 2^k) or x * m, for the same x (u32)

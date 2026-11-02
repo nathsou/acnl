@@ -621,7 +621,7 @@ pub fn structure(f: &mut Function) {
             && !loops(&mut f.body, &refs)
             && !branches(&mut f.body, &refs, None)
             && !motions(&mut f.body, &refs)
-            && !join_copies(&mut f.body)
+            && !(crate::decompile::FULL.with(|m| m.get()) && join_copies(&mut f.body))
         {
             break;
         }

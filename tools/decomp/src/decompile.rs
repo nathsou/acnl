@@ -72,6 +72,12 @@ fn verify_cached(ctx: &z3::Context, original: &Function, d: &Decompiled) -> crat
     v
 }
 
+thread_local! {
+    // the rewrites that can make a proof time out where the plainer function's did not (multiplications, join copies,
+    // the returned first argument kept, structuring twice): off for a second try
+    pub static FULL: std::cell::Cell<bool> = std::cell::Cell::new(true);
+}
+
 // Decompiles and proves; when removing the register saves does not give a proof, tries again keeping them.
 pub fn decompile_and_prove(ctx: &z3::Context, original: &Function) -> (Decompiled, crate::check::Verdict) {
     let first = decompile_with(original, true, &mut |_, _, _| {});
@@ -91,14 +97,14 @@ pub fn decompile_and_prove(ctx: &z3::Context, original: &Function) -> (Decompile
         let v2 = verify_cached(ctx, original, &second);
         (second, v2)
     };
-    // the multiplications the compiler wrote as shifts and adds can make the solver time out: once more without
+    // some rewrites can make the solver time out where the plainer function did not: once more without them
     let timed_out = matches!(&v, crate::check::Verdict::Unknown(_));
-    if !timed_out || !crate::simplify::MULTIPLY.with(|m| m.get()) {
+    if !timed_out || !FULL.with(|m| m.get()) {
         return (d, v);
     }
-    crate::simplify::MULTIPLY.with(|m| m.set(false));
+    FULL.with(|m| m.set(false));
     let r = decompile_and_prove(ctx, original);
-    crate::simplify::MULTIPLY.with(|m| m.set(true));
+    FULL.with(|m| m.set(true));
     if matches!(r.1, crate::check::Verdict::Proved) { r } else { (d, v) }
 }
 
@@ -132,7 +138,10 @@ pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn F
         saves::Saves { slots: vec![], registers: vec![] }
     };
     let (save_slots, saved) = (sv.slots, sv.registers);
-    crate::returns::keep_first_argument(&mut f);
+    let full = FULL.with(|m| m.get());
+    if full {
+        crate::returns::keep_first_argument(&mut f);
+    }
     after("returns::keep_first_argument", &f, &save_slots);
     for _ in 0..8 {
         let before = format!("{:?}", f.body);
@@ -169,12 +178,14 @@ pub fn decompile_with(original: &Function, remove_saves: bool, after: &mut dyn F
     flow::remove_dead_code(&mut f);
     after("flow::remove_dead_code", &f, &save_slots);
     // again: simplifying joins conditions (`if (a) { if (b) goto L; }` into `if (a && b) goto L;`), which structures
-    structure::structure(&mut f);
-    after("structure::structure", &f, &save_slots);
-    simplify::simplify(&mut f);
-    after("simplify::simplify", &f, &save_slots);
-    flow::remove_dead_code(&mut f);
-    after("flow::remove_dead_code", &f, &save_slots);
+    if full {
+        structure::structure(&mut f);
+        after("structure::structure", &f, &save_slots);
+        simplify::simplify(&mut f);
+        after("simplify::simplify", &f, &save_slots);
+        flow::remove_dead_code(&mut f);
+        after("flow::remove_dead_code", &f, &save_slots);
+    }
     Decompiled { function: f, save_slots, saved }
 }
 

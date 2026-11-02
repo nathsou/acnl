@@ -269,8 +269,9 @@ result):
 - `if (c) { X } X` with X leaving the function (a return, a jump) is `X`.
 - Multiplications by a constant that the compiler wrote as shifts and adds are multiplications (`x + (x << 1)` is
   `x * 3u`, `(x + (x << 1)) << 1` is `x * 6u`, `(x << 4) - x` is `x * 0xfu`, `(x * c) << k` is `x * (c << k)`): the
-  size of an array's elements. Multiplications can make the solver time out where the shifts did not, so a function
-  whose proof does not go through is decompiled once more without them.
+  size of an array's elements. Multiplications, like the join copies, the returned first argument kept and the
+  second structuring, can make the solver time out where the plainer function did not, so a function whose proof
+  does not go through is decompiled once more without them (decompile::FULL).
 - A void function's last `return;` goes; `u32 r6 = r0;` with r0 never assigned again is r0 (loop-free functions),
   and so is `u32 r0 = arg0.addr();` (its uses read `arg0.addr()`); `(x - K) == 0` reads `x == K`; a comparison of a
   widened unsigned byte or halfword drops the widening; a sign-extended load reads `*gptr<s8>(a)`.
