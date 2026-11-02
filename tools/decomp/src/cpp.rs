@@ -660,7 +660,14 @@ impl<'a> Parser<'a> {
                     }
                     let es = size_of(self.scope, inner)?;
                     let index = Expr::Cast(Ty::U32, Box::new(ie));
-                    let off = if es == 1 { index } else { Expr::Bin(BinOp::Mul, Box::new(index), Box::new(Expr::Num(es, Ty::U32))) };
+                    // (a power of two as the shift the decompiled function has: the solver need not relate the two)
+                    let off = if es == 1 {
+                        index
+                    } else if es.is_power_of_two() {
+                        Expr::Bin(BinOp::Shl, Box::new(index), Box::new(Expr::Num(es.trailing_zeros() as u64, Ty::U32)))
+                    } else {
+                        Expr::Bin(BinOp::Mul, Box::new(index), Box::new(Expr::Num(es, Ty::U32)))
+                    };
                     let a = Expr::Bin(BinOp::Add, Box::new(e.clone()), Box::new(off));
                     v = V::Pl(Place::Mem(a, 0, (**inner).clone()));
                     continue;
