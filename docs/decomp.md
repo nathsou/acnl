@@ -267,6 +267,10 @@ result):
   last simplification, which joins nested conditions into one (`if (a) { if (b) goto L; }` into `if (a && b)
   goto L;`) that the patterns above then take.
 - `if (c) { X } X` with X leaving the function (a return, a jump) is `X`.
+- A load at `b + (i << k)` or `b + i * n`, the element's size, reads `gptr<T>(b)[i]` (cpp.rs reads a pointer indexed
+  by a variable as the element at the address plus the index times its size; `gptr::operator[]` wraps at 32 bits
+  like the guest, as the model does). Not for stores: `gptr<T>(b)[i] = v;` at the start of a statement is C++'s
+  declaration of an array.
 - Multiplications by a constant that the compiler wrote as shifts and adds are multiplications (`x + (x << 1)` is
   `x * 3u`, `(x + (x << 1)) << 1` is `x * 6u`, `(x << 4) - x` is `x * 0xfu`, `(x * c) << k` is `x * (c << k)`): the
   size of an array's elements. Multiplications, like the join copies, the returned first argument kept and the

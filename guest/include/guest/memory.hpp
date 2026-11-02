@@ -36,8 +36,9 @@ public:
     T *operator->() const { return get(); }
     template <typename U = T, typename = std::enable_if_t<!std::is_void_v<U>>>
     U &operator*() const { return *get(); }
+    // (the element's address wraps at 32 bits like the guest's: decomp's proofs read p[i] as p + i * sizeof(T))
     template <typename U = T, typename = std::enable_if_t<!std::is_void_v<U>>>
-    U &operator[](std::ptrdiff_t i) const { return get()[i]; }
+    U &operator[](std::ptrdiff_t i) const { return *(*this + i); }
 
     constexpr explicit operator bool() const { return addr_ != 0; }
     constexpr bool operator==(const gptr &o) const = default;

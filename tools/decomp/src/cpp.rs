@@ -651,6 +651,20 @@ impl<'a> Parser<'a> {
                     };
                 }
             } else if self.eat("[") {
+                // a pointer indexed by a variable: the element at the address plus the index times its size
+                if let V::R(e, CType::Ptr(inner)) = &v {
+                    let (ie, it) = self.expr()?;
+                    self.expect("]")?;
+                    if !matches!(it, CType::Val(t) if !t.float() && t.bits() <= 32) {
+                        return Err("index of a non-integer type".into());
+                    }
+                    let es = size_of(self.scope, inner)?;
+                    let index = Expr::Cast(Ty::U32, Box::new(ie));
+                    let off = if es == 1 { index } else { Expr::Bin(BinOp::Mul, Box::new(index), Box::new(Expr::Num(es, Ty::U32))) };
+                    let a = Expr::Bin(BinOp::Add, Box::new(e.clone()), Box::new(off));
+                    v = V::Pl(Place::Mem(a, 0, (**inner).clone()));
+                    continue;
+                }
                 let k = self.number()?;
                 self.expect("]")?;
                 v = match v {

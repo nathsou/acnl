@@ -689,7 +689,10 @@ impl Emitter {
                 Some(f) => f,
                 None => match self.constant_address(a) {
                     Some(addr) if !t.float() => format!("*{}", self.global(addr, *t)),
-                    _ => format!("*gptr<{}>({})", t.c_name(), self.expr(a, 0)?),
+                    _ => match self.indexed(*t, a)? {
+                        Some(place) => place,
+                        None => format!("*gptr<{}>({})", t.c_name(), self.expr(a, 0)?),
+                    },
                 },
             },
             Expr::Call(n, args) => {
@@ -803,6 +806,29 @@ impl Emitter {
         };
         // (not a value the CPU's register holds wherever it is read)
         read.into_iter().filter(|(v, _)| !self.values.held_def(path, v)).collect()
+    }
+
+    // an access of type t at base + (i << k) or base + i * n, the element's size: `gptr<T>(base)[i]`
+    fn indexed(&self, t: Ty, a: &Expr) -> R<Option<String>> {
+        let size = (t.bits() / 8) as u64;
+        let index = |e: &Expr| -> Option<Expr> {
+            match e {
+                Expr::Bin(BinOp::Shl, i, k) if matches!(**k, Expr::Num(k, _) if k < 32 && 1u64 << k == size) => Some((**i).clone()),
+                Expr::Bin(BinOp::Mul, i, n) if matches!(**n, Expr::Num(n, _) if n == size) => Some((**i).clone()),
+                _ => None,
+            }
+        };
+        let Expr::Bin(BinOp::Add, x, y) = a else { return Ok(None) };
+        let (base, i) = match (index(y), index(x)) {
+            (Some(i), _) => (x, i),
+            (None, Some(i)) => (y, i),
+            _ => return Ok(None),
+        };
+        // (the index as an integer of at most 32 bits)
+        if crate::types::type_of(&i, &self.var_types).map_or(true, |t| t.float() || t.bits() > 32) {
+            return Ok(None);
+        }
+        Ok(Some(format!("gptr<{}>({})[{}]", t.c_name(), self.expr(base, 0)?, self.expr(&i, 0)?)))
     }
 
     // whether a branch is only a goto to the label right after its if (fallthrough_gotos)
@@ -1137,6 +1163,7 @@ impl Emitter {
                     let text = match (self.field_access(*t, a), global) {
                         (Some(f), _) => format!("{} = {};", f, value),
                         (None, Some(g)) => format!("*{} = {};", g, value),
+                        // (not `gptr<T>(b)[i] = v;`: at the start of a statement C++ reads that as declaring an array)
                         (None, None) => format!("*gptr<{}>({}) = {};", t.c_name(), self.expr(a, 0)?, value),
                     };
                     self.line(indent, &text);
