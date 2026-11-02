@@ -150,14 +150,13 @@ u32 f_007702a4(gptr<Object_007702a4_0> arg0, u32 r1, u32 r2) {
         if (r1 > r0) {
             do {
                 if (*gptr<u32>(r0) + 1u == 0) {
-                    goto L_7702f8;
+                    break;
                 }
                 r0 += 4u;
                 r4 += 1u;
                 guest::preempt();
             } while (r1 > r0);
         }
-L_7702f8:;
         r0_2 = r4;
     }
     guest::cpu()->r[1] = r1;
@@ -229,8 +228,7 @@ u32 f_00770934(u32 r0) {
     u32 r5 = r0;
     u32 r4 = 0u;
     do {
-        u32 r0_1 = r5 + (r4 + (r4 << 2) << 7);
-        u32 r0_2 = call_00758104(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+        u32 r0_2 = call_00758104(r5 + r4 * 0x280u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
         if (r0_2 != 0) {
             return r4;
         }
@@ -252,8 +250,7 @@ u32 f_00770974(u32 r0) {
     u32 r5 = r0;
     u32 r4 = 0u;
     do {
-        u32 r0_1 = r5 + (r4 + (r4 << 2) << 7);
-        u32 r0_2 = call_00758104(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+        u32 r0_2 = call_00758104(r5 + r4 * 0x280u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
         if (r0_2 == 0) {
             return 1u;
         }
@@ -328,13 +325,9 @@ u32 f_00770b68(gptr<Object_00770b68_0> arg0) {
     u32 r3_1 = arg0->word_c;
     u32 r1_1 = *global_0089021c;
     if (r3_1 == *global_00890218) {
-        if (r3_1 == 0 && ((arg0->word_10 | r1_1) & 1u) == 0) {
-            goto L_770ba8;
-        }
-        if (arg0->word_10 != r1_1) {
+        if ((r3_1 != 0 || ((arg0->word_10 | r1_1) & 1u) != 0) && arg0->word_10 != r1_1) {
             goto L_770bb0;
         }
-L_770ba8:;
         r4_1 = 1u;
         goto L_770bb4;
     }
@@ -343,19 +336,15 @@ L_770bb0:;
 L_770bb4:;
     u32 r1_2 = *global_00890214;
     if (r3_1 == *global_00890210) {
-        if (r3_1 == 0 && ((arg0->word_10 | r1_2) & 1u) == 0) {
+        if ((r3_1 != 0 || ((arg0->word_10 | r1_2) & 1u) != 0) && arg0->word_10 != r1_2) {
             guest::cpu()->r[1] = r1_2;
-            return 1u | r4_1;
-        }
-        if (arg0->word_10 != r1_2) {
-            guest::cpu()->r[1] = r1_2;
-            return 0u | r4_1;
+            return r4_1;
         }
         guest::cpu()->r[1] = r1_2;
         return 1u | r4_1;
     }
     guest::cpu()->r[1] = r1_2;
-    return 0u | r4_1;
+    return r4_1;
 }
 
 }  // namespace d_00770b68
@@ -429,12 +418,11 @@ void f_00779704(u32 r0, u32 r1) {
         u32 r1_1 = r1 - 1u;
         r12_1->word_0 = 0;
         r12_1->word_4 = r0 | r1_1 << 0x14;  // (from the original)
-        u32 r0_1 = r12_1.addr() + 8u;
         if ((r1_1 & 1u) != 0) {
             r1_1 += 1u;
         }
-        *global_00974a7c = r0_1;
-        *global_00974a7c = r0_1 + (r1_1 << 2);
+        *global_00974a7c = r12_1.addr() + 8u;
+        *global_00974a7c = r12_1.addr() + 8u + (r1_1 << 2);
     }
 }
 
