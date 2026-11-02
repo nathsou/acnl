@@ -231,6 +231,9 @@ thread_local! {
     // a call reads only the argument registers written since (and the results r0, s0 of the call before); the
     // others hold what that call left, which no compiled caller hands over
     pub static ARGUMENTS_SET_UP: std::cell::Cell<bool> = std::cell::Cell::new(false);
+    // the same for every call, not only those after another call on every path (the results analysis: what matters
+    // there is what is read after a call, and a register no statement wrote since that call is what it left)
+    pub static ARGUMENTS_AFTER_ANY_CALL: std::cell::Cell<bool> = std::cell::Cell::new(false);
 }
 
 // the same at every call (direct ones too: `indirect_only` false)
@@ -406,7 +409,9 @@ pub fn scratch_flows(f: &Function) -> HashSet<Path> {
                     continue;
                 }
                 seen[j] = true;
-                if headers[j] {
+                // (the results analysis under the calling convention's view: what the program reads, not what the
+                // proof relates at a loop header)
+                if headers[j] && !ARGUMENTS_AFTER_ANY_CALL.with(|a| a.get()) {
                     out.insert(p.clone());
                     break;
                 }
@@ -473,8 +478,9 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                     let si = nodes[i + 1..].iter().position(|n| matches!(n, Node::SyncIn(_))).map(|j| i + 1 + j);
                     if let Some(si) = si {
                         let cp = if let Some(Node::Call(_, cp)) = next { cp.clone() } else { vec![] };
+                        let any = ARGUMENTS_AFTER_ANY_CALL.with(|a| a.get());
                         let handed = |fl: &String| {
-                            !set_up || !after.contains(&cp) || fl == "r0" || fl == "s0" || written.get(&cp).map_or(true, |w| w.contains(fl))
+                            !set_up || (!any && !after.contains(&cp)) || fl == "r0" || fl == "s0" || written.get(&cp).map_or(true, |w| w.contains(fl))
                         };
                         let always: Set = synced
                             .iter()
@@ -491,12 +497,18 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                     }
                 }
             }
+            // (the calling convention's view, results analysis: a call hands over only the argument registers written
+            // since the call before, and the results r0, s0 of that one)
+            let any_call = set_up && ARGUMENTS_AFTER_ANY_CALL.with(|a| a.get());
+            let set_since = |cp: &Path, fl: &String| {
+                !any_call || fl == "r0" || fl == "s0" || fl == "r13" || written.get(cp).map_or(true, |w| w.contains(fl))
+            };
             let uses: Set = match next {
-                Some(Node::Call(..)) => synced
+                Some(Node::Call(_, cp)) => synced
                     .iter()
                     .filter(|v| {
                         let fl = &field_of[*v];
-                        call_argument(fl) || (preserve && survives_call(fl))
+                        (call_argument(fl) && set_since(cp, fl)) || (preserve && survives_call(fl))
                     })
                     .cloned()
                     .collect(),
@@ -505,6 +517,10 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                     // a tail call to a function with a signature hands over its arguments only (an indirect one with
                     // a site, its site's: the marker before it has the call's path)
                     let marker = at.and_then(|i| i.checked_sub(1)).map(|i| &nodes[i]);
+                    let marker_path = match marker {
+                        Some(Node::Simple(mp, ..)) if target.is_none() => Some(mp.clone()),
+                        _ => None,
+                    };
                     let sig = match (target, marker) {
                         (Some(t), _) => crate::signatures::of(*t),
                         (None, Some(Node::Simple(mp, ..))) => sites.get(mp).cloned(),
@@ -524,7 +540,7 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
                             let argument = match &sig {
                                 Some(regs) => regs.contains(fl) || fl == "r13",
                                 None => call_argument(fl),
-                            };
+                            } && marker_path.as_ref().map_or(true, |mp| set_since(mp, fl));
                             observed || (tail && (argument || fl == "r14"))
                         })
                         .cloned()

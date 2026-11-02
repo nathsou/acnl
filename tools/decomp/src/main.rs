@@ -843,6 +843,10 @@ fn results_all(out: &str, threads: usize) {
             .map(|t| {
                 let parsed = parsed.clone();
                 std::thread::spawn(move || {
+                    // (DECOMP_ABI=1: the calling convention's view of arguments, an assumption: flow::ARGUMENTS_SET_UP)
+                    let abi = std::env::var("DECOMP_ABI").map_or(false, |v| v == "1");
+                    flow::ARGUMENTS_SET_UP.with(|a| a.set(abi));
+                    flow::ARGUMENTS_AFTER_ANY_CALL.with(|a| a.set(abi));
                     let mut out: HashMap<u32, HashSet<String>> = HashMap::new();
                     for (a, f) in parsed.iter().skip(t).step_by(threads) {
                         let mine: HashSet<String> = results::RESULTS.iter().filter(|k| results::observed(*a, k)).map(|k| k.to_string()).collect();

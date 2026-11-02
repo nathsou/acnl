@@ -117,6 +117,27 @@ save area) and an "effects" token for everything outside guest memory. Scratch r
   comes mostly from the signatures, which list every register when a virtual call lies anywhere below.
 - The checker itself is tested by mutation (`selftest`): changing a constant of a decompiled function must be caught.
 
+## Call-site prototypes (`DECOMP_SITES=1`, opt-in)
+
+An assumption about the program instead of the exact CPU state, at the one place the model knows least: an indirect
+call's callee (sites.rs). The game's compiler puts the target of `blx rK` in the first argument register that holds
+no argument (14,636 calls through r1, 5,067 through r2, 2,536 through r3, 1,365 through r12), so the callee reads r0
+to r(K-1), plus a core register above K written since the function's entry or the last call (a 64-bit argument
+starts at an even register), and s0 up to the highest float register written since then. A `Stmt::Site` before the
+call says so, and the model treats the callee like one with that signature: a draft passes only those registers
+(`guest::call_address<u32>(target, this)` instead of five arguments), and its caller's own signature can be proved
+without the others. The C++ reader takes a `guest::call_address` call's typed arguments as its site (floats are
+passed as float arguments), and `guest::call_address_any` for a call with none (a target in r4-r11, a jump through
+memory).
+
+What it rests on: the compiler's register choice, and that a callee reads no argument its caller did not set up. The
+check that would back it is in the game (poisoning the other argument registers at every indirect call, then
+comparing runs), not done yet: it needs a hook in 3dsrecomp's runtime.
+
+Measured on the 800-function sample (2026-11-01): with the old tables, 1% fewer lines (indirect calls only);
+re-proving the signatures under the sites adds 14,702 signatures and narrows 1,778 (53.7k merged with the old
+table). The results analysis does not change (next section).
+
 ## Assumed signatures (`decomp assume-signatures OUT ASSUMED_OUT [THREADS]`, an experiment)
 
 For the functions without a proved signature, the least fixed point of the signature guess (signatures::guess),
@@ -127,6 +148,15 @@ which no compiled caller hands over (r0-r3 and s0-s15 are the caller's to save).
 proved signatures: 37,925 assumed in 9 rounds (100 s), 10,626 of them still every register; with them the results
 analysis is unchanged (r1 observed in 82k functions): what remains comes from the proved signatures that list every
 register, proved from a guess that liveness had saturated (next paragraph).
+
+The results side resists: with sites, the assumed signatures, and the calling convention's view of arguments in the
+results analysis too (`DECOMP_ABI=1`: after any call, a call hands over only the registers written since, and the
+results r0, s0; scratch results reaching a loop header no longer hand over everything, a proof artifact), r1 is
+still observed in 81.6k functions and s0 in 90.9k; one function traced (00102578) still reads r1 after an indirect
+call through paths not yet understood. The ceiling, measured with every function observed for r0 only (not a sound
+table: a measurement), sites and the assumed signatures, on the 749 sample drafts both have: 12,530 lines -> 11,910
+(-5%), CPU lines 1,687 -> 1,174 (-30%), 2.46x the hand-written versions -> 2.19x. That is what calling-convention
+prototypes could buy at most on the results side; the argument side (sites) is in the numbers above.
 
 Liveness (flow.rs) and the constant targets (dispatch.rs) used to count the runtime's re-entry table (`switch
 (entry)`, in the body until structuring removes it) as jumps from the start of the function to the label after every
