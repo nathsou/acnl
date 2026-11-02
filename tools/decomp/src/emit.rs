@@ -101,6 +101,7 @@ fn base_c(b: &str) -> &'static str {
 
 fn field_name(t: Ty, off: u64) -> String {
     let kind = match t.bits() {
+        32 if t == Ty::F32 => "float",
         8 => "byte",
         16 => "half",
         32 => "word",
@@ -527,8 +528,15 @@ impl Emitter {
         let base = db.field_base(st, off, bytes)?;
         let place = format!("arg{}->{}", k, path);
         Some(match base.as_str() {
+            // (a float access of a float field: the value as it is)
+            "float" if t == Ty::F32 => (place.clone(), place, "{}".into()),
             "float" => (format!("std::bit_cast<u32>({})", place), place, "std::bit_cast<float>(u32({}))".into()),
             "ptr" => (format!("{}.addr()", place), place, "gptr<void>(u32({}))".into()),
+            // (a float access of an integer field: its bits)
+            _ if t == Ty::F32 => match base_c(&base) {
+                b @ ("u32" | "s32") => (format!("std::bit_cast<float>({})", place), place, format!("std::bit_cast<{}>({{}})", b)),
+                _ => return None,
+            },
             // (no conversion when the field already has the access's type)
             _ if base_c(&base) == t.c_name() => (place.clone(), place, format!("{}({{}})", t.c_name())),
             _ => (format!("{}({})", t.c_name(), place), place, format!("{}({}({{}}))", base_c(&base), t.c_name())),
@@ -682,6 +690,10 @@ impl Emitter {
             Expr::Cond(c, a, b) => {
                 let t = format!("{} ? {} : {}", self.expr(c, 1)?, self.expr(a, 0)?, self.expr(b, 0)?);
                 if outer == 0 { t } else { format!("({})", t) }
+            }
+            // a float of the read-only segments at an address the emitter knows (a literal pool's): its number
+            Expr::Load(Ty::F32, a) if self.constant_u32(a).and_then(|k| crate::image::word(k as u32)).is_some() => {
+                return self.expr(&Expr::Call("U2F".into(), vec![Expr::Load(Ty::U32, a.clone())]), outer);
             }
             Expr::Load(t, a) if sp_offset(a).is_some() => self.frame_place(*t, sp_offset(a).unwrap()),
             Expr::Load(t, a) if self.local_field(*t, a).is_some() => self.local_field(*t, a).unwrap(),

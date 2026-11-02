@@ -267,6 +267,10 @@ result):
   last simplification, which joins nested conditions into one (`if (a) { if (b) goto L; }` into `if (a && b)
   goto L;`) that the patterns above then take.
 - `if (c) { X } X` with X leaving the function (a return, a jump) is `X`.
+- A word loaded and taken as a float is a float load, and a float's bits stored are a float store (`*gptr<float>(a)`,
+  float fields): the same bits in the model; a word of the read-only image still reads as its number. The model
+  converts a narrow integer to a float through its 32-bit promotion (`float(s16 x)` is `float(s32 x)`, as in C), so
+  the C++ may write either; F2U(U2F(x)) and U2F(F2U(x)) are x.
 - A load at `b + (i << k)` or `b + i * n`, the element's size, reads `gptr<T>(b)[i]` (cpp.rs reads a pointer indexed
   by a variable as the element at the address plus the index times its size; `gptr::operator[]` wraps at 32 bits
   like the guest, as the model does). Not for stores: `gptr<T>(b)[i] = v;` at the start of a statement is C++'s

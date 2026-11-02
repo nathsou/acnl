@@ -233,6 +233,13 @@ impl<'c> Sym<'c> {
 
     fn resize(&self, v: &BV<'c>, from: Ty, to: Ty) -> BV<'c> {
         let (fb, tb) = (from.bits(), to.bits());
+        // a narrow integer converted to a float is first widened to 32 bits (C's promotion: float(s16 x) is float(s32 x),
+        // and the C++ may write either)
+        if !from.float() && to.float() && from != Ty::Bool && fb < 32 {
+            let wide = if from.signed() { Ty::S32 } else { Ty::U32 };
+            let w = self.resize(v, from, wide);
+            return self.resize(&w, wide, to);
+        }
         if from.float() != to.float() && from != Ty::Bool && to != Ty::Bool {
             // int <-> float conversion (C semantics): opaque
             let name = format!("cvt_{}_{}", from.c_name(), to.c_name());
@@ -525,11 +532,11 @@ impl<'c> Sym<'c> {
                 let v = self.load_st(st, &addr, ty.bits() / 8);
                 // a word of the read-only segments (image.rs): the image's value; memory holds it too (a fact), so that
                 // a program reading it through an address the solver does not reduce sees the same word
-                if *ty == Ty::U32 {
+                if *ty == Ty::U32 || *ty == Ty::F32 {
                     if let Some(w) = addr.simplify().as_u64().and_then(|k| crate::image::word(k as u32)) {
                         let k = self.bv(w as u64, 32);
                         self.facts.push(v._eq(&k));
-                        return Ok((Ty::U32, k));
+                        return Ok((*ty, k));
                     }
                 }
                 (*ty, v)
