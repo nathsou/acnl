@@ -276,6 +276,7 @@
 0011ed24 RootTask__RootTask
 0011eea8 BlackWait__SingletonDisposer___SingletonDisposer_
 0011f290 return_constant_0x7387a8_
+0011fb18 ndm_initialize
 0011fcdc set_byte_97d8a1_to_1
 0011fd10 read_u32_0x00974af0_
 0011fd40 store_global_word_11fd40
@@ -395,6 +396,7 @@
 0012a9e8 set_byte_974adc_12a9e8
 0012a9f8 set_byte_974adb_12a9f8
 0012ab40 set_byte_974adb_to_0
+0012ab78 close_service_handle_97d7f8
 0012ae4c read_u8_0x00974ada_
 0012ae5c set_byte_974ada_12ae5c
 0012ae6c set_byte_974ada_to_0
@@ -426,6 +428,7 @@
 0012c984 ssys__ma__lyt__Layout__Layout
 0012ca50 construct_font_source
 0012ca54 store_constants_12ca54_0012ca54
+0012ca6c set_word_4
 0012ca78 construct_node_member
 0012ca7c construct_load_split
 0012cb24 call_12cb24
@@ -497,6 +500,8 @@
 001320cc sead__IDisposer__IDisposer_001320cc
 00132174 sead__IDisposer__IDisposer_00132174
 001321c8 sead__ThreadMgr__SingletonDisposer___SingletonDisposer_
+00132364 release_layout_parts
+001323b4 layout_at_10_virtual_8
 001323bc read_global_975c20
 001323cc construct_file_handle_001323cc
 00132478 clear_list
@@ -512,12 +517,14 @@
 00133628 nn__pia__inet__NexMatchLeaveSessionJob__virtual_15
 0013366c store_constants_13366c_0013366c
 0013424c on_allocation_failure
+00134250 fatal_result
 00134318 find_archive
 001343e4 sead__BufferedSafeStringBase_char___BufferedSafeStringBase_001343e4
 00134440 Interpolation__value
 0013451c Matrix34__copy_from
 00134544 copy_bytes_small_sizes_first
 00134c68 svc_arbitrate_address
+00134c90 svc_break
 00134cb4 aeabi_lasr
 00134cdc cfl_reset_sub_object
 00134d30 cfl_sub_object_flag
@@ -543,10 +550,12 @@
 00136474 return_constant_0x97d8b4_
 001365d4 retry_service_call_twice
 00136718 LinkedList__clear
-00136cb0 nw__lyt__Layout__virtual_9
+00136cb0 call_virtual_8_with_0
 00136cc8 detach_from_parent
+00136d04 SoundPlayer__remove_sound
 00136e0c nw__snd__internal__driver__DisposeCallback__DisposeCallback_00136e0c
 00136e4c store_two_words_at_10_136e4c
+00136e58 BasicSound__stop
 00136f2c load_kind_2
 001370dc load_sound_type_1
 001371c0 load_kind_6_from_file
@@ -722,6 +731,7 @@
 001435b4 translate_address
 001445ac read_u32_0x0097dff0_
 001445bc read_u32_0x0097dfec_
+00148710 mtx34_mult_vec3
 001487bc nn__crypto__Sha256Context__virtual_7
 0014ef20 multiply
 0014f3cc apply_matrix
@@ -1179,6 +1189,7 @@
 001c4b24 BsPlayerMgr__destructor
 001c4bc8 set_cell_high_bits
 001c4bf4 set_u16_cell
+001c4c14 call_005bf518
 001c4fe0 CatalogBase__virtual_16
 001c538c CatalogBase__virtual_17
 001c5390 CatalogList__virtual_5
@@ -1388,6 +1399,7 @@
 001e587c VillageBook__VillageBook
 001e588c VillageBook__deleting_destructor
 001e5890 VillageBook__destructor
+001e5894 camera_transform_point
 001e58cc bsobjchkmgr__ActorBody__ActorBody
 001e58ec bsobjchkmgr__ActorBody__deleting_destructor
 001e5e60 read_float_1e5e60
@@ -3743,6 +3755,7 @@
 002f68f0 reset_children_002f68f0
 002f6998 set_child_flag
 002f69c8 set_child_value
+002f6a30 Model__set_flag_10
 002f6ab0 ButtonActionControl__virtual_14
 002f6adc call_virtual_3_of_each_node
 002f6ba8 ButtonActionControl__virtual_10
@@ -3764,6 +3777,7 @@
 002f74c8 read_global_byte_2
 002f74d8 audio__bgm__StageOpusExhibition__virtual_16
 002f74e0 table_entry_has_all_bits
+002f7508 copy_four_animation_targets
 002f75a0 allocate_plain
 002f7604 construct_button_action_control
 002f76ac destroy_array_elements
@@ -3985,6 +3999,7 @@
 002ff34c cell_address_2x2
 002ff368 Letter__Letter
 002ff408 Letter__clear
+002ff4d4 Item__check_property
 002ff6a4 Item__is_in_id_set_c
 002ff6f4 roll_2ff6f4
 002ff6f8 random_below
@@ -4231,6 +4246,7 @@
 00306134 set_flag_bit_1
 003061bc read_field_u8_0x0__veneer
 00306350 bit_is_set_veneer
+00306354 load_mail_with_adapter
 00306408 call_target_with_two_0x5c__veneer
 003064ac AcNpc__virtual_32
 00306948 set_byte_957326_5b492c_veneer
@@ -4481,6 +4497,7 @@
 00312ae0 Villager__set_flag_100
 00312b20 Villager__set_item_249a
 00312bd0 construct_word_fix_19
+00312c4c init_text_with_buffer
 00312ca0 forward_to_target_virtual_19
 00312cb0 set_word_num_digit_vtable
 00312cc0 BsMenuBestFriendList__do_execute
@@ -4533,6 +4550,7 @@
 003171b0 Base__virtual_0
 003171b4 position_to_cell
 0031756c test_8
+0031758c HeapHolder__recreate
 00317600 BsMenuModelHomeBoard__do_execute
 00317a00 set_flag_below_8_00317a00
 00317d8c bgcheck__GuardBox__destructor
@@ -8431,6 +8449,7 @@
 004698e4 nn__pia__local__UdsNetworkManager__virtual_35
 0046a134 nn__boss__FgOnlyTask__FgOnlyTask
 0046a164 nn__boss__FgOnlyTask__deleting_destructor
+0046a174 ndm_suspend_once
 0046a1b0 nn__boss__TaskAction__virtual_2
 0046a27c nn__boss__TaskActionBase__TaskActionBase
 0046a2bc nn__boss__TaskAction__deleting_destructor
@@ -8465,6 +8484,7 @@
 0046c8e8 nn__boss__NsData__destructor
 0046c9d8 nn__boss__detail__IpcManager__deleting_destructor
 0046ca3c nn__boss__detail__IpcManager__destructor
+0046eaf0 ndm_resume_once
 0046efb4 nn__http__Connection__Connection
 0046efd0 nn__http__Connection__deleting_destructor
 0046f030 nn__http__Connection__destructor
@@ -8843,6 +8863,7 @@
 004b99ac nw__lyt__Layout__virtual_16
 004b9b38 nw__lyt__Layout__virtual_13
 004b9b54 store_global_word_4b9b54
+004b9b64 Listener__notify
 004b9b78 nw__lyt__Layout__virtual_7
 004b9b9c nw__lyt__Layout__virtual_8
 004b9bbc nw__lyt__Drawer__virtual_2
@@ -9250,6 +9271,8 @@
 004df7e0 cfl__MiiModelSimple__deleting_destructor
 004df7f0 store_word_0x00902814_
 004df800 return_constant_0x9ab040_
+004e029c set_entry_half_float_xyz
+004e09c8 queue_append_unique
 004e09fc construct_mii_icon
 004e0a40 cfl__MiiIcon__deleting_destructor
 004e0a44 cfl__MiiIcon__destructor
@@ -9263,25 +9286,54 @@
 004e0ca4 escape__BsEscapeStageFishEvent__virtual_28
 004e0cac escape__BsEscapeModelPickupEvent__virtual_25
 004e0cb0 return_constant_0x9c7ad4_
+004e0cbc room_cell_occupied
 004e0cec item_covering_tile
 004e0e90 is_free_to_use_4e0e90
 004e0f14 entry_for_item_value_06
 004e10c8 return_constant_0x9529d8_
+004e1204 RoomGrid__reset
+004e12b4 RoomGrid__furniture_of_entry
+004e1668 reset_room_light_slots
+004e1a7c room_flag
+004e1a90 room_flag_2
+004e1aa4 has_room_object_1
+004e1ac4 load_furniture_remake_params
+004e240c RoomGrid__place_if_free
+004e24d0 room_flag_3
 004e24e4 read_s8_0x009529d5_
 004e24f4 read_s8_0x009529d6_
+004e2504 has_neighbour_item
+004e263c count_down_4_timers
+004e26a0 clear_14_byte_record
 004e26bc sead__FixedSafeString_64___FixedSafeString_004e26bc
 004e281c sead__FixedSafeString_64___FixedSafeString_004e281c
 004e2cfc sead__FixedSafeString_64___FixedSafeString_004e2cfc
 004e2e54 sead__FixedSafeString_64___FixedSafeString_004e2e54
 004e332c construct_remake_tex_loader
 004e3344 ftr__RemakeTexLoader__deleting_destructor
+004e3354 act_on_first_flagged_furniture
+004e35f0 room_flag_4
+004e3604 clear_room_flag_and_timers
+004e36c0 is_class_19_furniture_on_empty_cell
+004e3768 room_flag_5
+004e39c4 mark_furniture_at_in_scene_0x35
+004e3a1c furniture_state_at
 004e3a7c BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c
+004e3f8c touch_furniture_at_position_plus_x
+004e408c clear_room_flag_and_timers_2
 004e424c furniture_first_tile
+004e440c touch_furniture_at_position_minus_x
+004e4510 item_maps_match_in_area
+004e49fc cell_is_blocked
+004e4ab8 call_004e40e8_with_r1
+004e54a4 try_place_at_position
+004e5818 drop_special_item_at
 004e58e8 is_special_kind_004e58e8
 004e9464 find_or_add_value_in_list
 004e951c remove_value_from_list
 004e958c value_from_list
 004e95b4 store_property_and_top_bits
+004e9a28 RoomGrid__furniture_at
 004e9f00 set_item_offset_pair
 004ea048 return_constant_0x9c7a14_
 004ea1ec AcFtr__virtual_57
@@ -11259,6 +11311,7 @@
 0057b988 Actor__post_create
 0057b98c Actor__post_delete
 0057b990 Actor__pre_execute
+0057b9dc start_529c80_mode_2
 0057ba08 angle_between_points
 0057ba24 Actor__post_execute
 0057ba28 Actor__virtual_16
@@ -11335,6 +11388,7 @@
 00580fd0 BsSkb__virtual_0_00580fd0
 00581428 GridMap__place_item_in_block
 005817bc namespace___VillagePrologueBuilder__virtual_10
+005817f0 GridRect__visit_cells
 005819ec construct_quad_pair
 00581f44 sead__SafeStringBase_char___SafeStringBase_00581f44
 005822c4 false____Bank_005822c4
@@ -11738,6 +11792,7 @@
 0058afb4 BgmParamList__contains
 0058aff8 BgmParamList__set_current_value
 0058b060 BgmParamList__set_flag_43c
+0058bc7c create_entry_58b06c
 0058c08c audio__bgm__EvOpusCleaning__EvOpusCleaning
 0058c19c return_constant_0x989bc0_
 0058c1a8 audio__bgm__EvOpusCountdown__virtual_0
@@ -11749,6 +11804,7 @@
 0058c5f0 FlagManager__release
 0058ca3c set_byte_94e488_to_0
 0058cb74 sead__SafeStringBase_char___SafeStringBase_0058cb74
+0058d3b4 stop_current_sound_effect
 0058d478 sead__RuntimeTypeInfo__Derive_sead__AudioPlayer___AudioPlayer__0058d478
 0058d590 read_s8_0x0094e43e_
 0058d7e8 set_byte_94e440_to_1
@@ -11891,6 +11947,7 @@
 0059ea94 fgobj__Proc__deleting_destructor
 0059eb64 fgobj__Proc__destructor
 0059ec30 row_byte_0e
+0059f194 add_to_free_slot_9b417c
 005a064c FieldDrop__init
 005a06d4 find_field_marker
 005a0ef8 find_field_drop
@@ -11988,6 +12045,7 @@
 005ab434 imgdb__PhotoHeaderImageInfoReader__destructor
 005ab488 read_s8_0x0097e0da_
 005ab5a4 nn__fs__Directory__Directory_005ab5a4
+005ae51c copy_table_wide_string
 005af8c8 imgdb__Crc16Context__Crc16Context
 005af9c4 store_byte_constant_pack_0x4_005af9c4
 005afd3c imgdb__MpSaver__MpSaver
@@ -12347,6 +12405,7 @@
 005d46dc value_for_mode
 005d477c return_constant_0x4__005d477c
 005d4788 speed_for_index
+005d4a78 call_virtual_slot_2
 005d4a94 script__InsertEngine__InsertEngine_005d4a94
 005d4b64 script__ChoiceSeq__ChoiceSeq
 005d4edc script__WordFix_65u___WordFix_005d4edc
@@ -12574,6 +12633,7 @@
 005e486c ChoiceStandardWin__LocalChoice__virtual_10
 005e4988 store_byte_constant_pack_0x4_005e4988
 005e4994 script__CapitalTopEngine__CapitalTopEngine_005e4994
+005e49c0 MessageChoice__setup
 005e4bd0 script__ChoiceStandard__virtual_12
 005e4bd4 script__ChoiceStandard__ChoiceStandard_005e4bd4
 005e4c88 script__ChoiceStandard__ChoiceStandard_005e4c88
@@ -13650,6 +13710,7 @@
 00656424 AcPlayer_rec__state_159_update
 00656ac8 AcPlayer_rec__state_129_exit
 00656c04 AcPlayer_rec__state_4_exit
+00656c20 state_params_with_8bc
 00656cac AcPlayer_rec__state_147_enter
 00656edc CounterSource__count_event
 006576f8 take_off_shoes_with_index_0x10_
@@ -13827,6 +13888,7 @@
 00669e74 AcPlayer_rec__state_108_enter
 0066a18c set_cell_target_7
 0066a284 set_cell_target_6
+0066ac8c request_player_state_with_params
 0066bb68 AcPlayer_rec__state_86_update
 0066beb0 AcPlayer_rec__state_145_update
 0066c024 AcPlayer_rec__state_123_update
@@ -14591,6 +14653,7 @@
 006c52c8 slot_value_at
 006c56c8 terrain_is_0xf9_at
 006c5744 terrain_flag_3_at_block_tile
+006c588c item_at_position
 006c5a3c is_special_terrain_at_block_tile
 006c5a88 terrain_at_position
 006c5ad8 terrain_at_block_tile
@@ -14994,6 +15057,7 @@
 006f8f0c return_float_constant_0x42000000__006f8f0c
 006f9574 return_float_constant_0x42e00000_
 006f9638 list_position_of_mode
+006f9c08 map_record_of_mode
 006f9db4 position_in_1b_to_1d
 006f9de8 return_float_constant_0xbf800000_
 006fa40c owner_of_mode
@@ -16280,6 +16344,7 @@
 00745210 return_constant_0x0__00745210
 0074557c free_elements_in_list
 007457a4 footprint_tile_offset
+007457e8 RoomGrid__cell
 00745d44 Resource__find_index
 00745f8c slot_test_frame
 0074619c AnimatedObject__animation_value_40

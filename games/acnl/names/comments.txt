@@ -32,6 +32,7 @@
 00118b70 The index of the first unused record of 15 (0x1ac bytes each); 15 when all are used.
 00118f7c The index of the first of 16 16-bit slots (from +0x17656) holding 0xffff; 16 when none.
 00118fb4 The index of the first of the 10 villagers whose flags (+0x2510) mark it (bit 0 without bit 1, or bits 0x600); -1 when none.
+0011fb18 Opens the ndm:u service handle (once, under a lock).
 0012089c Creates the script heap's children: libms, static, message, mail and flow.
 00122620 Appends an item when the array is not full.
 00124f94 Opens the friends service (frd:u) the first time, counting the users.
@@ -41,6 +42,8 @@
 00129898 Gives the microphone service its sample buffer (address and size aligned to 4 KiB).
 00129c7c Connects to the service manager's port (srv:) once, retrying every half millisecond while the port does not exist yet; counts the users.
 0012a518 Waits without a timeout on the handle (svc WaitSynchronization1), a failure reported.
+0012ab78 Closes the handle kept at 0x97d7f8 (svcCloseHandle) and releases the mutex at 0x97d7f4.
+0012ca6c Stores the value at +4; returns true.
 0012e640 Signed 64-bit division through the unsigned one, the operands and the quotient negated as their signs need.
 0012eeb0 Mounts the RomFS archive as rom:.
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
@@ -51,12 +54,19 @@
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
 00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
+00132364 Clears the layout's links (+8, +0x158), destroys its split part at +0x15c and finalizes the list at +0x30.
+001323b4 Calls virtual 8 (with 0) of the layout at +0x10.
+00134250 Calls the fatal-error hook once (when one is set) and breaks into the debugger (svc 0x3c) with the failing result.
 00134318 The mounted archive whose name is the path's prefix up to ':' (at most 8 characters); null when none.
 00134440 From `from` to `to` in `count` steps: the value at step `step` (`to` once done).
+00134c90 svcBreak.
 00135748 Takes the lock unless this thread already holds it, and counts the nesting.
 001357ec Ends one level of holding the lock; the last one clears the owner and releases it.
 001365d4 Calls call_00136598 up to twice while it fails with a retryable result; the result (one kind of failure is mapped to a fixed result code).
 00136718 Unlinks every node, counting each down and leaving it detached.
+00136cb0 Calls virtual 8 of the object with 0.
+00136d04 Removes a sound from the player's list (its link at +0x108).
+00136e58 Stops a playing sound, fading out over `fade_frames` (now when 0 or less).
 001376d8 Replaces the owner's frame heap (destroying the old one) by a new one on the region (start, size), 4-byte aligned; false when the region is too small or it fails.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
 00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
@@ -84,11 +94,16 @@
 0013ec20 Reads a wave archive (CWAR, version 1.0.0.0): its INFO block and, when asked, its file table.
 00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
+00148710 out = M * (v, 1) for a 3x4 matrix M.
 001c4bc8 ORs `bits` into the 16-bit cell (x, y), keeping only its low 4 bits.
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
+001c4c14 Calls 005bf518.
+001e5894 Transforms a point by the camera manager's view matrix (+0x29c), when there is a camera manager.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
+002f6a30 Sets or clears flag 0x10 (+0xd4) and the matching mask bits of +0xc4 (0x60000 or 0x14000, chosen once).
 002f737c Bit `index` (fewer than 5) of the flag bytes; 0 for a larger index.
 002f73b8 Releases what the part loaded (its graphics context current while it does) and destroys the load split base part at +0x1c.
+002f7508 When `copy`, copies the four animation targets (and +0xc) of one model to another and resets their values to 0.
 002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
 002f7ccc The wide formatter's sink for a bounded buffer: stores the character while there is room.
 002f7cdc Formats to a file; -1 when the file is in error.
@@ -107,6 +122,7 @@
 002fdd50 Finds set bit number `n` in 0x140 16-bit words, keeping the position in `cursor` (word index, bit, and an x/y position 16 bits to a row, 0x60 wide); true when found.
 002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.
 002ff408 Clears a letter: header, the opening line (0x42 bytes), the body (0x182 bytes), the closing line (0x42 bytes), flags, and an empty attached item.
+002ff4d4 Checks one of nine item properties (`property`, 0-8; with an option flag) of an item.
 002ff724 Removes entry `index` of the best three by moving the later ones up, and clears the last.
 002ffde0 The 0x30-byte record of entry `index` of the best three; the first's for a larger index.
 002ffdf4 Puts (identity, record, item) with `score` into the best three (scores at +0x138, +0x13a, +0x13c, best first), moving the lower ones down; nothing when it scores no better than the third.
@@ -123,6 +139,7 @@
 00305b7c How many of the 72 insects (category 0x24) have a record state.
 00305bcc How many of the 72 fish (category 0x27) and 30 sea creatures (0x28) have a record state.
 00305c64 How many of the 67 fossils (category 0x2c) have a record state.
+00306354 Builds a mail-loading adapter on the stack, hands it to the optional visitor, then loads the mail.
 003075cc Allocates `size` bytes from the current heap, 4-byte aligned.
 00307888 Drops the caller's reference to a shared string buffer (call_0011c0fa), then releases the owned object.
 00307a00 printf to a stream: the format and the stream are the first two arguments, the values follow (vfprintf).
@@ -136,6 +153,7 @@
 003120a8 Sets item `slot` (0-3, from +0x24d6) of the villager, then moves its non-empty items to the front.
 003122bc Sets the villager's catchphrase (+0x24f2) to its default from the message data (its data entry's), or to the common default.
 0031237c Clears the villager's design pattern and gives it back its default clothing item (from its data, or by its type) when it wears a special one.
+00312c4c Formats the arguments into a buffered wide string on the stack and stores the size at +0x40.
 00313a40 Whether villager `id` (below 0x18f) has type 0 (the low nibble of its data's +0x1c).
 00314278 Whether (word r0, signed bytes 0 and 1 of r1) equals (word r3, the same bytes of the stack argument).
 00314a1c A cursor past the last element of the list: its index is the list's count (virtual function 4).
@@ -143,14 +161,48 @@
 00314b58 Moves the cursor to the next element and copies it in, while there is one.
 00316ebc Bit `index` (fewer than 96) of the flag bytes; 0 for a larger index.
 00316edc Bit `index` (fewer than 7) of the flag bytes; 0 for a larger index.
+0031758c Destroys the held heap (+4) and creates a new one with the given arguments; true when it did.
 00317eac The byte cell (x, y) of the array.
 00317ec4 `value` limited to [low, high] (signed).
 0031e810 Hides the layout's root pane group (clears its visible bit) and lays the layout out again, when it was shown.
 00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
 003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
 00403828 Sets word `index` (fewer than 6) of the array at +0x210.
+0046a174 Once (flag at 0x974b8c): opens the ndm:u service and suspends the network daemons.
+0046eaf0 When ndm_suspend_once ran: resumes the daemons and closes the service.
 0047ea68 The CRC-32 of `size` bytes (polynomial 0x04c11db7, most significant bit first, its table built on the stack), starting from `seed`; complemented.
 004b4fc0 The pane of the layout's tree with this name (searching below the root pane).
+004b9b64 Marks the event (+0x1c = 1) and passes its value (+0x18) to virtual 0x3c of the listener at +0x20.
+004e029c Stores the three components call_004dfb58 gives (from the arguments) into entry `index` (0x24 bytes) as half floats, with a flag.
+004e09c8 Appends `node` to the queue unless it is in it already.
+004e1204 Empties the room's furniture grids (64 rows of 0x50 cells, and the 16 x 16 upper layer at +0x1400: -1 each) and its table of 48 furniture objects.
+004e12b4 The furniture object of the grid entry call_004e1768 gives (its index into the table); null when none.
+004e1668 Resets the two 0x40-byte slots from `slots`: no owner (-1), kind 4, every float 0.
+004e1a7c The room module's flag byte.
+004e1a90 The room module's flag byte (a second copy of room_flag).
+004e1aa4 Whether the lookup through 004e1174 finds entry 1 of the table at 0x572258.
+004e1ac4 Loads the furniture customization parameter file once, from the shared archive.
+004e240c Places a piece of furniture at cell (x, z) of `layer` when the room grid has nothing there (with its effects); true when it did.
+004e24d0 The room module's flag byte (a third copy of room_flag).
+004e2504 Whether one of the four cells next to (x, z) holds an item (an item standing for another is looked through first) that passes item_not_kind_11_or_flag_1c_bit_2.
+004e263c Counts down the four timers (16-bit, from +0) whose slot (+8) is in use, freeing a slot when its timer reaches 0.
+004e26a0 Zeroes a 14-byte record (three words and two bytes).
+004e3354 Runs 004e8ed4 with an empty item on the first room furniture (up to the capped count) with id 0x8870a0 and field 0x7a3 set; true when there is none.
+004e35f0 The room module's flag byte (a fourth copy of room_flag).
+004e3604 Clears the room flag; asks the main object to send message 0x5b when it is busy, else clears the first timer byte.
+004e36c0 Whether the furniture at (x, z) is of class 19 and the item map holds nothing at that cell.
+004e3768 The room module's flag byte (a fifth copy of room_flag).
+004e39c4 In scene 0x35, sets bit 0x20 of the 16-bit flags at +0x764 of the furniture at (x, z).
+004e3a1c The state byte of the furniture at (x, z) when it has one (flag bit 2), else 0xff.
+004e3f8c Runs 006311a4 on the furniture (id 0x88709c) under `position`, with the offset (32, 0, 0) and whether table bit 4 is clear.
+004e408c Same as clear_room_flag_and_timers.
+004e440c Runs 006311a4 on the furniture (id 0x88709c) under `position`, with the offset (-32, 0, 0) and whether table bit 4 is clear.
+004e4510 Whether the item maps of list positions `mode` and `mode - 1` hold the same items (same kind-11 top bits) over the area from 00284ee4.
+004e49fc Whether (x, z) is blocked: an open terrain cell with a terrain flag, or furniture of class 4/5 on terrain that is in the list for the current mode.
+004e4ab8 Calls 004e40e8 with its second argument as the first too.
+004e54a4 Places at the cell under `position` through 004e21e0 with the offset 32: 2 when it did, 0 when not, 3 when the furniture there is of kind b/12/c, 4 when there is none.
+004e5818 In scene 0x2b, for a special-set item: when the map cell (x, z) is empty, builds an empty item record and passes it to 0057456c; true when it did.
+004e9a28 The furniture object at cell (x, z) of the room grid (from the table of up to 48); null when none.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
 00520d5c Puts `node` (links: next +0, previous +4) at the front of the list (head +0, tail +4).
 00520df4 Puts `node` (links: next +0, previous +4) at the back of the list (head +0, tail +4).
@@ -168,11 +220,16 @@
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
+0057b9dc When `enable`: keeps the two extra arguments at 0x94dfd8 and runs 00529c80 in mode 2; else returns 0.
+005817f0 Walks the cells of a grid rectangle (begin to end iterator).
 005826d0 Copies 32 bytes into row `index` (fewer than 2).
 00582aa4 Fills two rows of 16 16-bit values with 0xffff.
 00582ae4 Fills a row of 16 16-bit values with 0xffff.
 00582e4c Plays sound `id` at the position given (r1, through the camera when there is one).
+0058bc7c Allocates an entry through 0058b06c at a position and initializes its fields from the arguments.
+0058d3b4 Stops the sound effect whose id is kept at 0x94e424+4 and forgets it (-1).
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
+0059f194 Finds the first of the four 0x12-byte slots at 0x9b417c whose byte +0xf is clear and fills it; -1 when all are used.
 005a06d4 The index of the used entry for (x, z, layer) among the 32 five-byte field markers; -1 when none (layer 0xa5: the current one).
 005a0ef8 The index of the used entry for (x, z, layer) among the 32 field drops (0x16 bytes each); -1 when none.
 005a1ba0 Buries the drop's item (a placeholder when its number is not indexed) at its cell, then clears the tile; true when it could.
@@ -181,6 +238,7 @@
 005a2534 Ends every field drop in use (sending what it needs) and clears it.
 005a2624 Sets the bit of cell (x, z) in a bit map of the town's 112 x 96 cells (after a 4-byte header); nothing out of range.
 005a2664 Clears a bit map of the town's 112 x 96 cells (0x540 bytes after its 4-byte header).
+005ae51c Copies wide string `index` of the table at 0x981660 into `out` (empty for index 0 or 1 handled apart).
 005b0164 Writes the photo's file name (the prefix and the number + 1, four digits) into the path's name field (8 characters).
 005b034c The index (0-3) of the wide file extension `text` (a leading '.' ignored) in the table of known extensions; 0 when unknown.
 005b03fc Writes `value` as three decimal digits into bytes 0xc-0xe.
@@ -207,10 +265,12 @@
 005c1c7c Puts the main player in state 6, or 0xf when `r0` is set (unless it is busy).
 005c257c Sends the player the special star letter with an attached item picked at random from kind 9 (that the player can still get); true when it was sent.
 005ca4b4 Whether entry `index` of the object name table (252 entries) is "fobj".
+005d4a78 Calls the object's virtual at +8.
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
 005e2e50 Restarts the message engine at +0x44 on the text the source's virtual function 3 returns, and runs it.
 005e34c4 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
 005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
+005e49c0 Sets up a choice list: `count` choices with `default` selected (none when out of range).
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
 006213c8 Refreshes the station's entry and slot, and in a session of more than one sends the update as a network record (kind 1).
 006214a0 Sets the slot's value and marks its state 1.
@@ -223,12 +283,16 @@
 0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
 006548ac Changes to `state` unless the player is in it already (true then).
+00656c20 Fills the state parameter buffer at +0x64 with the 0x26 bytes from +0x8bc of the object (the rest cleared) and returns it.
+0066ac8c Fills the state parameters (up to 3 entries, with three option bits) and requests the state change.
 0068229c Changes to `state` when the item the player holds is of `kind` (only the test when `test_only`).
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
 006bc4fc Sets the record state byte of an item of a recorded category to 5.
+006c588c The item at a world position on the map of `mode` (cell and tile from the position).
 006c5c60 The height of the ground at a position (0 outside the map).
 006c6640 The height at a position: the ground's, or for water, cliffs and similar terrain the surface's.
 006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
+006f9c08 The save record (from the two byte tables at 0x952742/0x95276c) for the list position of `mode` (positions 2 to 25 only).
 0070ab24 Slot `index` (fewer than 4; 0x18 bytes each, from +0xe0) passed on to call_007460e8; 0 for a larger index.
 0070b1a4 Entry `index` of an array of 12-byte entries (entry 0 when index is 10 or more).
 0070d904 The 16-bit cell (x, y) of the array.
@@ -252,6 +316,7 @@
 00741fcc The entry for `id` in a table that is one entry (0x6000), a list of ranges (0x6001, by their first id) or a dense range (0x6002, from its first to its last id); null when none.
 00742294 The entry for `id` in a table that is one entry (0x6000), a list of ranges (0x6001) or a dense range (0x6002); null when none.
 00742414 The section of kind 0x7001 in the header's table (12-byte entries from +0x14, count +0x10); null when none.
+007457e8 The index of the furniture at cell (x, z) of the room grid's layer (0: the floor, 0x50 per row; 1: the 16 x 16 upper layer); -1 when none or out of range.
 00745d44 The index of the entry with this name in the resource's dictionary (16-byte entries); -1 when there is none.
 007508b0 The furniture's item (+0x5e4) with the direction its angle (with its parent's, when it sits on one) gives, in a shared item.
 00750e1c The furniture's extents turned to its direction (absolute values) into `out`.

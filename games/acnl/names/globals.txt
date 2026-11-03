@@ -6,6 +6,7 @@
 0094d080 sound_system
 0094edd8 camera_manager
 00950148 npc_manager
+009529d4 room_flag
 00952c38 no_device_heap
 00952c3c stage_heap
 00952c48 weather_heap
@@ -39,6 +40,12 @@
 0097e06c srv_port
 00981fd8 pointer_list
 00985638 state_params_buffer
+009c79ac offset_minus_x
+009c79b8 offset_plus_x
+009c79d4 room_timers
+009c7a14 room_furniture
+009c7ad4 room_grid
+009c8fd4 room_light_slots
 00aaf14c current_player_data
 00ae0ab8 fatal_error_info
 00ae0b5c frd_lock
