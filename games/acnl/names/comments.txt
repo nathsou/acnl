@@ -55,6 +55,7 @@
 001024e0 Returns 0xc.
 001024fe A wide character's class flags (C ctype for characters up to 0xff, with the derived classes added).
 0010284c Parses the input with the format into the arguments.
+001032ee A file's error flag (C ferror).
 001032f6 Converts one wide character; -1 and errno EILSEQ when it has no multibyte form.
 00103374 Formats the float in fixed form.
 0010369c Forwards to 00103374.
@@ -1419,6 +1420,7 @@
 0020aedc Stops a sound object: the sound system forgets it if it was registered.
 0020af18 Constructs a sound object's base: distances 2000, volume 1, no handle, not registered.
 0020b0a4 Plays the symbol tree's sound unless it plays.
+0020b280 Constructs a held-item sound object: a sound object base with one sound slot, distances 2000.
 0020b494 Starts the object and sets its speed to 6.
 0020b9b0 Clears the 0x14b0-byte block: its base, identity, records and its two time bytes (from the earliest time).
 0020bb24 Clears the number pair.
@@ -2552,6 +2554,7 @@
 003085bc Calls the function on each villager record.
 00308728 Initializes the villager's memory of the player with their identity and names.
 0030878c Finds the villager's memory slot for the player.
+003088bc Sets a nine-character word into a text box from a name record (arg 1: its text at 2 and its flag at 0x14).
 003089cc Forwards to run_action_of_kind.
 003089d4 Picks a villager from the table (of the allowed types) for an empty slot, moves it in and schedules its arrival.
 00308d44 Jumps to 0x51dcbc.
@@ -2698,6 +2701,7 @@
 00312ab8 Forwards to TimeStamp__advance.
 00312acc Sets a time to a time stamp (arg 1); returns the time.
 00312af8 True unless the villager's flags (+0x2510) keep it in town.
+00312b20 Sets the villager's item at 0x249a (a copy of arg 1).
 00312b2c Finds the villager's item slot for the item, by the mask.
 00312c4c Formats the arguments into a buffered wide string on the stack and stores the size at +0x40.
 00313160 Moves the villager's items forward over the empty slots (of 4).
@@ -2797,6 +2801,7 @@
 0031fd44 Calls virtual 24 of entry `index` of the shown page.
 0031fd64 Marks the page changed (+0x201b) and enables all 10 entries, or (when off) restores each from its saved flag.
 0031ffbc Sets the page's changed flag (+0x201b).
+00320450 Releases a letter drag window: its layout parts and nodes, and takes it out of its drag icon list.
 0032049c Address of entry `index` among the 10 shown from +0xc (0x2b4 bytes each, +0x3d4); other indices give the first.
 00320500 Calls virtual 19 (refresh) of entry `index` of the shown page.
 00320548 The word at +0x684 of entry `index` of the shown page; 0 when it is not shown.
@@ -2812,6 +2817,7 @@
 00321a80 Starts the sound slot with its value, unless it plays.
 00321ae8 Forwards to SoundSystem__sound_value on the sound system.
 00321af8 Runs the function at 0x13c1d4 on the sound system.
+00321c84 Constructs a positioned melody player: a melody player base at the origin.
 00321cd4 Loads the room music player's data on the stage heap.
 00321ff0 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 003220e0 Plays the room music player's song (from its ready state).
@@ -4546,6 +4552,7 @@
 005cc524 Copies a letter field by field (identities, header, body, footer, flags, item and stamp).
 005cc82c Initializes through 0027d310 and sets +4 to -1.
 005cc844 Builds a new game: initializes the town (mode, speed, defaults), its parts, the town tune and the records, and resets the event state.
+005ccfc4 Constructs a save process (a temporary one) and clears the saved word it reports into (arg 0).
 005cd05c Resets the town flags (+0x621d0) and the slot records, and sets bit 1 of +0x570a of the current player.
 005cd0a4 Marks 0x95c33d, prepares the object at 0x95c33c and runs 005b4d7c for scene 0x61.
 005cd270 Unlinks the held node (unless 004dbc3c keeps it) and resets the request record (kind 0x800000, id -1).
@@ -4617,6 +4624,7 @@
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
 005dd570 Assigns the message to the string and records its flag.
 005dd5b8 Formats the number with three digits into the string.
+005e1974 Copies a C string (arg 1) into the object's string at 0x20.
 005e19a8 Sets the value as kind 1.
 005e1a00 Sets the value as kind 2.
 005e2c98 Binds the text box to the pane, taking its font and size, unless it is locked.
@@ -5465,6 +5473,7 @@
 006c6a84 Whether any of the four parts of the terrain at a block tile is in the 90-entry list at 0x89068f.
 006c6b84 The ground's kind at the position (by the scene).
 006c6fe8 The terrain kind of the position's cell in the map.
+006c7540 The map's height at a position (x arg 0, z arg 1), by its cell and tile.
 006c75e0 The height of the map at the position.
 006c7868 The ground height at a position (cell and tile; 006c7908).
 006c78b8 The ground height at a world position (block and tile; 006c7908).
@@ -5831,6 +5840,7 @@
 0070ef54 Seals the mail data's blocks and writes the checksum of its mailboxes (0x16188 bytes from +0x2058) at +0x2054.
 0070efa0 True when every block of the mail data and its mailboxes' checksum are intact.
 0070f534 Bit 12 + `player` (below 4) of the half at +0x22.
+0070f56c Whether a boss block (flagged in use) matches the boss's value 0x863 and an id (arg 1).
 0070f5b0 Checks the save's block at +0x71900.
 0070f678 The byte at (x, y) of a grid 16 bytes wide.
 00710614 Letter `index` of an array of letters (0x280 bytes each).
@@ -6736,6 +6746,7 @@
 0081b648 Plays the animation with the key on the animator (the fifth kind).
 0081b750 Plays the animation with the key on the animator (the fourth kind).
 0081c0a0 Moves the save step to the one after the current in its table.
+0081d12c Constructs a 20-character script word (filled with the empty character).
 0081d248 Constructs a 21-character script word (filled with the empty character).
 0081d8c0 Constructs a 33-character script word, empty.
 00825aa4 Unlinks the node from its owner's list and clears its owner.

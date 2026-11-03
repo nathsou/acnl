@@ -2967,7 +2967,7 @@
 0020b054 SoundObjFall__destructor
 0020b0a4 SoundObjSymbolTree__play
 0020b0d4 SoundObjFall__virtual_4
-0020b280 SoundObj_1___SoundObj_0020b280
+0020b280 SoundObjHold__construct
 0020b308 SoundObjHold__deleting_destructor
 0020b35c SoundObjHold__destructor
 0020b3ac SoundObjPond__virtual_2
@@ -6532,7 +6532,7 @@
 003085bc Villagers__for_each_record
 00308728 SaveVillager__init_player_memory
 0030878c SaveVillager__find_memory_slot
-003088bc script__WordFix_9u___WordFix_003088bc
+003088bc set_nine_character_word
 0030893c member_address_0x50_
 00308944 construct_word_ptr_sv_9_00308944
 00308960 store_constants_308960_00308960
@@ -7087,7 +7087,7 @@
 0031ffbc ItemPage__set_changed
 0031ffc8 LetterDragWindowBase__virtual_1
 0032042c LetterDragItemWindow__virtual_4
-00320450 LetterDragWindowBase__virtual_4
+00320450 LetterDragWindowBase__release
 00320490 LetterDragWindowBase__virtual_2
 0032049c ItemPage__entry_at
 003204d8 LetterDragWindowBase__virtual_0
@@ -19588,7 +19588,7 @@
 006c6a84 terrain_is_in_list_at_block_tile
 006c6b84 ground_kind_at
 006c6fe8 terrain_kind_at_position
-006c7540 height_at
+006c7540 map_height_at
 006c75e0 MapTable__height_at
 006c778c terrain_is_in_list_a_at
 006c77d8 terrain_is_in_list_c_at
@@ -20517,7 +20517,7 @@
 0070f034 slots_slot_4_if_class_5
 0070f51c record_2160_address_of_8_0070f51c
 0070f534 half_22_player_bit
-0070f56c check_block_0070f56c
+0070f56c BossBlock__matches
 0070f5b0 SaveBlock71900__check
 0070f624 seal_small_block
 0070f648 small_block_is_sealed
