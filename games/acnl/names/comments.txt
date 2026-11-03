@@ -1398,6 +1398,7 @@
 00297d54 Shows the scroll bar when the position is past the last page start.
 00297f04 Sets the scroll position (remembering the largest), its first shown entry and visibility, and moves the thumb.
 002982f0 Sets the scroll bar's position, clamped to its range.
+002986f0 Updates the scroll bar's knob when it is visible.
 00298834 True when the bar pane (+0x784) is touched.
 00298950 Drags the thumb, scrolling the list and playing its sound.
 00298a6c Sets up the scroll bar's button control and panes.
@@ -1412,6 +1413,7 @@
 002993ac When the thumb's pressed state changes, plays its press animation (and, while dragging, its sound).
 002999ac Sets the bar's style (+0x444) and plays it on the bar and its two arrows.
 0029a5f8 Starts the menu state (kind 0x20c, 0xb, 7) and tells the menu selection.
+0029aeac Drops the dragged icon when ready.
 0029b480 Resets the sub-menu and its child window.
 0029b840 Sets bit `index` (below 399) of the bit set.
 0029b868 Clears the 50-byte bit set.
@@ -1450,12 +1452,14 @@
 002a71a0 Counts to 4 (does nothing).
 002a71b4 Empties the 6 items of each of the 4 outfits and clears the flag (+0x60).
 002a722c Refreshes the outfits of the first player when they exist.
+002a7270 Sets up the player's badge list's words.
 002a75dc Converts the shirt and hat items of the 4 outfits by the rule.
 002a76c0 Restocks the 7 items: 3 from group 0xc, 3 from group 0xd and 1 from group 0x19, all distinct.
 002a77bc Places item `index` (below 7) in the room or the field once, when its owner is the current player.
 002a799c Picks one item from group 0xc (up to 0x73).
 002a7c74 Places item `index` (below 11) in the room or the field once, when its owner is the current player.
 002a9294 When enabled (bit 1 of +0x8a) and idle (+0x59c), stores the value and starts.
+002a93e8 Sets the shop dialog's mode (below 3).
 002a9cd8 Formats the value into the message buffer and stores the word.
 002aa08c Starts the furniture sound and marks it on (+0x98).
 002aa0dc Stops the furniture sound when on.
@@ -1472,6 +1476,7 @@
 002abdfc Picks a random insect from the spawn table for the time, skipping the ones already out or not allowed.
 002abf60 The insect with the id: in the list, or one of the two special slots; null when none.
 002ac76c True when the insect is in the spawn table at one of the 6 hours of the day, with the weather it needs (dry for 1, rain or snow for 2).
+002ad0a0 The catalog item of the offset for the current date.
 002ad1fc For an insect item (category 0x24), the flag of its insect index; 0 otherwise.
 002ae274 Puts the remembered item (0x94fd64) into the current player's pocket slot (+0xc8) and refreshes.
 002b1ea0 Fills the 7 labels of the current page from the markers (their names by kind), blanking the rest.
@@ -1486,9 +1491,11 @@
 002b7cb0 Updates the layout at +4 and attaches it to the layout system.
 002b7fa0 The index of the first clear bit of the 32 bits at 0x952aec; 0 when all are set.
 002b8044 Sets the record's four words and takes a free slot index.
+002b8090 Sets the button's scale and position from the camera.
 002b8898 Clears the word at 0x953230.
 002b8958 Shows or hides the button's pane and records it.
 002b8e84 Shows the pane and writes the number (up to 10 digits) into the label's text.
+002b8fb0 Sets the button's state and plays its animation.
 002b9aa4 Shows or hides the item name pane.
 002ba344 Advances the list's counter by the step (mod 3) and moves every child pane by the offset.
 002ba3cc Attaches the layout at +0x34c to the layout system.
@@ -1500,17 +1507,21 @@
 002bcd40 Fades to the volume over frames scaled by how far it has to go, and applies the volume (times the master when it has one).
 002be4a4 Writes the record of the player (the first matching or free of the 32 records).
 002be534 Clears the 32 records (0x14b0 bytes each).
+002be5fc Finds the player's record (by identity) among the 32.
 002be76c Destroys the 32 records.
 002be798 The oldest local entry without a visitor (of the 16), and its index.
 002be82c Clears the visit bits of the visitor in each of the 16 entries.
 002be864 Removes the visitor from each of the 16 entries.
 002be89c Clears the local entries that are no longer valid.
 002be8f0 Constructs the 16 park entries.
+002be93c Finds the entry with the identity in the 16 park entries.
 002bea00 Fills the park entry from the town data with the next id and stores it.
 002bea50 Stores the entry in the 16 park entries (by its identity).
 002beb4c Fills the park entry from a remote town with the next id and stores it.
 002beb90 The set and slot for an incoming entry: a free slot, else the oldest entry that may be replaced.
+002bec28 The main slot's flag in the park sets.
 002becec Prunes each of the 3 park entry sets (0x7dd80 bytes each).
+002bed24 Clears the main slot's flag in the park sets.
 002bed58 Constructs the 3 park entry sets again and clears the 200 visitor identities and the counters.
 002bee04 Finds the entry in the 3 sets; writes the set's index to `out_set` when given.
 002bee6c Constructs the 200 visitor identities, the 3 park entry sets and clears them.
@@ -1520,10 +1531,13 @@
 002bf574 Constructs the block's 4 slot headers, clears it and stamps its CRC.
 002bfe9c Copies the record (0x280 bytes) into the first free of the 10 slots.
 002bff84 Copies the letter (0x280 bytes) into the storage at the index.
+002c003c Clears the letter at the index.
 002c0048 Resets the flags of the 0xbc kinds.
 002c2024 Stores and applies the value (system value 2), on the old 3DS only.
 002c2058 Applies the default value (30) and marks it unset.
 002c2078 Initializes the flags and colors to their defaults.
+002c20ec Clears the flags and the switches.
+002c24dc Copies the town's name (0x12 bytes) into the record.
 002c2510 Looks the resource up in the data at +0x62138 and stores it (+0x2c), marking it set.
 002c2544 Sets the flag (+0x31) and enables the switch at +0x22.
 002c2710 Clears the flag (+0x31) and disables the switch at +0x22.
@@ -1540,10 +1554,12 @@
 002c61e8 Applies the theme's two colors to the window's panes and the text color.
 002c71ec Copies the letter of a page entry into the letter, with its sender and attachment.
 002c83a8 The letter list's entry at the index when on the page.
+002c9868 The window's first free slot.
 002caabc The resource named `name` (by CRC) in the builder's list (+0x1368), or null.
 002cab78 The grass wear texture in the list (+0x13c), or null.
 002cae6c Sets the touch area from the pane's size and position, in screen coordinates (origin at the top left of 320x240).
 002cb8e4 Hides the cursor on the first row; otherwise shows it at the selected row's height.
+002cbccc The row of the index on the current page of 10, or -1.
 002cbea4 Stores the selected row (counting the earlier pages of 10) in the player's data (+0x6f10).
 002cc1b0 The entry (0x2b4 bytes) for the index on the current page of 10, or the one before the first when outside it.
 002ccb84 Sets the two sharing flags (bits 0 and 2 of +0x9f) from the settings.
@@ -1570,10 +1586,12 @@
 002cf088 Sets channel 2's buffer and size, and resets its progress, under the lock.
 002cf0c0 Whether the state (+0x2e4) has reached connected (10).
 002cf1a8 Whether the state (+0x2e4) has reached finished (13).
+002cf3b4 Starts the transfer of kind 0xf.
 002cf87c Destroys the transfer and clears the instance.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d0998 The record (+0x668) of the object held by the slot; null without one.
 002d0cf8 Constructs the model with its skeletal model, base animation (kind 0x16, enabled) and its second animation.
+002d13e0 Starts the sound furniture manager's slot (below 52).
 002d17c0 Registers the furniture sound in the first free of the 52 slots (id -1, cleared), counting it; 0x35 when full.
 002d1858 Stops the sound furniture manager's slot (below 52).
 002d1a70 Stops and frees slot `index` (below 52), uncounting it.
@@ -1581,6 +1599,7 @@
 002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
 002d2d60 Plays the sound furniture's song with its volume.
 002d2e80 Sets the volume (and fade frames, 15 by default) of the slots playing the sound for the owner.
+002d3068 Starts the sound furniture with its song and options.
 002d31ec Plays the sound at the xz position (no height).
 002d3218 Plays the sound at the position.
 002d3404 Calls virtual 4 of the slot's object for the owner (of the 4 slots).
@@ -1612,6 +1631,7 @@
 002d5278 Constructs the room's rows, its 100 floor and 64 wall items and its four extra items.
 002d5770 Default room item `index` of the table at 0x985a10.
 002d5848 Builds the 8 default room items (0x985a10) from their ids.
+002d58b0 Starts the creature's sound at the position with its kind and volume.
 002d5920 Sets the flag at +0x37 and calls virtual 6 when it changes.
 002d596c Updates the insect or fish sound at the position (converted by the camera).
 002d59a4 Stops the sound when it plays: detaches it and stops its base.
@@ -1624,10 +1644,12 @@
 002da33c Plays the window's in animation from 0 and marks it opening; true.
 002da424 While animating, advances the in (or out) animation until its slot is done, then stops it (releasing the button after the out animation) and marks it settled.
 002db05c Refreshes entry `index` (below 10): renders the current player's pattern of the slot into its texture and shows it by its type.
+002dfe08 Sets up the icon set's three icons with their values.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
 002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
 002e0288 Sets the flag at +0x508 and mirrors it in bit 0 of the owner's +0xb7 byte.
 002e0308 Loads message `id` of group `group` into the button's text (+0x404), unless the button has no text (+0x516); id -1 leaves it.
+002e0374 Sets the first button's child when it has a pane.
 002e037c Moves the button's drag icon (+0x258) out of its current list and into `list` (when not null), remembering the list at +0x500.
 002e0428 When the selected state (+0x517) changes, plays (selected) or finishes (not) the animation at +0x3d4 and updates the layout.
 002e086c Finishes the animation at +0x3ac and updates the layout.
@@ -1637,7 +1659,9 @@
 002e173c Removes the first entry whose two bytes are (row, value) from the row's list (+0x10 + row * 0x24), else from the shared list at +0x7c.
 002e1818 Resets the candidate, counts the used slots into +0xa0 and marks the count done (+0xa1).
 002e2d24 Attaches the layouts at +0x4c4 (active) and +0x610 (inactive) to the layout system.
+002e2d54 Updates the mail view.
 002e326c Updates the object, then its layouts at +0x4c4 and +0x610.
+002e333c Shows or hides the letter entry's pane.
 002e354c Releases the resources of the page's entry at the index.
 002e3568 Releases the letter entry's resources when it holds any.
 002e35d0 Plays (on) or finishes (off) the animation at +0x280 of the layout at +0x134 when it has one, and stores the inverse state at +0xd9 and +0x12d.
@@ -1668,6 +1692,7 @@
 002e64bc Kills the effect, clears the handle's flags and the effect's +0xf8 word.
 002e6500 Moves the running effect to the position.
 002e668c Reads the effect's position when the handle still has one.
+002e66c0 Restarts the effect at the position with its owner.
 002e6808 Sets the float at +0x198 of the effect.
 002e6878 Sets the effect's rotation (+0x18c) and marks it rotated (bit 2 of +0x14).
 002e69cc Copies the 30 bytes of a ring buffer (data +0, size +4, start +8, count +0xc) in order, padding with 0xff, plus its trailing word and two bytes.
@@ -1677,6 +1702,8 @@
 002e7e20 Starts the tune player: picks the town tune (the 16 notes at +0x738 of the sound system) or, when it has fewer than 5 real notes (not 0xe or 0xf), a default tune, and resets the playback position.
 002e7f04 Plays the tune with random variations (when not repeating the plain tune).
 002e8444 Zeroes the tune player, with a 120 tempo and its 12 volumes at 100.
+002e8cc8 Plays the sound with the id.
+002e9324 Destroys the 3D sound object.
 002e9954 Releases the slot's sound handle (index below 0x30) and marks the slot free (-1).
 002e99d0 Initializes a free slot (-1).
 002e9a14 Releases the slot's handle and detaches it from its parent.
@@ -1690,6 +1717,7 @@
 002ea294 Address of the 0x30-byte record of place `index` (+0xa4); out-of-range indices give place 0.
 002ea2bc Inserts the player with `score` (below 0x400) and their prize item at the place the score earns, moving the lower places down.
 002ea430 Address of the identity of place `index` (+0x1a, 0x2e bytes each); out-of-range indices give place 0.
+002ea450 Refreshes the house's rooms.
 002eab00 Updates the villager house's state with the options.
 002eaec8 The first Saturday at or after the time stamp (skipping a week when today is already event 0xc) on which event 0xc is held.
 002eaf8c Clears the ranking, its places and prizes, and the contest flags of every player (and their entry bits too, when asked).
@@ -1703,6 +1731,7 @@
 002ebd68 Clears the four 0x1228-byte entries.
 002ebd9c Resets each of the four 0x1228-byte entries for its index.
 002ebdd0 Runs the entry function on each of the four 0x1228-byte entries with its index and the argument.
+002ebe0c Constructs the 4 records.
 002ed1ec Unless locked (+0xce5), stores the value at +0x3bc, refreshes from it and restarts with the default pair.
 002edcb0 Attaches the layout at +0x270 to the layout system.
 002edccc True when the word pair at +0xc equals the default pair (0x84517c).
@@ -1716,6 +1745,7 @@
 002eec34 Puts two panes of the layout at +0x2e4 at 0 and 350 and shows them, then updates the layout.
 002ef1b8 Marks the selected notice read when the player owns the slot, takes back the selection and plays the closing animation of the current tab.
 002ef27c Shows the new mark on each tab that has unread notices.
+002efe0c Sets up the house with its free record.
 002f3398 Sets the ready flag (0x9500e0) when the first resource is ready, or both flags when only the second one is.
 002f33e8 Releases the two resources and clears their flags.
 002f341c Resets the request record at 0xaf7618 with its default mode, allocating the 0xc8b8-byte work block (from the stage heap by default) and the local slot once; the second resource flag switches the mode.
@@ -1732,6 +1762,7 @@
 002f737c Bit `index` (fewer than 5) of the flag bytes; 0 for a larger index.
 002f73b8 Releases what the part loaded (its graphics context current while it does) and destroys the load split base part at +0x1c.
 002f7508 When `copy`, copies the four animation targets (and +0xc) of one model to another and resets their values to 0.
+002f7804 Moves the page's start to include the index and refreshes it.
 002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
 002f7ccc The wide formatter's sink for a bounded buffer: stores the character while there is room.
 002f7cdc Formats to a file; -1 when the file is in error.
@@ -1768,9 +1799,11 @@
 002fc2a4 Adds to the set (one bit per item id, up to 0x172b) every item of `kind` (its data's byte 0xd); kinds 1-8 add fixed groups through ItemSet__add_group.
 002fc948 The map of the current map index (0x952b9d), else the shared default map at 0xa14860 (constructed once).
 002fcc54 Switches the model's animation to kind `kind` (below 0x16, names at 0x953a94) when it changes, and restores its toggle mode.
+002fd0c4 Constructs the skeletal model with the class's vtables.
 002fd11c Clears the cells whose block kind is in the list (or of categories 0x24 and 0x28).
 002fd41c Whether (word r0, signed bytes 0 and 1 of r1) is not less than (word r3, the same bytes of the stack argument), compared in that order.
 002fdd50 Finds set bit number `n` in 0x140 16-bit words, keeping the position in `cursor` (word index, bit, and an x/y position 16 bits to a row, 0x60 wide); true when found.
+002fe2e0 Updates the sound data loader when it is up.
 002ff1cc Daily update of the second contest ranking: resets it for a new contest, updates the schedule and sends the prizes.
 002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.
 002ff3fc Clears the record (0x280 bytes) at the index.
@@ -1801,6 +1834,7 @@
 00302084 Resets the town's flags and its players' records.
 003022a4 Stores three words at +4, +8 and +0xc.
 003022b8 Clears +4, copies the two words at 0x88ec20 to +8 and returns the address of +8.
+003022e8 Updates the town's registered events.
 0030268c Forwards to end_event_9524d4.
 00302694 Forwards to clear_tables_ad5074.
 0030269c Forwards to byte_table_6f94a0_at.
@@ -1814,6 +1848,7 @@
 00302a5c Removes the null entries of the array of the count.
 00302fe8 Forwards to Item__check_data_nibbles.
 00303014 Forwards to Item__is_id_a0_a6_ac_b3_or_bd.
+00303018 Clears the item slots to the empty item.
 0030306c The item's placement kind (2 bits), or 2 without data.
 00303274 Sends the prizes of the finished second contest to the ranked players by letter.
 003035dc Initializes an entry of kind `kind` (0, 1 or 2) with its two constants; kind 2 also updates two save flags.
@@ -1946,6 +1981,8 @@
 0030800c Bit `index` (fewer than 40) of the flag bytes; 0 for a larger index.
 0030802c Releases an entry (unless of state 2), and when its object is gone sends message 0x40 with the slot and applies it to the table at 0x953874.
 00308198 Stores a 3-bit value in bits 3-5 of byte +5.
+003081b0 Copies 8 bytes.
+003082b8 Resets the scene table's 0xa5 entries.
 00308380 Copies two 22-byte names, a 16-bit id and a byte into a record.
 00308728 Initializes the villager's memory of the player with their identity and names.
 003089cc Forwards to run_action_of_kind.
@@ -1982,6 +2019,7 @@
 0030aac8 Updates the schedule's entries (below 0x21) for the day.
 0030ac60 Jumps to 0x56c798.
 0030ac64 Jumps to 0x698e64.
+0030ac68 Updates the player's badge record with the value (in its states below 5).
 0030af68 Jumps to 0x62cff8.
 0030af6c Jumps to 0x62cfe4.
 0030af70 Jumps to 0x56cf4c.

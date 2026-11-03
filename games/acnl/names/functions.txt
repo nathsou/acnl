@@ -4092,6 +4092,7 @@
 00297f04 CommonScrollBar__set_position
 002982e4 CatalogBase__virtual_14
 002982f0 ScrollBar__set_position
+002986f0 ScrollBar__update_knob
 00298834 CommonScrollBarWidth__bar_is_touched
 0029884c CommonScrollBar__virtual_5
 00298950 CommonScrollBar__drag
@@ -4120,6 +4121,7 @@
 0029a5f8 start_menu_state_20c
 0029a660 DragIconControl__virtual_9
 0029a674 DragIconControl__virtual_8
+0029aeac DragIconControl__drop
 0029b004 DragIconControl__virtual_13
 0029b030 DragIconControl__virtual_6
 0029b12c DragIconControl__virtual_11
@@ -4267,6 +4269,7 @@
 002a71a0 count_to_4
 002a71b4 PlayerOutfits4__clear
 002a722c PlayerOutfits4__refresh_first_player
+002a7270 BadgeList__setup
 002a75dc PlayerOutfits4__convert_items
 002a76c0 ShopStock7__restock
 002a77bc ShopStock7__place_in_world
@@ -4303,6 +4306,7 @@
 002a92c0 AcStrcCampingCar__virtual_59
 002a92e0 AcStrcCampingCar__virtual_58
 002a93d8 AcStrcCampingCar__virtual_57
+002a93e8 ShopTalk__set_mode
 002a9490 AcStrcCampingCar__virtual_32
 002a94a0 AcStrcCampingCar__virtual_31
 002a9728 AcStrcCampingCar__virtual_50
@@ -4352,6 +4356,7 @@
 002ac89c BsInsectFieldMgr__do_create
 002acb78 BsInsectFieldMgr__do_execute
 002accc4 BsInsectFieldMgr__do_delete
+002ad0a0 Catalog__item_of_offset
 002ad1fc Item__insect_flag
 002ad22c sead__SafeStringBase_char___SafeStringBase_002ad22c
 002ad300 sead__FixedSafeString_32___FixedSafeString_002ad300
@@ -4486,12 +4491,14 @@
 002b8010 clear_global_flag
 002b8044 SlotRecord__init
 002b806c GetVisitNpcIdxCB__virtual_0
+002b8090 LayoutButton__set_scale_and_position
 002b836c ishutfact2__BasicBuilder__BasicBuilder
 002b8898 clear_word_953230
 002b8958 LayoutButton__set_visible
 002b898c ChangeStockItem__virtual_12
 002b89ec sead__FixedSafeString_32___FixedSafeString_002b89ec
 002b8e84 NumberLabel__set
+002b8fb0 LayoutButton__set_state
 002b9024 ItemDragIconNode__virtual_29
 002b9160 ItemDragIconNode__virtual_4
 002b940c ItemDragIconNode__virtual_20
@@ -4592,6 +4599,7 @@
 002be4a0 SoundTv20JuiceCM__destructor
 002be4a4 PlayerRecords32__write_for_player
 002be534 PlayerRecords32__clear
+002be5fc PlayerRecords32__find
 002be76c PlayerRecords32__destroy
 002be798 ParkEntries16__oldest_free
 002be82c ParkEntries16__clear_visit_bits
@@ -4599,11 +4607,14 @@
 002be89c ParkEntries16__prune
 002be8f0 ParkEntries16__construct
 002be920 slot_address_002be920
+002be93c ParkEntries16__find
 002bea00 ExhibitionPark__store_local
 002bea50 ParkEntries16__store
 002beb4c ExhibitionPark__store_remote
 002beb90 ParkSet__slot_for_incoming
+002bec28 ParkSets3__slot_flag
 002becec ParkSets3__prune
+002bed24 ParkSets3__clear_slot_flag
 002bed58 ParkSets3__reset
 002bedd8 record_fbb_address
 002bee04 ParkSets3__find
@@ -4625,15 +4636,18 @@
 002bfe9c Records10__add
 002bff84 Letters__set
 002c002c small_record_address_002c002c
+002c003c Letters__clear
 002c0044 Letter__clear_veneer
 002c0048 FlagBlockBc__reset
 002c2024 SystemValueSetting__set
 002c2058 SystemValueSetting__reset
 002c2078 DrawFlags__init
+002c20ec Toggle22__reset
 002c2198 block_or_save_flags
 002c21c4 VisitorLocalInfo__SingletonDisposer___SingletonDisposer_
 002c228c VisitorLocalInfo__SingletonDisposer___deleting_destructor
 002c22d0 VisitorLocalInfo__SingletonDisposer___destructor
+002c24dc TownName__copy
 002c2510 set_resource_from_data_62138
 002c2538 store_byte_constant_pack_0x30_002c2538
 002c2544 Toggle22__enable
@@ -4753,6 +4767,7 @@
 002c9308 BsSeadParticleMgr__deleting_destructor
 002c932c BsSeadParticleMgr__destructor
 002c9864 BsShootingStarMgr__do_draw
+002c9868 CatalogWindow__first_free_slot
 002c997c BsShootingStarMgr__do_create
 002c9ac4 BsShootingStarMgr__do_execute
 002c9e34 BsShootingStarMgr__do_delete
@@ -4786,6 +4801,7 @@
 002cbac8 CensusContentList__deleting_destructor
 002cbad8 CensusContentList__destructor
 002cbbbc ChangeStockCooler__virtual_9
+002cbccc ListWindow__row_on_page
 002cbea4 ListWindow__store_selection
 002cbf20 ChangeStockCooler__virtual_8
 002cc00c ChangeStockCooler__ChangeStockCooler
@@ -4848,6 +4864,7 @@
 002cf088 NetTransfer__set_channel_2
 002cf0c0 NetTransfer__is_connected
 002cf1a8 NetTransfer__is_finished
+002cf3b4 NetTransfer__start_15
 002cf3bc MoveFromTalkRecept__virtual_37
 002cf494 MigrationReceiver__ScanBuf__virtual_2
 002cf49c MigrationReceiver__ScanBuf__ScanBuf
@@ -4886,6 +4903,7 @@
 002d1004 AcCockroach__virtual_3_002d1004
 002d1240 ResourceGetSklVis__virtual_1_002d1240
 002d1298 ResourceGetSklVis__virtual_0_002d1298
+002d13e0 SoundFurnitureMgr__start_slot
 002d17c0 SoundFurnitureMgr__register
 002d1858 SoundFurnitureMgr__stop_slot
 002d1a70 SoundFurnitureMgr__unregister
@@ -4918,6 +4936,7 @@
 002d2e80 SoundSlots4__set_volume
 002d2f4c update_entries
 002d2fa4 SoundSharedObjMgr__virtual_7
+002d3068 SoundFurniture__start
 002d31ec SoundSlots4__play_at_xz
 002d3218 SoundSlots4__play_at
 002d3238 SoundSharedObjMgr__virtual_6
@@ -4973,6 +4992,7 @@
 002d5770 default_room_item
 002d57f4 build_item_row
 002d5848 init_default_room_items
+002d58b0 SoundObjInsectFish__start
 002d5900 record_number_is_002d5900
 002d5920 SoundObj__set_flag_37_b
 002d5924 AcInsectFieldBase__virtual_19
@@ -5084,6 +5104,7 @@
 002dfc04 ButtonActionNodeEx__virtual_11
 002dfca8 ButtonActionNodeEx__virtual_10
 002dfd98 ButtonActionNodeEx__virtual_12
+002dfe08 IconSet__setup
 002dfee0 ButtonActionNodeEx__virtual_8
 002dff40 ButtonActionNodeEx__virtual_7
 002dffd0 ButtonActionNodeEx__ButtonActionNodeEx
@@ -5094,6 +5115,7 @@
 002e0248 LayoutButton__set_enabled
 002e0288 LayoutButton__set_flag_508
 002e0308 LayoutButton__set_message
+002e0374 ButtonList__set_child
 002e037c LayoutButton__move_drag_icon
 002e03cc sead__SafeStringBase_char___SafeStringBase_002e03cc
 002e0428 LayoutButton__set_selected
@@ -5152,9 +5174,11 @@
 002e2c7c HomeBtnProhibition__SingletonDisposer___deleting_destructor
 002e2cd4 HomeBtnProhibition__SingletonDisposer___destructor
 002e2d24 attach_two_layouts
+002e2d54 MailView__update
 002e326c update_two_layouts
 002e3290 HomeBtnProhibition__deleting_destructor
 002e32e8 HomeBtnProhibition__destructor
+002e333c LetterEntry__set_visible
 002e354c LetterPage__release_entry
 002e3568 LetterEntry__release
 002e35d0 set_state_animation_280
@@ -5221,6 +5245,7 @@
 002e64bc EffectHandle__reset
 002e6500 EffectHandle__move_to
 002e668c EffectHandle__get_position
+002e66c0 EffectHandle__restart
 002e6808 EffectHandle__set_float_198
 002e6878 EffectHandle__set_rotation_xyz
 002e68f8 SeadParticleHandle__deleting_destructor
@@ -5242,6 +5267,7 @@
 002e850c do_nothing_002e850c
 002e8bd8 SoundObjInsectFish__virtual_9
 002e8bf4 SoundObjInsectFish__virtual_4
+002e8cc8 SoundObj__play_id
 002e8ccc SoundObjInsectFish__virtual_7
 002e8ce8 SoundObj_1___SoundObj_002e8ce8
 002e8d58 SoundObjInsectFish__deleting_destructor
@@ -5256,6 +5282,7 @@
 002e9268 SoundObjWithMelody__virtual_3
 002e92b0 SoundObj_1___SoundObj_002e92b0
 002e9314 SoundObjWithMelody__deleting_destructor
+002e9324 SoundObj3d__destroy
 002e9328 SoundObjWithMelody__destructor
 002e97e0 SoundObjFurnitureInst__virtual_15
 002e9954 SoundObjSlot__release
@@ -5275,6 +5302,7 @@
 002ea294 ContestRanking__record_at
 002ea2bc ContestRanking__insert
 002ea430 ContestRanking__identity_at
+002ea450 HouseRooms__refresh
 002eab00 VillagerHouse__update_state
 002eaec8 next_event_saturday
 002eaf8c ContestRanking__reset
@@ -5291,6 +5319,7 @@
 002ebd68 Block1228__clear_all
 002ebd9c Block1228__reset_all
 002ebdd0 Block1228__apply_all
+002ebe0c Records4__construct
 002ec484 TotakekeLiveCamera__virtual_0
 002ec548 sead__SafeStringBase_char___SafeStringBase_002ec548
 002ec5ec TotakekeLiveCamera__TotakekeLiveCamera_002ec5ec
@@ -5324,6 +5353,7 @@
 002eec34 reset_two_pane_positions
 002ef1b8 NoticeBoard__close_selection
 002ef27c NoticeBoard__update_new_marks
+002efe0c House__setup
 002f0020 BsMenuBulletinBoard__do_draw
 002f0078 BsMenuBulletinBoard__do_create
 002f073c BsMenuBulletinBoard__do_execute
@@ -5415,6 +5445,7 @@
 002f7710 destroy_button_action_control
 002f777c do_nothing_002f777c
 002f77e8 same_pointer
+002f7804 Page4__clamp_start
 002f7950 multibyte_to_wide
 002f79c4 convert_byte
 002f7a04 return_constant_0xaf75e8_
@@ -5587,6 +5618,7 @@
 002fd010 map_object_entry
 002fd050 set_item_number
 002fd068 get_counter_block
+002fd0c4 SkeletalModel__construct
 002fd108 allocate_from_heap_002fd108
 002fd11c clear_blocks_of_listed_kinds
 002fd41c word_and_byte_pairs_not_less
@@ -5610,6 +5642,7 @@
 002fe1b4 SoundDataLoadThread__Thread__virtual_16
 002fe2cc SoundDataLoadThread__Thread__deleting_destructor
 002fe2dc SoundDataLoadThread__Thread__destructor
+002fe2e0 SoundData__update
 002fe37c SoundTv19ShoppingCM__virtual_2
 002fe3fc set_item_flags_bit_14
 002fe418 pick_random_set_bit
@@ -5766,6 +5799,7 @@
 003022d8 assign_bit2_of_byte10_3022d8
 003022dc assign_bit2_of_byte01_3022dc
 003022e4 cached_day_start_veneer
+003022e8 Town__update_registered
 0030268c end_event_9524d4_veneer
 00302694 clear_tables_ad5074_veneer
 0030269c byte_table_6f94a0_at_veneer
@@ -5791,6 +5825,7 @@
 00302fe8 Item__check_data_nibbles_veneer
 00302fec item_property_17
 00303014 Item__is_id_a0_a6_ac_b3_or_bd_veneer
+00303018 ItemSlots6__clear
 00303064 copy_item_002fc8e8_veneer
 0030306c Item__placement_kind
 00303094 ItemBitSet__add
@@ -6088,9 +6123,11 @@
 0030800c flag_bit_of_40
 0030802c release_entry_and_notify
 00308198 set_bits_3_to_5_of_byte_5
+003081b0 copy_8_bytes_b
 003081b4 copy_8_bytes
 003081c8 reset_shared_entry_table_003081c8
 00308238 reset_global_block_a
+003082b8 SceneTable__reset
 003082bc reset_global_block_b
 00308340 return_constant_0xac1948_
 0030834c member_address_0x24_
@@ -6200,6 +6237,7 @@
 0030ac4c store_constants_594e34_veneer
 0030ac60 thunk_0056c798
 0030ac64 thunk_00698e64
+0030ac68 BadgeRecord__update
 0030af68 thunk_0062cff8
 0030af6c thunk_0062cfe4
 0030af70 thunk_0056cf4c
