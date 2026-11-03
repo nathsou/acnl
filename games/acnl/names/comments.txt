@@ -1,23 +1,124 @@
+00100608 Initializes the system services chosen by the flags (bits 1 and 0: the main service set and the extra one); returns true.
+00100a8c Destroys the villager part: its four extra villagers, the two boards, its records and the ten villagers.
+00100b80 Forwards to Player__destruct.
+00100b8c Destroys a player record's parts (items, letters, patterns and the rest).
 00100e5c Formats into a buffer of `size` bytes, terminated when there is room; returns the length the output needed.
 00100e94 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
 00100f68 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
 001011e4 printf's %o: the digits of the 64-bit value (r2, r3), least significant first, then the '0' prefix for the # flag.
 0010125c printf's %x, %X and %p: the digits of the 64-bit value (r2, r3), least significant first, then the 0x prefix for the # flag.
 00101334 strtol in base 10, errno left as it was.
+001013c4 Calls 0010218c and returns its object.
 00101a00 Forwards to store_word_af75e8.
+00101a1e Whether the wide character has class bit 1.
 0010211c Skips white space and a sign, converts, and clamps to the long range on overflow (errno ERANGE).
+001024e0 Returns 0xc.
 001032f6 Converts one wide character; -1 and errno EILSEQ when it has no multibyte form.
+0010369c Forwards to 00103374.
+001036a0 Forwards to 001036ac.
+001059b4 Counts an item sale for the badges: the town's featured item adds 3 to its counter (part to the stock counter for type 4), other items add 2 or 3 to the general counter.
 00105d0c Picks a random item into `out`, from group 5 (35%), 3 (20%), 4 (20%), 6 (15%) or kind 0x33 (10%), never `exclude`.
+00105f54 Places the items of a list in the map cells (set C items as they are).
+00106318 The byte of the current slot (below 4) from the table at 0x853e36, or 0.
+001063bc Looks the key up in a pointer list.
+001063dc Allocates and frees one byte; returns -1.
 00106940 Frees the block `pointer` names in the pointer list and closes the gap.
+00106998 Updates the shop stock for the day (new items by date and the stock groups).
+00106bb0 Clears a record with two items and their flag bytes, and its time part (+0x18).
+00106bfc Returns its object.
+00106c0c Returns its object.
+00106da4 Scans the map cells for items of an indexed type (by terrain), collecting them.
+00107538 Clears the bulletin-board update state (0x95c210).
+00107544 Removes the bulletin-board notices older than their dates, moving the rest down.
 00107634 Removes notice `index` of the 15, moving the used ones after it up and clearing the last.
+0010767c Sets the bulletin-board update state (0x95c210) to -1.
 00107ed0 Posts the public works notice for the first player who qualifies, once (its flag is set after).
 00107fac Posts the public works notice (variant 0x10) on the bulletin board when the town's flag asks for it.
 001082c8 Clears the bulletin board's 15 notices.
 001082e8 Posts the bulletin board's two default notices, dated today.
+001083fc When the update state (0x95c210) is above 1: expires the old bulletin-board notices of the town.
+00108448 Clears the flag byte and the record after it (001e4524).
+00108a9c Clears a record of 18 items with their flags and its two 0x18-byte parts.
 00108ae0 Clears six item slots, then fills four with distinct items of group 0xb and two with distinct items of group 0xa.
+00108b58 Clears a reward entry, sets kind 0 and its encrypted value to 0.
+00109614 Clears a 0x9c-byte town record (count 10, limit 0xf, encrypted value 0).
 00109930 Creates the game's managers and singletons at start-up, in order.
 00109a90 Loads the NPC packages (normal, normal constants, special constants) and the other startup resources; whether all loaded.
+00109b58 Boot stage 3: loads the resources the boot needs.
+00109c14 Runs the boot stages not yet done (flags 0-4): core singletons and font/script, game singletons, NPC packages, stage 3, and the final setup; true when all are done.
+00109cc4 Chooses the scene after boot: the debug scene (0x62) with the right buttons held or in mode 4, else the title (0x5e) or the special start (0x9c).
+00109d68 Initializes the boot object and its two request records (kinds 0x540002 and 0x800000).
+00109da8 Picks the day's items for the season: three distinct items of categories 6 and 7 and two of category 9 (with the season's field), clearing the five slots first.
+00109ff8 Clears a 0x43cc-byte town record, its part at +0x4c and its encrypted value.
+0010a0cc Stores four bytes (the fourth from the stack).
+0010a0dc Stores four bytes, the stack one second.
+0010a2cc Initializes the new-town parts of the town flags block (+0x9c, +0x4650, +0x8b32).
+0010a400 Clears a 0x20-byte reward record (kind 0) and its four items.
+0010a44c Advances the reward by `days`: from state 1 counts its days down (to state 2 when the daily check fails), from state 0 starts it when flagged.
+0010a4a8 Clears three words and the part after them.
+0010a800 Clears a visiting-shop record: four items with their owner identities, flags and encrypted prices.
+0010a840 Renews the visiting shop for the day and sends the shopkeeper's letter when due.
+0010a9bc Initializes the tailor shop's records for a new town (display patterns and items picked at random).
+0010ab2c Clears the tailor shop: eight display patterns (item 0x2085, owner -1, price, pattern), five empty items and four encrypted values.
+0010abc8 For each existing player: deposits their pattern sales (encrypted at +0x43fc) into the bank, flags bit 7 of +0x5715 and records the balance; then clears the four sales.
+0010ac50 Copies an outfit: eight items and the flag byte.
+0010acb8 Picks the museum shop's items by which collections are complete (insects, fish, fossils, art).
+0010af10 Sets the record's state: 0 clears its days, 1 starts a 7-day period and updates the town flags.
+0010af72 In state 1: counts the record's days (+0x11) down by `days`, stopping at 0.
+0010b1e4 Clears a record and its three items.
+0010b210 Picks the items for the renewal (by the notice-renewal mode table).
+0010b390 Clears the renewal record (0x4c bytes), its encrypted value and its mode.
+0010b3b0 Advances the renewal state for the new day (mode changes by date).
+0010b43c Clears two words of the record.
+0010b448 Advances the record at +0x8b60 for the new day (counts, encrypted values and town flags).
+0010b544 Picks items for the category slots from the item sets (empty ones refilled).
+0010b6d0 Clears 0x28 bytes.
+0010b730 Sends the exhibition letter to the players it concerns.
+0010b9b0 Advances an exhibition entry for the elapsed days: raises its level (2 to 4), records it for the slot and flags the player.
+0010bb34 Word `index` of the table at 0x9502e8.
+0010beb8 Checks the held object's shop state (forwarding to the held object's slots 21 and 22).
+0010bf48 Checks the held object's shop state (the variant without forwarding).
+0010bf98 Allocates memory, reporting error 3 when it fails.
 0010c12c Forwards to free_memory.
+0010c228 Releases the shared string at +4.
+0010c234 Releases the shared strings at +0xc, +8 and +4.
+0010c33c Creates the structure heap (StrcHeap) and keeps it at 0x952c5c.
+0010c37c Forwards to 0010c384.
+0010c3c8 Forwards to 0010c3d0.
+0010c3e8 Forwards to 0010c3f0.
+0010c408 Forwards to 0010c410.
+0010c458 Creates the design work heap and keeps it at 0x952c60.
+0010c4b8 Creates the extra sound stage heap (0x140000 bytes by default) and keeps it at 0x952c98.
+0010c50c Forwards to 0010c514.
+0010c560 Forwards to 0010c568.
+0010c580 Forwards to 0010c588.
+0010c5d4 Forwards to 0010c5dc.
+0010c5f4 Forwards to 0010c5fc.
+0010c658 Builds four empty items.
+0010c720 Copies 8 bytes into `out` (the static default record when none).
+0010c764 Resets the runtime state of the town: records, NPC network parts, held item, notices, lists and global blocks.
+0010cadc The record of the same villager among the ten, when it is valid; else 0.
+0010cb10 Moves a villager into the town: finds a free record, clears it and fills it from the villager's data.
+0010cbd4 Schedules the villagers' events for the days ahead (random days, current event kind).
+0010d454 Advances the villagers' dated records by the elapsed days.
+0010d690 Copies a block of villager data between records.
+0010d984 Advances the villager part by `days`: its records, visitors, level and each existing player's villager records.
+0010db50 Clears the letter (0x280 bytes per slot) for player `slot` (below 4) in each valid villager.
+0010dea4 Updates the moving record (+0x173ec) when it has a value, unless a player matches it in state 4 with an item.
+0010df1c Clears bit `slot` (below 4) of bits 3-6 of +0x2510 in each villager.
+0010df64 Updates each villager's flags for the date.
+0010dfe4 Updates the villagers' moods and their network share info for the day.
+0010e210 Resets the two visitor records (+0x173c6, +0x173a0).
+0010e230 Picks items for the villagers from the item sets.
+0010e360 Whether `id` is one of the ten 16-bit ids at 0x95c230.
+0010e7ac Updates the villagers' records for the network (packets and boards).
+0010e9a8 Clears flag 2 of +0x2510 and the record at +0x8be of each villager, then rates the current player for each villager.
+0010eeec Starts the countdown of the event at +0x19760 when it has none: 7 (or 10 when its villager is close to a player) minus the elapsed days; -1 without a valid villager.
+0010f044 Forwards to 0010f04c.
+0010f0b0 Runs the villager part's new-day update: its records, the event state, the two 16-entry tables and the moving record; returns true.
+0010f138 Adds `days` to the event's elapsed days (up to 0x7f) and counts its countdown down.
+0010f16c After loading: refreshes the visitor records and the moving record, resets the NPC packets and clears 0x95c219.
+0010f3d0 Updates the villagers' slot flags (by their slot index and state).
 00110cdc Clears the byte at 0x95c219.
 00111050 When no blocking event runs and an hour has passed since the last check: clears the requests of villagers no longer in state 0x21, then stores the updated set.
 00111d48 Builds the villager part of the save data: ten villagers, the town's records, the two boards of 16 entries and the rest.

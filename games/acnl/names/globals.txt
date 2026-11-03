@@ -49,6 +49,8 @@
 00952c3c stage_heap
 00952c48 weather_heap
 00952c54 real_estate_heap
+00952c5c strc_heap
+00952c60 my_design_work_heap
 00952c64 human_anim_bank_heap
 00952c68 sead_particle_heap
 00952c6c particle_handle_heap
@@ -58,6 +60,7 @@
 00952c80 ugc_heap
 00952c84 script_heap
 00952c94 sound_heap
+00952c98 sound_ext_stage_heap
 00952c9c net_heap
 00952ca0 net_game_heap
 00952cac work_heap
