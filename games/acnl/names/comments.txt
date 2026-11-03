@@ -1841,7 +1841,30 @@
 00597d28 Adds the field drop that spawns the special insect for the item.
 00598164 Finds item 0xcd in the map and starts its drop; true when found.
 00598218 Adds a field drop of kind 7 for a buried item (0x9e) or hole (0x9d) at the cell; -1 otherwise.
+005982d8 Adds a field drop of kind 0xd (a hole 0x9d registered for the slot, the current one for 4) at a free spot; -1 when there is none.
+005983ac Adds a field drop of kind 0x1d for the low ground item at the cell (no marker there); -1 otherwise.
+00599294 Offsets the cell by the packed x and y steps (two 3-bit table indices); false when either is 0.
+005992fc Refreshes the cell when its item is not of type 0x1d (in island scenes).
+00599544 Refreshes the cell at the position and, for trees (type 0x13 or the set), refreshes the tree.
+00599784 Clears the 4 field drop slots and the drop counters.
+005999b8 Adds a field drop of kind 0x22 for the item at a free spot (swapping item 0x339f for 0x33a0 in island scenes); -1 when there is none.
+00599aa4 Drops the item at the position, checking markers and objects there.
+00599c6c True when a free spot exists for a drop.
+00599ca0 The buried form of the item by its category (0x36 to 0x38 and 0x40), marking unregistered items; true for category 0x40.
+00599da0 Buries the field drop of kind 0xb or 0x1c at the position and, when done, frees its slot, tells the other stations and clears the tile.
+0059a3f4 Sets the town bit (in the bits at +0x35c4 of the town object) when it exists.
+0059a420 Updates the field objects whose town bits are set.
+0059a9ac The world position of the item at the cell, on the surface (raised for some kinds).
+0059ab9c Creates a growing plant object for the item at the cell (inside the map) and adds it to the field objects; true when it did.
+0059ac18 Creates a scaling object for the item at the cell (inside the map) and adds it to the field objects; true when it did.
+0059b61c The field object table entry (0x16 bytes each, +0x414) for the item's map kind (below 0x87); null when none.
+0059baa8 Calls the field objects' function at 0x14fc70 with the two values; -1 without the field objects.
+0059c090 The angle from the object to the item's cell (with the item's offset by its kind).
+0059c7a8 Calls the field objects' function at 0x14fc78 with the values (not for id -1).
+0059c934 The field object at the cell (inside the map), marking it to refresh (state 0xa) when flagged; null when none.
+0059cae8 Binds the texture chosen by the town's setting (save +0x621ce) to the field object's material.
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
+0059ec48 The index of the first active field drop of the kinds 2, 4, 5, 0x15 or 0x17 to 0x1a; -1 when none.
 0059f194 Finds the first of the four 0x12-byte slots at 0x9b417c whose byte +0xf is clear and fills it; -1 when all are used.
 005a06b4 Forwards to do_nothing_002f777c.
 005a06d4 The index of the used entry for (x, z, layer) among the 32 five-byte field markers; -1 when none (layer 0xa5: the current one).
