@@ -19878,7 +19878,7 @@
 006daac8 payload_2b4
 006dab3c call_virtual_39_of_entry
 006dab64 payload_2bc
-006dabd8 object_operation
+006dabd8 FieldObjects__find_structure_object
 006dad34 BsStrcMgr__virtual_17
 006db950 BsStrcMgr__virtual_16
 006dc224 call_14fe38_on_6b4c

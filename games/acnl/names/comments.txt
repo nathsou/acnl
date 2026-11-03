@@ -3868,6 +3868,7 @@
 005269e8 Places items on the map by the terrain of each cell (a long routine over the map rectangle).
 00526ea0 Whether the two cells below a point are not shore (terrains 0x14, 0x31-0x33) holding a tree-like item (types 4, 6 or 8).
 00527088 Places items on the map by the terrain of each cell (the second routine).
+00527528 Finds the cell of a structure by its id (arg 1) across the 14 structure lists: walks each list's cells for \n the one whose handle matches.
 00527a2c Marks the cells of the structures in a block (first pass).
 00527c34 Generates the block's cells (its terrain and items) with the options.
 005284b8 Marks the cells of the structures in a block (second pass).
@@ -6102,6 +6103,7 @@
 006d9f38 Applies a received insect catch: hands the insect to the slot's catch when it exists, else marks the record missed; without a ready guest entry, answers 0x3b.
 006da030 Starts showing the catch (state 2) for the player.
 006dab3c Calls virtual 39 of entry `index` of the list (+0x67d4, count +0x67cc).
+006dabd8 The field object of a structure (arg 2 in list arg 1): first among the plain objects, then the kind-10 \n ones, then (in the scenes so flagged) the special ones; null when none.
 006dc224 Calls the function at 0x14fe38 on the object at +0x6b4c when it exists.
 006dc248 Finds the water at the position: its kind, its surface and its flags; whether there is any.
 006dc8cc The label chosen by the town's setting (low nibble of save +0x6214e) from the table of 10.
