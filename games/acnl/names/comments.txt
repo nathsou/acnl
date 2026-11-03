@@ -947,6 +947,49 @@
 0024f400 Constructs the actor sound object from its parameters, with its listener and cleared fade.
 0024f70c Calls handler `index` of the table at 0x8452f8.
 0024fbd4 Plays the sound at the position (converted by the camera) and marks it playing.
+00250334 Constructs the sound object at full volume.
+00250354 Places the sound object at the world position, seen from the camera.
+002503b0 Calls the sound object's virtual function 9.
+002504d4 Plays the sound (the sound object's virtual function 7).
+00250b34 Claims the tour's reward and clears the pending flag.
+00251690 Whether the object's id (+0x34) is one of two fixed ids.
+00251818 Whether the object's id (+0x34) is the first of the two fixed ids.
+00251868 Starts the object's fixed animation.
+002518f4 Copies the template of the slot's species into the record.
+0025191c The fish slot (0x108 bytes each).
+00251938 When the slot's fish is hooked (state 2): its position and item; else false.
+00251c24 Whether the slot belongs to the current main object (or, for a guest, its entry is ready).
+00251f14 Makes the current main object the owner of the slot, resets it from its template and tells its actor.
+00251fa4 Releases a claimed slot, resets it from its template and tells its actor.
+00252034 Whether the fish is hooked (state 2) and within the radius of the point (on the ground plane).
+0025244c Picks a species that appears at the place, the season and the time.
+00252850 Sets the fish's state to gone (3).
+0025286c Whether the slot does not belong here; writes whether its guest entry is still pending.
+00253bc4 The fish manager's flag at +0x118a, or 0 without a manager.
+002549b4 When the slot (below 15) is in use: its cell's x and z.
+002549f0 Whether the species appears at one of the day's three sample hours (in the place, or in the season); with `rain_only`, only in rain or snow.
+0025591c The fish information of a fish item (category 0x27), or 0.
+0025594c The actor of the slot.
+00255dfc Starts a cast at the position, with the flag.
+00255e38 Starts a cast at the position.
+00255ebc The sound kind of the water at the position (0x4a, 0x50 or 0x56), or 0 when there is none.
+00255f1c Starts the cast at the position when idle, finding the water there and its kind.
+00256664 Sets the fade step (-1/frames).
+0025668c Sets the two fade steps (1/frames) and resets their progress.
+002566e0 Applies the transform and the two values of the current season's variant (0x3c bytes each).
+00257ee4 Sets up the shop dialog's choices and the item label.
+00258c8c Hides the item label and sets up the dialog's five choices.
+002599ec When the scene does not start the NPC itself: picks the message for its start mode (2 or 3) and starts the dialog; whether the NPC starts on its own.
+00259dac Hides the item label and sets up the dialog's five choices (the second set).
+00259f30 Hides the item label and sets up the dialog's three choices.
+0025c1fc Updates the passport menu once its parts are ready.
+0025c3ac Posts the menu's request (0x14, or 0x16 without `first`) and starts it.
+0025c418 Posts the menu's request (0x15, or 0x17 without `first`) and starts it.
+0025c484 Posts the menu's request (0x18) and starts it.
+0025ca5c Forgets the day's event and clears its two flags.
+0025cdf8 Updates the reactions menu: its icons, dragging and selection.
+0025d9e4 Finds the first player with the flag and acts on their data.
+0025efb8 Sets the mode (+0x7e0e) and, for mode 1, resets the sub-menu at +0x6e2c.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
 0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
 00270ce0 Unloads the split part at +0x14.
@@ -1019,6 +1062,40 @@
 0027e13c When the NPC of kind 'sza' exists with the default id and its timer set, moves the clock by its span and starts event 0xe.
 0027e634 Resets the request record with mode 0x1800181 and its handler.
 0027e670 Refreshes the shared NPC info, then resets the request record with mode 0x24000942 and its three handlers.
+00280568 Starts the NPC's appearance: its model, animation, camera and action.
+00280ea0 Raises the NPC's visibility over 20 frames, then begins its next action.
+002812b0 Clears the save flag (+0x6acd) the NPC holds.
+0028130c Clears flag 4 of 0x9516a0 when the NPC holds it.
+0028176c Clears the lock at 0x94fd88 when the NPC holds it.
+002817a0 Clears the lock at 0x94fd8c when the NPC holds it.
+002817d4 Clears flag 0x10 of 0xaadad4 when the NPC holds it.
+00281cd8 Loads the special letter (variant 2) and attaches the song item.
+00281d6c Loads the special letter (variant 1) and attaches the song item.
+00282b44 Clears the player's presence bit and sets the state to 4.
+00282b68 Initializes the presence message.
+00282c44 Sets or clears the player's presence bit.
+00282c78 Resets the presence state, keeping the players' bits.
+00282ca4 In a multiplayer session (mode 2): marks the main player present and sends the presence message.
+00282d6c Resets the presence state and the players' bits.
+0028311c Formats the value into the label's buffer.
+00283ee0 The kind of the terrain at the position in the layer (0 to 4), or 0xfc when it is not in the list.
+00284b38 Constructs the item whose id is at 0x950806.
+00284b58 The world rectangle the camera sees, across the map's cells.
+00284ee4 The first and last cells (inclusive) the camera sees.
+00286668 Starts the object's fixed animation.
+002882b4 Resets the id the object points to (+0x3a0) to the default.
+00289ce8 Wraps the day within the month's length (one more in February of a leap year) and shows it with two digits.
+0028a008 Wraps the year within 2012 to 2050, shows it and clamps the day to the month.
+0028a600 Wraps the month within 1 to 12, shows it and clamps the day to the month.
+0028ab90 Whether the chosen date (or time, for the time mode) is not before the reference.
+0028b220 Sets up the date window's buttons and fields from the current date.
+0028c3e8 Sets up the model's button actions and animation targets.
+0028c538 Sets up the model's button actions and animation targets (the second variant).
+0028d378 Counts the point and, for the main player before the end, records it in the tour result.
+0028d568 Calls the owner's fixed function.
+0028f500 Updates the shadow views.
+0028f6f8 The shadow kind (0 to 4) of the current scene.
+0028f8bc Sets the fade from the distance between the two points (none within about 167 units, full at about 333).
 002900d4 Clears the pending flag (0x950710) or, when the tour is in state 1 or 3, resets it to state 0.
 00290108 While the tour plays (state 2, not done), counts one in the third counter (0x950720, at most 999).
 00290584 Finishes the tour (unless a network peer is busy): selects the BGM, shares the end template entry and marks it done.
@@ -1830,6 +1907,48 @@
 004ee55c Starts the split load, setting the read and write positions from its word (+0xec) the first time.
 004eee9c Finds the named entry in the model's dictionary and binds it.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
+005008b4 Resets the 5 tracks and copies the forward or the reverse curve set (0xe8 bytes) in, then starts it.
+005013dc Animation command: scales the pane's size (x, y or both) by the percentage that follows, or restores the saved size.
+00501580 Animation command: scales the pane's size by the percentage that follows on the chosen axes, or restores the saved size.
+00501cc8 Shows the letter's page text in the text area.
+00501f84 Shows or hides the text area's eight panes in three groups.
+00502030 When the scroll moved: shows the arrow when there are more than 3 lines, else hides it.
+005022e0 Places the text area for its mode (0 to 2) and shows the matching panes.
+005023c8 Finds the text area's eight panes, binds their texts and shows the first page.
+00504a34 Finds the board's ten panes, binds their texts, shows the first page and stops the flight.
+00504c54 Shows the board's page text in its panes.
+00508fc8 Shows or hides every pane of the group and marks the layout for update (state 2).
+005091fc Creates an animation object for the resource on the pane (or the resource's own target) and adds it to the layout's list; the object, or null.
+005095dc Sets up the layout's animation list and inserts it among the drawn layouts by priority.
+0050a710 The number of letters in the list, less one when the current one is hidden.
+0050c9a4 Clears the record and invalidates its id.
+0050ca3c Invalidates the record's id and clears it.
+0050cb9c Appends the value when fewer than 100 are stored.
+0050cc2c Clears the 100 values and the counts.
+0050cc60 The value at 0x95366c, capped at 5.
+0050cc78 The mode at 0x953670 when it is 1 or 2, else 0.
+0050cd1c Drops a reference to the shared service and, at the last one, shuts it down.
+0050cd64 Creates the shared service state (its lock and handle) once.
+0050ce40 Takes a reference to the shared service, starting it at the first one.
+0050d09c Posts request 0x1e to the online component.
+0050d10c Posts the connect request to the online component.
+0050d128 Posts the list request to the online component.
+0050d150 Posts request 0x1b to the online component.
+0050d18c Posts request 0x19 to the online component.
+0050d1f4 Posts request 0x1f to the online component.
+0050d210 Posts request 0x1c to the online component.
+0050d274 Posts request 0x1d to the online component.
+0050d478 Releases the online component's objects and, once disconnected, frees it.
+0050d8f0 Ends the store's open operation, if any, and shuts the service down.
+0050d9c4 Reads the slot's entry when it is in range and fits; 0 on success, 1 when it does not exist, else 8.
+0050db18 Writes the entry to the slot.
+0050dd68 Deletes the slot's entry; whether it succeeded.
+0050ddc0 Commits the store; whether it succeeded.
+0050dddc Opens the store with its parameters.
+0050ded0 Closes the store.
+0050deec Writes the C string to the log as a NEX string.
+0050df24 Writes the C string followed by the wide string to the log.
+0050df80 Writes the wide string to the log.
 00510878 Shuts the online client down when nothing uses it: releases the service, the shared state at 0x96b930 and the buffer (+0x24).
 00510b68 Logs out of the online service (waiting for the call to finish), then resets the session's state and timeouts.
 0051139c Logs into the online service and waits for the result; reports the error (level 3) on failure. True when logged in (+0x6b).
