@@ -2308,6 +2308,7 @@
 002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
 002d1db0 Constructs an external-volume sound object: a sound object base with two sound slots and two faders.
 002d1f40 Starts a furniture sound object for a furniture sound (arg 3): registers it and finds its sound table entry.
+002d27e0 Stops a furniture sound object (when started): stops the sounds of its entry's three sound ids in its two \n slots, unregisters it and stops the base.
 002d2a4c Constructs a furniture sound object: a sound object base with two sound slots, nothing playing.
 002d2b90 Destroys a furniture sound object: stops it, detaches its two sounds and stops the base.
 002d2d60 Plays the sound furniture's song with its volume.

@@ -5299,7 +5299,7 @@
 002d24e0 SoundObjFurniture__virtual_15
 002d267c AudioObjFurniture__virtual_12
 002d2684 SoundObjFurniture__virtual_7
-002d27e0 SoundObjFurniture__virtual_3
+002d27e0 SoundObjFurniture__stop
 002d2998 AudioObjFurniture__virtual_15
 002d2a0c AudioObjFurniture__virtual_16
 002d2a4c SoundObjFurniture__construct
