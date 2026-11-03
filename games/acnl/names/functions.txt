@@ -21912,6 +21912,7 @@
 0075f448 NetSession__peer_address_is_usable
 0075f4d4 entry_in_use
 0075f578 own_peer_index
+0075f5c0 NetPlayer__identity_differs
 0075f63c NetSession__player_identity
 0075f644 NetPlayers__identity_of_slot
 0075f728 NetPart__can_leave
@@ -21943,6 +21944,7 @@
 007618d4 AcNpcApril__AprilTalkRcpt__virtual_82
 00761ab0 npc_daytime_talk_allowed
 00761bcc AcNpcIn__InTalkRcpt__virtual_70
+00761c48 Villager__choose_present_for
 00761f60 talk_villager_personality
 00761fc0 AcNpcNml__virtual_44
 00761fdc AcNpcApril__virtual_18
@@ -21988,6 +21990,7 @@
 007648b8 play_player_effect
 00764af8 play_step_sound_for_worn_item_2
 00764b74 call_5964ec_in_action
+00764be4 AcPlayer__target_position
 00764dc8 furniture_under_is_2070_to_2072
 0076507c slot_player_has_full_fish_list
 007650ac call_5983ac_at_cell_of
@@ -22140,7 +22143,9 @@
 007699fc Item__price_with_boost
 00769a74 item_type_10_flag_bits
 00769aa0 item_data_16_low_nibble
+00769bc4 Item__group_value
 00769cc0 Item__variant_of_30cc_set
+00769d2c SpecialItem__index
 00769fb8 Item__is_in_table_88e622
 00769ff8 item_wear_class_index_1e
 0076a028 Item__is_marker_or_has_kind_11
@@ -22155,6 +22160,7 @@
 0076a684 Item__has_category_in_set_c
 0076a700 item_category_is_8d
 0076a730 current_player_can_use_pocket_item
+0076a7f8 Item__category_kind
 0076a880 Item__is_special_tool_for
 0076a9dc item_data_14_high_nibble
 0076aa04 Item__equals_ignoring_marks
@@ -22249,6 +22255,7 @@
 0076e014 Player__wears_whole_set_282b
 0076e0cc player_counter_unless_flagged
 0076e108 CharaModel__animations_done
+0076e1fc ObjectList__entry_at
 0076e290 CharaModel__animation_frame
 0076e2d8 CharaModel__transform_point
 0076e37c CharaModel__bone_point
@@ -22288,6 +22295,7 @@
 0076efc8 first_empty_in_row_9
 0076f018 cell_address_9x10
 0076f030 handler_is_845288_or_845290
+0076f0cc PopupWindow__elapsed
 0076f1b4 handler_is_845fc8
 0076f214 nearest_point_of_ten
 0076f2c8 child_count_67cc
@@ -22335,6 +22343,7 @@
 00770300 pack_id_with_byte_9
 0077033c OptionalWord64__is_present_and_nonzero
 00770364 cell_at_00770364
+007703ac Player__impression_value
 007703c8 State1__value_unless_flag
 007703e0 ItemBitSet__index_of_nth_set_bit
 00770438 index_bit_set
@@ -22962,9 +22971,11 @@
 00779450 nn__fs__FileStream__virtual_8_00779450
 00779464 nn__fs__FileStream__virtual_9_00779464
 00779500 allocate_default
+00779520 TownPlate__reset
 00779548 store_constants_779548
 0077955c store_constants_77955c
 0077956c store_constants_77956c
+0077957c GpuTexParams__clear
 00779598 store_constants_779598
 007795ac store_constants_7795ac
 007795bc store_constants_7795bc
@@ -22972,6 +22983,7 @@
 007795ec copy_record
 00779600 fill_12_bytes
 0077961c fill_3_bytes
+00779630 word_fill_ff
 00779638 fill_4_bytes
 0077964c fill_5_bytes
 00779664 GpuTexUnit__reset
@@ -22987,6 +22999,7 @@
 0077ab5c modff
 0077b6e8 math_raise_overflow_double
 0077b700 math_raise_underflow_float
+0077b710 float_to_f24
 0077b854 memmove_if_any
 0077f2ac GpuState__sync_depth_mode
 00783708 sead__SafeStringBase_char___SafeStringBase_00783708
@@ -23134,10 +23147,13 @@
 0079ec4c nn__nex__PseudoGlobalVariable_nn__nex__NintendoAuthenticationDDLDeclarations___NintendoAuthenticationDDLDeclarations_
 0079f3d0 demo__OrderList__OrderList
 0079f9fc time__TimeHioNode__TimeHioNode
+0079fb70 GpuState__set_depth_test
 007b0530 CommandList__write_block
 007b0bb0 gpu_register_value
+007b0c08 stereo_slider_value
 007b1034 thunk_00136088
 007b1038 GpuState__mark_dirty
+007b16b4 GpuState__flush
 007c28f0 SegmentHooks__run
 007c3094 HashBuckets512__insert_sorted
 007c513c wcslen16
@@ -23239,6 +23255,7 @@
 007ca078 false___virtual_4_007ca078
 007ca080 false___virtual_6_007ca080
 007ca088 false___virtual_7_007ca088
+007ca090 PathAgent__update
 007ca324 false___virtual_5_007ca324
 007ca32c false___virtual_3_007ca32c
 007ca330 false___virtual_2_007ca330
@@ -23260,9 +23277,14 @@
 007cb248 BsPartsSaveMgr_svholder__MyDesign___do_execute
 007cb250 BsPartsSaveMgr_svholder__MyDesign___do_delete
 007ce068 Grid__mark_cell_3
+007ce1bc PathGrid__neighbor_if_open
 007ce358 PathGrid__open_insert
+007ce640 PathGrid__link_neighbors
+007ce7f0 PathGrid__trace_path
 007ce860 PathGrid__reset
+007ceb80 PathGrid__step
 007cee58 PathGrid__block_cell
+007cefbc PathGrid__neighbor
 007cf170 PathGridRect__open_insert
 007cf434 PathGridRect__reset
 007cf578 true___virtual_1_007cf578
@@ -23293,6 +23315,7 @@
 007cfb30 SoundSystem__check_handle_7cfb30
 007cfd98 SoundSystem__check_handle_7cfd98
 007cfe94 SoundSystem__check_handle_7cfe94
+007cff90 PathGrid__best_neighbor
 007d009c true___virtual_10_007d009c
 007d0120 true___virtual_8_007d0120
 007d012c true___virtual_1_007d012c
@@ -23325,7 +23348,11 @@
 007d0b14 true___virtual_8_007d0b14
 007d0b20 true___virtual_1_007d0b20
 007d0b8c true___virtual_0_007d0b8c
+007d0c84 NetPresence__send_1e
+007d0d5c NetPresence__send_0
+007d0e24 NetPresence__send_1c
 007d0f40 NetPresence__send_1
+007d0fc8 NetPresence__send_12
 007d1090 NetPresence__send_13
 007d1164 NetPresence__send_message
 007d15bc NpcAmbCamModelBase_PlayerModel___virtual_9
@@ -23343,6 +23370,8 @@
 007d1c08 InOutWindowInButton_4___destructor
 007d1c44 TryLockPlayerSyncSpeak__TryLockPlayerSyncSpeak_007d1c44
 007d1d54 TryLockPlayerSyncSpeakOnBoat__TryLockPlayerSyncSpeakOnBoat
+007d1e64 PathGrid__search
+007d1fd4 PathGridRect__search
 007d2720 nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock___deleting_destructor
 007d2748 nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock___destructor
 007d2770 nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection____virtual_2
@@ -23749,6 +23778,7 @@
 007e680c nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader___deleting_destructor
 007e681c nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader___destructor
 007e85c0 Font__text_bounds
+007e8be8 BoundingBox__construct
 007e8c2c nw__font__TagProcessorBase_char___virtual_2
 007e8d04 nw__font__TagProcessorBase_char___virtual_3
 007e8ed4 nw__font__TagProcessorBase_char___deleting_destructor
@@ -23757,6 +23787,7 @@
 007e8fb4 nw__font__TagProcessorBase_wchar_t___virtual_3
 007e9184 nw__font__TagProcessorBase_wchar_t___deleting_destructor
 007e9188 nw__font__TagProcessorBase_wchar_t___destructor
+007e91bc ItemSlot__clear
 007eab40 AcSimpleTalk_ArtPlateTalkRecept___AcSimpleTalk
 007eab90 AcBrochure__AcBrochure
 007eac18 AcFtrAudio__AcFtrAudio
@@ -24167,6 +24198,7 @@
 00802184 nn__nex__InetAddress__InetAddress_00802184
 008021b4 nn__nex__InetAddress__InetAddress_008021b4
 008021c8 nn__nex__InetAddress__InetAddress_008021c8
+00802560 NexTree__copy_root
 00802ccc nn__nex___DDL_DataStoreRatingInfo___DDL_DataStoreRatingInfo_00802ccc
 00802e2c NexTree__recycle_nodes_802e2c
 00802e68 nn__nex___DDL_DataStoreRatingInfo___DDL_DataStoreRatingInfo_00802e68
@@ -24174,17 +24206,22 @@
 00803a80 NexTree__recycle_nodes_803a80
 00803abc nn__nex___DDL_DataStoreRatingInitParam___DDL_DataStoreRatingInitParam_00803abc
 00804878 NexTree__recycle_nodes_destroy_value
+008048c4 NexTree__copy_nodes_804
 0080561c NexTree__recycle_nodes_80561c
 00806030 NexTree__recycle_nodes_806030
+0080606c NexTree__copy_nodes_806
 00806b44 NexTree__recycle_nodes_806b44
 00807658 NexTree__recycle_nodes_807658
 0080806c NexTree__recycle_nodes_80806c
 00808be0 NexTree__recycle_nodes_destroy_url
 00809898 NexTree__recycle_nodes_809898
+008098d4 NexTree__copy_nodes_809
 0080a3ec NexTree__recycle_nodes_80a3ec
 0080aa88 NexTree__recycle_nodes_80aa88
+0080aac4 NexTree__copy_nodes_80a
 0080b4a0 NexTree__recycle_nodes_80b4a0
 0080bfc4 NexTree__recycle_nodes_80bfc4
+0080c000 NexTree__copy_nodes_80c
 0080cbac GridMap__apply_terrain_in_rect
 0080d3cc GridMap__place_layout_items_in_rect
 0080d59c GridMap__load_shared_blocks_in_rect
@@ -24437,11 +24474,14 @@
 00816c20 LayoutAnimator__play
 0081704c state__Mode_CensusWindow___deleting_destructor
 00817050 state__Mode_CensusWindow___destructor
+00817694 LayoutAnimator__play_n
 008177a0 dispatch_offset_a4_008177a0
 008178ac dispatch_offset_28_first
 008179b8 dispatch_offset_28_second
 00817ac4 dispatch_offset_a40
 00817bd0 dispatch_offset_0_00817bd0
+00817cd8 LayoutAnimator__play_m
+00817eec LayoutAnimator__play_l
 00818b78 LayoutAnimator__play_h
 00818fa0 LayoutAnimator__play_b
 008191b4 state__Mode_LifeSupportWindow___deleting_destructor

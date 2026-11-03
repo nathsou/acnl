@@ -5086,6 +5086,7 @@
 0075f34c Whether the four 8-byte ids match the ids (+0x10) of the four 0x18-byte entries.
 0075f448 Whether the address of peer `index` (below 4) is usable, read under the session lock.
 0075f578 The peer index of this console's address, or 4 when it has none.
+0075f5c0 Whether the player's identity differs from the other.
 0075f63c The identity of the session's player of the slot, under the lock.
 0075f644 The identity of the slot's player (below 4) when present, under the lock.
 0075f728 Whether the player may leave: not the main object, and the session does not forbid it.
@@ -5096,6 +5097,7 @@
 00760d60 Finds a present the villager may give, with room in the pockets.
 00760e7c Whether the villager may walk up to the current player now: the player has flag 2 of +0x5705, the hour fits, nothing blocks it (lists 2 and 0xd), and its model is free.
 00761ab0 Whether villagers may start talks now: the scene allows it (bit 0x20), no event or busy NPC manager, the hour is from 6 to 17, and no scheduled place is open (except place 5).
+00761c48 Chooses the villager's present for the player.
 00761f60 The personality (0-7, the high nibble of the villager data's +0x1c) of the villager the talk is with; 0 when there is none.
 007622c8 Calls 006c06dc with the arguments and the object's model (+0x1b4).
 007622f0 The point at `angle` on the circle around the object's position (+0x14), put on the ground when asked.
@@ -5126,6 +5128,7 @@
 007648b8 Starts effect `id` at the given position (a stack argument) for the player, attached to `target` when there is one, facing the player's direction; its angles are written to `angles` when asked.
 00764af8 In an action: calls 00598464 at (x, z) with the kind of the slot player's worn item of class 7 (set B -> 1, 007680a0 -> 2, else 0).
 00764b74 Calls 005964ec when the object is in an action (bit 5 of +0x171).
+00764be4 The player's target position (by the scene).
 00764dc8 In scenes with bit 0x20: whether the furniture item under the object is 0x2070, 0x2071 or 0x2072.
 0076507c Whether the slot player's encyclopedia (+0x6c20) lists every fish (category 0x27); 0 when there is no player.
 007650ac Calls 005983ac with the cell (x, z) under a position.
@@ -5173,13 +5176,16 @@
 00768fac Whether the item id (bit 15 ignored) is from 0x30cc to 0x30d1.
 007695b0 Whether the item id (bit 15 ignored) is 0x28a8 or 0x28a9.
 00769880 Whether the item id (bit 15 ignored) is 0x290d or 0x290e.
+00769bc4 The item's group value (below 0x9b).
 00769cc0 The variant (0-3, then 0-1) of an item from 0x30cc to 0x30d1; -1 for other items.
+00769d2c The special item's index, or -1.
 00769fb8 Whether the item id (bit 15 ignored) is one of the 18 ids of the table at 0x88e622.
 0076a068 Whether an item with a valid value-06 entry is flagged (bit 3 of +0x20), passes one of two entry checks, or is 0x2f38, 0x304a or 0x304b.
 0076a11c The furniture's slot for the item's kind.
 0076a4ac Whether the item's flags have any of the bits 0x388.
 0076a590 For an item of category 0x33 or 0x34: the item at the same offset in category 0x75 or 0x76; 0x7ffe otherwise or out of range.
 0076a730 Whether the current player's pocket item in `slot` is unlocked and usable in the current scene (0076a7f8, after the scene checks).
+0076a7f8 The kind of the item's category (none for a variant).
 0076a880 Whether a special value-06 item passes its entry check (or its flagged second one) for a target whose data kind is 6, 7 or 0x47.
 0076ab7c For an item of the set at 0x76af88: whether its flags have bit 3 or bit (index + 7).
 0076acd8 Whether the item is 0x334d or 0x334e with a level (low 4 bits of its flags) of 8 or more.
@@ -5232,6 +5238,7 @@
 0076df94 Whether the player wears one of the four items of the set 0x282b (head), 0x2598 (body), 0x26fe, 0x2925.
 0076e014 Whether the player wears all four items of the set 0x282b (head), 0x2598 (body), 0x26fe, 0x2925.
 0076e108 Whether the current model's (+0x24 bit 0) two animations (+0x7b0, +0x504) have finished, when it has a model.
+0076e1fc The list's entry at the index (none when negative).
 0076e290 The frame of the current model's animation at +0x7b0 (0.0 without a model or animation).
 0076e2d8 Transforms a point by the model's matrix (and moves it for mode flag 2 when asked); true when it has a model.
 0076e37c Transforms a point by the matrix of the bone called `name` of the current model (and moves it for mode flag 2 when asked); true when found.
@@ -5255,6 +5262,7 @@
 0076ef60 Whether bit `bit` of the nibble for (a * 6 + b) of the bit table at +0x25f84 is clear.
 0076f018 The address of word (a * 9 + b) * 10 + c of a table.
 0076f030 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x845290, bit 1 when it is the one at 0x845288.
+0076f0cc The time since the popup window opened.
 0076f1b4 Whether the member handler (+0xc, +0x10) is the one at 0x845fc8.
 0076f214 The nearest (in x-z) of the object's points (+0x344, count +0x20, up to 10) to `position`; zero when there is none.
 0076f2c8 The child count at +0x67cc.
@@ -5268,6 +5276,7 @@
 0077025c The item of the category list at the index, or the empty id when the category differs or it is out of range.
 007702a4 The number of items in the list before its first empty entry.
 00770300 The low 16 bits of the word at +0 (bounded by +4) plus byte +9 shifted left by 8.
+007703ac The player's impression value (by their gender bit).
 007703c8 The state, or 0 for state 1 with the flag.
 00770934 The index of the first free record of the 10, or -1.
 00770974 Whether any of the 10 records is in use.
@@ -5276,6 +5285,9 @@
 00770c04 The object's value at +0xc.
 00770c10 Whether the counter has reached 100.
 00779500 Allocates from the current heap, 4-byte aligned.
+00779520 Resets the town's plate record (its bytes to 0xff).
+0077957c Clears the texture parameters.
+00779630 Fills the word with 0xff bytes.
 00779664 Resets the texture unit's state (no texture, the default parameters).
 00779704 Appends a no-op GPU command of the length (padded to 8 bytes), or marks the list full.
 00779764 Appends the GPU commands to the list.
@@ -5287,12 +5299,16 @@
 0077ab5c Splits the float into its integer part (stored) and its fraction (in s0).
 0077b6e8 Raises the floating-point overflow by squaring a huge double (in d0).
 0077b700 Raises the floating-point underflow by squaring a tiny float (in s0).
+0077b710 Converts the float to the GPU's 24-bit float format.
 0077b854 Copies the bytes (any alignment) when there are any.
 0077f2ac Writes the command for the depth mode when it changed since the last frame, and records it.
+0079fb70 Sets the depth test mode in the active state.
 007b0530 Writes the block of commands to the list.
 007b0bb0 The current value of the GPU register (0x600 and after) in the active state.
+007b0c08 The 3D slider's value from the shared page (0 when 3D is off).
 007b1034 Jumps to 0x136088.
 007b1038 Marks the GPU state's parts dirty by the mask.
+007b16b4 Writes the dirty parts of the GPU state (by the mask) as commands.
 007c28f0 Runs the flagged segment hooks.
 007c3094 Inserts the node into its bucket (of 512) keeping the bucket sorted by key.
 007c513c The length of the 16-bit string.
@@ -5301,21 +5317,36 @@
 007c769c Finds the list's record with the key.
 007c7740 Copies the first record (0x18 bytes) of the kind in the range, or the end record.
 007c77b4 Releases the nodes of each flagged list (of 3) and clears the lists.
+007ca090 Updates the path agent's progress along its path.
 007ce068 Marks the cell (x, y) of a grid of 20-byte cells with state 3.
+007ce1bc The node's neighbor in the direction (below 8) when linked and open, or null.
 007ce358 Inserts the node into the open list, sorted by its cost (+0x8), and marks it open.
+007ce640 Links each node to its free neighbors.
+007ce7f0 Traces the found path back from the goal into the output.
 007ce860 Resets every node that is not blocked (state 3) and empties the lists.
+007ceb80 Runs one step of the search (expands the best open node).
 007cee58 Blocks the cell (state 3) and clears the links of its 8 neighbors toward it (and the diagonals beside).
+007cefbc The node's neighbor in the direction (below 8) when linked, or null.
 007cf170 Inserts the node into the open list of the rectangle grid, sorted by its cost, and marks it open.
 007cf434 Resets every node of the rectangle grid that is not blocked and empties the lists.
 007cfab8 Checks the sound handle against the system's count (below 128); 0 when valid, -1 otherwise.
 007cfb30 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
 007cfd98 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
 007cfe94 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
+007cff90 The neighbor (of the 8) with the lowest cost.
+007d0c84 Sends the presence message (kind 0x1e) for the main object.
+007d0d5c Sends the presence message (kind 0) for the main object.
+007d0e24 Sends the presence message (kind 0x1c) for the main object.
 007d0f40 Sends the presence message (kind 1) for the main object.
+007d0fc8 Sends the presence message (kind 0x12) for the main object.
 007d1090 Sends the presence message (kind 0x13) for the main object.
 007d1164 Sends the presence message (kind 0x23) to the stations, for the main object.
+007d1e64 Searches a path in the grid from the start to the goal.
+007d1fd4 Searches a path in the rectangle grid from the start to the goal.
 007e666c Removes the callback from the list.
 007e85c0 Computes the bounds of the text in the font.
+007e8be8 Constructs the bounding box (empty, at the largest float).
+007e91bc Clears the slot's item to the empty one.
 007f6f40 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 007f7aec Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 007f82c4 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
@@ -5334,21 +5365,27 @@
 00800e5c Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00801604 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00802148 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+00802560 Copies the tree's root and its links.
 00802e2c Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00803244 Replaces the tree's contents with a copy of the other tree's, reusing its nodes, and fixes its leftmost and rightmost links.
 00803a80 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00804878 Recycles the tree's nodes into the pool's free list, destroying each node's value.
+008048c4 Copies the tree's nodes (recursively) from the pool.
 0080561c Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00806030 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+0080606c Copies the tree's nodes (recursively) from the pool.
 00806b44 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00807658 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 0080806c Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00808be0 Recycles the tree's nodes into the pool's free list, destroying each node's station URL.
 00809898 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+008098d4 Copies the tree's nodes (recursively) from the pool.
 0080a3ec Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 0080aa88 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+0080aac4 Copies the tree's nodes (recursively) from the pool.
 0080b4a0 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 0080bfc4 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+0080c000 Copies the tree's nodes (recursively) from the pool.
 0080cbac Sets the tiles of the blocks in the rectangle from their large cells' terrain.
 0080d3cc Places the items of the layout table in the cells of the rectangle.
 0080d59c Loads the shared layout block of each large cell in the rectangle.
@@ -5367,6 +5404,9 @@
 008161b8 Plays the animation with the key on the animator (the tenth kind).
 00816b18 Plays the animation with the key on the animator (the ninth kind).
 00816c20 Plays the animation with the key on the animator.
+00817694 Plays the animation with the key on the animator (the fourteenth kind).
+00817cd8 Plays the animation with the key on the animator (the thirteenth kind).
+00817eec Plays the animation with the key on the animator (the twelfth kind).
 00818b78 Plays the animation with the key on the animator (the eighth kind).
 00818fa0 Plays the animation with the key on the animator (the second kind).
 008196f4 Plays the animation with the key on the animator (the eleventh kind).
