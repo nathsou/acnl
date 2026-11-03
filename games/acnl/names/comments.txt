@@ -1865,7 +1865,10 @@
 0059cae8 Binds the texture chosen by the town's setting (save +0x621ce) to the field object's material.
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
 0059ec48 The index of the first active field drop of the kinds 2, 4, 5, 0x15 or 0x17 to 0x1a; -1 when none.
+0059ecbc Finishes the field drop: buries or places its item by its kind and tells the other stations.
 0059f194 Finds the first of the four 0x12-byte slots at 0x9b417c whose byte +0xf is clear and fills it; -1 when all are used.
+0059f71c Fills the drop message for the item at the cell (kind 0x21, the station's index) with the scene byte.
+0059f7c8 Fills the drop message from the drop slot (its cell, kind, slot and items) with the action.
 005a06b4 Forwards to do_nothing_002f777c.
 005a06d4 The index of the used entry for (x, z, layer) among the 32 five-byte field markers; -1 when none (layer 0xa5: the current one).
 005a08dc Sends or applies the pending field drops (as field-drop records) to the stations.
@@ -2495,6 +2498,20 @@
 0062c8cc Clears the log state and frees its two entry buffers.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
 0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
+00650174 Runs the NPC source's operation at the cell of object `id`; 0 when there is none.
+00650234 In flagged scenes, sets the BGM's kind 6 (when asked) and pushes the special BGM once, setting mode 4.
+006502a8 Unless locked, turns the x angle (+0x2c) toward the target (+0x958) while asked (bit 3 of +0x17a), and marks it turned.
+00650310 Unless locked, turns the y angle (+0x2e) toward the target (+0x95c) while asked (bit 4 of +0x17a), and marks it turned.
+006512e8 Spawns the player's tool effect (by the kind and whether a tool is held) at the position with the angle.
+0065137c Leaves the reach 5.4 (and 0.97 of it) in the float registers; the shared parameters.
+0065139c Leaves the reach 5.4 (and 0.97 of it) in the float registers; the shared parameters.
+006513bc Leaves the reach 3.2 (and 0.97 of it) in the float registers; the shared parameters.
+0065141c Plays the player's motion: the locked motion 0xcb, or the normal or special one by the flags.
+006515b0 Plays the locked motion 0xcb.
+006515ec The record (+4) of the player of the slot; null without one.
+0065176c In flagged scenes, stops the special BGM.
+0065179c For states whose motion allows it, moves the object by its target's motion, flagging it moved when it did.
+006518d8 Requests player state 0x92 with the word and the camera's angle.
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
 006548ac Changes to `state` unless the player is in it already (true then).
 00656c20 Fills the state parameter buffer at +0x64 with the 0x26 bytes from +0x8bc of the object (the rest cleared) and returns it.
