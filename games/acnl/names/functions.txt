@@ -1043,7 +1043,7 @@
 001348cc memmove
 00134c68 svc_arbitrate_address
 00134c80 svc_break
-00134c90 svc_break
+00134c90 svc_break_2
 00134c98 svc_create_memory_block
 00134cb4 aeabi_lasr
 00134cdc cfl_reset_sub_object
@@ -1391,7 +1391,7 @@
 00141870 SoundInfo__value_2
 0014189c SoundInfo__priority
 00141a9c SparseArray__get
-00142070 SoundHeap__load_group
+00142070 SoundHeap__load_group_2
 00142104 Ndm__set_name
 00142430 nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection____destructor
 00142450 ByteBuffer__reserve
@@ -1677,7 +1677,7 @@
 001a2068 CameraCtl__update_room_view
 001a20f4 CameraCtl__apply_preset
 001a25dc CameraCtl__follow_player
-001a2c48 CameraCtl__set_target
+001a2c48 CameraCtl__set_target_2
 001a2ce0 CameraCtl__clamp_target
 001a3118 entry_half_for_global_byte_b
 001a32c8 CameraCtl__clamp_x
@@ -5326,7 +5326,7 @@
 002d397c SoundTv255Weather__virtual_3
 002d3994 SoundTv255Weather__deleting_destructor
 002d39a4 SoundTv255Weather__destructor
-002d39a8 Record18__clear
+002d39a8 Record18__clear_2
 002d3a14 SoundSlots__take_one
 002d3ab4 data_block_71900_field_24
 002d3e18 save_block_field
@@ -6466,7 +6466,7 @@
 00307164 thunk_005bd388
 00307168 thunk_005bcd4c
 0030716c SearchCandCore__unmark
-00307220 cell_position_of_id
+00307220 cell_position_of_id_2
 00307370 current_player_matches_veneer
 00307374 cell_of_position
 0030740c store_u16_argument_at_0_30740c
@@ -6485,7 +6485,7 @@
 00307760 format_allocated
 003077b8 player_has_entry_kind_21_or_more_veneer
 00307838 construct_array_veneer
-0030784c SharedString__assign
+0030784c SharedString__assign_2
 00307888 release_shared_string
 00307974 find_in_list_ee354_veneer
 00307978 call_on_af75ec
@@ -7056,7 +7056,7 @@
 0031e810 hide_all_pane
 0031e8bc attach_layout_270_b
 0031eb20 MessageWindow__release
-0031ec78 ItemSelectWindow__load_layout
+0031ec78 ItemSelectWindow__load_layout_2
 0031ecbc ItemSelectNameWindow__ItemSelectNameWindow
 0031ed50 ItemSelectNameWindow__deleting_destructor
 0031ed90 ItemSelectNameWindow__destructor
@@ -7304,7 +7304,7 @@
 0032b118 SoundBarcarollePlayer__SingletonDisposer___destructor
 0032b774 SoundBarcarollePlayer__run_state
 0032b7d0 SoundBarcarollePlayer__SoundBarcarollePlayer
-0032ba1c TunePlayer__start
+0032ba1c TunePlayer__start_2
 0032bcf8 TunePlayer__stop
 0032bd68 TunePlayer__should_vary
 0032be18 tune_table_value
@@ -12810,7 +12810,7 @@
 0051ab9c net__Sender__Handle__Handle
 0051abe4 net__Sender__Handle__deleting_destructor
 0051abf4 net__Sender__Handle__destructor
-0051ac04 RequestPool__release
+0051ac04 RequestPool__release_2
 0051ad60 RequestPool__acquire
 0051ae04 RequestPool__RequestPool
 0051b048 veneer_47f3a0
@@ -13406,7 +13406,7 @@
 0053ab8c pead__BinaryStreamFormat__virtual_14
 0053abe0 pead__BinaryStreamFormat__virtual_15
 0053ac4c Heap__allocate_aligned_4
-0053ac90 Heap__allocate
+0053ac90 Heap__allocate_2
 0053acd8 BufferedString__format
 0053ad24 Heap__add_child
 0053ad8c pead__ExpHeap__virtual_21
@@ -13523,8 +13523,8 @@
 0053eb60 sead__MainThread__destructor
 0053eb80 sead__Projection__deleting_destructor
 0053eb84 sead__Projection__destructor
-0053ecf8 utf8_to_utf16
-0053edf4 utf16_to_utf8
+0053ecf8 utf8_to_utf16_2
+0053edf4 utf16_to_utf8_2
 0053f59c write_gpu_part_commands_af52e8
 0053f5a8 sead__DebugMenuSkinDefault__virtual_12
 0053f5c8 sead__DebugMenuSkinDefault__virtual_11
@@ -14156,8 +14156,8 @@
 0055c670 sead__Mutex__Mutex
 0055c6c0 sead__Mutex__deleting_destructor
 0055c704 sead__Mutex__destructor
-0055c73c base64_decode
-0055c96c base64_encode
+0055c73c base64_decode_2
+0055c96c base64_encode_2
 0055cab4 sead__Camera__deleting_destructor
 0055cab8 sead__Camera__destructor
 0055cabc Random__seed
@@ -14226,7 +14226,7 @@
 00560a20 sead__TaskBase__destructor
 00560aa8 TreeNode__unlink
 00560b0c TreeNode__append_child
-00560b6c TreeNode__append_child
+00560b6c TreeNode__append_child_2
 00560bac TreeNode__unlink_children
 00560bec TreeNode__clear
 00560c44 RootTask__virtual_7
@@ -15511,7 +15511,7 @@
 00596e94 FieldDrops__add_from_player_tool
 005971e4 FieldItems__place_kind
 00597678 FieldDrops__add_dig
-00597784 FieldDrop__remove_at
+00597784 FieldDrop__remove_at_2
 00597790 FieldDrop__find_at
 00597864 FieldDrops__collect
 00597c30 FieldDrops__add_flagged_41
@@ -15580,7 +15580,7 @@
 0059f71c FieldDropMessage__init_item
 0059f7c8 FieldDropMessage__from_drop
 005a064c FieldDrop__init
-005a06b4 do_nothing_002f777c_veneer
+005a06b4 do_nothing_002f777c_veneer_10
 005a06d4 find_field_marker
 005a08dc FieldDrops__send_pending
 005a0ab8 FieldDrops__finish_kind_23_24
@@ -15815,7 +15815,7 @@
 005ada54 PhotoName__number_wide
 005adb08 PhotoDatabase__open_file
 005adc90 PhotoDatabase__count_kind
-005add4c PhotoName__parse
+005add4c PhotoName__parse_2
 005add7c photo_root_length_0
 005adde8 PhotoStore__count
 005adf1c photo_drive_length
@@ -15825,7 +15825,7 @@
 005aead8 check_fs_result
 005aeb58 wide_path_parent
 005aebc8 PhotoDir__find_folder
-005aed38 PhotoName__number
+005aed38 PhotoName__number_2
 005aed44 PhotoRecord__from_name
 005aee20 PhotoRecord__from_wide_name
 005aef40 PhotoRecord__copy_from_info
@@ -15848,7 +15848,7 @@
 005aff24 DirCursor__next
 005affd8 nn__fs__Directory__Directory_005affd8
 005b006c nn__fs__Directory__Directory_005b006c
-005b00a8 Handle__release
+005b00a8 Handle__release_2
 005b0120 PhotoRecord__clear_slot
 005b0164 set_photo_file_name
 005b01b0 String16__copy_8
@@ -15989,7 +15989,7 @@
 005b436c is_listed_byte
 005b43b0 scene_is_39_to_3c
 005b43d4 scene_start_mode
-005b4428 request_scene_change
+005b4428 request_scene_change_2
 005b449c scene_index_among_flagged
 005b4508 table_word_5b4508
 005b4520 scene_is_indoor_lit
@@ -17632,7 +17632,7 @@
 00618b08 NetSession__try_begin_close_5
 00618b38 NetSession__try_start_visit_with_friends
 00618b9c NetSession__request_leave
-00618c00 NetSession__reset
+00618c00 NetSession__reset_2
 00618dd4 NetSession__start
 00618ecc NetSession__station_link_ok
 00618fb0 NetSession__end
@@ -17661,7 +17661,7 @@
 0061dd74 remove_station_from_masks
 0061de7c NetGuest__request_leave
 0061df58 NetGuest__start_join
-0061e11c NetGuest__update
+0061e11c NetGuest__update_2
 0061e488 NetGuest__advance_leave_state
 0061e540 begin_state_25
 0061e574 NetGuest__finish_visit
@@ -17791,7 +17791,7 @@
 00624f30 StationBuffers__assign
 00624fb4 set_station_flag_18
 00624fc4 set_station_flag_14
-00624fd4 StationBuffers__clear
+00624fd4 StationBuffers__clear_2
 00625060 StationBuffers__clear_all
 006250a0 net_session_call_617c84
 006250b0 NetSession__set_visit_kind
@@ -17833,7 +17833,7 @@
 00625b50 init_part_0e
 00625b64 StationEntry__set
 00625b84 StationEntry__copy
-00625b90 StationEntry__clear
+00625b90 StationEntry__clear_3
 00625ba4 set_first_table_entry
 00625be0 set_second_table_entry
 00625c20 clear_station_slot
@@ -17966,7 +17966,7 @@
 0062c274 NetSession__clear_visitor_log
 0062c2bc sead__BufferedSafeStringBase_wchar_t___BufferedSafeStringBase_0062c2bc
 0062c790 VisitorLog__copy_entries
-0062c868 VisitorLog__construct
+0062c868 VisitorLog__construct_2
 0062c8cc VisitorLog__destruct
 0062c93c nnmfolw__FollowerAStarForeachCB__virtual_0
 0062c9c8 npcutil__NpcSearchCB__virtual_0
@@ -18291,7 +18291,7 @@
 006598a8 AcPlayer_rec__start_flagged_bgm_c
 00659c08 AcPlayer_rec__request_state_31
 00659d14 AcPlayer_rec__request_state_72
-00659d9c AcPlayer_rec__request_state_20
+00659d9c AcPlayer_rec__request_state_20_2
 00659e34 AcPlayer_rec__request_state_21
 00659e8c AcPlayer__start_state_with_speed
 00659f14 AcPlayer_rec__request_state_b0
@@ -18865,7 +18865,7 @@
 006851b8 AcPlayer_rec__state_170_enter
 00685384 AcPlayer_rec__state_173_enter
 006853f8 AcPlayer_rec__state_7_enter
-006853fc TourResult__record_item
+006853fc TourResult__record_item_2
 00685478 ForeachOnFallToPitfall__ForeachOnFallToPitfall
 00685ad4 get_float_range
 00685c18 AcPlayer_rec__start_flagged_scene_once
@@ -19564,7 +19564,7 @@
 006c52c8 slot_value_at
 006c56c8 terrain_is_0xf9_at
 006c5744 terrain_flag_3_at_block_tile
-006c588c item_at_position
+006c588c item_at_position_2
 006c5a3c is_special_terrain_at_block_tile
 006c5a88 terrain_at_position
 006c5ad8 terrain_at_block_tile
@@ -19581,7 +19581,7 @@
 006c6188 terrain_check_at_world_position
 006c61d8 terrain_record_at
 006c6590 terrain_blocks_at
-006c6640 surface_height_at
+006c6640 surface_height_at_2
 006c6714 spawn_items_for_mode
 006c69e4 terrain_is_in_list_at_position
 006c6a34 terrain_is_in_list_at_world
@@ -19685,7 +19685,7 @@
 006ccbbc svfscnve__UomasaForeachFunction__virtual_0
 006ccc1c LetterStorage__mark_dirty
 006ccc2c LetterStorage__clear_dirty
-006ccc3c LetterStorage__clear
+006ccc3c LetterStorage__clear_2
 006ccc78 LetterStorage__letter
 006ccd14 ItemStorage__swap_item
 006ccd54 clear_items_b4
@@ -19711,7 +19711,7 @@
 006ce22c script__WordFix_64u___WordFix_006ce22c
 006ce340 AtmWindow__deleting_destructor
 006ce3c8 AtmWindow__destructor
-006ce44c BadgeWindow__show_badge
+006ce44c BadgeWindow__show_badge_2
 006ce67c BlackWait__update_scene_kind
 006ce770 black_wait_byte_a10
 006cecdc BlackWait__SingletonDisposer___deleting_destructor
@@ -21895,7 +21895,7 @@
 00745890 first_eight_slots_empty
 007458c8 second_eight_slots_empty
 00745900 slot_position_of_value
-00745948 slot_value_at
+00745948 slot_value_at_2
 00745970 free_keyed_slot
 0074599c any_of_six_in_state_1
 00745bd8 Skeleton__joint_world_matrix
@@ -22020,7 +22020,7 @@
 007482bc GridRect__width
 007482d0 GridRect__contains
 0074830c GridRect__height
-00748310 GridRect__height
+00748310 GridRect__height_2
 00748324 grid_rect_relative_to
 0074836c grid_rect_translated
 007483b4 hobj__HouseObject__forward_to_child_007483b4
@@ -22495,7 +22495,7 @@
 00754964 entry_flag_10
 00754978 field_nonzero_754978
 00754988 PhotoView__update
-00754a3c entry_12_at
+00754a3c entry_12_at_2
 00754a4c entry_of_table_owner_00754a4c
 00754a70 entry_of_reference
 00754a9c entry_of_table_owner_00754a9c
@@ -23163,7 +23163,7 @@
 0076880c Item__furniture_entry
 007689a4 item_class_kind
 00768b2c item_data_byte_12
-00768b4c Item__group
+00768b4c Item__group_2
 00768b6c Item__has_nonzero_flag_nibble
 00768ba8 Item__has_type_in_set_a
 00768bfc item_type_10_with_clear_flags

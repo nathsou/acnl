@@ -89,7 +89,7 @@
 0094d548 sound_room_music_player_instance
 0094d550 sound_sea_mgr_instance
 0094d560 sound_seq_parser_instance
-0094d564 sound_seq_parser_instance
+0094d564 sound_seq_parser_disposer
 0094d6b8 furniture_direction_items
 0094d6bc furniture_direction_state
 0094d6dc furniture_contents_a
@@ -124,7 +124,7 @@
 0094dfbc password_charset_a
 0094dfd4 password_charset_b
 0094e3ad applet_callbacks_installed
-0094e3b4 count_94e3b4
+0094e3b4 counter_94e3b4
 0094e3c8 err_eula_mgr_instance
 0094e3f0 pending_applet_request
 0094e424 pending_sound_effect
@@ -147,7 +147,7 @@
 0094e491 object_flag_state
 0094e4a9 special_bgm_on
 0094e4aa special_bgm_active
-0094e4b0 flag_manager
+0094e4b0 flag_manager_instance
 0094e4b4 black_wait_instance
 0094e4b5 black_wait_scene_kind
 0094e4b8 popup_window
@@ -157,7 +157,7 @@
 0094ed3c shared_load_split_state
 0094ed40 table_94ed40
 0094ed4c boss_sys_instance
-0094ed50 boss_sys_instance
+0094ed50 boss_sys_disposer
 0094ed74 friend_record_state
 0094edc4 scene_npc_notify_a
 0094edc8 scene_npc_notify_b
@@ -167,7 +167,7 @@
 0094ee44 talk_manager
 0094ee4c field_object_table
 0094ee4f field_item_mode
-0094ee58 block_model_part
+0094ee58 block_model_parts
 0094ee60 field_item_model_table
 0094eeb4 object_deco_name
 0094eedc field_item_model_a
@@ -266,17 +266,17 @@
 00950874 camera_controller
 00951480 input_lock_state
 00951481 save_archive_mounted
-00951488 save_archive_mounted
+00951488 save_archive_mounted_b
 00951494 save_archive_open_files
 009514b0 save_archive_files
 009514bc caution_instance
 009514c4 net_store_open
 009514c5 pending_visit_count
-009514c6 pending_visit_count
+009514c6 pending_visit_count_b
 009514c8 net_store_villager_buffer
 00951658 button_positions
 00951668 compass_mgr_instance
-0095166c compass_mgr_instance
+0095166c compass_mgr_disposer
 00951670 visit_session_value
 0095168c boot_load_stage
 00951694 data_store_instance
@@ -326,9 +326,9 @@
 009528a0 pair_9528a0
 009528a8 pair_9528a8
 009528b0 pair_9528b0
-009529c8 ulcd_framework
+009529c8 ulcd_framework_instance
 009529cc friend_list_instance
-009529d4 room_flag
+009529d4 room_flags
 009529d5 room_flag_b
 009529d6 room_flag_c
 009529d7 room_flag_d
@@ -341,7 +341,7 @@
 00952a38 scene_environment
 00952a48 scene_env_frame
 00952a4c render_pass_scene
-00952ad4 model_effect_container
+00952ad4 model_effect_container_instance
 00952ad8 service_value_952ad8
 00952ae0 cec_message_box_icon
 00952ae4 cec_message_icon
@@ -424,7 +424,7 @@
 0095366c global_count_95366c
 00953670 global_mode_953670
 00953674 nex_heap
-00953678 net_clock
+00953678 net_clock_b
 00953684 scene_load_requested
 009537c2 player_angle_y
 0095385c npc_lock_player_permit_bit_instance
@@ -499,7 +499,7 @@
 0095c6dc group_item_table_b
 0095c714 enabled_slots
 0095c71c tour_result_instance
-0095c720 tour_result_instance
+0095c720 tour_result_disposer
 0095d720 terrain_heights
 0095d81f terrain_byte_a
 0095dc1b terrain_byte_b
@@ -561,7 +561,7 @@
 00974eec friends_init_count
 00974ef8 required_handle
 00974f00 time_ticks_ready
-00974f01 time_ticks_ready
+00974f01 time_ticks_ready_b
 00974f0c unit_heap_lock_c
 00974f10 file_server_archive_count
 00974f18 time_ticks_a
@@ -591,7 +591,7 @@
 00975278 cfl_run_state
 00975280 cfl_state
 00975284 cfl_instance
-0097528c string_pool
+0097528c string_pool_instance
 00975294 resource_table_a
 00975298 handler_table
 0097529c resource_table_b
@@ -614,7 +614,7 @@
 00975c32 load_split_handle_state
 00975c34 load_split_compressed_state
 00975c38 load_split_default_heap
-00975c3c loader_started
+00975c3c loader_started_b
 0097d40c thread_local_heap_key
 0097d41c pead_thread_mgr_instance
 0097d428 network_time
@@ -628,7 +628,7 @@
 0097d884 applet_lock
 0097d8ac applet_word
 0097d8bc applet_instance
-0097dff8 cached_service_handle
+0097dff8 service_handle_cache
 0097dffc storage_service
 0097e004 service_97e004
 0097e064 srv_state
@@ -640,7 +640,7 @@
 0097e0bc photo_drive_length_b
 0097e0dc cached_value_204_b
 0097e0e0 cached_value_204
-0097e0e4 photo_drive_length
+0097e0e4 photo_drive_length_cache
 0097e0e5 photo_root_path_ready_a
 0097e0e6 photo_root_path_ready_b
 0097e0e7 photo_drive_length_set
@@ -679,7 +679,7 @@
 00981890 heap_base_state
 00981cfc effect_random_state
 00981d70 text_writer_a
-00981e94 service_a
+00981e94 service_a_instance
 00981e98 service_ab_handle
 00981eb8 text_writer_b
 00981fb8 locale_b
@@ -694,7 +694,7 @@
 00982018 data_loader
 0098203c data_block_flags
 00982040 data_block
-00982068 data_block_982068
+00982068 data_block_982068_value
 00982128 photo_storage
 009825ec tile_tables_ready
 009825f4 empty_pair_head
@@ -702,7 +702,7 @@
 00982848 kk_song_info
 00982864 sound_request_list_b
 00982870 sound_request_list
-0098288c sound_system
+0098288c sound_system_b
 00982898 sound_handle_count
 009841c8 furniture_holder_sound
 009841ec fish_params
@@ -773,7 +773,7 @@
 00995644 fade_distance_params
 00997ae1 shadow_view_flag
 00997ae3 shadow_view_kind
-00997ae5 shadow_view_flag
+00997ae5 shadow_view_flag_b
 00997c30 field_item_fx
 00997c70 table_997c70
 00997fbc tour_schedule
@@ -882,7 +882,7 @@
 00ab7d0c render_targets
 00ab7dc4 render_target_index
 00ab7de4 structure_lists
-00ab7df4 structure_lists
+00ab7df4 structure_lists_b
 00ab7e00 structure_list_cells
 00ab7e04 structure_list_object
 00ab7e2c structure_kind_counts
@@ -937,7 +937,7 @@
 00ad5dd8 town_map_templates_b
 00ad5f68 keyboard_resources_a
 00ad6038 keyboard_messages_a
-00ad6054 keyboard_resources_b
+00ad6054 keyboard_resources_b2
 00ad6124 keyboard_messages_b
 00ad6540 keyboard_key_table_c
 00ad6544 keyboard_key_table_base
@@ -945,12 +945,12 @@
 00ad6550 keyboard_key_table_e
 00ad6554 keyboard_key_table_a
 00ad6558 keyboard_key_table_b
-00ad655c keyboard_key_table_a
-00ad6560 keyboard_key_table_b
+00ad655c keyboard_key_table_a2
+00ad6560 keyboard_key_table_b2
 00ad6580 keyboard_key_table_h
 00ad6590 keyboard_key_table_g
 00ad659c keyboard_key_table_f
-00ad65a0 keyboard_key_table_c
+00ad65a0 keyboard_key_table_c2
 00ad6604 layout_registry
 00ad6630 widget_state
 00adf8c0 segment_hooks
@@ -997,9 +997,9 @@
 00ae70dc heap_list
 00ae70e4 heap_list_end
 00ae83c4 segment_hook_state
-00aed620 srv_state
+00aed620 srv_state_b
 00aed62c os_event_thread
-00aed630 os_event_thread
+00aed630 os_event_thread_b
 00aed638 os_object_list_head
 00aed63c os_object_list_tail
 00aedfdc photo_drive_path
