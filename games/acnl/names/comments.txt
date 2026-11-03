@@ -759,6 +759,32 @@
 0027a4f4 Updates the current player's position, then imports the phrase into each of the 4 players who exist.
 0027a6c4 The first of the 4 players whose villager record (+0x8e08, below stage 3) is of the villager; null when none.
 0027a780 The first of the 4 players whose villager request (+0x8d4c, stage 0) is for the villager's town slot; null when none.
+0027a858 The first of the 4 players whose villager request (+0x8d5c, below stage 2) is for the villager's town slot; null when none.
+0027a930 The first of the 4 players whose villager item record (+0x8d6c, not stage 1) is for the villager's town slot; null when none.
+0027a9fc The first of the 4 players with the name pair record; null when none.
+0027aac0 Updates the current player's position, then runs the update on each of the 4 players who exist.
+0027b3a8 Builds the 8-item outfit from the given items (the fourth empty) and marks it set.
+0027b528 Places item `index` (below 3) in the room or the field once, when its owner is the current player.
+0027c2c8 Loads the town's map templates (sea sides) and grass texture and resets its slots.
+0027c554 Clears the flag at 0x95df50.
+0027d310 Draws the 4 random seeds (0xad5b90) and picks one of the two layout sides at random.
+0027d394 True when the fish shadow is not finished, or its fish slot (+0x116) is still in use in the fish manager.
+0027d44c True for ordinary fish; for the kinds 0x48 to 0x4a, whether their condition holds.
+0027d490 Clears the player's reference to the shadow (player index +0x119, below 4) and marks it released (4).
+0027d790 Packs the shadow's position (+0x48, +0x50), state and kind into its fish record (fetched once into +0x188) when its slot is in use.
+0027d8a8 Entry `index` (below 8, 0xc bytes each) of the fish parameters at 0x9841ec; the default otherwise.
+0027d93c The float at +8 of fish parameter entry `index` (below 8); the default otherwise.
+0027d9a8 Sets the value of fish slot `index` when it is in use.
+0027d9ec The value of fish slot `index` when it is in use; 0 otherwise.
+0027da24 Releases the shadow's fish slot (+0x116).
+0027da40 Clears the reference to the object held by player `index` (below 4).
+0027da80 Removes the shadow when it is finished, or when its record says it was caught and the catch completes.
+0027dc10 The half of motion step `step` (8 bytes each) of fish kind `kind` (0x28 bytes each, 0x83e168).
+0027dc2c The float of motion step `step` of fish kind `kind`.
+0027dc48 The u16 at +6 of motion step `step` of fish kind `kind`.
+0027dc64 Calls virtual 39 of the held object when it exists.
+0027dc88 Constructs the fish shadow actor from its parameters, with its sound object.
+0027dd00 Destroys the fish shadow actor: its sound object, animation and base.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d4d00 Forwards to the function at 0x2d4bf4.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
