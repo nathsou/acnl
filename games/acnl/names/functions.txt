@@ -14436,8 +14436,8 @@
 0056a664 Color3__normalize_max
 0056a6e8 ssys__ma__VramHeap__deleting_destructor
 0056a708 ssys__ma__VramHeap__destructor
-0056a724 ssys__ma__Allocator__virtual_3
-0056a734 ssys__ma__Allocator__virtual_2
+0056a724 Allocator__free
+0056a734 Allocator__allocate
 0056a750 ssys__ma__Allocator__deleting_destructor
 0056a754 ssys__ma__Allocator__destructor
 0056a758 LoadSplit__start_default
@@ -14508,7 +14508,7 @@
 0056cddc TimeStamp__add_seconds
 0056ce84 TimeStamp__set_minute
 0056cedc TimeStamp__set_second
-0056cf34 record_is_active
+0056cf34 clock_state_flag_3
 0056cf7c GameClock__check_early_date
 0056d00c construct_earliest_time_0056d00c
 0056d060 TimeStamp__season
@@ -14770,7 +14770,7 @@
 00580524 BsSkb__do_delete
 00580fb8 BsSkb__virtual_1_00580fb8
 00580fc8 BsSkb__virtual_0_00580fc8
-00580fd0 BsSkb__virtual_0_00580fd0
+00580fd0 BsSkb__destructor
 00581050 GridMap__create_with_buffer
 005810ac BlockMap__build_items
 005812ec GridMap__create_with_buffer_2
@@ -15301,7 +15301,7 @@
 0058cb20 mic_mgr_byte_63d
 0058cb38 mic_mgr_call_1d9578
 0058cb60 mic_mgr_call_1d960c
-0058cb74 setup_river_sound
+0058cb74 SoundMicMgr__load_when_ready
 0058cb84 mic_mgr_set_5e0_5e4
 0058cb9c do_nothing_0058cb9c
 0058cbbc mic_mgr_byte_38

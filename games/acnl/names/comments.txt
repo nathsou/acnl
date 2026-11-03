@@ -4014,6 +4014,7 @@
 00560b6c Unlinks the child, then appends it as the last child of the node.
 00560bac Unlinks each of the node's children.
 00560bec Unlinks the node and detaches all its children.
+00560e80 Destroys an upper-screen task: its four method tree nodes, then the task base.
 00561264 Applies the viewport's screen rotation (below 6).
 00561310 Constructs a viewport: an empty rectangle, rotated for the current screen.
 005615e4 Calls the function at 0x561900 with the stacked word.
@@ -4049,6 +4050,7 @@
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 00569774 Binds a texture (arg 1) to an animation target: its format, scale 1, offset 0, and whether it lacks mipmaps.
 00569ab8 Constructs an archive resource accessor for layouts: an archive accessor in VRAM with an empty texture \n buffer list.
+00569b28 Destroys an archive resource accessor for layouts: its VRAM accessor.
 00569b44 Sets the fade's start, target (at least 0), speed and mode.
 00569e6c Draws the layout on the top (0) or the bottom (1) screen.
 00569e90 Sets up the screen for 400 x 240 and resets its list.
@@ -4062,6 +4064,8 @@
 0056a58c Opens the file request through the file device manager once (under the file lock); true when it did.
 0056a5fc Reads from the file request (under the file lock); the amount read.
 0056a664 Scales the color down so its largest channel is at most 1.
+0056a724 Frees a block through the allocator's heap (its virtual 7).
+0056a734 Allocates size (arg 1) bytes through the allocator's heap (its virtual 6), aligned (arg 2, at least 1).
 0056a758 Starts the split load with the default heap (0x975c38), not compressed.
 0056a780 Binds the animation to its target unless it is done or stopped (states 3 to 5).
 0056a94c Starts the compressed split load with the default heaps.
@@ -4085,6 +4089,7 @@
 0056c76c (year - 2008) mod 12.
 0056c7b0 Sets bit 2 of the clock flags.
 0056c7c8 Checks the clock against the time limit.
+0056cf34 Bit 3 of the clock state flags.
 0056cf7c Flags the clock (bit 0, and the save's bit) while the date is before January 6, 2012; clears both otherwise.
 0056d2ec Sets the text box's word to the slot player's town name.
 0056d374 Sets the text box's word to the name of the slot's player.
@@ -4151,6 +4156,7 @@
 0057f2a0 Whether the NPC's action is in state 2.
 0057f2b8 Whether the NPC's second action is in state 2.
 00580490 Sets the NPC's leave flag and the global leaving state.
+00580fd0 Destroys the keyboard menu: its seven archive readers, talk receptor and menu base.
 00581050 Creates the grid map (005814d0) and its 0x4000-byte work buffer; on failure releases the cells.
 005810ac Builds the block map's cells and fills them with their default items.
 005812ec Creates the grid map (005810ac) and its 0x4000-byte work buffer; on failure releases the cells.
@@ -4270,6 +4276,7 @@
 0058cb20 Signed byte +0x63d of the mic manager.
 0058cb38 Calls 001d9578 on the mic manager.
 0058cb60 Calls 001d960c on the mic manager.
+0058cb74 Loads the microphone manager's resource when it is in state 2.
 0058cb84 Stores two words at +0x614 of the mic manager unless its state (+0x34) is 5.
 0058cb9c Returns at once.
 0058cbbc The low byte of +0x38 of the mic manager.
@@ -4421,6 +4428,7 @@
 005a1ba0 Buries the drop's item (a placeholder when its number is not indexed) at its cell, then clears the tile; true when it could.
 005a213c Throws the drop's item from its cell, with its effect and sound, then clears the tile.
 005a224c Ends and clears the field drop at (x, z) when there is one.
+005a2400 Updates the 32 field drops that are active.
 005a2438 Builds a field drop from an entry (cell and kind, empty items) and sends it (message 0x3a) when another station leads, else applies it.
 005a2534 Ends every field drop in use (sending what it needs) and clears it.
 005a2624 Sets the bit of cell (x, z) in a bit map of the town's 112 x 96 cells (after a 4-byte header); nothing out of range.
@@ -4442,7 +4450,9 @@
 005a360c Points the record at player model `index` and at its 12 and 14 part slots.
 005a36b8 Sets or clears the visibility bit of part `index` (its bit number from the part table) in the model's mask (+0x29c).
 005a3720 Clears 0x70 bytes of the object.
+005a3ad0 Constructs a photo database file reader over a buffer (arg 1, size arg 2), opened (or not, arg 3).
 005a3b10 Constructs a photo database file reader for a file (arg 1) with a buffer (arg 2), opened (or not, arg 3).
+005a3edc Constructs a photo database file writer for a file (arg 1).
 005a3f08 Calls 005a4cf4 with a 0x64000-byte buffer and two output slots.
 005a4030 Finishes the JPEG decoder's work.
 005a4aec The size of `count` 16-byte entries plus `extra`, rounded up to 32 bytes.
@@ -4491,6 +4501,7 @@
 005a8e60 Converts a count into a date and time and stores it as a 64-bit time.
 005a8ea0 Parses a 19-character date YYYY:MM:DD HH:MM:SS into a 64-bit time; true when it is valid.
 005a8fd0 Builds the entry's path and record, checks the storage and writes it; the writer's result.
+005a9054 Constructs an image file writer for a file (arg 1): its kind, buffer and scale.
 005a90b0 Stores a value at +0x10 of the record (+0xc) and marks it changed.
 005a90c4 Sets or clears flag 0x10 of the record's flags (+0x14 of +0xc).
 005a91e0 Keeps a value at 0x9816ac and marks it pending (0x9816a8).
@@ -4499,6 +4510,7 @@
 005a9c48 Finds the first free photo index in the folder.
 005a9e1c The path of the photo (or its folder) at the index.
 005aa0b8 Computes the photo file's aligned header and data sizes.
+005aa410 Constructs an SD archive mounter: not mounted.
 005aa460 Stores a 3-bit value in bits 2-4 of the key's second word.
 005aa47c Stores the packed id and count (two halves) in bits 5-28 of the key's second word.
 005aa4bc Stores a 2-bit value in bits 0-1 of the key's second word.
@@ -4521,8 +4533,10 @@
 005aa884 Initializes a flag buffer when it is large enough: its 16-bit count and `count` cleared flag bytes.
 005aa914 Formats the photo's file name from its folder and number.
 005aa970 Constructs a photo file reader for the pending picture: a file reader over the picture's buffer.
+005aab04 Constructs a NAND archive mounter: not mounted.
 005aab40 Keeps a value at 0x9816b4 and marks it pending (0x9816aa).
 005aab58 Keeps a value at 0x9816b0 and marks it pending (0x9816a9).
+005aad34 Constructs a DSi NAND archive mounter: not mounted.
 005aad7c Builds a wide photo path from its parts.
 005aae3c Decodes the photo's MPO (3D) into the buffers.
 005ab01c Decodes the photo's JPEG into the buffer.
@@ -4608,6 +4622,7 @@
 005b05b4 Copies a 4-character wide extension into the record.
 005b05c0 Stores slot `index` (+0x30 table) and sets its bit in bits 9-12 of +0x28.
 005b0628 Whether the value is at most 0x270e.
+005b0654 Whether a photo folder number is below 900.
 005b0664 The next photo number: the file number counts to 99, then the folder number advances (wrapping below 900).
 005b06a0 Starts the next photo folder (wrapping below 900) at file 0.
 005b06c4 Writes the photo database's index file (the second one).
