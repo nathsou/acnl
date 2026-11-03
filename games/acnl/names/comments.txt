@@ -1018,6 +1018,7 @@
 001b9254 Locks the input (counting) and returns the lock's state.
 001b9400 Writes the save counter (when asked) and commits the save archive; 8 on failure, 1 on success.
 001b94b0 Closes every save file and unmounts the archive, reporting fatal errors.
+001b95f8 Whether a file (arg 0) exists in the save archive, mounting it (under the input lock) when asked \n (arg 1).
 001b96a0 Opens the main save file.
 001b979c Releases the input lock (by its state).
 001b97dc Closes the 7 shared files and the 3 files of each of the 4 slots, then unmounts the archive (when asked and mounted).
@@ -3434,7 +3435,7 @@
 0053d2cc The CRC-16 (polynomial 0xa001, table built once) of the bytes.
 0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
-0053dffc Gets the file's size through the device (virtual 20) when the device is open.
+0053dffc Whether the device has a file (path arg 2), into a flag (arg 1); false when the device is not open or \n there is no flag.
 0053e71c Tests the touch against the pane and records the hit.
 0053e990 Releases the file handle through its device when it has one.
 0053e9b0 Reads from the file handle through its device when it has one.
@@ -3554,7 +3555,7 @@
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
 0056a1d4 Rotates the vector about the x axis by the angle.
 0056a2c0 Sets the transform's scale, rotation and translation.
-0056a4a4 The first byte (signed) of the file at a path (arg 0), through the file device manager; 0 when no \n device has it.
+0056a4a4 Whether a file (path arg 0) exists, asked of the device the file device manager finds for it; false \n when no device has it.
 0056a534 Binds the object to the source's second word.
 0056a53c Queries the file request's state (under the file lock); 0 without a request.
 0056a58c Opens the file request through the file device manager once (under the file lock); true when it did.

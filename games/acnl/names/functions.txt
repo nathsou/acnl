@@ -1949,7 +1949,7 @@
 001b9400 SaveArchive__commit
 001b94b0 SaveArchive__close_all
 001b95f4 do_nothing_001b95f4
-001b95f8 query_save_file_size
+001b95f8 save_file_exists
 001b96a0 SaveArchive__open_main_file
 001b979c InputLock__release
 001b97dc SaveArchive__close_files
@@ -13495,7 +13495,7 @@
 0053dfa0 FileDevice__read
 0053dfc8 sead__MainFileDevice__virtual_18
 0053dff4 sead__MainFileDevice__virtual_20
-0053dffc FileDevice__get_size
+0053dffc FileDevice__file_exists
 0053e020 sead__MainFileDevice__virtual_25
 0053e048 sead__MainFileDevice__virtual_22
 0053e12c sead__MainFileDevice__virtual_23
@@ -14428,7 +14428,7 @@
 0056a3f8 ssys__ma__Vec3i__destructor
 0056a3fc sead__FixedSafeString_256___FixedSafeString_0056a3fc
 0056a48c store_constants_56a48c
-0056a4a4 file_first_byte
+0056a4a4 file_exists
 0056a534 ObjectBinding__bind_from_word_4
 0056a53c FileRequest__query
 0056a58c FileRequest__open
