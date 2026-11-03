@@ -1679,6 +1679,7 @@
 00237008 Sets the talk's mode and marks each listener NPC as in a talk.
 00237a1c Pays or charges the player the talk's pending bells (as NpcTalkRecept__apply_bells), at the talk's first \n step.
 00237d58 Stores the pending text and its value when none is pending; whether it was stored.
+00237dd0 Sets a 21-character text word (arg 1) into a talk's target window; 1 when it has one (and the word \n resources are loaded).
 002383c0 Starts the word fix at the position, numbering it on first use.
 002389f8 Sets the talk's word slot to the fashion word of the index (1 to 10); 0 leaves it.
 00238e10 Sets the talk's word slot to the name of the object kind.
@@ -1687,6 +1688,7 @@
 0023930c Sets a nine-character word (arg 1) into an NPC's talk window; 1 when it has one.
 00239738 Sets the talk's word slot to the impression word for the person's gender; whether there was a talk to set.
 002397ec Sets the talk's word slot to the player's impression word for their gender.
+002398ac Sets a nine-character name word (from a name record, arg 1) into a special NPC's talk window; 1 when it \n has one.
 00239cd0 When idle (4): starts turning (mode 3) toward the player, with the flag.
 0023a200 When idle (4): starts turning (mode 1) toward the player, with the flag.
 0023a254 When idle (4): starts turning (mode 0) toward the object at the speed.
@@ -1700,6 +1702,9 @@
 0023b1b4 Whether the talk still has a script running, a pending close, or a window not idle.
 0023b248 Sets the string to the message of the archive.
 0023b480 Sets the talk's word slot to the amount; whether there was a talk to set.
+0023b5ec Sets a 33-character word (arg 1) into a talk's window; 1 when it has one.
+0023b87c Sets a nine-character name word (from a name record, arg 1) into a poster's talk window; 1 when it has one.
+0023b900 Sets a 33-character word (arg 1) into a talk's window, with the scene's owner in the scenes so flagged.
 0023bbe4 Constructs an object talk receptor: a talk receptor with a flow receptor, for an object (arg 1).
 0023bc64 Whether the background service is disabled.
 0023bf10 The negation of the wireless check A.
@@ -1888,6 +1893,7 @@
 00268d94 Sets the action's target and its model.
 00268db4 Starts the emoticon action of the kind.
 00269208 Updates the emoticon action (by its kind).
+00269478 Constructs an emoticon action: its emoticon slots, none showing.
 002694b8 Destroys an emoticon action: its emoticon slots.
 0026a418 Updates the emoticon slots' effects.
 0026a5dc Stops each of the 4 slots' effects and marks them stopped (or idle when unused).
@@ -1912,6 +1918,7 @@
 0026fa8c Sets the current player's pocket slot to the item.
 0026fe3c Destroys an item drag window: its drag icon control and groups, nodes, animations, archive readers and \n layouts.
 0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
+00270550 Destroys a simple NPC model: its parts, face animations, resource loaders and skeletal animation.
 002706ec Destroys an object resource: releases its object, then its heap allocator.
 00270ce0 Unloads the split part at +0x14.
 00271290 Sets the color of the current model slot's material (from its resource file) to the slot's color pair; false without a model.
