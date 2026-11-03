@@ -616,6 +616,24 @@
 001e5dc8 Sets the two scene flags (0x95210c, 0x9520c6).
 001e5de0 Stores the value plus 1 at 0x95210c.
 001e5df4 The 8-bit color of the kind (from its float color).
+001e62dc Adds the light (kind and three values) in the first free of the 5 light slots and marks the lights changed; true.
+001e6df4 In the current scene, turns one light of the kind off (restoring the default light when it was the last); in a house room, updates its record and, in a session, sends message 0x46.
+001e6f58 Turns off the light of the furniture's kind (kind 0xa for lamps 5, 0xb, 0x11, 0x17 and 0x94, else 0xb).
+001e6f98 Turns a light of kind 0xa on.
+001e74b0 Turns a light of kind 0xb on.
+001e74d4 Sets the scene's brightness byte and its float (value / 255), marking it set.
+001e7504 True when a light of kind 0xa or 0xb is on in the scene (the current one's counts or the house room's record).
+001e8364 3 when the scene's season kind is 5 to 0xb, else 0.
+001e83e4 The 8-bit ambient color for the hour and part from the table.
+001e848c Clears the light flag (0x9520c4) and marks the lights changed.
+001e84c8 Sets the light flag (0x9520c4) and marks the lights changed.
+001e8ba4 Classifies the save archive's result: 0 on success, 1 for the corrupted-data errors, 4 otherwise (remembering the code).
+001e8c34 Commits the archive (0x952630) and unmounts it; true on success.
+001e90e4 Constructs the actor base from its parameters, with cleared flags and angles.
+001eb754 Unless an effect is already there, spawns the dust effect 0x1fa on the ground under the position, scaled by the actor's kind.
+001ed520 Sets the town flag (bit 7 of save +0x62155) when one of the 4 players has the state 0xa (bits 3 to 6 of +0x5710).
+001ed594 Clears the DJ controller's state words.
+001ed5b4 Dresses the current player in the default outfit for their gender (+0x55ba).
 00200ab4 Copies the item layout entries (6 bytes each) of variant `index` of the table (+0xd0) into the buffer when it fits; their count, or 0.
 00200b9c Places the items of the cell's layout variant (up to 0x600 bytes of entries) in the cell, keeping their top bits.
 00200ca0 Loads the large cell's 0xa00-byte block from the shared layout of the cell's id.
