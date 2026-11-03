@@ -500,7 +500,48 @@
 00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
 00148710 out = M * (v, 1) for a 3x4 matrix M.
+00186d7c The distance between the two points (in s0).
+00188850 Whether the cell is blocked in the grid's bitmap; false outside the grid.
+001888ac Whether the cell is free in the grid's bitmap; true outside the grid.
+001889b8 Writes the quad (two corners and its depth) as draw commands, into the buffer or the command list.
+00189398 Marks the rectangle's cells in the grid's bitmap.
+00189e2c Registers the items in the catalog's sets and marks their categories.
+0018a390 Clears the item at 0x94d748.
+0018ac84 Finds the slot with the value for the mode's player.
+0018c1c0 Stops the furniture's song when it plays one and, when asked, clears the song placement; with the flag, resets its two slots.
+0018caf0 Starts the furniture's action 0x1f with the offset.
+0018d284 Collects the villagers (of the 10, but the current one) that may move or that the player knows.
+0018e6bc The cell (x, y) of the 7x7 grid (0x108 bytes each), or the first row or column when out of range.
+0018e944 Constructs the heap allocator and the grid's 7 rows.
+0018e970 Destroys the grid's 7 rows and the heap allocator.
+0018e9ac Marks the screen shown and starts its open animation.
 0018eab0 Forwards to the function at 0x8161b8.
+0018ebd4 Draws the screen's layout and its part while it is shown.
+0018ef38 Whether the screen is in its open animation.
+0018f64c For the player's slot (below 4) held by the NPC: cancels the gift and clears its links.
+0018f6a0 For the player's slot held by the NPC: sets the gift's value.
+0018f6dc For the player's slot held by the NPC: sets the gift's flag; whether it did.
+0018f898 For the player's slot held by the NPC: sets the gift's message.
+0018f8e0 For the player's slot held by the NPC: sets the gift's state; whether it did.
+0018fb98 For the player's slot held by the NPC: sets the gift's item and flag.
+001904f0 Adds the id to the set of 4 when absent and there is room; whether it is in.
+001905b0 Adds the id to the set of 12 when absent and there is room; whether it is in.
+00190670 Adds the id to the second set of 4 when absent and there is room; whether it is in.
+00191368 Moves the scroll bar's knob to the list's position.
+001916f0 Sets up the list's buttons, their actions and animations.
+00194504 The pixel under the touch point at the zoom, clamped to the canvas.
+00194ff4 The touch point at the center of the pixel at the zoom.
+00195488 Stores the two 4-bit values with the valid flag at 0x94f860.
+00195d74 Converts the editor's image into the pattern's format.
+00195dd4 Exports the part of the pattern into the preview and, with the guide on, draws the guide's lines over it.
+00197fa4 Copies the region of the pattern image, clearing the rest.
+001982d0 Paints the brush's 16x16 mask at the pixel with the current color, skipping transparent pixels.
+001990f0 Merges two bell items of the pockets into one, the rest staying in the first slot (bags up to 10 or 99).
+00199704 Whether the two pocket items may be merged (same stackable kind, not full).
+00199928 Records the selection and opens the action for the slot (an item, the wallet, the letters).
+0019a938 Moves the slot's bells into the wallet, leaving the rest as a bag when it is full; whether it all went in.
+0019b14c Swaps the two selected letters in the player's letter storage.
+0019c440 Opens the wallet's choice of amounts.
 001a08bc Clears the camera state's flags and restarts its state machine (+0x14) with the default handler pair.
 001a1204 The default camera parameters (0x998540), with a height of 29 in scene 1.
 001a1abc Sets the camera's target and, for a mode (not -1), remembers it with the current view as the start of the move.
