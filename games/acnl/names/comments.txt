@@ -4631,6 +4631,9 @@
 005b0c94 Reads the thumbnail (or another segment) of the picture's EXIF data into a buffer when it fits; gives its size; true when it worked.
 005b0d7c Reads the thumbnail when the picture's EXIF data is valid.
 005b0dec The larger of the two thumbnail segment ends of the picture's EXIF data, or 0.
+005b1684 Constructs a message flow's jump node from its data (arg 1).
+005b16b0 Constructs a message flow's entry node from its data (arg 1).
+005b16dc Constructs a message flow's event node from its data (arg 1).
 005b1928 Sets the window's three flags (+0x5c) for mode 0, 1 or 2.
 005b1968 Stores three bytes at +0x82.
 005b19e8 Stores a word at +0 and clears +4.
@@ -4649,6 +4652,7 @@
 005b4148 Starts a scene change (0x95732c) and loads the current scene's resources with the first set (0x95787c).
 005b4198 Starts a scene change (0x95732c) and loads the current scene's resources with the second set (0x95788c).
 005b41e8 The light kind (+0xc of the scene's environment) of a scene (the current one for 0xa5); without one, 2 for scenes with flag 0x20, else 0.
+005b43b0 Whether a scene is one of 0x39 to 0x3c.
 005b43d4 How the scene starts: 1 when 005b4724 refuses, 3 in a main slot's page with mode above 1, 2 when no NPC position, else 0.
 005b4428 Sets the next scene to `scene` and asks for the change with its entrance parameters (6: the saved ones).
 005b449c The index of `scene` among the scenes (of 0xa5) whose flags (the table at 0x889074) include all of `flags`; -1 when it has not.
@@ -4750,12 +4754,16 @@
 005c0e0c Sends the player the special letter from Nintendo with its attached item; true when it was sent.
 005c111c In talk state 0xe and unless locked: requests state 20 for the object of the given id.
 005c1198 In talk state 0xe (or when forced) and unless locked: requests state 21 with the angle and options.
+005c121c Changes the main player to state 0xcd (unless its state is locked).
 005c12a8 Initializes a move request of kind 0xb with zero targets.
 005c12d0 Slot `slot` (below 4) mapped through the table at 0xa82000, or the first one free.
 005c132c Jumps to look_up_object.
+005c13e0 Sets the player input flag 0x10.
 005c1428 Unless the player is locked: requests the state in the record with one parameter entry.
+005c159c Changes the main player to state 0xcc (unless its state is locked).
 005c167c Sets word `index` (fewer than 4) of an array in the save data.
 005c17e4 Calls 0052cb48 unless the talk state is 5 without its flag.
+005c1814 Calls virtual 23 of an object found by its kind and index (args 0 and 1), when there is one.
 005c1b0c Unless the player is locked: queues an action of kind 1 with the given word.
 005c1b6c Unless the player is locked: calls 00660d14 on it with the two arguments.
 005c1bb4 Unless the player is locked: queues an action of kind 2 with an item.
@@ -4763,6 +4771,8 @@
 005c2120 Unless the player is locked: queues an action of kind 6 with the given word.
 005c2188 Unless the player is locked: queues an action of kind 5 with the given word.
 005c21f0 When the main object's state class is 1 to 5: calls 0065e0b8 on the player.
+005c2224 Changes the main player to state 0xcb (unless its state is locked).
+005c2298 Changes the main player to state 0x78 (unless its state is locked).
 005c22dc Calls 006579a8 on the player with its entry set and the arguments.
 005c23c4 When the player (not locked) is in action 0x92: finishes it with the held item (+0x8ca).
 005c257c Sends the player the special star letter with an attached item picked at random from kind 9 (that the player can still get); true when it was sent.
@@ -4770,9 +4780,11 @@
 005c2730 The cell (x, z) of a point computed by 0065472c.
 005c2768 Copies the player's position (007634d0) into the static vector at 0xa843c8 and returns it.
 005c29f8 Calls 0067bcf4 on the object of the given id (from the stack) with the arguments.
+005c2a54 Whether the main player is in state 0x17 or 0x18, or can start state 0x17 now (when its action mask \n allows).
 005c2b00 Whether the player may start an action now: no input lock, the main object allows action 0x11, and the player is not in action 0x16.
 005c2ce0 The data (+0x14) of the object found for an id, or 0.
 005c2e40 Unless the player is locked: queues an action of kind 4 with an item.
+005c2f70 Changes the main player to state 6, or 0xf when arg 0 is set (unless its state is locked).
 005c305c Calls 006579a8 on the player with its entry set and the constant at 0xae5658.
 005c30a0 Unless the player is locked: calls 0065e2e0 with the arguments, flagging items of category 0x41.
 005c311c In modes with table bit 4: whether the player (direction +0x2e) is within 62 (height 16) of a point, through 006f8a58.
@@ -4945,6 +4957,7 @@
 005d53b0 Advances to the next page when there is one, and puts it.
 005d53d4 Constructs the text receptor with the given style and the default font settings.
 005d5414 Constructs a 400-character script word (over a 1536-character one).
+005d6000 Destroys a mail insert: its words and ten entries.
 005d60d4 Clears the text buffer and the line starts, marking the last line.
 005d6168 Constructs a render base: black colors, no scale yet, a character buffer (arg 1) and room for arg 2 lines.
 005d6510 Text tag: sets the color (from the tag's two halves) and skips the tag.
