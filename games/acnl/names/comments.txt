@@ -785,6 +785,36 @@
 0027dc64 Calls virtual 39 of the held object when it exists.
 0027dc88 Constructs the fish shadow actor from its parameters, with its sound object.
 0027dd00 Destroys the fish shadow actor: its sound object, animation and base.
+0027e08c Writes the Valentine's Day letter to the player (one of three variants, by the player's state), with its item.
+0027e13c When the NPC of kind 'sza' exists with the default id and its timer set, moves the clock by its span and starts event 0xe.
+0027e634 Resets the request record with mode 0x1800181 and its handler.
+0027e670 Refreshes the shared NPC info, then resets the request record with mode 0x24000942 and its three handlers.
+002a2850 Detaches the layout at +0x24 from the layout system.
+002a2ad0 Releases the layout at +0x24.
+002a324c Stores the id with its priority in the first free of the 10 entries (counting it), else replaces the lowest-priority one.
+002a3e08 Plays the song of the index through the sound system with its sound data.
+002a4abc Constructs the room music player: its two buffers (0x262 and 0x14 entries), ids at -1 and cleared fades.
+002a4b84 Points the object at the room music player.
+002a4b98 Looks the sequence up and registers its two tracks (groups 0x20 and 0x21) with the parser; marks it loaded.
+002a4bfc Counts a beat and, once synced, starts the 120-frame hold.
+002a4c30 Frees slot `index` (below 48) and uncounts it.
+002a4c60 Updates the beat tracker's timers: syncs after steady beats, drops sync after silence, and counts the hold down.
+002a502c Stores the object in the first free of the 48 slots and counts it; 0x31 when full.
+002a5080 Zeroes the slot table, its 48 slots and the beat tracker.
+002a5fa8 Sets the owner word when it is not set yet.
+002a6594 Clears the owner word.
+002a65d0 Zeroes the fade state with a step of 1.
+002a661c Clears the 10 daily counter entries (+0x1418, 4 bytes each).
+002a684c Updates the daily counters for the new day.
+002a6b44 Constructs the base part and clears the 12 daily counter entries.
+002a70d0 Clears the visit record: its identity, player reference and 10 ids, with its index at -1.
+002a7190 Address of outfit `index` (below 4, 0x18 bytes each); out-of-range gives the first.
+002a71a0 Counts to 4 (does nothing).
+002a71b4 Empties the 6 items of each of the 4 outfits and clears the flag (+0x60).
+002a722c Refreshes the outfits of the first player when they exist.
+002a75dc Converts the shirt and hat items of the 4 outfits by the rule.
+002a76c0 Restocks the 7 items: 3 from group 0xc, 3 from group 0xd and 1 from group 0x19, all distinct.
+002a77bc Places item `index` (below 7) in the room or the field once, when its owner is the current player.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d4d00 Forwards to the function at 0x2d4bf4.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
