@@ -446,10 +446,10 @@ GUEST_OFFSET(Local_007c769c_ea_3, word_8, 0x8);
 GUEST_OFFSET(Local_007c769c_ea_3, word_c, 0xc);
 GUEST_OFFSET(Local_007c769c_ea_3, word_10, 0x10);
 
-inline constexpr guest::Function<0x00314a1c, u32(u32, u32)> call_00314a1c;
-inline constexpr guest::Function<0x00314a9c, u32(u32, u32, u32, u32)> call_00314a9c;
+inline constexpr guest::Function<0x00314a1c, u32(u32, u32)> ListCursor__end;
+inline constexpr guest::Function<0x00314a9c, u32(u32, u32, u32, u32)> ListCursor__begin;
 inline constexpr guest::Function<0x00314b04, u32(u32, u32)> handles_differ;
-inline constexpr guest::Function<0x00314b58, u32(u32, u32, u32, u32)> call_00314b58;
+inline constexpr guest::Function<0x00314b58, u32(u32, u32, u32, u32)> ListCursor__next;
 
 struct __attribute__((packed)) Frame_007c769c {
     u32 word_0;
@@ -490,9 +490,9 @@ void f_007c769c(u32 r0, u32 r1, u32 r2, u32 r3) {
     ea_1->word_10 = r14;
     r5 = r0;
     r4 = r2;
-    call_00314a9c(frame.at(0x20).addr(), r1, r2, r3);  // (from the original)
+    ListCursor__begin(frame.at(0x20).addr(), r1, r2, r3);  // (from the original)
     r7 = frame.at(0x20).addr();  // (from the original)
-    call_00314a1c(frame.at(0).addr(), r1);
+    ListCursor__end(frame.at(0).addr(), r1);
     r6 = frame.at(0).addr();
     u32 r0_3 = handles_differ(r7, r6);
     r1 = guest::cpu()->r[1];
@@ -510,7 +510,7 @@ void f_007c769c(u32 r0, u32 r1, u32 r2, u32 r3) {
                 r12_1 = ea_2->word_14;
                 goto L_7c7724;
             }
-            call_00314b58(r7, r1, r2, r3);
+            ListCursor__next(r7, r1, r2, r3);
             r0_5 = handles_differ(r7, r6);
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
@@ -549,7 +549,7 @@ GUEST_EXPORT(0x007c769c, d_007c769c::f_007c769c);
 namespace d_007c7740 {
 
 inline constexpr guest::Function<0x00314b04, u32(u32, u32, u32, u32)> handles_differ;
-inline constexpr guest::Function<0x00314b58, u32(u32, u32, u32, u32)> call_00314b58;
+inline constexpr guest::Function<0x00314b58, u32(u32, u32, u32, u32)> ListCursor__next;
 
 void f_007c7740(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r0_2 = 0;
@@ -585,7 +585,7 @@ void f_007c7740(u32 r0, u32 r1, u32 r2, u32 r3) {
                 *gptr<u32>(r5 + 0x14) = r12_1;  // (from the original)
                 return;
             }
-            call_00314b58(r6, r1, r2, r3);
+            ListCursor__next(r6, r1, r2, r3);
             r0_3 = handles_differ(r6, r7, guest::cpu()->r[2], guest::cpu()->r[3]);
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];

@@ -26,66 +26,66 @@ inline constexpr u32 vtable_script__WordFix_65u_ = 0x0090a260u;
 inline constexpr u32 vtable_script__WordFix_9u_ = 0x0090a3e8u;
 inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> destroy_array_elements;
 
-u32 script__Insert__Insert_005f0bc4(gptr<script__Insert> arg0) {
-    arg0->word_0 = vtable_script__Insert;
-    arg0->word_11c38 = vtable_script__WordFix_64u_;
-    destroy_array_elements(arg0.addr() + 0x117b0u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x11328u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x10ea0u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x10cc0u, 0x81c70cu, 0x30u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x10928u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x1088cu) = vtable_script__WordFix_65u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x10854u) = vtable_script__WordFix_15u_;  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x1046cu, 0x3050f4u, 0x64u, 0xau);  // (from the original)
-    arg0->word_10410 = vtable_script__WordFix_33u_;
-    destroy_array_elements(arg0.addr() + 0x10050u, 0x81dadcu, 0x60u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0xfcb8u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0xfb00u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0xf948u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0xf790u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x7220u, 0x81c4e8u, 0xf4u, 0x8cu);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x5c34u, 0x81c4e8u, 0xf4u, 0x17u);  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x5c18u) = vtable_script__WordFix_2u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x5becu) = vtable_script__WordFix_9u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x5b98u) = vtable_script__WordFix_29u_;  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x5990u, 0x81ec90u, 0x34u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x54b8u, 0x81ea88u, 0x7cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x5030u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x4838u, 0x81ec20u, 0xccu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x4680u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x44c8u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x4040u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x400cu) = vtable_script__WordFix_13u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x3fdcu) = vtable_script__WordFix_12u_;  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x3c44u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x38acu, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x3514u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x2f4cu, 0x81eb54u, 0x94u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x2bb4u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x281cu, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x2484u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x20ecu, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x2078u) = vtable_script__WordFix_45u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x2004u) = vtable_script__WordFix_45u_;  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x1c44u, 0x81dadcu, 0x60u, 0xau);  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x1c18u) = vtable_script__WordFix_9u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x1be8u) = vtable_script__WordFix_11u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x1bbcu) = vtable_script__WordFix_9u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x1b90u) = vtable_script__WordFix_9u_;  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x1988u, 0x81ec90u, 0x34u, 0xau);  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x195cu) = vtable_script__WordFix_9u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x1930u) = vtable_script__WordFix_9u_;  // (from the original)
-    *gptr<u32>(arg0.addr() + 0x1904u) = vtable_script__WordFix_9u_;  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x165cu, 0x312cb0u, 0x44u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x13b4u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
-    arg0->word_1370 = vtable_script__WordFix_19u_;
-    destroy_array_elements(arg0.addr() + 0x10c8u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0xe20u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0xa88u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x6f0u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 0x448u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
-    destroy_array_elements(arg0.addr() + 8u, 0x312cb0u, 0x44u, 0x10u);  // (from the original)
-    return arg0.addr();
+u32 script__Insert__Insert_005f0bc4(gptr<script__Insert> insert) {
+    insert->word_0 = vtable_script__Insert;
+    insert->word_11c38 = vtable_script__WordFix_64u_;
+    destroy_array_elements(insert.addr() + 0x117b0u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x11328u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x10ea0u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x10cc0u, 0x81c70cu, 0x30u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x10928u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
+    *gptr<u32>(insert.addr() + 0x1088cu) = vtable_script__WordFix_65u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x10854u) = vtable_script__WordFix_15u_;  // (from the original)
+    destroy_array_elements(insert.addr() + 0x1046cu, 0x3050f4u, 0x64u, 0xau);  // (from the original)
+    insert->word_10410 = vtable_script__WordFix_33u_;
+    destroy_array_elements(insert.addr() + 0x10050u, 0x81dadcu, 0x60u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0xfcb8u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0xfb00u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0xf948u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0xf790u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x7220u, 0x81c4e8u, 0xf4u, 0x8cu);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x5c34u, 0x81c4e8u, 0xf4u, 0x17u);  // (from the original)
+    *gptr<u32>(insert.addr() + 0x5c18u) = vtable_script__WordFix_2u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x5becu) = vtable_script__WordFix_9u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x5b98u) = vtable_script__WordFix_29u_;  // (from the original)
+    destroy_array_elements(insert.addr() + 0x5990u, 0x81ec90u, 0x34u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x54b8u, 0x81ea88u, 0x7cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x5030u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x4838u, 0x81ec20u, 0xccu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x4680u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x44c8u, 0x3009ccu, 0x2cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x4040u, 0x81dedcu, 0x74u, 0xau);  // (from the original)
+    *gptr<u32>(insert.addr() + 0x400cu) = vtable_script__WordFix_13u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x3fdcu) = vtable_script__WordFix_12u_;  // (from the original)
+    destroy_array_elements(insert.addr() + 0x3c44u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x38acu, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x3514u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x2f4cu, 0x81eb54u, 0x94u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x2bb4u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x281cu, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x2484u, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x20ecu, 0x81ea18u, 0x5cu, 0xau);  // (from the original)
+    *gptr<u32>(insert.addr() + 0x2078u) = vtable_script__WordFix_45u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x2004u) = vtable_script__WordFix_45u_;  // (from the original)
+    destroy_array_elements(insert.addr() + 0x1c44u, 0x81dadcu, 0x60u, 0xau);  // (from the original)
+    *gptr<u32>(insert.addr() + 0x1c18u) = vtable_script__WordFix_9u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x1be8u) = vtable_script__WordFix_11u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x1bbcu) = vtable_script__WordFix_9u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x1b90u) = vtable_script__WordFix_9u_;  // (from the original)
+    destroy_array_elements(insert.addr() + 0x1988u, 0x81ec90u, 0x34u, 0xau);  // (from the original)
+    *gptr<u32>(insert.addr() + 0x195cu) = vtable_script__WordFix_9u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x1930u) = vtable_script__WordFix_9u_;  // (from the original)
+    *gptr<u32>(insert.addr() + 0x1904u) = vtable_script__WordFix_9u_;  // (from the original)
+    destroy_array_elements(insert.addr() + 0x165cu, 0x312cb0u, 0x44u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x13b4u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
+    insert->word_1370 = vtable_script__WordFix_19u_;
+    destroy_array_elements(insert.addr() + 0x10c8u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0xe20u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0xa88u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x6f0u, 0x2fe884u, 0x5cu, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 0x448u, 0x312cb0u, 0x44u, 0xau);  // (from the original)
+    destroy_array_elements(insert.addr() + 8u, 0x312cb0u, 0x44u, 0x10u);  // (from the original)
+    return insert.addr();
 }
 
 }  // namespace d_005f0bc4
@@ -136,7 +136,7 @@ GUEST_EXPORT_FRAMED(0x005f10b0, d_005f10b0::f_005f10b0, 0x4070);  // pushes {r4,
 // f_005f1138: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005f1138 {
 
-struct __attribute__((packed)) Object_005f1138_0 {
+struct __attribute__((packed)) script__Loader__LoadSplit {
     u8 byte_0;
     u8 byte_1;
     u8 unknown_2[0xf];  // (not used here)
@@ -146,27 +146,27 @@ struct __attribute__((packed)) Object_005f1138_0 {
     u8 unknown_18[0xe7];  // (not used here)
     u8 byte_ff;
 };
-GUEST_OFFSET(Object_005f1138_0, byte_0, 0x0);
-GUEST_OFFSET(Object_005f1138_0, byte_1, 0x1);
-GUEST_OFFSET(Object_005f1138_0, byte_11, 0x11);
-GUEST_OFFSET(Object_005f1138_0, word_14, 0x14);
-GUEST_OFFSET(Object_005f1138_0, byte_ff, 0xff);
+GUEST_OFFSET(script__Loader__LoadSplit, byte_0, 0x0);
+GUEST_OFFSET(script__Loader__LoadSplit, byte_1, 0x1);
+GUEST_OFFSET(script__Loader__LoadSplit, byte_11, 0x11);
+GUEST_OFFSET(script__Loader__LoadSplit, word_14, 0x14);
+GUEST_OFFSET(script__Loader__LoadSplit, byte_ff, 0xff);
 
 inline constexpr u32 vtable_script__Loader__LoadSplit = 0x009097a0u;
 inline constexpr guest::Function<0x0012ca50, u32(u32)> construct_font_source;
 inline constexpr guest::Function<0x0012ca7c, u32(u32)> construct_load_split;
 inline constexpr guest::Function<0x002f825c, u32(u32, u32)> clear_aligned;
 
-u32 script__Loader__LoadSplit__LoadSplit(gptr<Object_005f1138_0> arg0, u32 r1) {
-    arg0->byte_0 = u8(r1);
-    arg0->byte_1 = 0;
-    u32 r0_1 = arg0.addr() + 4u;
+u32 script__Loader__LoadSplit__LoadSplit(gptr<script__Loader__LoadSplit> load_split, u32 r1) {
+    load_split->byte_0 = u8(r1);
+    load_split->byte_1 = 0;
+    u32 r0_1 = load_split.addr() + 4u;
     construct_font_source(r0_1);
-    arg0->byte_11 = 0;
+    load_split->byte_11 = 0;
     clear_aligned(r0_1 + 0x10u, 0xebu);  // (from the original)
     construct_load_split(r0_1 + 0x10u);  // (from the original)
-    arg0->word_14 = vtable_script__Loader__LoadSplit;
-    arg0->byte_ff = 0;
+    load_split->word_14 = vtable_script__Loader__LoadSplit;
+    load_split->byte_ff = 0;
     guest::cpu()->r[1] = vtable_script__Loader__LoadSplit;
     return r0_1 - 4u;
 }
@@ -216,7 +216,7 @@ GUEST_EXPORT(0x005f1344, d_005f1344::f_005f1344);
 // f_005f4860: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005f4860 {
 
-struct __attribute__((packed)) Object_005f4860_0 {
+struct __attribute__((packed)) sead__SafeStringBase_char_ {
     u8 unknown_0[0x28];  // (not used here)
     u8 byte_28;
     u8 byte_29;
@@ -232,18 +232,18 @@ struct __attribute__((packed)) Object_005f4860_0 {
     u8 byte_1e6;
     u8 byte_1e7;
 };
-GUEST_OFFSET(Object_005f4860_0, byte_28, 0x28);
-GUEST_OFFSET(Object_005f4860_0, byte_29, 0x29);
-GUEST_OFFSET(Object_005f4860_0, word_180, 0x180);
-GUEST_OFFSET(Object_005f4860_0, word_188, 0x188);
-GUEST_OFFSET(Object_005f4860_0, word_1b4, 0x1b4);
-GUEST_OFFSET(Object_005f4860_0, word_1dc, 0x1dc);
-GUEST_OFFSET(Object_005f4860_0, byte_1e6, 0x1e6);
-GUEST_OFFSET(Object_005f4860_0, byte_1e7, 0x1e7);
+GUEST_OFFSET(sead__SafeStringBase_char_, byte_28, 0x28);
+GUEST_OFFSET(sead__SafeStringBase_char_, byte_29, 0x29);
+GUEST_OFFSET(sead__SafeStringBase_char_, word_180, 0x180);
+GUEST_OFFSET(sead__SafeStringBase_char_, word_188, 0x188);
+GUEST_OFFSET(sead__SafeStringBase_char_, word_1b4, 0x1b4);
+GUEST_OFFSET(sead__SafeStringBase_char_, word_1dc, 0x1dc);
+GUEST_OFFSET(sead__SafeStringBase_char_, byte_1e6, 0x1e6);
+GUEST_OFFSET(sead__SafeStringBase_char_, byte_1e7, 0x1e7);
 
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
-inline guest::global<u8, 0x008c9f1c> global_008c9f1c;
-inline constexpr guest::Function<0x0013cd00, u32(u32, u32, u32, u32)> call_0013cd00;
+inline guest::global<u8, 0x008c9f1c> empty_string;
+inline constexpr guest::Function<0x0013cd00, u32(u32, u32, u32, u32)> SafeString__copy;
 
 struct __attribute__((packed)) Frame_005f4860 {
     u32 word_0;
@@ -253,29 +253,29 @@ GUEST_OFFSET(Frame_005f4860, word_0, 0x0);
 GUEST_OFFSET(Frame_005f4860, word_4, 0x4);
 GUEST_SIZE(Frame_005f4860, 0x8);
 
-u32 sead__SafeStringBase_char___SafeStringBase_005f4860(gptr<Object_005f4860_0> arg0, u32 r1, u32 r2) {
+u32 sead__SafeStringBase_char___SafeStringBase_005f4860(gptr<sead__SafeStringBase_char_> safe_string_base_char, u32 r1, u32 r2) {
     guest::StackFrameOf<Frame_005f4860> frame;  // the original's stack frame
-    u32 r0_1 = arg0->byte_28;
+    u32 r0_1 = safe_string_base_char->byte_28;
     u32 r5_1 = r2;
     if (r0_1 == 0) {
-        arg0->word_180 = ~0u;
-        *gptr<u8>(arg0->word_188) = *global_008c9f1c;
-        *gptr<u8>(arg0->word_1b4) = *global_008c9f1c;
-        arg0->word_1dc = 0;
+        safe_string_base_char->word_180 = ~0u;
+        *gptr<u8>(safe_string_base_char->word_188) = *empty_string;
+        *gptr<u8>(safe_string_base_char->word_1b4) = *empty_string;
+        safe_string_base_char->word_1dc = 0;
         frame->word_4 = r1;
         frame->word_0 = vtable_sead__SafeStringBase_char_;
-        call_0013cd00(arg0.addr() + 0x1b0u, frame.at(0).addr(), ~0u, guest::cpu()->r[3]);  // (from the original)
+        SafeString__copy(safe_string_base_char.addr() + 0x1b0u, frame.at(0).addr(), ~0u, guest::cpu()->r[3]);  // (from the original)
         if (r5_1 == 0) {
             r5_1 = r1;
         }
         frame->word_4 = r5_1;
         frame->word_0 = vtable_sead__SafeStringBase_char_;
-        call_0013cd00(arg0.addr() + 0x184u, frame.at(0).addr(), ~0u, guest::cpu()->r[3]);  // (from the original)
+        SafeString__copy(safe_string_base_char.addr() + 0x184u, frame.at(0).addr(), ~0u, guest::cpu()->r[3]);  // (from the original)
         r1 = guest::cpu()->r[1];
-        arg0->byte_1e6 = 0;
+        safe_string_base_char->byte_1e6 = 0;
         r0_1 = 1u;
-        arg0->byte_1e7 = 0;
-        arg0->byte_29 = u8(r0_1);
+        safe_string_base_char->byte_1e7 = 0;
+        safe_string_base_char->byte_29 = u8(r0_1);
     }
     guest::cpu()->r[1] = r1;
     return r0_1;
@@ -403,15 +403,15 @@ inline constexpr u32 vtable_script__WordPtr = 0x0090a538u;
 inline constexpr u32 global_00ad59ac_address = 0x00ad59acu;
 inline guest::global<u16, 0x008c9f1e> global_008c9f1e;
 
-void sead__BufferedSafeStringBase_wchar_t___BufferedSafeStringBase_005f723c(gptr<sead__BufferedSafeStringBase_wchar_t_> arg0) {
-    arg0->word_4 = 0xad59ac;  // (from the original)
-    arg0->word_8 = 0x13;  // (from the original)
-    arg0->word_0 = vtable_sead__BufferedSafeStringBase_wchar_t_;
-    *gptr<u16>(arg0->word_4 + 0x24u) = *global_008c9f1e;  // (from the original)
-    arg0->word_c = vtable_script__WordPtr;
-    arg0->word_10 = 0xad59ac;  // (from the original)
-    arg0->word_14 = 0x13;  // (from the original)
-    guest::cpu()->r[1] = arg0.addr() + 0xcu;  // (from the original)
+void sead__BufferedSafeStringBase_wchar_t___BufferedSafeStringBase_005f723c(gptr<sead__BufferedSafeStringBase_wchar_t_> buffered_safe_string_base_wchar_t) {
+    buffered_safe_string_base_wchar_t->word_4 = 0xad59ac;  // (from the original)
+    buffered_safe_string_base_wchar_t->word_8 = 0x13;  // (from the original)
+    buffered_safe_string_base_wchar_t->word_0 = vtable_sead__BufferedSafeStringBase_wchar_t_;
+    *gptr<u16>(buffered_safe_string_base_wchar_t->word_4 + 0x24u) = *global_008c9f1e;  // (from the original)
+    buffered_safe_string_base_wchar_t->word_c = vtable_script__WordPtr;
+    buffered_safe_string_base_wchar_t->word_10 = 0xad59ac;  // (from the original)
+    buffered_safe_string_base_wchar_t->word_14 = 0x13;  // (from the original)
+    guest::cpu()->r[1] = buffered_safe_string_base_wchar_t.addr() + 0xcu;  // (from the original)
 }
 
 }  // namespace d_005f723c
@@ -451,7 +451,7 @@ struct __attribute__((packed)) Local_005fbc20_r2_2 {
 GUEST_OFFSET(Local_005fbc20_r2_2, word_0, 0x0);
 GUEST_OFFSET(Local_005fbc20_r2_2, word_4, 0x4);
 
-inline constexpr u32 global_0095df14_address = 0x0095df14u;
+inline constexpr u32 message_engine_options_address = 0x0095df14u;
 inline constexpr guest::Function<0x005d60d4, u32(u32, u32)> call_005d60d4;
 inline constexpr guest::Function<0x00601b44, u32(u32, u32, u32, u32)> MsgEngine__reset;
 
@@ -465,7 +465,7 @@ u32 f_005fbc20(gptr<Object_005fbc20_0> arg0, u32 r1, u32 r2, u32 r3, float S0) {
     arg0->word_a0 = 3;
     arg0->word_a4 = r1;
     arg0->word_a8 = r1;
-    u32 r14 = global_0095df14_address;
+    u32 r14 = message_engine_options_address;
     arg0->float_ac = S0;
     u32 r12 = 1u;
     arg0->byte_cb = u8(r12);
@@ -785,20 +785,20 @@ GUEST_OFFSET(Local_005fc75c_r2_2, float_0, 0x0);
 GUEST_OFFSET(Local_005fc75c_r2_2, float_4, 0x4);
 
 inline constexpr u32 vtable_script__TalkWin = 0x00909878u;
-inline constexpr guest::Function<0x006e69cc, u32(u32, u32, u32, u32)> MsgWindow__MsgWindow;
+inline constexpr guest::Function<0x006e69cc, u32(u32)> MsgWindow__MsgWindow;
 
-u32 script__TalkWin__TalkWin(gptr<script__TalkWin> arg0, u32 r1, u32 r2, float S0) {
-    u32 r6_1 = arg0.addr() + 4u;
-    arg0->word_0 = vtable_script__TalkWin;
-    arg0->word_4 = r1;
-    arg0->word_8 = r2;
-    arg0->byte_c = 0;
-    arg0->byte_d = 0;
-    arg0->byte_e = 5;
-    arg0->byte_f = 3;
-    arg0->byte_10 = 0;
-    arg0->byte_11 = 0;
-    u32 r0_2 = MsgWindow__MsgWindow(arg0.addr() + 0x14u, r1, r2, 5u);  // (from the original)
+u32 script__TalkWin__TalkWin(gptr<script__TalkWin> talk_win, u32 r1, u32 r2, float S0) {
+    u32 r6_1 = talk_win.addr() + 4u;
+    talk_win->word_0 = vtable_script__TalkWin;
+    talk_win->word_4 = r1;
+    talk_win->word_8 = r2;
+    talk_win->byte_c = 0;
+    talk_win->byte_d = 0;
+    talk_win->byte_e = 5;
+    talk_win->byte_f = 3;
+    talk_win->byte_10 = 0;
+    talk_win->byte_11 = 0;
+    u32 r0_2 = MsgWindow__MsgWindow(talk_win.addr() + 0x14u);  // (from the original)
     gptr<Local_005fc75c_r0_3> r0_3 = gptr<Local_005fc75c_r0_3>(r0_2 - 0x14u);  // (from the original)
     float S0_1 = 0.0f;
     gptr<Local_005fc75c_r2_1> r2_1 = gptr<Local_005fc75c_r2_1>(r0_3.addr() + 0xb0cu);  // (from the original)

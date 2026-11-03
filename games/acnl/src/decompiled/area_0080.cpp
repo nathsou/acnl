@@ -852,7 +852,7 @@ u32 f_0080d3cc(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r11 = guest::cpu()->r[11];
     u32 r12 = guest::cpu()->r[12];
     u32 r14 = guest::cpu()->r[14];
-    u32 r0_10 = 0;
+    u32 r0_11 = 0;
     gptr<Local_0080d3cc_ea_1> ea_1 = gptr<Local_0080d3cc_ea_1>(frame.at(0x688).addr());  // (from the original)
     ea_1->word_0 = r0;
     ea_1->word_4 = r1;
@@ -899,17 +899,16 @@ u32 f_0080d3cc(u32 r0, u32 r1, u32 r2, u32 r3) {
                     r4 = 0u;
                     if (r0_7 >= 0u && r0_7 != 0) {
                         do {
-                            gptr<Local_0080d3cc_r5_2> r5_2 = gptr<Local_0080d3cc_r5_2>(r6 + r4 * 6u);
+                            gptr<Local_0080d3cc_r5_2> r5_2 = gptr<Local_0080d3cc_r5_2>(r6 + (r4 + (r4 << 1) << 1));
                             u32 r8_1 = r5_2->half_8;
                             u32 r9_1 = r5_2->byte_c;
                             u32 r11_1 = r5_2->byte_d;
                             construct_item(r10, r8_1, r2, r3);
                             u32 r0_8 = item_has_valid_data(r10);
                             if (r0_8 != 0) {
-                                u32 r8_2 = frame.at(0x64c).addr();  // (from the original)
                                 u32 r5_3 = u32(r5_2->half_a) >> 0xe;  // (from the original)
-                                construct_item(r8_2, r8_1, guest::cpu()->r[2], guest::cpu()->r[3]);
-                                copy_item_with_top_bits(r10, r8_2, r5_3);
+                                u32 r0_9 = construct_item(frame.at(0x64c).addr(), r8_1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+                                copy_item_with_top_bits(r10, r0_9, r5_3);
                             }
                             frame->word_0 = 0;
                             GridCellSmall__place_item(frame->word_634, r10, r9_1, r11_1);
@@ -924,15 +923,15 @@ u32 f_0080d3cc(u32 r0, u32 r1, u32 r2, u32 r3) {
             }
             u32 r4_2 = frame.at(0x610).addr();  // (from the original)
             WrappingCursor__advance(r4_2, r1_1, r2, r3);
-            r0_10 = key_records_differ(r4_2, frame.at(0x638).addr());  // (from the original)
+            r0_11 = key_records_differ(r4_2, frame.at(0x638).addr());  // (from the original)
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
             guest::preempt();
-        } while (r0_10 != 0);
+        } while (r0_11 != 0);
     }
     u32 r4_3 = frame.at(8).addr();
     copy_aligned_bytes(r4_3, frame.at(0x690).addr(), 0x608u, r3);  // (from the original)
-    u32 r0_12 = copy_aligned_bytes(frame->word_688, r4_3, 0x608u, guest::cpu()->r[3]);  // (from the original)
+    u32 r0_13 = copy_aligned_bytes(frame->word_688, r4_3, 0x608u, guest::cpu()->r[3]);  // (from the original)
     gptr<Local_0080d3cc_ea_3> ea_3 = gptr<Local_0080d3cc_ea_3>(frame.at(0x660).addr());  // (from the original)
     u32 r4_4 = ea_3->word_0;
     u32 r5_4 = ea_3->word_4;
@@ -951,7 +950,7 @@ u32 f_0080d3cc(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::cpu()->r[9] = r9_2;
     guest::cpu()->r[10] = r10_1;
     guest::cpu()->r[11] = r11_2;
-    return r0_12;
+    return r0_13;
 }
 
 }  // namespace d_0080d3cc
@@ -968,7 +967,7 @@ GUEST_OFFSET(Local_0080d59c_r4_1, word_0, 0x0);
 GUEST_OFFSET(Local_0080d59c_r4_1, word_4, 0x4);
 
 inline constexpr guest::Function<0x001c1fcc, u32(u32, u32)> call_001c1fcc;
-inline constexpr guest::Function<0x00304530, u32(u32, u32, u32)> call_00304530;
+inline constexpr guest::Function<0x00304530, u32(u32, u32, u32)> shared_load_splits;
 inline constexpr guest::Function<0x00317148, u32(u32, u32, u32)> CellGrid__cell_at;
 inline constexpr guest::Function<0x0052f144, u32(u32, u32, u32)> WrappingCursor__advance;
 inline constexpr guest::Function<0x006a92f4, u32(u32, u32, u32)> load_block_a00;
@@ -996,7 +995,7 @@ u32 f_0080d59c(u32 r0, u32 r1, u32 r2) {
                 r2 = guest::cpu()->r[2];
                 if (r0_6 != 0) {
                     u32 r0_7 = *gptr<u16>(r0_5);
-                    u32 r0_8 = call_00304530(r0_7, r1, r2);
+                    u32 r0_8 = shared_load_splits(r0_7, r1, r2);
                     u32 r0_9 = call_001c1fcc(r0_8, r0_7);
                     r2 = guest::cpu()->r[2];
                     r1 = r0_9;
@@ -1122,12 +1121,12 @@ namespace d_0080ef60 {
 
 inline constexpr u32 vtable_pead__FixedSafeString_32_ = 0x00903a40u;
 
-void pead__BufferedSafeStringBase_char___BufferedSafeStringBase_0080ef60(gptr<pead__FixedSafeString_32_> arg0) {
-    arg0->word_4 = arg0.addr() + 0xcu;  // (from the original)
-    arg0->word_8 = 0x20;  // (from the original)
-    *gptr<u8>(arg0->word_4 + 0x1fu) = 0;  // (from the original)
-    *gptr<u8>(arg0->word_4) = 0;
-    arg0->word_0 = vtable_pead__FixedSafeString_32_;
+void pead__BufferedSafeStringBase_char___BufferedSafeStringBase_0080ef60(gptr<pead__FixedSafeString_32_> fixed_safe_string) {
+    fixed_safe_string->word_4 = fixed_safe_string.addr() + 0xcu;  // (from the original)
+    fixed_safe_string->word_8 = 0x20;  // (from the original)
+    *gptr<u8>(fixed_safe_string->word_4 + 0x1fu) = 0;  // (from the original)
+    *gptr<u8>(fixed_safe_string->word_4) = 0;
+    fixed_safe_string->word_0 = vtable_pead__FixedSafeString_32_;
 }
 
 }  // namespace d_0080ef60

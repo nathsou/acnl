@@ -344,8 +344,8 @@ L_189fa0:;
                     if (!u32((0ull + ~0u + u32(r4 >= 8u)) >> 0x20)) {  // (from the original)
                         do {
                             pick_random_item(frame.at(0x2e8).addr(), frame.at(0).addr(), r2, r3);  // (from the original)
-                            u32 r0_16 = item_offset_in_category(frame.at(0x2e8).addr());  // (from the original)
-                            *gptr<u32>(r6 + (r4 << 2)) = r0_16;
+                            u32 offset = item_offset_in_category(frame.at(0x2e8).addr());  // (from the original)
+                            *gptr<u32>(r6 + (r4 << 2)) = offset;
                             r4 += 1u;
                             u32 r1_12 = r4 - 2u;
                             if (s32(r1_12) >= 0) {
@@ -555,14 +555,14 @@ GUEST_OFFSET(Frame_0018c1c0, word_0, 0x0);
 GUEST_OFFSET(Frame_0018c1c0, word_4, 0x4);
 GUEST_SIZE(Frame_0018c1c0, 0xc);
 
-void f_0018c1c0(gptr<AcFtrAudio> arg0, u32 r1, u32 r2, u32 r3) {
+void f_0018c1c0(gptr<AcFtrAudio> ac_ftr_audio, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_0018c1c0> frame;  // the original's stack frame
     u32 r5_1 = r1;
     u32 r8_1 = ~0u;
-    if (arg0->byte_8dc != 0) {
-        u32 r0_1 = category_info(0x2fu, r1, r2, r3);  // (from the original)
+    if (ac_ftr_audio->byte_8dc != 0) {
+        u32 info = category_info(0x2fu, r1, r2, r3);  // (from the original)
         r1 = guest::cpu()->r[1];
-        u32 r0_2 = *gptr<u32>(r0_1 + 4u);
+        u32 r0_2 = *gptr<u32>(info + 4u);
         if (r0_2 > r5_1) {
             u32 r0_3 = return_constant_0x989bd8_(r0_2, r1);
             frame->word_0 = 0;
@@ -601,12 +601,12 @@ void f_0018c1c0(gptr<AcFtrAudio> arg0, u32 r1, u32 r2, u32 r3) {
                     }
                 }
             }
-            *gptr<u8>(arg0.addr() + 0x8dcu) = 0;  // (from the original)
+            *gptr<u8>(ac_ftr_audio.addr() + 0x8dcu) = 0;  // (from the original)
         }
     }
     if (r3 != 0) {
-        *gptr<u8>(arg0.addr() + 0x8ddu) = u8(r8_1);  // (from the original)
-        *gptr<u8>(arg0.addr() + 0x8deu) = u8(r8_1);  // (from the original)
+        *gptr<u8>(ac_ftr_audio.addr() + 0x8ddu) = u8(r8_1);  // (from the original)
+        *gptr<u8>(ac_ftr_audio.addr() + 0x8deu) = u8(r8_1);  // (from the original)
     }
     guest::cpu()->r[1] = r1;
 }
@@ -666,8 +666,8 @@ u32 f_0018d284(gptr<Object_0018d284_0> arg0, u32 r1) {
     r1 = guest::cpu()->r[1];
     u32 r4_1 = r0;
     if (r0 != 0) {
-        u32 r0_1 = get_save_data(r0, r1);
-        u32 r9 = r0_1 + 0x292a4u;  // (from the original)
+        u32 save_data = get_save_data(r0, r1);
+        u32 r9 = save_data + 0x292a4u;  // (from the original)
         r0 = villager_slot_index(r9, 0u);
         r1 = guest::cpu()->r[1];
         u32 r5 = r0;
@@ -726,7 +726,7 @@ GUEST_OFFSET(Local_0018d350_r0_1, byte_9a, 0x9a);
 
 inline constexpr u32 vtable_script__WordFix_9u_ = 0x0090a3e8u;
 inline constexpr u32 global_0095386c_address = 0x0095386cu;
-inline constexpr u32 global_0095debc_address = 0x0095debcu;
+inline constexpr u32 word_resources_address = 0x0095debcu;
 inline constexpr u32 global_00a83af0_address = 0x00a83af0u;
 inline guest::global<u32, 0x0095386c> global_0095386c;
 inline guest::global<u32, 0x00a83af0> global_00a83af0;
@@ -759,7 +759,7 @@ u32 script__WordFix_9u___WordFix_0018d350(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r3_6 = 0;
     u32 zf_1 = r0 == 0;
     u32 r8 = r0;
-    gptr<Local_0018d350_r0_1> r0_1 = gptr<Local_0018d350_r0_1>(global_0095debc_address);
+    gptr<Local_0018d350_r0_1> r0_1 = gptr<Local_0018d350_r0_1>(word_resources_address);
     u32 r6 = r0_1->word_0;
     if (!zf_1) {
         zf_1 = r6 == 0;
@@ -768,8 +768,8 @@ u32 script__WordFix_9u___WordFix_0018d350(u32 r0, u32 r1, u32 r2, u32 r3) {
         r0_1 = gptr<Local_0018d350_r0_1>(*global_0095386c);
         u32 r4_1 = s8(r0_1->byte_9a);
         if (s32(r4_1) >= 0) {
-            u32 r0_2 = get_save_data(r0_1.addr(), r1, r2, r3);
-            r0_1 = gptr<Local_0018d350_r0_1>(villager_record_at(r0_2 + 0x292a4u, r4_1));  // (from the original)
+            u32 save_data = get_save_data(r0_1.addr(), r1, r2, r3);
+            r0_1 = gptr<Local_0018d350_r0_1>(villager_record_at(save_data + 0x292a4u, r4_1));  // (from the original)
             r1 = guest::cpu()->r[1];
             if (r0_1.addr() != 0) {
                 r0_1 = gptr<Local_0018d350_r0_1>(u32(r0_1->half_2c));
@@ -913,13 +913,13 @@ GUEST_EXPORT_FRAMED(0x0018e944, d_0018e944::f_0018e944, 0x4010);  // pushes {r4,
 namespace d_0018e970 {
 
 inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> destroy_array_elements;
-inline constexpr guest::Function<0x00317dec, u32(u32, u32, u32, u32)> ssys__ma__HeapAllocator__virtual_0;
+inline constexpr guest::Function<0x00317dec, u32(u32, u32, u32, u32)> ssys__ma__HeapAllocator__destructor;
 
 u32 f_0018e970(u32 r0) {
     guest::StackFrame frame(0x8);  // the original's stack frame
     destroy_array_elements(r0 + 8u, 0x561f20u, 0x738u, 7u);  // (from the original)
     frame.release();
-    return ssys__ma__HeapAllocator__virtual_0(r0, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    return ssys__ma__HeapAllocator__destructor(r0, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_0018e970
@@ -1050,18 +1050,18 @@ inline constexpr guest::Function<0x00125aec, u32(u32)> construct_layout_animatio
 inline constexpr guest::Function<0x00125e3c, u32(u32, u32, u32, u32)> Layout__Layout;
 inline constexpr guest::Function<0x00569ab8, u32(u32)> ssys__ma__lyt__ArcResAcc__ArcResAcc_00569ab8;
 
-u32 BlackToBtn__BlackToBtn(gptr<BlackToBtn> arg0) {
-    arg0->word_4 = 0;
-    arg0->byte_8 = 0;
+u32 BlackToBtn__BlackToBtn(gptr<BlackToBtn> black_to_btn) {
+    black_to_btn->word_4 = 0;
+    black_to_btn->byte_8 = 0;
     u32 r2_1 = *global_00845f5c;
-    arg0->word_c = *global_00845f58;
-    arg0->word_10 = r2_1;
-    arg0->word_14 = 0;
-    arg0->byte_18 = 0;
-    arg0->word_1c = 0;
-    arg0->word_0 = vtable_BlackToBtn;
-    arg0->word_20 = 0;
-    u32 r0_2 = Layout__Layout(arg0.addr() + 0x24u, vtable_BlackToBtn, r2_1, arg0.addr() + 0xcu);  // (from the original)
+    black_to_btn->word_c = *global_00845f58;
+    black_to_btn->word_10 = r2_1;
+    black_to_btn->word_14 = 0;
+    black_to_btn->byte_18 = 0;
+    black_to_btn->word_1c = 0;
+    black_to_btn->word_0 = vtable_BlackToBtn;
+    black_to_btn->word_20 = 0;
+    u32 r0_2 = Layout__Layout(black_to_btn.addr() + 0x24u, vtable_BlackToBtn, r2_1, black_to_btn.addr() + 0xcu);  // (from the original)
     u32 r0_3 = r0_2 + 0x14cu;  // (from the original)
     ssys__ma__lyt__ArcResAcc__ArcResAcc_00569ab8(r0_3);
     u32 r0_4 = r0_3 + 0x158u;  // (from the original)

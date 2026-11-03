@@ -11,10 +11,10 @@ using guest::gptr;
 // f_001f4e30: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001f4e30 {
 
-inline constexpr guest::Function<0x0057ba2c, u32(u32)> Actor__virtual_11;
+inline constexpr guest::Function<0x0057ba2c, u32(u32)> Actor__pre_draw;
 
-u32 AcFishCommon__virtual_11(u32 r0) {
-    u32 r0_1 = Actor__virtual_11(r0);
+u32 AcObjectBase__pre_draw(u32 ac_object_base) {
+    u32 r0_1 = Actor__pre_draw(ac_object_base);
     if (r0_1 != 0) {
         r0_1 = 1u;
     }
@@ -22,7 +22,7 @@ u32 AcFishCommon__virtual_11(u32 r0) {
 }
 
 }  // namespace d_001f4e30
-GUEST_EXPORT_FRAMED(0x001f4e30, d_001f4e30::AcFishCommon__virtual_11, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x001f4e30, d_001f4e30::AcObjectBase__pre_draw, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_001f4fec: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001f4fec {
@@ -147,7 +147,7 @@ namespace d_001f581c {
 
 inline constexpr guest::Function<0x002d58b0, u32(u32, u32, u32)> call_002d58b0;
 inline constexpr guest::Function<0x002d595c, u32(u32, u32)> change_mode_002d595c;
-inline constexpr guest::Function<0x002e8cc8, u32(u32, u32, u32, u32)> call_002e8cc8;
+inline constexpr guest::Function<0x002e8cc8, u32(u32, u32, u32)> call_002e8cc8;
 inline constexpr guest::Function<0x002fc8e8, u32(u32, u32)> copy_item_002fc8e8;
 inline constexpr guest::Function<0x002fcb34, u32(u32, u32)> Item__category;
 inline constexpr guest::Function<0x00305f44, u32(u32)> query_current_main_object;
@@ -156,30 +156,30 @@ inline constexpr guest::Function<0x00615e8c, u32(u32, u32, u32, u32)> call_00615
 inline constexpr guest::Function<0x00700558, u32(u32, u32)> call_00700558;
 inline constexpr guest::Function<0x00701150, u32(u32, u32, u32, u32)> call_00701150;
 
-void f_001f581c(gptr<AcObjectShow> arg0, u32 r1_unused, u32 r2) {
+void f_001f581c(gptr<AcObjectShow> ac_object_show, u32 r1_unused, u32 r2) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 r1_1 = arg0->byte_200;
-    u32 r0_1 = arg0->word_204;
+    u32 r1_1 = ac_object_show->byte_200;
+    u32 r0_1 = ac_object_show->word_204;
     if (r1_1 != 0) {
         u32 r0_2 = call_00701150(r0_1, r1_1, r2, guest::cpu()->r[3]);
-        call_00700558(r0_2, arg0->word_204);
+        call_00700558(r0_2, ac_object_show->word_204);
     } else {
         u32 r0_3 = call_00615e8c(r0_1, r1_1, r2, guest::cpu()->r[3]);
-        call_00615b2c(r0_3, arg0->word_204);
+        call_00615b2c(r0_3, ac_object_show->word_204);
     }
-    u32 r0_5 = call_002d58b0(arg0.addr() + 0x260u, arg0.addr() + 0x14u, uxth(*gptr<u8>(arg0.addr() + 0x200u) == 0 ? 0x53u : arg0->word_204));  // (from the original)
+    u32 r0_5 = call_002d58b0(ac_object_show.addr() + 0x260u, ac_object_show.addr() + 0x14u, uxth(*gptr<u8>(ac_object_show.addr() + 0x200u) == 0 ? 0x53u : ac_object_show->word_204));  // (from the original)
     u32 r0_6 = query_current_main_object(r0_5);
-    u32 r1_6 = r0_6 == arg0->byte_255;
-    change_mode_002d595c(arg0.addr() + 0x260u, r1_6);  // (from the original)
-    copy_item_002fc8e8(arg0.addr() + 0x20cu, arg0.addr() + 0x208u);  // (from the original)
+    u32 r1_6 = r0_6 == ac_object_show->byte_255;
+    change_mode_002d595c(ac_object_show.addr() + 0x260u, r1_6);  // (from the original)
+    copy_item_002fc8e8(ac_object_show.addr() + 0x20cu, ac_object_show.addr() + 0x208u);  // (from the original)
     u32 r1_8 = 0x350u;  // (from the original)
-    *gptr<u16>(r1_8 + arg0.addr()) = 0;
-    if (arg0->byte_248 == 4u) {
-        u32 r0_10 = Item__category(arg0.addr() + 0x20cu, r1_8);  // (from the original)
+    *gptr<u16>(r1_8 + ac_object_show.addr()) = 0;
+    if (ac_object_show->byte_248 == 4u) {
+        u32 category = Item__category(ac_object_show.addr() + 0x20cu, r1_8);  // (from the original)
         r1_8 = guest::cpu()->r[1];
-        if (r0_10 == 0x27u || r0_10 == 0x28u) {  // (from the original)
+        if (category == 0x27u || category == 0x28u) {  // (from the original)
             frame.release();
-            call_002e8cc8(arg0.addr() + 0x260u, 0x1000613u, guest::cpu()->r[2], guest::cpu()->r[3]);
+            call_002e8cc8(ac_object_show.addr() + 0x260u, 0x1000613u, guest::cpu()->r[2]);
             return;  // (from the original)
         }
     }
@@ -206,9 +206,9 @@ struct __attribute__((packed)) Frame_001f6cc8 {
 GUEST_OFFSET(Frame_001f6cc8, word_0, 0x0);
 GUEST_SIZE(Frame_001f6cc8, 0x18);
 
-void f_001f6cc8(gptr<AcObjectShow> arg0, u32 r1, u32 r2_unused, u32 r3) {
+void f_001f6cc8(gptr<AcObjectShow> ac_object_show, u32 r1, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_001f6cc8> frame;  // the original's stack frame
-    u32 r0 = arg0.addr();
+    u32 r0 = ac_object_show.addr();
     u32 r1_2 = 0;
     u32 r0_5 = 0;
     u32 r0_6 = 0;
@@ -220,13 +220,13 @@ void f_001f6cc8(gptr<AcObjectShow> arg0, u32 r1, u32 r2_unused, u32 r3) {
     frame->word_0 = r3;
     u32 r4 = r0;
     u32 r5 = r1;
-    u32 r0_2 = Item__is_empty(r0 + 0x20cu, r1, guest::cpu()->r[2], r3);  // (from the original)
+    u32 is_empty = Item__is_empty(r0 + 0x20cu, r1, guest::cpu()->r[2], r3);  // (from the original)
     r3 = guest::cpu()->r[3];
-    if (r0_2 == 0) {
-        u32 r0_3 = arg0->byte_24a;
+    if (is_empty == 0) {
+        u32 r0_3 = ac_object_show->byte_24a;
         u32 r7 = 0x7ffeu;  // (from the original)
         u32 r6 = 0u;
-        u32 r0_4 = arg0->byte_249;
+        u32 r0_4 = ac_object_show->byte_249;
         if (r0_3 == 1u || r0_3 == 2u) {
             goto L_1f6d6c;
         }
@@ -296,8 +296,8 @@ inline guest::global<u32, 0x00986a54> global_00986a54;
 inline guest::global<u8, 0x00986a58> global_00986a58;
 inline guest::global<u32, 0x00986a5c> global_00986a5c;
 
-void AutoCampBook__AutoCampBook(gptr<AutoCampBook> arg0) {
-    arg0->word_0 = vtable_AutoCampBook;
+void AutoCampBook__AutoCampBook(gptr<AutoCampBook> auto_camp_book) {
+    auto_camp_book->word_0 = vtable_AutoCampBook;
     u32 r12_1 = ~0u;
     *global_00986a10 = 0;
     *global_00986a14 = 0;
@@ -1198,8 +1198,8 @@ GUEST_OFFSET(Local_001fa744_ea_2, word_0, 0x0);
 GUEST_OFFSET(Local_001fa744_ea_2, word_4, 0x4);
 GUEST_OFFSET(Local_001fa744_ea_2, word_8, 0x8);
 
-inline constexpr u32 global_0095362c_address = 0x0095362cu;
-inline guest::global<u32, 0x0095362c> global_0095362c;
+inline constexpr u32 net_session_address = 0x0095362cu;
+inline guest::global<u32, 0x0095362c> net_session;
 inline constexpr guest::Function<0x00108421, u32(u32, u32)> record_1ac_address;
 inline constexpr guest::Function<0x002fae84, u32(u32)> get_data_base;
 inline constexpr guest::Function<0x00300904, u32(u32, u32, u32, u32)> main_object_value;
@@ -1233,15 +1233,15 @@ void f_001fa744(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r0_1 = main_object_value(r0, r1, r2, r3);
     if (r0_1 != 0) {
         if (r1 != 0) {
-            u32 r0_2 = get_data_base(r0_1);
-            u32 r0_4 = record_1ac_address(r0_2 + 0x6e238u, frame->word_8);  // (from the original)
-            u32 r0_6 = NetSession__station(*global_0095362c);
+            u32 data_base = get_data_base(r0_1);
+            u32 r0_4 = record_1ac_address(data_base + 0x6e238u, frame->word_8);  // (from the original)
+            u32 r0_6 = NetSession__station(*net_session);
             r3_4 = 0x1acu;  // (from the original)
             r2_4 = r0_4;
             r1_4 = r0_6 == 0 ? 4u : 0u;
             r0_7 = 0x81u;  // (from the original)
         } else {
-            u32 r0_9 = NetSession__station(*global_0095362c);
+            u32 r0_9 = NetSession__station(*net_session);
             r2_4 = frame.at(8).addr();
             if (r0_9 == 0) {
                 r3_4 = 4u;
@@ -1347,32 +1347,32 @@ inline constexpr u32 vtable_ComButton1Lyt = 0x008ee218u;
 inline constexpr u32 vtable_Control1Button = 0x008ef22cu;
 inline constexpr u32 vtable_Control1Button_at_e4 = 0x008ef270u;
 inline constexpr u32 vtable_ComButtonLytBase = 0x008f18f4u;
-inline constexpr guest::Function<0x002b6ef8, u32(u32)> ButtonActionNode__virtual_0;
+inline constexpr guest::Function<0x002b6ef8, u32(u32)> ButtonActionNode__destructor;
 inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> destroy_array_elements;
 inline constexpr guest::Function<0x002f770c, u32(u32)> ControlButtonBase__virtual_0_002f770c;
 inline constexpr guest::Function<0x002f7710, u32(u32)> destroy_button_action_control;
-inline constexpr guest::Function<0x0053721c, u32(u32, u32, u32, u32)> item__ResLoader__virtual_0;
-inline constexpr guest::Function<0x00567ef0, u32(u32, u32)> ssys__ma__lyt__ArcResAccReader__virtual_0;
+inline constexpr guest::Function<0x0053721c, u32(u32, u32, u32, u32)> item__ResLoader__destructor;
+inline constexpr guest::Function<0x00567ef0, u32(u32, u32)> ssys__ma__lyt__ArcResAccReader__destructor;
 inline constexpr guest::Function<0x0056988c, u32(u32)> destroy_animation;
-inline constexpr guest::Function<0x005bf744, u32(u32)> Layout__virtual_0;
+inline constexpr guest::Function<0x005bf744, u32(u32)> Layout__destructor;
 inline constexpr guest::Function<0x005e3194, u32(u32)> script__RenderMain__RenderMain_005e3194;
 inline constexpr guest::Function<0x006aa8a0, u32(u32)> destroy_array_owner_c;
-inline constexpr guest::Function<0x006aaa30, u32(u32, u32)> MenuBase__virtual_0;
+inline constexpr guest::Function<0x006aaa30, u32(u32, u32)> MenuBase__destructor;
 
-u32 BsMenuLetter__virtual_0_001fc5a8(gptr<BsMenuLetter> arg0, u32 r1_unused, u32 r2_unused, u32 r3) {
+u32 BsMenuLetter__virtual_0_001fc5a8(gptr<BsMenuLetter> bs_menu_letter, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    arg0->word_0 = vtable_BsMenuLetter;
-    arg0->word_28 = vtable_BsMenuLetter_at_28;
-    u32 r0_1 = arg0.addr() + 0x1bbcu;  // (from the original)
-    item__ResLoader__virtual_0(r0_1, vtable_BsMenuLetter, vtable_BsMenuLetter_at_28, r3);
-    arg0->word_11f4 = vtable_ComButton1Lyt;
-    arg0->word_1670 = vtable_Control1Button_at_e4;
-    arg0->word_158c = vtable_Control1Button;
+    bs_menu_letter->word_0 = vtable_BsMenuLetter;
+    bs_menu_letter->word_28 = vtable_BsMenuLetter_at_28;
+    u32 r0_1 = bs_menu_letter.addr() + 0x1bbcu;  // (from the original)
+    item__ResLoader__destructor(r0_1, vtable_BsMenuLetter, vtable_BsMenuLetter_at_28, r3);
+    bs_menu_letter->word_11f4 = vtable_ComButton1Lyt;
+    bs_menu_letter->word_1670 = vtable_Control1Button_at_e4;
+    bs_menu_letter->word_158c = vtable_Control1Button;
     destroy_array_elements(r0_1 - 0x518u, 0x2e0b3cu, 0x518u, 1u);  // (from the original)
     ControlButtonBase__virtual_0_002f770c(r0_1 - 0x630u);  // (from the original)
-    arg0->word_11f4 = vtable_ComButtonLytBase;
-    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_1 - 0x878u, vtable_ComButtonLytBase);  // (from the original)
-    u32 r0_6 = Layout__virtual_0(r0_4 - 0x14cu);  // (from the original)
+    bs_menu_letter->word_11f4 = vtable_ComButtonLytBase;
+    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__destructor(r0_1 - 0x878u, vtable_ComButtonLytBase);  // (from the original)
+    u32 r0_6 = Layout__destructor(r0_4 - 0x14cu);  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_6 - 0xc8u);  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_6 - 0x18cu);  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_6 - 0x250u);  // (from the original)
@@ -1381,7 +1381,7 @@ u32 BsMenuLetter__virtual_0_001fc5a8(gptr<BsMenuLetter> arg0, u32 r1_unused, u32
     script__RenderMain__RenderMain_005e3194(r0_6 - 0x49cu);  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_6 - 0x560u);  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_6 - 0x624u);  // (from the original)
-    ButtonActionNode__virtual_0(r0_6 - 0x704u);  // (from the original)
+    ButtonActionNode__destructor(r0_6 - 0x704u);  // (from the original)
     destroy_button_action_control(r0_6 - 0x7e8u);  // (from the original)
     destroy_array_owner_c(r0_6 - 0xbbcu);  // (from the original)
     destroy_animation(r0_6 - 0xc04u);  // (from the original)
@@ -1390,11 +1390,11 @@ u32 BsMenuLetter__virtual_0_001fc5a8(gptr<BsMenuLetter> arg0, u32 r1_unused, u32
     destroy_animation(r0_6 - 0xc7cu);  // (from the original)
     destroy_animation(r0_6 - 0xca4u);  // (from the original)
     destroy_animation(r0_6 - 0xcccu);  // (from the original)
-    u32 r0_25 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_6 - 0xf14u, guest::cpu()->r[1]);  // (from the original)
-    u32 r0_27 = Layout__virtual_0(r0_25 - 0x14cu);  // (from the original)
-    u32 r0_29 = Layout__virtual_0(r0_27 - 0x14cu);  // (from the original)
+    u32 r0_25 = ssys__ma__lyt__ArcResAccReader__destructor(r0_6 - 0xf14u, guest::cpu()->r[1]);  // (from the original)
+    u32 r0_27 = Layout__destructor(r0_25 - 0x14cu);  // (from the original)
+    u32 r0_29 = Layout__destructor(r0_27 - 0x14cu);  // (from the original)
     frame.release();
-    return MenuBase__virtual_0(r0_29 - 0x4cu, guest::cpu()->r[1]);  // (from the original)
+    return MenuBase__destructor(r0_29 - 0x4cu, guest::cpu()->r[1]);  // (from the original)
 }
 
 }  // namespace d_001fc5a8
@@ -1411,26 +1411,26 @@ inline constexpr u32 vtable_Control2Button_at_e4 = 0x008ef2c8u;
 inline constexpr u32 vtable_ComButtonLytBase = 0x008f18f4u;
 inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> destroy_array_elements;
 inline constexpr guest::Function<0x002f770c, u32(u32)> ControlButtonBase__virtual_0_002f770c;
-inline constexpr guest::Function<0x0031c92c, u32(u32)> ButtonActionCstmNode__virtual_0;
-inline constexpr guest::Function<0x00567ef0, u32(u32, u32)> ssys__ma__lyt__ArcResAccReader__virtual_0;
+inline constexpr guest::Function<0x0031c92c, u32(u32)> ButtonActionCstmNode__destructor;
+inline constexpr guest::Function<0x00567ef0, u32(u32, u32)> ssys__ma__lyt__ArcResAccReader__destructor;
 inline constexpr guest::Function<0x0056988c, u32(u32)> destroy_animation;
-inline constexpr guest::Function<0x005bf744, u32(u32)> Layout__virtual_0;
-inline constexpr guest::Function<0x006aaa30, u32(u32, u32)> MenuBase__virtual_0;
+inline constexpr guest::Function<0x005bf744, u32(u32)> Layout__destructor;
+inline constexpr guest::Function<0x006aaa30, u32(u32, u32)> MenuBase__destructor;
 
-u32 BsMenuMelody__virtual_0_001fdc84(gptr<BsMenuMelody> arg0) {
+u32 BsMenuMelody__virtual_0_001fdc84(gptr<BsMenuMelody> bs_menu_melody) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    arg0->word_0 = vtable_BsMenuMelody;
-    arg0->word_28 = vtable_BsMenuMelody_at_28;
-    destroy_array_elements(arg0.addr() + 0x5400u, 0x81dfb4u, 0x20u, 0x10u);  // (from the original)
-    arg0->word_4510 = vtable_ComButton2Lyt;
-    arg0->word_498c = vtable_Control2Button_at_e4;
-    arg0->word_48a8 = vtable_Control2Button;
-    destroy_array_elements(arg0.addr() + 0x49c0u, 0x2e0b3cu, 0x518u, 2u);  // (from the original)
-    ControlButtonBase__virtual_0_002f770c(arg0.addr() + 0x48a8u);  // (from the original)
-    arg0->word_4510 = vtable_ComButtonLytBase;
-    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__virtual_0(arg0.addr() + 0x4660u, vtable_ComButtonLytBase);  // (from the original)
-    u32 r0_6 = Layout__virtual_0(r0_4 - 0x14cu);  // (from the original)
-    ButtonActionCstmNode__virtual_0(r0_6 - 0xe4u);  // (from the original)
+    bs_menu_melody->word_0 = vtable_BsMenuMelody;
+    bs_menu_melody->word_28 = vtable_BsMenuMelody_at_28;
+    destroy_array_elements(bs_menu_melody.addr() + 0x5400u, 0x81dfb4u, 0x20u, 0x10u);  // (from the original)
+    bs_menu_melody->word_4510 = vtable_ComButton2Lyt;
+    bs_menu_melody->word_498c = vtable_Control2Button_at_e4;
+    bs_menu_melody->word_48a8 = vtable_Control2Button;
+    destroy_array_elements(bs_menu_melody.addr() + 0x49c0u, 0x2e0b3cu, 0x518u, 2u);  // (from the original)
+    ControlButtonBase__virtual_0_002f770c(bs_menu_melody.addr() + 0x48a8u);  // (from the original)
+    bs_menu_melody->word_4510 = vtable_ComButtonLytBase;
+    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__destructor(bs_menu_melody.addr() + 0x4660u, vtable_ComButtonLytBase);  // (from the original)
+    u32 r0_6 = Layout__destructor(r0_4 - 0x14cu);  // (from the original)
+    ButtonActionCstmNode__destructor(r0_6 - 0xe4u);  // (from the original)
     destroy_animation(r0_6 - 0x10cu);  // (from the original)
     destroy_animation(r0_6 - 0x134u);  // (from the original)
     destroy_animation(r0_6 - 0x15cu);  // (from the original)
@@ -1440,11 +1440,11 @@ u32 BsMenuMelody__virtual_0_001fdc84(gptr<BsMenuMelody> arg0) {
     destroy_animation(r0_6 - 0x1fcu);  // (from the original)
     destroy_animation(r0_6 - 0x224u);  // (from the original)
     destroy_array_elements(r0_6 - 0x3fe8u, 0x1ad16cu, 0x3dcu, 0x10u);  // (from the original)
-    u32 r0_18 = Layout__virtual_0(r0_6 - 0x4134u);  // (from the original)
-    u32 r0_20 = Layout__virtual_0(r0_18 - 0x14cu);  // (from the original)
-    u32 r0_22 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_20 - 0x248u, guest::cpu()->r[1]);  // (from the original)
+    u32 r0_18 = Layout__destructor(r0_6 - 0x4134u);  // (from the original)
+    u32 r0_20 = Layout__destructor(r0_18 - 0x14cu);  // (from the original)
+    u32 r0_22 = ssys__ma__lyt__ArcResAccReader__destructor(r0_20 - 0x248u, guest::cpu()->r[1]);  // (from the original)
     frame.release();
-    return MenuBase__virtual_0(r0_22 - 0x4cu, guest::cpu()->r[1]);  // (from the original)
+    return MenuBase__destructor(r0_22 - 0x4cu, guest::cpu()->r[1]);  // (from the original)
 }
 
 }  // namespace d_001fdc84
@@ -1561,21 +1561,21 @@ inline constexpr guest::Function<0x002bc928, u32(u32, u32, u32, u32)> SoPaCaWind
 inline constexpr guest::Function<0x00301d0d, u32(u32, u32, u32, u32)> for_each_element;
 inline constexpr guest::Function<0x005e3128, u32(u32, u32)> script__RenderTrace__RenderTrace;
 
-u32 state__Mode_CensusWindow___Mode(gptr<CensusWindow> arg0, float S0) {
-    arg0->word_4 = 0;
-    arg0->byte_8 = 0;
+u32 state__Mode_CensusWindow___Mode(gptr<CensusWindow> census_window, float S0) {
+    census_window->word_4 = 0;
+    census_window->byte_8 = 0;
     u32 r2_1 = *global_00879dbc;
-    arg0->word_c = *global_00879db8;
-    arg0->word_10 = r2_1;
-    arg0->word_14 = 0;
-    arg0->word_0 = vtable_state__Mode_CensusWindow_;
-    arg0->byte_18 = 0;
-    arg0->word_1c = 0;
-    arg0->word_20 = 0;
-    u32 r0_1 = (arg0.addr() + 0x20u) + 4u;  // (from the original)
-    SoPaCaWindowBase__SoPaCaWindowBase(r0_1, vtable_state__Mode_CensusWindow_, r2_1, arg0.addr() + 0xcu);  // (from the original)
-    arg0->word_0 = vtable_CensusWindow;
-    arg0->word_24 = vtable_CensusWindow_at_24;
+    census_window->word_c = *global_00879db8;
+    census_window->word_10 = r2_1;
+    census_window->word_14 = 0;
+    census_window->word_0 = vtable_state__Mode_CensusWindow_;
+    census_window->byte_18 = 0;
+    census_window->word_1c = 0;
+    census_window->word_20 = 0;
+    u32 r0_1 = (census_window.addr() + 0x20u) + 4u;  // (from the original)
+    SoPaCaWindowBase__SoPaCaWindowBase(r0_1, vtable_state__Mode_CensusWindow_, r2_1, census_window.addr() + 0xcu);  // (from the original)
+    census_window->word_0 = vtable_CensusWindow;
+    census_window->word_24 = vtable_CensusWindow_at_24;
     u32 r0_3 = ssys__ma__lyt__ArcResAcc__ArcResAcc_001207d8(r0_1 + 8u, vtable_CensusWindow, vtable_CensusWindow_at_24);
     u32 r0_5 = InOutWindow__InOutWindow_001cb884(r0_3 + 0x248u);  // (from the original)
     *gptr<u32>(r0_5) = vtable_CensusBG;
@@ -1614,20 +1614,20 @@ namespace d_001ff124 {
 inline constexpr u32 vtable_CensusWindow = 0x008ed2e8u;
 inline constexpr u32 vtable_CensusWindow_at_24 = 0x008ed31cu;
 inline constexpr u32 vtable_CensusBG = 0x008f8b10u;
-inline constexpr guest::Function<0x001cb8fc, u32(u32)> InOutWindow__virtual_0;
+inline constexpr guest::Function<0x001cb8fc, u32(u32)> InOutWindow__destructor;
 inline constexpr guest::Function<0x002b7c94, u32(u32, u32)> destroy_animation_pair;
-inline constexpr guest::Function<0x002cbad8, u32(u32, u32, u32, u32)> CensusContentList__virtual_0;
-inline constexpr guest::Function<0x00567ef0, u32(u32)> ssys__ma__lyt__ArcResAccReader__virtual_0;
+inline constexpr guest::Function<0x002cbad8, u32(u32, u32, u32, u32)> CensusContentList__destructor;
+inline constexpr guest::Function<0x00567ef0, u32(u32)> ssys__ma__lyt__ArcResAccReader__destructor;
 
-u32 CensusWindow__virtual_0_001ff124(gptr<CensusWindow> arg0) {
-    arg0->word_0 = vtable_CensusWindow;
-    arg0->word_24 = vtable_CensusWindow_at_24;
-    u32 r0_2 = CensusContentList__virtual_0(arg0.addr() + 0x480u, vtable_CensusWindow, vtable_CensusWindow_at_24, guest::cpu()->r[3]);  // (from the original)
+u32 CensusWindow__virtual_0_001ff124(gptr<CensusWindow> census_window) {
+    census_window->word_0 = vtable_CensusWindow;
+    census_window->word_24 = vtable_CensusWindow_at_24;
+    u32 r0_2 = CensusContentList__destructor(census_window.addr() + 0x480u, vtable_CensusWindow, vtable_CensusWindow_at_24, guest::cpu()->r[3]);  // (from the original)
     *gptr<u32>(r0_2 - 0x20cu) = vtable_CensusBG;  // (from the original)
     u32 r0_3 = r0_2 - 0x5cu;  // (from the original)
     destroy_animation_pair(r0_3, vtable_CensusBG);
-    u32 r0_5 = InOutWindow__virtual_0(r0_3 - 0x1b0u);  // (from the original)
-    u32 r0_7 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_5 - 0x248u);  // (from the original)
+    u32 r0_5 = InOutWindow__destructor(r0_3 - 0x1b0u);  // (from the original)
+    u32 r0_7 = ssys__ma__lyt__ArcResAccReader__destructor(r0_5 - 0x248u);  // (from the original)
     return r0_7 - 0x2cu;  // (from the original)
 }
 
@@ -1693,27 +1693,27 @@ inline constexpr u32 vtable_DragIconNode = 0x008ed374u;
 inline constexpr guest::Function<0x00125aec, u32(u32)> construct_layout_animation;
 inline constexpr guest::Function<0x002b6de0, u32(u32, u32, u32, u32)> construct_button_node;
 
-u32 DragIconNode__DragIconNode(gptr<DragIconNode> arg0, u32 r1, u32 r2, u32 r3, float S0) {
-    construct_button_node(arg0.addr(), r1, r2, r3);
-    arg0->word_0 = vtable_DragIconNode;
-    construct_layout_animation(arg0.addr() + 0xe0u);  // (from the original)
-    arg0->word_108 = 0;
-    arg0->word_124 = 0;
-    arg0->half_128 = 0;
-    arg0->half_12a = 0;
-    arg0->byte_12c = 0;
+u32 DragIconNode__DragIconNode(gptr<DragIconNode> drag_icon_node, u32 r1, u32 r2, u32 r3, float S0) {
+    construct_button_node(drag_icon_node.addr(), r1, r2, r3);
+    drag_icon_node->word_0 = vtable_DragIconNode;
+    construct_layout_animation(drag_icon_node.addr() + 0xe0u);  // (from the original)
+    drag_icon_node->word_108 = 0;
+    drag_icon_node->word_124 = 0;
+    drag_icon_node->half_128 = 0;
+    drag_icon_node->half_12a = 0;
+    drag_icon_node->byte_12c = 0;
     float S0_1 = 0.0f;
-    arg0->byte_12d = 1;
-    arg0->float_10c = S0_1;
-    arg0->float_110 = S0_1;
-    arg0->float_114 = S0_1;
-    arg0->float_118 = S0_1;
-    arg0->float_11c = S0_1;
-    arg0->float_120 = S0_1;
-    arg0->word_cc = 0x100038e;  // (from the original)
-    arg0->byte_da = 1;
+    drag_icon_node->byte_12d = 1;
+    drag_icon_node->float_10c = S0_1;
+    drag_icon_node->float_110 = S0_1;
+    drag_icon_node->float_114 = S0_1;
+    drag_icon_node->float_118 = S0_1;
+    drag_icon_node->float_11c = S0_1;
+    drag_icon_node->float_120 = S0_1;
+    drag_icon_node->word_cc = 0x100038e;  // (from the original)
+    drag_icon_node->byte_da = 1;
     guest::cpu()->s[0] = S0_1;
-    return arg0.addr();
+    return drag_icon_node.addr();
 }
 
 }  // namespace d_001ff92c
@@ -1723,18 +1723,18 @@ GUEST_EXPORT_FRAMED(0x001ff92c, d_001ff92c::DragIconNode__DragIconNode, 0x4010);
 namespace d_001ff9d8 {
 
 inline constexpr u32 vtable_DragIconNode = 0x008ed374u;
-inline constexpr guest::Function<0x002b6ef8, u32(u32, u32, u32, u32)> ButtonActionNode__virtual_0;
+inline constexpr guest::Function<0x002b6ef8, u32(u32, u32, u32, u32)> ButtonActionNode__destructor;
 inline constexpr guest::Function<0x00569774, u32(u32, u32, u32, u32)> copy_animation_target;
 inline constexpr guest::Function<0x0056988c, u32(u32)> destroy_animation;
 
-u32 DragIconNode__virtual_0(gptr<DragIconNode> arg0) {
+u32 DragIconNode__destructor(gptr<DragIconNode> drag_icon_node) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    arg0->word_0 = vtable_DragIconNode;
-    copy_animation_target(arg0.addr() + 0xe0u, 0u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    destroy_animation(arg0.addr() + 0xe0u);  // (from the original)
+    drag_icon_node->word_0 = vtable_DragIconNode;
+    copy_animation_target(drag_icon_node.addr() + 0xe0u, 0u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    destroy_animation(drag_icon_node.addr() + 0xe0u);  // (from the original)
     frame.release();
-    return ButtonActionNode__virtual_0(arg0.addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    return ButtonActionNode__destructor(drag_icon_node.addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_001ff9d8
-GUEST_EXPORT(0x001ff9d8, d_001ff9d8::DragIconNode__virtual_0);
+GUEST_EXPORT(0x001ff9d8, d_001ff9d8::DragIconNode__destructor);

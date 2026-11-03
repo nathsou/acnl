@@ -368,8 +368,8 @@ void f_005a0d3c(gptr<Object_005a0d3c_0> arg0, gptr<Object_005a0d3c_1> arg1, u32 
     arg0->byte_28 = 0xf;  // (from the original)
     u32 r6 = r3;
     *gptr<u8>(r2_1 + 0x20u) = 0x5a;  // (from the original)
-    u32 r0_2 = random_below(r3 == 0 ? arg0->word_1c : arg0->word_18, 0x5au, r2_1, r3);  // (from the original)
-    u32 r8 = r0_2;
+    u32 random = random_below(r3 == 0 ? arg0->word_1c : arg0->word_18, 0x5au, r2_1, r3);  // (from the original)
+    u32 r8 = random;
     u32 r4 = arg1->word_4;
     u32 r7 = 0u;
     u32 r0_4 = slot_object_words_47c_480(frame.at(0).addr(), frame.at(4).addr(), 4u, 1u);
@@ -569,8 +569,8 @@ void f_005a1174(gptr<Object_005a1174_0> arg0, u32 r1, u32 r2, u32 r3) {
             u32 r0_13 = call_0076e6cc(*global_0095c6d0);
             r1_1 = guest::cpu()->r[1];
             if (r0_13 != 1u) {
-                u32 r0_15 = Item__category(arg0.addr() + 8u, r1_1);
-                if (r0_15 != 0x36u) {  // (from the original)
+                u32 category = Item__category(arg0.addr() + 8u, r1_1);
+                if (category != 0x36u) {  // (from the original)
                     u32 r0_17 = Item__has_number(arg0.addr() + 8u, 0x3413u);  // (from the original)
                     r1_1 = guest::cpu()->r[1];
                     if (r0_17 == 0 || (u32(arg0->byte_c) & 2u) != 0) {
@@ -601,7 +601,7 @@ inline constexpr guest::Function<0x002fc8e8, u32(u32, u32)> copy_item_002fc8e8;
 inline constexpr guest::Function<0x002fcbb0, u32(u32, u32)> construct_item;
 inline constexpr guest::Function<0x002fccc4, u32(u32)> item_number_is_indexed;
 inline constexpr guest::Function<0x0059a2d8, u32(u32, u32, u32, u32)> fgobj__ObjectBury__ObjectBury;
-inline constexpr guest::Function<0x0059e65c, u32(u32, u32, u32)> call_0059e65c;
+inline constexpr guest::Function<0x0059e65c, u32(u32, u32, u32)> clear_field_tile;
 
 struct __attribute__((packed)) Frame_005a1ba0 {
     u32 word_0;
@@ -633,7 +633,7 @@ u32 f_005a1ba0(u32 r0, u32 r1, u32 r2, u32 r3) {
         call_00168868(r0_8, r1_4, u32(*gptr<u8>(r0 + 0xcu)) & 1u, r3_4);  // (from the original)
         u32 r1_5 = *gptr<u8>(r0 + 0xfu);  // (from the original)
         u32 r0_9 = *gptr<u8>(r0 + 0xeu);  // (from the original)
-        call_0059e65c(r0_9, r1_5, 0u);
+        clear_field_tile(r0_9, r1_5, 0u);
         return 1u;
     }
     return 0u;
@@ -670,7 +670,7 @@ inline constexpr guest::Function<0x00250510, u32(u32)> SoundObj_1___SoundObj_002
 inline constexpr guest::Function<0x00250560, u32(u32)> SoundObj_1___SoundObj_00250560;
 inline constexpr guest::Function<0x0059a9ac, u32(u32, u32, u32, u32)> call_0059a9ac;
 inline constexpr guest::Function<0x0059b080, u32(u32, u32, u32, u32)> fgobj__ObjectThrow__ObjectThrow;
-inline constexpr guest::Function<0x0059e65c, u32(u32, u32, u32)> call_0059e65c;
+inline constexpr guest::Function<0x0059e65c, u32(u32, u32, u32)> clear_field_tile;
 
 struct __attribute__((packed)) Frame_005a213c {
     u32 word_0;
@@ -708,7 +708,7 @@ u32 f_005a213c(gptr<Object_005a213c_0> arg0, float S0, float S1) {
     call_00168868(r0_7, r1_5, u32(arg0->byte_c) & 1u, r3_7);
     u32 r1_6 = arg0->byte_f;
     u32 r0_8 = arg0->byte_e;
-    call_0059e65c(r0_8, r1_6, 0u);
+    clear_field_tile(r0_8, r1_6, 0u);
     float S1_9 = 10.0f;
     frame->float_6c = frame->float_6c + S1_9;
     frame->word_0 = frame.at(0x68).addr();  // (from the original)
@@ -976,14 +976,14 @@ GUEST_EXPORT(0x005a2804, d_005a2804::f_005a2804);
 // f_005a2864: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005a2864 {
 
-inline constexpr u32 global_00aaf14c_address = 0x00aaf14cu;
+inline constexpr u32 current_player_data_address = 0x00aaf14cu;
 inline guest::global<u16, 0x009526b0> global_009526b0;
 inline guest::global<u8, 0x009526b2> global_009526b2;
 inline guest::global<u8, 0x009526b3> global_009526b3;
 inline guest::global<u8, 0x009526b4> global_009526b4;
 inline guest::global<u8, 0x009526b5> global_009526b5;
 inline guest::global<u8, 0x009526b6> global_009526b6;
-inline guest::global<u32, 0x00aaf14c> global_00aaf14c;
+inline guest::global<u32, 0x00aaf14c> current_player_data;
 inline constexpr guest::Function<0x002fcb84, u32(u32, u32)> Item__has_number;
 inline constexpr guest::Function<0x00565c10, u32(u32)> random_up_to;
 inline constexpr guest::Function<0x0071a844, u32(u32)> slot_7_if_class_7;
@@ -1013,7 +1013,7 @@ u32 f_005a2864(u32 r0, u32 r1, float S0) {
         return r0_1;
     }
     *global_009526b5 = 1;
-    u32 r0_3 = *global_00aaf14c;
+    u32 r0_3 = *current_player_data;
     if (r0_3 != 0) {
         u32 r0_5 = slot_7_if_class_7(r0_3 + 0xau);  // (from the original)
         u32 r0_6 = Item__has_number(r0_5, 0x335au);  // (from the original)
@@ -1488,18 +1488,18 @@ namespace d_005a3ad0 {
 
 inline constexpr u32 vtable_imgdb__FileReader = 0x00907d70u;
 
-void imgdb__FileReader__FileReader_005a3ad0(gptr<imgdb__FileReader> arg0, u32 r1, u32 r2, u32 r3) {
-    arg0->word_8 = r1;
-    arg0->word_14 = r1;
-    arg0->word_c = r2;
-    arg0->byte_10 = u8(r3);
-    arg0->byte_28 = 1;
-    arg0->word_4 = 0;
-    arg0->word_0 = vtable_imgdb__FileReader;
-    arg0->word_18 = 0;
-    arg0->word_20 = 0;
-    arg0->word_24 = 0;
-    arg0->word_2c = 0;
+void imgdb__FileReader__FileReader_005a3ad0(gptr<imgdb__FileReader> file_reader, u32 r1, u32 r2, u32 r3) {
+    file_reader->word_8 = r1;
+    file_reader->word_14 = r1;
+    file_reader->word_c = r2;
+    file_reader->byte_10 = u8(r3);
+    file_reader->byte_28 = 1;
+    file_reader->word_4 = 0;
+    file_reader->word_0 = vtable_imgdb__FileReader;
+    file_reader->word_18 = 0;
+    file_reader->word_20 = 0;
+    file_reader->word_24 = 0;
+    file_reader->word_2c = 0;
 }
 
 }  // namespace d_005a3ad0
@@ -1510,18 +1510,18 @@ namespace d_005a3b10 {
 
 inline constexpr u32 vtable_imgdb__FileReader = 0x00907d70u;
 
-void imgdb__FileReader__FileReader_005a3b10(gptr<imgdb__FileReader> arg0, u32 r1, u32 r2, u32 r3) {
-    arg0->word_8 = 0;
-    arg0->word_14 = 0;
-    arg0->word_0 = vtable_imgdb__FileReader;
-    arg0->word_18 = 0;
-    arg0->word_20 = 0;
-    arg0->word_24 = 0;
-    arg0->byte_28 = 1;
-    arg0->word_4 = r1;
-    arg0->word_c = r2;
-    arg0->byte_10 = u8(r3);
-    arg0->word_2c = 0;
+void imgdb__FileReader__FileReader_005a3b10(gptr<imgdb__FileReader> file_reader, u32 r1, u32 r2, u32 r3) {
+    file_reader->word_8 = 0;
+    file_reader->word_14 = 0;
+    file_reader->word_0 = vtable_imgdb__FileReader;
+    file_reader->word_18 = 0;
+    file_reader->word_20 = 0;
+    file_reader->word_24 = 0;
+    file_reader->byte_28 = 1;
+    file_reader->word_4 = r1;
+    file_reader->word_c = r2;
+    file_reader->byte_10 = u8(r3);
+    file_reader->word_2c = 0;
 }
 
 }  // namespace d_005a3b10
@@ -1532,11 +1532,11 @@ namespace d_005a3edc {
 
 inline constexpr u32 vtable_imgdb__FileWriter = 0x00907d88u;
 
-void imgdb__FileWriter__FileWriter_005a3edc(gptr<imgdb__FileWriter> arg0, u32 r1) {
-    arg0->word_4 = r1;
-    arg0->byte_8 = 1;
-    arg0->word_0 = vtable_imgdb__FileWriter;
-    arg0->word_c = 0;
+void imgdb__FileWriter__FileWriter_005a3edc(gptr<imgdb__FileWriter> file_writer, u32 r1) {
+    file_writer->word_4 = r1;
+    file_writer->byte_8 = 1;
+    file_writer->word_0 = vtable_imgdb__FileWriter;
+    file_writer->word_c = 0;
 }
 
 }  // namespace d_005a3edc
@@ -2026,14 +2026,14 @@ inline constexpr guest::Function<0x005aa4bc, u32(u32, u32)> call_005aa4bc;
 inline constexpr guest::Function<0x005aa4d4, u32(u32, u32)> call_005aa4d4;
 inline constexpr guest::Function<0x005aa4ec, u32(u32, u32)> call_005aa4ec;
 inline constexpr guest::Function<0x005acde8, u32(u32)> call_005acde8;
-inline constexpr guest::Function<0x005adc90, u32(u32, u32, u32)> call_005adc90;
+inline constexpr guest::Function<0x005adc90, u32(u32)> call_005adc90;
 inline constexpr guest::Function<0x005ae46c, u32(u32, u32, u32)> call_005ae46c;
 inline constexpr guest::Function<0x0075412c, u32(u32, u32, u32)> call_0075412c;
 inline constexpr guest::Function<0x007546b4, u32(u32)> call_007546b4;
 inline constexpr guest::Function<0x00754978, u32(u32, u32, u32, u32)> field_nonzero_754978;
 inline constexpr guest::Function<0x00754a3c, u32(u32, u32, u32)> call_00754a3c;
 inline constexpr guest::Function<0x00754a9c, u32(u32)> entry_of_table_owner_00754a9c;
-inline constexpr guest::Function<0x007553d8, u32(u32)> call_007553d8;
+inline constexpr guest::Function<0x007553d8, u32(u32)> extension_index;
 inline constexpr guest::Function<0x00755484, u32(u32)> call_00755484;
 inline constexpr guest::Function<0x007554e4, u32(u32)> call_007554e4;
 
@@ -2087,7 +2087,7 @@ u32 f_005a53c4(gptr<Object_005a53c4_0> arg0, u32 r1, u32 r2) {
                 goto L_5a54dc;
             }
 L_5a5488:;
-            u32 r0_11 = call_005adc90(r1, guest::cpu()->r[1], r2);
+            u32 r0_11 = call_005adc90(r1);
             if (r0_11 == 0) {
                 r0_5 = r8_1;
             } else {
@@ -2114,7 +2114,7 @@ L_5a54dc:;
                     clear_word_pair_005aa450(frame.at(0).addr());
                     call_005aa4bc(frame.at(0).addr(), r9);
                     call_005aa4d4(frame.at(0).addr(), r4);
-                    u32 r0_19 = call_007553d8(r0_13);
+                    u32 r0_19 = extension_index(r0_13);
                     call_005aa460(frame.at(0).addr(), r0_19);
                     u32 r0_21 = call_00755484(r0_13);
                     frame->word_8 = r0_21;
@@ -2276,7 +2276,7 @@ inline constexpr guest::Function<0x007546b4, u32(u32)> call_007546b4;
 inline constexpr guest::Function<0x00754978, u32(u32, u32, u32, u32)> field_nonzero_754978;
 inline constexpr guest::Function<0x00754a3c, u32(u32, u32, u32, u32)> call_00754a3c;
 inline constexpr guest::Function<0x00754a9c, u32(u32)> entry_of_table_owner_00754a9c;
-inline constexpr guest::Function<0x007553d8, u32(u32)> call_007553d8;
+inline constexpr guest::Function<0x007553d8, u32(u32)> extension_index;
 inline constexpr guest::Function<0x00755484, u32(u32)> call_00755484;
 inline constexpr guest::Function<0x007554e4, u32(u32)> call_007554e4;
 
@@ -2361,7 +2361,7 @@ u32 f_005a593c(u32 r0, u32 r1, u32 r2, u32 r3) {
                     clear_word_pair_005aa450(frame.at(0).addr());
                     call_005aa4bc(frame.at(0).addr(), r7);
                     call_005aa4d4(frame.at(0).addr(), r4);
-                    u32 r0_17 = call_007553d8(r0_11);
+                    u32 r0_17 = extension_index(r0_11);
                     call_005aa460(frame.at(0).addr(), r0_17);
                     u32 r0_19 = call_00755484(r0_11);
                     frame->word_8 = r0_19;
@@ -2510,11 +2510,11 @@ GUEST_OFFSET(Local_005a66d4_r0_3, word_ac, 0xac);
 inline constexpr u32 vtable_imgdb__ImageDatabase = 0x00907de8u;
 inline constexpr guest::Function<0x00301d0d, u32(u32, u32, u32, u32)> for_each_element;
 
-void imgdb__ImageDatabase__ImageDatabase(gptr<imgdb__ImageDatabase> arg0) {
-    arg0->word_0 = vtable_imgdb__ImageDatabase;
-    arg0->byte_4 = 0;
-    arg0->byte_5 = 0;
-    u32 r0_2 = for_each_element(arg0.addr() + 8u, 0x5aa120u, 0x48u, 2u);  // (from the original)
+void imgdb__ImageDatabase__ImageDatabase(gptr<imgdb__ImageDatabase> image_database) {
+    image_database->word_0 = vtable_imgdb__ImageDatabase;
+    image_database->byte_4 = 0;
+    image_database->byte_5 = 0;
+    u32 r0_2 = for_each_element(image_database.addr() + 8u, 0x5aa120u, 0x48u, 2u);  // (from the original)
     gptr<Local_005a66d4_r0_3> r0_3 = gptr<Local_005a66d4_r0_3>(r0_2 - 8u);
     r0_3->word_9c = 0x20;  // (from the original)
     r0_3->word_a0 = 0;
@@ -2548,7 +2548,7 @@ inline constexpr guest::Function<0x005b05b4, u32(u32, u32)> call_005b05b4;
 inline constexpr guest::Function<0x00755290, u32(u32, u32)> call_00755290;
 inline constexpr guest::Function<0x007552e8, u32(u32, u32)> call_007552e8;
 inline constexpr guest::Function<0x00755384, u32(u32)> call_00755384;
-inline constexpr guest::Function<0x007553d8, u32(u32)> call_007553d8;
+inline constexpr guest::Function<0x007553d8, u32(u32)> extension_index;
 
 struct __attribute__((packed)) Frame_005a68e8 {
     u8 unknown_0[0x10];  // (not read or written by name)
@@ -2601,7 +2601,7 @@ L_5a69d8:;
     if (r0_15 != 0) {
         u32 r0_17 = call_00755384(r4_1 + 0x10u);  // (from the original)
         if (r0_17 != 0) {
-            u32 r0_19 = call_007553d8(r4_1 + 0x10u);  // (from the original)
+            u32 r0_19 = extension_index(r4_1 + 0x10u);  // (from the original)
             r1 = guest::cpu()->r[1];
             if (r0_19 != 0) {
                 return 1u;
@@ -2812,7 +2812,7 @@ inline constexpr guest::Function<0x005a8870, u32(u32, u32, u32, u32)> call_005a8
 inline constexpr guest::Function<0x005a89b0, u32(u32, u32, u32, u32)> call_005a89b0;
 inline constexpr guest::Function<0x00754a70, u32(u32)> entry_of_reference;
 inline constexpr guest::Function<0x00754a9c, u32(u32, u32, u32, u32)> entry_of_table_owner_00754a9c;
-inline constexpr guest::Function<0x007553d8, u32(u32)> call_007553d8;
+inline constexpr guest::Function<0x007553d8, u32(u32)> extension_index;
 inline constexpr guest::Function<0x007554e4, u32(u32)> call_007554e4;
 
 void f_005a7f70(u32 r0, u32 r1) {
@@ -2833,7 +2833,7 @@ void f_005a7f70(u32 r0, u32 r1) {
     u32 r0_4 = call_007554e4(r0_1);
     if (r0_4 != 0) {
         u32 r0_5 = entry_of_table_owner_00754a9c(r1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-        u32 r0_6 = call_007553d8(r0_5);
+        u32 r0_6 = extension_index(r0_5);
         if (r0_6 != 1u) {
             if (r0_6 != 2u) {
                 return;
@@ -2878,8 +2878,8 @@ GUEST_OFFSET(Local_005a802c_r0_3, word_4, 0x4);
 inline constexpr u32 global_009816b8_address = 0x009816b8u;
 inline constexpr guest::Function<0x005a4030, u32(u32)> call_005a4030;
 inline constexpr guest::Function<0x005a4418, u32(u32, u32, u32)> imgdb__JpegDecoder__JpegDecoder;
-inline constexpr guest::Function<0x005a455c, u32(u32, u32)> imgdb__JpegDecoder__virtual_0;
-inline constexpr guest::Function<0x005a9250, u32(u32)> imgdb__PhotoFileReader__virtual_0;
+inline constexpr guest::Function<0x005a455c, u32(u32, u32)> imgdb__JpegDecoder__destructor;
+inline constexpr guest::Function<0x005a9250, u32(u32)> imgdb__PhotoFileReader__destructor;
 inline constexpr guest::Function<0x005aa1b0, u32(u32)> return_constant_0x97e09c_;
 inline constexpr guest::Function<0x005aa914, u32(u32)> call_005aa914;
 inline constexpr guest::Function<0x005aa970, u32(u32, u32, u32, u32)> imgdb__PhotoFileReader__PhotoFileReader;
@@ -2887,11 +2887,11 @@ inline constexpr guest::Function<0x005ac5dc, u32(u32, u32, u32, u32)> call_005ac
 inline constexpr guest::Function<0x005adf88, u32(u32, u32)> call_005adf88;
 inline constexpr guest::Function<0x005b0b6c, u32(u32)> call_005b0b6c;
 inline constexpr guest::Function<0x005b0efc, u32(u32, u32, u32)> imgdb__MpDecoder__MpDecoder;
-inline constexpr guest::Function<0x005b106c, u32(u32, u32)> imgdb__MpDecoder__virtual_0;
+inline constexpr guest::Function<0x005b106c, u32(u32, u32)> imgdb__MpDecoder__destructor;
 inline constexpr guest::Function<0x00754a3c, u32(u32, u32, u32, u32)> call_00754a3c;
 inline constexpr guest::Function<0x00754a70, u32(u32)> entry_of_reference;
 inline constexpr guest::Function<0x00754a9c, u32(u32)> entry_of_table_owner_00754a9c;
-inline constexpr guest::Function<0x007553d8, u32(u32, u32, u32, u32)> call_007553d8;
+inline constexpr guest::Function<0x007553d8, u32(u32, u32, u32, u32)> extension_index;
 inline constexpr guest::Function<0x007554e4, u32(u32)> call_007554e4;
 
 struct __attribute__((packed)) Frame_005a802c {
@@ -2940,7 +2940,7 @@ void f_005a802c(u32 r0, u32 r1, u32 r2, u32 r3) {
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
         if (r0_5 != 0) {
-            u32 r0_7 = call_007553d8(frame->word_4, r1, r2, r3);
+            u32 r0_7 = extension_index(frame->word_4, r1, r2, r3);
             u32 r3_4 = frame->word_4;
             frame->word_0 = r8;
             u32 r0_9 = call_005ac5dc(frame.at(0xb8).addr(), r9, r6, r3_4);  // (from the original)
@@ -2987,13 +2987,13 @@ void f_005a802c(u32 r0, u32 r1, u32 r2, u32 r3) {
                     }
                 }
                 r0_22 = frame.at(0x48).addr();  // (from the original)
-                imgdb__JpegDecoder__virtual_0(r0_22, r1_13);
+                imgdb__JpegDecoder__destructor(r0_22, r1_13);
                 goto L_5a81e8;
 L_5a81e0:;
-                imgdb__MpDecoder__virtual_0(frame.at(0x48).addr(), r1_9);  // (from the original)
+                imgdb__MpDecoder__destructor(frame.at(0x48).addr(), r1_9);  // (from the original)
             }
 L_5a81e8:;
-            imgdb__PhotoFileReader__virtual_0(frame.at(8).addr());
+            imgdb__PhotoFileReader__destructor(frame.at(8).addr());
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
@@ -3021,7 +3021,7 @@ GUEST_OFFSET(Frame_005a8b24, word_0, 0x0);
 GUEST_OFFSET(Frame_005a8b24, word_4, 0x4);
 GUEST_SIZE(Frame_005a8b24, 0x8);
 
-void f_005a8b24(gptr<WordPair> arg0, u32 r1_unused, u32 r2, u32 r3) {
+void f_005a8b24(gptr<WordPair> word_pair, u32 r1_unused, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_005a8b24> frame;  // the original's stack frame
     call_005a8c34(frame.at(0).addr());
     u32 r1_1 = frame->word_4;
@@ -3034,17 +3034,17 @@ void f_005a8b24(gptr<WordPair> arg0, u32 r1_unused, u32 r2, u32 r3) {
         if (res_2 >> 0x1f != ((r1_2 ^ r3) & (r1_2 ^ res_2)) >> 0x1f) {  // (from the original)
             call_005a8b9c(frame.at(0).addr());
             u32 r1_3 = frame->word_4;
-            arg0->first = frame->word_0;
-            arg0->second = r1_3;
+            word_pair->first = frame->word_0;
+            word_pair->second = r1_3;
             return;
         }
-        arg0->first = r2;
-        arg0->second = r3;
+        word_pair->first = r2;
+        word_pair->second = r3;
     } else {
         call_005a8c34(r0_2);
         u32 r1_4 = frame->word_4;
-        arg0->first = frame->word_0;
-        arg0->second = r1_4;
+        word_pair->first = frame->word_0;
+        word_pair->second = r1_4;
     }
 }
 
@@ -3104,7 +3104,7 @@ GUEST_OFFSET(Frame_005a8da4, byte_28, 0x28);
 GUEST_OFFSET(Frame_005a8da4, byte_29, 0x29);
 GUEST_SIZE(Frame_005a8da4, 0x3c);
 
-void f_005a8da4(gptr<WordPair> arg0, u32 r1, u32 r2, u32 r3) {
+void f_005a8da4(gptr<WordPair> word_pair, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_005a8da4> frame;  // the original's stack frame
     call_00124130(frame.at(0x30).addr(), r1, r2, r3);  // (from the original)
     gptr<Local_005a8da4_ea_1> ea_1 = gptr<Local_005a8da4_ea_1>(frame.at(0x30).addr());  // (from the original)
@@ -3123,8 +3123,8 @@ void f_005a8da4(gptr<WordPair> arg0, u32 r1, u32 r2, u32 r3) {
     call_005a8cc0(frame.at(0x18).addr(), frame->word_20, r2_3, r3_2);  // (from the original)
     gptr<Local_005a8da4_ea_2> ea_2 = gptr<Local_005a8da4_ea_2>(frame.at(0x18).addr());  // (from the original)
     u32 r1_4 = ea_2->word_4;
-    arg0->first = ea_2->word_0;
-    arg0->second = r1_4;
+    word_pair->first = ea_2->word_0;
+    word_pair->second = r1_4;
 }
 
 }  // namespace d_005a8da4
@@ -3300,8 +3300,8 @@ GUEST_SIZE(Frame_005a8ea0, 0x24);
 
 u32 f_005a8ea0(u32 r0, gptr<Object_005a8ea0_1> arg1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_005a8ea0> frame;  // the original's stack frame
-    u32 r0_1 = string_length(arg1.addr(), arg1.addr(), r2, r3);
-    if (r0_1 == 0x13u && arg1->byte_4 == 0x3au && arg1->byte_7 == 0x3au && arg1->byte_a == 0x20u && arg1->byte_d == 0x3au && arg1->byte_10 == 0x3au) {  // (from the original)
+    u32 length = string_length(arg1.addr(), arg1.addr(), r2, r3);
+    if (length == 0x13u && arg1->byte_4 == 0x3au && arg1->byte_7 == 0x3au && arg1->byte_a == 0x20u && arg1->byte_d == 0x3au && arg1->byte_10 == 0x3au) {  // (from the original)
         u32 r0_3 = call_005af6dc(frame.at(0xc).addr(), arg1.addr(), 4u);  // (from the original)
         if (r0_3 == 0) {
             return r0_3;
@@ -3416,20 +3416,20 @@ GUEST_OFFSET(Local_005a9054_r4_1, float_4, 0x4);
 
 inline constexpr u32 vtable_imgdb__ImageFileWriter = 0x00907df8u;
 
-void imgdb__FileWriter__FileWriter_005a9054(gptr<imgdb__ImageFileWriter> arg0, u32 r1, u32 r2, u32 r3) {
+void imgdb__FileWriter__FileWriter_005a9054(gptr<imgdb__ImageFileWriter> image_file_writer, u32 r1, u32 r2, u32 r3) {
     gptr<Local_005a9054_r4_1> r4_1 = gptr<Local_005a9054_r4_1>(guest::cpu()->r[13] + 0xcu);  // (from the original)
     u32 r12_1 = *gptr<u32>(guest::cpu()->r[13] + 8u);
     float S0_1 = r4_1->float_0;
     float S1_1 = r4_1->float_4;
-    arg0->word_4 = r1;
-    arg0->byte_8 = 1;
-    arg0->word_c = 0;
-    arg0->word_0 = vtable_imgdb__ImageFileWriter;
-    arg0->byte_10 = u8(r2);
-    arg0->word_14 = r3;
-    arg0->byte_18 = u8(r12_1);
-    arg0->float_1c = S0_1;
-    arg0->float_20 = S1_1;
+    image_file_writer->word_4 = r1;
+    image_file_writer->byte_8 = 1;
+    image_file_writer->word_c = 0;
+    image_file_writer->word_0 = vtable_imgdb__ImageFileWriter;
+    image_file_writer->byte_10 = u8(r2);
+    image_file_writer->word_14 = r3;
+    image_file_writer->byte_18 = u8(r12_1);
+    image_file_writer->float_1c = S0_1;
+    image_file_writer->float_20 = S1_1;
     guest::cpu()->r[1] = vtable_imgdb__ImageFileWriter;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
@@ -3541,11 +3541,11 @@ namespace d_005aa410 {
 inline constexpr u32 vtable_imgdb__SdArchiveMounter = 0x00907e4cu;
 inline constexpr u32 vtable_imgdb__SdArchiveMounter_at_4 = 0x00907e6cu;
 
-void imgdb__SdArchiveMounter__SdArchiveMounter(gptr<imgdb__SdArchiveMounter> arg0) {
-    arg0->word_0 = vtable_imgdb__SdArchiveMounter;
-    arg0->word_4 = vtable_imgdb__SdArchiveMounter_at_4;
-    arg0->byte_8 = 0;
-    arg0->byte_9 = 0;
+void imgdb__SdArchiveMounter__SdArchiveMounter(gptr<imgdb__SdArchiveMounter> sd_archive_mounter) {
+    sd_archive_mounter->word_0 = vtable_imgdb__SdArchiveMounter;
+    sd_archive_mounter->word_4 = vtable_imgdb__SdArchiveMounter_at_4;
+    sd_archive_mounter->byte_8 = 0;
+    sd_archive_mounter->byte_9 = 0;
 }
 
 }  // namespace d_005aa410
@@ -3555,9 +3555,9 @@ GUEST_EXPORT(0x005aa410, d_005aa410::imgdb__SdArchiveMounter__SdArchiveMounter);
 namespace d_005aa460 {
 
 
-void f_005aa460(gptr<WordPair> arg0, u32 r1) {
-    u32 r1_1 = 0x1cu & r1 << 2 | arg0->second & ~0x1cu;  // (from the original)
-    arg0->second = r1_1;
+void f_005aa460(gptr<WordPair> word_pair, u32 r1) {
+    u32 r1_1 = 0x1cu & r1 << 2 | word_pair->second & ~0x1cu;  // (from the original)
+    word_pair->second = r1_1;
     guest::cpu()->r[1] = r1_1;
 }
 
@@ -3575,11 +3575,11 @@ GUEST_OFFSET(Object_005aa47c_1, half_0, 0x0);
 GUEST_OFFSET(Object_005aa47c_1, half_2, 0x2);
 
 
-void f_005aa47c(gptr<WordPair> arg0, gptr<Object_005aa47c_1> arg1) {
-    u32 r2_1 = arg0->second & ~0x7000u & ~0xfe0u | ~0x1f8000u & u32(arg1->half_0) << 5;  // (from the original)
-    arg0->second = r2_1;
+void f_005aa47c(gptr<WordPair> word_pair, gptr<Object_005aa47c_1> arg1) {
+    u32 r2_1 = word_pair->second & ~0x7000u & ~0xfe0u | ~0x1f8000u & u32(arg1->half_0) << 5;  // (from the original)
+    word_pair->second = r2_1;
     u32 r1_1 = ~0x60000000u & u32(arg1->half_2) << 0xf | r2_1 & ~0x1fc00000u & ~0x3f8000u;  // (from the original)
-    arg0->second = r1_1;
+    word_pair->second = r1_1;
     guest::cpu()->r[1] = r1_1;
 }
 
@@ -3590,8 +3590,8 @@ GUEST_EXPORT(0x005aa47c, d_005aa47c::f_005aa47c);
 namespace d_005aa4bc {
 
 
-void f_005aa4bc(gptr<WordPair> arg0, u32 r1) {
-    arg0->second = r1 & 3u | arg0->second & ~3u;
+void f_005aa4bc(gptr<WordPair> word_pair, u32 r1) {
+    word_pair->second = r1 & 3u | word_pair->second & ~3u;
 }
 
 }  // namespace d_005aa4bc
@@ -3601,9 +3601,9 @@ GUEST_EXPORT(0x005aa4bc, d_005aa4bc::f_005aa4bc);
 namespace d_005aa4d4 {
 
 
-void f_005aa4d4(gptr<WordPair> arg0, u32 r1) {
-    u32 r1_1 = arg0->first & 0x3ffffu | r1 << 0x12;  // (from the original)
-    arg0->first = r1_1;
+void f_005aa4d4(gptr<WordPair> word_pair, u32 r1) {
+    u32 r1_1 = word_pair->first & 0x3ffffu | r1 << 0x12;  // (from the original)
+    word_pair->first = r1_1;
     guest::cpu()->r[1] = r1_1;
 }
 
@@ -3614,8 +3614,8 @@ GUEST_EXPORT(0x005aa4d4, d_005aa4d4::f_005aa4d4);
 namespace d_005aa4ec {
 
 
-void f_005aa4ec(gptr<WordPair> arg0, u32 r1) {
-    arg0->first = r1 & 0x3ffffu | arg0->first >> 0x12 << 0x12;  // (from the original)
+void f_005aa4ec(gptr<WordPair> word_pair, u32 r1) {
+    word_pair->first = r1 & 0x3ffffu | word_pair->first >> 0x12 << 0x12;  // (from the original)
 }
 
 }  // namespace d_005aa4ec
@@ -4059,7 +4059,7 @@ GUEST_EXPORT_FRAMED(0x005aa884, d_005aa884::f_005aa884, 0x4070);  // pushes {r4,
 // f_005aa970: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005aa970 {
 
-struct __attribute__((packed)) Object_005aa970_0 {
+struct __attribute__((packed)) imgdb__PhotoFileReader {
     u32 word_0;
     u8 unknown_4[0x2c];  // (not used here)
     u32 word_30;
@@ -4068,11 +4068,11 @@ struct __attribute__((packed)) Object_005aa970_0 {
     u32 word_38;
     u8 byte_3c;
 };
-GUEST_OFFSET(Object_005aa970_0, word_0, 0x0);
-GUEST_OFFSET(Object_005aa970_0, word_30, 0x30);
-GUEST_OFFSET(Object_005aa970_0, byte_34, 0x34);
-GUEST_OFFSET(Object_005aa970_0, word_38, 0x38);
-GUEST_OFFSET(Object_005aa970_0, byte_3c, 0x3c);
+GUEST_OFFSET(imgdb__PhotoFileReader, word_0, 0x0);
+GUEST_OFFSET(imgdb__PhotoFileReader, word_30, 0x30);
+GUEST_OFFSET(imgdb__PhotoFileReader, byte_34, 0x34);
+GUEST_OFFSET(imgdb__PhotoFileReader, word_38, 0x38);
+GUEST_OFFSET(imgdb__PhotoFileReader, byte_3c, 0x3c);
 
 inline constexpr u32 vtable_imgdb__PhotoFileReader = 0x00907e1cu;
 inline constexpr u32 vtable_imgdb__PhotoImageInfoReader = 0x00907e9cu;
@@ -4081,15 +4081,15 @@ inline constexpr u32 global_009816ac_address = 0x009816acu;
 inline guest::global<u32, 0x009816ac> global_009816ac;
 inline constexpr guest::Function<0x005a3b10, u32(u32, u32, u32, u32)> imgdb__FileReader__FileReader_005a3b10;
 
-void imgdb__PhotoFileReader__PhotoFileReader(gptr<Object_005aa970_0> arg0, u32 r1, u32 r2, u32 r3) {
+void imgdb__PhotoFileReader__PhotoFileReader(gptr<imgdb__PhotoFileReader> photo_file_reader, u32 r1, u32 r2, u32 r3) {
     u32 r6_1 = *gptr<u32>(guest::cpu()->r[13] + 0x14u);  // (from the original)
-    imgdb__FileReader__FileReader_005a3b10(arg0.addr(), r1, *global_009816ac, 0u);
-    arg0->word_0 = vtable_imgdb__PhotoFileReader;
-    arg0->word_30 = *global_009816ac;
-    arg0->word_0 = vtable_imgdb__PhotoImageInfoReader;
-    arg0->byte_34 = u8(r2);
-    arg0->word_38 = r3;
-    arg0->byte_3c = u8(r6_1);
+    imgdb__FileReader__FileReader_005a3b10(photo_file_reader.addr(), r1, *global_009816ac, 0u);
+    photo_file_reader->word_0 = vtable_imgdb__PhotoFileReader;
+    photo_file_reader->word_30 = *global_009816ac;
+    photo_file_reader->word_0 = vtable_imgdb__PhotoImageInfoReader;
+    photo_file_reader->byte_34 = u8(r2);
+    photo_file_reader->word_38 = r3;
+    photo_file_reader->byte_3c = u8(r6_1);
     guest::cpu()->r[1] = vtable_imgdb__PhotoImageInfoReader;
 }
 
@@ -4102,10 +4102,10 @@ namespace d_005aab04 {
 inline constexpr u32 vtable_imgdb__CtrNandArchiveMounter = 0x00907eb4u;
 inline constexpr u32 vtable_imgdb__CtrNandArchiveMounter_at_4 = 0x00907ed4u;
 
-void imgdb__CtrNandArchiveMounter__CtrNandArchiveMounter(gptr<imgdb__CtrNandArchiveMounter> arg0) {
-    arg0->byte_8 = 0;
-    arg0->word_0 = vtable_imgdb__CtrNandArchiveMounter;
-    arg0->word_4 = vtable_imgdb__CtrNandArchiveMounter_at_4;
+void imgdb__CtrNandArchiveMounter__CtrNandArchiveMounter(gptr<imgdb__CtrNandArchiveMounter> ctr_nand_archive_mounter) {
+    ctr_nand_archive_mounter->byte_8 = 0;
+    ctr_nand_archive_mounter->word_0 = vtable_imgdb__CtrNandArchiveMounter;
+    ctr_nand_archive_mounter->word_4 = vtable_imgdb__CtrNandArchiveMounter_at_4;
 }
 
 }  // namespace d_005aab04
@@ -4145,10 +4145,10 @@ namespace d_005aad34 {
 inline constexpr u32 vtable_imgdb__TwlNandArchiveMounter = 0x00907f0cu;
 inline constexpr u32 vtable_imgdb__TwlNandArchiveMounter_at_4 = 0x00907f2cu;
 
-void imgdb__TwlNandArchiveMounter__TwlNandArchiveMounter(gptr<imgdb__TwlNandArchiveMounter> arg0) {
-    arg0->byte_8 = 0;
-    arg0->word_0 = vtable_imgdb__TwlNandArchiveMounter;
-    arg0->word_4 = vtable_imgdb__TwlNandArchiveMounter_at_4;
+void imgdb__TwlNandArchiveMounter__TwlNandArchiveMounter(gptr<imgdb__TwlNandArchiveMounter> twl_nand_archive_mounter) {
+    twl_nand_archive_mounter->byte_8 = 0;
+    twl_nand_archive_mounter->word_0 = vtable_imgdb__TwlNandArchiveMounter;
+    twl_nand_archive_mounter->word_4 = vtable_imgdb__TwlNandArchiveMounter_at_4;
 }
 
 }  // namespace d_005aad34
@@ -4241,13 +4241,13 @@ struct __attribute__((packed)) Object_005ab1fc_0 {
 GUEST_OFFSET(Object_005ab1fc_0, byte_0, 0x0);
 
 inline constexpr guest::Function<0x001416b0, u32(u32)> return_constant_0x97e098_;
-inline constexpr guest::Function<0x005aac5c, u32(u32, u32, u32, u32)> imgdb__PhotoHeaderFileReader__virtual_0;
+inline constexpr guest::Function<0x005aac5c, u32(u32, u32, u32, u32)> imgdb__PhotoHeaderFileReader__destructor;
 inline constexpr guest::Function<0x005aae3c, u32(u32, u32, u32, u32)> call_005aae3c;
 inline constexpr guest::Function<0x005ab01c, u32(u32, u32, u32, u32)> call_005ab01c;
 inline constexpr guest::Function<0x005ab334, u32(u32)> call_005ab334;
 inline constexpr guest::Function<0x005ab388, u32(u32, u32, u32, u32)> imgdb__PhotoHeaderFileReader__PhotoHeaderFileReader;
 inline constexpr guest::Function<0x00753cbc, u32(u32, u32, u32)> call_00753cbc;
-inline constexpr guest::Function<0x007553d8, u32(u32, u32, u32, u32)> call_007553d8;
+inline constexpr guest::Function<0x007553d8, u32(u32, u32, u32, u32)> extension_index;
 
 struct __attribute__((packed)) Frame_005ab1fc {
     u32 word_0;
@@ -4269,7 +4269,7 @@ u32 f_005ab1fc(gptr<Object_005ab1fc_0> arg0, u32 r1, u32 r2, u32 r3) {
     u32 r4 = 0;
     u32 r0_9 = 0;
     arg0->byte_0 = 0;
-    u32 r0_1 = call_007553d8(r2, r1, r2, r3);
+    u32 r0_1 = extension_index(r2, r1, r2, r3);
     if (r0_1 == 3u) {
     } else {
         u32 r0_2 = return_constant_0x97e098_(r0_1);
@@ -4277,7 +4277,7 @@ u32 f_005ab1fc(gptr<Object_005ab1fc_0> arg0, u32 r1, u32 r2, u32 r3) {
         imgdb__PhotoHeaderFileReader__PhotoHeaderFileReader(frame.at(8).addr(), r0_2, r1, r2);
         u32 r0_5 = call_005ab334(frame.at(8).addr());
         if (r0_5 == 0) {
-            u32 r0_6 = call_007553d8(r2, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+            u32 r0_6 = extension_index(r2, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
             r2 = guest::cpu()->r[2];
             u32 r7_1 = frame->word_1c;
             u32 r6_1 = frame->word_20;
@@ -4309,11 +4309,11 @@ u32 f_005ab1fc(gptr<Object_005ab1fc_0> arg0, u32 r1, u32 r2, u32 r3) {
             }
             goto L_5ab2b4;
         }
-        imgdb__PhotoHeaderFileReader__virtual_0(frame.at(8).addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+        imgdb__PhotoHeaderFileReader__destructor(frame.at(8).addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     }
     return 0u;
 L_5ab2b4:;
-    imgdb__PhotoHeaderFileReader__virtual_0(frame.at(8).addr(), r1, r2, r3);
+    imgdb__PhotoHeaderFileReader__destructor(frame.at(8).addr(), r1, r2, r3);
     return r4;
 }
 
@@ -4404,15 +4404,15 @@ inline constexpr u32 vtable_imgdb__PhotoHeaderImageInfoReader = 0x00907f4cu;
 inline guest::global<u32, 0x009816b0> global_009816b0;
 inline constexpr guest::Function<0x005a3b10, u32(u32, u32, u32, u32)> imgdb__FileReader__FileReader_005a3b10;
 
-void imgdb__PhotoHeaderFileReader__PhotoHeaderFileReader(gptr<imgdb__PhotoHeaderImageInfoReader> arg0, u32 r1, u32 r2, u32 r3) {
+void imgdb__PhotoHeaderFileReader__PhotoHeaderFileReader(gptr<imgdb__PhotoHeaderImageInfoReader> photo_header_image_info_reader, u32 r1, u32 r2, u32 r3) {
     u32 r6_1 = *gptr<u32>(guest::cpu()->r[13] + 0x10u);  // (from the original)
-    imgdb__FileReader__FileReader_005a3b10(arg0.addr(), r1, 0x20000u, 1u);  // (from the original)
-    arg0->word_0 = vtable_imgdb__PhotoHeaderFileReader;
-    arg0->word_30 = *global_009816b0;
-    arg0->word_0 = vtable_imgdb__PhotoHeaderImageInfoReader;
-    arg0->byte_34 = u8(r2);
-    arg0->word_38 = r3;
-    arg0->byte_3c = u8(r6_1);
+    imgdb__FileReader__FileReader_005a3b10(photo_header_image_info_reader.addr(), r1, 0x20000u, 1u);  // (from the original)
+    photo_header_image_info_reader->word_0 = vtable_imgdb__PhotoHeaderFileReader;
+    photo_header_image_info_reader->word_30 = *global_009816b0;
+    photo_header_image_info_reader->word_0 = vtable_imgdb__PhotoHeaderImageInfoReader;
+    photo_header_image_info_reader->byte_34 = u8(r2);
+    photo_header_image_info_reader->word_38 = r3;
+    photo_header_image_info_reader->byte_3c = u8(r6_1);
     guest::cpu()->r[1] = vtable_imgdb__PhotoHeaderImageInfoReader;
 }
 
@@ -5312,8 +5312,9 @@ u32 f_005ae46c(u32 r0, u32 r1) {
         u32 r0_1 = call_005adde8(0u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
         copy_wide_string(global_00aee01e_address, r0_1);
         append_wide_string(global_00aee01e_address, 0x5ae50cu);  // (from the original)
-        append_wide_string(global_00aee01e_address, *global_00981674);
-        u32 r0_2 = call_005adde8(1u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+        u32 r1_1 = *global_00981674;
+        append_wide_string(global_00aee01e_address, r1_1);
+        u32 r0_2 = call_005adde8(1u, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
         copy_wide_string(global_00aee094_address, r0_2);
         append_wide_string(global_00aee094_address, 0x5ae50cu);  // (from the original)
         append_wide_string(global_00aee094_address, *global_00981674);
@@ -6131,7 +6132,7 @@ inline constexpr guest::Function<0x005aff24, u32(u32, u32, u32, u32)> call_005af
 inline constexpr guest::Function<0x005affd8, u32(u32, u32, u32, u32)> nn__fs__Directory__Directory_005affd8;
 inline constexpr guest::Function<0x005b00a8, u32(u32, u32, u32, u32)> call_005b00a8;
 inline constexpr guest::Function<0x005b0520, u32(u32, u32, u32, u32)> call_005b0520;
-inline constexpr guest::Function<0x007553d8, u32(u32, u32, u32, u32)> call_007553d8;
+inline constexpr guest::Function<0x007553d8, u32(u32, u32, u32, u32)> extension_index;
 
 struct __attribute__((packed)) Frame_005af3e0 {
     u32 word_0;
@@ -6215,13 +6216,13 @@ u32 f_005af3e0(u32 r0, u32 r1, u32 r2, u32 r3) {
     r4 = r0;
     r5 = r2;
     r6 = 1u;
-    u32 r0_2 = call_007553d8(frame->word_b8, r1, r2, r3);
+    u32 r0_2 = extension_index(frame->word_b8, r1, r2, r3);
     r9 = 0x15u;  // (from the original)
     r8 = 0x3e8u;  // (from the original)
     if (r0_2 != 1u) {
-        u32 r0_4 = call_007553d8(frame->word_b8, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+        u32 r0_4 = extension_index(frame->word_b8, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
         if (r0_4 != 3u) {
-            u32 r0_6 = call_007553d8(frame->word_b8, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+            u32 r0_6 = extension_index(frame->word_b8, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
             if (r0_6 == 2u) {
                 u32 r3_3 = frame->word_b8;
                 frame->word_0 = r5;
@@ -6509,15 +6510,15 @@ inline constexpr u32 vtable_imgdb__Crc16Context = 0x00907dbcu;
 inline constexpr u32 global_00981eb1_address = 0x00981eb1u;
 inline constexpr u32 global_00af6e08_address = 0x00af6e08u;
 
-void imgdb__Crc16Context__Crc16Context(gptr<imgdb__Crc16Context> arg0, u32 r1, u32 r2) {
+void imgdb__Crc16Context__Crc16Context(gptr<imgdb__Crc16Context> crc16_context, u32 r1, u32 r2) {
     u32 r3 = 0;
     u32 res_1 = 0;
     u32 r7 = 0u;
     u32 r9 = 1u;
     u32 r8 = global_00981eb1_address;
-    arg0->word_0 = vtable_imgdb__Crc16Context;
-    arg0->byte_4 = u8(r7);
-    arg0->half_6 = u16(r7);
+    crc16_context->word_0 = vtable_imgdb__Crc16Context;
+    crc16_context->byte_4 = u8(r7);
+    crc16_context->half_6 = u16(r7);
     if (*gptr<u8>(r8) == 0) {
         u32 r10 = global_00af6e08_address;
         u32 r5 = 0u;
@@ -6539,8 +6540,8 @@ void imgdb__Crc16Context__Crc16Context(gptr<imgdb__Crc16Context> arg0, u32 r1, u
         *gptr<u8>(r8) = u8(r9);
     }
     r3 = global_00af6e08_address;
-    arg0->half_6 = u16(r7);
-    arg0->byte_4 = u8(r9);
+    crc16_context->half_6 = u16(r7);
+    crc16_context->byte_4 = u8(r9);
     if (r2 != 0) {
         r1 -= 1u;
         if ((r2 & 1u) != 0) {
@@ -6562,7 +6563,7 @@ void imgdb__Crc16Context__Crc16Context(gptr<imgdb__Crc16Context> arg0, u32 r1, u
             } while (res_1 != 0);
         }
     }
-    arg0->half_6 = u16(r7);
+    crc16_context->half_6 = u16(r7);
     guest::cpu()->r[1] = r1;
 }
 

@@ -25,14 +25,14 @@ GUEST_EXPORT(0x00130054, d_00130054::f_00130054);
 namespace d_00130060 {
 
 inline constexpr u32 global_0097d7e0_address = 0x0097d7e0u;
-inline constexpr guest::Function<0x0012ef20, u32(u32, u32)> LightEvent__wait;
+inline constexpr guest::Function<0x0012ef20, u32(u32, u32, u32, u32)> LightEvent__wait;
 
-u32 f_00130060() {
-    return LightEvent__wait(global_0097d7e0_address, guest::cpu()->r[1]);
+u32 wait_on_main_event() {
+    return LightEvent__wait(global_0097d7e0_address, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_00130060
-GUEST_EXPORT(0x00130060, d_00130060::f_00130060);
+GUEST_EXPORT(0x00130060, d_00130060::wait_on_main_event);
 
 // f_0013010c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013010c {
@@ -40,12 +40,12 @@ namespace d_0013010c {
 inline constexpr u32 global_0097d7e0_address = 0x0097d7e0u;
 inline constexpr guest::Function<0x0012efe8, u32(u32, u32)> LightEvent__try_wait;
 
-u32 f_0013010c() {
+u32 try_wait_on_main_event() {
     return LightEvent__try_wait(global_0097d7e0_address, guest::cpu()->r[1]);
 }
 
 }  // namespace d_0013010c
-GUEST_EXPORT(0x0013010c, d_0013010c::f_0013010c);
+GUEST_EXPORT(0x0013010c, d_0013010c::try_wait_on_main_event);
 
 // f_001306e0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001306e0 {
@@ -105,17 +105,17 @@ namespace d_00130c70 {
 
 inline constexpr u32 vtable_nw__lyt__Layout = 0x00901b9cu;
 
-void nw__lyt__Layout__Layout(gptr<nw__lyt__Layout> arg0) {
-    u32 r3_1 = arg0.addr() + 8u;
-    arg0->word_0 = vtable_nw__lyt__Layout;
+void nw__lyt__Layout__Layout(gptr<nw__lyt__Layout> layout) {
+    u32 r3_1 = layout.addr() + 8u;
+    layout->word_0 = vtable_nw__lyt__Layout;
     float S0_1 = 0.0f;
-    arg0->word_4 = 0;
-    arg0->word_8 = r3_1;
-    arg0->word_10 = 0;
-    arg0->word_c = r3_1;
-    arg0->word_14 = 0;
-    arg0->float_18 = S0_1;
-    arg0->float_1c = S0_1;
+    layout->word_4 = 0;
+    layout->word_8 = r3_1;
+    layout->word_10 = 0;
+    layout->word_c = r3_1;
+    layout->word_14 = 0;
+    layout->float_18 = S0_1;
+    layout->float_1c = S0_1;
     guest::cpu()->s[0] = S0_1;
 }
 
@@ -132,81 +132,81 @@ inline constexpr u32 vtable_nw__snd__internal__LoaderManager_nw__snd__internal__
 inline constexpr u32 vtable_nw__snd__internal__driver__MmlSequenceTrackAllocator = 0x00902424u;
 inline constexpr u32 vtable_nw__snd__internal__driver__MmlParser = 0x00902454u;
 
-void nw__snd__SoundArchivePlayer__SoundArchivePlayer(gptr<nw__snd__SoundArchivePlayer> arg0) {
-    arg0->word_0 = vtable_nw__snd__SoundArchivePlayer;
-    arg0->word_4 = 0;
-    arg0->word_8 = vtable_nw__snd__SoundArchivePlayer__SequenceNoteOnCallback;
-    arg0->word_c = arg0.addr();
-    arg0->word_10 = 0;
-    arg0->word_14 = 0;
-    arg0->word_18 = 0;
-    arg0->word_1c = 0;
-    arg0->word_20 = 0;
-    u32 r12_1 = arg0.addr() + 0x2cu;  // (from the original)
-    arg0->word_24 = 0;
-    arg0->word_28 = 0;
-    arg0->word_2c = r12_1;
-    arg0->word_30 = r12_1;
-    u32 r3_1 = arg0.addr() + 0x38u;  // (from the original)
-    arg0->word_34 = 0;
-    arg0->word_38 = r3_1;
-    u32 r12_2 = arg0.addr() + 0x58u;  // (from the original)
-    arg0->word_44 = 0;
-    arg0->word_3c = r3_1;
-    arg0->word_48 = 0;
-    arg0->word_40 = vtable_nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader_;
-    arg0->word_4c = 0;
-    arg0->word_50 = 0;
-    arg0->word_54 = 0;
-    arg0->word_58 = r12_2;
-    arg0->word_5c = r12_2;
-    u32 r3_2 = arg0.addr() + 0x64u;  // (from the original)
-    arg0->word_60 = 0;
-    arg0->word_64 = r3_2;
-    u32 r12_3 = arg0.addr() + 0x78u;  // (from the original)
-    arg0->word_6c = 0;
-    arg0->word_68 = r3_2;
-    arg0->word_70 = 0;
-    arg0->word_74 = 0;
-    arg0->word_78 = r12_3;
-    arg0->word_7c = r12_3;
-    u32 r3_3 = arg0.addr() + 0x84u;  // (from the original)
-    arg0->word_80 = 0;
-    arg0->word_84 = r3_3;
-    u32 r12_4 = arg0.addr() + 0xa4u;  // (from the original)
-    arg0->word_90 = 0;
-    arg0->word_88 = r3_3;
-    arg0->word_94 = 0;
-    arg0->word_8c = vtable_nw__snd__internal__LoaderManager_nw__snd__internal__driver__WaveSoundLoader_;
-    arg0->word_98 = 0;
-    arg0->word_9c = 0;
-    arg0->word_a0 = 0;
-    arg0->word_a4 = r12_4;
-    arg0->word_a8 = r12_4;
-    u32 r3_4 = arg0.addr() + 0xb0u;  // (from the original)
-    arg0->word_ac = 0;
-    arg0->word_b0 = r3_4;
-    arg0->word_b8 = 0;
-    arg0->word_b4 = r3_4;
-    u32 r12_5 = arg0.addr() + 0xc4u;  // (from the original)
-    arg0->word_bc = 0;
-    arg0->word_c0 = 0;
-    arg0->word_c4 = r12_5;
-    arg0->word_c8 = r12_5;
-    u32 r2_1 = arg0.addr() + 0xd0u;  // (from the original)
-    arg0->word_cc = 0;
-    arg0->word_d0 = r2_1;
-    arg0->word_f0 = 0;
-    arg0->word_d4 = r2_1;
-    arg0->word_f8 = arg0.addr() + 0x100u;  // (from the original)
-    arg0->word_fc = 0;
-    arg0->word_100 = vtable_nw__snd__internal__driver__MmlParser;
-    arg0->word_f4 = vtable_nw__snd__internal__driver__MmlSequenceTrackAllocator;
-    arg0->word_104 = 0;
-    arg0->word_108 = 0;
-    arg0->word_10c = 0;
-    arg0->word_110 = 0;
-    arg0->word_114 = 0;
+void nw__snd__SoundArchivePlayer__SoundArchivePlayer(gptr<nw__snd__SoundArchivePlayer> sound_archive_player) {
+    sound_archive_player->word_0 = vtable_nw__snd__SoundArchivePlayer;
+    sound_archive_player->word_4 = 0;
+    sound_archive_player->word_8 = vtable_nw__snd__SoundArchivePlayer__SequenceNoteOnCallback;
+    sound_archive_player->word_c = sound_archive_player.addr();
+    sound_archive_player->word_10 = 0;
+    sound_archive_player->word_14 = 0;
+    sound_archive_player->word_18 = 0;
+    sound_archive_player->word_1c = 0;
+    sound_archive_player->word_20 = 0;
+    u32 r12_1 = sound_archive_player.addr() + 0x2cu;  // (from the original)
+    sound_archive_player->word_24 = 0;
+    sound_archive_player->word_28 = 0;
+    sound_archive_player->word_2c = r12_1;
+    sound_archive_player->word_30 = r12_1;
+    u32 r3_1 = sound_archive_player.addr() + 0x38u;  // (from the original)
+    sound_archive_player->word_34 = 0;
+    sound_archive_player->word_38 = r3_1;
+    u32 r12_2 = sound_archive_player.addr() + 0x58u;  // (from the original)
+    sound_archive_player->word_44 = 0;
+    sound_archive_player->word_3c = r3_1;
+    sound_archive_player->word_48 = 0;
+    sound_archive_player->word_40 = vtable_nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader_;
+    sound_archive_player->word_4c = 0;
+    sound_archive_player->word_50 = 0;
+    sound_archive_player->word_54 = 0;
+    sound_archive_player->word_58 = r12_2;
+    sound_archive_player->word_5c = r12_2;
+    u32 r3_2 = sound_archive_player.addr() + 0x64u;  // (from the original)
+    sound_archive_player->word_60 = 0;
+    sound_archive_player->word_64 = r3_2;
+    u32 r12_3 = sound_archive_player.addr() + 0x78u;  // (from the original)
+    sound_archive_player->word_6c = 0;
+    sound_archive_player->word_68 = r3_2;
+    sound_archive_player->word_70 = 0;
+    sound_archive_player->word_74 = 0;
+    sound_archive_player->word_78 = r12_3;
+    sound_archive_player->word_7c = r12_3;
+    u32 r3_3 = sound_archive_player.addr() + 0x84u;  // (from the original)
+    sound_archive_player->word_80 = 0;
+    sound_archive_player->word_84 = r3_3;
+    u32 r12_4 = sound_archive_player.addr() + 0xa4u;  // (from the original)
+    sound_archive_player->word_90 = 0;
+    sound_archive_player->word_88 = r3_3;
+    sound_archive_player->word_94 = 0;
+    sound_archive_player->word_8c = vtable_nw__snd__internal__LoaderManager_nw__snd__internal__driver__WaveSoundLoader_;
+    sound_archive_player->word_98 = 0;
+    sound_archive_player->word_9c = 0;
+    sound_archive_player->word_a0 = 0;
+    sound_archive_player->word_a4 = r12_4;
+    sound_archive_player->word_a8 = r12_4;
+    u32 r3_4 = sound_archive_player.addr() + 0xb0u;  // (from the original)
+    sound_archive_player->word_ac = 0;
+    sound_archive_player->word_b0 = r3_4;
+    sound_archive_player->word_b8 = 0;
+    sound_archive_player->word_b4 = r3_4;
+    u32 r12_5 = sound_archive_player.addr() + 0xc4u;  // (from the original)
+    sound_archive_player->word_bc = 0;
+    sound_archive_player->word_c0 = 0;
+    sound_archive_player->word_c4 = r12_5;
+    sound_archive_player->word_c8 = r12_5;
+    u32 r2_1 = sound_archive_player.addr() + 0xd0u;  // (from the original)
+    sound_archive_player->word_cc = 0;
+    sound_archive_player->word_d0 = r2_1;
+    sound_archive_player->word_f0 = 0;
+    sound_archive_player->word_d4 = r2_1;
+    sound_archive_player->word_f8 = sound_archive_player.addr() + 0x100u;  // (from the original)
+    sound_archive_player->word_fc = 0;
+    sound_archive_player->word_100 = vtable_nw__snd__internal__driver__MmlParser;
+    sound_archive_player->word_f4 = vtable_nw__snd__internal__driver__MmlSequenceTrackAllocator;
+    sound_archive_player->word_104 = 0;
+    sound_archive_player->word_108 = 0;
+    sound_archive_player->word_10c = 0;
+    sound_archive_player->word_110 = 0;
+    sound_archive_player->word_114 = 0;
 }
 
 }  // namespace d_00130d6c
@@ -219,60 +219,61 @@ inline constexpr u32 vtable_SoundFader_rec = 0x008eb474u;
 inline constexpr u32 vtable_SoundMelodyPlayerOneSeqTimeTone = 0x008f7210u;
 inline constexpr guest::Function<0x00135134, u32(u32)> SoundMelodyPlayerOneSeqBase__SoundMelodyPlayerOneSeqBase;
 
-u32 SoundMelodyPlayerOneSeqTimeTone__SoundMelodyPlayerOneSeqTimeTone(gptr<SoundMelodyPlayerOneSeqTimeTone> arg0) {
-    SoundMelodyPlayerOneSeqBase__SoundMelodyPlayerOneSeqBase(arg0.addr());
+u32 SoundMelodyPlayerOneSeqTimeTone__SoundMelodyPlayerOneSeqTimeTone(gptr<SoundMelodyPlayerOneSeqTimeTone> sound_melody_player_one_seq_time_tone) {
+    SoundMelodyPlayerOneSeqBase__SoundMelodyPlayerOneSeqBase(sound_melody_player_one_seq_time_tone.addr());
     float S0_1 = 0.0f;
-    arg0->word_0 = vtable_SoundMelodyPlayerOneSeqTimeTone;
-    arg0->byte_12 = 0;
-    arg0->byte_13 = 0;
-    arg0->byte_14 = 0;
-    arg0->word_18 = vtable_SoundFader_rec;
-    arg0->float_1c = S0_1;
-    arg0->float_20 = S0_1;
-    arg0->float_24 = S0_1;
+    sound_melody_player_one_seq_time_tone->word_0 = vtable_SoundMelodyPlayerOneSeqTimeTone;
+    sound_melody_player_one_seq_time_tone->byte_12 = 0;
+    sound_melody_player_one_seq_time_tone->byte_13 = 0;
+    sound_melody_player_one_seq_time_tone->byte_14 = 0;
+    sound_melody_player_one_seq_time_tone->word_18 = vtable_SoundFader_rec;
+    sound_melody_player_one_seq_time_tone->float_1c = S0_1;
+    sound_melody_player_one_seq_time_tone->float_20 = S0_1;
+    sound_melody_player_one_seq_time_tone->float_24 = S0_1;
     u32 r3_1 = ~0u;
-    arg0->word_2c = vtable_SoundFader_rec;
-    arg0->word_28 = r3_1;
-    arg0->float_30 = S0_1;
-    arg0->float_34 = S0_1;
-    arg0->float_38 = S0_1;
-    arg0->word_3c = r3_1;
+    sound_melody_player_one_seq_time_tone->word_2c = vtable_SoundFader_rec;
+    sound_melody_player_one_seq_time_tone->word_28 = r3_1;
+    sound_melody_player_one_seq_time_tone->float_30 = S0_1;
+    sound_melody_player_one_seq_time_tone->float_34 = S0_1;
+    sound_melody_player_one_seq_time_tone->float_38 = S0_1;
+    sound_melody_player_one_seq_time_tone->word_3c = r3_1;
     guest::cpu()->s[0] = S0_1;
-    return arg0.addr();
+    return sound_melody_player_one_seq_time_tone.addr();
 }
 
 }  // namespace d_0013121c
 GUEST_EXPORT_FRAMED(0x0013121c, d_0013121c::SoundMelodyPlayerOneSeqTimeTone__SoundMelodyPlayerOneSeqTimeTone, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_00131580: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Destroys five font sets (a font resource, its load split and its other part each), last to first.
 namespace d_00131580 {
 
-inline constexpr guest::Function<0x00137848, u32(u32, u32, u32, u32)> nw__font__ResFont__virtual_0;
+inline constexpr guest::Function<0x00137848, u32(u32, u32, u32, u32)> nw__font__ResFont__destructor;
 inline constexpr guest::Function<0x0013bb80, u32(u32)> call_0013bb80;
 inline constexpr guest::Function<0x0013bc00, u32(u32)> destroy_load_split;
 
-u32 f_00131580(u32 r0) {
-    u32 r0_1 = r0 + 0x7e8u;  // (from the original)
-    nw__font__ResFont__virtual_0(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-    destroy_load_split(r0_1 - 0x164u);  // (from the original)
-    call_0013bb80(r0_1 - 0x174u);  // (from the original)
-    nw__font__ResFont__virtual_0(r0_1 - 0x198u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    destroy_load_split(r0_1 - 0x2fcu);  // (from the original)
-    call_0013bb80(r0_1 - 0x30cu);  // (from the original)
-    nw__font__ResFont__virtual_0(r0_1 - 0x330u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    destroy_load_split(r0_1 - 0x494u);  // (from the original)
-    call_0013bb80(r0_1 - 0x4a4u);  // (from the original)
-    nw__font__ResFont__virtual_0(r0_1 - 0x4c8u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    destroy_load_split(r0_1 - 0x62cu);  // (from the original)
-    call_0013bb80(r0_1 - 0x63cu);  // (from the original)
-    nw__font__ResFont__virtual_0(r0_1 - 0x660u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    destroy_load_split(r0_1 - 0x7c4u);  // (from the original)
-    call_0013bb80(r0_1 - 0x7c4u);  // (from the original)
-    return r0_1 - 0x7e8u;  // (from the original)
+u32 destroy_font_sets(u32 r0) {
+    u32 last = r0 + 0x7e8u;  // (from the original)
+    nw__font__ResFont__destructor(last, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    destroy_load_split(last - 0x164u);  // (from the original)
+    call_0013bb80(last - 0x174u);  // (from the original)
+    nw__font__ResFont__destructor(last - 0x198u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    destroy_load_split(last - 0x2fcu);  // (from the original)
+    call_0013bb80(last - 0x30cu);  // (from the original)
+    nw__font__ResFont__destructor(last - 0x330u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    destroy_load_split(last - 0x494u);  // (from the original)
+    call_0013bb80(last - 0x4a4u);  // (from the original)
+    nw__font__ResFont__destructor(last - 0x4c8u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    destroy_load_split(last - 0x62cu);  // (from the original)
+    call_0013bb80(last - 0x63cu);  // (from the original)
+    nw__font__ResFont__destructor(last - 0x660u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    destroy_load_split(last - 0x7c4u);  // (from the original)
+    call_0013bb80(last - 0x7c4u);  // (from the original)
+    return last - 0x7e8u;  // (from the original)
 }
 
 }  // namespace d_00131580
-GUEST_EXPORT_FRAMED(0x00131580, d_00131580::f_00131580, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00131580, d_00131580::destroy_font_sets, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_001316b8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001316b8 {
@@ -301,7 +302,7 @@ GUEST_EXPORT(0x001316b8, d_001316b8::f_001316b8);
 // f_001316d8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001316d8 {
 
-struct __attribute__((packed)) Object_001316d8_0 {
+struct __attribute__((packed)) sead__ResourceFactory {
     u8 unknown_0[0x10];  // (not used here)
     u32 word_10;
     u32 word_14;
@@ -312,14 +313,14 @@ struct __attribute__((packed)) Object_001316d8_0 {
     u32 word_28;
     u32 word_2c;
 };
-GUEST_OFFSET(Object_001316d8_0, word_10, 0x10);
-GUEST_OFFSET(Object_001316d8_0, word_14, 0x14);
-GUEST_OFFSET(Object_001316d8_0, word_18, 0x18);
-GUEST_OFFSET(Object_001316d8_0, word_1c, 0x1c);
-GUEST_OFFSET(Object_001316d8_0, word_20, 0x20);
-GUEST_OFFSET(Object_001316d8_0, word_24, 0x24);
-GUEST_OFFSET(Object_001316d8_0, word_28, 0x28);
-GUEST_OFFSET(Object_001316d8_0, word_2c, 0x2c);
+GUEST_OFFSET(sead__ResourceFactory, word_10, 0x10);
+GUEST_OFFSET(sead__ResourceFactory, word_14, 0x14);
+GUEST_OFFSET(sead__ResourceFactory, word_18, 0x18);
+GUEST_OFFSET(sead__ResourceFactory, word_1c, 0x1c);
+GUEST_OFFSET(sead__ResourceFactory, word_20, 0x20);
+GUEST_OFFSET(sead__ResourceFactory, word_24, 0x24);
+GUEST_OFFSET(sead__ResourceFactory, word_28, 0x28);
+GUEST_OFFSET(sead__ResourceFactory, word_2c, 0x2c);
 
 struct __attribute__((packed)) Local_001316d8_r0_5 {
     u32 word_0;
@@ -354,7 +355,7 @@ inline constexpr u32 vtable_sead__FixedSafeStringBase_char__32_ = 0x00905120u;
 inline constexpr u32 vtable_sead__DirectResourceFactory_sead__DirectResource_ = 0x00905460u;
 inline constexpr u32 vtable_sead__BufferedSafeStringBase_char_ = 0x0090558cu;
 inline constexpr u32 global_00975338_address = 0x00975338u;
-inline guest::global<u8, 0x008c9f1c> global_008c9f1c;
+inline guest::global<u8, 0x008c9f1c> empty_string;
 inline guest::global<u32, 0x00975338> global_00975338;
 inline constexpr guest::Function<0x00132174, u32(u32, u32)> sead__IDisposer__IDisposer_00132174;
 inline constexpr guest::Function<0x00137c78, u32(u32, u32, u32, u32)> call_00137c78;
@@ -369,46 +370,46 @@ GUEST_OFFSET(Frame_001316d8, word_0, 0x0);
 GUEST_OFFSET(Frame_001316d8, word_4, 0x4);
 GUEST_SIZE(Frame_001316d8, 0x8);
 
-u32 sead__ResourceFactory__ResourceFactory_001316d8(gptr<Object_001316d8_0> arg0, u32 r1_unused, u32 r2, u32 r3) {
+u32 sead__ResourceFactory__ResourceFactory_001316d8(gptr<sead__ResourceFactory> resource_factory, u32 r1_unused, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_001316d8> frame;  // the original's stack frame
-    u32 r0_1 = arg0.addr() + 0x10u;  // (from the original)
-    arg0->word_14 = r0_1;
-    arg0->word_18 = 0;
-    arg0->word_10 = r0_1;
-    u32 r0_2 = arg0.addr() + 0x1cu;  // (from the original)
-    arg0->word_20 = r0_2;
-    arg0->word_24 = 0;
-    arg0->word_1c = r0_2;
-    arg0->word_28 = 0;
-    arg0->word_2c = 0;
+    u32 r0_1 = resource_factory.addr() + 0x10u;  // (from the original)
+    resource_factory->word_14 = r0_1;
+    resource_factory->word_18 = 0;
+    resource_factory->word_10 = r0_1;
+    u32 r0_2 = resource_factory.addr() + 0x1cu;  // (from the original)
+    resource_factory->word_20 = r0_2;
+    resource_factory->word_24 = 0;
+    resource_factory->word_1c = r0_2;
+    resource_factory->word_28 = 0;
+    resource_factory->word_2c = 0;
     u32 r0_3 = *global_00975338;
     if (r0_3 != 0) {
-        u32 r0_4 = find_owner_in_heap(r0_3, arg0.addr(), r2, r3);
-        gptr<Local_001316d8_r0_5> r0_5 = gptr<Local_001316d8_r0_5>(allocate_from_heap_002fd108(0x4cu, r0_4, 4u));  // (from the original)
-        gptr<Local_001316d8_r1_1> r1_1 = gptr<Local_001316d8_r1_1>(r0_5.addr() + 0x18u);  // (from the original)
-        r0_5->word_10 = 0;
-        r0_5->word_14 = 0;
-        r1_1->word_0 = r0_5.addr();
+        u32 r0_4 = find_owner_in_heap(r0_3, resource_factory.addr(), r2, r3);
+        gptr<Local_001316d8_r0_5> block = gptr<Local_001316d8_r0_5>(allocate_from_heap_002fd108(0x4cu, r0_4, 4u));  // (from the original)
+        gptr<Local_001316d8_r1_1> r1_1 = gptr<Local_001316d8_r1_1>(block.addr() + 0x18u);  // (from the original)
+        block->word_10 = 0;
+        block->word_14 = 0;
+        r1_1->word_0 = block.addr();
         r1_1->word_4 = 0;
-        sead__IDisposer__IDisposer_00132174(r0_5.addr(), r1_1.addr());
-        r0_5->word_0 = vtable_sead__ResourceFactory;
-        gptr<Local_001316d8_r0_6> r0_6 = gptr<Local_001316d8_r0_6>(r0_5.addr() + 0x20u);  // (from the original)
+        sead__IDisposer__IDisposer_00132174(block.addr(), r1_1.addr());
+        block->word_0 = vtable_sead__ResourceFactory;
+        gptr<Local_001316d8_r0_6> r0_6 = gptr<Local_001316d8_r0_6>(block.addr() + 0x20u);  // (from the original)
         r0_6->word_4 = r0_6.addr() + 0xcu;  // (from the original)
         r0_6->word_0 = vtable_sead__BufferedSafeStringBase_char_;
         r0_6->word_8 = 0x20;  // (from the original)
-        u32 r6_1 = *global_008c9f1c;
+        u32 r6_1 = *empty_string;
         *gptr<u8>(r0_6->word_4 + 0x1fu) = u8(r6_1);  // (from the original)
         r0_6->word_0 = vtable_sead__FixedSafeStringBase_char__32_;
-        *gptr<u8>(r0_6->word_4) = *global_008c9f1c;
+        *gptr<u8>(r0_6->word_4) = *empty_string;
         r0_6->word_0 = vtable_sead__FixedSafeString_32_;
-        r0_5->word_0 = vtable_sead__DirectResourceFactory_sead__DirectResource_;
-        arg0->word_28 = r0_5.addr();
-        arg0->word_2c = r0_5.addr();
+        block->word_0 = vtable_sead__DirectResourceFactory_sead__DirectResource_;
+        resource_factory->word_28 = block.addr();
+        resource_factory->word_2c = block.addr();
         frame->word_4 = 0x8ae110;  // (from the original)
         frame->word_0 = vtable_sead__SafeStringBase_char_;
-        call_00137c78(arg0.addr(), arg0->word_2c, frame.at(0).addr(), vtable_sead__SafeStringBase_char_);
+        call_00137c78(resource_factory.addr(), resource_factory->word_2c, frame.at(0).addr(), vtable_sead__SafeStringBase_char_);
     }
-    return arg0.addr();
+    return resource_factory.addr();
 }
 
 }  // namespace d_001316d8
@@ -451,9 +452,9 @@ namespace d_001318c0 {
 
 inline constexpr u32 vtable_sead__AudioResetter = 0x009041f4u;
 
-void sead__AudioResetter__AudioResetter(gptr<sead__AudioResetter> arg0) {
-    arg0->word_0 = vtable_sead__AudioResetter;
-    arg0->word_4 = 0;
+void sead__AudioResetter__AudioResetter(gptr<sead__AudioResetter> audio_resetter) {
+    audio_resetter->word_0 = vtable_sead__AudioResetter;
+    audio_resetter->word_4 = 0;
 }
 
 }  // namespace d_001318c0
@@ -473,11 +474,11 @@ GUEST_OFFSET(ThreadLock, depth, 0x28);
 
 inline guest::global<u32, 0x009753d0> global_009753d0;
 inline constexpr guest::Function<0x00135740, u32(u32, u32)> lock_member_lock;
-inline constexpr guest::Function<0x00138c78, u32(u32)> ThreadLocal__get;
+inline constexpr guest::Function<0x00138c78, u32(u32, u32, u32, u32)> ThreadLocal__get;
 
-u32 ThreadLock__lock(gptr<ThreadLock> lock) {
+u32 ThreadLock__lock(gptr<ThreadLock> lock, u32 r1) {
     u32 depth = 0;
-    u32 thread = ThreadLocal__get(*global_009753d0 + 0x40u);  // (from the original)
+    u32 thread = ThreadLocal__get(*global_009753d0 + 0x40u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     u32 owner = lock->owner;
     if (owner == thread) {
         u32 r0_3 = lock->depth;
@@ -554,16 +555,16 @@ u32 f_00131b3c(gptr<Object_00131b3c_0> arg0, u32 r1_unused, u32 r2, u32 r3) {
     arg0->word_4 = r6;
     u32 r4 = r0;
     arg0->byte_28 = u8(r6);
-    u32 r0_1 = allocate(0x10u, r5, r2, r3);  // (from the original)
-    if (r0_1 != 0) {
-        r0_1 = OffsetList__initialize(r0_1);
+    u32 block = allocate(0x10u, r5, r2, r3);  // (from the original)
+    if (block != 0) {
+        block = OffsetList__initialize(block);
     }
-    arg0->word_0 = r0_1;
-    u32 r0_2 = allocate(0xcu, r5, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    if (r0_2 != 0) {
-        r0_2 = sead__AudioFxMemoryMgrCtr__AudioFxMemoryMgrCtr(r0_2);
+    arg0->word_0 = block;
+    u32 block_2 = allocate(0xcu, r5, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    if (block_2 != 0) {
+        block_2 = sead__AudioFxMemoryMgrCtr__AudioFxMemoryMgrCtr(block_2);
     }
-    arg0->word_4 = r0_2;
+    arg0->word_4 = block_2;
     r0 = 0u;
     do {
         r2 = 0u;
@@ -601,22 +602,23 @@ inline constexpr u32 vtable_sead__AudioSoundDataMgrCtr = 0x009052d0u;
 inline constexpr u32 vtable_sead__AudioSoundDataMgrCtr_at_c = 0x009052f0u;
 inline constexpr guest::Function<0x00136e0c, u32(u32)> nw__snd__internal__driver__DisposeCallback__DisposeCallback_00136e0c;
 
-u32 sead__AudioSoundDataMgrCtr__AudioSoundDataMgrCtr(gptr<sead__AudioSoundDataMgrCtr> arg0) {
-    nw__snd__internal__driver__DisposeCallback__DisposeCallback_00136e0c(arg0.addr());
-    arg0->word_220 = 0;
-    arg0->word_0 = vtable_sead__AudioSoundDataMgrCtr;
-    arg0->word_c = vtable_sead__AudioSoundDataMgrCtr_at_c;
-    arg0->word_224 = 0;
-    arg0->word_228 = 0;
-    arg0->byte_22c = 0;
+u32 sead__AudioSoundDataMgrCtr__AudioSoundDataMgrCtr(gptr<sead__AudioSoundDataMgrCtr> audio_sound_data_mgr_ctr) {
+    nw__snd__internal__driver__DisposeCallback__DisposeCallback_00136e0c(audio_sound_data_mgr_ctr.addr());
+    audio_sound_data_mgr_ctr->word_220 = 0;
+    audio_sound_data_mgr_ctr->word_0 = vtable_sead__AudioSoundDataMgrCtr;
+    audio_sound_data_mgr_ctr->word_c = vtable_sead__AudioSoundDataMgrCtr_at_c;
+    audio_sound_data_mgr_ctr->word_224 = 0;
+    audio_sound_data_mgr_ctr->word_228 = 0;
+    audio_sound_data_mgr_ctr->byte_22c = 0;
     guest::cpu()->r[1] = 0u;
-    return arg0.addr();
+    return audio_sound_data_mgr_ctr.addr();
 }
 
 }  // namespace d_00131be0
 GUEST_EXPORT_FRAMED(0x00131be0, d_00131be0::sead__AudioSoundDataMgrCtr__AudioSoundDataMgrCtr, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_00131c14: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 namespace d_00131c14 {
 
 struct __attribute__((packed)) Object_00131c14_0 {
@@ -634,24 +636,24 @@ GUEST_OFFSET(Local_00131c14_r5_1, word_8, 0x8);
 GUEST_OFFSET(Local_00131c14_r5_1, word_c, 0xc);
 
 inline constexpr u32 global_00ae53d4_address = 0x00ae53d4u;
-inline constexpr guest::Function<0x00135740, u32(u32)> lock_member_lock;
+inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 inline constexpr guest::Function<0x00138560, u32(u32, u32)> insert_node_after_00138560;
 
-void f_00131c14(gptr<Object_00131c14_0> arg0, u32 r1) {
+void insert_into_list_28_locked(gptr<Object_00131c14_0> owner, u32 index) {
     guest::StackFrame frame(0x18);  // the original's stack frame
-    lock_member_lock(global_00ae53d4_address);
+    lock_member_lock(global_00ae53d4_address, index, guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r4_1 = 0u;
-    u32 r1_1 = u32(arg0->half_70) & 1u;
+    u32 r1_1 = u32(owner->half_70) & 1u;
     if (r1_1 != 0) {
         r1_1 = 1u;
     }
     if (r1_1 != 0) {
-        r4_1 = arg0.addr() + 0x54u;  // (from the original)
-        lock_member_lock(arg0.addr() + 0x54u);  // (from the original)
+        r4_1 = owner.addr() + 0x54u;  // (from the original)
+        lock_member_lock(owner.addr() + 0x54u, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     }
-    gptr<Local_00131c14_r5_1> r5_1 = gptr<Local_00131c14_r5_1>(arg0.addr() + 0x28u);  // (from the original)
-    insert_node_after_00138560(r5_1.addr(), r5_1->word_c + r1);
+    gptr<Local_00131c14_r5_1> r5_1 = gptr<Local_00131c14_r5_1>(owner.addr() + 0x28u);  // (from the original)
+    insert_node_after_00138560(r5_1.addr(), r5_1->word_c + index);
     r5_1->word_8 = r5_1->word_8 + 1u;
     if (r4_1 != 0) {
         unlock_member_lock(r4_1, guest::cpu()->r[1]);
@@ -662,7 +664,7 @@ void f_00131c14(gptr<Object_00131c14_0> arg0, u32 r1) {
 }
 
 }  // namespace d_00131c14
-GUEST_EXPORT(0x00131c14, d_00131c14::f_00131c14);
+GUEST_EXPORT(0x00131c14, d_00131c14::insert_into_list_28_locked);
 
 // f_00131e5c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 // Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the
@@ -768,7 +770,7 @@ GUEST_OFFSET(Local_00131eb8_r0_2, word_c, 0xc);
 inline constexpr u32 vtable_sead__ExpHeap = 0x00905adcu;
 inline constexpr u32 vtable_sead__ExpHeap_at_18 = 0x00905b50u;
 inline constexpr guest::Function<0x00131c8c, u32(u32, u32, u32, u32)> sead__SafeStringBase_char___SafeStringBase_00131c8c;
-inline constexpr guest::Function<0x00135740, u32(u32, u32)> lock_member_lock;
+inline constexpr guest::Function<0x00135740, u32(u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 
 struct __attribute__((packed)) Frame_00131eb8 {
@@ -815,7 +817,7 @@ u32 sead__ExpHeap__ExpHeap(u32 r0, u32 r1, u32 r2) {
     }
     if (r0_4 != 0) {
         r5_2 = r1_2;
-        lock_member_lock(r1_2, r1_2);
+        lock_member_lock(r1_2, r1_2, vtable_sead__ExpHeap_at_18);
         r1_2 = guest::cpu()->r[1];
     }
     heap->word_84 = 0;
@@ -834,12 +836,12 @@ GUEST_EXPORT_FRAMED(0x00131eb8, d_00131eb8::sead__ExpHeap__ExpHeap, 0x4030);  //
 // f_00131f64: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00131f64 {
 
-struct __attribute__((packed)) Object_00131f64_0 {
+struct __attribute__((packed)) sead__SafeStringBase_char_ {
     u32 word_0;
     u32 word_4;
 };
-GUEST_OFFSET(Object_00131f64_0, word_0, 0x0);
-GUEST_OFFSET(Object_00131f64_0, word_4, 0x4);
+GUEST_OFFSET(sead__SafeStringBase_char_, word_0, 0x0);
+GUEST_OFFSET(sead__SafeStringBase_char_, word_4, 0x4);
 
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
 inline constexpr u32 global_00975344_address = 0x00975344u;
@@ -861,12 +863,12 @@ GUEST_OFFSET(Frame_00131f64, word_0, 0x0);
 GUEST_OFFSET(Frame_00131f64, word_4, 0x4);
 GUEST_SIZE(Frame_00131f64, 0xc);
 
-void sead__SafeStringBase_char___SafeStringBase_00131f64(gptr<Object_00131f64_0> arg0) {
+void sead__SafeStringBase_char___SafeStringBase_00131f64(gptr<sead__SafeStringBase_char_> safe_string_base_char) {
     guest::StackFrameOf<Frame_00131f64> frame;  // the original's stack frame
-    *global_0097533c = arg0.addr();
+    *global_0097533c = safe_string_base_char.addr();
     *global_00975348 = 0;
-    u32 r0_1 = arg0->word_0;
-    u32 r1_1 = arg0->word_4;
+    u32 r0_1 = safe_string_base_char->word_0;
+    u32 r1_1 = safe_string_base_char->word_4;
     frame->word_4 = 0x8a3bc4;  // (from the original)
     frame->word_0 = vtable_sead__SafeStringBase_char_;
     u32 r0_2 = sead__ExpHeap__create_at(r0_1, r1_1, frame.at(0).addr(), 0u);
@@ -949,18 +951,18 @@ namespace d_0013208c {
 inline constexpr u32 vtable_sead__DelegateEvent_void__ = 0x009043ccu;
 inline constexpr u32 vtable_sead__Framework = 0x00905f9cu;
 
-void sead__Framework__Framework(gptr<sead__Framework> arg0) {
-    arg0->word_0 = vtable_sead__Framework;
-    arg0->byte_4 = 0;
-    arg0->word_8 = 0;
-    arg0->word_c = vtable_sead__DelegateEvent_void__;
-    u32 r1_1 = arg0.addr() + 0x10u;  // (from the original)
-    arg0->word_14 = r1_1;
-    arg0->word_18 = 0;
-    arg0->word_10 = r1_1;
-    arg0->word_1c = 0;
-    arg0->word_20 = 0;
-    arg0->word_24 = 0;
+void sead__Framework__Framework(gptr<sead__Framework> framework) {
+    framework->word_0 = vtable_sead__Framework;
+    framework->byte_4 = 0;
+    framework->word_8 = 0;
+    framework->word_c = vtable_sead__DelegateEvent_void__;
+    u32 r1_1 = framework.addr() + 0x10u;  // (from the original)
+    framework->word_14 = r1_1;
+    framework->word_18 = 0;
+    framework->word_10 = r1_1;
+    framework->word_1c = 0;
+    framework->word_20 = 0;
+    framework->word_24 = 0;
 }
 
 }  // namespace d_0013208c
@@ -972,18 +974,18 @@ namespace d_001320cc {
 inline constexpr u32 vtable_sead__IDisposer = 0x00905fecu;
 inline constexpr u32 global_00975338_address = 0x00975338u;
 inline guest::global<u32, 0x00975338> global_00975338;
-inline constexpr guest::Function<0x00137ec0, u32(u32, u32)> call_00137ec0;
+inline constexpr guest::Function<0x00137ec0, u32(u32, u32, u32, u32)> insert_into_list_40_locked;
 inline constexpr guest::Function<0x00138fec, u32(u32, u32, u32, u32)> find_owner_in_heap;
-inline constexpr guest::Function<0x003045a8, u32(u32, u32)> call_3045a8;
+inline constexpr guest::Function<0x003045a8, u32(u32, u32, u32, u32)> call_3045a8;
 
-u32 sead__IDisposer__IDisposer_001320cc(gptr<sead__IDisposer> arg0, u32 r1, u32 r2) {
-    u32 r0 = arg0.addr();
+u32 sead__IDisposer__IDisposer_001320cc(gptr<sead__IDisposer> i_disposer, u32 r1, u32 r2) {
+    u32 r0 = i_disposer.addr();
     u32 r0_2 = 0;
-    arg0->word_0 = vtable_sead__IDisposer;
-    arg0->word_4 = r1;
-    arg0->word_8 = 0;
-    arg0->word_c = 0;
-    u32 r0_1 = arg0->word_4;
+    i_disposer->word_0 = vtable_sead__IDisposer;
+    i_disposer->word_4 = r1;
+    i_disposer->word_8 = 0;
+    i_disposer->word_c = 0;
+    u32 r0_1 = i_disposer->word_4;
     if (r0_1 == 0) {
         if (r2 != 0 && r2 != 1u) {
             if (r2 == 2u) {
@@ -1002,7 +1004,8 @@ u32 sead__IDisposer__IDisposer_001320cc(gptr<sead__IDisposer> arg0, u32 r1, u32 
             return r0;
         }
         r0_1 = find_owner_in_heap(r0_2, r0, r2, guest::cpu()->r[3]);
-        arg0->word_4 = r0_1;
+        r2 = guest::cpu()->r[2];
+        i_disposer->word_4 = r0_1;
         if (r0_1 == 0) {
             return r0;
         }
@@ -1013,14 +1016,15 @@ L_132140:;
             guest::cpu()->r[1] = 0u;
             return r0;
         }
-        r0_1 = call_3045a8(r0_3, 0u);
-        arg0->word_4 = r0_1;
+        r0_1 = call_3045a8(r0_3, 0u, r2, guest::cpu()->r[3]);
+        r2 = guest::cpu()->r[2];
+        i_disposer->word_4 = r0_1;
         if (r0_1 == 0) {
             return r0;
         }
     }
 L_13215c:;
-    call_00137ec0(r0_1, r0);
+    insert_into_list_40_locked(r0_1, r0, r2, guest::cpu()->r[3]);
     return r0;
 }
 
@@ -1033,31 +1037,31 @@ namespace d_00132174 {
 inline constexpr u32 vtable_sead__IDisposer = 0x00905fecu;
 inline constexpr u32 global_00975338_address = 0x00975338u;
 inline guest::global<u32, 0x00975338> global_00975338;
-inline constexpr guest::Function<0x00137ec0, u32(u32, u32)> call_00137ec0;
+inline constexpr guest::Function<0x00137ec0, u32(u32, u32)> insert_into_list_40_locked;
 inline constexpr guest::Function<0x00138fec, u32(u32, u32, u32, u32)> find_owner_in_heap;
 
-u32 sead__IDisposer__IDisposer_00132174(gptr<sead__IDisposer> arg0) {
-    arg0->word_0 = vtable_sead__IDisposer;
-    arg0->word_4 = 0;
-    arg0->word_8 = 0;
-    arg0->word_c = 0;
+u32 sead__IDisposer__IDisposer_00132174(gptr<sead__IDisposer> i_disposer) {
+    i_disposer->word_0 = vtable_sead__IDisposer;
+    i_disposer->word_4 = 0;
+    i_disposer->word_8 = 0;
+    i_disposer->word_c = 0;
     u32 r0_1 = *global_00975338;
     if (r0_1 == 0) {
         guest::cpu()->r[1] = 0u;
-        return arg0.addr();
+        return i_disposer.addr();
     }
-    u32 r0_2 = find_owner_in_heap(r0_1, arg0.addr(), guest::cpu()->r[2], guest::cpu()->r[3]);
+    u32 r0_2 = find_owner_in_heap(r0_1, i_disposer.addr(), guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r1_1 = guest::cpu()->r[1];
     if (r0_2 != 0) {
-        r1_1 = arg0.addr();
+        r1_1 = i_disposer.addr();
     }
-    arg0->word_4 = r0_2;
+    i_disposer->word_4 = r0_2;
     if (r0_2 != 0) {
-        call_00137ec0(r0_2, r1_1);
+        insert_into_list_40_locked(r0_2, r1_1);
         r1_1 = guest::cpu()->r[1];
     }
     guest::cpu()->r[1] = r1_1;
-    return arg0.addr();
+    return i_disposer.addr();
 }
 
 }  // namespace d_00132174
@@ -1078,8 +1082,8 @@ void sead__ThreadMgr__SingletonDisposer___SingletonDisposer_(u32 r0) {
     if (*global_009753d0 == 0) {
         u32 r2_1 = 4u;
         u32 r1_1 = r0;
-        u32 r0_1 = allocate_from_heap_00131280(0x44u, r1_1, r2_1, guest::cpu()->r[3]);  // (from the original)
-        u32 r0_2 = r0_1 + 4u;
+        u32 block = allocate_from_heap_00131280(0x44u, r1_1, r2_1, guest::cpu()->r[3]);  // (from the original)
+        u32 r0_2 = block + 4u;
         if (r0_2 != 0) {
             r1_1 = r0;
             r2_1 = 3u;
@@ -1087,10 +1091,10 @@ void sead__ThreadMgr__SingletonDisposer___SingletonDisposer_(u32 r0) {
             *gptr<u32>(r0_2) = vtable_sead__ThreadMgr__SingletonDisposer_;
         }
         *global_009753d4 = r0_2;
-        if (r0_1 == 0) {
+        if (block == 0) {
             r0_3 = 0u;
         } else {
-            r0_3 = sead__ThreadMgr__ThreadMgr(r0_1, r1_1, r2_1);
+            r0_3 = sead__ThreadMgr__ThreadMgr(block, r1_1, r2_1);
         }
         *global_009753d0 = r0_3;
     }
@@ -1123,18 +1127,18 @@ GUEST_OFFSET(Object_00132530_0, word_4, 0x4);
 
 inline constexpr guest::Function<0x0013d040, u32(u32, u32, u32, u32)> call_0013d040;
 
-void f_00132530(gptr<Object_00132530_0> arg0) {
-    u32 r0_1 = arg0->word_0;
+void release_and_clear_pair(gptr<Object_00132530_0> pair) {
+    u32 r0_1 = pair->word_0;
     if (r0_1 == 0) {
         return;
     }
     call_0013d040(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-    arg0->word_0 = 0;
-    arg0->word_4 = 0;
+    pair->word_0 = 0;
+    pair->word_4 = 0;
 }
 
 }  // namespace d_00132530
-GUEST_EXPORT_FRAMED(0x00132530, d_00132530::f_00132530, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00132530, d_00132530::release_and_clear_pair, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_001325a0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001325a0 {
@@ -1222,7 +1226,7 @@ GUEST_OFFSET(Local_00133580_ea_1, word_0, 0x0);
 GUEST_OFFSET(Local_00133580_ea_1, word_4, 0x4);
 
 inline constexpr u32 vtable_sead__FixedSafeString_32_ = 0x009048ecu;
-inline guest::global<u8, 0x008c9f1c> global_008c9f1c;
+inline guest::global<u8, 0x008c9f1c> empty_string;
 inline constexpr guest::Function<0x00137fa4, u32(u32, u32, u32, u32)> sead__SafeStringBase_char___SafeStringBase_00137fa4;
 inline constexpr guest::Function<0x0013805c, u32(u32, u32)> sead__SafeStringBase_char___SafeStringBase_0013805c;
 inline constexpr guest::Function<0x00138f3c, u32(u32, u32)> call_00138f3c;
@@ -1245,9 +1249,9 @@ u32 sead__FixedSafeString_32___FixedSafeString_00133580(u32 r0, u32 r1, u32 r2) 
     gptr<Local_00133580_ea_1> ea_1 = gptr<Local_00133580_ea_1>(frame.at(4).addr());
     ea_1->word_0 = frame.at(0xc).addr();  // (from the original)
     ea_1->word_4 = 0x20;  // (from the original)
-    u32 r3_1 = *global_008c9f1c;
+    u32 r3_1 = *empty_string;
     *gptr<u8>(frame->word_4 + 0x1fu) = u8(r3_1);  // (from the original)
-    frame->byte_c = *global_008c9f1c;
+    frame->byte_c = *empty_string;
     frame->word_0 = vtable_sead__FixedSafeString_32_;
     u32 r0_2 = sead__SafeStringBase_char___SafeStringBase_00137fa4(frame.at(0).addr(), r1, 0x20u, r3_1);  // (from the original)
     if (r0_2 != 0) {
@@ -1496,16 +1500,16 @@ namespace d_001343e4 {
 inline constexpr u32 vtable_sead__FixedSafeString_256_ = 0x009048b0u;
 inline constexpr u32 vtable_sead__FixedSafeStringBase_char__256_ = 0x009050f8u;
 inline constexpr u32 vtable_sead__BufferedSafeStringBase_char_ = 0x0090558cu;
-inline guest::global<u8, 0x008c9f1c> global_008c9f1c;
+inline guest::global<u8, 0x008c9f1c> empty_string;
 
-void sead__BufferedSafeStringBase_char___BufferedSafeStringBase_001343e4(gptr<sead__FixedSafeString_256_> arg0) {
-    arg0->word_4 = arg0.addr() + 0xcu;  // (from the original)
-    arg0->word_0 = vtable_sead__BufferedSafeStringBase_char_;
-    arg0->word_8 = 0x100;  // (from the original)
-    *gptr<u8>(arg0->word_4 + 0xffu) = *global_008c9f1c;  // (from the original)
-    arg0->word_0 = vtable_sead__FixedSafeStringBase_char__256_;
-    *gptr<u8>(arg0->word_4) = *global_008c9f1c;
-    arg0->word_0 = vtable_sead__FixedSafeString_256_;
+void sead__BufferedSafeStringBase_char___BufferedSafeStringBase_001343e4(gptr<sead__FixedSafeString_256_> fixed_safe_string) {
+    fixed_safe_string->word_4 = fixed_safe_string.addr() + 0xcu;  // (from the original)
+    fixed_safe_string->word_0 = vtable_sead__BufferedSafeStringBase_char_;
+    fixed_safe_string->word_8 = 0x100;  // (from the original)
+    *gptr<u8>(fixed_safe_string->word_4 + 0xffu) = *empty_string;  // (from the original)
+    fixed_safe_string->word_0 = vtable_sead__FixedSafeStringBase_char__256_;
+    *gptr<u8>(fixed_safe_string->word_4) = *empty_string;
+    fixed_safe_string->word_0 = vtable_sead__FixedSafeString_256_;
     guest::cpu()->r[1] = vtable_sead__FixedSafeString_256_;
 }
 
@@ -1585,14 +1589,14 @@ namespace d_00134f70 {
 
 inline constexpr u32 vtable_SoundFaderEx = 0x008ed7f4u;
 
-void SoundFaderEx__SoundFaderEx(gptr<SoundFaderEx> arg0) {
+void SoundFaderEx__SoundFaderEx(gptr<SoundFaderEx> sound_fader_ex) {
     float S0_1 = 0.0f;
-    arg0->word_4 = std::bit_cast<u32>(S0_1);
-    arg0->word_8 = std::bit_cast<u32>(S0_1);
-    arg0->float_c = S0_1;
-    arg0->word_10 = ~0u;
-    arg0->word_14 = 0;
-    arg0->word_0 = vtable_SoundFaderEx;
+    sound_fader_ex->word_4 = std::bit_cast<u32>(S0_1);
+    sound_fader_ex->word_8 = std::bit_cast<u32>(S0_1);
+    sound_fader_ex->float_c = S0_1;
+    sound_fader_ex->word_10 = ~0u;
+    sound_fader_ex->word_14 = 0;
+    sound_fader_ex->word_0 = vtable_SoundFaderEx;
     guest::cpu()->s[0] = S0_1;
 }
 
@@ -1623,9 +1627,9 @@ GUEST_OFFSET(Local_00135010_r5_1, word_14, 0x14);
 
 inline constexpr guest::Function<0x00135748, u32(u32, u32)> RecursiveLock__lock;
 inline constexpr guest::Function<0x001357ec, u32(u32)> RecursiveLock__unlock;
-inline constexpr guest::Function<0x00138f30, u32(u32)> call_00138f30;
+inline constexpr guest::Function<0x00138f30, u32(u32)> List__last_index;
 inline constexpr guest::Function<0x0013b6e0, u32(u32, u32)> call_0013b6e0;
-inline constexpr guest::Function<0x0013c0e8, u32(u32, u32, u32, u32)> call_0013c0e8;
+inline constexpr guest::Function<0x0013c0e8, u32(u32, u32, u32, u32)> state_is_1_or_2;
 
 u32 f_00135010(u32 r0, u32 r1, u32 r2) {
     u32 r7_1 = r1;
@@ -1634,12 +1638,12 @@ u32 f_00135010(u32 r0, u32 r1, u32 r2) {
         r1 = r5_1->word_14;
         if (r1 != 0) {
             u32 r1_1 = r2 * 3u;
-            u32 r0_2 = call_0013c0e8(r0 + (r1_1 << 3) + 0x2cu, r1_1, r2, guest::cpu()->r[3]);  // (from the original)
+            u32 r0_2 = state_is_1_or_2(r0 + (r1_1 << 3) + 0x2cu, r1_1, r2, guest::cpu()->r[3]);  // (from the original)
             r1 = guest::cpu()->r[1];
             if (r0_2 == 0) {
                 u32 r4_1 = r5_1->word_14;
                 RecursiveLock__lock(r4_1 + 4u, r1);
-                u32 r0_4 = call_00138f30(r4_1 + 0x10u);  // (from the original)
+                u32 r0_4 = List__last_index(r4_1 + 0x10u);  // (from the original)
                 RecursiveLock__unlock(r4_1 + 4u);
                 if (s32(r0_4) > s32(r7_1)) {
                     call_0013b6e0(r5_1->word_14, r7_1);
@@ -1660,13 +1664,13 @@ namespace d_00135134 {
 
 inline constexpr u32 vtable_SoundMelodyPlayerOneSeqBase = 0x008f701cu;
 
-void SoundMelodyPlayerOneSeqBase__SoundMelodyPlayerOneSeqBase(gptr<SoundMelodyPlayerOneSeqBase> arg0) {
-    arg0->word_0 = vtable_SoundMelodyPlayerOneSeqBase;
-    arg0->word_4 = 0;
-    arg0->word_8 = 0;
-    arg0->word_c = 0;
-    arg0->byte_10 = 0;
-    arg0->byte_11 = 0;
+void SoundMelodyPlayerOneSeqBase__SoundMelodyPlayerOneSeqBase(gptr<SoundMelodyPlayerOneSeqBase> sound_melody_player_one_seq_base) {
+    sound_melody_player_one_seq_base->word_0 = vtable_SoundMelodyPlayerOneSeqBase;
+    sound_melody_player_one_seq_base->word_4 = 0;
+    sound_melody_player_one_seq_base->word_8 = 0;
+    sound_melody_player_one_seq_base->word_c = 0;
+    sound_melody_player_one_seq_base->byte_10 = 0;
+    sound_melody_player_one_seq_base->byte_11 = 0;
 }
 
 }  // namespace d_00135134
@@ -1848,12 +1852,12 @@ struct __attribute__((packed)) RecursiveLock {
 GUEST_OFFSET(RecursiveLock, owner, 0x4);
 GUEST_OFFSET(RecursiveLock, depth, 0x8);
 
-inline constexpr guest::Function<0x0012f050, u32(u32, u32)> call_0012f050;
+inline constexpr guest::Function<0x0012f050, u32(u32, u32, u32, u32)> call_0012f050;
 
 u32 RecursiveLock__lock(gptr<RecursiveLock> lock) {
     u32 owner = lock->owner;
     if (guest::cpu()->tls != owner) {
-        call_0012f050(lock.addr(), owner);
+        call_0012f050(lock.addr(), owner, guest::cpu()->r[2], guest::cpu()->r[3]);
         owner = guest::cpu()->r[1];
         lock->owner = guest::cpu()->tls;
     }
@@ -1909,16 +1913,16 @@ GUEST_OFFSET(Frame_0013580c, word_0, 0x0);
 GUEST_OFFSET(Frame_0013580c, word_4, 0x4);
 GUEST_SIZE(Frame_0013580c, 0x8);
 
-void LightLock__unlock(u32 lock) {
+void LightLock__unlock(u32 light_lock) {
     guest::StackFrameOf<Frame_0013580c> frame;  // the original's stack frame
     do {
-        *gptr<u32>(lock) = 0u - *gptr<u32>(lock);
+        *gptr<u32>(light_lock) = 0u - *gptr<u32>(light_lock);
         guest::preempt();
     } while (!u32(1));
     u32 r0_1 = *global_0097dff8;
     frame->word_0 = 0;
     frame->word_4 = 0;
-    svc_arbitrate_address(r0_1, lock, 0u, ~0u);
+    svc_arbitrate_address(r0_1, light_lock, 0u, ~0u);
 }
 
 }  // namespace d_0013580c
@@ -1928,14 +1932,14 @@ GUEST_EXPORT_FRAMED(0x0013580c, d_0013580c::LightLock__unlock, 0x4010);  // push
 namespace d_00135858 {
 
 
-u32 LightLock__try_lock(u32 lock) {
+u32 LightLock__try_lock(u32 light_lock) {
     u32 r1 = ~0u;
     do {
-        if (*gptr<u32>(lock) != 1u) {
+        if (*gptr<u32>(light_lock) != 1u) {
             guest::cpu()->r[1] = r1;
             return 0u;
         }
-        *gptr<u32>(lock) = r1;
+        *gptr<u32>(light_lock) = r1;
         guest::preempt();
     } while (!u32(1));
     guest::cpu()->r[1] = r1;
@@ -1979,14 +1983,14 @@ namespace d_00135a8c {
 inline constexpr u32 vtable_nn__cec__CTR__MessageBox = 0x008faf48u;
 inline constexpr guest::Function<0x0013a63c, u32(u32, u32, u32, u32)> call_0013a63c;
 
-u32 nn__cec__CTR__MessageBox__virtual_0(gptr<nn__cec__CTR__MessageBox> arg0) {
-    arg0->word_0 = vtable_nn__cec__CTR__MessageBox;
-    call_0013a63c(arg0.addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-    return arg0.addr();
+u32 nn__cec__CTR__MessageBox__destructor(gptr<nn__cec__CTR__MessageBox> message_box) {
+    message_box->word_0 = vtable_nn__cec__CTR__MessageBox;
+    call_0013a63c(message_box.addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    return message_box.addr();
 }
 
 }  // namespace d_00135a8c
-GUEST_EXPORT_FRAMED(0x00135a8c, d_00135a8c::nn__cec__CTR__MessageBox__virtual_0, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00135a8c, d_00135a8c::nn__cec__CTR__MessageBox__destructor, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_00135bb8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00135bb8 {
@@ -2002,32 +2006,32 @@ GUEST_OFFSET(Object_00135bb8_0, word_54, 0x54);
 
 inline constexpr guest::Function<0x0013e6bc, u32(u32, u32, u32, u32)> call_0013e6bc;
 
-void f_00135bb8(gptr<Object_00135bb8_0> arg0) {
-    arg0->word_54 = 0;
-    if (arg0->word_18 != 0) {
-        call_0013e6bc(arg0.addr() + 0x18u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-        arg0->word_18 = 0;
+void release_region_18(gptr<Object_00135bb8_0> owner) {
+    owner->word_54 = 0;
+    if (owner->word_18 != 0) {
+        call_0013e6bc(owner.addr() + 0x18u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        owner->word_18 = 0;
     }
 }
 
 }  // namespace d_00135bb8
-GUEST_EXPORT_FRAMED(0x00135bb8, d_00135bb8::f_00135bb8, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00135bb8, d_00135bb8::release_region_18, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_00135be4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00135be4 {
 
 inline constexpr guest::Function<0x0013e6bc, u32(u32, u32, u32, u32)> call_0013e6bc;
 
-void f_00135be4(gptr<nn__fnd__ExpHeapBase> arg0) {
-    if (arg0->word_18 == 0) {
+void ExpHeapBase__release_region(gptr<nn__fnd__ExpHeapBase> heap) {
+    if (heap->word_18 == 0) {
         return;
     }
-    call_0013e6bc(arg0.addr() + 0x18u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    arg0->word_18 = 0;
+    call_0013e6bc(heap.addr() + 0x18u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    heap->word_18 = 0;
 }
 
 }  // namespace d_00135be4
-GUEST_EXPORT_FRAMED(0x00135be4, d_00135be4::f_00135be4, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00135be4, d_00135be4::ExpHeapBase__release_region, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_00135efc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00135efc {
@@ -2102,7 +2106,7 @@ GUEST_OFFSET(Local_00135f34_r7_1, word_18, 0x18);
 inline constexpr u32 global_0097ea3c_address = 0x0097ea3cu;
 inline guest::global<u8, 0x0097ea38> global_0097ea38;
 inline guest::global<u32, 0x0097ea3c> global_0097ea3c;
-inline constexpr guest::Function<0x00136464, u32(u32)> read_u32_0x0097d8bc_;
+inline constexpr guest::Function<0x00136464, u32(u32, u32, u32, u32)> read_u32_0x0097d8bc_;
 inline constexpr guest::Function<0x0013a834, u32(u32, u32)> call_0013a834;
 
 struct __attribute__((packed)) Frame_00135f34 {
@@ -2139,7 +2143,7 @@ void f_00135f34(u32 r0, u32 r1, u32 r2, u32 r3) {
         frame->word_1c = r3;
         r4_1->word_0 = r0;
         r4_1->word_4 = r2;
-        u32 r0_1 = read_u32_0x0097d8bc_(r0);
+        u32 r0_1 = read_u32_0x0097d8bc_(r0, r1, r2, r3);
         call_0013a834(r0_1 + 0x58u, frame.at(0).addr());  // (from the original)
     }
 }
@@ -2219,7 +2223,7 @@ GUEST_OFFSET(Local_00136014_r9_1, word_1c, 0x1c);
 inline constexpr u32 global_0097ea3c_address = 0x0097ea3cu;
 inline guest::global<u8, 0x0097ea38> global_0097ea38;
 inline guest::global<u32, 0x0097ea3c> global_0097ea3c;
-inline constexpr guest::Function<0x00136464, u32(u32)> read_u32_0x0097d8bc_;
+inline constexpr guest::Function<0x00136464, u32(u32, u32, u32, u32)> read_u32_0x0097d8bc_;
 inline constexpr guest::Function<0x0013a834, u32(u32, u32)> call_0013a834;
 
 struct __attribute__((packed)) Frame_00136014 {
@@ -2261,7 +2265,7 @@ void f_00136014(u32 r0, u32 r1, u32 r2, u32 r3) {
     r4_1->word_8 = r7_1;
     *frame.at<u16>(0x1c) = u16(r3);  // (from the original)
     frame->half_1e = u16(r8_1);
-    u32 r0_1 = read_u32_0x0097d8bc_(r0);
+    u32 r0_1 = read_u32_0x0097d8bc_(r0, r1, r2, r3);
     call_0013a834(r0_1 + 0x58u, frame.at(0).addr());  // (from the original)
 }
 
@@ -2309,7 +2313,7 @@ inline constexpr u32 global_0097ea38_address = 0x0097ea38u;
 inline constexpr u32 global_0097ea3c_address = 0x0097ea3cu;
 inline guest::global<u8, 0x0097ea38> global_0097ea38;
 inline guest::global<u32, 0x0097ea3c> global_0097ea3c;
-inline constexpr guest::Function<0x00136464, u32(u32)> read_u32_0x0097d8bc_;
+inline constexpr guest::Function<0x00136464, u32(u32, u32, u32, u32)> read_u32_0x0097d8bc_;
 inline constexpr guest::Function<0x0013a834, u32(u32, u32)> call_0013a834;
 
 struct __attribute__((packed)) Frame_00136188 {
@@ -2345,7 +2349,7 @@ void f_00136188(u32 r0, u32 r1, u32 r2, u32 r3) {
     r4_1->word_c = r3_1;
     r4_1->word_10 = r6_1 | r7_1 << 0x10;  // (from the original)
     r4_1->word_14 = r8_1;
-    u32 r0_1 = read_u32_0x0097d8bc_(r0);
+    u32 r0_1 = read_u32_0x0097d8bc_(r0, r1, r2, r3_1);
     call_0013a834(r0_1 + 0x58u, frame.at(0).addr());  // (from the original)
 }
 
@@ -2397,7 +2401,7 @@ GUEST_OFFSET(Local_00136344_r4_1, word_8, 0x8);
 inline constexpr u32 global_0097ea3c_address = 0x0097ea3cu;
 inline guest::global<u8, 0x0097ea38> global_0097ea38;
 inline guest::global<u32, 0x0097ea3c> global_0097ea3c;
-inline constexpr guest::Function<0x00136464, u32(u32)> read_u32_0x0097d8bc_;
+inline constexpr guest::Function<0x00136464, u32(u32, u32, u32, u32)> read_u32_0x0097d8bc_;
 inline constexpr guest::Function<0x0013a834, u32(u32, u32)> call_0013a834;
 
 struct __attribute__((packed)) Frame_00136344 {
@@ -2410,10 +2414,12 @@ GUEST_SIZE(Frame_00136344, 0x24);
 
 void f_00136344(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_00136344> frame;  // the original's stack frame
+    u32 r1_1 = r1 | r2 << 0x10;  // (from the original)
     gptr<Local_00136344_ea_1> ea_1 = gptr<Local_00136344_ea_1>(frame.at(0x40).addr());  // (from the original)
     u32 r5_1 = ea_1->word_0;
     u32 r6_1 = ea_1->word_4;
     u32 r7_1 = ea_1->word_8;
+    u32 r2_1 = r5_1 | r6_1 << 0x10;  // (from the original)
     u32 r9_1 = *global_0097ea3c;
     u32 r12_1 = *gptr<u32>(r9_1);
     gptr<Local_00136344_ea_2> ea_2 = gptr<Local_00136344_ea_2>(r9_1 + 0x18u);  // (from the original)
@@ -2429,10 +2435,10 @@ void f_00136344(u32 r0, u32 r1, u32 r2, u32 r3) {
     ea_7->word_0 = r0;
     ea_7->word_4 = r3;
     gptr<Local_00136344_r4_1> r4_1 = gptr<Local_00136344_r4_1>(frame.at(0xc).addr());  // (from the original)
-    r4_1->word_0 = r1 | r2 << 0x10;  // (from the original)
-    r4_1->word_4 = r5_1 | r6_1 << 0x10;  // (from the original)
+    r4_1->word_0 = r1_1;
+    r4_1->word_4 = r2_1;
     r4_1->word_8 = r7_1;
-    u32 r0_1 = read_u32_0x0097d8bc_(r0);
+    u32 r0_1 = read_u32_0x0097d8bc_(r0, r1_1, r2_1, r3);
     call_0013a834(r0_1 + 0x58u, frame.at(0).addr());  // (from the original)
 }
 
@@ -2492,12 +2498,14 @@ u32 f_0013654c(u32 r0) {
 GUEST_EXPORT(0x0013654c, d_0013654c::f_0013654c);
 
 // f_001365d4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Calls call_00136598 up to twice while it fails with a retryable result; the result (one kind of failure is mapped to
+// a fixed result code).
 namespace d_001365d4 {
 
 inline constexpr guest::Function<0x00134250, u32(u32, u32, u32)> call_00134250;
 inline constexpr guest::Function<0x00136598, u32(u32, u32, u32, u32)> call_00136598;
 
-u32 f_001365d4(u32 r0, u32 r1_unused, u32 r2) {
+u32 retry_service_call_twice(u32 r0, u32 r1_unused, u32 r2) {
     u32 r8 = r0;
     u32 r1 = 0x4000188u;  // (from the original)
     u32 r5 = 0xf9605002u;  // (from the original)
@@ -2541,7 +2549,7 @@ L_1365f8:;
 }
 
 }  // namespace d_001365d4
-GUEST_EXPORT_FRAMED(0x001365d4, d_001365d4::f_001365d4, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x001365d4, d_001365d4::retry_service_call_twice, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_00136718: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 // Unlinks every node, counting each down and leaving it detached.
@@ -2553,15 +2561,15 @@ struct __attribute__((packed)) Object_00136718_1 {
 GUEST_OFFSET(Object_00136718_1, word_0, 0x0);
 
 
-u32 LinkedList__clear(u32 r0, gptr<Object_00136718_1> sentinel) {
+u32 LinkedList__clear(u32 linked_list, gptr<Object_00136718_1> sentinel) {
     u32 node = sentinel.addr();
     u32 r4 = 0;
     u32 next = 0;
-    u32 r3 = r0;
-    r0 = sentinel->word_0;
-    if (node == r0) {
+    u32 r3 = linked_list;
+    linked_list = sentinel->word_0;
+    if (node == linked_list) {
         guest::cpu()->r[1] = node;
-        return r0;
+        return linked_list;
     } else {
         r4 = 0u;
     }
@@ -2575,9 +2583,9 @@ u32 LinkedList__clear(u32 r0, gptr<Object_00136718_1> sentinel) {
         *gptr<u32>(node + 4u) = r4;
         node = next;
         guest::preempt();
-    } while (next != r0);
+    } while (next != linked_list);
     guest::cpu()->r[1] = node;
-    return r0;
+    return linked_list;
 }
 
 }  // namespace d_00136718
@@ -2691,10 +2699,10 @@ GUEST_EXPORT(0x00136c9c, d_00136c9c::f_00136c9c);
 namespace d_00136cb0 {
 
 
-u32 nw__lyt__Layout__virtual_9(gptr<nw__lyt__Layout> arg0) {
-    u32 r2_1 = *gptr<u32>(arg0->word_0 + 0x20u);  // (from the original)
-    // virtual function 8 of arg0.addr() (nw__lyt__Layout)
-    return guest::call_address<u32>(r2_1, arg0.addr(), 0u, r2_1, guest::cpu()->r[3]);
+u32 nw__lyt__Layout__virtual_9(gptr<nw__lyt__Layout> layout) {
+    u32 r2_1 = *gptr<u32>(layout->word_0 + 0x20u);  // (from the original)
+    // virtual function 8 of layout.addr() (nw__lyt__Layout)
+    return guest::call_address<u32>(r2_1, layout.addr(), 0u, r2_1, guest::cpu()->r[3]);
 }
 
 }  // namespace d_00136cb0
@@ -2811,16 +2819,16 @@ inline constexpr u32 vtable_nw__snd__SoundDataManager_at_c = 0x00901eb4u;
 inline constexpr u32 vtable_nw__snd__internal__driver__DisposeCallback = 0x00902278u;
 inline constexpr guest::Function<0x0013b560, u32(u32)> nw__snd__internal__SoundArchiveLoader__SoundArchiveLoader;
 
-u32 nw__snd__internal__driver__DisposeCallback__DisposeCallback_00136e0c(gptr<nw__snd__SoundDataManager> arg0) {
-    arg0->word_0 = vtable_nw__snd__internal__driver__DisposeCallback;
-    arg0->word_4 = 0;
-    u32 ea_1 = arg0.addr() + 8u;
-    arg0->word_8 = 0;
+u32 nw__snd__internal__driver__DisposeCallback__DisposeCallback_00136e0c(gptr<nw__snd__SoundDataManager> sound_data_manager) {
+    sound_data_manager->word_0 = vtable_nw__snd__internal__driver__DisposeCallback;
+    sound_data_manager->word_4 = 0;
+    u32 ea_1 = sound_data_manager.addr() + 8u;
+    sound_data_manager->word_8 = 0;
     nw__snd__internal__SoundArchiveLoader__SoundArchiveLoader(ea_1 + 4u);
-    arg0->word_218 = 0;
-    arg0->word_c = vtable_nw__snd__SoundDataManager_at_c;
-    arg0->word_0 = vtable_nw__snd__SoundDataManager;
-    arg0->word_21c = 0;
+    sound_data_manager->word_218 = 0;
+    sound_data_manager->word_c = vtable_nw__snd__SoundDataManager_at_c;
+    sound_data_manager->word_0 = vtable_nw__snd__SoundDataManager;
+    sound_data_manager->word_21c = 0;
     return ea_1 - 8u;
 }
 
@@ -3082,6 +3090,8 @@ u32 load_sound_type_1(gptr<Object_001370dc_0> arg0, u32 r1, u32 r2, u32 r3) {
 GUEST_EXPORT_FRAMED(0x001370dc, d_001370dc::load_sound_type_1, 0x43f0);  // pushes {r4, r5, r6, r7, r8, r9, lr} first, as the original
 
 // f_001376d8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Replaces the owner's frame heap (destroying the old one) by a new one on the region (start, size), 4-byte aligned;
+// false when the region is too small or it fails.
 namespace d_001376d8 {
 
 struct __attribute__((packed)) Object_001376d8_0 {
@@ -3095,24 +3105,24 @@ inline constexpr guest::Function<0x0014077c, u32(u32, u32)> call_0014077c;
 inline constexpr guest::Function<0x00140900, u32(u32)> call_00140900;
 inline constexpr guest::Function<0x001412f8, u32(u32, u32, u32, u32)> call_001412f8;
 
-u32 f_001376d8(gptr<Object_001376d8_0> arg0, u32 r1, u32 r2) {
+u32 init_frame_heap_in_region(gptr<Object_001376d8_0> owner, u32 start, u32 size) {
     u32 r0_4 = 0;
-    if (arg0->word_0 != 0) {
-        call_001412f8(arg0.addr(), r1, r2, guest::cpu()->r[3]);
-        call_0014077c(arg0->word_0, 3u);
-        call_00140900(arg0->word_0);
-        arg0->word_0 = 0;
+    if (owner->word_0 != 0) {
+        call_001412f8(owner.addr(), start, size, guest::cpu()->r[3]);
+        call_0014077c(owner->word_0, 3u);
+        call_00140900(owner->word_0);
+        owner->word_0 = 0;
     }
-    u32 r1_2 = r1 + r2;
-    u32 r0_3 = r1 + 3u & ~3u;
-    if (r0_3 > r1_2) {
+    u32 r1_2 = start + size;
+    u32 aligned = start + 3u & ~3u;
+    if (aligned > r1_2) {
         r0_4 = 0u;
     } else {
-        r0_4 = nw__ut__FrameHeap__FrameHeap(r0_3, r1_2 - r0_3, 0u, guest::cpu()->r[3]);
+        r0_4 = nw__ut__FrameHeap__FrameHeap(aligned, r1_2 - aligned, 0u, guest::cpu()->r[3]);
         r1_2 = guest::cpu()->r[1];
-        arg0->word_0 = r0_4;
+        owner->word_0 = r0_4;
         if (r0_4 != 0) {
-            r0_4 = call_0013edb4(arg0.addr(), r1_2);
+            r0_4 = call_0013edb4(owner.addr(), r1_2);
             r1_2 = guest::cpu()->r[1];
             if (r0_4 != 0) {
                 r0_4 = 1u;
@@ -3124,24 +3134,24 @@ u32 f_001376d8(gptr<Object_001376d8_0> arg0, u32 r1, u32 r2) {
 }
 
 }  // namespace d_001376d8
-GUEST_EXPORT_FRAMED(0x001376d8, d_001376d8::f_001376d8, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x001376d8, d_001376d8::init_frame_heap_in_region, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_0013775c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013775c {
 
-struct __attribute__((packed)) Object_0013775c_0 {
+struct __attribute__((packed)) LinkedList {
     u32 word_0;
     u32 word_4;
     u32 word_8;
     u32 word_c;
 };
-GUEST_OFFSET(Object_0013775c_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013775c_0, word_4, 0x4);
-GUEST_OFFSET(Object_0013775c_0, word_8, 0x8);
-GUEST_OFFSET(Object_0013775c_0, word_c, 0xc);
+GUEST_OFFSET(LinkedList, word_0, 0x0);
+GUEST_OFFSET(LinkedList, word_4, 0x4);
+GUEST_OFFSET(LinkedList, word_8, 0x8);
+GUEST_OFFSET(LinkedList, word_c, 0xc);
 
 
-void LinkedList__initialize(gptr<Object_0013775c_0> list) {
+void LinkedList__initialize(gptr<LinkedList> list) {
     u32 r3_1 = list.addr() + 8u;
     list->word_0 = 0;
     list->word_4 = 0;
@@ -3164,11 +3174,11 @@ GUEST_OFFSET(Object_00137830_0, word_4, 0x4);
 inline constexpr guest::Function<0x0013b72c, u32(u32, u32, u32, u32)> call_0013b72c;
 
 void f_00137830(gptr<Object_00137830_0> arg0) {
-    u32 r1_1 = arg0->word_4;
-    if (r1_1 == 0) {
+    u32 r1 = 0;
+    if (arg0->word_4 == 0) {
         return;
     }
-    call_0013b72c(arg0.addr(), r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
+    call_0013b72c(arg0.addr(), r1, guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_00137830
@@ -3179,22 +3189,22 @@ namespace d_00137848 {
 
 inline constexpr u32 vtable_nw__font__ResFont = 0x00902720u;
 inline constexpr guest::Function<0x0013b72c, u32(u32, u32, u32, u32)> call_0013b72c;
-inline constexpr guest::Function<0x0013ef10, u32(u32, u32)> nw__font__ResFontBase__virtual_0;
+inline constexpr guest::Function<0x0013ef10, u32(u32, u32)> nw__font__ResFontBase__destructor;
 
-u32 nw__font__ResFont__virtual_0(gptr<nw__font__ResFont> arg0) {
+u32 nw__font__ResFont__destructor(gptr<nw__font__ResFont> res_font) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r1_1 = arg0->word_4;
-    arg0->word_0 = vtable_nw__font__ResFont;
+    u32 r1_1 = res_font->word_4;
+    res_font->word_0 = vtable_nw__font__ResFont;
     if (r1_1 != 0) {
-        call_0013b72c(arg0.addr(), r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
+        call_0013b72c(res_font.addr(), r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
         r1_1 = guest::cpu()->r[1];
     }
     frame.release();
-    return nw__font__ResFontBase__virtual_0(arg0.addr(), r1_1);
+    return nw__font__ResFontBase__destructor(res_font.addr(), r1_1);
 }
 
 }  // namespace d_00137848
-GUEST_EXPORT(0x00137848, d_00137848::nw__font__ResFont__virtual_0);
+GUEST_EXPORT(0x00137848, d_00137848::nw__font__ResFont__destructor);
 
 // f_00137878: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00137878 {
@@ -3372,52 +3382,53 @@ GUEST_EXPORT(0x001379e4, d_001379e4::part_144_update);
 // An empty intrusive list whose nodes sit 0x10 bytes into their objects.
 namespace d_00137c60 {
 
-struct __attribute__((packed)) Object_00137c60_0 {
+struct __attribute__((packed)) OffsetList {
     u32 word_0;
     u32 word_4;
     u32 word_8;
     u32 word_c;
 };
-GUEST_OFFSET(Object_00137c60_0, word_0, 0x0);
-GUEST_OFFSET(Object_00137c60_0, word_4, 0x4);
-GUEST_OFFSET(Object_00137c60_0, word_8, 0x8);
-GUEST_OFFSET(Object_00137c60_0, word_c, 0xc);
+GUEST_OFFSET(OffsetList, word_0, 0x0);
+GUEST_OFFSET(OffsetList, word_4, 0x4);
+GUEST_OFFSET(OffsetList, word_8, 0x8);
+GUEST_OFFSET(OffsetList, word_c, 0xc);
 
 
-void OffsetList__initialize(gptr<Object_00137c60_0> arg0) {
-    arg0->word_4 = arg0.addr();
-    arg0->word_8 = 0;
-    arg0->word_0 = arg0.addr();
-    arg0->word_c = 0x10;  // (from the original)
+void OffsetList__initialize(gptr<OffsetList> offset_list) {
+    offset_list->word_4 = offset_list.addr();
+    offset_list->word_8 = 0;
+    offset_list->word_0 = offset_list.addr();
+    offset_list->word_c = 0x10;  // (from the original)
 }
 
 }  // namespace d_00137c60
 GUEST_EXPORT(0x00137c60, d_00137c60::OffsetList__initialize);
 
 // f_00137d88: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
 namespace d_00137d88 {
 
-struct __attribute__((packed)) Object_00137d88_0 {
+struct __attribute__((packed)) PointerArray {
     u32 word_0;
 };
-GUEST_OFFSET(Object_00137d88_0, word_0, 0x0);
+GUEST_OFFSET(PointerArray, word_0, 0x0);
 
 inline constexpr guest::Function<0x00131280, u32(u32, u32, u32)> allocate_from_heap_00131280;
 inline constexpr guest::Function<0x0013cbdc, u32(u32, u32, u32)> call_0013cbdc;
 
-void f_00137d88(gptr<Object_00137d88_0> arg0, u32 r1, u32 r2) {
+void PointerArray__allocate_2(gptr<PointerArray> array, u32 capacity, u32 heap) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    if (r1 != 0 && r1 >> 0x1f == ((r1 & (r1 ^ r1)) >> 0x1f)) {  // (from the original)
-        u32 r0_2 = allocate_from_heap_00131280(r1 << 2, r2, 4u);
-        arg0->word_0 = r0_2;
+    if (capacity != 0 && capacity >> 0x1f == ((capacity & (capacity ^ capacity)) >> 0x1f)) {  // (from the original)
+        u32 block = allocate_from_heap_00131280(capacity << 2, heap, 4u);
+        array->word_0 = block;
         frame.release();
-        call_0013cbdc(arg0.addr() + 4u, r0_2, r1);
+        call_0013cbdc(array.addr() + 4u, block, capacity);
         return;
     }
 }
 
 }  // namespace d_00137d88
-GUEST_EXPORT(0x00137d88, d_00137d88::f_00137d88);
+GUEST_EXPORT(0x00137d88, d_00137d88::PointerArray__allocate_2);
 
 // f_00137dc4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00137dc4 {
@@ -3482,11 +3493,11 @@ GUEST_EXPORT(0x00137e84, d_00137e84::unlock_member_lock);
 namespace d_00137e8c {
 
 inline constexpr u32 vtable_sead__CriticalSection = 0x00904830u;
-inline constexpr guest::Function<0x0013efb4, u32(u32, u32)> destroy_disposer;
+inline constexpr guest::Function<0x0013efb4, u32(u32, u32, u32, u32)> destroy_disposer;
 
-u32 destroy_critical_section(gptr<sead__CriticalSection> arg0) {
-    arg0->word_0 = vtable_sead__CriticalSection;
-    return destroy_disposer(arg0.addr(), vtable_sead__CriticalSection);
+u32 destroy_critical_section(gptr<sead__CriticalSection> critical_section) {
+    critical_section->word_0 = vtable_sead__CriticalSection;
+    return destroy_disposer(critical_section.addr(), vtable_sead__CriticalSection, guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_00137e8c
@@ -3498,16 +3509,17 @@ namespace d_00137e9c {
 inline constexpr u32 vtable_sead__AudioFxMemoryMgrCtr = 0x00905018u;
 inline constexpr guest::Function<0x0013b910, u32(u32)> sead__AudioFxMemoryMgr__AudioFxMemoryMgr;
 
-u32 sead__AudioFxMemoryMgrCtr__AudioFxMemoryMgrCtr(gptr<sead__AudioFxMemoryMgrCtr> arg0) {
-    sead__AudioFxMemoryMgr__AudioFxMemoryMgr(arg0.addr());
-    arg0->word_0 = vtable_sead__AudioFxMemoryMgrCtr;
-    return arg0.addr();
+u32 sead__AudioFxMemoryMgrCtr__AudioFxMemoryMgrCtr(gptr<sead__AudioFxMemoryMgrCtr> audio_fx_memory_mgr_ctr) {
+    sead__AudioFxMemoryMgr__AudioFxMemoryMgr(audio_fx_memory_mgr_ctr.addr());
+    audio_fx_memory_mgr_ctr->word_0 = vtable_sead__AudioFxMemoryMgrCtr;
+    return audio_fx_memory_mgr_ctr.addr();
 }
 
 }  // namespace d_00137e9c
 GUEST_EXPORT_FRAMED(0x00137e9c, d_00137e9c::sead__AudioFxMemoryMgrCtr__AudioFxMemoryMgrCtr, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_00137ec0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Inserts at position `index` of the list at +0x40, under the object's lock when it has one.
 namespace d_00137ec0 {
 
 struct __attribute__((packed)) Object_00137ec0_0 {
@@ -3524,24 +3536,24 @@ struct __attribute__((packed)) Local_00137ec0_r5_1 {
 GUEST_OFFSET(Local_00137ec0_r5_1, word_8, 0x8);
 GUEST_OFFSET(Local_00137ec0_r5_1, word_c, 0xc);
 
-inline constexpr guest::Function<0x00135740, u32(u32)> lock_member_lock;
+inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 inline constexpr guest::Function<0x00138560, u32(u32, u32)> insert_node_after_00138560;
 
-void f_00137ec0(gptr<Object_00137ec0_0> arg0, u32 r1) {
+void insert_into_list_40_locked(gptr<Object_00137ec0_0> owner, u32 index) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 r0_1 = arg0.addr() + 0x54u;  // (from the original)
+    u32 r0_1 = owner.addr() + 0x54u;  // (from the original)
     u32 r4_1 = 0u;
-    u32 r1_1 = u32(arg0->half_70) & 1u;
+    u32 r1_1 = u32(owner->half_70) & 1u;
     if (r1_1 != 0) {
         r1_1 = 1u;
     }
     if (r1_1 != 0) {
         r4_1 = r0_1;
-        lock_member_lock(r0_1);
+        lock_member_lock(r0_1, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
     }
-    gptr<Local_00137ec0_r5_1> r5_1 = gptr<Local_00137ec0_r5_1>(arg0.addr() + 0x40u);  // (from the original)
-    insert_node_after_00138560(r5_1.addr(), r5_1->word_c + r1);
+    gptr<Local_00137ec0_r5_1> r5_1 = gptr<Local_00137ec0_r5_1>(owner.addr() + 0x40u);  // (from the original)
+    insert_node_after_00138560(r5_1.addr(), r5_1->word_c + index);
     r5_1->word_8 = r5_1->word_8 + 1u;
     if (r4_1 != 0) {
         frame.release();
@@ -3551,7 +3563,7 @@ void f_00137ec0(gptr<Object_00137ec0_0> arg0, u32 r1) {
 }
 
 }  // namespace d_00137ec0
-GUEST_EXPORT(0x00137ec0, d_00137ec0::f_00137ec0);
+GUEST_EXPORT(0x00137ec0, d_00137ec0::insert_into_list_40_locked);
 
 // f_001382cc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001382cc {
@@ -3581,13 +3593,13 @@ namespace d_00138398 {
 
 inline constexpr u32 vtable_sead__AudioFx = 0x00905ac4u;
 
-void sead__AudioFx__AudioFx(gptr<sead__AudioFx> arg0) {
-    arg0->word_4 = 0;
-    arg0->word_0 = vtable_sead__AudioFx;
-    arg0->word_8 = 0;
-    arg0->byte_c = 0xff;  // (from the original)
-    arg0->word_10 = 0;
-    arg0->word_14 = 0;
+void sead__AudioFx__AudioFx(gptr<sead__AudioFx> audio_fx) {
+    audio_fx->word_4 = 0;
+    audio_fx->word_0 = vtable_sead__AudioFx;
+    audio_fx->word_8 = 0;
+    audio_fx->byte_c = 0xff;  // (from the original)
+    audio_fx->word_10 = 0;
+    audio_fx->word_14 = 0;
 }
 
 }  // namespace d_00138398
@@ -3601,15 +3613,15 @@ inline constexpr guest::Function<0x0012bfec, u32(u32, u32, u32, u32)> sead__Crit
 inline constexpr guest::Function<0x0013a37c, u32(u32, u32)> ThreadLocal__set;
 inline constexpr guest::Function<0x0013a38c, u32(u32)> ThreadLocal__allocate;
 
-u32 sead__ThreadMgr__ThreadMgr(gptr<sead__ThreadMgr> arg0) {
-    u32 r2_1 = arg0.addr() + 0x14u;  // (from the original)
-    arg0->word_0 = vtable_sead__ThreadMgr;
-    arg0->word_18 = r2_1;
-    arg0->word_1c = 0;
-    u32 ea_1 = arg0.addr() + 0x14u;  // (from the original)
-    arg0->word_14 = r2_1;
-    sead__CriticalSection__CriticalSection_0012bfec(ea_1 + 0xcu, arg0.addr() + 0x18u, r2_1, guest::cpu()->r[3]);  // (from the original)
-    arg0->word_3c = 0;
+u32 sead__ThreadMgr__ThreadMgr(gptr<sead__ThreadMgr> thread_mgr) {
+    u32 r2_1 = thread_mgr.addr() + 0x14u;  // (from the original)
+    thread_mgr->word_0 = vtable_sead__ThreadMgr;
+    thread_mgr->word_18 = r2_1;
+    thread_mgr->word_1c = 0;
+    u32 ea_1 = thread_mgr.addr() + 0x14u;  // (from the original)
+    thread_mgr->word_14 = r2_1;
+    sead__CriticalSection__CriticalSection_0012bfec(ea_1 + 0xcu, thread_mgr.addr() + 0x18u, r2_1, guest::cpu()->r[3]);  // (from the original)
+    thread_mgr->word_3c = 0;
     u32 r0_3 = ThreadLocal__allocate(ea_1 + 0x2cu);  // (from the original)
     ThreadLocal__set(r0_3, 0u);
     return r0_3 - 0x40u;  // (from the original)
@@ -3619,23 +3631,24 @@ u32 sead__ThreadMgr__ThreadMgr(gptr<sead__ThreadMgr> arg0) {
 GUEST_EXPORT_FRAMED(0x001385fc, d_001385fc::sead__ThreadMgr__ThreadMgr, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_001386f4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Releases the split's handle and takes one from the count of handles in use.
 namespace d_001386f4 {
 
 inline constexpr u32 global_00ae55f0_address = 0x00ae55f0u;
 inline guest::global<u8, 0x00975c32> global_00975c32;
-inline constexpr guest::Function<0x00135740, u32(u32)> lock_member_lock;
+inline constexpr guest::Function<0x00135740, u32(u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 inline constexpr guest::Function<0x0013bb88, u32(u32, u32, u32, u32)> release_owned_handle;
 
-void f_001386f4(gptr<ssys__ma__LoadSplit> arg0) {
+void LoadSplit__release_handle(gptr<ssys__ma__LoadSplit> split) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r1_1 = arg0->word_3c;
+    u32 r1_1 = split->word_3c;
     if (r1_1 == 0) {
         guest::cpu()->r[1] = r1_1;
         return;
     }
-    release_owned_handle(arg0.addr() + 0xcu, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    lock_member_lock(global_00ae55f0_address);
+    release_owned_handle(split.addr() + 0xcu, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    lock_member_lock(global_00ae55f0_address, r1_1);
     u32 r1_2 = u32(*global_00975c32) - 1u;
     *global_00975c32 = u8(r1_2);
     frame.release();
@@ -3644,7 +3657,7 @@ void f_001386f4(gptr<ssys__ma__LoadSplit> arg0) {
 }
 
 }  // namespace d_001386f4
-GUEST_EXPORT(0x001386f4, d_001386f4::f_001386f4);
+GUEST_EXPORT(0x001386f4, d_001386f4::LoadSplit__release_handle);
 
 // f_00138998: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00138998 {
@@ -3656,20 +3669,20 @@ struct __attribute__((packed)) Object_00138998_0 {
 GUEST_OFFSET(Object_00138998_0, word_0, 0x0);
 GUEST_OFFSET(Object_00138998_0, word_4, 0x4);
 
-inline constexpr guest::Function<0x00139724, u32(u32, u32, u32, u32)> call_00139724;
+inline constexpr guest::Function<0x00139724, u32(u32, u32, u32, u32)> free_object_and_buffer;
 
-void f_00138998(gptr<Object_00138998_0> arg0) {
-    u32 r0_1 = arg0->word_0;
+void release_and_clear_pair_2(gptr<Object_00138998_0> pair) {
+    u32 r0_1 = pair->word_0;
     if (r0_1 == 0) {
         return;
     }
-    call_00139724(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-    arg0->word_0 = 0;
-    arg0->word_4 = 0;
+    free_object_and_buffer(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    pair->word_0 = 0;
+    pair->word_4 = 0;
 }
 
 }  // namespace d_00138998
-GUEST_EXPORT_FRAMED(0x00138998, d_00138998::f_00138998, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00138998, d_00138998::release_and_clear_pair_2, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_001389c0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001389c0 {
@@ -3715,19 +3728,20 @@ void do_nothing_00138a1c(u32 r0) {
 GUEST_EXPORT_FRAMED(0x00138a1c, d_00138a1c::do_nothing_00138a1c, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_00138c2c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// The last index of list `index` (fewer than 6), read under its lock; -1 without one.
 namespace d_00138c2c {
 
-inline constexpr guest::Function<0x00135748, u32(u32, u32)> RecursiveLock__lock;
+inline constexpr guest::Function<0x00135748, u32(u32, u32, u32, u32)> RecursiveLock__lock;
 inline constexpr guest::Function<0x001357ec, u32(u32)> RecursiveLock__unlock;
-inline constexpr guest::Function<0x00138f30, u32(u32)> call_00138f30;
+inline constexpr guest::Function<0x00138f30, u32(u32)> List__last_index;
 
-u32 f_00138c2c(u32 r0, u32 r1) {
-    if (r1 < 6u) {
-        u32 r4_1 = *gptr<u32>(r0 + (r1 << 2) + 0x14u);  // (from the original)
-        if (r4_1 != 0) {
-            RecursiveLock__lock(r4_1 + 4u, r1);
-            u32 r0_2 = call_00138f30(r4_1 + 0x10u);  // (from the original)
-            RecursiveLock__unlock(r4_1 + 4u);
+u32 locked_list_last_index(u32 r0, u32 index) {
+    if (index < 6u) {
+        u32 list = *gptr<u32>(r0 + (index << 2) + 0x14u);  // (from the original)
+        if (list != 0) {
+            RecursiveLock__lock(list + 4u, index, guest::cpu()->r[2], guest::cpu()->r[3]);
+            u32 r0_2 = List__last_index(list + 0x10u);  // (from the original)
+            RecursiveLock__unlock(list + 4u);
             return r0_2;
         }
     }
@@ -3735,19 +3749,19 @@ u32 f_00138c2c(u32 r0, u32 r1) {
 }
 
 }  // namespace d_00138c2c
-GUEST_EXPORT_FRAMED(0x00138c2c, d_00138c2c::f_00138c2c, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00138c2c, d_00138c2c::locked_list_last_index, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_00138c78: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 // The value of a thread-local slot for the current thread.
 namespace d_00138c78 {
 
-struct __attribute__((packed)) Object_00138c78_0 {
+struct __attribute__((packed)) ThreadLocal {
     u32 word_0;
 };
-GUEST_OFFSET(Object_00138c78_0, word_0, 0x0);
+GUEST_OFFSET(ThreadLocal, word_0, 0x0);
 
 
-u32 ThreadLocal__get(gptr<Object_00138c78_0> slot) {
+u32 ThreadLocal__get(gptr<ThreadLocal> slot) {
     u32 thread_slots = guest::cpu()->tls;
     u32 r0_1 = gptr<u32>(thread_slots)[slot->word_0];
     guest::cpu()->r[1] = thread_slots;
@@ -3767,16 +3781,16 @@ struct __attribute__((packed)) Object_00138f08_0 {
 GUEST_OFFSET(Object_00138f08_0, word_4, 0x4);
 
 inline constexpr guest::Function<0x0013f718, u32(u32, u32)> call_0013f718;
-inline constexpr guest::Function<0x00141728, u32(u32, u32)> call_00141728;
+inline constexpr guest::Function<0x00141728, u32(u32, u32)> HandleTable__resolve;
 
 u32 archive_sound_type(gptr<Object_00138f08_0> arg0) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r0_2 = call_00141728(*gptr<u32>(arg0->word_4 + 0x3cu), guest::cpu()->r[1]);  // (from the original)
-    if (r0_2 == 0) {
-        return r0_2;
+    u32 entry = HandleTable__resolve(*gptr<u32>(arg0->word_4 + 0x3cu), guest::cpu()->r[1]);  // (from the original)
+    if (entry == 0) {
+        return entry;
     }
     frame.release();
-    return call_0013f718(r0_2, guest::cpu()->r[1]);
+    return call_0013f718(entry, guest::cpu()->r[1]);
 }
 
 }  // namespace d_00138f08
@@ -3785,19 +3799,19 @@ GUEST_EXPORT(0x00138f08, d_00138f08::archive_sound_type);
 // f_00138f30: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00138f30 {
 
-struct __attribute__((packed)) Object_00138f30_0 {
+struct __attribute__((packed)) List {
     u8 unknown_0[0x4];  // (not used here)
     u32 word_4;
 };
-GUEST_OFFSET(Object_00138f30_0, word_4, 0x4);
+GUEST_OFFSET(List, word_4, 0x4);
 
 
-u32 f_00138f30(gptr<Object_00138f30_0> arg0) {
-    return arg0->word_4 - 1u;
+u32 List__last_index(gptr<List> list) {
+    return list->word_4 - 1u;
 }
 
 }  // namespace d_00138f30
-GUEST_EXPORT(0x00138f30, d_00138f30::f_00138f30);
+GUEST_EXPORT(0x00138f30, d_00138f30::List__last_index);
 
 // f_001391c4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001391c4 {
@@ -3907,81 +3921,12 @@ u32 context_block_slot() {
 }  // namespace d_00139448
 GUEST_EXPORT(0x00139448, d_00139448::context_block_slot);
 
-// f_00139454: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
-namespace d_00139454 {
-
-struct __attribute__((packed)) Local_00139454_r1_1 {
-    u32 word_0;
-    u8 unknown_4[0x44];  // (not used here)
-    u32 word_48;
-};
-GUEST_OFFSET(Local_00139454_r1_1, word_0, 0x0);
-GUEST_OFFSET(Local_00139454_r1_1, word_48, 0x48);
-
-struct __attribute__((packed)) Local_00139454_r1_2 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u32 word_c;
-};
-GUEST_OFFSET(Local_00139454_r1_2, word_0, 0x0);
-GUEST_OFFSET(Local_00139454_r1_2, word_4, 0x4);
-GUEST_OFFSET(Local_00139454_r1_2, word_8, 0x8);
-GUEST_OFFSET(Local_00139454_r1_2, word_c, 0xc);
-
-struct __attribute__((packed)) Local_00139454_r2_2 {
-    u8 unknown_0[0x4];  // (not used here)
-    u32 word_4;
-    u8 unknown_8[0x44];  // (not used here)
-    u32 word_4c;
-    u8 unknown_50[0x3c];  // (not used here)
-    u32 word_8c;
-};
-GUEST_OFFSET(Local_00139454_r2_2, word_4, 0x4);
-GUEST_OFFSET(Local_00139454_r2_2, word_4c, 0x4c);
-GUEST_OFFSET(Local_00139454_r2_2, word_8c, 0x8c);
-
-inline constexpr u32 global_0097d784_address = 0x0097d784u;
-inline guest::global<u32, 0x0097d784> global_0097d784;
-
-void f_00139454(u32 r0) {
-    u32 r2_1 = *global_0097d784;
-    gptr<Local_00139454_r1_1> r1_1 = gptr<Local_00139454_r1_1>(r2_1 + 0x6a0u);  // (from the original)
-    if (r0 == 0x10u) {  // (from the original)
-        r1_1->word_0 = 0;
-        r1_1->word_48 = 0;
-        guest::cpu()->r[1] = r1_1.addr();
-        return;
-    }
-    gptr<Local_00139454_r2_2> r2_2 = gptr<Local_00139454_r2_2>(r1_1.addr() + (r0 << 2));
-    gptr<Local_00139454_r1_2> r1_2 = gptr<Local_00139454_r1_2>(r2_1 + 0x458u + r0 * 0x18u);  // (from the original)
-    u32 r0_1 = r1_2->word_0;
-    r2_2->word_4 = r0_1;
-    r2_2->word_4c = r0_1;
-    u32 r0_2 = r1_2->word_8;
-    u32 zf_1 = r0_2 - 0x1400u == 0;  // (from the original)
-    if (!zf_1) {
-        zf_1 = r0_2 - 0x1401u == 0;  // (from the original)
-        r0_2 = r0_2 - 0x1401u;  // (from the original)
-    }
-    u32 r3_2 = r1_2->word_c;
-    if (r3_2 == 0) {
-        r1_2 = gptr<Local_00139454_r1_2>(r1_2->word_4);
-        r3_2 = r1_2.addr() * (zf_1 ? 1u : r0_2 == 1u ? 2u : r0_2 == 5u ? 4u : 0u);
-    }
-    r2_2->word_8c = r3_2;
-    guest::cpu()->r[1] = r1_2.addr();
-}
-
-}  // namespace d_00139454
-GUEST_EXPORT(0x00139454, d_00139454::f_00139454);
-
 // f_0013959c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013959c {
 
 inline guest::global<u32, 0x008fac7c> global_008fac7c;
 inline guest::global<u32, 0x008fac88> global_008fac88;
-inline constexpr guest::Function<0x0012ede8, u32(u32, u32)> call_0012ede8;
+inline constexpr guest::Function<0x0012ede8, u32(u32, u32)> call_virtual_12_if_present;
 inline constexpr guest::Function<0x00134250, u32(u32, u32)> call_00134250;
 inline constexpr guest::Function<0x0013d85c, u32(u32, u32)> call_0013d85c;
 inline constexpr guest::Function<0x0013df14, u32(u32, u32, u32, u32)> call_0013df14;
@@ -4030,7 +3975,7 @@ u32 cfl_file_exists_13959c(u32 r0) {
                 call_00134250(r0_3, r1_2);
                 r1_2 = guest::cpu()->r[1];
             }
-            call_0012ede8(frame->word_4 & ~1u, r1_2);
+            call_virtual_12_if_present(frame->word_4 & ~1u, r1_2);
             frame->word_4 = 0;
         }
     }
@@ -4119,6 +4064,7 @@ u32 cfl_set_callback_1396c0(u32 r0, u32 r1, u32 r2, u32 r3) {
 GUEST_EXPORT(0x001396c0, d_001396c0::cfl_set_callback_1396c0);
 
 // f_00139724: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Frees the object's buffer (+0xc) when it has one, then the object, through the free hook.
 namespace d_00139724 {
 
 struct __attribute__((packed)) Object_00139724_0 {
@@ -4129,19 +4075,19 @@ GUEST_OFFSET(Object_00139724_0, word_c, 0xc);
 
 inline constexpr guest::Function<0x0013d060, u32(u32, u32, u32, u32)> call_free_hook;
 
-void f_00139724(gptr<Object_00139724_0> arg0) {
+void free_object_and_buffer(gptr<Object_00139724_0> object) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r0_1 = arg0->word_c;
+    u32 r0_1 = object->word_c;
     if (r0_1 != 0) {
         call_free_hook(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     }
     frame.release();
-    call_free_hook(arg0.addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    call_free_hook(object.addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     return;
 }
 
 }  // namespace d_00139724
-GUEST_EXPORT(0x00139724, d_00139724::f_00139724);
+GUEST_EXPORT(0x00139724, d_00139724::free_object_and_buffer);
 
 // f_00139a90: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00139a90 {
@@ -4315,72 +4261,18 @@ GUEST_EXPORT_FRAMED(0x00139dac, d_00139dac::f_00139dac, 0x4070);  // pushes {r4,
 // f_0013a37c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013a37c {
 
-struct __attribute__((packed)) Object_0013a37c_0 {
+struct __attribute__((packed)) ThreadLocal {
     u32 word_0;
 };
-GUEST_OFFSET(Object_0013a37c_0, word_0, 0x0);
+GUEST_OFFSET(ThreadLocal, word_0, 0x0);
 
 
-void ThreadLocal__set(gptr<Object_0013a37c_0> slot, u32 value) {
+void ThreadLocal__set(gptr<ThreadLocal> slot, u32 value) {
     *gptr<u32>(guest::cpu()->tls + (slot->word_0 << 2)) = value;
 }
 
 }  // namespace d_0013a37c
 GUEST_EXPORT(0x0013a37c, d_0013a37c::ThreadLocal__set);
-
-// f_0013a38c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
-// Takes the first free one of the 16 thread-local slots (fatal when none is free).
-namespace d_0013a38c {
-
-struct __attribute__((packed)) Local_0013a38c_r12 {
-    u16 half_0;
-};
-GUEST_OFFSET(Local_0013a38c_r12, half_0, 0x0);
-
-inline constexpr u32 global_00974f74_address = 0x00974f74u;
-inline constexpr u32 global_00ae0f94_address = 0x00ae0f94u;
-inline constexpr guest::Function<0x0012f204, u32(u32)> call_0012f204;
-
-u32 ThreadLocal__allocate(u32 r0) {
-    gptr<Local_0013a38c_r12> r12 = gptr<Local_0013a38c_r12>(global_00974f74_address);
-    u32 slot = r0;
-    u32 index = 0u;
-    u32 used = r12->half_0;
-    for (;;) {
-        r0 = lsr_r(used, index & 0xff);  // (from the original)
-        if ((r0 & 1u) == 0) {
-            goto L_13a3cc;
-        }
-        index += 1u;
-        if (s32(index) >= 0x10) {  // (from the original)
-            break;
-        }
-        if (index >= 0x10u) {  // (from the original)
-            goto L_13a3cc;
-        }
-        guest::preempt();
-    }
-    index = ~0u;
-    goto L_13a3e0;
-L_13a3cc:;
-    if (index < 0x10u) {  // (from the original)
-        r0 = used | lsl_r(1u, index & 0xff);  // (from the original)
-        r12->half_0 = u16(r0);
-    }
-L_13a3e0:;
-    if (s32(index) < 0) {
-        r0 = 0xd8601838u;  // (from the original)
-    }
-    *gptr<u32>(slot) = index;
-    if (s32(index) < 0) {
-        call_0012f204(r0);
-    }
-    *gptr<u32>((*gptr<u32>(slot) << 2) + global_00ae0f94_address) = 0;
-    return slot;
-}
-
-}  // namespace d_0013a38c
-GUEST_EXPORT_FRAMED(0x0013a38c, d_0013a38c::ThreadLocal__allocate, 0x4010);  // pushes {slot, lr} first, as the original
 
 // f_0013a414: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013a414 {
@@ -4426,21 +4318,21 @@ inline constexpr guest::Function<0x0013e360, u32(u32, u32, u32, u32)> call_0013e
 inline constexpr guest::Function<0x001400b4, u32(u32)> call_001400b4;
 inline constexpr guest::Function<0x001402b0, u32(u32)> call_001402b0;
 
-void f_0013a63c(gptr<nn__cec__CTR__MessageBox> arg0, u32 r1) {
-    arg0->word_4 = 0;
+void f_0013a63c(gptr<nn__cec__CTR__MessageBox> message_box, u32 r1) {
+    message_box->word_4 = 0;
     if (*global_00974b99 != 0) {
-        call_0013e360(arg0.addr(), 0u, guest::cpu()->r[2], guest::cpu()->r[3]);
+        call_0013e360(message_box.addr(), 0u, guest::cpu()->r[2], guest::cpu()->r[3]);
         r1 = guest::cpu()->r[1];
     }
     RecursiveLock__lock(global_00ae0aa0_address, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
     if (*global_00974b9c != 0) {
-        call_001402b0(arg0->word_3a8);
+        call_001402b0(message_box->word_3a8);
         *global_00974b9c = 0;
     }
     RecursiveLock__unlock(global_00ae0aa0_address);
     RecursiveLock__lock(global_00ae0aa0_address, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     if (*global_00974b9d != 0) {
-        call_001402b0(arg0->word_558);
+        call_001402b0(message_box->word_558);
         *global_00974b9d = 0;
     }
     RecursiveLock__unlock(global_00ae0aa0_address);
@@ -4448,8 +4340,8 @@ void f_0013a63c(gptr<nn__cec__CTR__MessageBox> arg0, u32 r1) {
         call_001400b4(0u);
         *global_00974b9a = 0;
     }
-    if (arg0->byte_8 != 0) {
-        arg0->byte_8 = 0;
+    if (message_box->byte_8 != 0) {
+        message_box->byte_8 = 0;
     }
 }
 
@@ -4457,52 +4349,55 @@ void f_0013a63c(gptr<nn__cec__CTR__MessageBox> arg0, u32 r1) {
 GUEST_EXPORT_FRAMED(0x0013a63c, d_0013a63c::f_0013a63c, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_0013a6f8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// The innermost region of the tree (children from call_0013a750) whose range [+0x18, +0x1c) holds `address`; null when
+// none.
 namespace d_0013a6f8 {
 
-inline constexpr guest::Function<0x0013a6f8, u32(u32, u32)> call_0013a6f8;
-inline constexpr guest::Function<0x0013a750, u32(u32, u32, u32, u32)> call_0013a750;
+inline constexpr guest::Function<0x0013a6f8, u32(u32, u32)> call_find_innermost_region;
+inline constexpr guest::Function<0x0013a750, u32(u32, u32, u32, u32)> Tree__next_child;
 
-u32 f_0013a6f8(u32 r0, u32 r1) {
-    u32 r6 = r0;
-    u32 r5 = r1;
-    u32 r4 = 0u;
+u32 find_innermost_region(u32 r0, u32 r1) {
+    u32 tree = r0;
+    u32 address = r1;
+    u32 child = 0u;
 L_13a708:;
-    u32 r0_1 = call_0013a750(r6, r4, guest::cpu()->r[2], guest::cpu()->r[3]);
-    r4 = r0_1;
+    u32 r0_1 = Tree__next_child(tree, child, guest::cpu()->r[2], guest::cpu()->r[3]);
+    child = r0_1;
     if (r0_1 != 0) {
-        if (*gptr<u32>(r4 + 0x18u) > r5 || r5 >= *gptr<u32>(r4 + 0x1cu)) {  // (from the original)
+        if (*gptr<u32>(child + 0x18u) > address || address >= *gptr<u32>(child + 0x1cu)) {  // (from the original)
             guest::preempt();
             goto L_13a708;
         }
-        r0_1 = call_0013a6f8(r4 + 0xcu, r5);  // (from the original)
+        r0_1 = call_find_innermost_region(child + 0xcu, address);  // (from the original)
         if (r0_1 == 0) {
-            r0_1 = r4;
+            r0_1 = child;
         }
     }
     return r0_1;
 }
 
 }  // namespace d_0013a6f8
-GUEST_EXPORT_FRAMED(0x0013a6f8, d_0013a6f8::f_0013a6f8, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0013a6f8, d_0013a6f8::find_innermost_region, 0x4070);  // pushes {child, address, tree, lr} first, as the original
 
 // f_0013a750: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// The first child when `child` is null, else the sibling after it (through the link offset at +0xa).
 namespace d_0013a750 {
 
-struct __attribute__((packed)) Object_0013a750_0 {
+struct __attribute__((packed)) Tree {
     u32 word_0;
     u8 unknown_4[0x6];  // (not used here)
     u16 half_a;
 };
-GUEST_OFFSET(Object_0013a750_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013a750_0, half_a, 0xa);
+GUEST_OFFSET(Tree, word_0, 0x0);
+GUEST_OFFSET(Tree, half_a, 0xa);
 
 
-u32 f_0013a750(gptr<Object_0013a750_0> arg0, u32 r1) {
-    return r1 == 0 ? arg0->word_0 : *gptr<u32>(u32(arg0->half_a) + (r1 + 4u));
+u32 Tree__next_child(gptr<Tree> tree, u32 child) {
+    return child == 0 ? tree->word_0 : *gptr<u32>(u32(tree->half_a) + (child + 4u));
 }
 
 }  // namespace d_0013a750
-GUEST_EXPORT(0x0013a750, d_0013a750::f_0013a750);
+GUEST_EXPORT(0x0013a750, d_0013a750::Tree__next_child);
 
 // f_0013a768: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 // Stores the value in every word from `begin` up to `end`.
@@ -4651,14 +4546,14 @@ GUEST_EXPORT(0x0013ad90, d_0013ad90::release_target);
 // Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
 namespace d_0013adac {
 
-struct __attribute__((packed)) Object_0013adac_0 {
+struct __attribute__((packed)) BankFileReader {
     u32 word_0;
     u32 word_4;
     u8 byte_8;
 };
-GUEST_OFFSET(Object_0013adac_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013adac_0, word_4, 0x4);
-GUEST_OFFSET(Object_0013adac_0, byte_8, 0x8);
+GUEST_OFFSET(BankFileReader, word_0, 0x0);
+GUEST_OFFSET(BankFileReader, word_4, 0x4);
+GUEST_OFFSET(BankFileReader, byte_8, 0x8);
 
 struct __attribute__((packed)) Object_0013adac_1 {
     u32 word_0;
@@ -4670,7 +4565,7 @@ GUEST_OFFSET(Object_0013adac_1, word_8, 0x8);
 
 inline constexpr guest::Function<0x0013c850, u32(u32)> BankFile__info_block;
 
-void BankFileReader__initialize(gptr<Object_0013adac_0> reader, gptr<Object_0013adac_1> file) {
+void BankFileReader__initialize(gptr<BankFileReader> reader, gptr<Object_0013adac_1> file) {
     reader->word_0 = 0;
     reader->word_4 = 0;
     reader->byte_8 = 0;
@@ -4702,14 +4597,14 @@ GUEST_EXPORT_FRAMED(0x0013adac, d_0013adac::BankFileReader__initialize, 0x4010);
 // Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
 namespace d_0013ae10 {
 
-struct __attribute__((packed)) Object_0013ae10_0 {
+struct __attribute__((packed)) GroupFileReader {
     u32 word_0;
     u32 word_4;
     u32 word_8;
 };
-GUEST_OFFSET(Object_0013ae10_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013ae10_0, word_4, 0x4);
-GUEST_OFFSET(Object_0013ae10_0, word_8, 0x8);
+GUEST_OFFSET(GroupFileReader, word_0, 0x0);
+GUEST_OFFSET(GroupFileReader, word_4, 0x4);
+GUEST_OFFSET(GroupFileReader, word_8, 0x8);
 
 struct __attribute__((packed)) Object_0013ae10_1 {
     u32 word_0;
@@ -4723,7 +4618,7 @@ inline constexpr guest::Function<0x0013f8cc, u32(u32)> GroupFile__file_block;
 inline constexpr guest::Function<0x0013f934, u32(u32, u32)> GroupFile__info_block;
 inline constexpr guest::Function<0x0013f9a0, u32(u32)> GroupFile__infox_block;
 
-void GroupFileReader__initialize(gptr<Object_0013ae10_0> reader, gptr<Object_0013ae10_1> file) {
+void GroupFileReader__initialize(gptr<GroupFileReader> reader, gptr<Object_0013ae10_1> file) {
     u32 r1 = file.addr();
     reader->word_0 = 0;
     reader->word_4 = 0;
@@ -4816,11 +4711,11 @@ namespace d_0013b560 {
 
 inline constexpr u32 vtable_nw__snd__internal__SoundArchiveLoader = 0x009021d0u;
 
-void nw__snd__internal__SoundArchiveLoader__SoundArchiveLoader(gptr<nw__snd__internal__SoundArchiveLoader> arg0) {
-    arg0->word_4 = 0;
-    arg0->word_0 = vtable_nw__snd__internal__SoundArchiveLoader;
-    arg0->half_208 = 0;
-    arg0->byte_20a = 0;
+void nw__snd__internal__SoundArchiveLoader__SoundArchiveLoader(gptr<nw__snd__internal__SoundArchiveLoader> sound_archive_loader) {
+    sound_archive_loader->word_4 = 0;
+    sound_archive_loader->word_0 = vtable_nw__snd__internal__SoundArchiveLoader;
+    sound_archive_loader->half_208 = 0;
+    sound_archive_loader->byte_20a = 0;
 }
 
 }  // namespace d_0013b560
@@ -4830,12 +4725,12 @@ GUEST_EXPORT(0x0013b560, d_0013b560::nw__snd__internal__SoundArchiveLoader__Soun
 // Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
 namespace d_0013b584 {
 
-struct __attribute__((packed)) Object_0013b584_0 {
+struct __attribute__((packed)) WaveSoundFileReader {
     u32 word_0;
     u32 word_4;
 };
-GUEST_OFFSET(Object_0013b584_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013b584_0, word_4, 0x4);
+GUEST_OFFSET(WaveSoundFileReader, word_0, 0x0);
+GUEST_OFFSET(WaveSoundFileReader, word_4, 0x4);
 
 struct __attribute__((packed)) Object_0013b584_1 {
     u32 word_0;
@@ -4847,7 +4742,7 @@ GUEST_OFFSET(Object_0013b584_1, word_8, 0x8);
 
 inline constexpr guest::Function<0x0013c348, u32(u32)> WaveSoundFile__info_block;
 
-void WaveSoundFileReader__initialize(gptr<Object_0013b584_0> reader, gptr<Object_0013b584_1> file) {
+void WaveSoundFileReader__initialize(gptr<WaveSoundFileReader> reader, gptr<Object_0013b584_1> file) {
     reader->word_0 = 0;
     reader->word_4 = 0;
     if (file->word_0 != 0x44535743u || file->word_8 + 0xff000000u > 0x100u) {  // (from the original)
@@ -4932,12 +4827,12 @@ inline constexpr u32 vtable_sead__CriticalSection = 0x00904830u;
 inline constexpr guest::Function<0x0012f154, u32(u32)> RecursiveLock__initialize;
 inline constexpr guest::Function<0x001320cc, u32(u32, u32, u32, u32)> sead__IDisposer__IDisposer_001320cc;
 
-u32 sead__CriticalSection__CriticalSection_0013b8e0(gptr<sead__CriticalSection> arg0, u32 r1) {
-    sead__IDisposer__IDisposer_001320cc(arg0.addr(), r1, 1u, guest::cpu()->r[3]);
-    arg0->word_0 = vtable_sead__CriticalSection;
-    arg0->word_10 = 0;
-    RecursiveLock__initialize(arg0.addr() + 0x10u);  // (from the original)
-    return arg0.addr();
+u32 sead__CriticalSection__CriticalSection_0013b8e0(gptr<sead__CriticalSection> critical_section, u32 r1) {
+    sead__IDisposer__IDisposer_001320cc(critical_section.addr(), r1, 1u, guest::cpu()->r[3]);
+    critical_section->word_0 = vtable_sead__CriticalSection;
+    critical_section->word_10 = 0;
+    RecursiveLock__initialize(critical_section.addr() + 0x10u);  // (from the original)
+    return critical_section.addr();
 }
 
 }  // namespace d_0013b8e0
@@ -4948,10 +4843,10 @@ namespace d_0013b910 {
 
 inline constexpr u32 vtable_sead__AudioFxMemoryMgr = 0x00904ce0u;
 
-void sead__AudioFxMemoryMgr__AudioFxMemoryMgr(gptr<sead__AudioFxMemoryMgr> arg0) {
-    arg0->word_4 = 0;
-    arg0->word_0 = vtable_sead__AudioFxMemoryMgr;
-    arg0->word_8 = 0;
+void sead__AudioFxMemoryMgr__AudioFxMemoryMgr(gptr<sead__AudioFxMemoryMgr> audio_fx_memory_mgr) {
+    audio_fx_memory_mgr->word_4 = 0;
+    audio_fx_memory_mgr->word_0 = vtable_sead__AudioFxMemoryMgr;
+    audio_fx_memory_mgr->word_8 = 0;
 }
 
 }  // namespace d_0013b910
@@ -4968,9 +4863,9 @@ GUEST_OFFSET(Object_0013b92c_2, word_0, 0x0);
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
 inline constexpr u32 vtable_sead__Thread = 0x00905a58u;
 inline constexpr u32 vtable_sead__Thread_at_18 = 0x00905aa8u;
-inline constexpr guest::Function<0x0012f204, u32(u32, u32)> call_0012f204;
+inline constexpr guest::Function<0x0012f204, u32(u32, u32)> check_result;
 inline constexpr guest::Function<0x00132174, u32(u32, u32, u32, u32)> sead__IDisposer__IDisposer_00132174;
-inline constexpr guest::Function<0x00137d88, u32(u32, u32, u32)> call_00137d88;
+inline constexpr guest::Function<0x00137d88, u32(u32, u32, u32)> PointerArray__allocate_2;
 inline constexpr guest::Function<0x00137dc4, u32(u32, u32, u32, u32)> call_00137dc4;
 inline constexpr guest::Function<0x00137eb4, u32(u32, u32)> store_word_constant_pack_0x0_00137eb4;
 inline constexpr guest::Function<0x0013d00c, u32(u32, u32, u32)> call_0013d00c;
@@ -4982,40 +4877,40 @@ struct __attribute__((packed)) Frame_0013b92c {
 GUEST_OFFSET(Frame_0013b92c, word_0, 0x0);
 GUEST_SIZE(Frame_0013b92c, 0x4);
 
-u32 sead__SafeStringBase_char___SafeStringBase_0013b92c(gptr<sead__Thread> arg0, u32 r1, gptr<Object_0013b92c_2> arg2, u32 r3) {
+u32 sead__SafeStringBase_char___SafeStringBase_0013b92c(gptr<sead__Thread> thread, u32 r1, gptr<Object_0013b92c_2> arg2, u32 r3) {
     guest::StackFrameOf<Frame_0013b92c> frame;  // the original's stack frame
     frame->word_0 = r3;
-    sead__IDisposer__IDisposer_00132174(arg0.addr(), r1, arg2.addr(), r3);
-    arg0->word_10 = vtable_sead__SafeStringBase_char_;
-    arg0->word_14 = 0x8ae11c;  // (from the original)
-    arg0->word_0 = vtable_sead__Thread;
-    arg0->word_18 = vtable_sead__Thread_at_18;
-    call_00137dc4(arg0.addr() + 0x1cu, arg0.addr(), vtable_sead__Thread_at_18, vtable_sead__SafeStringBase_char_);  // (from the original)
-    arg0->word_54 = 0;
-    arg0->word_58 = 0;
-    arg0->word_5c = 0;
-    arg0->word_60 = 0;
-    arg0->word_64 = 0;
-    arg0->word_68 = 0;
-    store_word_constant_pack_0x0_00137eb4(arg0.addr() + 0x6cu, arg0.addr());  // (from the original)
-    arg0->byte_70 = 1;
-    arg0->word_74 = ~0x80000000u;  // (from the original)
-    arg0->word_78 = r3;
-    arg0->word_7c = 1;
-    arg0->word_80 = arg2.addr();
-    arg0->word_84 = 0;
-    u32 r0_4 = call_0013d00c(frame.at(0).addr(), arg2->word_0, arg0.addr() + 0x74u);  // (from the original)
+    sead__IDisposer__IDisposer_00132174(thread.addr(), r1, arg2.addr(), r3);
+    thread->word_10 = vtable_sead__SafeStringBase_char_;
+    thread->word_14 = 0x8ae11c;  // (from the original)
+    thread->word_0 = vtable_sead__Thread;
+    thread->word_18 = vtable_sead__Thread_at_18;
+    call_00137dc4(thread.addr() + 0x1cu, thread.addr(), vtable_sead__Thread_at_18, vtable_sead__SafeStringBase_char_);  // (from the original)
+    thread->word_54 = 0;
+    thread->word_58 = 0;
+    thread->word_5c = 0;
+    thread->word_60 = 0;
+    thread->word_64 = 0;
+    thread->word_68 = 0;
+    store_word_constant_pack_0x0_00137eb4(thread.addr() + 0x6cu, thread.addr());  // (from the original)
+    thread->byte_70 = 1;
+    thread->word_74 = ~0x80000000u;  // (from the original)
+    thread->word_78 = r3;
+    thread->word_7c = 1;
+    thread->word_80 = arg2.addr();
+    thread->word_84 = 0;
+    u32 r0_4 = call_0013d00c(frame.at(0).addr(), arg2->word_0, thread.addr() + 0x74u);  // (from the original)
     u32 r1_3 = r0_4 >> 0x1f;  // (from the original)
     if (r1_3 != 0) {
-        call_0012f204(r0_4, r1_3);
+        check_result(r0_4, r1_3);
         r1_3 = guest::cpu()->r[1];
     }
     u32 r0_6 = call_0013e164(frame->word_0, r1_3);
-    arg0->word_60 = arg0.addr();
-    arg0->word_88 = r0_6;
-    arg0->word_8c = ~1u;
-    call_00137d88(arg0.addr() + 0x1cu, 0x20u, r1);  // (from the original)
-    return arg0.addr();
+    thread->word_60 = thread.addr();
+    thread->word_88 = r0_6;
+    thread->word_8c = ~1u;
+    PointerArray__allocate_2(thread.addr() + 0x1cu, 0x20u, r1);  // (from the original)
+    return thread.addr();
 }
 
 }  // namespace d_0013b92c
@@ -5059,15 +4954,15 @@ inline constexpr u32 vtable_SoundDoubutsugoMgr = 0x008f39fcu;
 inline constexpr u32 vtable_SoundMelodyPlayerOneSeqBase = 0x008f701cu;
 inline constexpr u32 vtable_SoundMelodyPlayerOneSeqTimeTone = 0x008f7210u;
 inline constexpr guest::Function<0x00136cc8, u32(u32, u32, u32, u32)> detach_from_parent;
-inline constexpr guest::Function<0x0013d408, u32(u32)> SoundFxMgr__virtual_3;
-inline constexpr guest::Function<0x0013d59c, u32(u32, u32, u32, u32)> SoundSharedObjMgr__virtual_3;
-inline constexpr guest::Function<0x0013d7cc, u32(u32)> SoundMelodyPlayerBase__virtual_0;
+inline constexpr guest::Function<0x0013d408, u32(u32)> SoundFxMgr__destructor;
+inline constexpr guest::Function<0x0013d59c, u32(u32, u32, u32, u32)> SoundSharedObjMgr__destructor;
+inline constexpr guest::Function<0x0013d7cc, u32(u32)> SoundMelodyPlayerBase__destructor;
 inline constexpr guest::Function<0x0013ef18, u32(u32)> call_0013ef18;
 inline constexpr guest::Function<0x0013efa0, u32(u32)> store_word_0x00905568_;
 inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> destroy_array_elements;
 
 u32 SoundEnvMgr__SoundEnvMgr_0013bee0(u32 r0, u32 r1, u32 r2, u32 r3) {
-    u32 r0_2 = SoundSharedObjMgr__virtual_3(r0 + 0xbc8u, r1, r2, r3);  // (from the original)
+    u32 r0_2 = SoundSharedObjMgr__destructor(r0 + 0xbc8u, r1, r2, r3);  // (from the original)
     u32 r5_1 = r0_2 - 0xbc8u;  // (from the original)
     *gptr<u32>(r5_1 + 0xb00u) = vtable_SoundEnvMgr;  // (from the original)
     u32 r4_1 = r5_1 + 0xb00u;  // (from the original)
@@ -5076,7 +4971,7 @@ u32 SoundEnvMgr__SoundEnvMgr_0013bee0(u32 r0, u32 r1, u32 r2, u32 r3) {
     detach_from_parent(r4_1 + 0x28u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     detach_from_parent(r4_1 + 0x24u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     detach_from_parent(r4_1 + 0x20u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    u32 r0_9 = SoundFxMgr__virtual_3(r5_1 + 0x860u);  // (from the original)
+    u32 r0_9 = SoundFxMgr__destructor(r5_1 + 0x860u);  // (from the original)
     gptr<Local_0013bee0_r5_2> r5_2 = gptr<Local_0013bee0_r5_2>(r0_9 - 0x860u);  // (from the original)
     r5_2->word_754 = vtable_SoundBgmMgr;
     u32 r4_2 = r5_2.addr() + 0x754u;  // (from the original)
@@ -5095,7 +4990,7 @@ u32 SoundEnvMgr__SoundEnvMgr_0013bee0(u32 r0, u32 r1, u32 r2, u32 r3) {
     detach_from_parent(r5_3 + 8u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     r4_3->word_58 = vtable_SoundMelodyPlayerOneSeqBase;
     detach_from_parent(r4_3.addr() + 0x60u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    SoundMelodyPlayerBase__virtual_0(r4_3.addr() + 0xcu);  // (from the original)
+    SoundMelodyPlayerBase__destructor(r4_3.addr() + 0xcu);  // (from the original)
     gptr<Local_0013bee0_r5_5> r5_5 = gptr<Local_0013bee0_r5_5>(r4_3.addr() - 0x68cu);  // (from the original)
     r5_5->word_594 = vtable_SoundDoubutsugoMgr;
     u32 r4_4 = r5_5.addr() + 0x594u;  // (from the original)
@@ -5140,30 +5035,30 @@ struct __attribute__((packed)) Object_0013c0e8_0 {
 GUEST_OFFSET(Object_0013c0e8_0, byte_c, 0xc);
 
 
-u32 f_0013c0e8(gptr<Object_0013c0e8_0> arg0) {
-    u32 r1_1 = arg0->byte_c;
-    u32 r0_1 = (r1_1 == 1u || arg0->byte_c == 2u) ? 1u : 0u;
+u32 state_is_1_or_2(gptr<Object_0013c0e8_0> object) {
+    u32 r1_1 = object->byte_c;
+    u32 r0_1 = (r1_1 == 1u || object->byte_c == 2u) ? 1u : 0u;
     guest::cpu()->r[1] = r1_1;
     return r0_1;
 }
 
 }  // namespace d_0013c0e8
-GUEST_EXPORT(0x0013c0e8, d_0013c0e8::f_0013c0e8);
+GUEST_EXPORT(0x0013c0e8, d_0013c0e8::state_is_1_or_2);
 
 // f_0013c348: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013c348 {
 
-struct __attribute__((packed)) Object_0013c348_0 {
+struct __attribute__((packed)) WaveSoundFile {
     u8 unknown_0[0x10];  // (not used here)
     u16 half_10;
 };
-GUEST_OFFSET(Object_0013c348_0, half_10, 0x10);
+GUEST_OFFSET(WaveSoundFile, half_10, 0x10);
 
 
-u32 WaveSoundFile__info_block(gptr<Object_0013c348_0> arg0) {
-    u32 r0 = arg0.addr();
+u32 WaveSoundFile__info_block(gptr<WaveSoundFile> wave_sound_file) {
+    u32 r0 = wave_sound_file.addr();
     u32 r0_1 = 0;
-    u32 r12 = arg0->half_10;
+    u32 r12 = wave_sound_file->half_10;
     u32 r3 = r0 + 0x14u;  // (from the original)
     u32 r5 = r0;
     r0 = 0u;
@@ -5198,6 +5093,7 @@ u32 WaveSoundFile__info_block(gptr<Object_0013c348_0> arg0) {
 GUEST_EXPORT_FRAMED(0x0013c348, d_0013c348::WaveSoundFile__info_block, 0x30);  // pushes {r4, r5} first, as the original
 
 // f_0013c3c0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Entry `index` of the table at +word_c when its kind is 0x4900: its data; null otherwise.
 namespace d_0013c3c0 {
 
 struct __attribute__((packed)) Object_0013c3c0_0 {
@@ -5216,7 +5112,7 @@ GUEST_OFFSET(Local_0013c3c0_r1_1, half_4, 0x4);
 GUEST_OFFSET(Local_0013c3c0_r1_1, word_8, 0x8);
 
 
-u32 f_0013c3c0(gptr<Object_0013c3c0_0> arg0, u32 r1) {
+u32 section_4900_at(gptr<Object_0013c3c0_0> arg0, u32 r1) {
     u32 r0_1 = arg0.addr() + arg0->word_c;
     if (*gptr<u32>(r0_1) <= r1) {
         guest::cpu()->r[1] = r1;
@@ -5233,9 +5129,10 @@ u32 f_0013c3c0(gptr<Object_0013c3c0_0> arg0, u32 r1) {
 }
 
 }  // namespace d_0013c3c0
-GUEST_EXPORT(0x0013c3c0, d_0013c3c0::f_0013c3c0);
+GUEST_EXPORT(0x0013c3c0, d_0013c3c0::section_4900_at);
 
 // f_0013c3f4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Entry `index` of the table at +word_14 when its kind is 0x4902: its data; null otherwise.
 namespace d_0013c3f4 {
 
 struct __attribute__((packed)) Object_0013c3f4_0 {
@@ -5254,7 +5151,7 @@ GUEST_OFFSET(Local_0013c3f4_r1_1, half_4, 0x4);
 GUEST_OFFSET(Local_0013c3f4_r1_1, word_8, 0x8);
 
 
-u32 f_0013c3f4(gptr<Object_0013c3f4_0> arg0, u32 r1) {
+u32 section_4902_at(gptr<Object_0013c3f4_0> arg0, u32 r1) {
     u32 r0_1 = arg0.addr() + arg0->word_14;
     if (*gptr<u32>(r0_1) <= r1) {
         guest::cpu()->r[1] = r1;
@@ -5271,13 +5168,13 @@ u32 f_0013c3f4(gptr<Object_0013c3f4_0> arg0, u32 r1) {
 }
 
 }  // namespace d_0013c3f4
-GUEST_EXPORT(0x0013c3f4, d_0013c3f4::f_0013c3f4);
+GUEST_EXPORT(0x0013c3f4, d_0013c3f4::section_4902_at);
 
 // f_0013c430: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013c430 {
 
 inline constexpr u32 global_00981880_address = 0x00981880u;
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013c430 {
     u32 word_0;
@@ -5288,8 +5185,8 @@ GUEST_SIZE(Frame_0013c430, 0x4);
 u32 f_0013c430(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013c430> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 4u, frame.at(0).addr(), 9u);
-    if (r0_2 == 0) {
+    u32 found = SparseArray__get(r0 + 4u, frame.at(0).addr(), 9u);
+    if (found == 0) {
         return global_00981880_address;
     }
     u32 r0_3 = frame->word_0 + r0;
@@ -5302,7 +5199,7 @@ GUEST_EXPORT_FRAMED(0x0013c430, d_0013c430::f_0013c430, 0x4030);  // pushes {r4,
 // f_0013c46c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013c46c {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013c46c {
     u32 word_0;
@@ -5313,8 +5210,8 @@ GUEST_SIZE(Frame_0013c46c, 0x4);
 u32 f_0013c46c(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013c46c> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 4u, frame.at(0).addr(), 0u);
-    return r0_2 == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
+    u32 found = SparseArray__get(r0 + 4u, frame.at(0).addr(), 0u);
+    return found == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
 }
 
 }  // namespace d_0013c46c
@@ -5323,7 +5220,7 @@ GUEST_EXPORT_FRAMED(0x0013c46c, d_0013c46c::f_0013c46c, 0x4000);  // pushes {lr}
 // f_0013c494: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013c494 {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013c494 {
     u32 word_0;
@@ -5334,9 +5231,9 @@ GUEST_SIZE(Frame_0013c494, 0x4);
 u32 f_0013c494(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013c494> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 4u, frame.at(0).addr(), 2u);
-    if (r0_2 == 0) {
-        return r0_2;
+    u32 found = SparseArray__get(r0 + 4u, frame.at(0).addr(), 2u);
+    if (found == 0) {
+        return found;
     }
     return frame->word_0 >> 8u & 0xffu;  // (from the original)
 }
@@ -5347,7 +5244,7 @@ GUEST_EXPORT_FRAMED(0x0013c494, d_0013c494::f_0013c494, 0x4000);  // pushes {lr}
 // f_0013c4c0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013c4c0 {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013c4c0 {
     u32 word_0;
@@ -5358,8 +5255,8 @@ GUEST_SIZE(Frame_0013c4c0, 0x4);
 u32 f_0013c4c0(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013c4c0> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 4u, frame.at(0).addr(), 2u);
-    return r0_2 == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
+    u32 found = SparseArray__get(r0 + 4u, frame.at(0).addr(), 2u);
+    return found == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
 }
 
 }  // namespace d_0013c4c0
@@ -5415,7 +5312,7 @@ GUEST_EXPORT_FRAMED(0x0013c4e8, d_0013c4e8::f_0013c4e8, 0xf0);  // pushes {r4, r
 // f_0013c55c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013c55c {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013c55c {
     u32 word_0;
@@ -5426,8 +5323,8 @@ GUEST_SIZE(Frame_0013c55c, 0x4);
 u32 f_0013c55c(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013c55c> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 4u, frame.at(0).addr(), 1u);
-    return r0_2 == 0 ? 0x60u : frame->word_0 & 0xffu;  // (from the original)
+    u32 found = SparseArray__get(r0 + 4u, frame.at(0).addr(), 1u);
+    return found == 0 ? 0x60u : frame->word_0 & 0xffu;  // (from the original)
 }
 
 }  // namespace d_0013c55c
@@ -5611,8 +5508,8 @@ GUEST_OFFSET(Local_0013c644_r0_6, word_0, 0x0);
 GUEST_OFFSET(Local_0013c644_r0_6, word_4, 0x4);
 
 inline constexpr guest::Function<0x0013c3b4, u32(u32)> adjusted_this_0x4__0013c3b4;
-inline constexpr guest::Function<0x0013c3c0, u32(u32, u32, u32, u32)> call_0013c3c0;
-inline constexpr guest::Function<0x0013c3f4, u32(u32, u32)> call_0013c3f4;
+inline constexpr guest::Function<0x0013c3c0, u32(u32, u32, u32, u32)> section_4900_at;
+inline constexpr guest::Function<0x0013c3f4, u32(u32, u32)> section_4902_at;
 inline constexpr guest::Function<0x0013c430, u32(u32)> call_0013c430;
 inline constexpr guest::Function<0x0013c46c, u32(u32)> call_0013c46c;
 inline constexpr guest::Function<0x0013c494, u32(u32)> call_0013c494;
@@ -5623,8 +5520,8 @@ inline constexpr guest::Function<0x0013ca2c, u32(u32, u32)> call_0013ca2c;
 
 u32 f_0013c644(gptr<Object_0013c644_0> arg0, gptr<Object_0013c644_1> arg1, u32 r2, u32 r3, float S0) {
     u32 r0_1 = arg0->word_4;
-    u32 r0_2 = call_0013c3c0(r0_1, r2, r2, r3);
-    u32 r0_3 = call_0013c3f4(r0_2, r3);
+    u32 r0_2 = section_4900_at(r0_1, r2, r2, r3);
+    u32 r0_3 = section_4902_at(r0_2, r3);
     u32 r0_5 = adjusted_this_0x4__0013c3b4(arg0->word_4);
     u32 r2_3 = *gptr<u32>(r0_5);
     u32 r1_2 = *gptr<u32>(r0_3);
@@ -5712,16 +5609,16 @@ inline constexpr guest::Function<0x0013f5e8, u32(u32)> call_0013f5e8;
 inline constexpr guest::Function<0x0013f610, u32(u32)> call_0013f610;
 inline constexpr guest::Function<0x0013f718, u32(u32)> call_0013f718;
 inline constexpr guest::Function<0x0013f748, u32(u32)> adjusted_this_0x10__0013f748;
-inline constexpr guest::Function<0x00141728, u32(u32, u32, u32, u32)> call_00141728;
+inline constexpr guest::Function<0x00141728, u32(u32, u32, u32, u32)> HandleTable__resolve;
 
 u32 f_0013c728(gptr<Object_0013c728_0> arg0, u32 r1_unused, gptr<Object_0013c728_2> arg2) {
-    u32 r0_2 = call_00141728(arg0->word_3c, guest::cpu()->r[1], arg2.addr(), guest::cpu()->r[3]);
-    if (r0_2 != 0) {
-        u32 r0_3 = call_0013f718(r0_2);
+    u32 entry_2 = HandleTable__resolve(arg0->word_3c, guest::cpu()->r[1], arg2.addr(), guest::cpu()->r[3]);
+    if (entry_2 != 0) {
+        u32 r0_3 = call_0013f718(entry_2);
         if (r0_3 != 3u) {
-            r0_2 = 0u;
+            entry_2 = 0u;
         } else {
-            gptr<Local_0013c728_r0_4> r0_4 = gptr<Local_0013c728_r0_4>(adjusted_this_0x10__0013f748(r0_2));
+            gptr<Local_0013c728_r0_4> r0_4 = gptr<Local_0013c728_r0_4>(adjusted_this_0x10__0013f748(entry_2));
             arg2->word_0 = r0_4->word_0;
             arg2->word_4 = r0_4->word_4;
             u32 r0_5 = call_0013f5e8(r0_4.addr());
@@ -5731,10 +5628,10 @@ u32 f_0013c728(gptr<Object_0013c728_0> arg0, u32 r1_unused, gptr<Object_0013c728
                 r0_6 = 1u;
             }
             arg2->byte_9 = u8(r0_6);
-            r0_2 = 1u;
+            entry_2 = 1u;
         }
     }
-    return r0_2;
+    return entry_2;
 }
 
 }  // namespace d_0013c728
@@ -5813,16 +5710,16 @@ inline constexpr guest::Function<0x0013f6bc, u32(u32)> call_0013f6bc;
 inline constexpr guest::Function<0x0013f6e4, u32(u32)> call_0013f6e4;
 inline constexpr guest::Function<0x0013f718, u32(u32)> call_0013f718;
 inline constexpr guest::Function<0x0013f754, u32(u32)> adjusted_this_0x10__0013f754;
-inline constexpr guest::Function<0x00141728, u32(u32, u32, u32, u32)> call_00141728;
+inline constexpr guest::Function<0x00141728, u32(u32, u32, u32, u32)> HandleTable__resolve;
 
 u32 f_0013c7e0(gptr<Object_0013c7e0_0> arg0, u32 r1, gptr<Object_0013c7e0_2> arg2) {
-    u32 r0_2 = call_00141728(arg0->word_3c, r1, arg2.addr(), guest::cpu()->r[3]);
-    if (r0_2 != 0) {
-        u32 r0_3 = call_0013f718(r0_2);
+    u32 entry_2 = HandleTable__resolve(arg0->word_3c, r1, arg2.addr(), guest::cpu()->r[3]);
+    if (entry_2 != 0) {
+        u32 r0_3 = call_0013f718(entry_2);
         if (r0_3 != 1u) {
-            r0_2 = 0u;
+            entry_2 = 0u;
         } else {
-            u32 r0_4 = adjusted_this_0x10__0013f754(r0_2);
+            u32 r0_4 = adjusted_this_0x10__0013f754(entry_2);
             u32 r0_5 = call_0013f69c(r0_4);
             arg2->word_0 = r0_5;
             arg2->word_14 = *gptr<u32>(r0_4 + 8u);
@@ -5831,10 +5728,10 @@ u32 f_0013c7e0(gptr<Object_0013c7e0_0> arg0, u32 r1, gptr<Object_0013c7e0_2> arg
             u32 r0_7 = call_0013f6e4(r0_4);
             arg2->byte_19 = u8(r0_7);
             call_0013f63c(r0_4, arg2.addr() + 4u);
-            r0_2 = 1u;
+            entry_2 = 1u;
         }
     }
-    return r0_2;
+    return entry_2;
 }
 
 }  // namespace d_0013c7e0
@@ -5844,17 +5741,17 @@ GUEST_EXPORT_FRAMED(0x0013c7e0, d_0013c7e0::f_0013c7e0, 0x4070);  // pushes {r4,
 // The bank file's INFO block (block id 0x5800); null when the file has none.
 namespace d_0013c850 {
 
-struct __attribute__((packed)) Object_0013c850_0 {
+struct __attribute__((packed)) BankFile {
     u8 unknown_0[0x10];  // (not used here)
     u16 half_10;
 };
-GUEST_OFFSET(Object_0013c850_0, half_10, 0x10);
+GUEST_OFFSET(BankFile, half_10, 0x10);
 
 
-u32 BankFile__info_block(gptr<Object_0013c850_0> arg0) {
-    u32 r0 = arg0.addr();
+u32 BankFile__info_block(gptr<BankFile> bank_file) {
+    u32 r0 = bank_file.addr();
     u32 r0_1 = 0;
-    u32 r12 = arg0->half_10;
+    u32 r12 = bank_file->half_10;
     u32 r3 = r0 + 0x14u;  // (from the original)
     u32 r5 = r0;
     r0 = 0u;
@@ -5889,12 +5786,14 @@ u32 BankFile__info_block(gptr<Object_0013c850_0> arg0) {
 GUEST_EXPORT_FRAMED(0x0013c850, d_0013c850::BankFile__info_block, 0x30);  // pushes {r4, r5} first, as the original
 
 // f_0013c8c8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// The index of the range (8-byte entries [first, last] from +8) holding `key`, by binary search; the insertion point
+// when none does.
 namespace d_0013c8c8 {
 
-struct __attribute__((packed)) Object_0013c8c8_0 {
+struct __attribute__((packed)) RangeTable {
     u32 word_0;
 };
-GUEST_OFFSET(Object_0013c8c8_0, word_0, 0x0);
+GUEST_OFFSET(RangeTable, word_0, 0x0);
 
 struct __attribute__((packed)) Object_0013c8c8_1 {
     u32 word_0;
@@ -5910,33 +5809,33 @@ GUEST_OFFSET(Local_0013c8c8_r4_1, word_8, 0x8);
 GUEST_OFFSET(Local_0013c8c8_r4_1, word_c, 0xc);
 
 
-u32 f_0013c8c8(gptr<Object_0013c8c8_0> arg0, gptr<Object_0013c8c8_1> arg1) {
-    u32 r0 = arg0.addr();
-    u32 r1 = arg1.addr();
+u32 RangeTable__find(gptr<RangeTable> table, gptr<Object_0013c8c8_1> key) {
+    u32 r0 = table.addr();
+    u32 r1 = key.addr();
     u32 r12 = r0;
-    u32 r0_1 = arg0->word_0;
+    u32 r0_1 = table->word_0;
     if (r0_1 == 0) {
         return r0_1;
     }
-    r1 = arg1->word_0;
-    u32 r2 = 0u;
-    u32 r3 = r0_1 - 1u;
+    r1 = key->word_0;
+    u32 low = 0u;
+    u32 high = r0_1 - 1u;
 L_13c8e8:;
-    u32 r0_2 = r2 + r3 >> 1;
+    u32 r0_2 = low + high >> 1;
     gptr<Local_0013c8c8_r4_1> r4_1 = gptr<Local_0013c8c8_r4_1>(r12 + (r0_2 << 3));
     if (r1 >= r4_1->word_8) {
         if (r4_1->word_c >= r1) {
             return r0_2;
         }
-        if (r0_2 != r3) {
-            r2 = r0_2 + 1u;
+        if (r0_2 != high) {
+            low = r0_2 + 1u;
             guest::preempt();
             goto L_13c8e8;
         }
         return r0_2 + 1u;
     }
-    if (r0_2 != r2) {
-        r3 = r0_2 - 1u;
+    if (r0_2 != low) {
+        high = r0_2 - 1u;
         guest::preempt();
         goto L_13c8e8;
     }
@@ -5944,7 +5843,7 @@ L_13c8e8:;
 }
 
 }  // namespace d_0013c8c8
-GUEST_EXPORT_FRAMED(0x0013c8c8, d_0013c8c8::f_0013c8c8, 0x30);  // pushes {r4, r5} first, as the original
+GUEST_EXPORT_FRAMED(0x0013c8c8, d_0013c8c8::RangeTable__find, 0x30);  // pushes {r4, r5} first, as the original
 
 // f_0013c938: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013c938 {
@@ -6170,7 +6069,7 @@ GUEST_EXPORT(0x0013cbdc, d_0013cbdc::f_0013cbdc);
 // left.
 namespace d_0013cc9c {
 
-struct __attribute__((packed)) Object_0013cc9c_0 {
+struct __attribute__((packed)) FixedPool {
     u8 unknown_0[0x14];  // (not used here)
     u32 word_14;
     u32 word_18;
@@ -6179,18 +6078,18 @@ struct __attribute__((packed)) Object_0013cc9c_0 {
     u8 unknown_28[0x4];  // (not used here)
     u32 word_2c;
 };
-GUEST_OFFSET(Object_0013cc9c_0, word_14, 0x14);
-GUEST_OFFSET(Object_0013cc9c_0, word_18, 0x18);
-GUEST_OFFSET(Object_0013cc9c_0, word_24, 0x24);
-GUEST_OFFSET(Object_0013cc9c_0, word_2c, 0x2c);
+GUEST_OFFSET(FixedPool, word_14, 0x14);
+GUEST_OFFSET(FixedPool, word_18, 0x18);
+GUEST_OFFSET(FixedPool, word_24, 0x24);
+GUEST_OFFSET(FixedPool, word_2c, 0x2c);
 
-inline constexpr guest::Function<0x00135748, u32(u32, u32)> RecursiveLock__lock;
+inline constexpr guest::Function<0x00135748, u32(u32, u32, u32, u32)> RecursiveLock__lock;
 inline constexpr guest::Function<0x001357ec, u32(u32, u32)> RecursiveLock__unlock;
 inline constexpr guest::Function<0x0013a768, u32(u32, u32, u32)> fill_words;
 
-u32 FixedPool__allocate(gptr<Object_0013cc9c_0> pool, u32 r1) {
+u32 FixedPool__allocate(gptr<FixedPool> pool, u32 r1, u32 r2) {
     u32 r0_1 = pool.addr() + 0x30u;  // (from the original)
-    RecursiveLock__lock(r0_1, r1);
+    RecursiveLock__lock(r0_1, r1, r2, guest::cpu()->r[3]);
     u32 r1_1 = guest::cpu()->r[1];
     u32 block = pool->word_24;
     if (block != 0) {
@@ -6272,18 +6171,18 @@ GUEST_EXPORT_FRAMED(0x0013d148, d_0013d148::allocate_in_default_heap, 0x4010);  
 namespace d_0013d408 {
 
 inline constexpr u32 vtable_SoundFxMgr = 0x008eb490u;
-inline constexpr guest::Function<0x0014156c, u32(u32)> call_0014156c;
+inline constexpr guest::Function<0x0014156c, u32(u32, u32, u32)> call_0014156c;
 inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> destroy_array_elements;
 
-u32 SoundFxMgr__virtual_3(gptr<SoundFxMgr> arg0) {
-    arg0->word_0 = vtable_SoundFxMgr;
-    destroy_array_elements(arg0.addr() + 0x44u, 0x14152cu, 0x20u, 0xau);  // (from the original)
-    u32 r0_3 = call_0014156c(arg0.addr() + 0x14u);  // (from the original)
+u32 SoundFxMgr__destructor(gptr<SoundFxMgr> sound_fx_mgr) {
+    sound_fx_mgr->word_0 = vtable_SoundFxMgr;
+    destroy_array_elements(sound_fx_mgr.addr() + 0x44u, 0x14152cu, 0x20u, 0xau);  // (from the original)
+    u32 r0_3 = call_0014156c(sound_fx_mgr.addr() + 0x14u, guest::cpu()->r[1], 0x20u);  // (from the original)
     return r0_3 - 0x14u;  // (from the original)
 }
 
 }  // namespace d_0013d408
-GUEST_EXPORT_FRAMED(0x0013d408, d_0013d408::SoundFxMgr__virtual_3, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0013d408, d_0013d408::SoundFxMgr__destructor, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_0013d444: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013d444 {
@@ -6365,15 +6264,15 @@ GUEST_OFFSET(Local_0013d6d0_ea_2, word_4, 0x4);
 
 inline constexpr u32 global_00982864_address = 0x00982864u;
 inline constexpr u32 global_00982870_address = 0x00982870u;
-inline constexpr guest::Function<0x00135740, u32(u32)> lock_member_lock;
+inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 inline constexpr guest::Function<0x0013f000, u32(u32, u32)> unlink_from_ends;
 
-void f_0013d6d0(gptr<Object_0013d6d0_0> arg0) {
+void f_0013d6d0(gptr<Object_0013d6d0_0> arg0, u32 r1) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    lock_member_lock(global_00982870_address);
+    lock_member_lock(global_00982870_address, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
     if (arg0->byte_c == 1u || arg0->byte_c == 2u) {
-        lock_member_lock(global_00982870_address);
+        lock_member_lock(global_00982870_address, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
         unlink_from_ends(global_00982864_address, arg0.addr());
         unlock_member_lock(global_00982870_address, arg0.addr());
     }
@@ -6403,28 +6302,28 @@ GUEST_OFFSET(Local_0013d73c_r1_1, word_4, 0x4);
 inline constexpr u32 vtable_SoundDataLoadRequest = 0x008f4a84u;
 inline constexpr u32 global_00982864_address = 0x00982864u;
 inline constexpr u32 global_00982870_address = 0x00982870u;
-inline constexpr guest::Function<0x00135740, u32(u32)> lock_member_lock;
+inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 inline constexpr guest::Function<0x0013f000, u32(u32, u32)> unlink_from_ends;
 
-u32 SoundDataLoadRequest__virtual_0(gptr<SoundDataLoadRequest> arg0) {
-    arg0->word_0 = vtable_SoundDataLoadRequest;
-    lock_member_lock(global_00982870_address);
-    if (arg0->byte_c == 1u || arg0->byte_c == 2u) {
-        lock_member_lock(global_00982870_address);
-        unlink_from_ends(global_00982864_address, arg0.addr());
-        unlock_member_lock(global_00982870_address, arg0.addr());
+u32 SoundDataLoadRequest__destructor(gptr<SoundDataLoadRequest> sound_data_load_request, u32 r1, u32 r2) {
+    sound_data_load_request->word_0 = vtable_SoundDataLoadRequest;
+    lock_member_lock(global_00982870_address, r1, r2, guest::cpu()->r[3]);
+    if (sound_data_load_request->byte_c == 1u || sound_data_load_request->byte_c == 2u) {
+        lock_member_lock(global_00982870_address, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
+        unlink_from_ends(global_00982864_address, sound_data_load_request.addr());
+        unlock_member_lock(global_00982870_address, sound_data_load_request.addr());
     }
-    arg0->byte_c = 0;
-    gptr<Local_0013d73c_r1_1> r1_1 = gptr<Local_0013d73c_r1_1>(arg0.addr() + 0x10u);  // (from the original)
+    sound_data_load_request->byte_c = 0;
+    gptr<Local_0013d73c_r1_1> r1_1 = gptr<Local_0013d73c_r1_1>(sound_data_load_request.addr() + 0x10u);  // (from the original)
     r1_1->word_0 = 0;
     r1_1->word_4 = ~0u;
     unlock_member_lock(global_00982870_address, r1_1.addr());
-    return arg0.addr();
+    return sound_data_load_request.addr();
 }
 
 }  // namespace d_0013d73c
-GUEST_EXPORT_FRAMED(0x0013d73c, d_0013d73c::SoundDataLoadRequest__virtual_0, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0013d73c, d_0013d73c::SoundDataLoadRequest__destructor, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_0013d7cc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013d7cc {
@@ -6434,48 +6333,48 @@ inline constexpr u32 global_0094cd20_address = 0x0094cd20u;
 inline guest::global<u32, 0x0094cd20> global_0094cd20;
 inline constexpr guest::Function<0x00136cc8, u32(u32, u32)> detach_from_parent;
 inline constexpr guest::Function<0x00136e58, u32(u32, u32, u32, u32)> call_00136e58;
-inline constexpr guest::Function<0x00138c2c, u32(u32, u32, u32, u32)> call_00138c2c;
+inline constexpr guest::Function<0x00138c2c, u32(u32, u32, u32, u32)> locked_list_last_index;
 inline constexpr guest::Function<0x0013d4f0, u32(u32, u32, u32)> call_0013d4f0;
 
-u32 SoundMelodyPlayerBase__virtual_0(gptr<SoundMelodyPlayerBase> arg0, u32 r1, u32 r2) {
-    arg0->word_0 = vtable_SoundMelodyPlayerBase;
-    u32 r0_1 = arg0->word_4;
+u32 SoundMelodyPlayerBase__destructor(gptr<SoundMelodyPlayerBase> sound_melody_player_base, u32 r1, u32 r2) {
+    sound_melody_player_base->word_0 = vtable_SoundMelodyPlayerBase;
+    u32 r0_1 = sound_melody_player_base->word_4;
     if (r0_1 != 0) {
         call_00136e58(r0_1, 0u, r2, guest::cpu()->r[3]);
         r1 = guest::cpu()->r[1];
         r2 = guest::cpu()->r[2];
     }
-    if (arg0->word_44 + 1u != 0) {
+    if (sound_melody_player_base->word_44 + 1u != 0) {
         u32 r0_2 = *global_0094cd20;
         if (r0_2 != 0) {
-            u32 r0_3 = call_00138c2c(r0_2, 0u, r2, guest::cpu()->r[3]);
-            r1 = arg0->word_44;
+            u32 r0_3 = locked_list_last_index(r0_2, 0u, r2, guest::cpu()->r[3]);
+            r1 = sound_melody_player_base->word_44;
             if (s32(r1) <= s32(r0_3)) {
                 u32 r0_5 = call_0013d4f0(*global_0094cd20, r1, 0u);
                 r1 = guest::cpu()->r[1];
                 if (r0_5 != 0) {
-                    arg0->word_44 = ~0u;
+                    sound_melody_player_base->word_44 = ~0u;
                 }
             }
         }
     }
-    arg0->byte_24 = 0;
-    detach_from_parent(arg0.addr() + 4u, r1);
-    return arg0.addr();
+    sound_melody_player_base->byte_24 = 0;
+    detach_from_parent(sound_melody_player_base.addr() + 4u, r1);
+    return sound_melody_player_base.addr();
 }
 
 }  // namespace d_0013d7cc
-GUEST_EXPORT_FRAMED(0x0013d7cc, d_0013d7cc::SoundMelodyPlayerBase__virtual_0, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0013d7cc, d_0013d7cc::SoundMelodyPlayerBase__destructor, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_0013d85c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013d85c {
 
-inline constexpr guest::Function<0x0012ede8, u32(u32, u32, u32, u32)> call_0012ede8;
+inline constexpr guest::Function<0x0012ede8, u32(u32, u32, u32, u32)> call_virtual_12_if_present;
 inline constexpr guest::Function<0x00134250, u32(u32, u32, u32, u32)> call_00134250;
 
-u32 f_0013d85c(gptr<nn__fs__FileInputStream> arg0) {
-    u32 r4_1 = arg0.addr() + 4u;
-    u32 r0_1 = arg0->word_4;
+u32 f_0013d85c(gptr<nn__fs__FileInputStream> file_input_stream) {
+    u32 r4_1 = file_input_stream.addr() + 4u;
+    u32 r0_1 = file_input_stream->word_4;
     u32 r1_1 = r0_1 & ~1u;
     if (r1_1 == 0) {
         guest::cpu()->r[1] = r1_1;
@@ -6483,10 +6382,9 @@ u32 f_0013d85c(gptr<nn__fs__FileInputStream> arg0) {
     }
     if ((r0_1 & 1u) != 0) {
         call_00134250(r0_1, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
-        r1_1 = guest::cpu()->r[1];
     }
-    call_0012ede8(arg0->word_4 & ~1u, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
-    arg0->word_4 = 0;
+    call_virtual_12_if_present(file_input_stream->word_4 & ~1u, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
+    file_input_stream->word_4 = 0;
     guest::cpu()->r[1] = 0u;
     return r4_1 - 4u;
 }
@@ -6518,9 +6416,9 @@ inline guest::global<u32, 0x00ae0c00> global_00ae0c00;
 inline constexpr guest::Function<0x0012f154, u32(u32)> RecursiveLock__initialize;
 inline constexpr guest::Function<0x00135748, u32(u32, u32, u32, u32)> RecursiveLock__lock;
 inline constexpr guest::Function<0x001357ec, u32(u32)> RecursiveLock__unlock;
-inline constexpr guest::Function<0x0013cc9c, u32(u32)> FixedPool__allocate;
+inline constexpr guest::Function<0x0013cc9c, u32(u32, u32, u32)> FixedPool__allocate;
 inline constexpr guest::Function<0x0014031c, u32(u32, u32, u32, u32)> call_0014031c;
-inline constexpr guest::Function<0x002fe7dd, u32(u32)> claim_flag;
+inline constexpr guest::Function<0x002fe7dd, u32(u32, u32, u32)> claim_flag;
 
 struct __attribute__((packed)) Frame_0013dc74 {
     u32 word_0;
@@ -6533,8 +6431,10 @@ GUEST_SIZE(Frame_0013dc74, 0x8);
 u32 nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection____CriticalSection___0013dc74(u32 r0_unused, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_0013dc74> frame;  // the original's stack frame
     RecursiveLock__lock(global_00ae0cb8_address, r1, r2, r3);
+    u32 r2_1 = guest::cpu()->r[2];
     if ((*global_00974f0c & 1u) == 0) {
-        u32 r0_1 = claim_flag(global_00974f0c_address);
+        u32 r0_1 = claim_flag(global_00974f0c_address, guest::cpu()->r[1], r2_1);
+        r2_1 = guest::cpu()->r[2];
         if (r0_1 != 0) {
             *global_00ae0bcc = 0;
             *global_00ae0bd0 = 0;
@@ -6550,10 +6450,11 @@ u32 nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection
             frame->word_4 = 0;
             call_0014031c(global_00ae0bc8_address, 0x130u, global_0094a940_address, 0x1300u);  // (from the original)
             RecursiveLock__initialize(global_00ae0bf8_address);
+            r2_1 = 0x100000u;  // (from the original)
         }
     }
     *global_00974f04 = 0xae0bc8;  // (from the original)
-    u32 r0_2 = FixedPool__allocate(global_00ae0bc8_address);
+    u32 r0_2 = FixedPool__allocate(global_00ae0bc8_address, guest::cpu()->r[1], r2_1);
     RecursiveLock__unlock(global_00ae0cb8_address);
     return r0_2;
 }
@@ -6567,56 +6468,56 @@ namespace d_0013dd5c {
 inline constexpr u32 vtable_nn__fs__CTR__MPCore__detail__ContentRomFsArchive = 0x008faed0u;
 inline constexpr u32 vtable_nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection__ = 0x008fb030u;
 
-void nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection____CriticalSection___0013dd5c(gptr<nn__fs__CTR__MPCore__detail__ContentRomFsArchive> arg0) {
-    arg0->word_4 = 0;
-    arg0->word_8 = 0;
-    arg0->word_20 = 0;
-    arg0->word_24 = 0;
-    arg0->word_28 = 0;
-    arg0->word_2c = 0;
-    arg0->word_30 = 0;
-    arg0->word_34 = 0;
-    arg0->word_38 = 0;
-    arg0->word_3c = 0;
-    arg0->word_40 = 0;
-    arg0->word_44 = 0;
-    arg0->word_48 = 0;
-    arg0->word_4c = 0;
-    arg0->word_50 = 0;
-    arg0->word_54 = 0;
-    arg0->word_58 = 0;
-    arg0->word_5c = 0;
-    arg0->word_60 = 0;
-    arg0->word_64 = 0;
-    arg0->word_68 = 0;
-    arg0->word_6c = 0;
-    arg0->word_bc = 0;
-    arg0->word_c0 = 0;
-    arg0->word_c4 = 0;
-    arg0->word_c8 = 0;
-    arg0->word_cc = 0;
-    arg0->word_dc = 0;
-    arg0->word_e8 = 0;
+void nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection____CriticalSection___0013dd5c(gptr<nn__fs__CTR__MPCore__detail__ContentRomFsArchive> content_rom_fs_archive) {
+    content_rom_fs_archive->word_4 = 0;
+    content_rom_fs_archive->word_8 = 0;
+    content_rom_fs_archive->word_20 = 0;
+    content_rom_fs_archive->word_24 = 0;
+    content_rom_fs_archive->word_28 = 0;
+    content_rom_fs_archive->word_2c = 0;
+    content_rom_fs_archive->word_30 = 0;
+    content_rom_fs_archive->word_34 = 0;
+    content_rom_fs_archive->word_38 = 0;
+    content_rom_fs_archive->word_3c = 0;
+    content_rom_fs_archive->word_40 = 0;
+    content_rom_fs_archive->word_44 = 0;
+    content_rom_fs_archive->word_48 = 0;
+    content_rom_fs_archive->word_4c = 0;
+    content_rom_fs_archive->word_50 = 0;
+    content_rom_fs_archive->word_54 = 0;
+    content_rom_fs_archive->word_58 = 0;
+    content_rom_fs_archive->word_5c = 0;
+    content_rom_fs_archive->word_60 = 0;
+    content_rom_fs_archive->word_64 = 0;
+    content_rom_fs_archive->word_68 = 0;
+    content_rom_fs_archive->word_6c = 0;
+    content_rom_fs_archive->word_bc = 0;
+    content_rom_fs_archive->word_c0 = 0;
+    content_rom_fs_archive->word_c4 = 0;
+    content_rom_fs_archive->word_c8 = 0;
+    content_rom_fs_archive->word_cc = 0;
+    content_rom_fs_archive->word_dc = 0;
+    content_rom_fs_archive->word_e8 = 0;
     u32 r12_1 = ~0u;
-    arg0->word_ec = 0;
-    arg0->word_f0 = r12_1;
-    arg0->word_f8 = 0;
-    arg0->word_b8 = vtable_nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection__;
-    arg0->word_fc = 0;
-    arg0->word_100 = 0;
-    arg0->word_104 = 0;
-    arg0->word_108 = 0;
-    arg0->word_118 = 0;
-    arg0->word_124 = 0;
-    arg0->word_128 = 0;
-    arg0->word_12c = r12_1;
-    arg0->word_c = 0;
-    arg0->word_f4 = vtable_nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection__;
-    arg0->word_10 = 0;
-    arg0->word_14 = 0;
-    arg0->word_18 = 0;
-    arg0->word_0 = vtable_nn__fs__CTR__MPCore__detail__ContentRomFsArchive;
-    arg0->word_1c = 0;
+    content_rom_fs_archive->word_ec = 0;
+    content_rom_fs_archive->word_f0 = r12_1;
+    content_rom_fs_archive->word_f8 = 0;
+    content_rom_fs_archive->word_b8 = vtable_nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection__;
+    content_rom_fs_archive->word_fc = 0;
+    content_rom_fs_archive->word_100 = 0;
+    content_rom_fs_archive->word_104 = 0;
+    content_rom_fs_archive->word_108 = 0;
+    content_rom_fs_archive->word_118 = 0;
+    content_rom_fs_archive->word_124 = 0;
+    content_rom_fs_archive->word_128 = 0;
+    content_rom_fs_archive->word_12c = r12_1;
+    content_rom_fs_archive->word_c = 0;
+    content_rom_fs_archive->word_f4 = vtable_nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection__;
+    content_rom_fs_archive->word_10 = 0;
+    content_rom_fs_archive->word_14 = 0;
+    content_rom_fs_archive->word_18 = 0;
+    content_rom_fs_archive->word_0 = vtable_nn__fs__CTR__MPCore__detail__ContentRomFsArchive;
+    content_rom_fs_archive->word_1c = 0;
 }
 
 }  // namespace d_0013dd5c
@@ -6728,134 +6629,15 @@ u32 f_0013e258(u32 r0) {
 }  // namespace d_0013e258
 GUEST_EXPORT(0x0013e258, d_0013e258::f_0013e258);
 
-// f_0013e274: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
-namespace d_0013e274 {
-
-struct __attribute__((packed)) Object_0013e274_0 {
-    u8 unknown_0[0xc8];  // (not used here)
-    u32 word_c8;
-    u32 word_cc;
-};
-GUEST_OFFSET(Object_0013e274_0, word_c8, 0xc8);
-GUEST_OFFSET(Object_0013e274_0, word_cc, 0xcc);
-
-struct __attribute__((packed)) Local_0013e274_ea_2 {
-    u32 word_0;
-    u32 word_4;
-};
-GUEST_OFFSET(Local_0013e274_ea_2, word_0, 0x0);
-GUEST_OFFSET(Local_0013e274_ea_2, word_4, 0x4);
-
-struct __attribute__((packed)) Local_0013e274_ea_3 {
-    u32 word_0;
-    u32 word_4;
-};
-GUEST_OFFSET(Local_0013e274_ea_3, word_0, 0x0);
-GUEST_OFFSET(Local_0013e274_ea_3, word_4, 0x4);
-
-struct __attribute__((packed)) Local_0013e274_ea_4 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-};
-GUEST_OFFSET(Local_0013e274_ea_4, word_0, 0x0);
-GUEST_OFFSET(Local_0013e274_ea_4, word_4, 0x4);
-GUEST_OFFSET(Local_0013e274_ea_4, word_8, 0x8);
-
-struct __attribute__((packed)) Local_0013e274_r0_6 {
-    u32 word_0;
-    u8 unknown_4[0x4];  // (not used here)
-    u8 byte_8;
-};
-GUEST_OFFSET(Local_0013e274_r0_6, word_0, 0x0);
-GUEST_OFFSET(Local_0013e274_r0_6, byte_8, 0x8);
-
-inline guest::global<u8, 0x0097e038> global_0097e038;
-inline constexpr guest::Function<0x00134c80, u32(u32, u32, u32, u32)> call_00134c80;
-inline constexpr guest::Function<0x0013fff8, u32(u32, u32)> call_0013fff8;
-inline constexpr guest::Function<0x00140694, u32(u32, u32, u32, u32)> nn__crypto__Sha256Context__Sha256Context;
-
-struct __attribute__((packed)) Frame_0013e274 {
-    u8 unknown_0[0xc];  // (not read or written by name)
-    u32 word_c;
-    u8 unknown_10[0xc];  // (not read or written by name)
-    u32 word_1c;
-    u8 unknown_20[0x24];  // (not read or written by name)
-};
-GUEST_OFFSET(Frame_0013e274, word_c, 0xc);
-GUEST_OFFSET(Frame_0013e274, word_1c, 0x1c);
-GUEST_SIZE(Frame_0013e274, 0x44);
-
-void f_0013e274(gptr<Object_0013e274_0> arg0, u32 r1_unused, u32 r2_unused, u32 r3) {
-    guest::StackFrameOf<Frame_0013e274> frame;  // the original's stack frame
-    u32 r0 = arg0.addr();
-    u32 r1_1 = *global_0097e038;
-    if (r1_1 == 0) {
-        guest::cpu()->r[1] = r1_1;
-        return;
-    }
-    nn__crypto__Sha256Context__Sha256Context(frame.at(0x20).addr(), r0, 0x80u, r3);  // (from the original)
-    u32 r0_3 = call_0013fff8(frame.at(0xc).addr(), frame.at(0x20).addr());  // (from the original)
-    u32 r5 = 0u;
-    if (s32(r0_3) < 0) {
-        guest::cpu()->r[1] = r0_3;
-        return;
-    }
-    u32 r0_4 = frame->word_c;
-    if (*gptr<u32>(r0_4 + 0x14u) == 0) {  // (from the original)
-        guest::cpu()->r[1] = r0_3;
-        return;
-    }
-    gptr<Local_0013e274_ea_2> ea_2 = gptr<Local_0013e274_ea_2>(*gptr<u32>(r0_4 + 0x10u) + r0_4);  // (from the original)
-    u32 r12 = ea_2->word_4;
-    u32 r2 = ea_2->word_0 + r0_4;
-    if (s32(r12) <= s32(r0_3)) {
-        guest::cpu()->r[1] = r0_3;
-        return;
-    }
-    gptr<Local_0013e274_ea_3> ea_3 = gptr<Local_0013e274_ea_3>(*gptr<u32>(r2 + (r0_3 << 3)) + r0_4);
-    u32 r1_3 = ea_3->word_4;
-    u32 r0_5 = r0_4 + ea_3->word_0;
-    if (r0_5 == 0) {
-        guest::cpu()->r[1] = r1_3;
-        return;
-    }
-    gptr<Local_0013e274_ea_4> ea_4 = gptr<Local_0013e274_ea_4>(frame.at(0x10).addr());  // (from the original)
-    ea_4->word_0 = r0_5;
-    ea_4->word_4 = r1_3 + 1u;
-    ea_4->word_8 = r0;
-    u32 r1 = 0u;
-    r3 = arg0->word_cc;
-    if (r3 != 0 && s32(r3) >= 0) {
-        r12 = arg0->word_c8;
-    }
-    if (s32(r3) > 0) {
-        do {
-            gptr<Local_0013e274_r0_6> r0_6 = gptr<Local_0013e274_r0_6>(r12 + r1 * 0xcu);  // (from the original)
-            if (r0_6->byte_8 == 2u) {
-                r5 = r0_6->word_0;
-                break;
-            }
-            r1 += 1u;
-            guest::preempt();
-        } while (s32(r3) > s32(r1));
-    }
-    frame->word_1c = r5;
-    call_00134c80(frame.at(0x10).addr(), 0x10u, r2, r3);  // (from the original)
-}
-
-}  // namespace d_0013e274
-GUEST_EXPORT_FRAMED(0x0013e274, d_0013e274::f_0013e274, 0x4030);  // pushes {r4, r5, lr} first, as the original
-
 // f_0013e560: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013e560 {
 
 inline constexpr guest::Function<0x0013e580, u32(u32, u32, u32, u32)> call_0013e580;
 
-u32 ExpHeap__free(gptr<nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock_> arg0) {
-    call_0013e580(arg0.addr() + 0x18u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    u32 r0_2 = arg0->word_54 - 1u;
-    arg0->word_54 = r0_2;
+u32 ExpHeap__free(gptr<nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock_> no_lock) {
+    call_0013e580(no_lock.addr() + 0x18u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    u32 r0_2 = no_lock->word_54 - 1u;
+    no_lock->word_54 = r0_2;
     return r0_2;
 }
 
@@ -6866,7 +6648,7 @@ GUEST_EXPORT_FRAMED(0x0013e560, d_0013e560::ExpHeap__free, 0x4010);  // pushes {
 // Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
 namespace d_0013e75c {
 
-struct __attribute__((packed)) Object_0013e75c_0 {
+struct __attribute__((packed)) HeapBase {
     u8 unknown_0[0xc];  // (not used here)
     u32 word_c;
     u32 word_10;
@@ -6874,19 +6656,19 @@ struct __attribute__((packed)) Object_0013e75c_0 {
     u8 unknown_18[0xc];  // (not used here)
     u32 word_24;
 };
-GUEST_OFFSET(Object_0013e75c_0, word_c, 0xc);
-GUEST_OFFSET(Object_0013e75c_0, word_10, 0x10);
-GUEST_OFFSET(Object_0013e75c_0, word_14, 0x14);
-GUEST_OFFSET(Object_0013e75c_0, word_24, 0x24);
+GUEST_OFFSET(HeapBase, word_c, 0xc);
+GUEST_OFFSET(HeapBase, word_10, 0x10);
+GUEST_OFFSET(HeapBase, word_14, 0x14);
+GUEST_OFFSET(HeapBase, word_24, 0x24);
 
 inline constexpr u32 global_00981890_address = 0x00981890u;
 inline constexpr u32 global_00af51c0_address = 0x00af51c0u;
 inline guest::global<u32, 0x00981890> global_00981890;
 inline constexpr guest::Function<0x0013e7d8, u32(u32, u32, u32)> linked_list_insert_before;
-inline constexpr guest::Function<0x0013fac4, u32(u32, u32, u32)> set_bytes;
+inline constexpr guest::Function<0x0013fac4, u32(u32, u32, u32, u32)> set_bytes;
 inline constexpr guest::Function<0x001432c8, u32(u32, u32)> call_001432c8;
 
-void HeapBase__initialize(gptr<Object_0013e75c_0> heap, u32 signature, u32 start, u32 end) {
+void HeapBase__initialize(gptr<HeapBase> heap, u32 signature, u32 start, u32 end) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 options = *frame.at<u32>(0x10) & 0xffu;  // (from the original)
     heap->word_24 = options;
@@ -6894,7 +6676,7 @@ void HeapBase__initialize(gptr<Object_0013e75c_0> heap, u32 signature, u32 start
     heap->word_c = start;
     heap->word_10 = end;
     if ((options & 2u) != 0) {
-        set_bytes(start, end - start, *global_00981890);
+        set_bytes(start, end - start, *global_00981890, end);
     }
     u32 list = global_00af51c0_address;
     u32 r0_2 = call_001432c8(list, heap.addr());
@@ -7008,16 +6790,16 @@ GUEST_EXPORT(0x0013ebec, d_0013ebec::f_0013ebec);
 // Reads a wave archive (CWAR, version 1.0.0.0): its INFO block and, when asked, its file table.
 namespace d_0013ec20 {
 
-struct __attribute__((packed)) Object_0013ec20_0 {
+struct __attribute__((packed)) WaveArchiveFileReader {
     u32 word_0;
     u32 word_4;
     u32 word_8;
     u8 byte_c;
 };
-GUEST_OFFSET(Object_0013ec20_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013ec20_0, word_4, 0x4);
-GUEST_OFFSET(Object_0013ec20_0, word_8, 0x8);
-GUEST_OFFSET(Object_0013ec20_0, byte_c, 0xc);
+GUEST_OFFSET(WaveArchiveFileReader, word_0, 0x0);
+GUEST_OFFSET(WaveArchiveFileReader, word_4, 0x4);
+GUEST_OFFSET(WaveArchiveFileReader, word_8, 0x8);
+GUEST_OFFSET(WaveArchiveFileReader, byte_c, 0xc);
 
 struct __attribute__((packed)) Object_0013ec20_1 {
     u32 word_0;
@@ -7030,7 +6812,7 @@ GUEST_OFFSET(Object_0013ec20_1, word_8, 0x8);
 inline constexpr guest::Function<0x0013f3cc, u32(u32)> WaveArchiveFile__info_block;
 inline constexpr guest::Function<0x001416bc, u32(u32, u32)> call_001416bc;
 
-void WaveArchiveFileReader__initialize(gptr<Object_0013ec20_0> reader, gptr<Object_0013ec20_1> file, u32 with_table) {
+void WaveArchiveFileReader__initialize(gptr<WaveArchiveFileReader> reader, gptr<Object_0013ec20_1> file, u32 with_table) {
     u32 r1 = file.addr();
     u32 r5_1 = r1;
     reader->word_0 = 0;
@@ -7133,18 +6915,18 @@ inline constexpr guest::Function<0x001411ec, u32(u32, u32)> call_001411ec;
 inline constexpr guest::Function<0x00141490, u32(u32)> call_00141490;
 inline constexpr guest::Function<0x001414b4, u32(u32)> call_001414b4;
 
-void f_0013ee40(gptr<sead__AudioSoundHeapCtr> arg0, u32 r1) {
+void f_0013ee40(gptr<sead__AudioSoundHeapCtr> audio_sound_heap_ctr, u32 r1) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 r5_1 = arg0.addr() + 4u;
+    u32 r5_1 = audio_sound_heap_ctr.addr() + 4u;
     RecursiveLock__lock(r5_1, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
-    if (arg0->word_10 != 0) {
-        RecursiveLock__lock(arg0.addr() + 4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-        call_00141490(arg0.addr() + 0x10u);  // (from the original)
-        u32 r0_2 = RecursiveLock__unlock(arg0.addr() + 4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    if (audio_sound_heap_ctr->word_10 != 0) {
+        RecursiveLock__lock(audio_sound_heap_ctr.addr() + 4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+        call_00141490(audio_sound_heap_ctr.addr() + 0x10u);  // (from the original)
+        u32 r0_2 = RecursiveLock__unlock(audio_sound_heap_ctr.addr() + 4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r0_3 = call_00140f54(r0_2);
         u32 r0_4 = call_00140fac(r0_3, 1u);
         call_001411ec(r0_3, r0_4);
-        call_001414b4(arg0.addr() + 0x10u);  // (from the original)
+        call_001414b4(audio_sound_heap_ctr.addr() + 0x10u);  // (from the original)
         frame.release();
         RecursiveLock__unlock(r5_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
         return;
@@ -7162,8 +6944,8 @@ namespace d_0013ef18 {
 
 inline constexpr guest::Function<0x00136e58, u32(u32, u32, u32, u32)> call_00136e58;
 
-void f_0013ef18(gptr<SoundMelodyPlayerOneSeqBase> arg0) {
-    u32 r0_1 = arg0->word_8;
+void f_0013ef18(gptr<SoundMelodyPlayerOneSeqBase> sound_melody_player_one_seq_base) {
+    u32 r0_1 = sound_melody_player_one_seq_base->word_8;
     if (r0_1 == 0) {
         guest::cpu()->r[1] = 0u;
         return;
@@ -7180,21 +6962,21 @@ namespace d_0013efb4 {
 inline constexpr u32 vtable_sead__IDisposer = 0x00905fecu;
 inline constexpr u32 global_00975334_address = 0x00975334u;
 inline guest::global<u32, 0x00975334> global_00975334;
-inline constexpr guest::Function<0x00141650, u32(u32, u32)> call_00141650;
+inline constexpr guest::Function<0x00141650, u32(u32, u32, u32, u32)> call_00141650;
 
-u32 destroy_disposer(gptr<sead__IDisposer> arg0) {
-    arg0->word_0 = vtable_sead__IDisposer;
-    u32 r0_1 = arg0->word_4;
+u32 destroy_disposer(gptr<sead__IDisposer> i_disposer) {
+    i_disposer->word_0 = vtable_sead__IDisposer;
+    u32 r0_1 = i_disposer->word_4;
     u32 r1_1 = *global_00975334;
     if (r0_1 != r1_1) {
         if (r0_1 != 0) {
-            call_00141650(r0_1, arg0.addr());
+            call_00141650(r0_1, i_disposer.addr(), guest::cpu()->r[2], guest::cpu()->r[3]);
             r1_1 = guest::cpu()->r[1];
         }
-        arg0->word_4 = *global_00975334;
+        i_disposer->word_4 = *global_00975334;
     }
     guest::cpu()->r[1] = r1_1;
-    return arg0.addr();
+    return i_disposer.addr();
 }
 
 }  // namespace d_0013efb4
@@ -7203,25 +6985,25 @@ GUEST_EXPORT_FRAMED(0x0013efb4, d_0013efb4::destroy_disposer, 0x4070);  // pushe
 // f_0013f398: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f398 {
 
-struct __attribute__((packed)) Object_0013f398_0 {
+struct __attribute__((packed)) WaveArchiveFile {
     u8 unknown_0[0x14];  // (not used here)
     u16 half_14;
     u8 unknown_16[0xa];  // (not used here)
     u16 half_20;
 };
-GUEST_OFFSET(Object_0013f398_0, half_14, 0x14);
-GUEST_OFFSET(Object_0013f398_0, half_20, 0x20);
+GUEST_OFFSET(WaveArchiveFile, half_14, 0x14);
+GUEST_OFFSET(WaveArchiveFile, half_20, 0x20);
 
 
-u32 WaveArchiveFile__file_block(gptr<Object_0013f398_0> arg0) {
-    if (arg0->half_14 == 0x6801u) {  // (from the original)
-        u32 r1_2 = *gptr<u32>((arg0.addr() + 0x14u) + 4u);  // (from the original)
+u32 WaveArchiveFile__file_block(gptr<WaveArchiveFile> wave_archive_file) {
+    if (wave_archive_file->half_14 == 0x6801u) {  // (from the original)
+        u32 r1_2 = *gptr<u32>((wave_archive_file.addr() + 0x14u) + 4u);  // (from the original)
         guest::cpu()->r[1] = r1_2;
-        return arg0.addr() + r1_2;
+        return wave_archive_file.addr() + r1_2;
     }
-    u32 r1_4 = *gptr<u32>((arg0->half_20 == 0x6801u ? arg0.addr() + 0x20u : 0u) + 4u);  // (from the original)
+    u32 r1_4 = *gptr<u32>((wave_archive_file->half_20 == 0x6801u ? wave_archive_file.addr() + 0x20u : 0u) + 4u);  // (from the original)
     guest::cpu()->r[1] = r1_4;
-    return arg0.addr() + r1_4;
+    return wave_archive_file.addr() + r1_4;
 }
 
 }  // namespace d_0013f398
@@ -7230,21 +7012,21 @@ GUEST_EXPORT(0x0013f398, d_0013f398::WaveArchiveFile__file_block);
 // f_0013f3cc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f3cc {
 
-struct __attribute__((packed)) Object_0013f3cc_0 {
+struct __attribute__((packed)) WaveArchiveFile {
     u8 unknown_0[0x14];  // (not used here)
     u16 half_14;
     u8 unknown_16[0xa];  // (not used here)
     u16 half_20;
 };
-GUEST_OFFSET(Object_0013f3cc_0, half_14, 0x14);
-GUEST_OFFSET(Object_0013f3cc_0, half_20, 0x20);
+GUEST_OFFSET(WaveArchiveFile, half_14, 0x14);
+GUEST_OFFSET(WaveArchiveFile, half_20, 0x20);
 
 
-u32 WaveArchiveFile__info_block(gptr<Object_0013f3cc_0> arg0) {
-    if (arg0->half_14 == 0x6800u) {  // (from the original)
-        return arg0.addr() + *gptr<u32>((arg0.addr() + 0x14u) + 4u);  // (from the original)
+u32 WaveArchiveFile__info_block(gptr<WaveArchiveFile> wave_archive_file) {
+    if (wave_archive_file->half_14 == 0x6800u) {  // (from the original)
+        return wave_archive_file.addr() + *gptr<u32>((wave_archive_file.addr() + 0x14u) + 4u);  // (from the original)
     }
-    return arg0.addr() + *gptr<u32>((arg0->half_20 == 0x6800u ? arg0.addr() + 0x20u : 0u) + 4u);  // (from the original)
+    return wave_archive_file.addr() + *gptr<u32>((wave_archive_file->half_20 == 0x6800u ? wave_archive_file.addr() + 0x20u : 0u) + 4u);  // (from the original)
 }
 
 }  // namespace d_0013f3cc
@@ -7253,7 +7035,7 @@ GUEST_EXPORT(0x0013f3cc, d_0013f3cc::WaveArchiveFile__info_block);
 // f_0013f5e8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f5e8 {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013f5e8 {
     u32 word_0;
@@ -7264,8 +7046,8 @@ GUEST_SIZE(Frame_0013f5e8, 0x4);
 u32 f_0013f5e8(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013f5e8> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 8u, frame.at(0).addr(), 0u);
-    return r0_2 == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
+    u32 found = SparseArray__get(r0 + 8u, frame.at(0).addr(), 0u);
+    return found == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
 }
 
 }  // namespace d_0013f5e8
@@ -7274,7 +7056,7 @@ GUEST_EXPORT_FRAMED(0x0013f5e8, d_0013f5e8::f_0013f5e8, 0x4000);  // pushes {lr}
 // f_0013f610: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f610 {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013f610 {
     u32 word_0;
@@ -7285,9 +7067,9 @@ GUEST_SIZE(Frame_0013f610, 0x4);
 u32 f_0013f610(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013f610> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 8u, frame.at(0).addr(), 0u);
-    if (r0_2 == 0) {
-        return r0_2;
+    u32 found = SparseArray__get(r0 + 8u, frame.at(0).addr(), 0u);
+    if (found == 0) {
+        return found;
     }
     return frame->word_0 >> 8u & 0xffu;  // (from the original)
 }
@@ -7298,7 +7080,7 @@ GUEST_EXPORT_FRAMED(0x0013f610, d_0013f610::f_0013f610, 0x4000);  // pushes {lr}
 // f_0013f69c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f69c {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013f69c {
     u32 word_0;
@@ -7309,11 +7091,11 @@ GUEST_SIZE(Frame_0013f69c, 0x4);
 u32 f_0013f69c(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013f69c> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 0xcu, frame.at(0).addr(), 0u);  // (from the original)
-    if (r0_2 != 0) {
-        r0_2 = frame->word_0;
+    u32 found = SparseArray__get(r0 + 0xcu, frame.at(0).addr(), 0u);  // (from the original)
+    if (found != 0) {
+        found = frame->word_0;
     }
-    return r0_2;
+    return found;
 }
 
 }  // namespace d_0013f69c
@@ -7322,7 +7104,7 @@ GUEST_EXPORT_FRAMED(0x0013f69c, d_0013f69c::f_0013f69c, 0x4000);  // pushes {lr}
 // f_0013f6bc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f6bc {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013f6bc {
     u32 word_0;
@@ -7333,8 +7115,8 @@ GUEST_SIZE(Frame_0013f6bc, 0x4);
 u32 f_0013f6bc(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013f6bc> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 0xcu, frame.at(0).addr(), 1u);  // (from the original)
-    return r0_2 == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
+    u32 found = SparseArray__get(r0 + 0xcu, frame.at(0).addr(), 1u);  // (from the original)
+    return found == 0 ? 0x40u : frame->word_0 & 0xffu;  // (from the original)
 }
 
 }  // namespace d_0013f6bc
@@ -7343,7 +7125,7 @@ GUEST_EXPORT_FRAMED(0x0013f6bc, d_0013f6bc::f_0013f6bc, 0x4000);  // pushes {lr}
 // f_0013f6e4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f6e4 {
 
-inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> call_00141a9c;
+inline constexpr guest::Function<0x00141a9c, u32(u32, u32, u32)> SparseArray__get;
 
 struct __attribute__((packed)) Frame_0013f6e4 {
     u32 word_0;
@@ -7354,8 +7136,8 @@ GUEST_SIZE(Frame_0013f6e4, 0x4);
 u32 f_0013f6e4(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0013f6e4> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_2 = call_00141a9c(r0 + 0xcu, frame.at(0).addr(), 1u);  // (from the original)
-    if (r0_2 == 0) {
+    u32 found = SparseArray__get(r0 + 0xcu, frame.at(0).addr(), 1u);  // (from the original)
+    if (found == 0) {
         return 1u;
     }
     u32 r0_3 = frame->word_0 >> 8u & 0xffu;  // (from the original)
@@ -7392,23 +7174,23 @@ GUEST_EXPORT(0x0013f718, d_0013f718::f_0013f718);
 // f_0013f7b8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f7b8 {
 
-struct __attribute__((packed)) Object_0013f7b8_0 {
+struct __attribute__((packed)) WaveArchiveFileReader {
     u32 word_0;
     u8 unknown_4[0x8];  // (not used here)
     u8 byte_c;
 };
-GUEST_OFFSET(Object_0013f7b8_0, word_0, 0x0);
-GUEST_OFFSET(Object_0013f7b8_0, byte_c, 0xc);
+GUEST_OFFSET(WaveArchiveFileReader, word_0, 0x0);
+GUEST_OFFSET(WaveArchiveFileReader, byte_c, 0xc);
 
 inline constexpr guest::Function<0x001416bc, u32(u32)> call_001416bc;
 
-u32 WaveArchiveFileReader__has_table(gptr<Object_0013f7b8_0> arg0) {
-    u32 r1_1 = arg0->byte_c;
+u32 WaveArchiveFileReader__has_table(gptr<WaveArchiveFileReader> wave_archive_file_reader) {
+    u32 r1_1 = wave_archive_file_reader->byte_c;
     if (r1_1 == 0) {
         guest::cpu()->r[1] = r1_1;
         return 0u;
     }
-    u32 r4_1 = arg0->word_0;
+    u32 r4_1 = wave_archive_file_reader->word_0;
     u32 r0_1 = call_001416bc(r4_1);
     if (*gptr<u32>(r4_1 + r0_1) == 0x54415743u) {  // (from the original)
         guest::cpu()->r[1] = 0x54415743u;  // (from the original)
@@ -7486,7 +7268,7 @@ GUEST_OFFSET(Local_0013f81c_r0_2, word_0, 0x0);
 GUEST_OFFSET(Local_0013f81c_r0_2, word_4, 0x4);
 GUEST_OFFSET(Local_0013f81c_r0_2, byte_8, 0x8);
 
-inline constexpr guest::Function<0x00141728, u32(u32, u32, u32, u32)> call_00141728;
+inline constexpr guest::Function<0x00141728, u32(u32, u32, u32, u32)> HandleTable__resolve;
 inline constexpr guest::Function<0x001417fc, u32(u32)> call_001417fc;
 inline constexpr guest::Function<0x00141820, u32(u32)> call_00141820;
 inline constexpr guest::Function<0x0014184c, u32(u32)> call_0014184c;
@@ -7495,24 +7277,24 @@ inline constexpr guest::Function<0x0014189c, u32(u32)> call_0014189c;
 
 u32 f_0013f81c(gptr<Object_0013f81c_0> arg0, u32 r1_unused, gptr<Object_0013f81c_2> arg2) {
     u32 r0_1 = arg0->word_3c;
-    gptr<Local_0013f81c_r0_2> r0_2 = gptr<Local_0013f81c_r0_2>(call_00141728(r0_1, guest::cpu()->r[1], arg2.addr(), guest::cpu()->r[3]));
-    if (r0_2.addr() != 0) {
-        arg2->word_0 = r0_2->word_0;
-        arg2->word_4 = r0_2->word_4;
-        arg2->word_10 = u32(r0_2->byte_8);
-        u32 r0_3 = call_001417fc(r0_2.addr());
+    gptr<Local_0013f81c_r0_2> entry_2 = gptr<Local_0013f81c_r0_2>(HandleTable__resolve(r0_1, guest::cpu()->r[1], arg2.addr(), guest::cpu()->r[3]));
+    if (entry_2.addr() != 0) {
+        arg2->word_0 = entry_2->word_0;
+        arg2->word_4 = entry_2->word_4;
+        arg2->word_10 = u32(entry_2->byte_8);
+        u32 r0_3 = call_001417fc(entry_2.addr());
         arg2->byte_14 = u8(r0_3);
-        u32 r0_4 = call_00141820(r0_2.addr());
+        u32 r0_4 = call_00141820(entry_2.addr());
         arg2->byte_15 = u8(r0_4);
-        u32 r0_5 = call_0014189c(r0_2.addr());
+        u32 r0_5 = call_0014189c(entry_2.addr());
         arg2->word_c = r0_5;
-        u32 r0_6 = call_00141870(r0_2.addr());
+        u32 r0_6 = call_00141870(entry_2.addr());
         arg2->word_8 = r0_6;
-        u32 r0_7 = call_0014184c(r0_2.addr());
+        u32 r0_7 = call_0014184c(entry_2.addr());
         arg2->byte_16 = u8(r0_7);
-        r0_2 = gptr<Local_0013f81c_r0_2>(1u);
+        entry_2 = gptr<Local_0013f81c_r0_2>(1u);
     }
-    return r0_2.addr();
+    return entry_2.addr();
 }
 
 }  // namespace d_0013f81c
@@ -7565,18 +7347,18 @@ GUEST_EXPORT_FRAMED(0x0013f890, d_0013f890::f_0013f890, 0x4070);  // pushes {r4,
 // f_0013f8cc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f8cc {
 
-struct __attribute__((packed)) Object_0013f8cc_0 {
+struct __attribute__((packed)) GroupFile {
     u8 unknown_0[0x10];  // (not used here)
     u16 half_10;
 };
-GUEST_OFFSET(Object_0013f8cc_0, half_10, 0x10);
+GUEST_OFFSET(GroupFile, half_10, 0x10);
 
 
-u32 GroupFile__file_block(gptr<Object_0013f8cc_0> arg0) {
-    u32 r0 = arg0.addr();
+u32 GroupFile__file_block(gptr<GroupFile> group_file) {
+    u32 r0 = group_file.addr();
     u32 res_1 = 0;
     u32 zf_1 = 0;
-    u32 r3 = arg0->half_10;
+    u32 r3 = group_file->half_10;
     u32 r12 = 0x7801u;  // (from the original)
     u32 r5 = 0u;
     u32 r2 = r0 + 0x14u;  // (from the original)
@@ -7617,17 +7399,17 @@ GUEST_EXPORT_FRAMED(0x0013f8cc, d_0013f8cc::GroupFile__file_block, 0x30);  // pu
 // f_0013f934: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f934 {
 
-struct __attribute__((packed)) Object_0013f934_0 {
+struct __attribute__((packed)) GroupFile {
     u8 unknown_0[0x10];  // (not used here)
     u16 half_10;
 };
-GUEST_OFFSET(Object_0013f934_0, half_10, 0x10);
+GUEST_OFFSET(GroupFile, half_10, 0x10);
 
 
-u32 GroupFile__info_block(gptr<Object_0013f934_0> arg0) {
-    u32 r0 = arg0.addr();
+u32 GroupFile__info_block(gptr<GroupFile> group_file) {
+    u32 r0 = group_file.addr();
     u32 r0_1 = 0;
-    u32 r12 = arg0->half_10;
+    u32 r12 = group_file->half_10;
     u32 r3 = r0 + 0x14u;  // (from the original)
     u32 r5 = r0;
     r0 = 0u;
@@ -7668,18 +7450,18 @@ GUEST_EXPORT_FRAMED(0x0013f934, d_0013f934::GroupFile__info_block, 0x30);  // pu
 // f_0013f9a0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0013f9a0 {
 
-struct __attribute__((packed)) Object_0013f9a0_0 {
+struct __attribute__((packed)) GroupFile {
     u8 unknown_0[0x10];  // (not used here)
     u16 half_10;
 };
-GUEST_OFFSET(Object_0013f9a0_0, half_10, 0x10);
+GUEST_OFFSET(GroupFile, half_10, 0x10);
 
 
-u32 GroupFile__infox_block(gptr<Object_0013f9a0_0> arg0) {
-    u32 r0 = arg0.addr();
+u32 GroupFile__infox_block(gptr<GroupFile> group_file) {
+    u32 r0 = group_file.addr();
     u32 res_1 = 0;
     u32 zf_1 = 0;
-    u32 r3 = arg0->half_10;
+    u32 r3 = group_file->half_10;
     u32 r12 = 0x7802u;  // (from the original)
     u32 r5 = 0u;
     u32 r2 = r0 + 0x14u;  // (from the original)

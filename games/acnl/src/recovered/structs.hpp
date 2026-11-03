@@ -67512,8 +67512,8 @@ struct AcPlayer_rec {
     u8 byte_17a;
     u8 byte_17b;
     u8 unknown_17c[0x2d];  // (not used yet)
-    u8 byte_1a9;
-    u8 byte_1aa;
+    u8 state;
+    u8 previous_state;
     u8 byte_1ab;
     u8 byte_1ac;
     u8 unknown_1ad[0x3];  // (not used yet)
@@ -67568,7 +67568,7 @@ struct AcPlayer_rec {
     u32 word_868;
     u16 half_86c;
     u8 unknown_86e[0x4e];  // (not used yet)
-    u8 byte_8bc;
+    u8 state_params;
     u8 byte_8bd;
     u16 half_8be;
     u16 half_8c0;
@@ -67637,8 +67637,8 @@ GUEST_OFFSET(AcPlayer_rec, byte_178, 0x178);
 GUEST_OFFSET(AcPlayer_rec, byte_179, 0x179);
 GUEST_OFFSET(AcPlayer_rec, byte_17a, 0x17a);
 GUEST_OFFSET(AcPlayer_rec, byte_17b, 0x17b);
-GUEST_OFFSET(AcPlayer_rec, byte_1a9, 0x1a9);
-GUEST_OFFSET(AcPlayer_rec, byte_1aa, 0x1aa);
+GUEST_OFFSET(AcPlayer_rec, state, 0x1a9);
+GUEST_OFFSET(AcPlayer_rec, previous_state, 0x1aa);
 GUEST_OFFSET(AcPlayer_rec, byte_1ab, 0x1ab);
 GUEST_OFFSET(AcPlayer_rec, byte_1ac, 0x1ac);
 GUEST_OFFSET(AcPlayer_rec, word_1b0, 0x1b0);
@@ -67682,7 +67682,7 @@ GUEST_OFFSET(AcPlayer_rec, word_860, 0x860);
 GUEST_OFFSET(AcPlayer_rec, word_864, 0x864);
 GUEST_OFFSET(AcPlayer_rec, word_868, 0x868);
 GUEST_OFFSET(AcPlayer_rec, half_86c, 0x86c);
-GUEST_OFFSET(AcPlayer_rec, byte_8bc, 0x8bc);
+GUEST_OFFSET(AcPlayer_rec, state_params, 0x8bc);
 GUEST_OFFSET(AcPlayer_rec, byte_8bd, 0x8bd);
 GUEST_OFFSET(AcPlayer_rec, half_8be, 0x8be);
 GUEST_OFFSET(AcPlayer_rec, half_8c0, 0x8c0);

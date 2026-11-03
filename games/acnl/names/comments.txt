@@ -9,6 +9,22 @@
 00107634 Removes notice `index` of the 15, moving the used ones after it up and clearing the last.
 001082c8 Clears the bulletin board's 15 notices.
 00109a90 Loads the NPC packages (normal, normal constants, special constants) and the other startup resources; whether all loaded.
+00111f4c Villager `id`'s bit (below 0x18f) in a bit array; 0 without one.
+00112d9c Clears the villager's letter (+0x2210) and its four kept letters (from +0x1810), then the rest of what it remembers of them.
+001130cc Clears two flag bits of each of the villager's 16 player memories (0xf2 bytes each, from +0x8ee).
+00113430 Clears the villager's four kept letters (from +0x1810) and resets what goes with each.
+001138dc Copies a villager record (0x2518 bytes).
+001138ec Clears the villager and sets it up from `source`: its id, its data entry, the town's details, the date, its catchphrase from the message data, and its player memories.
+00113ca4 Removes `item` from the villager's four items (+0x8c6) when it has it.
+00113cfc Item `index` (fewer than 4) of the villager's items at +0x8c6; null for a larger index.
+00113d14 Constructs a villager record (its items, memories, letters and the rest), then clears it.
+00114160 Clears villager (row, column) of a 2 x 2 block of villager records.
+00114b28 Refreshes three scores and sums them, each limited to 0-100.
+00116ebe Records `count` and `bits` and counts the set bits among the first `count`.
+00118738 Clears a 0x1ac-byte record, marks it used and stamps it with the date.
+00118b70 The index of the first unused record of 15 (0x1ac bytes each); 15 when all are used.
+00118f7c The index of the first of 16 16-bit slots (from +0x17656) holding 0xffff; 16 when none.
+00118fb4 The index of the first of the 10 villagers whose flags (+0x2510) mark it (bit 0 without bit 1, or bits 0x600); -1 when none.
 0012089c Creates the script heap's children: libms, static, message, mail and flow.
 00122620 Appends an item when the array is not full.
 00124f94 Opens the friends service (frd:u) the first time, counting the users.
@@ -23,24 +39,38 @@
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
 0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
 0012f204 A failed result code (negative) is reported as fatal, unless its level is one the caller tolerates; a success passes through.
+00131580 Destroys five font sets (a font resource, its load split and its other part each), last to first.
 0013187c Gives an empty array room for `capacity` pointers from the heap.
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
+00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
 00134318 The mounted archive whose name is the path's prefix up to ':' (at most 8 characters); null when none.
 00134440 From `from` to `to` in `count` steps: the value at step `step` (`to` once done).
 00135748 Takes the lock unless this thread already holds it, and counts the nesting.
 001357ec Ends one level of holding the lock; the last one clears the owner and releases it.
+001365d4 Calls call_00136598 up to twice while it fails with a retryable result; the result (one kind of failure is mapped to a fixed result code).
 00136718 Unlinks every node, counting each down and leaving it detached.
+001376d8 Replaces the owner's frame heap (destroying the old one) by a new one on the region (start, size), 4-byte aligned; false when the region is too small or it fails.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
+00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
+00137ec0 Inserts at position `index` of the list at +0x40, under the object's lock when it has one.
 0013864c Releases what the handle holds (through the service when it owns a service handle, else through the owner's virtual function 7) and clears it.
+001386f4 Releases the split's handle and takes one from the count of handles in use.
+00138c2c The last index of list `index` (fewer than 6), read under its lock; -1 without one.
 00138c78 The value of a thread-local slot for the current thread.
 001391d8 Allocates from the current heap, 4-byte aligned.
+00139724 Frees the object's buffer (+0xc) when it has one, then the object, through the free hook.
 0013a38c Takes the first free one of the 16 thread-local slots (fatal when none is free).
+0013a6f8 The innermost region of the tree (children from call_0013a750) whose range [+0x18, +0x1c) holds `address`; null when none.
+0013a750 The first child when `child` is null, else the sibling after it (through the link offset at +0xa).
 0013a768 Stores the value in every word from `begin` up to `end`.
 0013adac Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
 0013ae10 Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
 0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
+0013c3c0 Entry `index` of the table at +word_c when its kind is 0x4900: its data; null otherwise.
+0013c3f4 Entry `index` of the table at +word_14 when its kind is 0x4902: its data; null otherwise.
 0013c850 The bank file's INFO block (block id 0x5800); null when the file has none.
+0013c8c8 The index of the range (8-byte entries [first, last] from +8) holding `key`, by binary search; the insertion point when none does.
 0013cc9c Takes a block off the pool's free list under its lock (zeroed when the pool clears its blocks); null when none is left.
 0013cd00 Copies `source` into the string's buffer, at most `length` characters (all of it when negative) and fewer than its capacity, then terminates it; the number copied.
 0013e75c Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
@@ -55,12 +85,45 @@
 002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
 002f7ccc The wide formatter's sink for a bounded buffer: stores the character while there is room.
 002f7cdc Formats to a file; -1 when the file is in error.
+002f7d52 The signed argument cut to the length its flags give: a char for hh (0x400), a short for h (0x100), else as it is.
+002f7d68 The unsigned argument cut to the length its flags give: a char for hh (0x400), a short for h (0x100), else as it is.
+002f7d80 The quotient of r0 by 10 (by shifts and adds), the remainder in r1.
+002f7e5c The quotient of the 64-bit value (r0, r1) by 10, by shifts and adds.
+002f8bd8 The class of a double (r0, r1): 0 zero, 4 subnormal, 5 normal, 3 infinity, 7 NaN.
+002f9888 The value of digit character `c` (0-9, then letters either case from 10) when it is below `base`; -1 otherwise.
+002f99b8 Marks the stream as failed and empties its buffer.
+002f99cc Writes `size` bytes of the stream's buffer through its handle (seeking first when a read left the position elsewhere); 0 when all of it went, -1 (the stream marked failed) otherwise.
+002f9a18 Writes out what the stream's buffer holds (when it is writing) and empties it.
+002fa5b0 Whether `value` is one of the `count` 16-bit values: !negate when it is, negate when it is not.
 002fc2a4 Adds to the set (one bit per item id, up to 0x172b) every item of `kind` (its data's byte 0xd); kinds 1-8 add fixed groups through ItemSet__add_group.
+002fd41c Whether (word r0, signed bytes 0 and 1 of r1) is not less than (word r3, the same bytes of the stack argument), compared in that order.
+002fdd50 Finds set bit number `n` in 0x140 16-bit words, keeping the position in `cursor` (word index, bit, and an x/y position 16 bits to a row, 0x60 wide); true when found.
 002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.
 002ff408 Clears a letter: header, the opening line (0x42 bytes), the body (0x182 bytes), the closing line (0x42 bytes), flags, and an empty attached item.
+002ff724 Removes entry `index` of the best three by moving the later ones up, and clears the last.
+002ffde0 The 0x30-byte record of entry `index` of the best three; the first's for a larger index.
+002ffdf4 Puts (identity, record, item) with `score` into the best three (scores at +0x138, +0x13a, +0x13c, best first), moving the lower ones down; nothing when it scores no better than the third.
+002fff68 The identity (0x2e bytes) of entry `index` of the best three; the first's for a larger index.
+003002f0 Whether the date (year, month, day) has all three set.
+00300458 Today's date (year, month, day) from the clock; with `from_6am` the day changes at 6:00, as the game's days do.
+00300888 Finds the `n`th cell holding `value` in the 16 x 16 byte grid (row by row): its column and row; false when there are fewer.
+00301400 1 when the date is after (year, month, day), -1 when before, 0 when the same.
+003016d4 Sets (or clears) bit `index` of a bit array of 28 bits.
+00301f98 The start of the first Saturday from `from` (at the day's start) that check_words12 accepts, a week after the other.
+00304280 Sends the special housing letter (with an attached item) to each of the four players whose flags ask for it, and marks it sent.
 00304530 The two load splits shared by the callers, constructed on first use.
 003059f8 Clears a design pattern (0x870 bytes): the title (0x2a bytes), the creator's identity, the palette (15 bytes), the pixels (0x800 bytes) and the type.
+00305b7c How many of the 72 insects (category 0x24) have a record state.
+00305bcc How many of the 72 fish (category 0x27) and 30 sea creatures (0x28) have a record state.
+00305c64 How many of the 67 fossils (category 0x2c) have a record state.
 003075cc Allocates `size` bytes from the current heap, 4-byte aligned.
+00307888 Drops the caller's reference to a shared string buffer (call_0011c0fa), then releases the owned object.
+00307a00 printf to a stream: the format and the stream are the first two arguments, the values follow (vfprintf).
+0030800c Bit `index` (fewer than 40) of the flag bytes; 0 for a larger index.
+00308d4c Clears a villager's record (0x2518 bytes): its identity, player memories, letter, design pattern and items.
+00309168 For each of the 10 villagers in use: clears two bits of its flags word (+0x2510) when set, and a bit of each of its 16 player memories (0xf2 bytes each, from +0x8ee).
+0030bc44 Whether villager `id` (below 0x18f) has a type (the low nibble of its data's +0x1c) of 0, 1 or 2.
+0030c3e4 Sets villager `id`'s bit in the two bit arrays of the save data (+0x196fc and +0x1972e).
 00314278 Whether (word r0, signed bytes 0 and 1 of r1) equals (word r3, the same bytes of the stack argument).
 00314a1c A cursor past the last element of the list: its index is the list's count (virtual function 4).
 00314a9c A cursor on the first element of the list (virtual function 5 copies the element), at index 0.
@@ -81,32 +144,77 @@
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
+005826d0 Copies 32 bytes into row `index` (fewer than 2).
+00582aa4 Fills two rows of 16 16-bit values with 0xffff.
+00582ae4 Fills a row of 16 16-bit values with 0xffff.
 00582e4c Plays sound `id` at the position given (r1, through the camera when there is one).
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
+005a06d4 The index of the used entry for (x, z, layer) among the 32 five-byte field markers; -1 when none (layer 0xa5: the current one).
+005a0ef8 The index of the used entry for (x, z, layer) among the 32 field drops (0x16 bytes each); -1 when none.
+005a1ba0 Buries the drop's item (a placeholder when its number is not indexed) at its cell, then clears the tile; true when it could.
+005a213c Throws the drop's item from its cell, with its effect and sound, then clears the tile.
+005a224c Ends and clears the field drop at (x, z) when there is one.
+005a2534 Ends every field drop in use (sending what it needs) and clears it.
+005a2624 Sets the bit of cell (x, z) in a bit map of the town's 112 x 96 cells (after a 4-byte header); nothing out of range.
+005a2664 Clears a bit map of the town's 112 x 96 cells (0x540 bytes after its 4-byte header).
+005c021c Puts the clothing item the current player holds into a free pocket slot (unless a request has it reserved), and records the player and slot in `ref`; true when it did.
+005c0648 Records the current player's identity and pocket `slot` (fewer than 16) in `ref`.
+005c0898 The item the main player holds (empty without a player).
+005c0e0c Sends the player the special letter from Nintendo with its attached item; true when it was sent.
+005c167c Sets word `index` (fewer than 4) of an array in the save data.
+005c1c7c Puts the main player in state 6, or 0xf when `r0` is set (unless it is busy).
+005c257c Sends the player the special star letter with an attached item picked at random from kind 9 (that the player can still get); true when it was sent.
 005ca4b4 Whether entry `index` of the object name table (252 entries) is "fobj".
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
 005e2e50 Restarts the message engine at +0x44 on the text the source's virtual function 3 returns, and runs it.
 005e34c4 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
 005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
+006213c8 Refreshes the station's entry and slot, and in a session of more than one sends the update as a network record (kind 1).
+006214a0 Sets the slot's value and marks its state 1.
+00621684 Clears station slot `slot` (fewer than 4): its entry, no value (0xa5), state 0, and its bit in the station mask.
+00623c3c Resets what station `station` uses, and its count (under the session's lock).
+00623c8c Adds `delta` (negative to take away) to station `station`'s count, under the session's lock.
+00623cfc Adds `size` to what station `station` uses when it still fits in its 0xd002 bytes; true when it did.
+00623d48 Lays the buffer out once: each of the 4 stations but `own` gets 0xd002 bytes of it, in order.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
 0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
 006548ac Changes to `state` unless the player is in it already (true then).
 0068229c Changes to `state` when the item the player holds is of `kind` (only the test when `test_only`).
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
+006bc4fc Sets the record state byte of an item of a recorded category to 5.
 006c5c60 The height of the ground at a position (0 outside the map).
 006c6640 The height at a position: the ground's, or for water, cliffs and similar terrain the surface's.
 006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
 0070ab24 Slot `index` (fewer than 4; 0x18 bytes each, from +0xe0) passed on to call_007460e8; 0 for a larger index.
 0070b1a4 Entry `index` of an array of 12-byte entries (entry 0 when index is 10 or more).
 0070d904 The 16-bit cell (x, y) of the array.
+00710614 Letter `index` of an array of letters (0x280 bytes each).
+007110c4 Whether the time stamp is set and lies after today's start (by the clock mode).
+0071112c Whether the time stamp is set and lies before today's start (by the clock mode).
+007111b4 Whether the time stamp is set and falls on today (by the clock mode).
+0071287c Whether one of the 10 design patterns (0x870 bytes each) has a type set.
+00713bf0 The byte after the current one (+0x54) in the ring buffer (data +0x20, size +0x24, start +0x28, count +0x2c); 0xff past the end.
+00715918 Whether the 64-bit id (r2, r3; not zero) is among the first 100 entries of the list, which ends at the first zero entry.
+0071596c The index of the first zero entry of a list of 100 64-bit ids; 100 when it is full.
+00715c98 Whether badge `kind`'s counter (+0x1c) has reached its threshold.
+00715ffc The sum of the levels (1-3) of the 24 badges (+0xc0).
+00716060 The value of the 24 badges by level (50,000, 150,000, 350,000), and the counts of each level stored with the catalog state.
 00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
 00736a1c The entry of a resource dictionary (a radix tree on the name's bits) whose name is `name` (of `length` bytes); null when none.
 00745d44 The index of the entry with this name in the resource's dictionary (16-byte entries); -1 when there is none.
 007553d8 The index (0-3) of the file extension `text` (up to 4 characters, compared in capitals, a leading '.' ignored) in the table of known extensions; 0 when unknown.
 00759a54 A position from x and z packed as 16-bit quarter units, at the ground's height there.
 00759ab0 The world position of a pair of 16-bit coordinates in quarter units (x, z), on the ground.
+007608f8 How a villager reacts to being shown `item` by the current player: kinds for two particular items, insects (8), fish and sea creatures (7), category 0x35 (4), 0x75/0x76 (10), the saved item of category 0x33 or 0x34 (1-3), anything else 9.
+00761f60 The personality (0-7, the high nibble of the villager data's +0x1c) of the villager the talk is with; 0 when there is none.
+007622f0 The point at `angle` on the circle around the object's position (+0x14), put on the ground when asked.
+00762dc8 The point 26 units ahead of the object (in its facing direction), on the ground.
+00763298 The kind of ground at `position` for the player's effects: by its terrain type, the weather (rain) and whether it is the snow season.
+007635c4 The point 12 units ahead of the object (in its facing direction), on the ground.
+007648b8 Starts effect `id` at the given position (a stack argument) for the player, attached to `target` when there is one, facing the player's direction; its angles are written to `angles` when asked.
 00766b00 Entry `index` of an array of 8 entries of 12 bytes (entry 1 when out of range).
+0076d668 The record state byte of an insect, fish, sea creature, fossil or other recorded category's item; 0 for other items.
 00779500 Allocates from the current heap, 4-byte aligned.
 00825c64 Whether one of the 8 slots holds an object whose id (+0xb0) is `id`.

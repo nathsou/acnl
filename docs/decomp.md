@@ -411,7 +411,12 @@ function keeps in its variable, at every header where that variable is live (ass
 the rest). The CPU fields the proof leaves unrelated at the headers (the CPU copies of the registers the decompiled
 function keeps in variables, pc) hold a value of their own in each program there; before 2026-11-03 they started
 equal in both without being proved equal on arrival (a gap: `unrelated_cpu_fields_differ_at_loop_headers`). The
-5,893 committed drafts prove again with it closed.
+5,893 committed drafts prove again with it closed. The signature proofs (non_interference leaves the changed
+registers unrelated at the headers the same way) were not sound in loops: of 150 sampled signatures, 2 had dropped
+float registers that a loop hands on to an indirect call. The table was proved again with the gap closed
+(build/tools/sig_v4.txt, 57,892 signatures: `decomp signatures`, then the drafts' remaining callees one by one,
+callees first, against the table, a callee without a signature taking every register), and the drafts emitted and
+proved again with it (5,877 prove).
 
 Tried (2026-11-03): leaving the scratch registers (r2, r3, r12, s2-s15, the flags) unrelated at the headers too,
 so that a scratch result reaching a header flows on only when something after it reads it (a call's scratch results
@@ -466,7 +471,7 @@ their offsets (packed). A 32-bit field that every function only reads as a float
 and a field no function votes on is a `u32` (2026-11-03: 6354 float fields instead of 5893 with the same inputs; the
 header is generated as `build/acnl/structs_generated.hpp` and named into the repository's by names.py). First run: 3705 class structs for 25392
 arguments of 25229 functions; with floats (2026-11-01): 3701 structs, 4649 float fields, for 25522 arguments of 25346
-functions (run with `DECOMP_SIGNATURES=build/tools/sig_38k.txt`, `DECOMP_TYPES` unset, about 17 minutes). The header goes to
+functions (run with `DECOMP_SIGNATURES=build/tools/sig_v4.txt`, `DECOMP_TYPES` unset, about 17 minutes). The header goes to
 `games/acnl/src/recovered/structs.hpp` and the type database (structs, parameter types) to OUTDIR; with
 `DECOMP_TYPES=OUTDIR` the emitter writes the class instead of a per-function struct. The facts are hints: each draft
 that uses a struct still has its layout checked by the compiler and is proved as usual. Without RTTI, arguments are
