@@ -5667,11 +5667,11 @@
 0063cd2c The days since the designated villager moved in.
 0063d364 Gives the request's reward: to the pockets or by letter, and counts it.
 0063da4c Picks a random item of the 5 from the mask (for kinds 1 and 2) and sets it as the talk's word.
-006401f4 Selects an NPC game's talk label by the player's outfit, item and the event.
+006401f4 Selects an NPC game's talk label, by the player's outfit and items and the current event.
 006405f4 Records the letter's slot and state (none, sent, or sent without its present) for the talk.
 00641f88 Sets the talk's words to the NPC's skill, family and dream, and its two values.
 0064664c Counts the active NPCs for the scene (or the player's house).
-006483f4 Selects a villager's talk label by its mood, its present and the day.
+006483f4 Selects a villager's talk label, by its records, its present choice and the date.
 0064bed4 Adds the item to the player's pockets, records it with the partner and removes it from the villager.
 0064c130 Flags the villager for the player and ends the talk's wait when it was set.
 0064c450 Destroys a normal NPC: its action, foot marks, face animations, model, collision body and demo actor base.
@@ -6561,7 +6561,7 @@
 00712800 Whether the 16-bit value is below 0xfc.
 00712810 Whether bit `index` (below 6) of the bits at +0x28 is set.
 0071287c Whether one of the 10 design patterns (0x870 bytes each) has a type set.
-00712c88 Compares two strings as talk labels.
+00712c88 Builds a nine-character word and looks up a talk label with it.
 007132e4 On the same day: whether the hour is within the opening hours (7-20 with town flag 1, 10-23 with flag 2, else 10-20).
 0071348c The item `index` of the recent stock (+0x4c) while it is within its age window, else of the slots at +0x3cf4; empty when out of range.
 00713bf0 The byte after the current one (+0x54) in the ring buffer (data +0x20, size +0x24, start +0x28, count +0x2c); 0xff past the end.
@@ -6597,7 +6597,7 @@
 00716894 The position in the reference table at 0x88f29c of the id at `index` of the list; -1 when absent.
 007168dc Whether byte `index` of the list is set.
 00716928 Whether any of the 40 bytes of the list is set.
-00716b74 Whether the save flags 0x621cf (bits 1 and 2) allow the check today.
+00716b74 A day check on the save flags 0x621cf (bits 1 and 2), the day start and the current time.
 00716c60 Whether the shop is closed at this hour (opening hours by weekday 6 and the town flags 1 and 2).
 00716d80 How many of the six 16-bit slots (+4 to +0xe) are used (not 0xffff).
 00716de4 Whether it is from 20:00 on day 6 of the clock's week (and not the day the record at 0x6add4 marks, nor a \n day change).
