@@ -7299,10 +7299,12 @@
 0081b750 Plays the animation with the key on the animator (the fourth kind).
 0081c0a0 Moves the save step to the one after the current in its table.
 0081c694 Constructs an 11-character script word, empty.
+0081c8b8 Constructs a 12-character script word, empty.
 0081c9bc Constructs a 13-character script word, empty.
 0081d12c Constructs a 20-character script word (filled with the empty character).
 0081d248 Constructs a 21-character script word (filled with the empty character).
 0081d8c0 Constructs a 33-character script word, empty.
+0081de64 Constructs a 45-character script word, empty.
 0081e020 Constructs a 50-character script word (filled with the empty character).
 0081e25c Constructs a 60-character script word (filled with the empty character).
 0081e35c Constructs a 64-character script word (filled with the empty character).
