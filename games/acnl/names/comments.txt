@@ -718,8 +718,47 @@
 0024f70c Calls handler `index` of the table at 0x8452f8.
 0024fbd4 Plays the sound at the position (converted by the camera) and marks it playing.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
+0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
+00270ce0 Unloads the split part at +0x14.
+00271290 Sets the color of the current model slot's material (from its resource file) to the slot's color pair; false without a model.
+00271c78 Builds the model's matrix (copied, rotated around z) and applies it.
+00271d0c Scales the current slot's model uniformly when it is loaded, else updates the fallback.
+00271e30 Sets the three words (+0x29c) and the four floats (+0x3d0) of the model.
+00272300 Sets the color of the current model slot's material from the item's color bytes; false without an item or model.
 002738b8 Forwards to the function at 0x817cd8.
+00273a9c Calls virtual 24 of entry `index` of the shown page (0x2b4 bytes each, +0xfa0).
+00273b30 Refreshes entry `index` of the page, updating its letter from the mailbox when it has one.
+00273ba8 Updates the layout at +0x26c and attaches it to the layout system.
+0027430c Address of entry `index` among the 10 shown from +0x2be8; other indices give the first.
+00274384 Loads the letter window's layout archive.
+00274394 The word at +0x1250 of entry `index` of the shown page.
+00274478 Sets the animation at +0x430 from the NPC's distance value plus 4.
+00274754 Loads the item selection window, the item icons (unless shared) and the bag's layout archives.
+0027480c Sets or clears bit 3 of the flags (+0xd4) of the 10 models (0x348 bytes each, +0x8e0).
+00275798 Releases the bag window's layouts, its 10 models' layouts and its message window.
+002763bc Sets the source's mode: 0 follows the room music player, 1 follows the given object (state 3).
+0027643c Frees slot `index` (below 64) and uncounts it.
+002767bc Stores the object in the first free of the 64 slots and counts it; 0x41 when full.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
+0027689c Plays the step sound for the ground kind (below 14), with its pitch from the table; kind 13 has its own sound.
+00276c98 Unless muted (+0x34), plays sound variant `index` (below 0x83, from 0x1000a96).
+00276cdc Sets the volume of the playing handle (of the two) that plays the current sound.
+002783c4 Looks the sound id up in the bank and remembers its entry and data.
+00278484 Registers the sound with its group byte (kind 3).
+002796a0 Starts the ducking fade of the channel (unless held in states 4 and 5): with the channel's frame counts, or the fader's own.
+00279984 Mutes channel `index` (below 18): through the sound system, or by fading it to 0 and remembering its volume.
+00279a08 Unmutes channel `index` (below 18): through the sound system, or by fading it back to its remembered volume.
+00279e9c Clears the table and its four extra entries (with their records) and counters.
+00279f00 Constructs the table, its four extra entries and counters.
+00279f40 Frees the pattern slots (0x878 bytes each) holding the id pair: clears their name and ids.
+0027a004 The index of the first free of the 8 pattern slots (both ids -1); 0 when none.
+0027a060 Clears the names and ids of the 8 pattern slots.
+0027a0a0 Clears the patterns and ids of the 8 pattern slots.
+0027a2bc Gives the first free pattern slot the id pair; false when all are taken.
+0027a31c Constructs the 8 pattern slots, all free.
+0027a4f4 Updates the current player's position, then imports the phrase into each of the 4 players who exist.
+0027a6c4 The first of the 4 players whose villager record (+0x8e08, below stage 3) is of the villager; null when none.
+0027a780 The first of the 4 players whose villager request (+0x8d4c, stage 0) is for the villager's town slot; null when none.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d4d00 Forwards to the function at 0x2d4bf4.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
