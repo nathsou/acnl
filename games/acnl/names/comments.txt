@@ -760,22 +760,96 @@
 0030ef70 Schedules the move of the villager whose table entry allows it.
 0030feb4 Sets the state byte (+0x24) of the 10 runtime villager entries to 0x21, sparing (unless forced) those in state 0x12 or of class 0xb.
 00310530 Flag `index` (fewer than 10) of the villager (bits of +0x1f and +0x20); false for no villager.
+00310a30 Clears the villager part of the town data: villagers, their records, the paired player records and the timed records.
+00310cf8 The daily update of the villager part: moves, catchphrases, clothing, letters and flags of each villager.
+0031108c Moves the villager out: copies its block to the moved-out list, removes it from the id list and clears its slot.
+003113b8 Constructs an empty scheduled record (kind 0x21, invalid time).
 00311744 The 0x58-byte data entry of villager `id` (below 0x18f); null without the table.
 003120a8 Sets item `slot` (0-3, from +0x24d6) of the villager, then moves its non-empty items to the front.
+00312274 Sends network message 0x41 of kind 0x11 carrying the word, when the main object is set.
 003122bc Sets the villager's catchphrase (+0x24f2) to its default from the message data (its data entry's), or to the common default.
 0031237c Clears the villager's design pattern and gives it back its default clothing item (from its data, or by its type) when it wears a special one.
+00312434 Adds points to the villager's friendship (10 bits at +0x571a), capped at 100 (or 50 before the bond), when the memory is in use; true when it changed.
+00312ab8 Forwards to TimeStamp__advance.
+00312af8 True unless the villager's flags (+0x2510) keep it in town.
 00312c4c Formats the arguments into a buffered wide string on the stack and stores the size at +0x40.
+00313414 Sets the time stamp to the invalid value.
 00313a40 Whether villager `id` (below 0x18f) has type 0 (the low nibble of its data's +0x1c).
+00313a8c The address of the shared object at 0xab7f30.
 00314278 Whether (word r0, signed bytes 0 and 1 of r1) equals (word r3, the same bytes of the stack argument).
 00314a1c A cursor past the last element of the list: its index is the list's count (virtual function 4).
 00314a9c A cursor on the first element of the list (virtual function 5 copies the element), at index 0.
+00314b40 The signed byte of map kind `kind` (below 0xfc) in the table at 0x88c528; 0 otherwise.
 00314b58 Moves the cursor to the next element and copies it in, while there is one.
+00314c04 The signed byte of map kind `kind` (below 0xfc) in the table at 0x88c626; 0 otherwise.
+00315924 Clears the record's bit in the mask at +0xf5c and places the kind-2 item at the record's world position.
+00315df4 Clears the record's bit in the masks at +0xa54 and +0x1464 and places the kind-3 item at the record's world position.
+0031600c Clears the record's bit in the masks at +0xcd8 and +0x1464 and places the kind-4 item at the record's world position.
+00316664 Entry (0xc bytes) of the id among the 72 of the table; null for an unknown id or no table.
 00316ebc Bit `index` (fewer than 96) of the flag bytes; 0 for a larger index.
 00316edc Bit `index` (fewer than 7) of the flag bytes; 0 for a larger index.
 0031758c Destroys the held heap (+4) and creates a new one with the given arguments; true when it did.
+00317a50 Starts the split load, setting the read and write positions from its word (+0xec) the first time.
+00317cc8 Entry `index` of the resource file's dictionary (offset +0x20, 0x10-byte entries from +0x28), resolved from its self-relative offset; null when absent.
 00317eac The byte cell (x, y) of the array.
 00317ec4 `value` limited to [low, high] (signed).
+00317fd8 Scans the items of the cells around the world position, checking their properties.
+00318540 Sets the bits in the record's first half.
+00318d8c The signed byte `index` (below 3) at +0x56; -1 out of range.
+00318da0 True when the two identity pairs (with the town ids at +0x2c) are equal.
+00318e38 The record of the player (of the two kept for them) whose identity pair matches; null when none does.
+00318f18 True for states 0 and 1, and for state 3 while its time stamp holds.
+00318fbc Runs the function at 0x200ab4 on the shared object at 0x9b3ce0; true.
+00319568 Sets the bit-table bits of the villagers of the town.
+00319aa4 Sets or clears bit (column, row, page) of the bit table of `kind` (halves of 16 bits, 16 per page).
+0031a334 Fills the item description for its category (recursing for kinds 5 and 6).
+0031b394 The locale's multibyte maximum: its stored value for multibyte locales, else 1.
+0031b3b2 Remembers the current locale of the category (copying its name) and switches to the given one.
+0031b3ea Restores the remembered locale and frees its name.
+0031b404 Copies the string (up to `size` bytes) through the locale's translation table when it has one; the length of the source.
+0031b4c4 Constructs a shared string of `length` characters copied from the source (the empty representation for 0).
+0031b578 The shared empty word pair at 0x9825f8 (constructed once).
+0031b5b8 Assigns the locale: takes a reference to the other's implementation and drops this one's, destroying it when it was the last (count at +0x1c).
+0031b5ec The global locale at 0x981fbc, constructed once from the classic implementation (initialized first when needed).
+0031b766 Resizes the word vector to `count` words: copies the kept ones into a new buffer and fills the rest with the value.
+0031b7b0 Constructs the locale on the implementation, taking a reference (initializing the classic one first when needed).
+0031b854 Drops the locale's reference, destroying the implementation when it was the last.
+0031b8f0 Address of word `index` of the vector.
+0031ba1c Builds the character class table from the class bits.
+0031bdb8 Constructs a locale implementation: its name, facet vector and tables.
+0031bea0 Destroys a locale implementation: its facets (+0x18), holder (+8) and name.
+0031c1c8 Copies the holder's word and locale.
+0031c1da Maps the character through the tree of ranges (low +0xc, high +0xd): by its table, or by adding the range's offset (+0xe); unchanged when no range has it.
+0031c214 Writes the GPU commands that upload the parameter words (+0x30, count +0x28) for the program, unless it is already current.
+0031c310 The address of the larger of the two words.
+0031c31c Allocates a shared string representation of `capacity` with `length` (the empty one for 0); too large sizes raise the length error.
+0031c39c Forwards to copy_bytes_at_any_alignment.
+0031c3a8 Drops the string's reference to its representation, freeing it when it was the last (the empty ones are never freed).
+0031c75c Adds a reference to the representation (not to the empty one).
+0031c770 Replaces a part of the string (position, length) with the given characters, making the representation its own.
+0031c7dc Sets up the window's parts with dummy layouts.
+0031d00c Updates the button control at +0x608 and releases its active child once it is ready.
+0031d048 Sets up the button controls and their panes and animation targets.
+0031d6e8 Stores the chosen appearance value (bits 3 to 5) in the part (bits 0 to 2) of the player's look, then updates the player model for that part.
+0031d8f8 Stops the model's animation (when asked) and resets the second slot (+0x60) when it is playing.
+0031df9c Stops the slot's animation in the model and releases its resource.
+0031e0d8 Resets both animation slots (+0x2c, +0x60) and their material animations, and forgets the model.
+0031e510 When the window is closed (+0x4ec), sets its text (message, its arguments) and opens it.
+0031e594 Sets the window's text (message and arguments): refreshes it when open, else opens it.
 0031e810 Hides the layout's root pane group (clears its visible bit) and lays the layout out again, when it was shown.
+0031e8bc Attaches the layout at +0x270 to the layout system.
+0031eb20 Releases the window's layout parts (when loaded), layout and text; true.
+0031f1a4 Starts the state at +0x213c with the handler pair at 0x879538.
+0031f2bc Starts the state at +0x213c with the handler pair at 0x879540.
+0031f2dc Sets up the window's B button pane and its values.
+0031f69c Sets the flag of the entry for the key (0x2b4 bytes each) and updates its node.
+0031fa14 True when the state at +0x213c runs the handler pair at 0x879558.
+0031faf4 True when the state at +0x213c runs the handler pair at 0x879560.
+0031fcc4 Moves the window's drag icon (+0x278) from its list (+0x3d0) into `list` (when not null).
+0031fcfc Sets the flag (+0x12d) of entry `index` among the 10 shown from +0xc (0x2b4 bytes each, +0x3d4); other indices set the first.
+0031fd44 Calls virtual 24 of entry `index` of the shown page.
+0031fd64 Marks the page changed (+0x201b) and enables all 10 entries, or (when off) restores each from its saved flag.
+0031ffbc Sets the page's changed flag (+0x201b).
 0032b774 When sound is allowed: runs the member handler of the current state (+0x10) from the table at 0x839048.
 00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
 003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
