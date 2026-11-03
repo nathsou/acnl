@@ -2970,6 +2970,24 @@
 006ea210 Copies the action's target, angles and speeds into the move record and starts it; true.
 006ea318 Updates the action's timer, then calls its member callback when it has one.
 006ed200 In a session, packs the NPC's state, a new sequence number and its target position into its shared record.
+006ee02c Sets the action's cell (+0x4e0), and its start cell in the early stages.
+006eedc8 Copies the 8-byte entries of variant `index` of the layout table at 0xab7fc0 into the buffer when it fits; their count, or 0.
+006eeef4 Initializes the 99 shadows (0x8c bytes each) of the pool at 0xabe1a4 and its 27 layer lists, with all shadows free.
+006ef0a0 Queues the shadow in its layer's draw list (once), drawing it at once when it is ready.
+006ef39c Takes a free shadow, sets it up with the alpha (clamped to 0 to 1) and parameters, and queues it.
+006ef48c Takes a free shadow from the pool, reset with full alpha; null when none is left.
+006ef61c Gives the shadow back to the free list unless it is queued.
+006ef650 Empties the 27 layer lists, giving the finished shadows back to the free list.
+006ef8e8 Builds the availability of the category's items by their rules.
+006efa68 Sets the table's 0x6ed ids to -1 and its kind to 0x9b.
+006efab8 Fills the availability bytes of the category's items by their rules.
+006efbe8 Marks the value set and stores the pair when it changes (resetting its seen flag when asked).
+006efc2c Copies the value pair and its two flags.
+006efcdc Zeroes the value pair and its two flags.
+006efd24 Zeroes the value pair and its two flags.
+006efd40 Fills the valid cells of the 16 x 16 block with the default item (0x95bfd2).
+006efd9c Constructs the 256 item cells.
+006efdb0 Converts the items of the block's cells.
 006f09d4 Picks a random item from the set bits of the item bit set, of the wanted type.
 006f14b0 Sets the bits of the category's items that pass its check (the insect flag for insects).
 006f15c4 Builds the candidate item set from the trait bytes and picks an item.
