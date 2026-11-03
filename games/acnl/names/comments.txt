@@ -278,21 +278,93 @@
 0011fd60 Stores the sleep mode for `mode` (0 -> 3, 1 -> 2, 2 -> 1) at 0x974ae3 and, for 0 and 1, applies it.
 0011fda4 Installs the default callback (0x124318) and clears the fourteen callback pairs at 0x974b0c and 0x974b4c.
 0012089c Creates the script heap's children: libms, static, message, mail and flow.
+001209f8 Loads the font resources of the table.
+001210d4 Writes the GPU commands of the part at +0x68 into the command buffer.
+00121110 Sets the mode at 0xadf9e4 from the request: 0x400 and 0x401 give 0 and 1, 0x410 gives 2.
+00122554 Sets the display mode (0x700 to 0x702) and its width: 400, or 800 for the stereoscopic mode 0x701.
 00122620 Appends an item when the array is not full.
+00122ca8 The word at +0x94 of the object held at +0x1c of 0x953384; 0 when missing.
+00123344 Creates the two audio sound heaps (named from 0x8391f8) when missing.
+00123600 Initializes the screen parameters for a 240 x 400 screen.
+00123678 Initializes the render state block to its defaults.
+001237d4 Sets up the thread's local block (at +0x60 of the thread storage).
+00123838 Runs the call and stops with a fatal error when it fails.
+00123854 The value returned by the query at 0x129c30.
+00123870 The worker thread's loop: waits for work and runs it.
+00123ae8 The worker thread's entry: sets it up, runs its loop and cleans up.
+00123e40 Gets the service handle (once, under the lock) and counts a user.
+00123ee8 Gets the service handle (once, under the lock) and counts a user.
+00124244 Signals the event at 0x97d8b4 when its owner (0x97d8a0) exists.
+00124270 The low 3 bits of the flags at 0x974af0.
+001242a0 Sets the callback at 0x974b2c and its argument (0x974b6c).
+001242b4 Sets the callback at 0x974b20 and its argument (0x974b60).
+00124304 Sets the callback at 0x974b24 and its argument (0x974b64).
+00124b4c Sends command 5 with the word and the byte.
+00124b80 Sends command 7 with the word.
+00124c20 Sets the callback at 0x97d7d0 and its argument.
+00124c4c Sends command 4 without data.
 00124f94 Opens the friends service (frd:u) the first time, counting the users.
+0012564c Inserts the object (by its node offset, +0x20) at the end of the list (+0x14) and counts it (+0x1c).
+00125674 Copies the source's second word to +0x24 and sets the flag byte (+4).
+00125acc Constructs the unit heap with the two float parameters passed on the stack.
+001266a4 Creates the first block and points both ends of the list at 0x97d46c at it; -1 when it cannot.
+001266e8 Decompresses the data block into the buffer.
+001275f0 Initializes the service object at 0x974a88 and its four parts.
+00127c70 0x3000000.
+001288a8 Zeroes the record and its 10 bytes.
+00128924 Constructs the table's 6 entries (0xec bytes each) and resets its 10 halves to -1.
+001289ac Sets the record's kind byte and its two words, clearing the rest.
+00128c0c Resets the once flag: finishes its pending wait when it was in progress.
 00129094 The handle of a named service, through the service manager (fails when the handle is already open).
+001290f0 The shared lock at 0xae8344, initialized once (other threads wait for it).
 001292e8 Returns the result when its level is success or info; otherwise reports it as fatal.
 001297c4 Opens the microphone service (mic:u) once.
+00129870 Reads the value at 0x974f34 when it is set; an error code otherwise.
 00129898 Gives the microphone service its sample buffer (address and size aligned to 4 KiB).
 00129c7c Connects to the service manager's port (srv:) once, retrying every half millisecond while the port does not exist yet; counts the users.
+00129fa0 Registers the sleep notification (when the applet is up) and tells the handler it is on; an error code when the applet is not initialized.
+0012a008 Unregisters the sleep notification and tells the handler it is off.
+0012a084 Sends the parameter to the applet event at 0x97d8b4.
+0012a0b8 The state byte at +0x75 of the applet's handler.
+0012a0d0 Replaces callback `index` (below 7) of the applet's handler (under its lock); the previous one.
+0012a11c The word at 0x97d8ac.
+0012a370 Sends the command with its input and output buffers to the service and waits; stops with a fatal error when it fails.
+0012a450 Blocks (when not set) or unblocks the HOME button handling.
+0012a4a0 Turns the sleep notification handling on or off, stopping with a fatal error on unexpected results.
 0012a518 Waits without a timeout on the handle (svc WaitSynchronization1), a failure reported.
+0012a54c Sends the query to the service and waits; stops with a fatal error when it fails.
 0012ab78 Closes the handle kept at 0x97d7f8 (svcCloseHandle) and releases the mutex at 0x97d7f4.
+0012ae20 Calls the service command at 0x130448 with the argument; stops with a fatal error when it fails.
+0012ae80 Calls the service command at 0x130658; stops with a fatal error when it fails.
+0012b3dc Runs the function at 0x131154 on +0x10 under the lock at +4.
+0012b40c Shuts the system services down in order and releases their global objects.
+0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
 0012ca6c Stores the value at +4; returns true.
+0012d3ec Releases the layout at +0x27c.
+0012d3f4 When loaded (+0xeb18), unloads the split part, releases its object and clears flag 4 at +0xf126.
+0012d4ac Runs the finish step, then the destroy step.
+0012d89c Converts the sound parameters (volume, pitch) and writes them.
 0012e640 Signed 64-bit division through the unsigned one, the operands and the quotient negated as their signs need.
+0012e904 When the BGM flag (0x94cd06) is set, clears it and the sound system's two words, and stops the sound (+0x1c).
+0012eacc Destroys the two number pairs, the four blocks and the 16 halves.
+0012eb28 Destroys the four 0x1228-byte entries.
+0012ebf4 Releases the slot's sound data request (all of it when asked, else its own, +0x14).
+0012ecd4 Clears the 0x3000-byte buffer at 0xad6670 and its four counters.
+0012edc0 Constructs the file with an empty path record.
+0012ee90 The object at 0x974f20; a fatal error when it is missing.
 0012eeb0 Mounts the RomFS archive as rom:.
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
 0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
 0012f204 A failed result code (negative) is reported as fatal, unless its level is one the caller tolerates; a success passes through.
+0012f278 Unmounts the storage when mounted (0x974f76).
+0012f384 Calls the applet service with the arguments under its light lock (retrying every millisecond); an error when the applet is not up.
+0012f600 Allocates a block of `size` with its alignment, direction and group, counting it (+0x54).
+0012f814 Sets the block's alignment (+0x34).
+0012f824 Sets the block's direction bit (+0x36 bit 0).
+0012f844 Sets the block's group id (+0x38).
+0012f854 Zeroes the record and sets its half at +0xa.
+0012fa68 Unmounts the bad-word archive and frees its memory when held, then resets the filter.
+0012fe1c Sets or clears bit 24 of the first entry's word in the list (+4).
 00130054 Calls 00128c0c on the object at 0x97d7e0.
 001306e0 When enabled (0x97d801): reads two system flags into 0x97d800 and applies them (retrying on result 0xc9405001).
 00131580 Destroys five font sets (a font resource, its load split and its other part each), last to first.
