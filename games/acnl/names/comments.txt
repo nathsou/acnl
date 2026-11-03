@@ -513,6 +513,39 @@
 001a4e7c Keeps the camera's x and z inside the room's bounds (with their margins), centering them when the room is too small.
 001a5144 Requests the default mode (+0xf0) back and releases the two flags it holds (0x27, 0x2b).
 001a5e64 Keeps the camera's x (margin 160) and z inside the room's bounds, centering them when the room is too small.
+001a616c Sets the camera's tilt (+0x1ac) from the turn angle: none past 15 degrees, else a small tilt to the side of the turn.
+001a63e8 Picks a random view around the object for the camera.
+001a7760 Sets the three bytes of cell (x, y) of the map.
+001a77a0 Counts the real item: marks its number in the bit set (+0x40) and counts it by its class and kind.
+001a8ddc From an idle handler, sets the menu mode by the window's kind and restarts its state machine (first or second handler pair); otherwise marks it to resume (+0x185e).
+001a9368 Resets the record: its ids to -1, its words to 0, enabled.
+001aa4a0 Refreshes the friend list and reads the friend key of the entry (under the lock); zero when not found.
+001aa500 The index of the friend matching the entry; -1 when none does.
+001aa630 Loads the friend list when the service is up (state 1); true when loaded (state 3).
+001aa804 Initializes the friend service once (under the lock) and adds the friend; true on success.
+001aa88c Reads the friend keys (up to 100) into the list (under the lock).
+001aa8c8 Initializes the friend service once and rereads the friend keys when they changed.
+001aa94c True when the entry is a friend (by its id, or its key among the list).
+001aa9fc True when the entry is in the friend list (refreshing it first, under the lock).
+001aadd0 Sets the frame of slot `index`'s animation (below 4, 0x18 bytes each, +0xe0) when the frame is not negative.
+001aaed4 Finds the resource index of the scene's model.
+001ab060 Applies the material (+0x24) to the model (+0x1c) when it exists.
+001ab2ec Moves the target by the offset rotated by the angle and, when asked, resets both models' positions.
+001ab70c Loads the model part of the grouped record and binds it; true when it did.
+001abcd4 Resets the 8 part ids (0x276 for none) and releases the model and its loader.
+001ac668 Sets the move's angle, target position and its two halves.
+001accd4 Loads the 4 items from the save (+0x6adb8), or restocks them when asked.
+001acf0c Sets up the message board's panes and animations once.
+001ad2e4 Sets the first word and clears the second.
+001ad5c8 Clears the 4 visiting villagers (0x2518 bytes each), their ids and flags.
+001add58 Copies the visiting villagers from friends into the slots, clearing their letters.
+001ae1e4 Constructs the villager slot with a cleared trailing word and flag.
+001aebdc Destroys the 10 elements of 0xc bytes.
+001aec00 Sets the low nibble of the byte.
+001aed7c Resets the packed record's kind to 0x6b, clears its flag and sets its mode to 2.
+001aede0 Draws the rectangle of the tile range (in sixteenths).
+001af458 Releases the split load's part at 0xa18690.
+001af914 Sorts the ids by their order (from the loaded table at 0xa18690).
 001b1010 Loads the six static data tables; true when all loaded.
 001b1900 Takes the received letter (version 3, newer than the current one) when its checksum over 0x28c bytes matches and its letter is valid; true when taken.
 001b19ac Constructs an empty received letter record.
