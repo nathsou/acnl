@@ -5121,6 +5121,8 @@
 005e9d90 Clears the pair (category 0x27).
 005e9fdc Measures the text box's text bounds.
 005ea158 Formats the number with three digits into the string.
+005ea21c Appends a text code's value (arg 2: 16-bit for size 1, 32-bit for size 2) to a writer's cursor (arg 0) when \n it fits before the end (arg 1); 1 when written.
+005ea540 The shared one-character script word, constructed the first time.
 005ea8f8 Attaches the window to the message store and restamps its time.
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
 005ec990 Starts reading a UTF-16 text (arg 1): the first character's width (2, or 4 for a surrogate pair).
@@ -5196,6 +5198,7 @@
 0060ea4c Initializes the shaker with the default ranges and no motion.
 006124bc For a valid weather kind and `slot` (below 2): stores its layout name (or the default) in the slot's name field (+0x52c, 0xf4 bytes each); true otherwise.
 00612738 Updates the weather's items for the day.
+0061290c Starts loading the camping car's four info files on the stage heap, and sets the weather layout names from \n the saved record; 1 once all have started.
 00612cec Stores 0x109 in a 16-bit field.
 00612d0c Stores 0x7db in a 16-bit field.
 00613620 Resets the town's record (its bytes to 7).
@@ -5801,6 +5804,7 @@
 006a2c2c Sets the byte at (x, y) of the byte map.
 006a2c48 Forwards to ResModel__info.
 006a2c58 Stores the three words.
+006a2ca4 Shows a UI message (index arg 1) in the window's text.
 006a3988 Attaches the layout at +0x504 to the layout system.
 006a3bd4 Releases the title window's layout parts, layout, text and its five message parts; true.
 006a3cb4 Loads the common title window's layout archive.

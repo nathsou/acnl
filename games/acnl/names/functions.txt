@@ -16894,10 +16894,10 @@
 005ea0a8 script__Chip__MeasureProcessor__MeasureProcessor
 005ea158 format_3_digits
 005ea1d0 write_wide_text
-005ea21c handle_other_code
+005ea21c TextWriter__put_code
 005ea294 filter_character
 005ea520 AreaList__virtual_9
-005ea540 script__WordFix_1u___WordFix
+005ea540 WordFix1__instance
 005ea5d0 script__WordCPtr__virtual_9
 005ea640 call_virtual_7_5ea640
 005ea64c script__WordCPtr__virtual_6
