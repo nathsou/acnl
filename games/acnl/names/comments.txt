@@ -245,6 +245,7 @@
 001e5894 Transforms a point by the camera manager's view matrix (+0x29c), when there is a camera manager.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
+002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002f6a30 Sets or clears flag 0x10 (+0xd4) and the matching mask bits of +0xc4 (0x60000 or 0x14000, chosen once).
 002f737c Bit `index` (fewer than 5) of the flag bytes; 0 for a larger index.
 002f73b8 Releases what the part loaded (its graphics context current while it does) and destroys the load split base part at +0x1c.
@@ -1082,17 +1083,135 @@
 0070b334 Whether a range of kind 1 or 2 has a start and an end, start <= end.
 0070d904 The 16-bit cell (x, y) of the array.
 00710614 Letter `index` of an array of letters (0x280 bytes each).
+007108c4 Whether the town flag (bit 0 of +0x621d0) is set, the town event (+0x62264) is in state 3 and its stamp (+0x62250) is not today.
+0071109c Checks the record (00710d50) unless the day has changed.
 007110c4 Whether the time stamp is set and lies after today's start (by the clock mode).
 0071112c Whether the time stamp is set and lies before today's start (by the clock mode).
 007111b4 Whether the time stamp is set and falls on today (by the clock mode).
+007112c8 Whether a record not stamped today is due now: same day, it passes its check, the current player has flag 2 of +0x5701 (or there is none) and its time (+8) has come.
+00711858 Whether a record not stamped today passes its check on the same day and the current player has flag 2 of +0x5701 (or there is none).
+00711bdc The ground height at the position at +0x6c.
+00711d9c The address of 16-byte entry `index` (below 5; else the first) of the table at 0x986a10.
+0071262c Whether the entry (+5: owner in bits 0-2, state in bits 6-7) belongs to this station: state 2 or this owner, or the guest owner (4) when the guest entry is ready.
+0071268c Whether the member handler (+0xc, +0x10) is the one at 0x887784.
+007126dc Bit 0 when the member handler (+0xc, +0x10) is the one at 0x8877a4, bit 1 when it is the one at 0x887794.
+00712788 The part at +0xa4 for kind 0x400, else at +0x144.
+00712798 A value (0073682c) times 400 plus 0.5, passed to 0077a650 and truncated.
+007127c8 The part at +0x64 for kind 0x400, else at +0x104.
+007127d8 The part at +0xd4 for kind 0x400, else at +0x174.
+00712800 Whether the 16-bit value is below 0xfc.
+00712810 Whether bit `index` (below 6) of the bits at +0x28 is set.
 0071287c Whether one of the 10 design patterns (0x870 bytes each) has a type set.
+007132e4 On the same day: whether the hour is within the opening hours (7-20 with town flag 1, 10-23 with flag 2, else 10-20).
+0071348c The item `index` of the recent stock (+0x4c) while it is within its age window, else of the slots at +0x3cf4; empty when out of range.
 00713bf0 The byte after the current one (+0x54) in the ring buffer (data +0x20, size +0x24, start +0x28, count +0x2c); 0xff past the end.
+00713d94 The value of a song request kind (1-3 from the KK information by song, 0x20 for kinds 4-5, 0 otherwise).
+00714934 Whether a cell of the rectangle has a terrain of the first kind (by its large cell).
+00714b40 Whether a cell of the rectangle has a terrain of the second kind (by its large cell).
+00715074 Whether a cell of the rectangle has a terrain of the third kind (by its large cell).
+00715280 Whether a cell of the rectangle holds an item of indexed type 0xa that is not covered (by the rectangle's own cell data when it has some).
+007153ec Whether a cell of the rectangle blocks placement (terrain or items).
+00715780 Whether a block of the rectangle has a cell kind that 00605618 maps to 1 and that is not covered.
 00715918 Whether the 64-bit id (r2, r3; not zero) is among the first 100 entries of the list, which ends at the first zero entry.
 0071596c The index of the first zero entry of a list of 100 64-bit ids; 100 when it is full.
+007159b0 A counter value of the slot player for the weekday of a game time.
+00715aec The points of the badges earned (counters 1-0x65 past their threshold, not hidden by +0x1b4): 2, 3 or 1 by the badge's tier.
+00715b88 The points of badge `index` by its tier (0 -> 2, 1 -> 3, 2 -> 2, 3 -> 1).
+00715bc4 How many counters of tier 0 are past their threshold.
 00715c98 Whether badge `kind`'s counter (+0x1c) has reached its threshold.
+00715cc8 The level of badge `index` earned by its counter (against the badge's thresholds).
 00715ffc The sum of the levels (1-3) of the 24 badges (+0xc0).
+00716044 Word +0x28 of entry `index` (0x28 bytes) of the table from global_word_0c.
 00716060 The value of the 24 badges by level (50,000, 150,000, 350,000), and the counts of each level stored with the catalog state.
+00716168 Word `column` from +0x18 of entry `index` (0x28 bytes) of the table from global_word_0c.
+0071618c Word `column` from +0x28 of entry `index` (0x28 bytes) of the table from global_word_0c.
+007164c0 The house loan still to pay: the cost of each built room and its upgrades (table 0x88f040) plus the bonus for flag 7 of +0x5727, less 10000 without flag 4 of +0x5704, less the amount at +0x6b94; kept in the catalog state.
+007165d0 The house's level (+0x36): 1 for 0, 2-3 as they are, 4 with +0x338 = 1, else 5 plus the number of upgraded rooms.
+00716764 Whether every id (below 0x2f) of the reference table at 0x88f29c is in the 40-byte list.
+00716804 `id` - 1 when it is in the reference table at 0x88f29c, else -1.
+00716848 Whether `id` (below 0x2f) is in the reference table at 0x88f29c.
+00716894 The position in the reference table at 0x88f29c of the id at `index` of the list; -1 when absent.
+007168dc Whether byte `index` of the list is set.
+00716928 Whether any of the 40 bytes of the list is set.
+00716c60 Whether the shop is closed at this hour (opening hours by weekday 6 and the town flags 1 and 2).
+00716d80 How many of the six 16-bit slots (+4 to +0xe) are used (not 0xffff).
+00716e68 When the main object is idle and the current player has flags bit 4 of +0x5700 and bit 7 of +0x5713: whether the set (state below 2) has fewer than 6 used slots.
+00717254 Whether one of the six 16-bit slots (+4 to +0xe) holds `id`.
+007179a0 Finds the `n`-th map cell with value 0x28 and calls 00535ab0 there with the entry; 0 when there is none.
+007179ec The value of slot `index` (below 8; +0x34) minus 4 when it is at least 4, else -1.
+00717aac The kind of slot `index` (below 8; +0x34): 1 for values 0-3, 2 for 4 and above, 0 otherwise.
+00718364 Whether the 16-bit value is at most 0xfc.
+007186c4 Applies the template of kind (table 0x846bcb) to the 6-byte entry of `index` (below 8) at +0xe4.
+007187e8 Builds the character set used for passwords in the current mode.
+00718c1c Whether the member handler (+0xc, +0x10) is the one at 0x87919c.
+00718c6c Bit 0 when the member handler (+0xc, +0x10) is the one at 0x8791bc, bit 1 when it is the one at 0x8791b4.
+00718d38 Whether the target is ready: the state object (+4) when +0x10e is set, else the object at +0x84.
+00718dd8 Whether the value of the owner at +0x458 is 0.
+00718e20 The index of the `n`-th set bit of the candidate bits, or -1.
+00718f9c How many of the children (64 slots from +0x14, count +0x114) have +0x80 set.
+0071900c Calls virtual 4 of the handler at +0x118, or 0x18 without one.
+0071902c Calls virtual 5 of the handler at +0x118, or 0x18 without one.
+0071904c Calls virtual 7 of the handler at +0x118, or 0x18 without one.
+0071906c Calls virtual 6 of the handler at +0x118, or 0 without one.
+0071a040 The address of 16-byte entry `index` (below 4; else the first) of the table at 0x83b146.
+0071a054 The float of slot `index` (below 0x12): from +0x1f8 (by 7 words) or +0x3ec by the slot's flag (+0x434); 0 when out of range.
+0071a310 Whether the four player records pass their stored CRC check and the CRC of their part at +0x6b8c (0x38f4 bytes).
+0071aa1c The item of the child (+0) through its virtual 41, or the empty item without a child.
+0071ad3c Whether the count (+0x1c) is at most the limit (+0x18).
+0071ae0c The translation of the matrix at +0x80 of the object (the origin moved by it).
+0071ae30 Whether a menu may open now: no blocking flag, the error/EULA manager idle (or allowing it), the object free (+0xf8) and its handler not the idle one.
+0071b2a8 The id (+0xc8 of +0x104) of the current menu, or -1 when none or idle.
+0071b708 The word of the villager's habit (the habit table entry of its id, from 0xa83afc).
+0071b88c The text (+0xa) of the villager's entry in the habit table at 0xa83afc.
+0071bf58 How many of the ten 8-byte entries (+0x10) have `id` (0 when +0x60 is clear).
+0071bfa0 Whether one of the ten 8-byte history entries (+0x10) has `id` (false when +0x60 is clear).
+0071bfe4 Whether one of the five 12-byte entries (+0x64) has `id` with a value (+8) of at least the given float (false when +0xa0 is clear).
+0071c0d0 Stores the CRC-32 (MSB first) of the 0x1444 bytes after the checksum word.
+0071c0f4 Whether the stored CRC-32 (MSB first) matches the 0x1444 bytes after it.
+0071c124 The address of 24-byte entry `index` (below 4; else the first).
+0071c2f8 Checks the town event (00710fcc) unless the day has changed.
+0071c358 Whether the town event (state 2 and up) was stamped today, or (below 2) whether the object's +0x10 is 1.
+0071c620 Whether the town event passes its check on the same day, the current player has flag 2 of +0x5701 (or there is none) and town flag bit 6 of +0x621d9 is clear.
+0071cba4 Applies the template of kind (table 0x846fb6) to the 6-byte entry of `index` (below 12) at +0x1370.
+0071cff8 Pushes a point out of the plane (a, c, d in x-z) when it crossed it from the side of the reference point.
+0071d0b8 Whether the member handler (+0xc, +0x10) is the one at 0x8793f4.
+0071d108 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x879414, bit 1 when it is the one at 0x87940c.
+0071d1a4 Whether the member handler (+0xc, +0x10) is the one at 0x879404.
+0071d2b0 Whether the low nibble of byte +1 is 1.
+0071d2d4 Calls 001332d4 on the sound archive (+0xc of +0x144 of +0x10) with the arguments.
+0071d2e4 Whether slot `index` (below 6) is set and its state (+0x2c, 24 bytes per slot) is 1 or 2.
+0071d314 Whether slot `index` (below 6; +0x14) is set.
+0071d474 The CRC-32 of the 0x29604 bytes after the checksum word.
+0071d528 Whether one of the 16 entries (0x7dd8 bytes) matches through 0071fce4.
+0071d5f8 Whether one of the 16 entries (0x7dd8 bytes) matches through 0071fc90.
+0071d664 The block (1, 2 or 0) with the most free slots, by steps of 4; -1 when all are full.
+0071d6e4 Whether one of the three blocks has an entry for the current slot (below 4).
+0071d7b4 The CRC-32 of the 0x17be0c bytes after the checksum word.
+0071d9c4 Stores the CRC-32 (MSB first) of the 0x28f0 bytes after the checksum word.
+0071d9e8 Whether the stored CRC-32 (MSB first) matches the 0x28f0 bytes after it.
 0071e6a8 The slot value used when the save entry at +0x6ae54 has id 0x2004 (else slot 0).
+0071ec70 Whether one of the four entries has a count above 0 (+0x210) or passes 007207d8.
+0071ecf0 The item of the recent stock at `index` (within 10 of its start +0x3ca0) from the current player's list (+0x6f10).
+0071ed64 Whether `index` is within the 10 entries from the window start (+0x3520).
+0071ed90 Whether `index` is within the 8 entries from the window start (+0x2780).
+0071edb8 The entry of `index` within the 8-entry window (+0x2780): from the object at 0x95c6d0 in ordinary scenes, else through 002d5770.
+0071f27c Whether the link object at 0xa22020 is idle (true) or, when busy, ready (00746ee4).
+0071f2a8 The part at +0x28c when the state (+0x2e4) is 2, else 0.
+0071f2c4 The camping car's state (+0x88) when below 2, else 0.
+0071f644 Builds the item whose id is at +4 of the record.
+0071f66c Builds the item whose id is at +0x86 of the record.
+0071f69c 1 or 2 when the slot's held object carries item 0x3356 or 0x3357, else 0.
+0071f6e4 Attaches the slot's held object to its owner's hand (the owner's bone matrix); true when it did.
+0071f750 Calls 006bead8 on the slot's held object; 0 without one.
+0071f778 Calls 006be888 on the slot's held object; 0 without one.
+0071f798 Copies the position (+0x644) of the slot's held object when asked; true when there is one.
+0071f7d8 Copies the position of the slot's held object when asked; whether it is in state 4 (+0x640) with nothing attached (+0x668).
+0071fc78 Bit 2 of +0x7dd6.
+0071fc90 Bit 2 of slot `index` (below 4; +0x7dd2).
+0071fce4 Bit 3 of slot `index` (below 4; +0x7dd2).
+0071fd0c Whether the entry's stamp (+0x7dc8) is before the other's.
+0071fe48 Stores the CRC-32 (MSB first) of the 0x7f0 bytes after the checksum word.
+0071fe68 Whether the stored CRC-32 (MSB first) matches the 0x7f0 bytes after it.
 00720348 Whether byte +0x1f is set.
 00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
 0072543c Whether the date bytes at +0xe match those at +5.

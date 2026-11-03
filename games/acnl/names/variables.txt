@@ -2889,6 +2889,7 @@
 00716de4 r0@716dec data_base
 007179a0 r0@7179b0 map
 00718e20 arg0 search_cand_core
+00718e20 search_cand_core core
 0071a310 r0@71a370 crc
 0071c0d0 r0@71c0e4 crc
 0071c0f4 r0@71c108 crc
