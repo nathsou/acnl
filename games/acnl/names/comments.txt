@@ -2199,6 +2199,7 @@
 002bcb60 Releases the flagged banks' sound data once their loaders are idle.
 002bcd40 Fades to the volume over frames scaled by how far it has to go, and applies the volume (times the master when it has one).
 002bcde0 Starts a field object's sound object (unless started).
+002bcfd8 Constructs a field object's sound object: a sound object base with one sound slot, distances 2000.
 002be4a4 Writes the record of the player (the first matching or free of the 32 records).
 002be534 Clears the 32 records (0x14b0 bytes each).
 002be5fc Finds the player's record (by identity) among the 32.
@@ -2247,6 +2248,7 @@
 002c4544 The item at the index of the current page when the player has seen it, else the empty item.
 002c4ad4 Clears the flag at 0x94d92e.
 002c61e8 Applies the theme's two colors to the window's panes and the text color.
+002c6b0c Destroys the room view manager: its exchange banks, model, heaps and model grid.
 002c7060 Deletes a fixed ambient light: its camera node, then the light base.
 002c71ec Copies the letter of a page entry into the letter, with its sender and attachment.
 002c83a8 The letter list's entry at the index when on the page.
@@ -2254,11 +2256,13 @@
 002caabc The resource named `name` (by CRC) in the builder's list (+0x1368), or null.
 002cab78 The grass wear texture in the list (+0x13c), or null.
 002cae6c Sets the touch area from the pane's size and position, in screen coordinates (origin at the top left of 320x240).
+002cb150 Shows UI message 0x1d8 in the window's text view.
 002cb8e4 Hides the cursor on the first row; otherwise shows it at the selected row's height.
 002cbad8 Destroys a census content list: its animations, scroll bar, buttons, layout and window.
 002cbbbc The first free slot of the current cooler page among the player's item rows, offset by the page start; \n negative when full.
 002cbccc The row of the index on the current page of 10, or -1.
 002cbea4 Stores the selected row (counting the earlier pages of 10) in the player's data (+0x6f10).
+002cc00c Constructs a cooler stock change window: a rental change window with ten item slots and an item drag icon \n group, its layout names and the cooler state.
 002cc1b0 The entry (0x2b4 bytes) for the index on the current page of 10, or the one before the first when outside it.
 002cc5c4 Destroys a letter stock change window: its drag icon group, buttons, then the change list base.
 002cca88 Constructs a rental stock change window: a one-button rental window with eight item drag icons and an item \n drag icon group.
@@ -2283,6 +2287,7 @@
 002cdd00 Destroys an item drag icon group: its four animations, then the drag icon group.
 002cdd40 Adds the object's icon (+0x20) to the drag icon list.
 002cdf30 Whether the day's event counter of the current player is in progress (between 1 and 101); else forgets the event.
+002ceee0 Destroys the life support window: its explanation window, renderers, message engines, content list and \n windows.
 002cf018 Sets channel 0's buffer and size, and resets its progress, under the lock.
 002cf050 Sets channel 1's buffer and size, and resets its progress, under the lock.
 002cf088 Sets channel 2's buffer and size, and resets its progress, under the lock.
@@ -5025,6 +5030,7 @@
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
 005d6d28 Lays out the text box's lines (the second layout) and sets the text's size.
 005d6fac Constructs a ruby (reading aid) renderer: a main renderer with a second render base and a tracing message \n engine.
+005d703c Destroys a message engine: releases its two renderers and its parts.
 005d72a4 Text tag: places the ruby text above its base characters, centered, and skips the tag.
 005d79bc Sets the style to the preset of the index (below 7), else the default.
 005d79e0 Builds the text scale command (in 1/32 units), once; the command.

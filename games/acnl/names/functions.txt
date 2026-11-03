@@ -4952,7 +4952,7 @@
 002bcdfc SoundObjFieldObj__virtual_4
 002bcf54 SoundObjFieldObj__virtual_7
 002bcf8c SoundObjFieldObj__virtual_8
-002bcfd8 SoundObj_1___SoundObj_002bcfd8
+002bcfd8 SoundObjFieldObj__construct
 002bd04c SoundObjFieldObj__deleting_destructor
 002bd0a4 SoundObjFieldObj__destructor
 002bd0f4 SoundTv08Variety__virtual_2
@@ -5179,7 +5179,7 @@
 002cbccc ListWindow__row_on_page
 002cbea4 ListWindow__store_selection
 002cbf20 ChangeStockCooler__virtual_8
-002cc00c ChangeStockCooler__ChangeStockCooler
+002cc00c ChangeStockCooler__construct
 002cc0c8 ChangeStockCooler__virtual_1_002cc0c8
 002cc118 ChangeStockCooler__virtual_0_002cc118
 002cc1b0 LetterPage__entry
@@ -5233,7 +5233,7 @@
 002ced34 state__Mode_LifeSupportWindow___Mode
 002ceec8 LifeSupportWindow__virtual_1_002ceec8
 002ceed8 LifeSupportWindow__virtual_0_002ceed8
-002ceee0 LifeSupportWindow__virtual_0_002ceee0
+002ceee0 LifeSupportWindow__destructor
 002cf018 NetTransfer__set_channel_0
 002cf050 NetTransfer__set_channel_1
 002cf088 NetTransfer__set_channel_2
@@ -16563,7 +16563,7 @@
 005d6cc0 start_window_message
 005d6d28 TextBox__layout_lines_b
 005d6fac script__RenderRuby__RenderRuby_005d6fac
-005d703c script__MsgEngine__MsgEngine_005d703c
+005d703c script__MsgEngine__destructor
 005d72a4 RenderRuby__place_ruby
 005d7398 script__RenderRuby__virtual_2
 005d7454 script__RenderRuby__virtual_3
