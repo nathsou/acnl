@@ -483,16 +483,20 @@
 0013a750 The first child when `child` is null, else the sibling after it (through the link offset at +0xa).
 0013a768 Stores the value in every word from `begin` up to `end`.
 0013a834 Takes the light lock (atomically), waiting when it is held; the result.
+0013a9a4 Sends command 2 (with the flag) to the service and returns its result.
 0013adac Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
 0013ae10 Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
 0013b034 Loads an entry of the archive: through its own loader when it is packed, else its file (when flag 8 asks); true when loaded.
 0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
 0013b6e0 Stops the sounds of the player's list from `index` (under its lock).
 0013b72c Releases the font's texture sheets.
+0013b7dc Resets the network event handler.
+0013b80c Notifies the network event handler.
 0013bb80 Returns at once.
 0013c1d4 Reads the player's info from the system's sound archive.
 0013c1e8 Reads the player's info from the sound archive.
 0013c240 Reads the sequence's info from the sound archive.
+0013c2f0 Reads the archive's group info.
 0013c3c0 Entry `index` of the table at +word_c when its kind is 0x4900: its data; null otherwise.
 0013c3f4 Entry `index` of the table at +word_14 when its kind is 0x4902: its data; null otherwise.
 0013c430 The data of key 9 of the sparse array at +4 (an offset from the object), or the empty data.
@@ -519,26 +523,37 @@
 0013cc9c Takes a block off the pool's free list under its lock (zeroed when the pool clears its blocks); null when none is left.
 0013cd00 Copies `source` into the string's buffer, at most `length` characters (all of it when negative) and fewer than its capacity, then terminates it; the number copied.
 0013d00c Gets the thread's priority (svc 0xb).
+0013d040 Joins the thread when it runs.
+0013d24c Runs the thread's main loop.
 0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
 0013d4f0 Whether the bank's slot (below 6) is loaded.
 0013d6d0 Unlinks the request from the pending list (when queued or running, under the list lock) and clears it.
 0013d85c Closes the file stream's handle (+4; a pending failure is fatal).
 0013dee0 The handle at 0x974ef8 (a fatal error when it is not set).
 0013df14 Converts a multibyte path to wide characters and opens it as a file stream.
+0013e0ec Frees the pages back to the pool, under its lock.
 0013e164 The physical address for an offset in the video memory banks (by its range).
 0013e258 Converts a linear heap address to its physical address (unchanged below 0xaf9000).
 0013e274 When reports are on (0x97e038): hashes the archive's name and sends its entry and kind to the report hook.
+0013e358 Closes the data store's box (without the flag).
+0013e360 Closes the data store's box, under the service lock.
+0013e580 Reads the heap block's info from its header.
 0013e6bc Removes the heap from the list of heaps, under its lock.
 0013e75c Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
 0013ea18 Calls the handler for the animation's kind (0x80000000 or 0x40000000) from the table at 0x97511c.
 0013ea4c Dispatches the animation's child (+0x28 offset) when it has one.
+0013ea78 Prepares the sound player's sound with its options.
 0013ebec Stores a word at `index` of the table's values (+8) when it is loaded and in range.
 0013ec20 Reads a wave archive (CWAR, version 1.0.0.0): its INFO block and, when asked, its file table.
+0013ecd8 Loads the sound heap's group.
 0013edb4 Allocates a new section record on the frame heap and links it in the heap's section list; true when it did.
 0013ee40 Clears the sound heap (under its lock): stops the sounds using it and frees its sections.
+0013eeb8 Loads the sound heap's entries.
 0013ef18 Stops the player's sound (+8) at once when it has one.
+0013f2e4 Reads the archive's wave archive info.
 0013f5e8 The low byte of the value of key 0 of the sparse array at +8, or 0x40.
 0013f610 Bits 8-15 of the value of key 0 of the sparse array at +8, or 0.
+0013f63c The referenced value, or -1.
 0013f69c The value of key 0 of the sparse array at +0xc, or 0.
 0013f6bc The low byte of the value of key 1 of the sparse array at +0xc, or 0x40.
 0013f6e4 Whether bits 8-15 of the value of key 1 of the sparse array at +0xc are set (true when absent).
@@ -549,23 +564,56 @@
 0013fd78 Stops the microphone input in its active states.
 0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
 0013ff94 Calls the service handler for the command (+0xa0: table in its low nibble, entry above), or returns the not-found result.
+0013fff8 Reads the local player's friend identity.
+001400b4 Starts the data store service once.
 001402b0 Releases the message box's resource.
+0014031c Initializes the sound system's heaps with their sizes.
 0014041c Reads the DSP's state when it is up.
 001404f0 Sends command 0xa (with the flag) to the service and returns its result.
 00140530 Sends command 5 to the service and returns its result.
 00140564 Finalizes the DSP service when it is up.
+0014077c Sets the sound heap's mode by the flags.
+0014087c Removes the pointer from the list (by its links).
+00140900 Destroys the sound heap.
+00140914 The archive's first block, or null.
 00140f54 The sound archive, set up once.
 00140fac Sets the flag of the sound handle's active sound.
 001411ec Finds the archive player's sound player of the id.
+001412f8 Frees the sound heap's blocks back to the level.
+00141490 Clears the sound heap and resets its state (mode 3).
+001414b4 Clears the sound heap.
+0014156c Resets the sound effect manager's 2 slots.
+00141650 Disposes the sound handle's resources.
 001416bc The offset of the archive's block of the kind 0x6801, or none.
+001416ec Finds the archive's entry of kind 3 with the id.
 00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
+00141764 Finds the archive's entry of kind 2 with the id.
+001417a0 Finds the archive's entry of kind 5 with the id.
+001417dc The archive entry's value 1.
+001417fc The sound's byte value 1.
+00141820 The sound's value 1.
+0014184c The sound's flag 0x11.
+00141870 The sound's value 2.
+0014189c The sound's priority (0x40 by default).
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
+00142070 Loads the sound heap's group.
+00142104 Sets the daemon's name when given.
 00142450 Makes room for the bytes in the buffer.
+001426b0 Starts the microphone sampling when the service is up.
+001429f4 Sends command 0x863 to the service and returns its result.
+001432c8 Finds the heap in the list.
 001435c8 Sets the handle to none (-1).
+00143604 Sets the handle to none (-1).
 00148710 out = M * (v, 1) for a 3x4 matrix M.
+001488f4 Writes the 3x4 matrix as GPU uniform commands (reversed rows); their end.
+00148930 Writes the 4x4 matrix as GPU uniform commands (reversed rows); their end.
 0014e910 Copies the 3x4 matrix.
+0014ecb0 Inverts the 3x4 matrix.
+0014f004 Builds the 3x4 matrix from the 3x3 one with no translation.
 0014f378 Adds the two vectors into the output.
 0014f4d0 Writes the second vector plus the first times the scale (in s0).
+0014f4ec Normalizes the vector into the output (none when zero); its length in s0.
+0014f55c The sine and cosine of the angle (from the table, interpolated).
 0014f5dc Creates a mutex (svc 0x13), locked or not.
 0014f6fc Jumps to the imported function (the word that follows).
 0014f704 Jumps to the imported function (the word that follows).
