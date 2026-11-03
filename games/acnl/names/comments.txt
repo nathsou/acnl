@@ -1552,7 +1552,7 @@
 0024b730 Sets the time stamp invalid and clears the badge counters, their flags and records.
 0024b97c Constructs the 24 encrypted counters, the six words and the two encrypted totals, all zero.
 0024c4dc Value `index` (below 25) of the search candidates, unless masked out (+0x4c); 0 otherwise.
-0024c53c Search candidates of kind 5: those whose letters (of a player, arg 1) carry no item.
+0024c53c Search candidates of kind 5, checked against the items a player (arg 1) holds.
 0024c858 Resets the schedule: a random count (1 to 10), its 7 entries (kind 0xf), the current day and state 5.
 0024c8d4 Clears the player's record at +0x8a3c and its references.
 0024d778 Clears the schedule and its references, with a random count.
