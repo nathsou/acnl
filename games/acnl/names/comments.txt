@@ -1317,17 +1317,113 @@
 00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
 0072543c Whether the date bytes at +0xe match those at +5.
 00736a1c The entry of a resource dictionary (a radix tree on the name's bits) whose name is `name` (of `length` bytes); null when none.
+007400f8 The word at the adjusted +0x2c part of the resource file (+0x3c of +4).
+00740114 Finds an entry of the resource (+0x3c) and gives its id and value; true when found.
+00740144 Resolves an entry handle of the resource and copies its two words and two bytes; true when found.
+007401c0 The word at the adjusted +0x1c part of the resource file (+0x3c of +4).
+0074046c For an entry of type 2: its format flag, size and offset (by the file version, before or from 2.3.1.0); true when found.
+00740528 Copies the resource header's seven 16-bit values (and the eighth from version 2.3.2.0, else 1); true when it has one.
 007405c4 The section of kind 0x4000 in the header's table (12-byte entries from +0x14, count +0x10); null when none.
 00740630 The section of kind 0x4004 in the header's table (12-byte entries from +0x14, count +0x10); null when none.
+007406a4 Copies the 0x4c-byte information of an entry.
+007406cc Copies the two words and the adjusted data of entry `index` (0x14 bytes from +8 +4); true.
+00740708 Copies the 0x26-byte identity and the record of an entry when found; true when it is.
+00740758 The word +8 of the part at +0x68 of the object (+0), or 0.
+0074076c Whether byte +4 of the object (+0) is clear (false without one).
+0074078c Byte +0x50, or 1 when there is no object (+0).
 007407a0 The ramp's value: from +4 to +8 in proportion to step +0x10 of +0xc steps (the end value once reached).
+00740814 The float `index` of the table at +0x38.
 00740820 The sum of the sizes of the list's nodes (each 0x50 bytes before its link), under the owner's lock.
+0074087c Whether +0x84 is set, unless +0x51 is set.
+007409c8 The signed 16-bit value `index` of the table at +0xd0.
 00741fcc The entry for `id` in a table that is one entry (0x6000), a list of ranges (0x6001, by their first id) or a dense range (0x6002, from its first to its last id); null when none.
+00742080 The data of section `index` when its kind is 0x5900 and the index is in range; 0 otherwise.
+007420d0 Bits 8-15 of the value of key 4 of the sparse array at +4, or 0.
+007420fc The data of key 9 of the sparse array at +4 (an offset from the object), or the empty data.
+00742138 The low byte of the value of key 0 of the sparse array at +4, or 0x3c.
+00742160 Whether the low byte of the value of key 4 of the sparse array at +4 is set.
+0074218c The data at +8 when the kind (+4) is 0x21f, else 0.
+007421a4 Bits 16-23 of the value of key 4 of the sparse array at +4, or 0.
+007421d0 The low byte of the value of key 2 of the sparse array at +4, or 0x40.
+007421f8 The float of key 3 of the packed float set (mask +4), or 1.0 when absent.
+0074226c The low byte of the value of key 1 of the sparse array at +4, or 0x7f.
 00742294 The entry for `id` in a table that is one entry (0x6000), a list of ranges (0x6001) or a dense range (0x6002); null when none.
 00742414 The section of kind 0x7001 in the header's table (12-byte entries from +0x14, count +0x10); null when none.
+0074247c The data of the first section of kind 0x7000 (12-byte entries from +0x14, count +0x10), or 0.
+007424f4 The word at +4 plus an offset.
+00742500 The data of entry `index` (8-byte entries after the count at +0x14), or 0 when out of range.
+00742640 Copies into the target the words the source has (by its mask) that the target lacks, and whether the target now has all the required ones.
+00743f28 Sets a light parameter by kind: two colours (+0xb8, +0xc8), the normalized direction (+0xd8) or a word (+0xe4).
+007440a4 Sets a light parameter by kind (the variant with more kinds).
+0074420c The padding (0 or 0x20) needed so a command of `size` does not cross the 4 KiB boundary of the command buffer (+0x680).
+00744310 The glyph index of a character code in the font's code maps.
+00744be4 Whether a box intersects the view frustum.
+00744ce4 Whether a sphere (center, radius) intersects the view frustum (near and far planes, then the four sides).
+007453a4 Whether the record passes the two checks (00744df8, 00744f60) and the slot value (007450c4) is 0.
+007453f0 Whether the record has a slot of the kind (007452e8).
+00745404 Whether one of the slots 1-13 has `value`.
+00745448 Which of the two entries (+0 or +0x40) refers to the room furniture slot holding `furniture`, or 0.
+007455cc The index of `furniture` among the room's furniture (within the capped count), or -1.
+00745784 Byte +0x10 of the object of the entry's owner (table at 0x9529fc, below 5), or 0.
 007457e8 The index of the furniture at cell (x, z) of the room grid's layer (0: the floor, 0x50 per row; 1: the 16 x 16 upper layer); -1 when none or out of range.
+00745890 Whether the eight slot bytes at +0xa are all -1.
+007458c8 Whether the eight slot bytes at +0x12 are all -1.
+00745900 The position (below 8) of the slot byte (+0xa) equal to `value` (the current one, +8, for -1), or -1.
+00745948 Slot byte `index` (below 8) of the first (+0xa) or, without `first`, second (+0x12) set; -1 when out of range.
+00745970 Frees the slot with the record's key (+4, +8) in the table at 0x95009c, when there is one.
+0074599c Whether one of the six objects (+0xc to +0x20) is in state 1 (+4).
 00745d44 The index of the entry with this name in the resource's dictionary (16-byte entries); -1 when there is none.
+00745f74 The address of +0xbc of the model (+4).
+00745f80 The address of the model's matrix (+0x4c of +4).
+00746d20 Removes the icon from its list (+0x174), clears its 16-byte name and its link, and removes it from the drag-icon list.
+00746d78 Calls virtual 11 of the icon's owner (+0x48) with 1.
+00746e2c The object when its 16-bit +0 is set, else 0.
+00746e4c Word `index` of the array when below the count (+0x190), else 0.
+00746f10 Calls 00747438 on the link state's sub object, or 0 without one.
+00746fec Whether the wireless manager (0x974a58) exists and passes 0072f380.
+0074701c Whether the wireless manager (0x974a58) exists and passes 0072f380 or 0072f3a4.
+00747094 When the network clock (0x974a64) is synchronized: the value from 00733680 for the time at 0x97d428 (within range); else 0.
+0074724c Whether the record is active (+0x18) and the network clock (0x974a64) is ready.
+007472b0 Copies the network clock's time (+0x7c of 0x974a64, or the default at 0x953678).
+00747438 Whether the link is connected (+0x28), unless it is closing (+0x155) and `force` is clear.
+007475e0 The link state (+0x28), read under its lock.
+00747608 Whether two addresses match: by their ids when both have one, else by the two words.
+00747660 Whether two addresses differ: by their ids when both have one, else by the two words.
+007479b4 Whether the bucket of the key (folded to 1024 entries) holds a live entry before its end.
+00747a90 Bit 0 of the flag byte (+0x1102c) of the bucket of the key (folded to 1024 entries).
+00747c04 Whether the 16-bit values at +0xe and +0xc differ.
+00747c24 The next live node: +8 or +0x10, else the first +0x10 up the parent chain (+4).
+00747c70 The end node: +0x10, else the first +0x10 up the parent chain (+4).
+00747cb0 The character at `index` of the text (+0x10), shown as a mask character in hidden ranges (a password field).
+00747d70 Whether `index` is outside the two hidden ranges at the end of the text (+0x24, +0x28).
+00748070 Whether the range found for a key (0013c9b8) overlaps the given range.
 007482b8 The width of a grid rectangle (+8 - +0 + 1).
 0074830c The height of a grid rectangle (+0xc - +4 + 1).
+0074862c Byte +8 (or +9 when `alternate` is clear) of the entry of kind +0xb (below 0xaa) of the table at 0x878198.
+00748914 Walks the heap's block list (under its lock when it is thread-safe).
+00748a00 Walks the heap's free block list (under its lock when it is thread-safe).
+00748c70 The free block of at least `size` bytes: the first one (mode 0), the smallest (mode 1) or the largest (mode 2).
+00748dd8 Allocates from a free block of the heap.
+00749010 Word +0x64 of the current thread's object (thread-local).
+00749134 Whether the state (+0x1c) is not 3, 4, 5 or 6.
+0074a3e8 The first node of the list (+0xc0) whose byte +0xc is `key`, or 0.
+0074b2bc Stores a value at +0x3c of the node and of every descendant (children +0x14, siblings +0x18).
+0074baa4 Word `index` (below 2; else the first) of the table at +0x20.
+0074ca5c The top of the view at the near plane (from the near +0x94, the scale +0xa8 and the offset +0xb4).
+0074ca8c The left of the view at the near plane (with the aspect +0xac and the offset +0xb0).
+0074cac4 The right of the view at the near plane (with the aspect +0xac and the offset +0xb0).
+0074cafc The bottom of the view at the near plane (from the near +0x94, the scale +0xa8 and the offset +0xb4).
+0074dcac Whether the owner (+0xc) has +0x88 or +0x8c set.
+0074df14 Walks the heap's block list (under its lock when it is thread-safe).
+0074e00c Walks the heap's free block list (under its lock when it is thread-safe).
+0074e2e8 The free block of at least `size` bytes: the first one (mode 0), the smallest (mode 1) or the largest (mode 2).
+0074e45c Allocates from a free block of the heap.
+0074e928 The position of `node` in the circular list, or -1.
+0074e960 Word +0x20 of +0x20 of the task's manager (+0x5c).
+0074fbbc Extracts the rotation angles (x, y, z, in 1/65536 turns) of a matrix, handling the gimbal-lock case.
+0074fc40 Converts a point from the pane's local space (relative to its rectangle) through its matrix (+0x74).
+0074fcd8 The frame of the animation at a time (looping or clamped).
+0074fd9c The last frame of the animation (+4, less 1 when looping), or 0 when it has none.
 007508b0 The furniture's item (+0x5e4) with the direction its angle (with its parent's, when it sits on one) gives, in a shared item.
 00750994 The furniture's state byte (from its data at +0x5f4; 0 when it reads 0xff), or 0xff without data.
 00750d40 Copies the furniture's position (the translation column of its matrix at +0x548) to `out`.

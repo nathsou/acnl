@@ -2936,7 +2936,9 @@
 00742294 r2@entry data
 00742414 r0@entry header
 0074420c arg0 drawer
+0074420c drawer drawer
 00744310 arg0 res_font_base
+00744310 res_font_base font
 00745448 r0@74545c count
 007455cc r0@7455dc count
 007457e8 r0@entry grid
@@ -2952,6 +2954,7 @@
 0074df14 arg0 exp_heap
 0074e00c arg0 exp_heap
 0074e960 arg0 task_base
+0074e960 task_base task
 007508b0 r0@entry ac_ftr
 00750994 arg0 furniture
 00750d40 arg0 furniture
