@@ -512,6 +512,7 @@
 0013a38c r2@entry used
 0013a38c r4@entry slot
 0013a63c arg0 message_box
+0013a63c message_box box
 0013a6f8 r4@entry child
 0013a6f8 r5@entry address
 0013a6f8 r6@entry tree
@@ -564,6 +565,7 @@
 0013d73c arg0 sound_data_load_request
 0013d7cc arg0 sound_melody_player_base
 0013d85c arg0 file_input_stream
+0013d85c file_input_stream stream
 0013dd5c arg0 content_rom_fs_archive
 0013e560 arg0 no_lock
 0013e75c arg0 heap
@@ -577,7 +579,9 @@
 0013ec20 r0@13ec6c info
 0013ec20 r2@entry with_table
 0013ee40 arg0 audio_sound_heap_ctr
+0013ee40 audio_sound_heap_ctr heap
 0013ef18 arg0 sound_melody_player_one_seq_base
+0013ef18 sound_melody_player_one_seq_base player
 0013efb4 arg0 i_disposer
 0013f398 arg0 wave_archive_file
 0013f3cc arg0 wave_archive_file

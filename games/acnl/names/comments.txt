@@ -293,50 +293,138 @@
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
 0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
 0012f204 A failed result code (negative) is reported as fatal, unless its level is one the caller tolerates; a success passes through.
+00130054 Calls 00128c0c on the object at 0x97d7e0.
+001306e0 When enabled (0x97d801): reads two system flags into 0x97d800 and applies them (retrying on result 0xc9405001).
 00131580 Destroys five font sets (a font resource, its load split and its other part each), last to first.
+001316b8 Calls virtual 10 of the file device when it is mounted (+0x4c), else 0.
 0013187c Gives an empty array room for `capacity` pointers from the heap.
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
+00131b3c Builds the sound effect manager's parts: an offset list, the effect memory manager and the 2 x 3 slots.
 00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
 00132364 Clears the layout's links (+8, +0x158), destroys its split part at +0x15c and finalizes the list at +0x30.
 001323b4 Calls virtual 8 (with 0) of the layout at +0x10.
+001325a0 Destroys the 56 and 2 slot entries and the table at +0xf0.
+0013293c Destroys the town map: the 20 small blocks, the 20 acre blocks and the 42 terrain ids.
+001330fc Whether the child at +4 has its field set.
 00134250 Calls the fatal-error hook once (when one is set) and breaks into the debugger (svc 0x3c) with the failing result.
+001342a4 Calls 00135f34 with 1 as the stack argument.
+001342b8 Forwards to 00136344 with the three stack arguments.
+001342d8 Forwards to 00136014 with the four stack arguments.
+001342f8 Forwards to 00136188 with the four stack arguments.
 00134318 The mounted archive whose name is the path's prefix up to ':' (at most 8 characters); null when none.
 00134440 From `from` to `to` in `count` steps: the value at step `step` (`to` once done).
 00134c90 svcBreak.
+00134f04 Releases the object at 0x975270 (its virtual 1) and clears it.
+00134fec Destroys eight 0x878-byte pattern records.
+00135010 For slot `index` (below 6) not playing: trims its queue past `count` (under its lock); true when the slot is set.
+001352dc Keeps a value at 0x974f10 and sends it with request 0xb0500c8.
+00135384 Checks a list of results, reporting a fatal error for a failing one.
+00135720 Releases the memory block (from the block pool at 0xae0f64) when it has one (+8).
 00135748 Takes the lock unless this thread already holds it, and counts the nesting.
 001357ec Ends one level of holding the lock; the last one clears the owner and releases it.
+001358c0 Unmounts the storage (through the service at 0x97dffc), reporting a failure with its location.
+00135efc Calls 0013a7c8 and reports a fatal error when it fails.
+00135f18 Reads a byte through 0013a7f8 (fatal on failure).
+00135f34 Sends an error report of kind 0 (a result and its location) to the error service, unless filtered.
+00135fb4 Fills the four bytes of the target word (+0) with a value (the low byte only below 0xf).
+00136014 Sends an error report of kind 2 (a result with its module and location) to the error service.
+00136188 Sends an error report of kind 4 (a result with its packed arguments) to the error service.
+00136344 Sends an error report of kind 3 (an exception with its packed arguments) to the error service.
+00136490 Whether the low three bits of the applet word (0x974af0) are 2.
+00136530 Calls 0013a968 and reports a fatal error when it fails.
+0013654c Calls 0013a9a4 and reports a fatal error when it fails.
 001365d4 Calls call_00136598 up to twice while it fails with a retryable result; the result (one kind of failure is mapped to a fixed result code).
 00136718 Unlinks every node, counting each down and leaving it detached.
+00136764 Calls the handler for the model's kind (0x20000002, 0x20000004, 0x20000009, 0x20000011, 0x20000021) from the table at 0x975100.
+00136860 Dispatches the model's child (+0xc4 offset) by its kind when it has one.
+00136c9c Clears +0x20.
 00136cb0 Calls virtual 8 of the object with 0.
 00136d04 Removes a sound from the player's list (its link at +0x108).
+00136d2c Inserts a sound in the player's list by priority, releasing one when full.
 00136e58 Stops a playing sound, fading out over `fade_frames` (now when 0 or less).
 001376d8 Replaces the owner's frame heap (destroying the old one) by a new one on the region (start, size), 4-byte aligned; false when the region is too small or it fails.
+00137830 Releases the handle at +4 (0013b72c) when it is set.
+00137878 Clears a set of network addresses (each the empty pair -3, -1) and its counters.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
 00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
+00137dc4 Clears a thread's parameter block (id -1).
 00137ec0 Inserts at position `index` of the list at +0x40, under the object's lock when it has one.
+001382cc Marks 0x97e854, stores a value at +4 and the memory size (0x974f54) at +0.
 0013864c Releases what the handle holds (through the service when it owns a service handle, else through the owner's virtual function 7) and clears it.
 001386f4 Releases the split's handle and takes one from the count of handles in use.
+001389c0 Destroys eight 0x40-byte entries.
 00138c2c The last index of list `index` (fewer than 6), read under its lock; -1 without one.
 00138c78 The value of a thread-local slot for the current thread.
 001391d8 Allocates from the current heap, 4-byte aligned.
+001391ec Initializes the vertex attribute tables at 0x974a7c.
+00139454 Sets vertex attribute `index` (0x10 clears all) from its description: its address and its stride (the given one, or the element count times the type size).
 00139724 Frees the object's buffer (+0xc) when it has one, then the object, through the free hook.
+00139dac Stops the camera when it is running: stops capture, releases its buffer and marks it stopped.
 0013a38c Takes the first free one of the 16 thread-local slots (fatal when none is free).
+0013a414 Sends the request to the service (0013a5a4) and keeps its value (+0xc, else +8) on success.
+0013a63c Closes the StreetPass message box: finishes its open part, releases its two buffers (under the lock) and the session when they are flagged.
 0013a6f8 The innermost region of the tree (children from call_0013a750) whose range [+0x18, +0x1c) holds `address`; null when none.
 0013a750 The first child when `child` is null, else the sibling after it (through the link offset at +0xa).
 0013a768 Stores the value in every word from `begin` up to `end`.
 0013adac Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
 0013ae10 Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
+0013b034 Loads an entry of the archive: through its own loader when it is packed, else its file (when flag 8 asks); true when loaded.
 0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
+0013b6e0 Stops the sounds of the player's list from `index` (under its lock).
 0013bb80 Returns at once.
 0013c3c0 Entry `index` of the table at +word_c when its kind is 0x4900: its data; null otherwise.
 0013c3f4 Entry `index` of the table at +word_14 when its kind is 0x4902: its data; null otherwise.
+0013c430 The data of key 9 of the sparse array at +4 (an offset from the object), or the empty data.
+0013c46c The low byte of the value of key 0 of the sparse array at +4, or 0x40.
+0013c494 Bits 8-15 of the value of key 2 of the sparse array at +4, or 0.
+0013c4c0 The low byte of the value of key 2 of the sparse array at +4, or 0x40.
+0013c4e8 The float of key 3 of the packed float set (mask +4), or 1.0 when absent.
+0013c55c The low byte of the value of key 1 of the sparse array at +4, or 0x60.
+0013c584 The adjusted data of the sound resource (+4) when it is loaded (+8), else 0.
+0013c5a0 The entry count of the table (+8), or 0.
+0013c5b0 Copies the two words of entry `index` of the table (+8); true when it is in range.
+0013c5f0 Copies the id and the data address (from +4, 0 for -1) of entry `index` of the table (+0); true when it is in range.
+0013c644 Fills the information of a sound's wave entry: its id, offset, volume, pan and priorities from its sparse parameters; true when it is in range.
+0013c700 The first word of the table (+4) when it is loaded (+0xc), else 0.
+0013c728 For an entry of type 3: copies its two words and its two flags; true when found.
+0013c794 Copies the two words and the data address of a group entry; true when found.
+0013c7e0 For an entry of type 1: copies its data, size, two flags and bank list; true when found.
 0013c850 The bank file's INFO block (block id 0x5800); null when the file has none.
 0013c8c8 The index of the range (8-byte entries [first, last] from +8) holding `key`, by binary search; the insertion point when none does.
+0013c938 The index of the range (sorted, 8 bytes each from +8) that contains a value by binary search; the one before when none does.
+0013c9b8 The index of the range (sorted, 8 bytes each from +8) that overlaps the given range by binary search; the insertion index when none does.
+0013ca2c Copies a word and a byte.
+0013cbdc Initializes a sound channel: its owner, priority, two volume ramps (target 0x7fff) and its lock.
 0013cc9c Takes a block off the pool's free list under its lock (zeroed when the pool clears its blocks); null when none is left.
 0013cd00 Copies `source` into the string's buffer, at most `length` characters (all of it when negative) and fewer than its capacity, then terminates it; the number copied.
+0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
+0013d6d0 Unlinks the request from the pending list (when queued or running, under the list lock) and clears it.
+0013d85c Closes the file stream's handle (+4; a pending failure is fatal).
+0013dee0 The handle at 0x974ef8 (a fatal error when it is not set).
+0013df14 Converts a multibyte path to wide characters and opens it as a file stream.
+0013e164 The physical address for an offset in the video memory banks (by its range).
+0013e258 Converts a linear heap address to its physical address (unchanged below 0xaf9000).
+0013e274 When reports are on (0x97e038): hashes the archive's name and sends its entry and kind to the report hook.
 0013e75c Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
+0013ea18 Calls the handler for the animation's kind (0x80000000 or 0x40000000) from the table at 0x97511c.
+0013ea4c Dispatches the animation's child (+0x28 offset) when it has one.
+0013ebec Stores a word at `index` of the table's values (+8) when it is loaded and in range.
 0013ec20 Reads a wave archive (CWAR, version 1.0.0.0): its INFO block and, when asked, its file table.
+0013edb4 Allocates a new section record on the frame heap and links it in the heap's section list; true when it did.
+0013ee40 Clears the sound heap (under its lock): stops the sounds using it and frees its sections.
+0013ef18 Stops the player's sound (+8) at once when it has one.
+0013f5e8 The low byte of the value of key 0 of the sparse array at +8, or 0x40.
+0013f610 Bits 8-15 of the value of key 0 of the sparse array at +8, or 0.
+0013f69c The value of key 0 of the sparse array at +0xc, or 0.
+0013f6bc The low byte of the value of key 1 of the sparse array at +0xc, or 0x40.
+0013f6e4 Whether bits 8-15 of the value of key 1 of the sparse array at +0xc are set (true when absent).
+0013f718 The sound entry's type from its kind (+0xc): 0x2201 -> 2 (wave), 0x2202 -> 3 (stream), 0x2203 -> 1 (sequence), else 0.
+0013f7f4 Copies the first word of a bank entry; true when found.
+0013f81c Copies a player entry's words and its flags; true when found.
+0013f890 Copies a wave archive entry's word, data and flag; true when found.
+0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
+0013ff94 Calls the service handler for the command (+0xa0: table in its low nibble, entry above), or returns the not-found result.
 00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
 00148710 out = M * (v, 1) for a 3x4 matrix M.
