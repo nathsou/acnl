@@ -164,6 +164,7 @@
 0010c5f4 Forwards to 0010c5fc.
 0010c5fc Destroys the heap and clears it.
 0010c658 Builds four empty items.
+0010c6b0 Detaches an NPC: stops its sounds and the NPC manager forgets it.
 0010c720 Copies 8 bytes into `out` (the static default record when none).
 0010c764 Resets the runtime state of the town: records, NPC network parts, held item, notices, lists and global blocks.
 0010cadc The record of the same villager among the ten, when it is valid; else 0.
@@ -1166,6 +1167,7 @@
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
 001c4c14 Calls 005bf518.
 001c50e0 Centers the window on its pane (screen 320 x 240) and stores its size; marks it placed.
+001c53b8 Draws a catalog's layout on the lower screen.
 001c53dc Starts the state with the handler pair at 0x87a024.
 001c551c Starts the state with the handler pair at 0x87a02c.
 001c8cd4 Relocates the table's entries to addresses.
@@ -1175,6 +1177,8 @@
 001ca2c0 Shrinks the scale to 0 over 10 frames (after the delay); true when done.
 001cb118 Sets the model animation's frame (when positive).
 001cb474 Advances the button's animation until its slot is done, then stops it; true when finished.
+001cb690 Draws the amiibo photo background's layout (on the upper screen when its flag is set).
+001cb78c Closes the amiibo photo background: releases its layout and shows the main window again.
 001cb7ec Stops the current animation and starts the first (0) or second (1) animation from zero.
 001cb884 Constructs an in-and-out window: a layout with its in and out animations, shown.
 001cb8fc Destroys an in-and-out window: its two animations and its layout.
@@ -1428,8 +1432,10 @@
 0020ae2c Sets a sound object's distances (from arg 2, the far one widened by its kind's margin) and position (arg 1).
 0020aedc Stops a sound object: the sound system forgets it if it was registered.
 0020af18 Constructs a sound object's base: distances 2000, volume 1, no handle, not registered.
+0020afb8 Starts a waterfall's sound object (kind 5, unless started).
 0020b0a4 Plays the symbol tree's sound unless it plays.
 0020b280 Constructs a held-item sound object: a sound object base with one sound slot, distances 2000.
+0020b3ac Starts a pond's sound object (kind 6, unless started).
 0020b494 Starts the object and sets its speed to 6.
 0020b9b0 Clears the 0x14b0-byte block: its base, identity, records and its two time bytes (from the earliest time).
 0020bb24 Clears the number pair.
@@ -1550,6 +1556,7 @@
 002306c4 Sets the talk's word slot to the number with its digits; whether there was a talk to set.
 00231918 Tells the talk target it is talking (its virtual function 23).
 00231ad4 Stores the gift item and its flag, and tells the gift manager for the main player and the NPC.
+00236ca4 Calls the talk receptor's pending member-function handler (and clears it).
 00237008 Sets the talk's mode and marks each listener NPC as in a talk.
 00237d58 Stores the pending text and its value when none is pending; whether it was stored.
 002383c0 Starts the word fix at the position, numbering it on first use.
@@ -1617,6 +1624,8 @@
 00244bb4 Starts (or stops) the sound object's sound in the sound system and updates the object.
 002454f8 Builds the song's playback info from its table entry and tune values (under the info's lock).
 002458e4 Resets the player's counters and sets its beat length (900 / tempo, rounded up).
+00246934 Starts a river's sound object (kind 7): registers it with the river sound manager.
+00246b90 Stops a river's sound object: the river sound manager forgets it, then the base stops.
 00246cb8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00246df4 Stores the object in the first free of the 60 slots (+0x14) and counts it; 0x3d when full or null.
 00246f34 Frees slot `index` (below 60) and uncounts it.
@@ -1733,6 +1742,9 @@
 00264698 Begins the photo capture: sets up the scene environment, its camera and viewport.
 00265d54 Loads the paper shader on the weather heap.
 00267188 Shows the page and page count (up to 10 digits) and sets the previous and next pages, wrapping.
+00267758 Draws a change list's layouts (on the lower screen).
+002677cc Releases a change list: its drag icons, layouts and buttons.
+00268270 Marks each of a change list's four slots by whether it holds something.
 002686d4 Sets the first button's value.
 0026876c Sets the messages of the buttons (up to 2) and marks them for update.
 002687c8 Sets the two flags of each button.
@@ -2012,6 +2024,7 @@
 002b6ef8 Destroys a button action node: detaches and destroys its four animations.
 002b7598 Updates the layout at +0x270 and attaches it to the layout system.
 002b75bc Starts the state with the handler pair at 0x87a114.
+002b75d4 Releases a rental change window: its layout parts, buttons and layout.
 002b7910 Starts the state with the handler pair at 0x87a11c.
 002b7928 Loads the change window's layout archive.
 002b7938 Constructs a rental change window with one button: an archive accessor, a layout with two animations.
@@ -2025,6 +2038,7 @@
 002b8958 Shows or hides the button's pane and records it.
 002b8e84 Shows the pane and writes the number (up to 10 digits) into the label's text.
 002b8fb0 Sets the button's state and plays its animation.
+002b940c Sets an item drag icon's sounds (the drop sound by whether it is accepted, arg 1).
 002b9aa4 Shows or hides the item name pane.
 002ba344 Advances the list's counter by the step (mod 3) and moves every child pane by the offset.
 002ba3cc Attaches the layout at +0x34c to the layout system.
@@ -2035,6 +2049,7 @@
 002bc94c Requests the sound data of the id for bank `index` (below 6) and starts its loader; the request's index, or -1.
 002bcb60 Releases the flagged banks' sound data once their loaders are idle.
 002bcd40 Fades to the volume over frames scaled by how far it has to go, and applies the volume (times the master when it has one).
+002bcde0 Starts a field object's sound object (unless started).
 002be4a4 Writes the record of the player (the first matching or free of the 32 records).
 002be534 Clears the 32 records (0x14b0 bytes each).
 002be5fc Finds the player's record (by identity) among the 32.
@@ -2091,6 +2106,7 @@
 002cae6c Sets the touch area from the pane's size and position, in screen coordinates (origin at the top left of 320x240).
 002cb8e4 Hides the cursor on the first row; otherwise shows it at the selected row's height.
 002cbad8 Destroys a census content list: its animations, scroll bar, buttons, layout and window.
+002cbbbc The first free slot of the current cooler page among the player's item rows, offset by the page start; \n negative when full.
 002cbccc The row of the index on the current page of 10, or -1.
 002cbea4 Stores the selected row (counting the earlier pages of 10) in the player's data (+0x6f10).
 002cc1b0 The entry (0x2b4 bytes) for the index on the current page of 10, or the one before the first when outside it.
@@ -2246,6 +2262,7 @@
 002e8444 Zeroes the tune player, with a 120 tempo and its 12 volumes at 100.
 002e8cc8 Plays the sound with the id.
 002e8ce8 Constructs an insect or fish sound object: a sound object base with one sound slot, volume 1.
+002e8dfc Starts the town tree's sound (kind 8): the sound for its size, or the default one.
 002e9118 Starts a melody sound object (unless started): kind 10 in the scenes so flagged, then the base, and binds \n its melody players.
 002e9268 Stops a melody sound object (when started): its tune and melody players, its sound, then the base.
 002e92b0 Constructs a melody sound object: a sound object base with one sound slot and two positioned melody \n players.
@@ -2435,6 +2452,7 @@
 003037e8 Refreshes the villager house's items for the current time.
 00303b10 Copies the empty item into `item`.
 00303f50 Stores a 16-bit value at +0x1d9c and marks +0x1d9e.
+003040cc Starts an NPC's wait for talk (in state 2): its emoticons and a kind-1 command.
 00304280 Sends the special housing letter (with an attached item) to each of the four players whose flags ask for it, and marks it sent.
 0030437c Forwards to Range__is_valid.
 00304440 Forwards to pack_id_with_byte_9.
@@ -2743,6 +2761,7 @@
 00316664 Entry (0xc bytes) of the id among the 72 of the table; null for an unknown id or no table.
 00316ebc Bit `index` (fewer than 96) of the flag bytes; 0 for a larger index.
 00316edc Bit `index` (fewer than 7) of the flag bytes; 0 for a larger index.
+003171b0 A base's virtual 0: nothing.
 0031758c Destroys the held heap (+4) and creates a new one with the given arguments; true when it did.
 00317a50 Starts the split load, setting the read and write positions from its word (+0xec) the first time.
 00317a88 Draws the string with the renderer's font and color.
@@ -2810,7 +2829,9 @@
 0031f2bc Starts the state at +0x213c with the handler pair at 0x879540.
 0031f2dc Sets up the window's B button pane and its values.
 0031f69c Sets the flag of the entry for the key (0x2b4 bytes each) and updates its node.
+0031f7f0 Draws a letter post drag window's layout on the lower screen.
 0031fa14 True when the state at +0x213c runs the handler pair at 0x879558.
+0031fa34 Releases a letter post drag window (as its base).
 0031faf4 True when the state at +0x213c runs the handler pair at 0x879560.
 0031fcc4 Moves the window's drag icon (+0x278) from its list (+0x3d0) into `list` (when not null).
 0031fcfc Sets the flag (+0x12d) of entry `index` among the 10 shown from +0xc (0x2b4 bytes each, +0x3d4); other indices set the first.
@@ -2818,7 +2839,9 @@
 0031fd64 Marks the page changed (+0x201b) and enables all 10 entries, or (when off) restores each from its saved flag.
 0031ffbc Sets the page's changed flag (+0x201b).
 00320450 Releases a letter drag window: its layout parts and nodes, and takes it out of its drag icon list.
+00320490 Updates a letter drag window's drag icon control.
 0032049c Address of entry `index` among the 10 shown from +0xc (0x2b4 bytes each, +0x3d4); other indices give the first.
+003204d8 Loads the letter icon layout archive.
 00320500 Calls virtual 19 (refresh) of entry `index` of the shown page.
 00320548 The word at +0x684 of entry `index` of the shown page; 0 when it is not shown.
 00320584 Starts or stops the button node of entry `index` of the shown page.
@@ -2827,6 +2850,7 @@
 0032069c Sets the visibility bit of the pane at +0x280.
 003206bc Plays the icon layout's animation for the state.
 003207d8 Sets the visibility bit of the pane at +0x150 and updates the layout at +0x130.
+00320a4c Sets a design drag icon's sounds (the drop sound by whether it is accepted, arg 1).
 00320cec Sets the icon button's state and plays its animation.
 00320d54 Refreshes the icon button for the current scene and player.
 003219e8 Registers the 7 sound bank entries (ids 0x40 to 0x46) with their parameters from 0x94ccc0.
@@ -2859,6 +2883,7 @@
 0032be18 The value (row below 10, column below 19) of the tune table at 0x83b1b0; 0 out of range.
 0032c348 Stops the tune's sound and gives back its sound data request.
 0032c654 Clears the two flag bytes when the first is set.
+0032c72c Stops an instrument furniture's sound object: releases its slot, then the furniture stop.
 0032c850 Resets the record (empty, its 10 bytes at -1) unless its stamp is today, then stamps it with today.
 0032c8c8 Removes player `index` (below 4) from the 10 entries and moves the later entries up.
 0032cb6c Sets the state byte (+0xd); entering state 1 from idle resets the counters.
@@ -2867,6 +2892,8 @@
 0032cc68 Resets the option bytes (+4) to their defaults and copies them into the saved copy (+0xd).
 0032ccb0 Constructs the option bytes and clears the saved copy.
 0032cef4 Draws the random state into 0x9525d0 and, in a network session with the main object idle, sends it as message 4.
+0032d638 Starts a furniture audio object at a point (arg 1, seen through the camera).
+0032d774 Stops a furniture audio object (when started).
 0032f240 Writes the GPU commands of the depth settings, with the depth offset (scaled when enabled) as a 24-bit float.
 0032fd1c Constructs a multi-item drag icon group: a drag icon group with its own vtables.
 003302c8 Starts the sound player unless it plays.
@@ -2877,6 +2904,7 @@
 00331a0c Sets the two halves and the two floats.
 00331a20 Zeroes the two halves and the two floats.
 00331a40 Starts a furniture audio sound object (unless started): kind 9, then the furniture start.
+00331a68 Stops the room music player when this furniture audio is its source, and forgets it.
 00331c1c Stops a furniture audio sound object (when started): the room music player stops it if it is its source, \n then the furniture stop.
 00331c7c Constructs a furniture audio sound object: a furniture sound object with its own vtable.
 00331d0c Destroys a furniture audio sound object: stops it (as SoundObjFurnitureAudio__stop), then the furniture \n sound object.

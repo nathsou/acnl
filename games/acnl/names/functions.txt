@@ -247,7 +247,7 @@
 0010c650 sead__FixedSafeString_7___virtual_0
 0010c658 construct_four_empty_items
 0010c66c AcNpc__post_create
-0010c6b0 AcNpc__virtual_35
+0010c6b0 AcNpc__detach
 0010c6e4 AcNpc__virtual_33
 0010c720 copy_to_default_pair
 0010c764 reset_town_runtime_state
@@ -2154,7 +2154,7 @@
 001c50e0 Window__center_on_pane
 001c538c CatalogBase__virtual_17
 001c5390 CatalogList__virtual_5
-001c53b8 CatalogBase__virtual_5
+001c53b8 CatalogBase__draw
 001c53dc start_state_87a024
 001c53f4 CatalogBase__virtual_4
 001c54b0 CatalogBase__virtual_20
@@ -2222,12 +2222,12 @@
 001cb608 BadgeExplainWindow__virtual_8
 001cb610 BadgeExplainWindow__virtual_7
 001cb674 CensusWindow__virtual_9_001cb674
-001cb690 AmiiboPhotoBG__virtual_5
+001cb690 AmiiboPhotoBG__draw
 001cb6d0 AmiiboPhotoBG__virtual_3
 001cb75c BadgeExplainWindow__virtual_2
 001cb764 CensusBG__virtual_4
 001cb768 ChangeMenuWindow__virtual_6
-001cb78c AmiiboPhotoBG__virtual_6
+001cb78c AmiiboPhotoBG__close
 001cb7ec ButtonAnim__start
 001cb884 InOutWindow__construct
 001cb8cc InOutWindow__deleting_destructor
@@ -2962,7 +2962,7 @@
 0020af18 SoundObjBase__SoundObjBase
 0020afb0 SoundObjBase__deleting_destructor
 0020afb4 SoundObjBase__destructor
-0020afb8 SoundObjFall__virtual_2
+0020afb8 SoundObjFall__start
 0020b000 SoundObjFall__deleting_destructor
 0020b054 SoundObjFall__destructor
 0020b0a4 SoundObjSymbolTree__play
@@ -2970,7 +2970,7 @@
 0020b280 SoundObjHold__construct
 0020b308 SoundObjHold__deleting_destructor
 0020b35c SoundObjHold__destructor
-0020b3ac SoundObjPond__virtual_2
+0020b3ac SoundObjPond__start
 0020b3f0 SoundObjPond__deleting_destructor
 0020b444 SoundObjPond__destructor
 0020b494 start_with_speed_6
@@ -3376,7 +3376,7 @@
 00231ad4 TalkGift__set_item
 00236644 script__WordFix_9u___WordFix_00236644
 00236b7c sead__SafeStringBase_char___SafeStringBase_00236b7c
-00236ca4 AcNpcPlayerGhost__TalkRecept__virtual_42
+00236ca4 NpcTalkRecept__call_handler
 00236d18 AcNpcPlayerGhost__TalkRecept__virtual_43
 00236e10 NpcTalkRecept__virtual_34
 00236e18 NpcTalkRecept__virtual_16
@@ -3550,10 +3550,10 @@
 00246774 SoundDJPlayer__SoundDJPlayer
 00246878 SoundDJPlayer__deleting_destructor
 002468d8 SoundDJPlayer__destructor
-00246934 SoundObjRiver__virtual_2
+00246934 SoundObjRiver__start
 002469ac SoundObjRiver__virtual_5
 002469c4 SoundObjRiver__virtual_4
-00246b90 SoundObjRiver__virtual_3
+00246b90 SoundObjRiver__stop
 00246bd4 SoundObjRiver__SoundObjRiver
 00246c14 SoundObjRiver__deleting_destructor
 00246c68 SoundObjRiver__destructor
@@ -3887,12 +3887,12 @@
 00267124 BsWeatherPaper__deleting_destructor
 00267158 BsWeatherPaper__destructor
 00267188 PageCounter__show
-00267758 ChangeListBase__virtual_7
+00267758 ChangeListBase__draw
 00267784 ChangeStockMyDesign__virtual_3
-002677cc ChangeListBase__virtual_3
+002677cc ChangeListBase__release
 00267808 ChangeListBase__virtual_6
 002681e0 ChangeListBase__virtual_4
-00268270 ChangeListBase__virtual_8
+00268270 ChangeListBase__refresh_slot_flags
 002682ac ChangeRentalBase__ChangeRentalBase_002682ac
 002684c0 ChangeListBase__ChangeListBase
 00268664 CheckEnterStrc__virtual_0
@@ -4840,7 +4840,7 @@
 002b7414 ChangeMenuWindow__destructor
 002b7598 update_and_attach_layout_270
 002b75bc start_state_87a114
-002b75d4 ChangeRentalBase__virtual_3
+002b75d4 ChangeRentalBase__release
 002b75fc ChangeRentalBase__virtual_6
 002b787c ChangeRentalBase__virtual_4
 002b7910 start_state_87a11c
@@ -4876,7 +4876,7 @@
 002b8fb0 LayoutButton__set_state
 002b9024 ItemDragIconNode__virtual_29
 002b9160 ItemDragIconNode__virtual_4
-002b940c ItemDragIconNode__virtual_20
+002b940c ItemDragIconNode__set_sounds
 002b9440 ItemDragIconNode__ItemDragIconNode_002b9440
 002b94b4 ItemDragIconNode__deleting_destructor
 002b950c ItemDragIconNode__destructor
@@ -4948,7 +4948,7 @@
 002bcc00 SoundFaderPlayer__virtual_3
 002bcd40 SoundFader__fade_to
 002bcddc SoundFaderPlayer__deleting_destructor
-002bcde0 SoundObjFieldObj__virtual_2
+002bcde0 SoundObjFieldObj__start
 002bcdfc SoundObjFieldObj__virtual_4
 002bcf54 SoundObjFieldObj__virtual_7
 002bcf8c SoundObjFieldObj__virtual_8
@@ -5175,7 +5175,7 @@
 002cba48 CensusContentList__virtual_6
 002cbac8 CensusContentList__deleting_destructor
 002cbad8 CensusContentList__destructor
-002cbbbc ChangeStockCooler__virtual_9
+002cbbbc ChangeStockCooler__first_free_slot
 002cbccc ListWindow__row_on_page
 002cbea4 ListWindow__store_selection
 002cbf20 ChangeStockCooler__virtual_8
@@ -5647,7 +5647,7 @@
 002e8ce8 SoundObjInsectFish__construct
 002e8d58 SoundObjInsectFish__deleting_destructor
 002e8dac SoundObjInsectFish__destructor
-002e8dfc SoundObjSymbolTree__virtual_2
+002e8dfc SoundObjSymbolTree__start
 002e8e24 SoundObjSymbolTree__virtual_4
 002e9044 SoundObjSymbolTree__SoundObjSymbolTree
 002e9074 SoundObjSymbolTree__deleting_destructor
@@ -6267,7 +6267,7 @@
 0030400c check_stamp_0e
 00304010 check_stamp_09
 00304014 set_flags
-003040cc AcNpc__virtual_31
+003040cc AcNpc__start_talk_wait
 003040fc do_nothing_003040fc
 00304100 AcNpc__virtual_34
 003041ac today_has_no_event_pattern_veneer
@@ -7070,10 +7070,10 @@
 0031f54c LetterDragItemWindow__deleting_destructor
 0031f55c LetterDragItemWindow__destructor
 0031f69c set_entry_flag_4ad
-0031f7f0 LetterDragPostWindow__virtual_3
+0031f7f0 LetterDragPostWindow__draw
 0031f814 LetterDragPostWindow__virtual_5
 0031fa14 is_state_879558
-0031fa34 LetterDragPostWindow__virtual_4
+0031fa34 LetterDragPostWindow__release
 0031fa38 LetterDragPostWindow__virtual_2_0031fa38
 0031faf4 is_state_879560
 0031fb14 LetterDragPostWindow__LetterDragPostWindow
@@ -7088,9 +7088,9 @@
 0031ffc8 LetterDragWindowBase__virtual_1
 0032042c LetterDragItemWindow__virtual_4
 00320450 LetterDragWindowBase__release
-00320490 LetterDragWindowBase__virtual_2
+00320490 LetterDragWindowBase__update
 0032049c ItemPage__entry_at
-003204d8 LetterDragWindowBase__virtual_0
+003204d8 LetterDragWindowBase__load_layout
 00320500 ItemPage__refresh_entry
 00320548 ItemPage__entry_word_684
 00320584 ItemPage__start_or_stop_entry
@@ -7099,7 +7099,7 @@
 0032069c set_pane_visible_280
 003206bc IconLayout__play_state
 003207d8 set_pane_visible_150
-00320a4c MyDesignDragIconNode__virtual_20
+00320a4c MyDesignDragIconNode__set_sounds
 00320a80 MyDesignDragIconNode__MyDesignDragIconNode_00320a80
 00320ac4 MyDesignDragIconNode__deleting_destructor
 00320b0c MyDesignDragIconNode__destructor
@@ -7314,7 +7314,7 @@
 0032c654 clear_two_flags
 0032c6cc AudioObjFurnitureInst__virtual_29
 0032c700 AudioObjFurnitureInst__virtual_31
-0032c72c SoundObjFurnitureInst__virtual_3
+0032c72c SoundObjFurnitureInst__stop
 0032c760 AudioObjFurnitureInst__virtual_30
 0032c78c SoundObjFurnitureInst__SoundObjFurnitureInst
 0032c7ac SoundObjFurnitureInst__deleting_destructor
@@ -7338,7 +7338,7 @@
 0032d0bc AcInsectFieldFlyPursue__virtual_50
 0032d60c AcInsectFieldFlyPursue__virtual_1_0032d60c
 0032d624 AcInsectFieldFlyPursue__virtual_0_0032d624
-0032d638 AudioObjFurnitureAudio__virtual_2
+0032d638 AudioObjFurnitureAudio__start
 0032d680 AudioObjFurnitureAudio__virtual_17
 0032d688 AudioObjFurnitureAudio__virtual_11
 0032d6c4 AudioObjFurnitureAudio__virtual_9
@@ -7348,7 +7348,7 @@
 0032d724 AudioObjFurnitureAudio__virtual_18
 0032d72c AudioObjFurnitureAudio__virtual_4
 0032d76c AudioObjFurnitureAudio__virtual_12
-0032d774 AudioObjFurnitureAudio__virtual_6
+0032d774 AudioObjFurnitureAudio__stop
 0032d79c AudioObjFurnitureAudio__virtual_15
 0032d7a4 AudioObjFurnitureAudio__virtual_16
 0032d7c8 AudioObjFurnitureAudio__AudioObjFurnitureAudio
@@ -7442,7 +7442,7 @@
 00331a0c HalfFloat2__set
 00331a20 HalfFloat2__clear
 00331a40 SoundObjFurnitureAudio__start
-00331a68 AudioObjFurnitureAudio__virtual_24
+00331a68 AudioObjFurnitureAudio__forget
 00331ab0 AudioObjFurnitureAudio__virtual_22
 00331ad4 AudioObjFurnitureAudio__virtual_20
 00331b00 SoundObjFurnitureAudio__virtual_15
