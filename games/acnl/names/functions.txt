@@ -234,6 +234,7 @@
 00110cdc clear_flag_95c219
 00110dc0 take_over_flag_ba_bit7
 00111050 update_villager_moving_requests
+0011188c Villagers__update_day
 00111d48 VillagerPart__construct
 00111f4c villager_id_bit
 00111f70 item_data_byte_19_is
@@ -263,11 +264,14 @@
 00112fd4 guarded_nibble_1d
 00112fe2 byte_6_or_0
 00112fea byte_7_or_0
+00112ff4 SaveVillager__find_player_memory
 001130cc Villager__clear_memory_flags
+00113178 Villagers__choose_leaving
 00113274 reset_player_memories
 001133f8 Villager__send_item_request
 00113430 Villager__clear_kept_letters
 00113468 SaveVillager__clear_flag_bc_bit5_of_used_records
+00113494 Villager__refresh_items
 00113828 call_00113830_if_set
 001138a4 Villager__mark_flag_ad555c
 001138dc Villager__copy
@@ -279,6 +283,8 @@
 00113cfc Villager__item_at
 00113d14 Villager__Villager
 00113ecc Villager__update_b6_if_current
+00113f1c Villagers__add_friendship_all
+00114088 Villager__reset_for_move_in
 00114160 clear_villager_at
 00114184 call_0011418c
 001141a4 friendship_tier_of_value
@@ -302,6 +308,7 @@
 00114c80 query_105d05
 00114c90 set_byte_952b9c
 00114c9c start_block_event_2x2
+00114d00 Villagers__update_since_last_play
 00114e00 set_word_952bdc
 00114e10 start_event_on_random_block
 00116cdc clear_value_105971
@@ -331,6 +338,7 @@
 001175bc BsGrowUp__do_execute
 0011765c BsGrowUp__do_delete
 00117674 update_scene_kind_handlers
+001176c4 Villager__choose_spot
 001177a0 BsGrowUp__BsGrowUp
 001177d4 BsGrowUp__virtual_1
 001177f0 BsGrowUp__virtual_0
@@ -357,6 +365,7 @@
 00118cac SearchNpcByProductIdCB__SearchNpcByProductIdCB
 00118e24 is_designated_villager
 00118e5c count_villagers_in_state_0_or_1
+00118e94 Villagers__count_valid
 00118f18 VillagerPart__moving_record_value
 00118f7c first_empty_slot_of_16
 00118fb4 first_flagged_villager
@@ -370,8 +379,10 @@
 00119388 VillagerPart__refresh_villager_phrases
 001193d0 index_of_villager_with_id
 00119404 special_event_today_or_tomorrow
+0011945c Villagers__find_by_check
 001194e0 global_word_7e0_veneer
 001194ec VillagerPart__has_active_villager
+00119534 Villager__find_letter_slot
 001195bc VillagerPart__history_id
 00119858 refresh_crc
 00119874 crc_matches
@@ -390,6 +401,7 @@
 0011a520 find_empty_owner_slot
 0011a5f4 IdentityRecords__has_record_matching
 0011a650 villager_check_11a650
+0011a6d8 Villagers__player_memory_for_slot
 0011a794 find_first_flagged_record
 0011a7c4 entry_has_flag_bc_bit7
 0011a7de SaveVillager__has_slot_flag
@@ -416,11 +428,13 @@
 0011b56a flag_20_of_1aa
 0011b576 random_set_index_of_33
 0011b5a4 any_flag_set_in_range
+0011b7c8 Locale__combine
 0011b836 locale__facet_table_release
 0011b872 locale__facet_slot
 0011b890 locale__use_facet
 0011ba94 locale__call_with_name
 0011badc locale__make_named
+0011bba8 Locale__build_ctype
 0011bcfc locale__append_category_name
 0011bd84 locale__facet_construct
 0011bda4 destroy_owning_holder
@@ -2578,6 +2592,7 @@
 0020d7f4 store_item_set_b
 0020d848 store_half_and_bytes
 0020d858 reset_records
+0020d8a4 TimeLimit__check_date
 0020d904 clear_byte_bits_20d904
 0020d914 set_byte_bits_20d914
 0020da04 sead__SafeStringBase_char___SafeStringBase_0020da04
@@ -2598,6 +2613,7 @@
 0020e838 AcNpcSpRollan__TalkRecept__select_message_set
 0020e95c AcNpcSpRollan__TalkRecept__virtual_80
 0020f934 AcNpcSpRollan__TalkRecept__virtual_81
+0020fb10 Present__give_contents
 0020fe10 AcNpcSpRollan__TalkRecept__virtual_66
 0020fe64 AcNpcSpRollan__TalkRecept__virtual_1_0020fe64
 0020fe74 AcNpcSpRollan__TalkRecept__virtual_0_0020fe74
@@ -2622,10 +2638,13 @@
 00210bac AudioObjRiver__AudioObjRiver
 00210bf0 AudioObjRiver__deleting_destructor
 00210c10 AudioObjRiver__destructor
+00210c2c BalloonString__setup_vertex_buffers
 00211040 BalloonString__virtual_5
 00211a84 BalloonString__virtual_6
+002127f4 BalloonString__write_commands
 00212ba4 BalloonString__BalloonString
 00212d9c BalloonString__virtual_2
+00212ed0 BalloonString__register_draw
 00212f08 BalloonString__virtual_3
 00212f50 BankTableBase__call_virtual_0
 00212f5c BalloonString__virtual_4
@@ -2645,9 +2664,13 @@
 00213718 BingoMassBase__virtual_3
 00213794 BingoMassBase__deleting_destructor
 00213800 BingoMassBase__destructor
+00213868 MapView__clamp_zoom_and_offset
+00213930 MapView__smooth_scroll
+00213b54 DepthTree__insert
 002140fc namespace___SearchNpcCB__SearchNpcCB
 00214c8c script__WordFix_9u___WordFix_00214c8c
 00214d74 script__WordFix_9u___WordFix_00214d74
+00214e88 scene_blocks_balloons
 00214f4c script__WordFix_9u___WordFix_00214f4c
 002150b4 script__WordFix_9u___WordFix_002150b4
 0021536c script__WordFix_9u___WordFix_0021536c
@@ -2657,6 +2680,7 @@
 00215e28 script__WordFix_9u___WordFix_00215e28
 00215f40 script__WordFix_9u___WordFix_00215f40
 00216058 script__WordFix_9u___WordFix_00216058
+002161a4 NetPlayers__refresh_slots
 00216274 BsBalloonChat__do_draw
 00216420 set_pending_item
 00216468 clear_pending_item
@@ -2669,8 +2693,10 @@
 00217dc0 BsBalloonChat__BsBalloonChat_2
 00217ef0 BsBalloonChat__deleting_destructor
 00217fbc BsBalloonChat__destructor
+002194d8 Fireworks__launch
 002196f0 BsFireworkMgr__do_draw
 002196f4 BsFireworkMgr__do_create
+002198b4 Fireworks__play_sound
 002199f0 BsFireworkMgr__do_execute
 0021a0e0 BsFireworkMgr__do_delete
 0021a108 BsFireworkMgr__BsFireworkMgr_2
@@ -2700,8 +2726,10 @@
 0021f600 BsMenuMailbox__do_create
 0021f7e4 BsMenuMailbox__do_execute
 0021f9cc BsMenuMailbox__do_delete
+0021fa30 Mailbox__entry_word
 0021fb50 BsMenuMailbox__virtual_1_0021fb50
 0021fb60 BsMenuMailbox__virtual_0_0021fb60
+0021fe04 Mailbox__play_tab_animation
 002202dc script__WordFix_21u___WordFix_002202dc
 00220338 script__WordFix_9u___WordFix_00220338
 002204c0 script__WordFix_21u___WordFix_002204c0
@@ -3210,6 +3238,7 @@
 00250510 SoundObj_1___SoundObj_00250510
 00250560 SoundObj_1___SoundObj_00250560
 00250b34 TourState__claim_reward_and_clear
+00250b58 FishMgr__update_slots
 00250dc0 BsCockroachMgr__do_draw
 00250dc8 BsCockroachMgr__do_create
 002510b0 BsCockroachMgr__do_execute
@@ -3237,6 +3266,7 @@
 00251f14 FishMgr__claim_slot
 00251fa4 FishMgr__release_slot
 00252034 FishMgr__is_within
+002520fc FishMgr__copy_owned_slot
 0025244c FishMgr__pick_species
 00252850 FishMgr__set_gone
 00252860 return_float_constant_0x3f000000_
@@ -3446,6 +3476,8 @@
 0026f808 can_wear_with_owner_slot_2
 0026f8a8 item_can_be_shown_here
 0026f970 dispatch_when_tagged_20
+0026f9c4 ItemWindow__load_layouts
+0026fa8c Pockets__set_current_slot
 0026fac4 record_by_size_flag_0026fac4
 0026fc4c ItemDragWindow__ItemDragWindow
 0026fe2c ItemDragWindow__deleting_destructor
@@ -3734,6 +3766,7 @@
 00281cc8 read_u32_0x0095386c_
 00281cd8 SpecialMail__load_with_song_a
 00281d6c SpecialMail__load_with_song_b
+00281e00 NpcNetShareInfo__visit_window
 00282028 AcNpcSpTourDesk__TalkRecept__virtual_4
 00282030 AcNpcSpTourDesk__TalkRecept__virtual_71
 002825f4 AcNpcSpTourDesk__TalkRecept__virtual_3
@@ -3811,6 +3844,7 @@
 002861c0 BsMenuBbsEditer__virtual_1_002861c0
 002861c8 ComButton2Lyt__ComButton2Lyt
 00286268 BsMenuBbsEditer__virtual_0_00286268
+00286558 table_scan_286558
 00286668 Object__start_animation_848188
 00287474 BsMenuBingoCard__do_draw
 00287538 BsMenuBingoCard__do_create
@@ -3840,6 +3874,7 @@
 0028a600 DateWindow__show_month
 0028a6c0 script__WordFix_15u___WordFix_0028a6c0
 0028ab90 DateWindow__is_valid
+0028ac60 DateWindow__layout_fields
 0028b220 DateWindow__setup
 0028c3e8 ButtonModel__setup_a
 0028c538 ButtonModel__setup_b
@@ -3876,6 +3911,7 @@
 0028fe6c BsShadowViewMgr__BsShadowViewMgr_2
 0028feac BsShadowViewMgr__deleting_destructor
 0028fed8 BsShadowViewMgr__destructor
+0028ff00 TourState__reset_entry
 002900d4 TourState__reset_finished
 00290108 TourState__count_c
 00290584 TourState__finish
@@ -4990,6 +5026,7 @@
 002e37ac LetterDragIconNode__LetterDragIconNode
 002e37f4 LetterDragIconNode__deleting_destructor
 002e3854 LetterDragIconNode__destructor
+002e38b4 Grid2x2__scatter_random
 002e3bd4 sead__SafeStringBase_char___SafeStringBase_002e3bd4
 002e4288 MigrationNetModule__Transceiver__virtual_4
 002e42c8 MigrationNetModule__Transceiver__virtual_2
@@ -5278,6 +5315,8 @@
 002f8968 ExhibitionNorthBook__destructor
 002f896c publish_request
 002f89cc return_constant_0x0__002f89cc
+002f8b78 double_add_if_finite
+002f8ba8 double_compare_if_finite
 002f8bd8 classify_double
 002f915c LetterDragIconGroup__LetterDragIconGroup
 002f917c LetterDragIconGroup__virtual_1_002f917c
@@ -5315,6 +5354,7 @@
 002faa30 shift_left_64
 002fabac AcPlayer__virtual_7
 002fabd8 AcPlayer__virtual_42
+002fac78 Table__find_entry_af74c8
 002fae18 store_u32_argument_at_0_2fae18
 002fae20 AcPlayer__virtual_43
 002fae74 set_pointer_af7f3c
@@ -5850,6 +5890,7 @@
 003084f8 init_sub_object
 003085b4 do_nothing_00716760_veneer
 003085b8 read_field_u8_0x4__veneer
+00308728 SaveVillager__init_player_memory
 003088bc script__WordFix_9u___WordFix_003088bc
 0030893c member_address_0x50_
 00308944 construct_word_ptr_sv_9_00308944
@@ -5875,6 +5916,7 @@
 003095a4 record_is_ready_veneer
 003095a8 record_check_same_day_veneer
 003095ac shop_is_open_now_veneer
+003095b4 PlayerStats__update_day
 0030984c town_event_ready_for_player_veneer
 00309850 town_event_check_same_day_veneer
 00309854 veneer_69f26c
@@ -5915,6 +5957,7 @@
 0030a344 call_0076880c_veneer
 0030a348 item_class_kind_veneer
 0030a34c make_value12_from_date
+0030a390 Villager__refresh_records
 0030a484 set_half_7db_veneer
 0030a488 TimeStamp__advance
 0030a62c speed_for_index_veneer
@@ -6107,6 +6150,7 @@
 00311c48 member_address_0x274_
 00311c50 record_identity_of_kind
 00311c70 copy_8_bytes_returning_destination
+00311f7c SaveVillager__add_friendship
 00312000 member_address_0x30_
 00312008 part_set_312008
 0031201c part_update_31201c
@@ -6115,6 +6159,7 @@
 003120a8 Villager__set_item_and_compact
 00312178 Villager__set_item_24ea
 00312184 Villager__set_item_24e6
+00312190 Villager__choose_gift_item
 0031224c set_numbered_pair
 00312274 send_net_message_11
 003122bc Villager__reset_catchphrase
@@ -6166,6 +6211,8 @@
 00314c68 return_constant_0x88e622_
 00314ce4 store_u32_argument_at_0_314ce4
 00314cec GameTime__round_down_to_day_start
+00314d40 MenuWindow__update
+00315110 Field__scan_items_around
 00315788 terrain_at_world
 00315924 place_item_kind_2
 00315df4 place_item_kind_3
@@ -12109,8 +12156,13 @@
 0052db0c copy_table_9516c0_entry
 0052ddf8 adjust_position_for_mode
 0052de50 Matrix34__from_adjusted_position
+0052e038 scene_position_to_world
+0052e0b4 scene_tilt_angle_at
+0052e1ec scene_curve_point
 0052e294 Matrix34__from_position_and_angles
+0052e32c scene_curve_matrix
 0052e3ec run_75d24c_if_mode_flag_2
+0052e5ac NpcAction__call_state_handler
 0052e600 font__Mgr__SingletonDisposer___deleting_destructor
 0052e650 font__Mgr__SingletonDisposer___destructor
 0052e6c8 FontMgr__get_ready_font
@@ -12128,6 +12180,8 @@
 0052edfc block_of_cell
 0052ee54 get_reported_point
 0052eed0 cell_of_block_and_position
+0052ef44 cell_to_world_corner
+0052ef8c cell_to_world_center
 0052f074 zero_word_pair
 0052f0c0 copy_construct_word_pair
 0052f0dc construct_word_pair
@@ -13654,6 +13708,8 @@
 0057ee8c namespace___InsectFdParamAccess__virtual_23
 0057f1a8 call_virtual_4_57f1a8
 0057f1b8 namespace___InsectFdParamAccess__virtual_33
+0057f2a0 Npc__is_in_state_2
+0057f2b8 Npc__is_in_state_2_b
 0057f2d0 BsSkb__do_draw
 0057f30c BsSkb__do_create
 0057f4b4 ComButtonLytBase__ComButtonLytBase_0057f4b4
@@ -13663,9 +13719,11 @@
 00580fc8 BsSkb__virtual_0_00580fc8
 00580fd0 BsSkb__virtual_0_00580fd0
 00581050 GridMap__create_with_buffer
+005810ac BlockMap__build_items
 005812ec GridMap__create_with_buffer_2
 00581354 GridMap__place_item_at_position
 00581428 GridMap__place_item_in_block
+005814d0 BlockMap__build_cells
 005817bc namespace___VillagePrologueBuilder__virtual_10
 005817f0 GridRect__visit_cells
 005819ec construct_quad_pair
@@ -14082,6 +14140,7 @@
 00588a04 audio__bgm__StageOpusVillageDowntown__virtual_14
 00588a2c audio__bgm__StageOpusVillageDowntown__virtual_11
 00588cb4 audio__bgm__StageOpusPrologue2__virtual_13
+00588d54 ObjectFlag__update
 00588eb4 audio__bgm__StageOpusVillageDowntown__virtual_13
 00588f0c audio__bgm__StageOpusVillageDowntown__virtual_10
 00588f40 audio__bgm__StageOpusVillageDowntown__virtual_3
@@ -14152,6 +14211,7 @@
 0058bc3c BgmParamList__set_fade
 0058bc7c BgmParamList__push
 0058be00 BgmParamList__BgmParamList
+0058be48 TourDesk__choose_talk
 0058c08c audio__bgm__EvOpusCleaning__EvOpusCleaning
 0058c19c return_constant_0x989bc0_
 0058c1a8 audio__bgm__EvOpusCountdown__virtual_0
@@ -14217,6 +14277,7 @@
 0058e380 scheduled_place_today
 0058e3cc is_event_day_today
 0058e500 event__EventAnniversary__virtual_0
+0058e508 Event__days_until
 0058e6e8 get_flagged_player_date
 0058e854 event__EventBase__EventBase_0058e854
 0058e98c event__EventBase__EventBase_0058e98c
@@ -14246,8 +14307,14 @@
 0058f718 attach_effect_to_free_slot
 0058f810 fgobj__ObjectBase__virtual_6
 0058f818 fgobj__ObjectBase__virtual_7
+0058f81c FieldItem__classify
 0058f940 fgobj__ObjectBase__virtual_4
+0058f948 FieldItem__play_place_sound
+0058fc38 FieldItem__set_room_cell
+0058fcb0 FieldItem__write_render_state
 0058fdc8 fgobj__ObjectBase__virtual_2
+0058fde0 FieldItem__set_color
+0058fe4c FieldItem__setup_model
 00590aac fgobj__ObjectScale__virtual_5
 00590ad8 fgobj__ObjectBase__virtual_5
 00590f1c fgobj__ObjectBase__ObjectBase
@@ -14906,6 +14973,7 @@
 005bff24 player_call_6503b0
 005bff78 player_play_reaction_for_slot
 005c00f0 set_2_bit_entry_below_4
+005c0100 bitmap_scan_5c0100
 005c0204 fill_ones
 005c021c move_held_clothing_to_pockets
 005c032c PersonalId__adopt_current_player_0
@@ -15008,6 +15076,7 @@
 005c4534 item_value_536094
 005c458c slot_object_in_state_bd_or_10_with_flag
 005c4840 player_queue_action_0_with_target
+005c48c8 AcPlayer__try_enter_state
 005c4cdc assign_player_slot
 005c4da4 snapshot_slot_records
 005c4df0 read_u8_0x00aaf150_
@@ -15082,6 +15151,7 @@
 005c91cc reset_player_slots
 005c973c table_word_5c973c
 005c9754 map_structure_size
+005c98a8 PlayerAction__dispatch
 005ca1d4 map_structure_value
 005ca1fc save_flag_for_index
 005ca234 entry_address_88b948
@@ -15123,6 +15193,7 @@
 005caf80 Town__add_to_counter_62130
 005cb1dc Town__init_new
 005cb26c Town__clear
+005cb49c SaveData__construct_player
 005cbc3c Letter__set_kind_bits
 005cbc54 Letter__init_from_current_player
 005cbd34 Letter__init_for_villager

@@ -121,6 +121,7 @@
 0010f3d0 Updates the villagers' slot flags (by their slot index and state).
 00110cdc Clears the byte at 0x95c219.
 00111050 When no blocking event runs and an hour has passed since the last check: clears the requests of villagers no longer in state 0x21, then stores the updated set.
+0011188c Updates each villager's day (parts, moving out) for the town's records.
 00111d48 Builds the villager part of the save data: ten villagers, the town's records, the two boards of 16 entries and the rest.
 00111f4c Villager `id`'s bit (below 0x18f) in a bit array; 0 without one.
 0011253c Clears the villager part (0x22bcc bytes) and the four villagers kept at +0x1976c (two sets of two).
@@ -132,9 +133,12 @@
 00112f9c Changes the villager's friendship (00311f7c) with a player (the current one by default) by `amount`; when it rose, updates the player's record.
 00112fe2 Byte +6 of the record, or 0 without one.
 00112fea Byte +7 of the record, or 0 without one.
+00112ff4 Finds the villager's memory of the player (by identity), or a free one.
 001130cc Clears two flag bits of each of the villager's 16 player memories (0xf2 bytes each, from +0x8ee).
+00113178 Chooses the villager that may leave from the day, among those allowed.
 001133f8 Sends request 4 with the villager's index in the town and two values.
 00113430 Clears the villager's four kept letters (from +0x1810) and resets what goes with each.
+00113494 Refreshes the villager's held items (its gift, shirt and furniture) and compacts them.
 00113828 Calls 00113830 when the second argument is set, else 0.
 001138a4 Sets bit `bit` of the villager's 16-bit flags in the table at 0xad555c (by its index in the town).
 001138dc Copies a villager record (0x2518 bytes).
@@ -144,6 +148,8 @@
 00113cfc Item `index` (fewer than 4) of the villager's items at +0x8c6; null for a larger index.
 00113d14 Constructs a villager record (its items, memories, letters and the rest), then clears it.
 00113ecc Updates the part at +0xb6 and, when the villager is the one of the current mode, finishes it.
+00113f1c Adds the friendship to each villager's memory of the player.
+00114088 Resets the villager's data (letters, catchphrase, clothing) for moving in.
 00114160 Clears villager (row, column) of a 2 x 2 block of villager records.
 00114184 Forwards to 0011418c.
 00114694 Updates the day records (+0x8b78) when the new day differs or comes before the last one.
@@ -158,6 +164,7 @@
 00114c80 Calls 00314c74 with the accessor at 0x105d05.
 00114c90 Stores a byte at 0x952b9c.
 00114c9c Stores the argument at 0x952bdc and starts kind 0x1e on the four blocks (1-2, 1-2).
+00114d00 Updates the villagers for the days since the last play.
 00114e00 Stores the argument at 0x952bdc.
 00114e10 Picks a random block (of the 5 x 4 whose kind qualifies), starts kind 1 there and kind 0x1e on a random one of the four corner blocks.
 00116cdc Clears the value through the accessor at 0x105971 and applies it.
@@ -165,6 +172,7 @@
 00116ebe Records `count` and `bits` and counts the set bits among the first `count`.
 00116f2c Calls 0030be88 and returns its object.
 00117674 Runs the handlers for the current scene's kind (0x20 / 0x10000000 -> 0030c3a0, 0x200 -> 0030c3a4).
+001176c4 Chooses the villager's spot near its house or the main object.
 00117ac0 In scenes with bit 0x80: sets bit 6 of +0x570a of the current player.
 0011872a Sets flag 0x40 of the bits at +0x1aa.
 00118738 Clears a 0x1ac-byte record, marks it used and stamps it with the date.
@@ -176,6 +184,7 @@
 00118a74 Clears the weather record (+8 = -1, +9 and +0xa = 0x34).
 00118a94 Brings the weather record up to today, generating the weather pattern for the days that passed.
 00118b70 The index of the first unused record of 15 (0x1ac bytes each); 15 when all are used.
+00118e94 Counts the valid villager records.
 00118f18 The value (00318d8c) for `index` (below 3) of the moving record at +0x173ec when it is in state 0x12; -1 otherwise.
 00118f7c The index of the first of 16 16-bit slots (from +0x17656) holding 0xffff; 16 when none.
 00118fb4 The index of the first of the 10 villagers whose flags (+0x2510) mark it (bit 0 without bit 1, or bits 0x600); -1 when none.
@@ -185,11 +194,14 @@
 00119308 The days left of the event at +0x19760: 7 (or 10 when its villager is close to a player) minus the elapsed days; -1 without a valid villager.
 00119360 The first of the ten entries of the table at 0xa82b90 with flag 3 (+0x44), or -1.
 00119388 For each of the ten villagers: rebuilds its phrase from its personality (+0x24f0) and applies it.
+0011945c Finds the villager that passes the check, from the start index.
 001194e0 Forwards to global_word_7e0 with the second argument.
 001194ec Whether one of the ten villagers passes 00309a44 and is not in state 2 (nor marked leaving by bits 0-1 of +0x2510).
+00119534 Finds the letter slot for the villager's entry, matching the names.
 001195bc The 16-bit id `index` (below 16) of the list at +0x17656, or 0xffff.
 00119898 The first of the 16 board entries (0xf2 bytes from +0x8ee) that matches the key, or 0.
 00119fe4 The constant for an indexed object (tables at 0x88ee28, 0x88ee68, 0x88ee88), chosen by `which` and the town flags (bits 1-2 of save +0x621cf).
+0011a6d8 The villager's memory of the player in the slot.
 0011b37c The address of word `index` (below 4) of the table at +0x8c6, or 0.
 0011b3d4 The level (0-5) of the talk's 9-bit value (+0xb9) against the descending thresholds at 0x88ec60.
 0011b40c The address of villager `index` of pair `pair` (0x4a30 bytes per pair, 0x2518 per villager).
@@ -202,11 +214,13 @@
 0011b560 Builds a word pointer to +0x24 of the second argument.
 0011b56a Bit 5 of the 16-bit flags at +0x1aa.
 0011b576 A random index (below 0x21) whose test passes, by reservoir choice; 0x21 when none.
+0011b7c8 Builds a locale combining the other's facets of the categories.
 0011b836 Releases facet `index` of the locale's facet table (its slot set to -1).
 0011b872 The address of facet `index` of the locale's facet table, or the shared default when out of range.
 0011b890 Looks up facet `index` of the locale (001063bc), or 0 when it is not there.
 0011ba94 Calls 00307650 with the locale's name (or the default name when it has none).
 0011badc Builds a named locale (the POSIX name for the classic one) on the heap.
+0011bba8 Builds the named locale's character class table.
 0011bcfc Appends the name of category `category` (below 0x17, from the table at 0x8c8428) to the locale's combined name (+4).
 0011bd84 Builds a facet (vtable 0x90b5a4) with no reference count.
 0011bdd8 Resets the vtable to 0x90b5e8 and releases the string at +0x14.
@@ -895,6 +909,20 @@
 0020d328 Clears the four item pairs, their flags, records and words.
 0020d600 Puts one of three reward items (chosen at random) in the record's slot.
 0020d71c Sets item slot `index` (below 13) and, when the owner is the current player, shows it.
+0020d8a4 Flags the date when it is before the first valid month of 2012, then checks it.
+0020fb10 Gives the present's contents: items to the pockets, or the room's wallpaper and floor.
+00210c2c Sets up the balloon string's vertex buffers.
+002127f4 Writes the balloon string's shader setup and light commands; their end.
+00212ed0 Adds the balloon string to the draw list when it is shown.
+00213868 Caps the zoom so the map fits in 400 units and keeps the offset within 200.
+00213930 Moves the view toward its target by up to 6 units a frame (snapping on the first), then places it.
+00213b54 Inserts the node into the depth-sorted tree (by +0x3d0); the subtree's root.
+00214e88 Whether the scene, the online state or a pending request blocks balloons.
+002161a4 In a multiplayer session: refreshes the template and each of the 4 players' slots and presence flags.
+002194d8 Launches the firework with its light and its sound.
+002198b4 Plays the firework's sound at its position, unless the scene mutes it.
+0021fa30 The word of the entry: a letter on the page, or an item.
+0021fe04 Plays the tab's animation on its pane.
 00220c28 Selects icon `index` of the second group (+0x2b1c): unselects the previous one and starts the new one's highlight (kind 2).
 0022105c Selects icon `index` of the first group (+4): unselects the previous one and starts the new one's highlight (kind 1).
 002214e4 In room scenes, selects the player icon (+0xac64): unselects the previous one and starts its highlight (kind 5).
@@ -1051,6 +1079,7 @@
 002503b0 Calls the sound object's virtual function 9.
 002504d4 Plays the sound (the sound object's virtual function 7).
 00250b34 Claims the tour's reward and clears the pending flag.
+00250b58 Spawns and updates the fish in the slots (species, shadows, places).
 00251690 Whether the object's id (+0x34) is one of two fixed ids.
 00251818 Whether the object's id (+0x34) is the first of the two fixed ids.
 00251868 Starts the object's fixed animation.
@@ -1061,6 +1090,7 @@
 00251f14 Makes the current main object the owner of the slot, resets it from its template and tells its actor.
 00251fa4 Releases a claimed slot, resets it from its template and tells its actor.
 00252034 Whether the fish is hooked (state 2) and within the radius of the point (on the ground plane).
+002520fc Copies the record of the slot that belongs here (or its template).
 0025244c Picks a species that appears at the place, the season and the time.
 00252850 Sets the fish's state to gone (3).
 0025286c Whether the slot does not belong here; writes whether its guest entry is still pending.
@@ -1117,6 +1147,8 @@
 0026eb6c When the pocket button accepts it: selects it with the value.
 0026f6fc Removes the grid's drag icon and releases its layouts and parts; true.
 0026f8a8 Whether the item is set, the scene allows it, and its category is flagged.
+0026f9c4 Loads the item window's layouts (the plain or the selection screen, and the icons); whether both loaded.
+0026fa8c Sets the current player's pocket slot to the item.
 0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
 00270ce0 Unloads the split part at +0x14.
 00271290 Sets the color of the current model slot's material (from its resource file) to the slot's color pair; false without a model.
@@ -1197,6 +1229,7 @@
 002817d4 Clears flag 0x10 of 0xaadad4 when the NPC holds it.
 00281cd8 Loads the special letter (variant 2) and attaches the song item.
 00281d6c Loads the special letter (variant 1) and attaches the song item.
+00281e00 Computes the NPC's visit window from the day and the time range.
 00282b44 Clears the player's presence bit and sets the state to 4.
 00282b68 Initializes the presence message.
 00282c44 Sets or clears the player's presence bit.
@@ -1208,12 +1241,14 @@
 00284b38 Constructs the item whose id is at 0x950806.
 00284b58 The world rectangle the camera sees, across the map's cells.
 00284ee4 The first and last cells (inclusive) the camera sees.
+00286558 Scans the table for the value.
 00286668 Starts the object's fixed animation.
 002882b4 Resets the id the object points to (+0x3a0) to the default.
 00289ce8 Wraps the day within the month's length (one more in February of a leap year) and shows it with two digits.
 0028a008 Wraps the year within 2012 to 2050, shows it and clamps the day to the month.
 0028a600 Wraps the month within 1 to 12, shows it and clamps the day to the month.
 0028ab90 Whether the chosen date (or time, for the time mode) is not before the reference.
+0028ac60 Lays out the date window's fields for the mode.
 0028b220 Sets up the date window's buttons and fields from the current date.
 0028c3e8 Sets up the model's button actions and animation targets.
 0028c538 Sets up the model's button actions and animation targets (the second variant).
@@ -1222,6 +1257,7 @@
 0028f500 Updates the shadow views.
 0028f6f8 The shadow kind (0 to 4) of the current scene.
 0028f8bc Sets the fade from the distance between the two points (none within about 167 units, full at about 333).
+0028ff00 Resets the tour state and, for an idle main object, its entry template.
 002900d4 Clears the pending flag (0x950710) or, when the tour is in state 1 or 3, resets it to state 0.
 00290108 While the tour plays (state 2, not done), counts one in the third counter (0x950720, at most 999).
 00290584 Finishes the tour (unless a network peer is busy): selects the BGM, shares the end template entry and marks it done.
@@ -1469,6 +1505,7 @@
 002e2d24 Attaches the layouts at +0x4c4 (active) and +0x610 (inactive) to the layout system.
 002e326c Updates the object, then its layouts at +0x4c4 and +0x610.
 002e35d0 Plays (on) or finishes (off) the animation at +0x280 of the layout at +0x134 when it has one, and stores the inverse state at +0xd9 and +0x12d.
+002e38b4 Scatters random items in the 2x2 blocks' cells.
 002e43d0 Releases the handle at +0x30 once it is unlocked, then acquires a new one for the key at +0x10 from the manager at 0xa22020; true when it got one.
 002e5a4c Sets the byte at (column, row) of a 112 x 96 grid; out-of-range coordinates fall back to row or column 0.
 002e5a68 Fills the 112 x 96 grid with 0xff.
@@ -1565,6 +1602,8 @@
 002f81e4 Stores the design of entry `index` (relative to the shown page) into the selected design storage slot.
 002f86f0 Stores the half at +0xa0 + index * 2 (index below 4) of the shared NPC info.
 002f872c Picks a random entry of the weighted table at 0x94d7b0.
+002f8b78 Adds the two doubles when both are finite.
+002f8ba8 Compares the two doubles when neither is infinite or NaN.
 002f8bd8 The class of a double (r0, r1): 0 zero, 4 subnormal, 5 normal, 3 infinity, 7 NaN.
 002f93bc Clears the player input lock, tells the NPC manager, then sends network message 4 with the NPC's slot and the current main object, resetting the permit record.
 002f9888 The value of digit character `c` (0-9, then letters either case from 10) when it is below `base`; -1 otherwise.
@@ -1575,6 +1614,7 @@
 002f9aa8 Zeroes the shared NPC info, with its byte ring cleared and its four halves at the default.
 002fa47c Empties the record's string, sets its ids (+0xc8 to +0xfc) to -1 and its item to empty.
 002fa5b0 Whether `value` is one of the `count` 16-bit values: !negate when it is, negate when it is not.
+002fac78 Finds the entry for the value in the table at 0xaf74c8.
 002fae74 Points the object at the shared record at 0xaf7f3c.
 002fb4d8 Places the item in the world or swaps it with a pocket or storage slot, by the item's category.
 002fb7b0 Releases flag-manager flag 0x24 when the record holds it (bit 2 of +0x79), clearing bits 1 and 2.
@@ -1690,6 +1730,7 @@
 0030802c Releases an entry (unless of state 2), and when its object is gone sends message 0x40 with the slot and applies it to the table at 0x953874.
 00308198 Stores a 3-bit value in bits 3-5 of byte +5.
 00308380 Copies two 22-byte names, a 16-bit id and a byte into a record.
+00308728 Initializes the villager's memory of the player with their identity and names.
 003089cc Forwards to run_action_of_kind.
 003089d4 Picks a villager from the table (of the allowed types) for an empty slot, moves it in and schedules its arrival.
 00308d4c Clears a villager's record (0x2518 bytes): its identity, player memories, letter, design pattern and items.
@@ -1700,6 +1741,7 @@
 003095a4 Forwards to record_is_ready.
 003095a8 Forwards to record_check_same_day.
 003095ac Forwards to shop_is_open_now.
+003095b4 Updates the current player's daily statistics.
 0030984c Forwards to town_event_ready_for_player.
 00309850 Forwards to town_event_check_same_day.
 00309854 Forwards to the function at 0x69f26c.
@@ -1707,6 +1749,7 @@
 00309a44 True when the villager's birthday (month and day of its table entry) is the given day (today when null).
 00309bbc Forwards to the function at 0x5e90cc.
 0030a344 Forwards to the function at 0x76880c.
+0030a390 Refreshes the villager's record book and counts for the day.
 0030a484 Forwards to set_half_7db.
 0030a70c Picks a random valid town villager (by the index rules) and stores it at 0xa83388.
 0030a8f8 Releases the menu's active buttons and children, then updates its layout.
@@ -1780,7 +1823,9 @@
 0031108c Moves the villager out: copies its block to the moved-out list, removes it from the id list and clears its slot.
 003113b8 Constructs an empty scheduled record (kind 0x21, invalid time).
 00311744 The 0x58-byte data entry of villager `id` (below 0x18f); null without the table.
+00311f7c Adds the friendship (8-bit, saturating) to the villager's memory of the player.
 003120a8 Sets item `slot` (0-3, from +0x24d6) of the villager, then moves its non-empty items to the front.
+00312190 Chooses the villager's held item of the kind and copies it.
 00312274 Sends network message 0x41 of kind 0x11 carrying the word, when the main object is set.
 003122bc Sets the villager's catchphrase (+0x24f2) to its default from the message data (its data entry's), or to the common default.
 0031237c Clears the villager's design pattern and gives it back its default clothing item (from its data, or by its type) when it wears a special one.
@@ -1797,6 +1842,8 @@
 00314b40 The signed byte of map kind `kind` (below 0xfc) in the table at 0x88c528; 0 otherwise.
 00314b58 Moves the cursor to the next element and copies it in, while there is one.
 00314c04 The signed byte of map kind `kind` (below 0xfc) in the table at 0x88c626; 0 otherwise.
+00314d40 Updates the menu window's buttons, nodes and its shown state.
+00315110 Scans the items around the position by their terrain.
 00315924 Clears the record's bit in the mask at +0xf5c and places the kind-2 item at the record's world position.
 00315df4 Clears the record's bit in the masks at +0xa54 and +0x1464 and places the kind-3 item at the record's world position.
 0031600c Clears the record's bit in the masks at +0xcd8 and +0x1464 and places the kind-4 item at the record's world position.
@@ -2290,8 +2337,15 @@
 0052db0c Copies entry `index` (three words, and the matching words at +0x3c) of the table at 0x9516c0.
 0052ddf8 Copies a position, or (in modes with flag 2) moves it through 0075d2f8 and returns its angle.
 0052de50 Builds a matrix at the (mode-adjusted) position, rotated by the angle about x and by `angle_y` about y.
+0052e038 Converts the position to world space when the scene is curved (flag 2), else copies it.
+0052e0b4 The tilt angle of the curved scene at the position, or 0 when flat.
+0052e1ec The position bent by the scene's curve (by the camera or the mode) and its tilt angle; else the position unchanged.
+0052e32c The matrix placing an object at the position on the scene's curve, with its rotation.
 0052e3ec When the current mode has flag 2: calls 0075d24c with the static zero vector and the two arguments.
+0052e5ac Calls the handler of the NPC's state (a member function pointer).
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
+0052ef44 The world position of the cell's corner.
+0052ef8c The world position of the cell's center.
 0053138c Calls slot 4 of the cloud model's transform node.
 00531398 Updates the cloud model's transform and model.
 005313b4 Releases the item model: its sub parts, model, animation, the two lists of loaded parts and its objects.
@@ -2497,9 +2551,13 @@
 0057bd94 Clears the entry with no NPC (0x169).
 0057d55c Starts the NPC's leaving, clears the town flag and starts its walk animation unless it plays already.
 0057ddf4 Lays out the keyboard's glyphs for the current mode.
+0057f2a0 Whether the NPC's action is in state 2.
+0057f2b8 Whether the NPC's second action is in state 2.
 00581050 Creates the grid map (005814d0) and its 0x4000-byte work buffer; on failure releases the cells.
+005810ac Builds the block map's cells and fills them with their default items.
 005812ec Creates the grid map (005810ac) and its 0x4000-byte work buffer; on failure releases the cells.
 00581354 Places an item in the small cell under a world position, when it is inside the map.
+005814d0 Allocates and initializes the block map's cells for the rectangle.
 005817f0 Walks the cells of a grid rectangle (begin to end iterator).
 00581a18 Forwards to do_nothing_0052f280.
 00582464 Resets the entries of ten lists (ids 0x1b and up) found through 005826e8.
@@ -2555,6 +2613,7 @@
 00584250 Clears the two 16-bit counters at 0x98a088.
 00584d78 For an entry of kind 0x2c whose owner has +0x20 set: queues BGM entry 3 (fade 12) and marks the owner.
 00585410 Builds a heap allocator with kind 0x39 and alignment 4.
+00588d54 Requests or releases the object's flag by its state.
 005897b0 Whether byte +0x768 of the sound system is clear.
 005897c0 When the special BGM (0x94e4a9) is on: fades it out, queues BGM entry 0x11 and moves the flag request from 0x10 to 0x11.
 005899ac When the special BGM is on and active: whether sound byte +0x836 is set.
@@ -2586,6 +2645,7 @@
 0058bc3c Sets the fade (+0xc) of the queued entry with this priority and sound id.
 0058bc7c Pushes an entry (priority, sound id, fade and options) onto the BGM queue, kept sorted by priority.
 0058be00 Builds the 29 entries and clears the list and the current-BGM state (+0x41c).
+0058be48 Chooses the tour desk's talk (the reward, the registered tours).
 0058c4cc Sets bit `index` of the 64-bit mask at +0x20.
 0058c704 Keeps only the bits of the 64-bit mask at +0x18 that are in the constant mask at 0x845f30.
 0058c90c Updates the flag manager and marks it updated (0x94e4b0).
@@ -2630,6 +2690,7 @@
 0058e228 Checks the daily event at 0x9524ec against today (from the day start); nothing when the global object byte is 3.
 0058e2e4 Calls the member handler (from 0x85e6ac) on the first event of the list at 0x9524dc with this kind (+0x1b).
 0058e3cc When there is a current event: whether today (day start) is its day (0x9b39f8); keeps the answer at 0x9524d6.
+0058e508 The days until the player's flagged event date.
 0058ead4 True unless the event is running or was due today; recomputes whether today is its day.
 0058eb60 Signed byte +0x3a of the current event, or 0.
 0058ebd8 Checks the current event (00753a50) against the current time; 0 when there is none.
@@ -2642,6 +2703,12 @@
 0058f3c0 Zeroes a record of three words, five halves and a byte.
 0058f3ec 1 << the current mode (from the save data when 0x95bf80 is set, else from value_for_mode); 0 when the global object byte is 3.
 0058f718 Finds the first free of the 20 effect slots (0x18 bytes, at 0x94ee4c+0x10), keeps its index at +0x11f and starts effect 0xf8 (0xf9 with flag 0x80) there.
+0058f81c Sets the field item's flags from its indexed kind (fence, plant, low ground item...).
+0058f948 Plays the sound of placing (or removing) the item by its kind.
+0058fc38 Marks the item as in a room and records its cell and whether its furniture is special; or clears it.
+0058fcb0 Writes the item's render state (blend, depth, alpha) as GPU commands.
+0058fde0 Packs the color and its flags.
+0058fe4c Sets up the field item's model from its map entry.
 005929c0 Updates the field object by its item's kind and map entry.
 005937b4 Refreshes the field object's state from its item's kind.
 00593fbc Remembers the old position, moves to the new one with the scale, and starts its 15-frame growth animation.
@@ -2935,6 +3002,7 @@
 005bff24 Unless the player is locked: whether 006503b0 accepts the arguments.
 005bff78 Unless the player is locked: requests state 0xc4 with the reaction id of the slot (table 0x881b98) and sound 0x100056d.
 005c00f0 Stores a 2-bit value in byte `index` (below 4).
+005c0100 Scans the bitmap for the bit.
 005c021c Puts the clothing item the current player holds into a free pocket slot (unless a request has it reserved), and records the player and slot in `ref`; true when it did.
 005c032c PersonalId__adopt_current_player in mode 0.
 005c0334 Keeps the current player's identity in `id` (copying it when it differs), with mode `mode`.
@@ -2984,6 +3052,7 @@
 005c44a0 The design pattern (0x870-byte record) of the player's worn item of the first kind, when it is a design item (category 0x47/0x48); else 0.
 005c4534 The value of an item through 00536094, or -1 when it is not an item.
 005c4840 Unless the player is locked: queues two action entries (kind 0 with a word, then a target).
+005c48c8 Enters the state when the main object's action allows it.
 005c4cdc Assigns player record `record` (below 8) to slot `slot` (below 4), copying a remote player's record; when it is the current slot, updates the current player data and its position.
 005c4e00 The town record (+0x5d880) of the current slot's local player, or 0.
 005c4f3c The design pattern of the player's worn item of class 7, when it is a design item (category 0x47/0x48); else 0.
@@ -3028,6 +3097,7 @@
 005c91a0 Whether slot `slot` (below 4) maps to a player through the table at 0xa82000 (true from 4).
 005c91cc Clears the player slots (0xaad990, all 8), the player records (0xa84790) and the four slot identities, and resets the player state block.
 005c9754 The size (width, depth in bytes) of map structure `kind` (0x12 from 0xfc) from its rectangle in the table at 0x88b948.
+005c98a8 Runs the player action of the kind once its flag is claimed.
 005ca1d4 The 16-bit value of map structure `kind` (table 0x88bf34) times 100; 0 from 0xfc.
 005ca294 Byte of map structure `kind` from the table at 0x88be36; 0 from 0xfc.
 005ca2ac The offset, angle (in 1/182 degrees) and word of map structure `kind` from the table at 0x88c724 (raised by -488 for kinds flagged 0xf).
@@ -3056,6 +3126,7 @@
 005caf80 Adds a 64-bit amount to the counter at +0x62130, saturating at the largest positive value.
 005cb1dc Initializes the parts of a new town (villagers, map, letters, events and the rest).
 005cb26c Clears every part of the town data (villagers, map, records, events, pattern, counters).
+005cb49c Constructs the player's save data (records, patterns, rankings, pockets).
 005cbc3c Stores a 3-bit kind in bits 0-2 of +0x270.
 005cbc54 Clears a letter, notes its item (flag 0x20 for category 0x2a), and fills the sender from the current player with their header and footer (0x42 bytes each).
 005cbd34 Fills the recipient from the villager record and copies the current player's letter header (0x42 bytes).
