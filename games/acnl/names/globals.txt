@@ -47,6 +47,7 @@
 0094e445 room_music_player_exists
 0094e446 sea_sound_exists
 0094e476 last_message_id
+0094e489 last_weather_sound
 0094e4a9 special_bgm_on
 0094e4aa special_bgm_active
 0094e4b4 black_wait_instance
@@ -117,6 +118,7 @@
 009516ac current_talk_entry
 009516b0 talk_queue_count
 009516b4 talk_listener
+009516b8 talk_slot_claim
 009520c4 scene_light_flag_c4
 0095210c scene_value_95210c
 009524d6 event_day_is_today
@@ -135,9 +137,13 @@
 009526f8 town_block_grid
 009529cc friend_list_instance
 009529d4 room_flag
+009529d5 room_flag_b
+009529d6 room_flag_c
+009529d7 room_flag_d
 00952a20 photo_mode_active
 00952a38 scene_environment
 00952a4c render_pass_scene
+00952ad8 service_value_952ad8
 00952b8c boot_object
 00952b9d map_default_kind
 00952c38 no_device_heap
@@ -170,6 +176,7 @@
 009535e4 net_store
 00953624 matching_list_instance
 0095362c net_session
+00953644 online_flag
 00953658 net_event_handler
 0095365c net_clock
 00953660 net_match_mode
@@ -202,7 +209,10 @@
 0095c2c0 play_time_total
 0095c4d0 clock_state
 0095c4d2 clock_state_flags
+0095c4e8 game_clock_offset_lo
+0095c4ec game_clock_offset_hi
 0095c6d0 tour_instance
+0095c714 enabled_slots
 0095c71c tour_result_instance
 0095deac talk_window_holder
 0095debc word_resources
@@ -217,6 +227,7 @@
 0095df60 visitor_local_info_instance
 0095df64 toggle22_instance
 0095e0e0 keyboard_resources
+0095e0e4 keyboard_resources_b
 0095e0fc letter_list_instance
 0095e1a8 saved_pane_size_x
 0095e1ac saved_pane_size_y
@@ -245,6 +256,7 @@
 00974f60 memory_block_reserved
 00974f76 storage_mounted
 00975284 cfl_instance
+00975298 handler_table
 009752b8 audio_mgr_instance
 009752d4 current_viewport
 009752e0 file_device_mgr_instance
@@ -253,6 +265,8 @@
 00975348 string_id_owner
 009753c8 resource_mgr_instance
 009753d0 thread_mgr_instance
+00975c14 layout_allocator
+00975c18 layout_allocator_arg
 00975c30 loader_started
 00975c38 load_split_default_heap
 0097d40c thread_local_heap_key
@@ -268,6 +282,10 @@
 0097e06c srv_port
 0097e0e5 photo_root_path_ready_a
 0097e0e6 photo_root_path_ready_b
+0097e6ec effect_render_state_a
+0097e6f0 effect_render_state_b
+0097e6f1 effect_render_state_c
+0097e6f2 effect_render_state_d
 0097ea28 service_a_refcount
 0097ea30 service_b_refcount
 0097ea38 error_report_handle
@@ -277,11 +295,17 @@
 00981e98 service_ab_handle
 00981fc8 global_locale
 00981fd8 pointer_list
+00981ff0 request_record_ready
 00981ff4 boot_resource_b
 00982014 data_loader_flag
 00982018 data_loader
+0098203c data_block_flags
+00982040 data_block
 009825ec tile_tables_ready
 00982898 sound_handle_count
+00984628 anim_preset_primary
+00984634 anim_preset_secondary_a
+00984640 anim_preset_secondary_b
 00985638 state_params_buffer
 009856c4 spot_search_x
 009856c8 spot_search_y
@@ -313,6 +337,11 @@
 009c8fd4 room_light_slots
 009c9fe0 player_models
 00a18590 default_params_a
+00a18594 default_params_b
+00a18598 default_params_c
+00a1859c default_params_d
+00a185a0 default_params_e
+00a185a4 default_params_f
 00a22020 request_pool
 00a827f4 scene_load_state_a
 00a827f8 scene_load_state_b
@@ -339,6 +368,11 @@
 00ab7dc4 render_target_index
 00ab7df4 structure_lists
 00abe0ac pending_effect_handles
+00ad5638 request_record_head
+00ad6540 keyboard_key_table_c
+00ad6544 keyboard_key_table_d
+00ad6548 keyboard_key_mode
+00ad6550 keyboard_key_table_e
 00ad6554 keyboard_key_table_a
 00ad6558 keyboard_key_table_b
 00adf8c8 display_width
@@ -359,6 +393,7 @@
 00ae5724 blocked_grid_width
 00ae5728 blocked_grid_height
 00ae572c blocked_grid_bits
+00ae70a4 heap_name_counter
 00aed620 srv_lock
 00aed62c os_event_thread
 00aed638 os_object_list
