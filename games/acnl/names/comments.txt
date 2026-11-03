@@ -1116,7 +1116,93 @@
 005e49c0 Sets up a choice list: `count` choices with `default` selected (none when out of range).
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
 0060c5c4 A zero vector (with a zero word after it), initialized once.
+006124bc For a valid weather kind and `slot` (below 2): stores its layout name (or the default) in the slot's name field (+0x52c, 0xf4 bytes each); true otherwise.
+00612738 Updates the weather's items for the day.
+00612cec Stores 0x109 in a 16-bit field.
+00612d0c Stores 0x7db in a 16-bit field.
+00613658 Unsets the two time records (+0, +0xf).
+00613684 The address of the 0x400-byte block of acre (column below 5, row below 4) from +0x58 (the first one when out of range).
+006136a8 The address of the 0x100-byte block of acre (column below 5, row below 4) from +0x5058 (the first one when out of range).
+006136d4 Whether (x, z) is within the 7 x 6 acres.
+006136e8 Whether (x, z) is an inner acre (x 1-5, z 1-4).
+00613704 Whether (x, z) is within the 5 x 4 acres.
+00613718 Whether cell (x, z) is inside the town (x 0x10-0x5f, z 0x10-0x4f).
+00613764 Builds the town map: its sizes (2, 3, 3), the 42 terrain ids, the 20 acre blocks and their small blocks.
+006138a4 Clears 0x4000 bytes.
+00613dfc Copies 0x1404 bytes.
+00613e08 Clears a 0x1404-byte block (its word and data).
+00613e18 Clears the 0x1400 bytes of data of a block.
+00613e24 Clears a 0x1404-byte block and returns it.
+00613e80 Places a villager's items on the scene's free cells.
+0061402c In scene 0x2b: places the items of the first listed villager that is not leaving.
+006145cc The normalized direction between two reported points.
+0061476c Releases a resource from the list at 0x9870a8 (when there is one).
+006148e4 Clears a notice record and its four 16-byte entries.
+0061532c Clears a 0x30-byte record.
+006154b0 Copies up to 16 letters and digits, clearing the rest from the first other character.
+00615534 Clears five words and a 16-bit value.
+00615b2c The model scale of a caught creature (kind below 0x6b, table 0x86a2c8) from its length: 1 + (length - base) / (range * 10), clamped to 0.7-1.3; 1.0 without a range.
+00615bcc Whether a creature appears at a time (its hours and months, by the scene's kind).
+00615ffc For a sea creature (category 0x28): its two spawn bytes (+0x48, +0x49) from the creature table.
+00616058 Whether a creature is in season at a time (by the scene's kind).
+006165c4 Word `index` (below 3; else the first) of the table at 0x952880.
+0061666c For a sea creature the current player's encyclopedia (+0x6c20) lacks: records it (006bd2c8).
+00616e70 Clamps the signed 16-bit value to -limit..limit; whether it was already inside.
+00616fb0 Word +0xc of the object at 0x952b8c.
+00616fc4 Word +0x10 of the object at 0x952b8c.
+00617088 Clears byte `index` (below 4).
+00617120 Whether station `index` is connected, not leaving, joined and not dropped (the four station masks, under the session lock).
+006174fc Counts the close timer (+0x132a0) down; when it ends, resets the link, the peer table and the link state.
+0061754c Updates the network session: the link, the visit state, the stations and the peers.
+006176fc Copies entries of the session's visitor log (+0x28ec).
+00617724 Opens the link when needed (initializing the peer table and sending this player's stamp on the first open) and counts it; whether it is open.
+00617824 Adds an empty entry (the default address and id) to the session's visitor log.
+006179d0 Removes the leaving station and processes the guest leave; whether both were done.
+00617d08 Updates the visit: ends a pending notice, refreshes the slot blocks, the roles and the guest records, and moves to visit kind 2 when the link part asks.
+00617f90 Starts a visit: lays out and assigns the station buffers, sets this console's address and the station masks.
+00618164 Drops station `index` (below 4): clears its counters, slots, buffers, packets, records and masks (under the session lock) and drops its peer.
+006182f4 Stores the station's packet sequence (under the lock); when checking, flags a gap (bit 3 of +0x1326a) unless it is the next one.
+00618384 Clears the guest villager record (+0x7894) and its flag.
+006184d8 The close result: -1 when the peer list is gone (state reset), 1 when closed, 0 when still closing.
+00618578 Once a guest station is known: assigns the guest's slot and buffers and, unless keeping them, sets the slots of the other stations.
+00618684 When the link object accepts (0050d24c): starts the visit as the host; true when it did.
+006186b8 Sends the join answer (message 0x76: accepted when a guest is connected and assigned, else refused) and keeps it (+0x132b1).
+00618aa4 When the link object accepts (0050d238): starts the visit as a guest with option 1; true when it did.
+00618ad8 Moves the session's close state (+0x1f0) from 0 or 1 to 2 with reason 7; true when it did.
+00618b08 Moves the session's close state (+0x1f0) from 0 or 1 to 2 with reason 5; true when it did.
+00618b38 When the link object accepts (0050d260): starts the visit with the friend list's value; true when it did.
+00618c00 Resets every part of the network session (stations, visit, peers, packets, records).
+00618ecc Whether station `index` is ready (when `check_masks`), its peer address is usable and, when asked, its player byte +0x24 is clear.
+00618fb0 Ends the session: resets it, restores this console's slot, releases the other three slots and counts the link down (closing it at 0).
+00619044 Builds the network session's parts (peers, records, buffers, friend check, visitor log).
+00619298 Destroys the network session's parts (lock, player blocks, guest record, peers, friend check, visitor log, avatars).
+0061a41c Sends the pending slot record (0x1d) when the session allows it (or clears station 0's wait as a guest), and copies the reference clock when asked.
+0061a684 Stores a byte for station `index` (below 4) at +8.
+0061a6a4 Clears the slot blocks' state (stations 4 and 8, three flag pairs and the counters).
+0061a71c Builds the slot blocks' state (stations 8 and 4, two flag pairs and the counters).
 0061a7a0 NetSession__guest_entry_is_ready on the network session.
+0061a7b0 Clears the peer's id and sets its address to the empty pair (-3, -1).
+0061a7cc Stores a peer's id, two halves and its address pair.
+0061a810 Asks for station `index`'s bit: through the link as the host, else sends record 0x30 with it.
+0061d9bc Refreshes the object at 0x95c6d0 (006c3e4c, then 006a69c0).
+0061d9e0 Whether the guest's leave (record kind 0x2b or 0x37) is done: the station dropped from the session masks, or every station ready.
+0061dad0 Stores the word at 0x87bd1c at +0x4c.
+0061dae4 Updates the guest records: handles leaving and dropped stations, ending the session when needed.
+0061dc30 Sends the visiting player home: requests the scene change to the home spawn point (by the group's spawn tile).
+0061de7c Asks to leave: directly in mode 2, else sends record 0x6a as the host or marks state 6 as a guest; true.
+0061df58 Starts joining a town: stamps the current player, sets the station masks and the friend checks.
+0061e488 Advances the leave states: 0x2e -> 0x2f and 0x5a -> 0x5b (resetting the leaving station), 0x39 -> 0x3a (ending the session).
+0061e574 Finishes the visit: in mode 2 requests the pending scene change; otherwise sells the visitor's shoes and pockets into the bank, takes off the set-A items and sends them home.
+0061e690 When the guests are ready: marks the announcement (+0x141) and sends record 0x14 to each waited station (and the given one); true when sent.
+0061e72c Starts the scene of the group's entry (its byte +0x15) through 005b4d7c.
+0061eb20 Puts the arriving visitor in the town: builds their items and requests the scene change to a random spot near the entrance.
+0061ec88 Starts the leave: clears the flags, state 0x45 (or 0x4a when the main object is busy) and stops the leaving sound for this station.
+0061ee60 Caps +0x50 at 0x96.
+0061f2a0 In mode 2 with a main-object value and state 0: whether the session may end (00618b9c).
+0061f3f8 Clears the guest records (states, flag pairs, stations 4, counters).
+0061f608 Accepts a friend key that is new to the three known ones (when the link allows it): sends it (0050d1b4) and records it; true when done or already known.
+0061f6a0 Records an accepted friend key in a free entry.
+0061fc98 Sends the 100-entry friend list (+0x11950) through the link object; clears the pending flags when it went through.
 00620e18 Sets the visit role from the session: 1 when this station hosts the guest, 3 without a guest, else 8 (for stations below 4).
 006212f0 In role 1 with a valid session: refreshes the station set and sends this station's kind state (record 0xd), or handles it locally as the host; then moves to role 2.
 006213c8 Refreshes the station's entry and slot, and in a session of more than one sends the update as a network record (kind 1).
