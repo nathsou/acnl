@@ -130,6 +130,7 @@
 001127ac Forwards to 001127b4.
 00112d34 Sets the villager's item `slot` (below 16: 0-9 in the main list, 10 and 11 the two special slots, 12-15 compacted); when `notify`, sends request 4 with the villager's index and slot.
 00112d9c Clears the villager's letter (+0x2210) and its four kept letters (from +0x1810), then the rest of what it remembers of them.
+00112e34 Updates the villager's request (by its kind, below 0xb).
 00112f9c Changes the villager's friendship (00311f7c) with a player (the current one by default) by `amount`; when it rose, updates the player's record.
 00112fe2 Byte +6 of the record, or 0 without one.
 00112fea Byte +7 of the record, or 0 without one.
@@ -242,7 +243,9 @@
 0011cc54 Unless disabled (0x974ad8): marks 0x974ab3, creates a thread (priority 0x300) and waits for it, then closes its handles.
 0011cfe4 Keeps ten times the tick rate (0x974f18) and marks the time as ready (0x974f00, 0x974f01).
 0011d048 Grows or shrinks the memory mapped from 0x8000000 to `size` (a multiple of 0x1000; svcControlMemory), keeping the size at 0x974f5c.
+0011d0f0 Initializes the linear memory region.
 0011d144 Maps the device memory block of `size` (0x31b8000 here) and keeps its address.
+0011d224 Initializes the heap region once.
 0011d258 Whether the extended memory mode is on (read once from the system with 0x400024b, kept at 0x974f48).
 0011d2d4 Calls 0011f8d4 and reports a fatal error with information when it fails.
 0011d350 Creates the root heap and every game heap (work, stage, real estate, animations, weather, particles, effects, fader, UGC, script, sound, network).
@@ -263,11 +266,15 @@
 0011db9c Asks the service for a 16-bit value (into +0); 0x11464 when the request failed.
 0011dc5c Starts the service client once (0x974f76).
 0011dc88 Reads the system's region from the config service.
+0011ddb0 Queries the system configuration (unless the kernel flags it).
+0011de28 Queries the system configuration (unless the kernel flags it).
+0011de98 Whether the system's extended mode is ready.
 0011dedc Opens the service named at 0x8a275c into 0x97e004 unless it is open; the result.
 0011df2c Creates the OS event thread (entry 0x11f2e0, stack 0xaed848) and keeps its handle at 0xaed62c.
 0011dff4 Adds an object (with its value) to the global circular list at 0xaed638, under its lock.
 0011e084 Sends command 0x1 (header 0x10002) to the service at 0x97e06c and returns its result.
 0011e180 Waits for the service, queries a system value (00120158) and releases it.
+0011e1a4 Maps the memory region with its permissions.
 0011e340 Waits for the service, queries a value (00120198) with kind 1 and releases it.
 0011e378 Sends command 0x55 (header 0x550040) to the service at 0x97d7f8 and returns its result.
 0011e3b4 Initializes the applet state: queries it (fatal on failure) and, when allowed, registers the applet notifications and keeps their handles.
@@ -283,11 +290,14 @@
 0011ef40 Marks job `index` of the job list (0xadf95c) as done, or the whole list (+0x3c) for -1.
 0011ef7c Stores a value at +0x38 of the job list (0xadf95c) when there is one.
 0011ef94 Clears a memory block record and, when memory blocks are on, reserves `size` (rounded to 0x1000) for it (fatal on failure).
+0011f00c Creates an address arbiter (svc 0x21).
 0011f054 Builds the friend service client: its lock, event, 100 friend entries, the service (initialized once) and the friend list.
 0011f220 Releases the held object (+8; a pending failure is fatal) and clears it.
 0011f25c Stores 1 at +0.
 0011f274 Stores 0 at +0.
 0011f2e4 Sends request 0xf000000b on the service handle at 0x97dffc; a failure is reported with its location.
+0011f31c Waits for the friend events and dispatches them.
+0011f6e8 Posts the job (0x14 bytes) to the worker thread.
 0011f880 Registers an object with the service (00123ca8); keeps it at 0x974f7c and marks 0x97e038 when it has +0x14; the object, or 0 on failure.
 0011f8d4 Opens the service named at 0x8b2340 on first use (under its lock) and counts the users (0x97d818); the result.
 0011fa68 Opens the service in the first mode that works (0, 1 or 2, kept at +0); a failure code when none does.
