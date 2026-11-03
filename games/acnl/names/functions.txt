@@ -1112,7 +1112,7 @@
 00137848 nw__font__ResFont__destructor
 00137878 NetAddressSet__clear
 0013796c NetEventHandler__release
-001379b4 object_1c_finish
+001379b4 NetEventHandler__finish
 001379e4 part_144_update
 00137a0c RankedValue__clear_00137a0c
 00137c60 OffsetList__initialize

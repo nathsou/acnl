@@ -739,6 +739,7 @@
 00137848 Destroys a font resource: releases its textures, then the font base.
 00137878 Clears a set of network addresses (each the empty pair -3, -1) and its counters.
 0013796c Releases the net event handler (when set up): resets it and its clock handler, and clears the global \n handler.
+001379b4 Finishes the net event handler: clears the net clock and the global handler, and notifies it.
 001379e4 Resets a part below state 4: state 0, no data, kind 6.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
 00137c78 Creates the resource with the factory's heap and its name.
@@ -756,6 +757,9 @@
 0013873c Updates the sound player's state.
 00138998 Frees the object a pair holds (with its buffer), then clears the pair.
 001389c0 Destroys eight 0x40-byte entries.
+001389e4 Nothing.
+00138a00 Nothing.
+00138a1c Nothing.
 00138bbc Removes the pointer from the list.
 00138c2c The last index of list `index` (fewer than 6), read under its lock; -1 without one.
 00138c78 The value of a thread-local slot for the current thread.
@@ -839,11 +843,14 @@
 0013d00c Gets the thread's priority (svc 0xb).
 0013d040 Joins the thread when it runs.
 0013d060 Calls the free hook.
+0013d118 Frees a block (unless null) on the CFL's default heap.
+0013d148 Allocates size bytes (arg 0, aligned arg 1) on the CFL's default heap.
 0013d24c Runs the thread's main loop.
 0013d408 Destroys the sound effects manager: its ten effect slots, then resets it.
 0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
 0013d4f0 Whether the bank's slot (below 6) is loaded.
 0013d6d0 Unlinks the request from the pending list (when queued or running, under the list lock) and clears it.
+0013d73c Destroys a sound data load request: takes it out of the request list (when queued or loading), under the \n list's lock.
 0013d7cc Destroys a melody player's base: stops its sound and frees its sound bank slot.
 0013d85c Closes the file stream's handle (+4; a pending failure is fatal).
 0013dee0 The handle at 0x974ef8 (a fatal error when it is not set).
@@ -870,6 +877,7 @@
 0013ef18 Stops the player's sound (+8) at once when it has one.
 0013efb4 Destroys a disposer: its heap forgets it, and it is left with the singletons' list as its heap.
 0013f2e4 Reads the archive's wave archive info.
+0013f398 A wave archive file's file block (its first or second section, whichever has kind 0x6801).
 0013f3cc A wave archive file's info block (its first or second section, whichever has kind 0x6800).
 0013f5e8 The low byte of the value of key 0 of the sparse array at +8, or 0x40.
 0013f610 Bits 8-15 of the value of key 0 of the sparse array at +8, or 0.
@@ -885,6 +893,7 @@
 0013f8cc A group file's file block (the section with kind 0x7801); 0 when it has none.
 0013f934 A group file's info block (the section with kind 0x7800); 0 when it has none.
 0013f9a0 A group file's extended info block (the section with kind 0x7802); 0 when it has none.
+0013fa08 Nothing.
 0013fad4 The handler for an integer division by zero: nothing.
 0013fd78 Stops the microphone input in its active states.
 0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
@@ -1450,6 +1459,8 @@
 00200a6c Starts loading a split (path arg 1) on a heap (arg 2); done when either is missing.
 00200ab0 Jumps to destroy_load_split_base_part.
 00200ab4 Copies the item layout entries (6 bytes each) of variant `index` of the table (+0xd0) into the buffer when it fits; their count, or 0.
+00200b64 Destroys a load split: its base part, then the rest.
+00200b7c Constructs a field builder for a field (arg 1).
 00200b9c Places the items of the cell's layout variant (up to 0x600 bytes of entries) in the cell, keeping their top bits.
 00200ca0 Loads the large cell's 0xa00-byte block from the shared layout of the cell's id.
 00201ea0 Empties both layers of every tile of the cell.
@@ -2014,6 +2025,7 @@
 002933cc Marks the town's tour reward claimed, resets the tour and, when idle in a session, shares the cleared template.
 002941f0 Updates the tour's state machine and its sounds.
 00294340 Clears the started flag (0x950709) in state 1.
+002947ac Starts loading the time and bells window's layout archive with the layout allocator.
 0029598c Loads the cherry blossom shader (on the weather heap).
 00297b60 Moves the scroll bar's drag icon into `list` and remembers the scales of its bar and two arrows.
 00297d54 Shows the scroll bar when the position is past the last page start.
@@ -2502,6 +2514,7 @@
 002ff724 Removes entry `index` of the best three by moving the later ones up, and clears the last.
 002ff864 Recomputes the second ranking, then finishes it when it is in use (bit 0) and not locked (bit 7).
 002ff950 Removes the places whose players are no longer valid, moving the later ones up.
+002ffc08 Clears flags (arg 1) in the object's byte 0x18.
 002ffc8c Fills the item set (0x280 bytes) with random items of the kind.
 002ffde0 The 0x30-byte record of entry `index` of the best three; the first's for a larger index.
 002ffdf4 Puts (identity, record, item) with `score` into the best three (scores at +0x138, +0x13a, +0x13c, best first), moving the lower ones down; nothing when it scores no better than the third.
@@ -2610,6 +2623,7 @@
 00305060 Jumps to 0x81fc44.
 00305074 Jumps to 0x6d36d4.
 00305078 Jumps to 0x6a50f4.
+0030507c Constructs a 38-character script word (filled with the empty character).
 003050dc Jumps to 0x7ca97c.
 003050e0 Jumps to 0x7ca700.
 003050e4 Jumps to 0x58c998.
@@ -7173,6 +7187,8 @@
 0081d248 Constructs a 21-character script word (filled with the empty character).
 0081d8c0 Constructs a 33-character script word, empty.
 0081e020 Constructs a 50-character script word (filled with the empty character).
+0081e25c Constructs a 60-character script word (filled with the empty character).
+0081e35c Constructs a 64-character script word (filled with the empty character).
 00825aa4 Unlinks the node from its owner's list and clears its owner.
 00825acc Unlinks the node and links it into the new owner's list (+0x70).
 00825b04 Unlinks the node from its owner's list and clears its owner; the node.
