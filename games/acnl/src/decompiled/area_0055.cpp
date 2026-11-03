@@ -9,16 +9,18 @@
 using guest::gptr;
 
 // f_005500a0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Takes the next free emitter of the ring, links it into its group's list and resets it; null (with a warning) when
+// all are in use.
 namespace d_005500a0 {
 
-struct __attribute__((packed)) Object_005500a0_0 {
+struct __attribute__((packed)) EffectSystem {
     u8 unknown_0[0x428];  // (not used here)
     u32 word_428;
     u8 unknown_42c[0x428];  // (not used here)
     u32 word_854;
 };
-GUEST_OFFSET(Object_005500a0_0, word_428, 0x428);
-GUEST_OFFSET(Object_005500a0_0, word_854, 0x854);
+GUEST_OFFSET(EffectSystem, word_428, 0x428);
+GUEST_OFFSET(EffectSystem, word_854, 0x854);
 
 struct __attribute__((packed)) Local_005500a0_r0_1 {
     u32 word_0;
@@ -44,19 +46,19 @@ struct __attribute__((packed)) Local_005500a0_r4_4 {
 GUEST_OFFSET(Local_005500a0_r4_4, float_23c, 0x23c);
 GUEST_OFFSET(Local_005500a0_r4_4, float_240, 0x240);
 
-inline guest::global<u32, 0x00af78f0> global_00af78f0;
-inline guest::global<u32, 0x00af78f4> global_00af78f4;
-inline guest::global<u32, 0x00af78f8> global_00af78f8;
-inline constexpr guest::Function<0x0055030c, u32(u32, u32, u32, u32)> call_0055030c;
+inline guest::global<u32, 0x00af78f0> effect_default_scale_x;
+inline guest::global<u32, 0x00af78f4> effect_default_scale_y;
+inline guest::global<u32, 0x00af78f8> effect_default_scale_z;
+inline constexpr guest::Function<0x0055030c, u32(u32, u32, u32, u32)> EffectSystem__warn;
 
-u32 f_005500a0(gptr<Object_005500a0_0> arg0, u32 r1, u32 r2, float S0) {
-    u32 r0 = arg0.addr();
+u32 EffectSystem__alloc_emitter(gptr<EffectSystem> effect_system, u32 r1, u32 r2, float S0) {
+    u32 r0 = effect_system.addr();
     u32 r3_2 = 0;
     u32 r4_5 = 0;
     u32 r5 = r0 + 0x83cu;  // (from the original)
     u32 r6 = 0x2614u;  // (from the original)
-    u32 r3 = arg0->word_428;
-    u32 r12 = arg0->word_854;
+    u32 r3 = effect_system->word_428;
+    u32 r12 = effect_system->word_854;
     u32 r14 = 0u;
     do {
         u32 r4_1 = *gptr<u32>(r0 + 0x83cu) + 1u & r12;  // (from the original)
@@ -91,9 +93,9 @@ u32 f_005500a0(gptr<Object_005500a0_0> arg0, u32 r1, u32 r2, float S0) {
             *gptr<u32>(r14 + r0_1.addr()) = 0;
             r4_4->float_240 = S0_1;
             r4_4->float_23c = S0_1;
-            r0_1->word_4c = *global_00af78f0;
-            r0_1->word_50 = *global_00af78f4;
-            r0_1->word_54 = *global_00af78f8;
+            r0_1->word_4c = *effect_default_scale_x;
+            r0_1->word_50 = *effect_default_scale_y;
+            r0_1->word_54 = *effect_default_scale_z;
             guest::cpu()->s[0] = S0_1;
             return r0_1.addr();
         }
@@ -102,24 +104,25 @@ u32 f_005500a0(gptr<Object_005500a0_0> arg0, u32 r1, u32 r2, float S0) {
         guest::preempt();
     } while (s32(r4_5) > s32(r14));
     guest::cpu()->s[0] = S0;
-    call_0055030c(r0, 0x5501ccu, r2, r3);  // (from the original)
+    EffectSystem__warn(r0, 0x5501ccu, r2, r3);  // (from the original)
     return 0u;
 }
 
 }  // namespace d_005500a0
-GUEST_EXPORT_FRAMED(0x005500a0, d_005500a0::f_005500a0, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x005500a0, d_005500a0::EffectSystem__alloc_emitter, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_00550204: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Creates the emitter set with the transform's position and no rotation.
 namespace d_00550204 {
 
-struct __attribute__((packed)) Object_00550204_0 {
+struct __attribute__((packed)) EffectSystem {
     u8 unknown_0[0x87c];  // (not used here)
     u32 word_87c;
 };
-GUEST_OFFSET(Object_00550204_0, word_87c, 0x87c);
+GUEST_OFFSET(EffectSystem, word_87c, 0x87c);
 
-inline constexpr guest::Function<0x0014f004, u32(u32, u32, u32, u32)> call_0014f004;
-inline constexpr guest::Function<0x00555f90, u32(u32, u32, u32)> call_00555f90;
+inline constexpr guest::Function<0x0014f004, u32(u32, u32, u32, u32)> Matrix34__from_33;
+inline constexpr guest::Function<0x00555f90, u32(u32, u32, u32)> EffectRenderer__write_matrix_commands;
 
 struct __attribute__((packed)) Frame_00550204 {
     u8 unknown_0[0xc];  // (not read or written by name)
@@ -135,41 +138,42 @@ GUEST_OFFSET(Frame_00550204, float_1c, 0x1c);
 GUEST_OFFSET(Frame_00550204, float_2c, 0x2c);
 GUEST_SIZE(Frame_00550204, 0x34);
 
-u32 f_00550204(gptr<Object_00550204_0> arg0, u32 r1, u32 r2, float S0) {
+u32 EffectSystem__create_emitter_at(gptr<EffectSystem> effect_system, u32 r1, u32 r2, float S0) {
     guest::StackFrameOf<Frame_00550204> frame;  // the original's stack frame
-    call_0014f004(frame.at(0).addr(), r2, r2, guest::cpu()->r[3]);
+    Matrix34__from_33(frame.at(0).addr(), r2, r2, guest::cpu()->r[3]);
     float S0_1 = 0.0f;
     frame->float_2c = S0_1;
     frame->float_1c = S0_1;
     frame->float_c = S0_1;
-    u32 r0_2 = arg0->word_87c;
+    u32 r0_2 = effect_system->word_87c;
     guest::cpu()->s[0] = S0_1;
-    u32 r0_3 = call_00555f90(r0_2, r1, frame.at(0).addr());
+    u32 r0_3 = EffectRenderer__write_matrix_commands(r0_2, r1, frame.at(0).addr());
     return r0_3;
 }
 
 }  // namespace d_00550204
-GUEST_EXPORT_FRAMED(0x00550204, d_00550204::f_00550204, 0x4030);  // pushes {r4, r5, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00550204, d_00550204::EffectSystem__create_emitter_at, 0x4030);  // pushes {r4, r5, lr} first, as the original
 
 // f_00550438: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Takes the next free particle of the ring and counts it; null (with a warning) when all are in use.
 namespace d_00550438 {
 
-struct __attribute__((packed)) Object_00550438_0 {
+struct __attribute__((packed)) EffectSystem {
     u8 unknown_0[0x424];  // (not used here)
     u32 word_424;
     u8 unknown_428[0x428];  // (not used here)
     u32 word_850;
 };
-GUEST_OFFSET(Object_00550438_0, word_424, 0x424);
-GUEST_OFFSET(Object_00550438_0, word_850, 0x850);
+GUEST_OFFSET(EffectSystem, word_424, 0x424);
+GUEST_OFFSET(EffectSystem, word_850, 0x850);
 
-inline constexpr guest::Function<0x0055030c, u32(u32, u32, u32, u32)> call_0055030c;
+inline constexpr guest::Function<0x0055030c, u32(u32, u32, u32, u32)> EffectSystem__warn;
 
-u32 f_00550438(gptr<Object_00550438_0> arg0) {
-    u32 r0 = arg0.addr();
+u32 EffectSystem__alloc_particle(gptr<EffectSystem> effect_system) {
+    u32 r0 = effect_system.addr();
     u32 r4_2 = 0;
-    u32 r1 = arg0->word_424;
-    u32 r3 = arg0->word_850;
+    u32 r1 = effect_system->word_424;
+    u32 r3 = effect_system->word_850;
     u32 r2 = 0u;
     u32 r5 = 0x114u;  // (from the original)
     u32 r12 = r0 + 0x834u;  // (from the original)
@@ -186,17 +190,18 @@ u32 f_00550438(gptr<Object_00550438_0> arg0) {
         r2 += 1u;
         guest::preempt();
     } while (s32(r4_2) > s32(r2));
-    call_0055030c(r0, 0x5504bcu, r2, r3);  // (from the original)
+    EffectSystem__warn(r0, 0x5504bcu, r2, r3);  // (from the original)
     return 0u;
 }
 
 }  // namespace d_00550438
-GUEST_EXPORT_FRAMED(0x00550438, d_00550438::f_00550438, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00550438, d_00550438::EffectSystem__alloc_particle, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_005504e8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Clears the renderer's buffer use and the system's counts, and resets the render state.
 namespace d_005504e8 {
 
-struct __attribute__((packed)) Object_005504e8_0 {
+struct __attribute__((packed)) EffectSystem {
     u8 unknown_0[0x858];  // (not used here)
     u32 word_858;
     u32 word_85c;
@@ -208,43 +213,44 @@ struct __attribute__((packed)) Object_005504e8_0 {
     u32 word_878;
     u32 word_87c;
 };
-GUEST_OFFSET(Object_005504e8_0, word_858, 0x858);
-GUEST_OFFSET(Object_005504e8_0, word_85c, 0x85c);
-GUEST_OFFSET(Object_005504e8_0, word_860, 0x860);
-GUEST_OFFSET(Object_005504e8_0, word_864, 0x864);
-GUEST_OFFSET(Object_005504e8_0, word_870, 0x870);
-GUEST_OFFSET(Object_005504e8_0, word_874, 0x874);
-GUEST_OFFSET(Object_005504e8_0, word_878, 0x878);
-GUEST_OFFSET(Object_005504e8_0, word_87c, 0x87c);
+GUEST_OFFSET(EffectSystem, word_858, 0x858);
+GUEST_OFFSET(EffectSystem, word_85c, 0x85c);
+GUEST_OFFSET(EffectSystem, word_860, 0x860);
+GUEST_OFFSET(EffectSystem, word_864, 0x864);
+GUEST_OFFSET(EffectSystem, word_870, 0x870);
+GUEST_OFFSET(EffectSystem, word_874, 0x874);
+GUEST_OFFSET(EffectSystem, word_878, 0x878);
+GUEST_OFFSET(EffectSystem, word_87c, 0x87c);
 
-inline guest::global<u32, 0x0097e6ec> global_0097e6ec;
-inline guest::global<u8, 0x0097e6f0> global_0097e6f0;
-inline guest::global<u8, 0x0097e6f1> global_0097e6f1;
-inline guest::global<u8, 0x0097e6f2> global_0097e6f2;
-inline constexpr guest::Function<0x00556094, u32(u32, u32, u32, u32)> call_00556094;
+inline guest::global<u32, 0x0097e6ec> effect_render_state_a;
+inline guest::global<u8, 0x0097e6f0> effect_render_state_b;
+inline guest::global<u8, 0x0097e6f1> effect_render_state_c;
+inline guest::global<u8, 0x0097e6f2> effect_render_state_d;
+inline constexpr guest::Function<0x00556094, u32(u32, u32, u32, u32)> EffectRenderer__copy_setup_commands;
 
-u32 f_005504e8(gptr<Object_005504e8_0> arg0, u32 r1) {
+u32 EffectSystem__reset_counts(gptr<EffectSystem> effect_system, u32 r1) {
     u32 r2 = 0;
-    *gptr<u32>(arg0->word_87c + 0x60768u) = 0;  // (from the original)
-    u32 r0_2 = call_00556094(arg0->word_87c, r1, r2, 0x60768u);  // (from the original)
-    arg0->word_858 = 0;
-    arg0->word_85c = 0;
-    arg0->word_860 = 0;
-    arg0->word_864 = 0;
-    arg0->word_870 = 0;
-    arg0->word_874 = 0;
-    arg0->word_878 = 0;
-    *global_0097e6f0 = 0x1c;  // (from the original)
-    *global_0097e6f1 = 4;
-    *global_0097e6f2 = 0;
-    *global_0097e6ec = 0;
+    *gptr<u32>(effect_system->word_87c + 0x60768u) = 0;  // (from the original)
+    u32 r0_2 = EffectRenderer__copy_setup_commands(effect_system->word_87c, r1, r2, 0x60768u);  // (from the original)
+    effect_system->word_858 = 0;
+    effect_system->word_85c = 0;
+    effect_system->word_860 = 0;
+    effect_system->word_864 = 0;
+    effect_system->word_870 = 0;
+    effect_system->word_874 = 0;
+    effect_system->word_878 = 0;
+    *effect_render_state_b = 0x1c;  // (from the original)
+    *effect_render_state_c = 4;
+    *effect_render_state_d = 0;
+    *effect_render_state_a = 0;
     return r0_2;
 }
 
 }  // namespace d_005504e8
-GUEST_EXPORT_FRAMED(0x005504e8, d_005504e8::f_005504e8, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x005504e8, d_005504e8::EffectSystem__reset_counts, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_00551d94: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Particle command: rotates the vector about the axis (x, y or z) by the angle; the next command.
 namespace d_00551d94 {
 
 struct __attribute__((packed)) Object_00551d94_2 {
@@ -263,7 +269,7 @@ GUEST_OFFSET(Local_00551d94_r4_1, float_0, 0x0);
 GUEST_OFFSET(Local_00551d94_r4_1, float_4, 0x4);
 GUEST_OFFSET(Local_00551d94_r4_1, float_8, 0x8);
 
-inline constexpr guest::Function<0x0014f55c, u32(u32, u32, u32)> call_0014f55c;
+inline constexpr guest::Function<0x0014f55c, u32(u32, u32, u32)> sin_cos_of_angle;
 
 struct __attribute__((packed)) Frame_00551d94 {
     float float_0;
@@ -274,11 +280,11 @@ GUEST_OFFSET(Frame_00551d94, float_0, 0x0);
 GUEST_OFFSET(Frame_00551d94, float_4, 0x4);
 GUEST_SIZE(Frame_00551d94, 0xc);
 
-u32 f_00551d94(u32 r0_unused, u32 r1, gptr<Object_00551d94_2> arg2, float S0, float S1) {
+u32 particle_rotate_command(u32 r0_unused, u32 r1, gptr<Object_00551d94_2> arg2, float S0, float S1) {
     guest::StackFrameOf<Frame_00551d94> frame;  // the original's stack frame
     gptr<Local_00551d94_r4_1> r4_1 = gptr<Local_00551d94_r4_1>(r1);
     u32 r2_1 = arg2->word_0;
-    call_0014f55c(frame.at(0).addr(), frame.at(4).addr(), r2_1);
+    sin_cos_of_angle(frame.at(0).addr(), frame.at(4).addr(), r2_1);
     float S0_1 = guest::cpu()->s[0];
     float S1_1 = guest::cpu()->s[1];
     u32 r0_2 = arg2->word_4;
@@ -324,16 +330,17 @@ u32 f_00551d94(u32 r0_unused, u32 r1, gptr<Object_00551d94_2> arg2, float S0, fl
 }
 
 }  // namespace d_00551d94
-GUEST_EXPORT_FRAMED(0x00551d94, d_00551d94::f_00551d94, 0x4030);  // pushes {r4, r5, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00551d94, d_00551d94::particle_rotate_command, 0x4030);  // pushes {r4, r5, lr} first, as the original
 
 // f_00551e58: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Scales the particle's alpha (and/or scale) by the emitter's flicker table at its age.
 namespace d_00551e58 {
 
-struct __attribute__((packed)) Object_00551e58_0 {
+struct __attribute__((packed)) Particle {
     u8 unknown_0[0xa8];  // (not used here)
     u32 word_a8;
 };
-GUEST_OFFSET(Object_00551e58_0, word_a8, 0xa8);
+GUEST_OFFSET(Particle, word_a8, 0xa8);
 
 struct __attribute__((packed)) Object_00551e58_1 {
     u8 unknown_0[0xf0];  // (not used here)
@@ -360,8 +367,8 @@ GUEST_OFFSET(Local_00551e58_r0_2, word_8, 0x8);
 
 inline guest::global<u32, 0x0097e744> global_0097e744;
 
-void f_00551e58(gptr<Object_00551e58_0> arg0, gptr<Object_00551e58_1> arg1) {
-    u32 r0_1 = arg0->word_a8;
+void Particle__apply_flicker(gptr<Particle> particle, gptr<Object_00551e58_1> arg1) {
+    u32 r0_1 = particle->word_a8;
     gptr<Local_00551e58_r0_2> r0_2 = gptr<Local_00551e58_r0_2>(r0_1 + u32(*gptr<u16>(r0_1 + 0x200u)));  // (from the original)
     u32 r2_1 = *gptr<u16>((r0_1 + 0x100u) + 0xf8u);  // (from the original)
     float S1_1 = std::bit_cast<float>(gptr<u32>(*global_0097e744)[arg1->word_f8 * r0_2->word_8 + vcvt_sz_f(float(s32(arg1->word_f0)) * r0_2->float_4) & 0x7fu]);  // (from the original)
@@ -377,9 +384,10 @@ void f_00551e58(gptr<Object_00551e58_0> arg0, gptr<Object_00551e58_1> arg1) {
 }
 
 }  // namespace d_00551e58
-GUEST_EXPORT_FRAMED(0x00551e58, d_00551e58::f_00551e58, 0x10);  // pushes {r4} first, as the original
+GUEST_EXPORT_FRAMED(0x00551e58, d_00551e58::Particle__apply_flicker, 0x10);  // pushes {r4} first, as the original
 
 // f_00552190: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Particle command: moves the particle's velocity toward the target on the flagged axes by the rate; the next command.
 namespace d_00552190 {
 
 struct __attribute__((packed)) Object_00552190_1 {
@@ -412,7 +420,7 @@ GUEST_OFFSET(Object_00552190_2, float_c, 0xc);
 GUEST_OFFSET(Object_00552190_2, word_10, 0x10);
 
 
-u32 f_00552190(u32 r0_unused, gptr<Object_00552190_1> arg1, gptr<Object_00552190_2> arg2, float S0, float S1) {
+u32 particle_approach_command(u32 r0_unused, gptr<Object_00552190_1> arg1, gptr<Object_00552190_2> arg2, float S0, float S1) {
     u32 r0_1 = arg2->word_10;
     if ((r0_1 & 1u) != 0) {
         float S0_1 = arg1->float_18;
@@ -441,9 +449,10 @@ u32 f_00552190(u32 r0_unused, gptr<Object_00552190_1> arg1, gptr<Object_00552190
 }
 
 }  // namespace d_00552190
-GUEST_EXPORT(0x00552190, d_00552190::f_00552190);
+GUEST_EXPORT(0x00552190, d_00552190::particle_approach_command);
 
 // f_0055224c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Particle command: at each interval, adds a random offset scaled per axis to the velocity; the next command.
 namespace d_0055224c {
 
 struct __attribute__((packed)) Object_0055224c_0 {
@@ -485,18 +494,18 @@ GUEST_OFFSET(Local_0055224c_r0_3, float_0, 0x0);
 GUEST_OFFSET(Local_0055224c_r0_3, float_4, 0x4);
 GUEST_OFFSET(Local_0055224c_r0_3, float_8, 0x8);
 
-inline constexpr u32 global_0097e83c_address = 0x0097e83cu;
-inline guest::global<u32, 0x0097e83c> global_0097e83c;
+inline constexpr u32 particle_jitter_address = 0x0097e83cu;
+inline guest::global<u32, 0x0097e83c> particle_jitter;
 inline constexpr guest::Function<0x002f9e1c, u32(u32, u32, u32, u32)> divide_with_remainder;
 
-u32 f_0055224c(gptr<Object_0055224c_0> arg0, gptr<Object_0055224c_1> arg1, gptr<Object_0055224c_2> arg2, u32 r3, float S0, float S1, float S2, float S3, float S4, float S5, float S6, float S7, float S8) {
+u32 particle_jitter_command(gptr<Object_0055224c_0> arg0, gptr<Object_0055224c_1> arg1, gptr<Object_0055224c_2> arg2, u32 r3, float S0, float S1, float S2, float S3, float S4, float S5, float S6, float S7, float S8) {
     u32 r1_1 = arg2->word_0;
     u32 r0_1 = arg1->word_f0;
     divide_with_remainder(r0_1, r1_1, arg2.addr(), r3);
     float S0_1 = guest::cpu()->s[0];
     float S1_1 = guest::cpu()->s[1];
     if (guest::cpu()->r[1] == 0) {
-        u32 r2_1 = *global_0097e83c;
+        u32 r2_1 = *particle_jitter;
         u32 r0_2 = arg0->half_78;
         arg0->half_78 = u16(r0_2 + 1u);
         gptr<Local_0055224c_r0_3> r0_3 = gptr<Local_0055224c_r0_3>(r2_1 + (r0_2 & ~0xfe00u) * 0xcu);  // (from the original)
@@ -513,24 +522,25 @@ u32 f_0055224c(gptr<Object_0055224c_0> arg0, gptr<Object_0055224c_1> arg1, gptr<
 }
 
 }  // namespace d_0055224c
-GUEST_EXPORT_FRAMED(0x0055224c, d_0055224c::f_0055224c, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055224c, d_0055224c::particle_jitter_command, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_005547e0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// The emitter's own matrix, or its set's when it follows the set.
 namespace d_005547e0 {
 
-struct __attribute__((packed)) Object_005547e0_0 {
+struct __attribute__((packed)) Emitter {
     u8 unknown_0[0xa8];  // (not used here)
     u32 word_a8;
 };
-GUEST_OFFSET(Object_005547e0_0, word_a8, 0xa8);
+GUEST_OFFSET(Emitter, word_a8, 0xa8);
 
 
-u32 f_005547e0(gptr<Object_005547e0_0> arg0, u32 r1) {
-    return *gptr<u8>(arg0->word_a8 + 0x2du) == 0 ? r1 + 0x6cu : arg0.addr() + 0x48u;  // (from the original)
+u32 Emitter__matrix(gptr<Emitter> emitter, u32 r1) {
+    return *gptr<u8>(emitter->word_a8 + 0x2du) == 0 ? r1 + 0x6cu : emitter.addr() + 0x48u;  // (from the original)
 }
 
 }  // namespace d_005547e0
-GUEST_EXPORT(0x005547e0, d_005547e0::f_005547e0);
+GUEST_EXPORT(0x005547e0, d_005547e0::Emitter__matrix);
 
 // f_00554a64: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00554a64 {
@@ -545,14 +555,14 @@ inline constexpr u32 vtable_sead__FixedSafeString_256_ = 0x009048b0u;
 inline constexpr u32 vtable_sead__FixedSafeStringBase_char__256_ = 0x009050f8u;
 inline constexpr u32 vtable_sead__BufferedSafeStringBase_char_ = 0x0090558cu;
 inline constexpr u32 vtable_sead__ptcl__PtclPreview = 0x009059a0u;
-inline guest::global<u32, 0x008a3bbc> global_008a3bbc;
-inline guest::global<u32, 0x008a3bc0> global_008a3bc0;
+inline guest::global<u32, 0x008a3bbc> float_one;
+inline guest::global<u32, 0x008a3bc0> float_zero;
 inline guest::global<u8, 0x008c9f1c> empty_string;
-inline constexpr guest::Function<0x002fd108, u32(u32, u32, u32, u32)> allocate_from_heap_002fd108;
-inline constexpr guest::Function<0x005547f8, u32(u32, u32)> call_005547f8;
+inline constexpr guest::Function<0x002fd108, u32(u32, u32, u32, u32)> allocate_on_heap;
+inline constexpr guest::Function<0x005547f8, u32(u32, u32)> Emitter__reset;
 inline constexpr guest::Function<0x00554fbc, u32(u32, u32, u32, u32)> sead__ptcl__TextureData__TextureData;
 inline constexpr guest::Function<0x00555208, u32(u32, u32, u32, u32)> sead__ptcl__PtclModelMgr__PtclModelMgr;
-inline constexpr guest::Function<0x0074dcac, u32(u32, u32, u32, u32)> call_0074dcac;
+inline constexpr guest::Function<0x0074dcac, u32(u32, u32, u32, u32)> owner_has_88_or_8c;
 
 struct __attribute__((packed)) Frame_00554a64 {
     u32 word_0;
@@ -567,40 +577,40 @@ u32 sead__ptcl__PtclPreview__PtclPreview(gptr<sead__ptcl__PtclPreview> ptcl_prev
     u32 r0 = ptcl_preview.addr();
     u32 r7 = r2;
     u32 r6_1 = r3;
-    ptcl_preview->word_0 = vtable_sead__ptcl__PtclPreview;
+    ptcl_preview->vtable = vtable_sead__ptcl__PtclPreview;
     u32 r0_1 = r0 + 0x38u;  // (from the original)
     ptcl_preview->word_3c = r0_1 + 0xcu;  // (from the original)
     ptcl_preview->word_40 = 0x100;  // (from the original)
-    ptcl_preview->word_38 = vtable_sead__BufferedSafeStringBase_char_;
+    ptcl_preview->vtable_38 = vtable_sead__BufferedSafeStringBase_char_;
     *gptr<u8>(ptcl_preview->word_3c + 0xffu) = *empty_string;  // (from the original)
-    ptcl_preview->word_38 = vtable_sead__FixedSafeStringBase_char__256_;
+    ptcl_preview->vtable_38 = vtable_sead__FixedSafeStringBase_char__256_;
     u32 r3_1 = *empty_string;
     *gptr<u8>(ptcl_preview->word_3c) = u8(r3_1);
-    ptcl_preview->word_38 = vtable_sead__FixedSafeString_256_;
-    u32 r2_1 = *global_008a3bc0;
+    ptcl_preview->vtable_38 = vtable_sead__FixedSafeString_256_;
+    u32 r2_1 = *float_zero;
     u32 ea_1 = r0_1 + 0x10cu;  // (from the original)
     ptcl_preview->word_144 = r2_1;
-    u32 r2_2 = *global_008a3bc0;
+    u32 r2_2 = *float_zero;
     ptcl_preview->word_148 = r2_2;
-    ptcl_preview->word_14c = *global_008a3bc0;
-    ptcl_preview->word_150 = *global_008a3bbc;
-    u32 r0_2 = ea_1 + 0x10u;  // (from the original)
-    sead__ptcl__TextureData__TextureData(r0_2, ea_1, r2_2, r3_1);
+    ptcl_preview->word_14c = *float_zero;
+    ptcl_preview->word_150 = *float_one;
+    u32 texture_data = ea_1 + 0x10u;  // (from the original)
+    sead__ptcl__TextureData__TextureData(texture_data, ea_1, r2_2, r3_1);
     r3 = guest::cpu()->r[3];
     u32 r8 = 0u;
     ptcl_preview->word_18c = r7;
     ptcl_preview->word_20 = r8;
     ptcl_preview->word_4 = r1;
     ptcl_preview->word_8 = r6_1;
-    u32 r4 = r0_2 - 0x154u;  // (from the original)
+    u32 r4 = texture_data - 0x154u;  // (from the original)
     u32 r6 = 0x29e8u;  // (from the original)
     u32 r5 = r8;
     do {
-        u32 block_2 = allocate_from_heap_002fd108(r6, *gptr<u32>(r4 + 4u), 4u, r3);
+        u32 block = allocate_on_heap(r6, *gptr<u32>(r4 + 4u), 4u, r3);
         u32 r1_2 = *gptr<u32>(r4 + 8u);
         frame->word_0 = r4;
         frame->word_4 = r1_2;
-        u32 r0_4 = sead__ptcl__PtclModelMgr__PtclModelMgr(block_2, *gptr<u32>(r4 + 4u), r7, r5);
+        u32 r0_4 = sead__ptcl__PtclModelMgr__PtclModelMgr(block, *gptr<u32>(r4 + 4u), r7, r5);
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
         r1 = r4 + (r5 << 2);
@@ -612,7 +622,7 @@ u32 sead__ptcl__PtclPreview__PtclPreview(gptr<sead__ptcl__PtclPreview> ptcl_prev
     *gptr<u32>(r4 + 0x20u) = r8;  // (from the original)
     do {
         gptr<Local_00554a64_r6_2> r6_2 = gptr<Local_00554a64_r6_2>(r4 + (r5 << 2));
-        u32 r0_6 = call_0074dcac(r6_2->word_c, r1, r2, r3);
+        u32 r0_6 = owner_has_88_or_8c(r6_2->word_c, r1, r2, r3);
         r1 = guest::cpu()->r[1];
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
@@ -627,7 +637,7 @@ u32 sead__ptcl__PtclPreview__PtclPreview(gptr<sead__ptcl__PtclPreview> ptcl_prev
         r5 += 1u;
         guest::preempt();
     } while (s32(r5) < 5);
-    call_005547f8(r4, 1u);
+    Emitter__reset(r4, 1u);
     *gptr<u32>(r4 + 0x220u) = 0xb4;  // (from the original)
     *gptr<u8>(r4 + 0x224u) = u8(r8);  // (from the original)
     return r4;
@@ -652,31 +662,31 @@ inline guest::global<u8, 0x008c9f1c> empty_string;
 u32 sead__ptcl__PtclProject__PtclProject(gptr<sead__ptcl__PtclProject> ptcl_project, u32 r1, u32 r2, u32 r3) {
     u32 r0 = ptcl_project.addr();
     float S0 = std::bit_cast<float>(*gptr<u32>(guest::cpu()->r[13] + 0x10u));  // (from the original)
-    ptcl_project->word_0 = vtable_sead__ptcl__PtclProject;
+    ptcl_project->vtable = vtable_sead__ptcl__PtclProject;
     u32 r0_1 = r0 + 0x110u;  // (from the original)
-    ptcl_project->word_110 = vtable_sead__BufferedSafeStringBase_char_;
+    ptcl_project->vtable_110 = vtable_sead__BufferedSafeStringBase_char_;
     ptcl_project->word_114 = r0_1 + 0xcu;  // (from the original)
     ptcl_project->word_118 = 0x100;  // (from the original)
     *gptr<u8>(ptcl_project->word_114 + 0xffu) = *empty_string;  // (from the original)
-    ptcl_project->word_110 = vtable_sead__FixedSafeStringBase_char__256_;
+    ptcl_project->vtable_110 = vtable_sead__FixedSafeStringBase_char__256_;
     u32 r6_1 = *empty_string;
     *gptr<u8>(ptcl_project->word_114) = u8(r6_1);
-    ptcl_project->word_110 = vtable_sead__FixedSafeString_256_;
+    ptcl_project->vtable_110 = vtable_sead__FixedSafeString_256_;
     ptcl_project->word_224 = 0x40;  // (from the original)
-    ptcl_project->word_21c = vtable_sead__BufferedSafeStringBase_char_;
+    ptcl_project->vtable_21c = vtable_sead__BufferedSafeStringBase_char_;
     ptcl_project->word_220 = r0_1 + 0x118u;  // (from the original)
     *gptr<u8>(ptcl_project->word_220 + 0x3fu) = *empty_string;  // (from the original)
-    ptcl_project->word_21c = vtable_sead__FixedSafeStringBase_char__64_;
+    ptcl_project->vtable_21c = vtable_sead__FixedSafeStringBase_char__64_;
     u32 r6_2 = *empty_string;
     *gptr<u8>(ptcl_project->word_220) = u8(r6_2);
-    ptcl_project->word_21c = vtable_sead__FixedSafeString_64_;
+    ptcl_project->vtable_21c = vtable_sead__FixedSafeString_64_;
     ptcl_project->word_270 = 0x80;  // (from the original)
-    ptcl_project->word_268 = vtable_sead__BufferedSafeStringBase_char_;
+    ptcl_project->vtable_268 = vtable_sead__BufferedSafeStringBase_char_;
     ptcl_project->word_26c = r0_1 + 0x164u;  // (from the original)
     *gptr<u8>(r0_1 + 0x163u + 0x80u) = *empty_string;  // (from the original)
-    ptcl_project->word_268 = vtable_sead__FixedSafeStringBase_char__128_;
+    ptcl_project->vtable_268 = vtable_sead__FixedSafeStringBase_char__128_;
     *gptr<u8>(ptcl_project->word_26c) = *empty_string;
-    ptcl_project->word_268 = vtable_sead__FixedSafeString_128_;
+    ptcl_project->vtable_268 = vtable_sead__FixedSafeString_128_;
     ptcl_project->word_4 = r1;
     r0 = r0_1 - 0x110u;  // (from the original)
     ptcl_project->word_108 = r2;
@@ -708,7 +718,7 @@ inline constexpr u32 vtable_sead__ptcl__TextureData = 0x009059c4u;
 inline constexpr guest::Function<0x00540c3c, u32(u32)> sead__TextureCtrGR__TextureCtrGR;
 
 u32 sead__ptcl__TextureData__TextureData(gptr<sead__ptcl__TextureData> texture_data) {
-    texture_data->word_0 = vtable_sead__ptcl__TextureData;
+    texture_data->vtable = vtable_sead__ptcl__TextureData;
     u32 r0_1 = texture_data.addr() + 0x24u;  // (from the original)
     sead__TextureCtrGR__TextureCtrGR(r0_1);
     texture_data->word_14 = 0;
@@ -727,7 +737,7 @@ inline constexpr guest::Function<0x002ffb64, u32(u32, u32, u32, u32)> free_memor
 inline constexpr guest::Function<0x0053f6bc, u32(u32)> sead__TextureCtrGR__destructor;
 
 u32 sead__ptcl__TextureData__destructor(gptr<sead__ptcl__TextureData> texture_data) {
-    texture_data->word_0 = vtable_sead__ptcl__TextureData;
+    texture_data->vtable = vtable_sead__ptcl__TextureData;
     u32 r0_1 = texture_data->word_14;
     if (r0_1 != 0) {
         free_memory(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
@@ -792,22 +802,22 @@ GUEST_OFFSET(sead__SafeStringBase_char_, word_29dc, 0x29dc);
 GUEST_OFFSET(sead__SafeStringBase_char_, word_29e0, 0x29e0);
 
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
-inline guest::global<u32, 0x00af78e4> global_00af78e4;
-inline guest::global<u32, 0x00af78e8> global_00af78e8;
-inline guest::global<u32, 0x00af78ec> global_00af78ec;
-inline guest::global<u32, 0x00af78f0> global_00af78f0;
-inline guest::global<u32, 0x00af78f4> global_00af78f4;
-inline guest::global<u32, 0x00af78f8> global_00af78f8;
+inline guest::global<u32, 0x00af78e4> effect_default_rotation_x;
+inline guest::global<u32, 0x00af78e8> effect_default_rotation_y;
+inline guest::global<u32, 0x00af78ec> effect_default_rotation_z;
+inline guest::global<u32, 0x00af78f0> effect_default_scale_x;
+inline guest::global<u32, 0x00af78f4> effect_default_scale_y;
+inline guest::global<u32, 0x00af78f8> effect_default_scale_z;
 inline guest::global<u32, 0x00af7968> global_00af7968;
 inline guest::global<u32, 0x00af796c> global_00af796c;
 inline guest::global<u32, 0x00af7970> global_00af7970;
 inline constexpr guest::Function<0x0013cd00, u32(u32, u32, u32, u32)> SafeString__copy;
 
 struct __attribute__((packed)) Frame_00555094 {
-    u32 word_0;
+    u32 object_0_vtable;
     u32 word_4;
 };
-GUEST_OFFSET(Frame_00555094, word_0, 0x0);
+GUEST_OFFSET(Frame_00555094, object_0_vtable, 0x0);
 GUEST_OFFSET(Frame_00555094, word_4, 0x4);
 GUEST_SIZE(Frame_00555094, 0x8);
 
@@ -822,15 +832,15 @@ void sead__SafeStringBase_char___SafeStringBase_00555094(gptr<sead__SafeStringBa
     *gptr<u32>(0x29b8u - (r0 << 2) + r4) = r6;  // (from the original)
     *gptr<u8>((0x29b8u & ~(r0 >> 0x1c)) + r4) = 1;  // (from the original)
     u32 r5 = r4 + 0x2800u;  // (from the original)
-    safe_string_base_char->word_29c0 = *global_00af78f0;
-    safe_string_base_char->word_29c4 = *global_00af78f4;
-    safe_string_base_char->word_29c8 = *global_00af78f8;
+    safe_string_base_char->word_29c0 = *effect_default_scale_x;
+    safe_string_base_char->word_29c4 = *effect_default_scale_y;
+    safe_string_base_char->word_29c8 = *effect_default_scale_z;
     safe_string_base_char->word_29cc = *global_00af7968;
     safe_string_base_char->word_29d0 = *global_00af796c;
     safe_string_base_char->word_29d4 = *global_00af7970;
-    safe_string_base_char->word_29d8 = *global_00af78e4;
-    safe_string_base_char->word_29dc = *global_00af78e8;
-    safe_string_base_char->word_29e0 = *global_00af78ec;
+    safe_string_base_char->word_29d8 = *effect_default_rotation_x;
+    safe_string_base_char->word_29dc = *effect_default_rotation_y;
+    safe_string_base_char->word_29e0 = *effect_default_rotation_z;
     safe_string_base_char->word_2970 = r6;
     safe_string_base_char->word_2974 = r6;
     safe_string_base_char->word_2978 = r6;
@@ -855,7 +865,7 @@ void sead__SafeStringBase_char___SafeStringBase_00555094(gptr<sead__SafeStringBa
         guest::preempt();
     } while (s32(r2) < 6);
     frame->word_4 = 0x8c1c28;  // (from the original)
-    frame->word_0 = vtable_sead__SafeStringBase_char_;
+    frame->object_0_vtable = vtable_sead__SafeStringBase_char_;
     guest::cpu()->s[0] = S0;
     SafeString__copy(r4 + 0x14cu, frame.at(0).addr(), ~0u, r3_2);  // (from the original)
     float S0_1 = 1.0f;
@@ -868,24 +878,25 @@ void sead__SafeStringBase_char___SafeStringBase_00555094(gptr<sead__SafeStringBa
 GUEST_EXPORT_FRAMED(0x00555094, d_00555094::sead__SafeStringBase_char___SafeStringBase_00555094, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_005551f4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Resets the emitter's fade.
 namespace d_005551f4 {
 
-struct __attribute__((packed)) Object_005551f4_0 {
+struct __attribute__((packed)) Emitter {
     u8 unknown_0[0x29a8];  // (not used here)
     float float_29a8;
 };
-GUEST_OFFSET(Object_005551f4_0, float_29a8, 0x29a8);
+GUEST_OFFSET(Emitter, float_29a8, 0x29a8);
 
 
-u32 f_005551f4(gptr<Object_005551f4_0> arg0) {
+u32 Emitter__reset_fade(gptr<Emitter> emitter) {
     float S0_1 = 0.0f;
-    arg0->float_29a8 = S0_1;
+    emitter->float_29a8 = S0_1;
     guest::cpu()->s[0] = S0_1;
-    return arg0.addr() + 0x2800u;  // (from the original)
+    return emitter.addr() + 0x2800u;  // (from the original)
 }
 
 }  // namespace d_005551f4
-GUEST_EXPORT(0x005551f4, d_005551f4::f_005551f4);
+GUEST_EXPORT(0x005551f4, d_005551f4::Emitter__reset_fade);
 
 // f_005556d4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005556d4 {
@@ -893,13 +904,13 @@ namespace d_005556d4 {
 inline constexpr u32 vtable_sead__ptcl__PtclModelMgr = 0x009059d4u;
 inline constexpr guest::Function<0x002f76ad, u32(u32, u32, u32, u32)> destroy_array_elements;
 inline constexpr guest::Function<0x002ffb64, u32(u32)> free_memory;
-inline constexpr guest::Function<0x0055c5ec, u32(u32, u32, u32, u32)> call_0055c5ec;
+inline constexpr guest::Function<0x0055c5ec, u32(u32, u32, u32, u32)> PtclModelMgr__destroy;
 
 u32 sead__ptcl__PtclModelMgr__deleting_destructor(gptr<sead__ptcl__PtclModelMgr> ptcl_model_mgr, u32 r1_unused, u32 r2, u32 r3) {
     u32 r0_1 = ptcl_model_mgr->word_c;
-    ptcl_model_mgr->word_0 = vtable_sead__ptcl__PtclModelMgr;
+    ptcl_model_mgr->vtable = vtable_sead__ptcl__PtclModelMgr;
     if (r0_1 != 0) {
-        call_0055c5ec(r0_1, vtable_sead__ptcl__PtclModelMgr, r2, r3);
+        PtclModelMgr__destroy(r0_1, vtable_sead__ptcl__PtclModelMgr, r2, r3);
         free_memory(r0_1);
     }
     destroy_array_elements(ptcl_model_mgr.addr() + 0x2034u, 0x5450f0u, 0x10cu, 2u);  // (from the original)
@@ -921,16 +932,17 @@ u32 sead__ptcl__PtclModelMgr__deleting_destructor(gptr<sead__ptcl__PtclModelMgr>
 GUEST_EXPORT_FRAMED(0x005556d4, d_005556d4::sead__ptcl__PtclModelMgr__deleting_destructor, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_00555824: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Writes the renderer's GPU state commands (blend, depth and the color constants) into the buffer; its end.
 namespace d_00555824 {
 
-struct __attribute__((packed)) Object_00555824_0 {
+struct __attribute__((packed)) EffectRenderer {
     u8 unknown_0[0x4cb36];  // (not used here)
     u8 byte_4cb36;
     u8 unknown_4cb37[0x7];  // (not used here)
     u8 byte_4cb3e;
 };
-GUEST_OFFSET(Object_00555824_0, byte_4cb36, 0x4cb36);
-GUEST_OFFSET(Object_00555824_0, byte_4cb3e, 0x4cb3e);
+GUEST_OFFSET(EffectRenderer, byte_4cb36, 0x4cb36);
+GUEST_OFFSET(EffectRenderer, byte_4cb3e, 0x4cb3e);
 
 struct __attribute__((packed)) Object_00555824_1 {
     u8 unknown_0[0x148];  // (not used here)
@@ -1008,18 +1020,18 @@ GUEST_OFFSET(Local_00555824_r4_1, word_24, 0x24);
 GUEST_OFFSET(Local_00555824_r4_1, word_28, 0x28);
 
 inline constexpr guest::Function<0x00134544, u32(u32, u32, u32, u32)> copy_bytes_small_sizes_first;
-inline constexpr guest::Function<0x001488f4, u32(u32, u32, u32)> call_001488f4;
-inline constexpr guest::Function<0x00148930, u32(u32, u32, u32)> call_00148930;
+inline constexpr guest::Function<0x001488f4, u32(u32, u32, u32)> write_matrix34_commands;
+inline constexpr guest::Function<0x00148930, u32(u32, u32, u32)> write_matrix44_commands;
 
-u32 f_00555824(gptr<Object_00555824_0> arg0, gptr<Object_00555824_1> arg1, u32 r2, u32 r3) {
+u32 EffectRenderer__write_state_commands(gptr<EffectRenderer> effect_renderer, gptr<Object_00555824_1> arg1, u32 r2, u32 r3) {
     gptr<Local_00555824_r4_1> r4_1 = gptr<Local_00555824_r4_1>(*gptr<u32>(guest::cpu()->r[13] + 0x20u));  // (from the original)
     copy_bytes_small_sizes_first(arg1.addr(), 0x8baddcu, 0x148u, r3);  // (from the original)
-    arg1->word_148 = u32(arg0->byte_4cb36) | 0x80000000u;  // (from the original)
+    arg1->word_148 = u32(effect_renderer->byte_4cb36) | 0x80000000u;  // (from the original)
     arg1->word_14c = 0xf02c0;  // (from the original)
-    call_00148930(arg1.addr() + 0x150u, r2, 0xff02c1u);  // (from the original)
-    arg1->word_198 = u32(arg0->byte_4cb3e) | 0x80000000u;  // (from the original)
+    write_matrix44_commands(arg1.addr() + 0x150u, r2, 0xff02c1u);  // (from the original)
+    arg1->word_198 = u32(effect_renderer->byte_4cb3e) | 0x80000000u;  // (from the original)
     arg1->word_19c = 0xf02c0;  // (from the original)
-    call_001488f4(arg1.addr() + 0x1a0u, r3, 0xbf02c1u);  // (from the original)
+    write_matrix34_commands(arg1.addr() + 0x1a0u, r3, 0xbf02c1u);  // (from the original)
     arg1->word_1e0 = 0;
     arg1->word_1e4 = 0xff02c1;  // (from the original)
     arg1->word_1d8 = 0x80000000;  // (from the original)
@@ -1046,9 +1058,10 @@ u32 f_00555824(gptr<Object_00555824_0> arg0, gptr<Object_00555824_1> arg1, u32 r
 }
 
 }  // namespace d_00555824
-GUEST_EXPORT_FRAMED(0x00555824, d_00555824::f_00555824, 0x47f0);  // pushes {r4, r5, r6, r7, r8, r9, r10, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00555824, d_00555824::EffectRenderer__write_state_commands, 0x47f0);  // pushes {r4, r5, r6, r7, r8, r9, r10, lr} first, as the original
 
 // f_00555f90: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Writes the renderer's base state and the 3x4 matrix as GPU commands; their end.
 namespace d_00555f90 {
 
 struct __attribute__((packed)) Object_00555f90_1 {
@@ -1118,7 +1131,7 @@ GUEST_OFFSET(Object_00555f90_2, word_28, 0x28);
 
 inline constexpr guest::Function<0x00134544, u32(u32, u32, u32, u32)> copy_bytes_small_sizes_first;
 
-u32 f_00555f90(u32 r0_unused, gptr<Object_00555f90_1> arg1, gptr<Object_00555f90_2> arg2, u32 r3) {
+u32 EffectRenderer__write_matrix_commands(u32 r0_unused, gptr<Object_00555f90_1> arg1, gptr<Object_00555f90_2> arg2, u32 r3) {
     copy_bytes_small_sizes_first(arg1.addr(), 0x8baddcu, 0x148u, r3);  // (from the original)
     arg1->word_154 = 0xff02c1;  // (from the original)
     arg1->word_150 = 0;
@@ -1145,73 +1158,76 @@ u32 f_00555f90(u32 r0_unused, gptr<Object_00555f90_1> arg1, gptr<Object_00555f90
 }
 
 }  // namespace d_00555f90
-GUEST_EXPORT_FRAMED(0x00555f90, d_00555f90::f_00555f90, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00555f90, d_00555f90::EffectRenderer__write_matrix_commands, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_00556050: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Begins the renderer's frame.
 namespace d_00556050 {
 
-struct __attribute__((packed)) Object_00556050_0 {
+struct __attribute__((packed)) EffectSystem {
     u8 unknown_0[0x87c];  // (not used here)
     u32 word_87c;
 };
-GUEST_OFFSET(Object_00556050_0, word_87c, 0x87c);
+GUEST_OFFSET(EffectSystem, word_87c, 0x87c);
 
-inline constexpr guest::Function<0x00556058, u32(u32, u32, u32, u32)> call_00556058;
+inline constexpr guest::Function<0x00556058, u32(u32, u32, u32, u32)> EffectRenderer__begin;
 
-u32 f_00556050(gptr<Object_00556050_0> arg0) {
-    return call_00556058(arg0->word_87c, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+u32 EffectSystem__renderer_begin(gptr<EffectSystem> effect_system) {
+    return EffectRenderer__begin(effect_system->word_87c, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_00556050
-GUEST_EXPORT(0x00556050, d_00556050::f_00556050);
+GUEST_EXPORT(0x00556050, d_00556050::EffectSystem__renderer_begin);
 
 // f_00556094: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Copies the renderer's setup commands into the buffer once per frame and resets the render state; their end.
 namespace d_00556094 {
 
-struct __attribute__((packed)) Object_00556094_0 {
+struct __attribute__((packed)) EffectRenderer {
     u8 unknown_0[0x60560];  // (not used here)
     u32 word_60560;
     u8 unknown_60564[0x204];  // (not used here)
     u32 word_60768;
 };
-GUEST_OFFSET(Object_00556094_0, word_60560, 0x60560);
-GUEST_OFFSET(Object_00556094_0, word_60768, 0x60768);
+GUEST_OFFSET(EffectRenderer, word_60560, 0x60560);
+GUEST_OFFSET(EffectRenderer, word_60768, 0x60768);
 
-inline guest::global<u32, 0x0097e6ec> global_0097e6ec;
-inline guest::global<u8, 0x0097e6f0> global_0097e6f0;
-inline guest::global<u8, 0x0097e6f1> global_0097e6f1;
-inline guest::global<u8, 0x0097e6f2> global_0097e6f2;
+inline guest::global<u32, 0x0097e6ec> effect_render_state_a;
+inline guest::global<u8, 0x0097e6f0> effect_render_state_b;
+inline guest::global<u8, 0x0097e6f1> effect_render_state_c;
+inline guest::global<u8, 0x0097e6f2> effect_render_state_d;
 inline constexpr guest::Function<0x00134544, u32(u32, u32, u32, u32)> copy_bytes_small_sizes_first;
 
-u32 f_00556094(gptr<Object_00556094_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
+u32 EffectRenderer__copy_setup_commands(gptr<EffectRenderer> effect_renderer, u32 r1, u32 r2_unused, u32 r3) {
     u32 r0_1 = 0;
-    if (arg0->word_60768 == 1u) {
+    if (effect_renderer->word_60768 == 1u) {
         r0_1 = r1;
     } else {
-        u32 r4_1 = arg0.addr() + 0x60560u;  // (from the original)
-        arg0->word_60768 = 1;
-        copy_bytes_small_sizes_first(r1, arg0.addr() + 0x5fc00u, arg0->word_60560 << 2, r3);  // (from the original)
-        u32 r0_2 = arg0->word_60560;
-        *global_0097e6f0 = 0x1c;  // (from the original)
+        u32 r4_1 = effect_renderer.addr() + 0x60560u;  // (from the original)
+        effect_renderer->word_60768 = 1;
+        copy_bytes_small_sizes_first(r1, effect_renderer.addr() + 0x5fc00u, effect_renderer->word_60560 << 2, r3);  // (from the original)
+        u32 r0_2 = effect_renderer->word_60560;
+        *effect_render_state_b = 0x1c;  // (from the original)
         r0_1 = r1 + (r0_2 << 2);
-        *global_0097e6f1 = 4;
-        *global_0097e6f2 = 0;
-        *global_0097e6ec = 0;
+        *effect_render_state_c = 4;
+        *effect_render_state_d = 0;
+        *effect_render_state_a = 0;
     }
     return r0_1;
 }
 
 }  // namespace d_00556094
-GUEST_EXPORT_FRAMED(0x00556094, d_00556094::f_00556094, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00556094, d_00556094::EffectRenderer__copy_setup_commands, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_00556128: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Writes the commands enabling the 12 lights and their colors; their end.
 namespace d_00556128 {
 
-struct __attribute__((packed)) Object_00556128_0 {
+struct __attribute__((packed)) EffectRenderer {
     u8 unknown_0[0x87c];  // (not used here)
     u32 word_87c;
 };
-GUEST_OFFSET(Object_00556128_0, word_87c, 0x87c);
+GUEST_OFFSET(EffectRenderer, word_87c, 0x87c);
 
 struct __attribute__((packed)) Local_00556128_r1_3 {
     u32 word_0;
@@ -1219,12 +1235,12 @@ struct __attribute__((packed)) Local_00556128_r1_3 {
 GUEST_OFFSET(Local_00556128_r1_3, word_0, 0x0);
 
 
-u32 f_00556128(gptr<Object_00556128_0> arg0, u32 r1) {
-    u32 r0 = arg0.addr();
+u32 EffectRenderer__write_light_commands(gptr<EffectRenderer> effect_renderer, u32 r1) {
+    u32 r0 = effect_renderer.addr();
     gptr<Local_00556128_r1_3> r1_3 = gptr<Local_00556128_r1_3>(0u);
     u32 r4 = 0x803f0232u;  // (from the original)
     r0 = 0u;
-    u32 r2 = arg0->word_87c + 0x39aacu;  // (from the original)
+    u32 r2 = effect_renderer->word_87c + 0x39aacu;  // (from the original)
     u32 r12 = r0;
     do {
         u32 r3_1 = r0 * 3u;
@@ -1265,9 +1281,10 @@ u32 f_00556128(gptr<Object_00556128_0> arg0, u32 r1) {
 }
 
 }  // namespace d_00556128
-GUEST_EXPORT_FRAMED(0x00556128, d_00556128::f_00556128, 0x10);  // pushes {r4} first, as the original
+GUEST_EXPORT_FRAMED(0x00556128, d_00556128::EffectRenderer__write_light_commands, 0x10);  // pushes {r4} first, as the original
 
 // f_00556d80: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Allocates and relocates the effect resource's data and its textures.
 namespace d_00556d80 {
 
 struct __attribute__((packed)) Object_00556d80_2 {
@@ -1286,16 +1303,16 @@ GUEST_OFFSET(Object_00556d80_2, byte_7, 0x7);
 GUEST_OFFSET(Object_00556d80_2, byte_8, 0x8);
 
 inline constexpr guest::Function<0x001435b4, u32(u32)> translate_address;
-inline constexpr guest::Function<0x002fd108, u32(u32, u32, u32, u32)> allocate_from_heap_002fd108;
-inline constexpr guest::Function<0x0034ac5c, u32(u32, u32)> call_0034ac5c;
+inline constexpr guest::Function<0x002fd108, u32(u32, u32, u32, u32)> allocate_on_heap;
+inline constexpr guest::Function<0x0034ac5c, u32(u32, u32)> GpuCommandBuffer__init;
 
-u32 f_00556d80(u32 r0, u32 r1, gptr<Object_00556d80_2> arg2, u32 r3, float S0) {
+u32 EffectResource__relocate(u32 effect_resource, u32 r1, gptr<Object_00556d80_2> arg2, u32 r3, float S0) {
     guest::StackFrame frame(0x4);  // the original's stack frame
     u32 r12 = guest::cpu()->r[12];
     u32 r3_2 = 0;
     u32 r12_1 = 0;
     *frame.at<u32>(0x20) = r12;  // (from the original)
-    u32 block_2 = allocate_from_heap_002fd108(0xb4u, r0, 4u, r3);  // (from the original)
+    u32 block = allocate_on_heap(0xb4u, effect_resource, 4u, r3);  // (from the original)
     u32 r1_1 = arg2->half_4;
     u32 r6_1 = arg2->byte_6;
     u32 r8_1 = arg2->half_0;
@@ -1303,19 +1320,19 @@ u32 f_00556d80(u32 r0, u32 r1, gptr<Object_00556d80_2> arg2, u32 r3, float S0) {
     u32 r7_1 = arg2->byte_7;
     u32 r10_1 = arg2->byte_8;
     u32 r5_1 = r1_1 & 0xffu;  // (from the original)
-    call_0034ac5c(block_2, r1_1);
-    *gptr<u8>(block_2 + 0x1cu) = 0;  // (from the original)
+    GpuCommandBuffer__init(block, r1_1);
+    *gptr<u8>(block + 0x1cu) = 0;  // (from the original)
     u32 r0_2 = translate_address(r1);
     u32 r1_3 = guest::cpu()->r[1];
     float S0_3 = guest::cpu()->s[0];
-    *gptr<u32>(block_2) = r0_2;
-    *gptr<u16>(block_2 + 4u) = u16(r8_1);
+    *gptr<u32>(block) = r0_2;
+    *gptr<u16>(block + 4u) = u16(r8_1);
     u32 res_1 = r7_1 & 0xfu;  // (from the original)
-    *gptr<u16>(block_2 + 6u) = u16(r9_1);
+    *gptr<u16>(block + 6u) = u16(r9_1);
     if (res_1 == 0) {
         r0_2 = 3u;
     }
-    *gptr<u8>(block_2 + 8u) = u8(r5_1);
+    *gptr<u8>(block + 8u) = u8(r5_1);
     if (res_1 != 0) {
         if (res_1 == 1u) {
             r0_2 = 2u;
@@ -1339,121 +1356,25 @@ u32 f_00556d80(u32 r0, u32 r1, gptr<Object_00556d80_2> arg2, u32 r3, float S0) {
         r12_1 = 0u;
     }
     u32 r1_4 = r3_2 | r12_1 << 2 | (r5_1 == 0xcu ? 2u : 0u) << 4 | r1_3 << 8;  // (from the original)
-    *gptr<u32>(block_2 + 0xa8u) = r1_4 | r0_2 << 0xc;  // (from the original)
-    *gptr<u32>(block_2 + 0xacu) = ror32(*gptr<u32>(block_2 + 4u), 0x10);  // (from the original)
+    *gptr<u32>(block + 0xa8u) = r1_4 | r0_2 << 0xc;  // (from the original)
+    *gptr<u32>(block + 0xacu) = ror32(*gptr<u32>(block + 4u), 0x10);  // (from the original)
     if (s32(r6_1) <= 0) {
-        *gptr<u32>(block_2 + 0xb0u) = 0;  // (from the original)
+        *gptr<u32>(block + 0xb0u) = 0;  // (from the original)
     } else {
         u32 r0_3 = r6_1 - 1u & 0xffu;  // (from the original)
-        *gptr<u8>(block_2 + 0x14u) = 0;  // (from the original)
+        *gptr<u8>(block + 0x14u) = 0;  // (from the original)
         S0_3 = 0.0f;
-        *gptr<u8>(block_2 + 0x15u) = u8(r0_3);  // (from the original)
-        *gptr<u32>(block_2 + 0x10u) = std::bit_cast<u32>(S0_3);  // (from the original)
-        *gptr<u32>(block_2 + 0xb0u) = r0_3 << 0x10;  // (from the original)
+        *gptr<u8>(block + 0x15u) = u8(r0_3);  // (from the original)
+        *gptr<u32>(block + 0x10u) = std::bit_cast<u32>(S0_3);  // (from the original)
+        *gptr<u32>(block + 0xb0u) = r0_3 << 0x10;  // (from the original)
     }
     guest::cpu()->r[1] = r1_4;
     guest::cpu()->s[0] = S0_3;
-    return block_2;
+    return block;
 }
 
 }  // namespace d_00556d80
-GUEST_EXPORT_FRAMED(0x00556d80, d_00556d80::f_00556d80, 0x4ff0);  // pushes {r4, r5, r6, r7, r8, r9, r10, r11, lr} first, as the original
-
-// f_00556ea0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
-namespace d_00556ea0 {
-
-struct __attribute__((packed)) Object_00556ea0_0 {
-    u8 unknown_0[0x18];  // (not used here)
-    u32 word_18;
-};
-GUEST_OFFSET(Object_00556ea0_0, word_18, 0x18);
-
-struct __attribute__((packed)) Object_00556ea0_1 {
-    u8 unknown_0[0x8];  // (not used here)
-    u32 word_8;
-};
-GUEST_OFFSET(Object_00556ea0_1, word_8, 0x8);
-
-struct __attribute__((packed)) Local_00556ea0_ea_4 {
-    u32 word_0;
-    u32 word_4;
-};
-GUEST_OFFSET(Local_00556ea0_ea_4, word_0, 0x0);
-GUEST_OFFSET(Local_00556ea0_ea_4, word_4, 0x4);
-
-struct __attribute__((packed)) Local_00556ea0_r6_1 {
-    u32 word_0;
-    u32 word_4;
-};
-GUEST_OFFSET(Local_00556ea0_r6_1, word_0, 0x0);
-GUEST_OFFSET(Local_00556ea0_r6_1, word_4, 0x4);
-
-inline constexpr guest::Function<0x0054f804, u32(u32, u32, u32, u32)> call_0054f804;
-
-struct __attribute__((packed)) Frame_00556ea0 {
-    u32 word_0;
-    u32 word_4;
-    u32 word_8;
-    u8 unknown_c[0x1c];  // (not read or written by name)
-};
-GUEST_OFFSET(Frame_00556ea0, word_0, 0x0);
-GUEST_OFFSET(Frame_00556ea0, word_4, 0x4);
-GUEST_OFFSET(Frame_00556ea0, word_8, 0x8);
-GUEST_SIZE(Frame_00556ea0, 0x28);
-
-void f_00556ea0(gptr<Object_00556ea0_0> arg0, gptr<Object_00556ea0_1> arg1, u32 r2, u32 r3) {
-    guest::StackFrameOf<Frame_00556ea0> frame;  // the original's stack frame
-    u32 r0 = arg0.addr();
-    u32 r1 = arg1.addr();
-    u32 r6 = r0;
-    u32 r5 = r1;
-    u32 r0_1 = arg1->word_8;
-    u32 r8 = r2;
-    u32 r7 = r3;
-    r1 = arg0->word_18 + (r0_1 + (r0_1 << 2) << 3);
-    u32 r4 = *gptr<u32>(r1 + 8u);
-    if (s32(r4) > 0) {
-        r0 = r4 & 1u;
-        r2 = 0u;
-        r3 = frame.at(8).addr();
-        u32 r12 = 4u;
-        if (r0 == 1u) {
-            r2 = 1u;
-            frame->word_8 = *gptr<u32>(*gptr<u32>(r1 + 4u) + 4u);
-        }
-        if (s32(r0) < s32(r4)) {
-            do {
-                r0 += 2u;
-                *gptr<u32>(r3 + (r2 << 2)) = *gptr<u32>(*gptr<u32>(r1 + 4u) + (r12 + (r2 << 3)));
-                u32 r2_1 = r2 + 1u;
-                *gptr<u32>(r3 + (r2_1 << 2)) = *gptr<u32>(*gptr<u32>(r1 + 4u) + (r12 + (r2_1 << 3)));
-                r2 = r2_1 + 1u;
-                guest::preempt();
-            } while (s32(r0) < s32(r4));
-        }
-    }
-    *gptr<u32>(r1 + 4u) = *gptr<u32>(r5 + 0x14u);  // (from the original)
-    *gptr<u32>(r1 + 8u) = *gptr<u32>(r5 + 0x10u);  // (from the original)
-    *gptr<u32>(r1 + 0x20u) = *gptr<u32>(r5 + 0xcu);  // (from the original)
-    *gptr<u32>(r1 + 0xcu) = *gptr<u32>(r5 + 0x18u);  // (from the original)
-    *gptr<u32>(r5) = 0;
-    if (r8 != 0) {
-        u32 r1_1 = *gptr<u32>(r5 + 8u);
-        frame->word_4 = 0;
-        frame->word_0 = r1_1;
-        gptr<Local_00556ea0_ea_4> ea_4 = gptr<Local_00556ea0_ea_4>(r6 + 4u);
-        call_0054f804(ea_4->word_0, frame.at(8).addr(), r4, ea_4->word_4);
-    }
-    if (r7 != 0) {
-        gptr<Local_00556ea0_r6_1> r6_1 = gptr<Local_00556ea0_r6_1>(r6 + 4u);
-        frame->word_0 = *gptr<u32>(r5 + 8u);
-        frame->word_4 = 1;
-        call_0054f804(r6_1->word_0, frame.at(8).addr(), r4, r6_1->word_4);
-    }
-}
-
-}  // namespace d_00556ea0
-GUEST_EXPORT_FRAMED(0x00556ea0, d_00556ea0::f_00556ea0, 0x47f0);  // pushes {r4, r5, r6, r7, r8, r9, r10, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x00556d80, d_00556d80::EffectResource__relocate, 0x4ff0);  // pushes {r4, r5, r6, r7, r8, r9, r10, r11, lr} first, as the original
 
 // f_005573e0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005573e0 {
@@ -1467,7 +1388,7 @@ u32 sead__ptcl__PtclLoadCheck__PtclLoadCheck(gptr<sead__ptcl__PtclLoadCheck> ptc
     u32 r0_1 = *gptr<u32>(guest::cpu()->r[13] + 0x18u);  // (from the original)
     ptcl_load_check->byte_c = 0;
     ptcl_load_check->word_18 = r3;
-    ptcl_load_check->word_0 = vtable_sead__ptcl__PtclLoadCheck;
+    ptcl_load_check->vtable = vtable_sead__ptcl__PtclLoadCheck;
     ptcl_load_check->word_10 = 0xb4;  // (from the original)
     ptcl_load_check->word_4 = r1;
     ptcl_load_check->word_8 = r2;
@@ -1490,18 +1411,19 @@ u32 sead__ptcl__PtclLoadCheck__PtclLoadCheck(gptr<sead__ptcl__PtclLoadCheck> ptc
 GUEST_EXPORT_FRAMED(0x005573e0, d_005573e0::sead__ptcl__PtclLoadCheck__PtclLoadCheck, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_0055746c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Sets the particle's texture offset from its animation frame (by age or by life).
 namespace d_0055746c {
 
-struct __attribute__((packed)) Object_0055746c_0 {
+struct __attribute__((packed)) Particle {
     u8 unknown_0[0x1d6];  // (not used here)
     u8 byte_1d6;
     u8 unknown_1d7[0x19];  // (not used here)
     u16 half_1f0;
     u16 half_1f2;
 };
-GUEST_OFFSET(Object_0055746c_0, byte_1d6, 0x1d6);
-GUEST_OFFSET(Object_0055746c_0, half_1f0, 0x1f0);
-GUEST_OFFSET(Object_0055746c_0, half_1f2, 0x1f2);
+GUEST_OFFSET(Particle, byte_1d6, 0x1d6);
+GUEST_OFFSET(Particle, half_1f0, 0x1f0);
+GUEST_OFFSET(Particle, half_1f2, 0x1f2);
 
 struct __attribute__((packed)) Object_0055746c_1 {
     u8 unknown_0[0xf0];  // (not used here)
@@ -1527,10 +1449,10 @@ GUEST_OFFSET(Local_0055746c_r5_1, float_4, 0x4);
 
 inline constexpr guest::Function<0x002f9e1c, u32(u32, u32, u32, u32)> divide_with_remainder;
 
-void f_0055746c(gptr<Object_0055746c_0> arg0, gptr<Object_0055746c_1> arg1, float S0, float S1, float S2, float S3) {
+void Particle__set_texture_frame(gptr<Particle> particle, gptr<Object_0055746c_1> arg1, float S0, float S1, float S2, float S3) {
     u32 r0_3 = 0;
-    u32 r1_1 = s16(arg0->half_1f0);
-    u32 r6_1 = s16(arg0->half_1f2);
+    u32 r1_1 = s16(particle->half_1f0);
+    u32 r6_1 = s16(particle->half_1f2);
     u32 r0_1 = arg1->word_f0;
     if (r1_1 == 0) {
         u32 r1_2 = arg1->word_f4;
@@ -1543,10 +1465,10 @@ void f_0055746c(gptr<Object_0055746c_0> arg0, gptr<Object_0055746c_1> arg1, floa
         r0_3 = divide_with_remainder(r0_1, r1_1, guest::cpu()->r[2], guest::cpu()->r[3]);
     }
     divide_with_remainder(r0_3, r6_1, guest::cpu()->r[2], guest::cpu()->r[3]);
-    u32 r1_4 = arg0->byte_1d6;
-    u32 r0_5 = *gptr<u8>((guest::cpu()->r[1] + arg0.addr()) + 0x1e0u);  // (from the original)
+    u32 r1_4 = particle->byte_1d6;
+    u32 r0_5 = *gptr<u8>((guest::cpu()->r[1] + particle.addr()) + 0x1e0u);  // (from the original)
     u32 r0_6 = divide_with_remainder(r0_5, r1_4, guest::cpu()->r[2], guest::cpu()->r[3]);
-    gptr<Local_0055746c_r4_1> r4_1 = gptr<Local_0055746c_r4_1>(arg0.addr() + 0x1d8u);  // (from the original)
+    gptr<Local_0055746c_r4_1> r4_1 = gptr<Local_0055746c_r4_1>(particle.addr() + 0x1d8u);  // (from the original)
     gptr<Local_0055746c_r5_1> r5_1 = gptr<Local_0055746c_r5_1>(arg1.addr() + 0xd0u);  // (from the original)
     float S1_3 = r4_1->float_4 * float(s32(r0_6));
     float S0_3 = r4_1->float_0 * float(s32(guest::cpu()->r[1]));
@@ -1557,12 +1479,13 @@ void f_0055746c(gptr<Object_0055746c_0> arg0, gptr<Object_0055746c_1> arg1, floa
 }
 
 }  // namespace d_0055746c
-GUEST_EXPORT_FRAMED(0x0055746c, d_0055746c::f_0055746c, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055746c, d_0055746c::Particle__set_texture_frame, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_005574f0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Initializes the camera's field of view, distances and position.
 namespace d_005574f0 {
 
-struct __attribute__((packed)) Object_005574f0_0 {
+struct __attribute__((packed)) Camera3d {
     u8 unknown_0[0x5c];  // (not used here)
     float float_5c;
     float float_60;
@@ -1580,56 +1503,57 @@ struct __attribute__((packed)) Object_005574f0_0 {
     u8 unknown_90[0x20];  // (not used here)
     u8 byte_b0;
 };
-GUEST_OFFSET(Object_005574f0_0, float_5c, 0x5c);
-GUEST_OFFSET(Object_005574f0_0, float_60, 0x60);
-GUEST_OFFSET(Object_005574f0_0, float_64, 0x64);
-GUEST_OFFSET(Object_005574f0_0, word_68, 0x68);
-GUEST_OFFSET(Object_005574f0_0, word_6c, 0x6c);
-GUEST_OFFSET(Object_005574f0_0, word_70, 0x70);
-GUEST_OFFSET(Object_005574f0_0, word_74, 0x74);
-GUEST_OFFSET(Object_005574f0_0, word_78, 0x78);
-GUEST_OFFSET(Object_005574f0_0, float_7c, 0x7c);
-GUEST_OFFSET(Object_005574f0_0, word_80, 0x80);
-GUEST_OFFSET(Object_005574f0_0, float_84, 0x84);
-GUEST_OFFSET(Object_005574f0_0, float_88, 0x88);
-GUEST_OFFSET(Object_005574f0_0, float_8c, 0x8c);
-GUEST_OFFSET(Object_005574f0_0, byte_b0, 0xb0);
+GUEST_OFFSET(Camera3d, float_5c, 0x5c);
+GUEST_OFFSET(Camera3d, float_60, 0x60);
+GUEST_OFFSET(Camera3d, float_64, 0x64);
+GUEST_OFFSET(Camera3d, word_68, 0x68);
+GUEST_OFFSET(Camera3d, word_6c, 0x6c);
+GUEST_OFFSET(Camera3d, word_70, 0x70);
+GUEST_OFFSET(Camera3d, word_74, 0x74);
+GUEST_OFFSET(Camera3d, word_78, 0x78);
+GUEST_OFFSET(Camera3d, float_7c, 0x7c);
+GUEST_OFFSET(Camera3d, word_80, 0x80);
+GUEST_OFFSET(Camera3d, float_84, 0x84);
+GUEST_OFFSET(Camera3d, float_88, 0x88);
+GUEST_OFFSET(Camera3d, float_8c, 0x8c);
+GUEST_OFFSET(Camera3d, byte_b0, 0xb0);
 
-inline guest::global<u32, 0x00af78f0> global_00af78f0;
-inline guest::global<u32, 0x00af78f4> global_00af78f4;
-inline guest::global<u32, 0x00af78f8> global_00af78f8;
+inline guest::global<u32, 0x00af78f0> effect_default_scale_x;
+inline guest::global<u32, 0x00af78f4> effect_default_scale_y;
+inline guest::global<u32, 0x00af78f8> effect_default_scale_z;
 
-void f_005574f0(gptr<Object_005574f0_0> arg0) {
+void Camera3d__init(gptr<Camera3d> camera3d) {
     float S1_1 = 22.0f;
-    arg0->word_74 = 0;
-    arg0->float_7c = S1_1;
+    camera3d->word_74 = 0;
+    camera3d->float_7c = S1_1;
     float S0_1 = 10.0f;
-    arg0->float_5c = S1_1;
+    camera3d->float_5c = S1_1;
     float S2_1 = 0.0f;
-    arg0->float_60 = S0_1;
-    arg0->float_64 = S2_1;
+    camera3d->float_60 = S0_1;
+    camera3d->float_64 = S2_1;
     float S1_2 = 90.0f;
-    arg0->word_78 = 0xf1c71b80;  // (from the original)
-    arg0->word_80 = 0;
-    arg0->float_84 = S1_2;
+    camera3d->word_78 = 0xf1c71b80;  // (from the original)
+    camera3d->word_80 = 0;
+    camera3d->float_84 = S1_2;
     float S1_3 = 1.0f;
-    arg0->word_68 = *global_00af78f0;
-    arg0->word_6c = *global_00af78f4;
-    arg0->word_70 = *global_00af78f8;
-    arg0->byte_b0 = 0;
-    arg0->float_88 = S0_1;
-    arg0->float_8c = S1_3;
+    camera3d->word_68 = *effect_default_scale_x;
+    camera3d->word_6c = *effect_default_scale_y;
+    camera3d->word_70 = *effect_default_scale_z;
+    camera3d->byte_b0 = 0;
+    camera3d->float_88 = S0_1;
+    camera3d->float_8c = S1_3;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_3;
 }
 
 }  // namespace d_005574f0
-GUEST_EXPORT(0x005574f0, d_005574f0::f_005574f0);
+GUEST_EXPORT(0x005574f0, d_005574f0::Camera3d__init);
 
 // f_0055b6e0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Counts the set's live emitters and draws the set with them.
 namespace d_0055b6e0 {
 
-inline constexpr guest::Function<0x00556a90, u32(u32, u32, u32, u32)> call_00556a90;
+inline constexpr guest::Function<0x00556a90, u32(u32, u32, u32, u32)> EmitterSet__draw_emitters;
 
 struct __attribute__((packed)) Frame_0055b6e0 {
     u32 word_0;
@@ -1642,18 +1566,18 @@ GUEST_OFFSET(Frame_0055b6e0, word_4, 0x4);
 GUEST_OFFSET(Frame_0055b6e0, word_8, 0x8);
 GUEST_SIZE(Frame_0055b6e0, 0x10);
 
-void f_0055b6e0(u32 r0, u32 r1, u32 r2, u32 r3) {
+void EmitterSet__draw(u32 emitter_set, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_0055b6e0> frame;  // the original's stack frame
-    u32 r12 = r0;
+    u32 r12 = emitter_set;
     u32 r6 = r1;
     u32 r4 = 0u;
     u32 r7 = r2;
     u32 r8 = r3;
-    r0 = r4;
+    emitter_set = r4;
     r1 = 0x20u;  // (from the original)
     do {
-        u32 r2_1 = *gptr<u32>(r12 + (r0 << 2) + 0x1f0u);  // (from the original)
-        r0 += 1u;
+        u32 r2_1 = *gptr<u32>(r12 + (emitter_set << 2) + 0x1f0u);  // (from the original)
+        emitter_set += 1u;
         if (r2_1 != 0) {
             r4 += 1u;
         }
@@ -1664,24 +1588,25 @@ void f_0055b6e0(u32 r0, u32 r1, u32 r2, u32 r3) {
     frame->word_4 = r12 + 0x114u;  // (from the original)
     frame->word_8 = r0_1;
     frame->word_0 = r4;
-    call_00556a90(r7, r8, r12 + r6 * 0x1cu + 0x270u, r12 + 0x2acu);  // (from the original)
+    EmitterSet__draw_emitters(r7, r8, r12 + r6 * 0x1cu + 0x270u, r12 + 0x2acu);  // (from the original)
 }
 
 }  // namespace d_0055b6e0
-GUEST_EXPORT_FRAMED(0x0055b6e0, d_0055b6e0::f_0055b6e0, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055b6e0, d_0055b6e0::EmitterSet__draw, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_0055ba48: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// The next value of the effect random generator, in [0, 1].
 namespace d_0055ba48 {
 
-inline guest::global<u32, 0x00981cfc> global_00981cfc;
+inline guest::global<u32, 0x00981cfc> effect_random_state;
 
-u32 f_0055ba48() {
+u32 random_unit_float() {
     u32 fpsr = guest::cpu()->fpscr;
     u32 r0_2 = 0;
     float S1_1 = 3.7252903e-9f;
     float S2 = 0.0f;
-    u32 r1 = *global_00981cfc * 0xfd43fdu + 0xc39ec3u;  // (from the original)
-    *global_00981cfc = r1;
+    u32 r1 = *effect_random_state * 0xfd43fdu + 0xc39ec3u;  // (from the original)
+    *effect_random_state = r1;
     float S0 = float(s32(r1 & ~0xf0000000u)) * S1_1;  // (from the original)
     float S1 = 1.0f;
     fpsr = fpsr & 0xfffffffu | vfp_cmpf(S0, S2);  // (from the original)
@@ -1711,55 +1636,57 @@ u32 f_0055ba48() {
 }
 
 }  // namespace d_0055ba48
-GUEST_EXPORT(0x0055ba48, d_0055ba48::f_0055ba48);
+GUEST_EXPORT(0x0055ba48, d_0055ba48::random_unit_float);
 
 // f_0055badc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Loads the particle shader and finds its uniforms by name.
 namespace d_0055badc {
 
-struct __attribute__((packed)) Object_0055badc_0 {
+struct __attribute__((packed)) ParticleShader {
     u8 unknown_0[0x29c];  // (not used here)
     u8 byte_29c;
 };
-GUEST_OFFSET(Object_0055badc_0, byte_29c, 0x29c);
+GUEST_OFFSET(ParticleShader, byte_29c, 0x29c);
 
-inline constexpr guest::Function<0x00349878, u32(u32, u32, u32, u32)> call_00349878;
-inline constexpr guest::Function<0x00726d2c, u32(u32, u32, u32, u32)> call_00726d2c;
+inline constexpr guest::Function<0x00349878, u32(u32, u32, u32, u32)> Shader__load;
+inline constexpr guest::Function<0x00726d2c, u32(u32, u32, u32, u32)> Shader__find_uniform;
 
-void f_0055badc(gptr<Object_0055badc_0> arg0, u32 r1, u32 r2) {
+void ParticleShader__bind_uniforms(gptr<ParticleShader> particle_shader, u32 r1, u32 r2) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    call_00349878(arg0.addr() + 4u, r1, r2, guest::cpu()->r[3]);
-    arg0->byte_29c = 3;
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x1295cu, 0x8c1b84u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x12964u, 0x8c1b7cu, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x1296cu, 0x8c1b74u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x12974u, 0x8c1b6cu, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x1297cu, 0x8c1b60u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x12984u, 0x8c1b54u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x1298cu, 0x8c1b48u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x12994u, 0x8c1b3cu, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x1299cu, 0x8c1b34u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129a4u, 0x8c1b2cu, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129acu, 0x8c1b20u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129b4u, 0x8c1b18u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129bcu, 0x8c1b10u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129c4u, 0x8c1b08u, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129ccu, 0x8c1afcu, guest::cpu()->r[3]);  // (from the original)
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129d4u, 0x8c1ae8u, guest::cpu()->r[3]);  // (from the original)
+    Shader__load(particle_shader.addr() + 4u, r1, r2, guest::cpu()->r[3]);
+    particle_shader->byte_29c = 3;
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x1295cu, 0x8c1b84u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x12964u, 0x8c1b7cu, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x1296cu, 0x8c1b74u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x12974u, 0x8c1b6cu, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x1297cu, 0x8c1b60u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x12984u, 0x8c1b54u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x1298cu, 0x8c1b48u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x12994u, 0x8c1b3cu, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x1299cu, 0x8c1b34u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129a4u, 0x8c1b2cu, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129acu, 0x8c1b20u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129b4u, 0x8c1b18u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129bcu, 0x8c1b10u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129c4u, 0x8c1b08u, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129ccu, 0x8c1afcu, guest::cpu()->r[3]);  // (from the original)
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129d4u, 0x8c1ae8u, guest::cpu()->r[3]);  // (from the original)
     frame.release();
-    call_00726d2c(arg0.addr() + 4u, arg0.addr() + 0x129dcu, 0x8c1ac8u, guest::cpu()->r[3]);
+    Shader__find_uniform(particle_shader.addr() + 4u, particle_shader.addr() + 0x129dcu, 0x8c1ac8u, guest::cpu()->r[3]);
     return;  // (from the original)
 }
 
 }  // namespace d_0055badc
-GUEST_EXPORT(0x0055badc, d_0055badc::f_0055badc);
+GUEST_EXPORT(0x0055badc, d_0055badc::ParticleShader__bind_uniforms);
 
 // f_0055bc90: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Sets up the three vertex buffers (position and two UV sets) of each of the 3 frames, and the index buffer.
 namespace d_0055bc90 {
 
 inline constexpr guest::Function<0x001435b4, u32(u32, u32, u32, u32)> translate_address;
-inline constexpr guest::Function<0x0034a784, u32(u32, u32, u32, u32)> call_0034a784;
-inline constexpr guest::Function<0x0055b898, u32(u32, u32, u32, u32)> call_0055b898;
-inline constexpr guest::Function<0x00726d2c, u32(u32, u32, u32, u32)> call_00726d2c;
+inline constexpr guest::Function<0x0034a784, u32(u32, u32, u32, u32)> VertexBuffer__bind_attribute;
+inline constexpr guest::Function<0x0055b898, u32(u32, u32, u32, u32)> ParticleShader__fill_index_buffer;
+inline constexpr guest::Function<0x00726d2c, u32(u32, u32, u32, u32)> Shader__find_uniform;
 
 struct __attribute__((packed)) Frame_0055bc90 {
     u8 byte_0;
@@ -1796,7 +1723,7 @@ GUEST_OFFSET(Frame_0055bc90, byte_13, 0x13);
 GUEST_OFFSET(Frame_0055bc90, word_14, 0x14);
 GUEST_SIZE(Frame_0055bc90, 0x2c);
 
-void f_0055bc90(u32 r0) {
+void ParticleShader__setup_vertex_buffers(u32 particle_shader) {
     guest::StackFrameOf<Frame_0055bc90> frame;  // the original's stack frame
     u32 r0_10 = 0;
     u32 r1_9 = 0;
@@ -1804,7 +1731,7 @@ void f_0055bc90(u32 r0) {
     frame->byte_10 = 0;
     frame->byte_0 = 0;
     frame->byte_8 = 0;
-    u32 r4 = r0;
+    u32 r4 = particle_shader;
     frame->byte_11 = 1;
     frame->byte_1 = 1;
     frame->byte_9 = 1;
@@ -1816,22 +1743,22 @@ void f_0055bc90(u32 r0) {
     frame->word_4 = 0;
     frame->byte_b = 0xff;  // (from the original)
     frame->word_c = 0;
-    call_0055b898(r4 + 0x129e4u, 0xffu, 0u, 1u);  // (from the original)
+    ParticleShader__fill_index_buffer(r4 + 0x129e4u, 0xffu, 0u, 1u);  // (from the original)
     u32 r3 = guest::cpu()->r[3];
     u32 r5 = 0u;
     do {
-        call_00726d2c(r4 + 4u, frame.at(0x10).addr(), 0x8c1abcu, r3);  // (from the original)
+        Shader__find_uniform(r4 + 4u, frame.at(0x10).addr(), 0x8c1abcu, r3);  // (from the original)
         u32 r6_1 = r4 + (r5 << 0xe);  // (from the original)
         u32 r0_4 = translate_address(r6_1 + 0x129e4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
         u32 r7_1 = r4 + ((r5 << 7) - r5 * 7u << 4) + 0x371e4u;  // (from the original)
-        call_0034a784(r7_1, frame.at(0x10).addr(), r0_4, 0xfu);  // (from the original)
-        call_00726d2c(r4 + 4u, frame.at(0).addr(), 0x8c1ab8u, guest::cpu()->r[3]);  // (from the original)
+        VertexBuffer__bind_attribute(r7_1, frame.at(0x10).addr(), r0_4, 0xfu);  // (from the original)
+        Shader__find_uniform(r4 + 4u, frame.at(0).addr(), 0x8c1ab8u, guest::cpu()->r[3]);  // (from the original)
         u32 r0_7 = translate_address(r6_1 + 0x1e9e4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-        call_0034a784(r7_1, frame.at(0).addr(), r0_7, 0xfu);  // (from the original)
-        call_00726d2c(r4 + 4u, frame.at(8).addr(), 0x8c1ab4u, guest::cpu()->r[3]);  // (from the original)
+        VertexBuffer__bind_attribute(r7_1, frame.at(0).addr(), r0_7, 0xfu);  // (from the original)
+        Shader__find_uniform(r4 + 4u, frame.at(8).addr(), 0x8c1ab4u, guest::cpu()->r[3]);  // (from the original)
         r0_10 = translate_address(r6_1 + 0x2a9e4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
         r1_9 = frame.at(8).addr();
-        call_0034a784(r7_1, r1_9, r0_10, 0xfu);  // (from the original)
+        VertexBuffer__bind_attribute(r7_1, r1_9, r0_10, 0xfu);  // (from the original)
         r3 = guest::cpu()->r[3];
         r5 += 1u;
         guest::preempt();
@@ -1842,12 +1769,13 @@ void f_0055bc90(u32 r0) {
 }
 
 }  // namespace d_0055bc90
-GUEST_EXPORT_FRAMED(0x0055bc90, d_0055bc90::f_0055bc90, 0x40f0);  // pushes {r4, r5, r6, r7, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055bc90, d_0055bc90::ParticleShader__setup_vertex_buffers, 0x40f0);  // pushes {r4, r5, r6, r7, lr} first, as the original
 
 // f_0055c0c8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Loads the shader, sets up its buffers and builds its setup and light command lists.
 namespace d_0055c0c8 {
 
-struct __attribute__((packed)) Object_0055c0c8_0 {
+struct __attribute__((packed)) ParticleShader {
     u32 word_0;
     u8 unknown_4[0x398a0];  // (not used here)
     u32 word_398a4;
@@ -1857,12 +1785,12 @@ struct __attribute__((packed)) Object_0055c0c8_0 {
     u8 unknown_398b4[0x4];  // (not used here)
     u32 word_398b8;
 };
-GUEST_OFFSET(Object_0055c0c8_0, word_0, 0x0);
-GUEST_OFFSET(Object_0055c0c8_0, word_398a4, 0x398a4);
-GUEST_OFFSET(Object_0055c0c8_0, word_398a8, 0x398a8);
-GUEST_OFFSET(Object_0055c0c8_0, word_398ac, 0x398ac);
-GUEST_OFFSET(Object_0055c0c8_0, word_398b0, 0x398b0);
-GUEST_OFFSET(Object_0055c0c8_0, word_398b8, 0x398b8);
+GUEST_OFFSET(ParticleShader, word_0, 0x0);
+GUEST_OFFSET(ParticleShader, word_398a4, 0x398a4);
+GUEST_OFFSET(ParticleShader, word_398a8, 0x398a8);
+GUEST_OFFSET(ParticleShader, word_398ac, 0x398ac);
+GUEST_OFFSET(ParticleShader, word_398b0, 0x398b0);
+GUEST_OFFSET(ParticleShader, word_398b8, 0x398b8);
 
 struct __attribute__((packed)) Local_0055c0c8_ea_1 {
     u32 word_0;
@@ -1872,30 +1800,30 @@ GUEST_OFFSET(Local_0055c0c8_ea_1, word_0, 0x0);
 GUEST_OFFSET(Local_0055c0c8_ea_1, word_4, 0x4);
 
 inline constexpr guest::Function<0x002f825c, u32(u32, u32)> clear_aligned;
-inline constexpr guest::Function<0x0055badc, u32(u32, u32, u32, u32)> call_0055badc;
-inline constexpr guest::Function<0x0055bc90, u32(u32)> call_0055bc90;
-inline constexpr guest::Function<0x00726a54, u32(u32, u32)> call_00726a54;
+inline constexpr guest::Function<0x0055badc, u32(u32, u32, u32, u32)> ParticleShader__bind_uniforms;
+inline constexpr guest::Function<0x0055bc90, u32(u32)> ParticleShader__setup_vertex_buffers;
+inline constexpr guest::Function<0x00726a54, u32(u32, u32)> Shader__write_program_commands;
 
-void f_0055c0c8(gptr<Object_0055c0c8_0> arg0, u32 r1, u32 r2, u32 r3) {
-    u32 r0 = arg0.addr();
+void ParticleShader__init(gptr<ParticleShader> particle_shader, u32 r1, u32 r2, u32 r3) {
+    u32 r0 = particle_shader.addr();
     u32 res_1 = 0;
     u32 r4 = r0;
     u32 r3_1 = *gptr<u32>(guest::cpu()->r[13] + 0x10u);  // (from the original)
-    arg0->word_0 = r1;
-    call_0055badc(r4, r2, r3, r3_1);
-    call_0055bc90(r4);
-    u32 r0_2 = call_00726a54(r4 + 4u, r4 + 0x388a0u);  // (from the original)
+    particle_shader->word_0 = r1;
+    ParticleShader__bind_uniforms(r4, r2, r3, r3_1);
+    ParticleShader__setup_vertex_buffers(r4);
+    u32 r0_2 = Shader__write_program_commands(r4 + 4u, r4 + 0x388a0u);  // (from the original)
     *gptr<u32>(r4 + 0x398a0u) = (r0_2 - r4) - 0x388a0u;  // (from the original)
     u32 r6 = 0u;
-    arg0->word_398a4 = r6;
-    arg0->word_398a8 = 0xf0201;  // (from the original)
-    arg0->word_398ac = r6;
-    arg0->word_398b0 = 0xf0201u ^ u32(s32(0x398a0u) >> 0x10);  // (from the original)
+    particle_shader->word_398a4 = r6;
+    particle_shader->word_398a8 = 0xf0201;  // (from the original)
+    particle_shader->word_398ac = r6;
+    particle_shader->word_398b0 = 0xf0201u ^ u32(s32(0x398a0u) >> 0x10);  // (from the original)
     u32 r5_1 = r4 + 0x398b4u;  // (from the original)
     clear_aligned(r5_1, 0x98u);  // (from the original)
     r3 = 0x803f0232u;  // (from the original)
     u32 r12 = r5_1 + 0x98u;  // (from the original)
-    arg0->word_398b8 = 0x823f0203;  // (from the original)
+    particle_shader->word_398b8 = 0x823f0203;  // (from the original)
     r0 = r12;
     r1 = 0u;
     r2 = 0xcu;  // (from the original)
@@ -1918,12 +1846,13 @@ void f_0055c0c8(gptr<Object_0055c0c8_0> arg0, u32 r1, u32 r2, u32 r3) {
 }
 
 }  // namespace d_0055c0c8
-GUEST_EXPORT_FRAMED(0x0055c0c8, d_0055c0c8::f_0055c0c8, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055c0c8, d_0055c0c8::ParticleShader__init, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_0055c1b8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Once per state change: writes the commands binding the shader and its lights; their end.
 namespace d_0055c1b8 {
 
-struct __attribute__((packed)) Object_0055c1b8_0 {
+struct __attribute__((packed)) ParticleShader {
     u32 word_0;
     u8 unknown_4[0x129d2];  // (not used here)
     u8 byte_129d6;
@@ -1932,10 +1861,10 @@ struct __attribute__((packed)) Object_0055c1b8_0 {
     u8 unknown_398a4[0x200];  // (not used here)
     u32 word_39aa4;
 };
-GUEST_OFFSET(Object_0055c1b8_0, word_0, 0x0);
-GUEST_OFFSET(Object_0055c1b8_0, byte_129d6, 0x129d6);
-GUEST_OFFSET(Object_0055c1b8_0, word_398a0, 0x398a0);
-GUEST_OFFSET(Object_0055c1b8_0, word_39aa4, 0x39aa4);
+GUEST_OFFSET(ParticleShader, word_0, 0x0);
+GUEST_OFFSET(ParticleShader, byte_129d6, 0x129d6);
+GUEST_OFFSET(ParticleShader, word_398a0, 0x398a0);
+GUEST_OFFSET(ParticleShader, word_39aa4, 0x39aa4);
 
 struct __attribute__((packed)) Object_0055c1b8_1 {
     u32 word_0;
@@ -1963,54 +1892,56 @@ inline guest::global<u32, 0x00af51d4> global_00af51d4;
 inline guest::global<u32, 0x00af51d8> global_00af51d8;
 inline constexpr guest::Function<0x002fbb30, u32(u32, u32, u32, u32)> copy_aligned_bytes;
 
-u32 f_0055c1b8(gptr<Object_0055c1b8_0> arg0, gptr<Object_0055c1b8_1> arg1) {
+u32 ParticleShader__write_bind_commands(gptr<ParticleShader> particle_shader, gptr<Object_0055c1b8_1> arg1) {
     u32 r0_1 = arg1.addr();
-    gptr<Local_0055c1b8_r1_1> r1_1 = gptr<Local_0055c1b8_r1_1>(arg0->word_0 + 0x60768u);  // (from the original)
+    gptr<Local_0055c1b8_r1_1> r1_1 = gptr<Local_0055c1b8_r1_1>(particle_shader->word_0 + 0x60768u);  // (from the original)
     if (r1_1->word_0 != 2u) {
         r1_1->word_0 = 2;
-        u32 r6_1 = arg0.addr() + 0x398a0u;  // (from the original)
-        arg1->word_0 = u32(arg0->byte_129d6) | 0x80000000u;  // (from the original)
+        u32 r6_1 = particle_shader.addr() + 0x398a0u;  // (from the original)
+        arg1->word_0 = u32(particle_shader->byte_129d6) | 0x80000000u;  // (from the original)
         arg1->word_4 = 0x804f0290;  // (from the original)
         arg1->word_8 = *global_00af51d8;
         arg1->word_c = *global_00af51d4;
         arg1->word_10 = *global_00af51d0;
         arg1->word_14 = *global_00af51cc;
-        copy_aligned_bytes(r0_1 + 0x18u, arg0.addr() + 0x388a0u, arg0->word_398a0, 0x804f0290u);  // (from the original)
-        u32 r6_2 = arg0.addr() + 0x39aa4u;  // (from the original)
-        u32 r5_1 = r0_1 + 0x18u + (arg0->word_398a0 & ~3u);  // (from the original)
-        copy_aligned_bytes(r5_1, arg0.addr() + 0x398a4u, arg0->word_39aa4, guest::cpu()->r[3]);  // (from the original)
-        r0_1 = (arg0->word_39aa4 & ~3u) + r5_1;
+        copy_aligned_bytes(r0_1 + 0x18u, particle_shader.addr() + 0x388a0u, particle_shader->word_398a0, 0x804f0290u);  // (from the original)
+        u32 r6_2 = particle_shader.addr() + 0x39aa4u;  // (from the original)
+        u32 r5_1 = r0_1 + 0x18u + (particle_shader->word_398a0 & ~3u);  // (from the original)
+        copy_aligned_bytes(r5_1, particle_shader.addr() + 0x398a4u, particle_shader->word_39aa4, guest::cpu()->r[3]);  // (from the original)
+        r0_1 = (particle_shader->word_39aa4 & ~3u) + r5_1;
     }
     return r0_1;
 }
 
 }  // namespace d_0055c1b8
-GUEST_EXPORT_FRAMED(0x0055c1b8, d_0055c1b8::f_0055c1b8, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055c1b8, d_0055c1b8::ParticleShader__write_bind_commands, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_0055c27c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Copies the shader's light commands into the buffer; their end.
 namespace d_0055c27c {
 
-struct __attribute__((packed)) Object_0055c27c_0 {
+struct __attribute__((packed)) ParticleShader {
     u8 unknown_0[0x39aa4];  // (not used here)
     u32 word_39aa4;
 };
-GUEST_OFFSET(Object_0055c27c_0, word_39aa4, 0x39aa4);
+GUEST_OFFSET(ParticleShader, word_39aa4, 0x39aa4);
 
 inline constexpr guest::Function<0x002fbb30, u32(u32, u32, u32, u32)> copy_aligned_bytes;
 
-u32 f_0055c27c(gptr<Object_0055c27c_0> arg0, u32 r1) {
-    u32 r4_1 = arg0.addr() + 0x39aa4u;  // (from the original)
-    copy_aligned_bytes(r1, arg0.addr() + 0x398a4u, arg0->word_39aa4, guest::cpu()->r[3]);  // (from the original)
-    return (arg0->word_39aa4 & ~3u) + r1;
+u32 ParticleShader__write_light_commands(gptr<ParticleShader> particle_shader, u32 r1) {
+    u32 r4_1 = particle_shader.addr() + 0x39aa4u;  // (from the original)
+    copy_aligned_bytes(r1, particle_shader.addr() + 0x398a4u, particle_shader->word_39aa4, guest::cpu()->r[3]);  // (from the original)
+    return (particle_shader->word_39aa4 & ~3u) + r1;
 }
 
 }  // namespace d_0055c27c
-GUEST_EXPORT_FRAMED(0x0055c27c, d_0055c27c::f_0055c27c, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055c27c, d_0055c27c::ParticleShader__write_light_commands, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_0055c2b0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Writes the shader's uniforms as GPU commands.
 namespace d_0055c2b0 {
 
-struct __attribute__((packed)) Object_0055c2b0_0 {
+struct __attribute__((packed)) ParticleShader {
     u8 unknown_0[0x1295c];  // (not used here)
     u8 byte_1295c;
     u8 byte_1295d;
@@ -2098,91 +2029,91 @@ struct __attribute__((packed)) Object_0055c2b0_0 {
     u8 byte_129df;
     u32 word_129e0;
 };
-GUEST_OFFSET(Object_0055c2b0_0, byte_1295c, 0x1295c);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1295d, 0x1295d);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1295e, 0x1295e);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1295f, 0x1295f);
-GUEST_OFFSET(Object_0055c2b0_0, word_12960, 0x12960);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12964, 0x12964);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12965, 0x12965);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12966, 0x12966);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12967, 0x12967);
-GUEST_OFFSET(Object_0055c2b0_0, word_12968, 0x12968);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1296c, 0x1296c);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1296d, 0x1296d);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1296e, 0x1296e);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1296f, 0x1296f);
-GUEST_OFFSET(Object_0055c2b0_0, word_12970, 0x12970);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12974, 0x12974);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12975, 0x12975);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12976, 0x12976);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12977, 0x12977);
-GUEST_OFFSET(Object_0055c2b0_0, word_12978, 0x12978);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1297c, 0x1297c);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1297d, 0x1297d);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1297e, 0x1297e);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1297f, 0x1297f);
-GUEST_OFFSET(Object_0055c2b0_0, word_12980, 0x12980);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12984, 0x12984);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12985, 0x12985);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12986, 0x12986);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12987, 0x12987);
-GUEST_OFFSET(Object_0055c2b0_0, word_12988, 0x12988);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1298c, 0x1298c);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1298d, 0x1298d);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1298e, 0x1298e);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1298f, 0x1298f);
-GUEST_OFFSET(Object_0055c2b0_0, word_12990, 0x12990);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12994, 0x12994);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12995, 0x12995);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12996, 0x12996);
-GUEST_OFFSET(Object_0055c2b0_0, byte_12997, 0x12997);
-GUEST_OFFSET(Object_0055c2b0_0, word_12998, 0x12998);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1299c, 0x1299c);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1299d, 0x1299d);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1299e, 0x1299e);
-GUEST_OFFSET(Object_0055c2b0_0, byte_1299f, 0x1299f);
-GUEST_OFFSET(Object_0055c2b0_0, word_129a0, 0x129a0);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129a4, 0x129a4);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129a5, 0x129a5);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129a6, 0x129a6);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129a7, 0x129a7);
-GUEST_OFFSET(Object_0055c2b0_0, word_129a8, 0x129a8);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129ac, 0x129ac);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129ad, 0x129ad);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129ae, 0x129ae);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129af, 0x129af);
-GUEST_OFFSET(Object_0055c2b0_0, word_129b0, 0x129b0);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129b4, 0x129b4);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129b5, 0x129b5);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129b6, 0x129b6);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129b7, 0x129b7);
-GUEST_OFFSET(Object_0055c2b0_0, word_129b8, 0x129b8);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129bc, 0x129bc);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129bd, 0x129bd);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129be, 0x129be);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129bf, 0x129bf);
-GUEST_OFFSET(Object_0055c2b0_0, word_129c0, 0x129c0);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129c4, 0x129c4);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129c5, 0x129c5);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129c6, 0x129c6);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129c7, 0x129c7);
-GUEST_OFFSET(Object_0055c2b0_0, word_129c8, 0x129c8);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129cc, 0x129cc);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129cd, 0x129cd);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129ce, 0x129ce);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129cf, 0x129cf);
-GUEST_OFFSET(Object_0055c2b0_0, word_129d0, 0x129d0);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129d4, 0x129d4);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129d5, 0x129d5);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129d6, 0x129d6);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129d7, 0x129d7);
-GUEST_OFFSET(Object_0055c2b0_0, word_129d8, 0x129d8);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129dc, 0x129dc);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129dd, 0x129dd);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129de, 0x129de);
-GUEST_OFFSET(Object_0055c2b0_0, byte_129df, 0x129df);
-GUEST_OFFSET(Object_0055c2b0_0, word_129e0, 0x129e0);
+GUEST_OFFSET(ParticleShader, byte_1295c, 0x1295c);
+GUEST_OFFSET(ParticleShader, byte_1295d, 0x1295d);
+GUEST_OFFSET(ParticleShader, byte_1295e, 0x1295e);
+GUEST_OFFSET(ParticleShader, byte_1295f, 0x1295f);
+GUEST_OFFSET(ParticleShader, word_12960, 0x12960);
+GUEST_OFFSET(ParticleShader, byte_12964, 0x12964);
+GUEST_OFFSET(ParticleShader, byte_12965, 0x12965);
+GUEST_OFFSET(ParticleShader, byte_12966, 0x12966);
+GUEST_OFFSET(ParticleShader, byte_12967, 0x12967);
+GUEST_OFFSET(ParticleShader, word_12968, 0x12968);
+GUEST_OFFSET(ParticleShader, byte_1296c, 0x1296c);
+GUEST_OFFSET(ParticleShader, byte_1296d, 0x1296d);
+GUEST_OFFSET(ParticleShader, byte_1296e, 0x1296e);
+GUEST_OFFSET(ParticleShader, byte_1296f, 0x1296f);
+GUEST_OFFSET(ParticleShader, word_12970, 0x12970);
+GUEST_OFFSET(ParticleShader, byte_12974, 0x12974);
+GUEST_OFFSET(ParticleShader, byte_12975, 0x12975);
+GUEST_OFFSET(ParticleShader, byte_12976, 0x12976);
+GUEST_OFFSET(ParticleShader, byte_12977, 0x12977);
+GUEST_OFFSET(ParticleShader, word_12978, 0x12978);
+GUEST_OFFSET(ParticleShader, byte_1297c, 0x1297c);
+GUEST_OFFSET(ParticleShader, byte_1297d, 0x1297d);
+GUEST_OFFSET(ParticleShader, byte_1297e, 0x1297e);
+GUEST_OFFSET(ParticleShader, byte_1297f, 0x1297f);
+GUEST_OFFSET(ParticleShader, word_12980, 0x12980);
+GUEST_OFFSET(ParticleShader, byte_12984, 0x12984);
+GUEST_OFFSET(ParticleShader, byte_12985, 0x12985);
+GUEST_OFFSET(ParticleShader, byte_12986, 0x12986);
+GUEST_OFFSET(ParticleShader, byte_12987, 0x12987);
+GUEST_OFFSET(ParticleShader, word_12988, 0x12988);
+GUEST_OFFSET(ParticleShader, byte_1298c, 0x1298c);
+GUEST_OFFSET(ParticleShader, byte_1298d, 0x1298d);
+GUEST_OFFSET(ParticleShader, byte_1298e, 0x1298e);
+GUEST_OFFSET(ParticleShader, byte_1298f, 0x1298f);
+GUEST_OFFSET(ParticleShader, word_12990, 0x12990);
+GUEST_OFFSET(ParticleShader, byte_12994, 0x12994);
+GUEST_OFFSET(ParticleShader, byte_12995, 0x12995);
+GUEST_OFFSET(ParticleShader, byte_12996, 0x12996);
+GUEST_OFFSET(ParticleShader, byte_12997, 0x12997);
+GUEST_OFFSET(ParticleShader, word_12998, 0x12998);
+GUEST_OFFSET(ParticleShader, byte_1299c, 0x1299c);
+GUEST_OFFSET(ParticleShader, byte_1299d, 0x1299d);
+GUEST_OFFSET(ParticleShader, byte_1299e, 0x1299e);
+GUEST_OFFSET(ParticleShader, byte_1299f, 0x1299f);
+GUEST_OFFSET(ParticleShader, word_129a0, 0x129a0);
+GUEST_OFFSET(ParticleShader, byte_129a4, 0x129a4);
+GUEST_OFFSET(ParticleShader, byte_129a5, 0x129a5);
+GUEST_OFFSET(ParticleShader, byte_129a6, 0x129a6);
+GUEST_OFFSET(ParticleShader, byte_129a7, 0x129a7);
+GUEST_OFFSET(ParticleShader, word_129a8, 0x129a8);
+GUEST_OFFSET(ParticleShader, byte_129ac, 0x129ac);
+GUEST_OFFSET(ParticleShader, byte_129ad, 0x129ad);
+GUEST_OFFSET(ParticleShader, byte_129ae, 0x129ae);
+GUEST_OFFSET(ParticleShader, byte_129af, 0x129af);
+GUEST_OFFSET(ParticleShader, word_129b0, 0x129b0);
+GUEST_OFFSET(ParticleShader, byte_129b4, 0x129b4);
+GUEST_OFFSET(ParticleShader, byte_129b5, 0x129b5);
+GUEST_OFFSET(ParticleShader, byte_129b6, 0x129b6);
+GUEST_OFFSET(ParticleShader, byte_129b7, 0x129b7);
+GUEST_OFFSET(ParticleShader, word_129b8, 0x129b8);
+GUEST_OFFSET(ParticleShader, byte_129bc, 0x129bc);
+GUEST_OFFSET(ParticleShader, byte_129bd, 0x129bd);
+GUEST_OFFSET(ParticleShader, byte_129be, 0x129be);
+GUEST_OFFSET(ParticleShader, byte_129bf, 0x129bf);
+GUEST_OFFSET(ParticleShader, word_129c0, 0x129c0);
+GUEST_OFFSET(ParticleShader, byte_129c4, 0x129c4);
+GUEST_OFFSET(ParticleShader, byte_129c5, 0x129c5);
+GUEST_OFFSET(ParticleShader, byte_129c6, 0x129c6);
+GUEST_OFFSET(ParticleShader, byte_129c7, 0x129c7);
+GUEST_OFFSET(ParticleShader, word_129c8, 0x129c8);
+GUEST_OFFSET(ParticleShader, byte_129cc, 0x129cc);
+GUEST_OFFSET(ParticleShader, byte_129cd, 0x129cd);
+GUEST_OFFSET(ParticleShader, byte_129ce, 0x129ce);
+GUEST_OFFSET(ParticleShader, byte_129cf, 0x129cf);
+GUEST_OFFSET(ParticleShader, word_129d0, 0x129d0);
+GUEST_OFFSET(ParticleShader, byte_129d4, 0x129d4);
+GUEST_OFFSET(ParticleShader, byte_129d5, 0x129d5);
+GUEST_OFFSET(ParticleShader, byte_129d6, 0x129d6);
+GUEST_OFFSET(ParticleShader, byte_129d7, 0x129d7);
+GUEST_OFFSET(ParticleShader, word_129d8, 0x129d8);
+GUEST_OFFSET(ParticleShader, byte_129dc, 0x129dc);
+GUEST_OFFSET(ParticleShader, byte_129dd, 0x129dd);
+GUEST_OFFSET(ParticleShader, byte_129de, 0x129de);
+GUEST_OFFSET(ParticleShader, byte_129df, 0x129df);
+GUEST_OFFSET(ParticleShader, word_129e0, 0x129e0);
 
 struct __attribute__((packed)) Local_0055c2b0_r1_1 {
     u32 word_0;
@@ -2194,96 +2125,96 @@ GUEST_OFFSET(Local_0055c2b0_r1_1, word_4, 0x4);
 GUEST_OFFSET(Local_0055c2b0_r1_1, byte_8, 0x8);
 
 inline constexpr guest::Function<0x00301d0d, u32(u32, u32, u32, u32)> for_each_element;
-inline constexpr guest::Function<0x0034a5e4, u32(u32, u32, u32, u32)> call_0034a5e4;
+inline constexpr guest::Function<0x0034a5e4, u32(u32, u32, u32, u32)> GpuState__init;
 
-u32 f_0055c2b0(gptr<Object_0055c2b0_0> arg0, u32 r1, u32 r2, u32 r3) {
-    u32 r0_1 = arg0.addr() + 4u;
-    call_0034a5e4(r0_1, r1, r2, r3);
-    arg0->byte_1295c = 0;
-    arg0->byte_1295d = 2;
-    arg0->byte_1295e = 0xff;  // (from the original)
-    arg0->byte_1295f = 0xff;  // (from the original)
-    arg0->word_12960 = 0;
-    arg0->byte_12964 = 0;
-    arg0->byte_12965 = 2;
-    arg0->byte_12966 = 0xff;  // (from the original)
-    arg0->byte_12967 = 0xff;  // (from the original)
-    arg0->word_12968 = 0;
-    arg0->byte_1296c = 0;
-    arg0->byte_1296d = 2;
-    arg0->byte_1296e = 0xff;  // (from the original)
-    arg0->byte_1296f = 0xff;  // (from the original)
-    arg0->word_12970 = 0;
-    arg0->byte_12974 = 0;
-    arg0->byte_12975 = 2;
-    arg0->byte_12976 = 0xff;  // (from the original)
-    arg0->byte_12977 = 0xff;  // (from the original)
-    arg0->word_12978 = 0;
-    arg0->byte_1297c = 0;
-    arg0->byte_1297d = 2;
-    arg0->byte_1297e = 0xff;  // (from the original)
-    arg0->byte_1297f = 0xff;  // (from the original)
-    arg0->word_12980 = 0;
-    arg0->byte_12984 = 0;
-    arg0->byte_12985 = 2;
-    arg0->byte_12986 = 0xff;  // (from the original)
-    arg0->byte_12987 = 0xff;  // (from the original)
-    arg0->word_12988 = 0;
-    arg0->byte_1298c = 0;
-    arg0->byte_1298d = 2;
-    arg0->byte_1298e = 0xff;  // (from the original)
-    arg0->byte_1298f = 0xff;  // (from the original)
-    arg0->word_12990 = 0;
-    arg0->byte_12994 = 0;
-    arg0->byte_12995 = 2;
-    arg0->byte_12996 = 0xff;  // (from the original)
-    arg0->byte_12997 = 0xff;  // (from the original)
-    arg0->word_12998 = 0;
-    arg0->byte_1299c = 0;
-    arg0->byte_1299d = 2;
-    arg0->byte_1299e = 0xff;  // (from the original)
-    arg0->byte_1299f = 0xff;  // (from the original)
-    arg0->word_129a0 = 0;
-    arg0->byte_129a4 = 0;
-    arg0->byte_129a5 = 2;
-    arg0->byte_129a6 = 0xff;  // (from the original)
-    arg0->byte_129a7 = 0xff;  // (from the original)
-    arg0->word_129a8 = 0;
-    arg0->byte_129ac = 0;
-    arg0->byte_129ad = 2;
-    arg0->byte_129ae = 0xff;  // (from the original)
-    arg0->byte_129af = 0xff;  // (from the original)
-    arg0->word_129b0 = 0;
-    arg0->byte_129b4 = 0;
-    arg0->byte_129b5 = 2;
-    arg0->byte_129b6 = 0xff;  // (from the original)
-    arg0->byte_129b7 = 0xff;  // (from the original)
-    arg0->word_129b8 = 0;
-    arg0->byte_129bc = 0;
-    arg0->byte_129bd = 2;
-    arg0->byte_129be = 0xff;  // (from the original)
-    arg0->byte_129bf = 0xff;  // (from the original)
-    arg0->word_129c0 = 0;
-    arg0->byte_129c4 = 0;
-    arg0->byte_129c5 = 2;
-    arg0->byte_129c6 = 0xff;  // (from the original)
-    arg0->byte_129c7 = 0xff;  // (from the original)
-    arg0->word_129c8 = 0;
-    arg0->byte_129cc = 0;
-    arg0->byte_129cd = 2;
-    arg0->byte_129ce = 0xff;  // (from the original)
-    arg0->byte_129cf = 0xff;  // (from the original)
-    arg0->word_129d0 = 0;
-    arg0->byte_129d4 = 1;
-    arg0->byte_129d5 = 2;
-    arg0->byte_129d6 = 0xff;  // (from the original)
-    arg0->byte_129d7 = 0xff;  // (from the original)
-    arg0->word_129d8 = 0;
-    arg0->byte_129dc = 1;
-    arg0->byte_129dd = 4;
-    arg0->byte_129de = 0xff;  // (from the original)
-    arg0->byte_129df = 0xff;  // (from the original)
-    arg0->word_129e0 = 0;
+u32 ParticleShader__write_uniform_commands(gptr<ParticleShader> particle_shader, u32 r1, u32 r2, u32 r3) {
+    u32 r0_1 = particle_shader.addr() + 4u;
+    GpuState__init(r0_1, r1, r2, r3);
+    particle_shader->byte_1295c = 0;
+    particle_shader->byte_1295d = 2;
+    particle_shader->byte_1295e = 0xff;  // (from the original)
+    particle_shader->byte_1295f = 0xff;  // (from the original)
+    particle_shader->word_12960 = 0;
+    particle_shader->byte_12964 = 0;
+    particle_shader->byte_12965 = 2;
+    particle_shader->byte_12966 = 0xff;  // (from the original)
+    particle_shader->byte_12967 = 0xff;  // (from the original)
+    particle_shader->word_12968 = 0;
+    particle_shader->byte_1296c = 0;
+    particle_shader->byte_1296d = 2;
+    particle_shader->byte_1296e = 0xff;  // (from the original)
+    particle_shader->byte_1296f = 0xff;  // (from the original)
+    particle_shader->word_12970 = 0;
+    particle_shader->byte_12974 = 0;
+    particle_shader->byte_12975 = 2;
+    particle_shader->byte_12976 = 0xff;  // (from the original)
+    particle_shader->byte_12977 = 0xff;  // (from the original)
+    particle_shader->word_12978 = 0;
+    particle_shader->byte_1297c = 0;
+    particle_shader->byte_1297d = 2;
+    particle_shader->byte_1297e = 0xff;  // (from the original)
+    particle_shader->byte_1297f = 0xff;  // (from the original)
+    particle_shader->word_12980 = 0;
+    particle_shader->byte_12984 = 0;
+    particle_shader->byte_12985 = 2;
+    particle_shader->byte_12986 = 0xff;  // (from the original)
+    particle_shader->byte_12987 = 0xff;  // (from the original)
+    particle_shader->word_12988 = 0;
+    particle_shader->byte_1298c = 0;
+    particle_shader->byte_1298d = 2;
+    particle_shader->byte_1298e = 0xff;  // (from the original)
+    particle_shader->byte_1298f = 0xff;  // (from the original)
+    particle_shader->word_12990 = 0;
+    particle_shader->byte_12994 = 0;
+    particle_shader->byte_12995 = 2;
+    particle_shader->byte_12996 = 0xff;  // (from the original)
+    particle_shader->byte_12997 = 0xff;  // (from the original)
+    particle_shader->word_12998 = 0;
+    particle_shader->byte_1299c = 0;
+    particle_shader->byte_1299d = 2;
+    particle_shader->byte_1299e = 0xff;  // (from the original)
+    particle_shader->byte_1299f = 0xff;  // (from the original)
+    particle_shader->word_129a0 = 0;
+    particle_shader->byte_129a4 = 0;
+    particle_shader->byte_129a5 = 2;
+    particle_shader->byte_129a6 = 0xff;  // (from the original)
+    particle_shader->byte_129a7 = 0xff;  // (from the original)
+    particle_shader->word_129a8 = 0;
+    particle_shader->byte_129ac = 0;
+    particle_shader->byte_129ad = 2;
+    particle_shader->byte_129ae = 0xff;  // (from the original)
+    particle_shader->byte_129af = 0xff;  // (from the original)
+    particle_shader->word_129b0 = 0;
+    particle_shader->byte_129b4 = 0;
+    particle_shader->byte_129b5 = 2;
+    particle_shader->byte_129b6 = 0xff;  // (from the original)
+    particle_shader->byte_129b7 = 0xff;  // (from the original)
+    particle_shader->word_129b8 = 0;
+    particle_shader->byte_129bc = 0;
+    particle_shader->byte_129bd = 2;
+    particle_shader->byte_129be = 0xff;  // (from the original)
+    particle_shader->byte_129bf = 0xff;  // (from the original)
+    particle_shader->word_129c0 = 0;
+    particle_shader->byte_129c4 = 0;
+    particle_shader->byte_129c5 = 2;
+    particle_shader->byte_129c6 = 0xff;  // (from the original)
+    particle_shader->byte_129c7 = 0xff;  // (from the original)
+    particle_shader->word_129c8 = 0;
+    particle_shader->byte_129cc = 0;
+    particle_shader->byte_129cd = 2;
+    particle_shader->byte_129ce = 0xff;  // (from the original)
+    particle_shader->byte_129cf = 0xff;  // (from the original)
+    particle_shader->word_129d0 = 0;
+    particle_shader->byte_129d4 = 1;
+    particle_shader->byte_129d5 = 2;
+    particle_shader->byte_129d6 = 0xff;  // (from the original)
+    particle_shader->byte_129d7 = 0xff;  // (from the original)
+    particle_shader->word_129d8 = 0;
+    particle_shader->byte_129dc = 1;
+    particle_shader->byte_129dd = 4;
+    particle_shader->byte_129de = 0xff;  // (from the original)
+    particle_shader->byte_129df = 0xff;  // (from the original)
+    particle_shader->word_129e0 = 0;
     u32 r0_3 = for_each_element(r0_1 + 0x371e0u, 0x34ab24u, 0x790u, 3u);  // (from the original)
     gptr<Local_0055c2b0_r1_1> r1_1 = gptr<Local_0055c2b0_r1_1>(r0_3 + 0x16b0u);  // (from the original)
     r1_1->word_0 = 0;
@@ -2293,7 +2224,7 @@ u32 f_0055c2b0(gptr<Object_0055c2b0_0> arg0, u32 r1, u32 r2, u32 r3) {
 }
 
 }  // namespace d_0055c2b0
-GUEST_EXPORT_FRAMED(0x0055c2b0, d_0055c2b0::f_0055c2b0, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055c2b0, d_0055c2b0::ParticleShader__write_uniform_commands, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_0055c4ec: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0055c4ec {
@@ -2301,13 +2232,13 @@ namespace d_0055c4ec {
 struct __attribute__((packed)) sead__ResourceFactory {
     u32 word_0;
     u8 unknown_4[0x10];  // (not used here)
-    u32 word_14;
+    u32 vtable_14;
     u8 unknown_18[0xc];  // (not used here)
     u32 word_24;
     u32 word_28;
     u32 word_2c;
     u32 word_30;
-    u32 word_34;
+    u32 vtable_34;
     u32 word_38;
     u32 word_3c;
     u8 unknown_40[0x20];  // (not used here)
@@ -2331,12 +2262,12 @@ struct __attribute__((packed)) sead__ResourceFactory {
     u32 word_258;
 };
 GUEST_OFFSET(sead__ResourceFactory, word_0, 0x0);
-GUEST_OFFSET(sead__ResourceFactory, word_14, 0x14);
+GUEST_OFFSET(sead__ResourceFactory, vtable_14, 0x14);
 GUEST_OFFSET(sead__ResourceFactory, word_24, 0x24);
 GUEST_OFFSET(sead__ResourceFactory, word_28, 0x28);
 GUEST_OFFSET(sead__ResourceFactory, word_2c, 0x2c);
 GUEST_OFFSET(sead__ResourceFactory, word_30, 0x30);
-GUEST_OFFSET(sead__ResourceFactory, word_34, 0x34);
+GUEST_OFFSET(sead__ResourceFactory, vtable_34, 0x34);
 GUEST_OFFSET(sead__ResourceFactory, word_38, 0x38);
 GUEST_OFFSET(sead__ResourceFactory, word_3c, 0x3c);
 GUEST_OFFSET(sead__ResourceFactory, word_60, 0x60);
@@ -2374,15 +2305,15 @@ u32 sead__ResourceFactory__ResourceFactory_0055c4ec(gptr<sead__ResourceFactory> 
     resource_factory->word_2c = r0_1 + 0x10u;  // (from the original)
     resource_factory->word_30 = 0;
     sead__IDisposer__IDisposer_00132174(r0_1 + 0x10u, 0u);  // (from the original)
-    resource_factory->word_14 = vtable_sead__ResourceFactory;
+    resource_factory->vtable_14 = vtable_sead__ResourceFactory;
     resource_factory->word_38 = r0_1 + 0x3cu;  // (from the original)
-    resource_factory->word_34 = vtable_sead__BufferedSafeStringBase_char_;
+    resource_factory->vtable_34 = vtable_sead__BufferedSafeStringBase_char_;
     resource_factory->word_3c = 0x20;  // (from the original)
     *gptr<u8>(resource_factory->word_38 + 0x1fu) = *empty_string;  // (from the original)
-    resource_factory->word_34 = vtable_sead__FixedSafeStringBase_char__32_;
+    resource_factory->vtable_34 = vtable_sead__FixedSafeStringBase_char__32_;
     *gptr<u8>(resource_factory->word_38) = *empty_string;
-    resource_factory->word_34 = vtable_sead__FixedSafeString_32_;
-    resource_factory->word_14 = vtable_sead__DirectResourceFactory_sead__GraphicsFileResNw4c_;
+    resource_factory->vtable_34 = vtable_sead__FixedSafeString_32_;
+    resource_factory->vtable_14 = vtable_sead__DirectResourceFactory_sead__GraphicsFileResNw4c_;
     resource_factory->word_0 = r1;
     resource_factory->word_60 = r2;
     resource_factory->word_64 = 0;
@@ -2407,18 +2338,19 @@ u32 sead__ResourceFactory__ResourceFactory_0055c4ec(gptr<sead__ResourceFactory> 
 GUEST_EXPORT_FRAMED(0x0055c4ec, d_0055c4ec::sead__ResourceFactory__ResourceFactory_0055c4ec, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_0055c5ec: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Destroys the particle model manager's resource factory.
 namespace d_0055c5ec {
 
 inline constexpr guest::Function<0x00545aa8, u32(u32, u32, u32, u32)> sead__ResourceFactory__destructor;
 
-u32 f_0055c5ec(u32 r0) {
-    u32 r0_1 = r0 + 0x14u;  // (from the original)
+u32 PtclModelMgr__destroy(u32 ptcl_model_mgr) {
+    u32 r0_1 = ptcl_model_mgr + 0x14u;  // (from the original)
     sead__ResourceFactory__destructor(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     return r0_1 - 0x14u;  // (from the original)
 }
 
 }  // namespace d_0055c5ec
-GUEST_EXPORT_FRAMED(0x0055c5ec, d_0055c5ec::f_0055c5ec, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055c5ec, d_0055c5ec::PtclModelMgr__destroy, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_0055c670: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0055c670 {
@@ -2426,7 +2358,7 @@ namespace d_0055c670 {
 inline constexpr u32 vtable_sead__Mutex = 0x00905a2cu;
 inline constexpr guest::Function<0x0012f204, u32(u32)> check_result;
 inline constexpr guest::Function<0x00132174, u32(u32, u32, u32, u32)> sead__IDisposer__IDisposer_00132174;
-inline constexpr guest::Function<0x0014f5dc, u32(u32, u32)> call_0014f5dc;
+inline constexpr guest::Function<0x0014f5dc, u32(u32, u32)> svc_create_mutex;
 
 struct __attribute__((packed)) Frame_0055c670 {
     u32 word_0;
@@ -2438,10 +2370,10 @@ u32 sead__Mutex__Mutex(gptr<sead__Mutex> mutex, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_0055c670> frame;  // the original's stack frame
     frame->word_0 = r3;
     sead__IDisposer__IDisposer_00132174(mutex.addr(), r1, r2, r3);
-    mutex->word_0 = vtable_sead__Mutex;
+    mutex->vtable = vtable_sead__Mutex;
     mutex->word_10 = 0;
     frame->word_0 = 0;
-    u32 r0_2 = call_0014f5dc(frame.at(0).addr(), 0u);
+    u32 r0_2 = svc_create_mutex(frame.at(0).addr(), 0u);
     if ((r0_2 >> 0x1f) == 0) {  // (from the original)
         r0_2 = 0u;
         mutex->word_10 = frame->word_0;
@@ -2456,10 +2388,11 @@ u32 sead__Mutex__Mutex(gptr<sead__Mutex> mutex, u32 r1, u32 r2, u32 r3) {
 GUEST_EXPORT_FRAMED(0x0055c670, d_0055c670::sead__Mutex__Mutex, 0x4030);  // pushes {r4, r5, lr} first, as the original
 
 // f_0055c73c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Decodes the base64 text into bytes.
 namespace d_0055c73c {
 
 
-void f_0055c73c(u32 r0, u32 r1, u32 r2, u32 r3) {
+void base64_decode_2(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r12 = 0u;
     u32 r4 = r12;
     u32 r6 = *gptr<u32>(guest::cpu()->r[13] + 0x1cu);  // (from the original)
@@ -2536,9 +2469,10 @@ L_55c94c:;
 }
 
 }  // namespace d_0055c73c
-GUEST_EXPORT_FRAMED(0x0055c73c, d_0055c73c::f_0055c73c, 0x7f0);  // pushes {r4, r5, r6, r7, r8, r9, r10} first, as the original
+GUEST_EXPORT_FRAMED(0x0055c73c, d_0055c73c::base64_decode_2, 0x7f0);  // pushes {r4, r5, r6, r7, r8, r9, r10} first, as the original
 
 // f_0055c96c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Encodes the bytes as base64 (the standard or the URL alphabet), with padding.
 namespace d_0055c96c {
 
 struct __attribute__((packed)) Local_0055c96c_r12 {
@@ -2551,7 +2485,7 @@ GUEST_OFFSET(Local_0055c96c_r12, byte_1, 0x1);
 GUEST_OFFSET(Local_0055c96c_r12, byte_2, 0x2);
 
 
-void f_0055c96c(u32 r0, u32 r1, u32 r2, u32 r3) {
+void base64_encode_2(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 res_1 = 0;
     r3 = r3 == 0 ? 0x8c54ccu : 0x8c5488u;  // (from the original)
     u32 r12_1 = u64(s64(s32(0x55555556u)) * s32(r2)) >> 0x20;  // (from the original)
@@ -2596,7 +2530,7 @@ void f_0055c96c(u32 r0, u32 r1, u32 r2, u32 r3) {
 }
 
 }  // namespace d_0055c96c
-GUEST_EXPORT_FRAMED(0x0055c96c, d_0055c96c::f_0055c96c, 0x3f0);  // pushes {r4, r5, r6, r7, r8, r9} first, as the original
+GUEST_EXPORT_FRAMED(0x0055c96c, d_0055c96c::base64_encode_2, 0x3f0);  // pushes {r4, r5, r6, r7, r8, r9} first, as the original
 
 // f_0055cabc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 // Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding
@@ -2641,9 +2575,9 @@ struct __attribute__((packed)) Local_0055cd54_r0_1 {
 GUEST_OFFSET(Local_0055cd54_r0_1, float_0, 0x0);
 GUEST_OFFSET(Local_0055cd54_r0_1, float_4, 0x4);
 
-inline constexpr guest::Function<0x00128e80, u32(u32, u32, u32, u32)> call_00128e80;
+inline constexpr guest::Function<0x00128e80, u32(u32, u32, u32, u32)> FsArchive__open_file;
 inline constexpr guest::Function<0x0012f204, u32(u32, u32)> check_result;
-inline constexpr guest::Function<0x00139504, u32(u32, u32)> call_00139504;
+inline constexpr guest::Function<0x00139504, u32(u32, u32)> svc_get_thread_id;
 
 struct __attribute__((packed)) Frame_0055cd54 {
     u32 word_0;
@@ -2672,7 +2606,7 @@ u32 ProcThread__virtual_6(gptr<sead__Thread> thread, u32 r1, float S0, float S1)
     if (thread->word_7c == 0) {
         u32 r12_1 = thread->word_80;
         frame->word_14 = thread.addr();
-        float S0_1 = std::bit_cast<float>(thread->word_88);
+        float S0_1 = std::bit_cast<float>(thread->physical_address);
         float S1_1 = std::bit_cast<float>(thread->word_8c);
         frame->word_20 = 4;
         frame->word_24 = 0x1394e4;  // (from the original)
@@ -2685,7 +2619,7 @@ u32 ProcThread__virtual_6(gptr<sead__Thread> thread, u32 r1, float S0, float S1)
         frame->word_c = 0;
         guest::cpu()->s[0] = S0_1;
         guest::cpu()->s[1] = S1_1;
-        u32 r0_2 = call_00128e80(r12_1, frame.at(0x20).addr(), 0x55cc40u, frame.at(0x14).addr());  // (from the original)
+        u32 r0_2 = FsArchive__open_file(r12_1, frame.at(0x20).addr(), 0x55cc40u, frame.at(0x14).addr());  // (from the original)
         r1 = guest::cpu()->r[1];
         S0 = guest::cpu()->s[0];
         S1 = guest::cpu()->s[1];
@@ -2703,7 +2637,7 @@ u32 ProcThread__virtual_6(gptr<sead__Thread> thread, u32 r1, float S0, float S1)
             u32 r1_2 = *gptr<u32>(thread->word_80);
             guest::cpu()->s[0] = S0;
             guest::cpu()->s[1] = S1;
-            u32 r0_4 = call_00139504(frame.at(0).addr(), r1_2);
+            u32 r0_4 = svc_get_thread_id(frame.at(0).addr(), r1_2);
             if ((r0_4 >> 0x1f) != 0) {  // (from the original)
                 check_result(r0_4, r1_2);
             }
@@ -2726,24 +2660,25 @@ u32 ProcThread__virtual_6(gptr<sead__Thread> thread, u32 r1, float S0, float S1)
 GUEST_EXPORT_FRAMED(0x0055cd54, d_0055cd54::ProcThread__virtual_6, 0x4030);  // pushes {r4, r5, lr} first, as the original
 
 // f_0055d510: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Clamps the four channels to [0, 1].
 namespace d_0055d510 {
 
-struct __attribute__((packed)) Object_0055d510_0 {
+struct __attribute__((packed)) Color4f {
     float float_0;
     float float_4;
     float float_8;
     float float_c;
 };
-GUEST_OFFSET(Object_0055d510_0, float_0, 0x0);
-GUEST_OFFSET(Object_0055d510_0, float_4, 0x4);
-GUEST_OFFSET(Object_0055d510_0, float_8, 0x8);
-GUEST_OFFSET(Object_0055d510_0, float_c, 0xc);
+GUEST_OFFSET(Color4f, float_0, 0x0);
+GUEST_OFFSET(Color4f, float_4, 0x4);
+GUEST_OFFSET(Color4f, float_8, 0x8);
+GUEST_OFFSET(Color4f, float_c, 0xc);
 
 
-void f_0055d510(gptr<Object_0055d510_0> arg0) {
+void Color4f__clamp(gptr<Color4f> color4f) {
     u32 fpsr = guest::cpu()->fpscr;
     float S0_1 = 0.0f;
-    float S2_1 = arg0->float_0;
+    float S2_1 = color4f->float_0;
     float S1_1 = 1.0f;
     u32 fpsr_1 = fpsr & 0xfffffffu | vfp_cmpf(S2_1, S0_1);  // (from the original)
     if (!(S2_1 < S0_1)) {
@@ -2754,8 +2689,8 @@ void f_0055d510(gptr<Object_0055d510_0> arg0) {
     } else {
         S2_1 = S0_1;
     }
-    arg0->float_0 = S2_1;
-    float S2_2 = arg0->float_4;
+    color4f->float_0 = S2_1;
+    float S2_2 = color4f->float_4;
     u32 fpsr_2 = fpsr_1 & 0xfffffffu | vfp_cmpf(S2_2, S0_1);  // (from the original)
     if (!(S2_2 < S0_1)) {
         fpsr_2 = fpsr_2 & 0xfffffffu | vfp_cmpf(S2_2, S1_1);  // (from the original)
@@ -2765,8 +2700,8 @@ void f_0055d510(gptr<Object_0055d510_0> arg0) {
     } else {
         S2_2 = S0_1;
     }
-    arg0->float_4 = S2_2;
-    float S2_3 = arg0->float_8;
+    color4f->float_4 = S2_2;
+    float S2_3 = color4f->float_8;
     u32 fpsr_3 = fpsr_2 & 0xfffffffu | vfp_cmpf(S2_3, S0_1);  // (from the original)
     if (!(S2_3 < S0_1)) {
         fpsr_3 = fpsr_3 & 0xfffffffu | vfp_cmpf(S2_3, S1_1);  // (from the original)
@@ -2776,10 +2711,10 @@ void f_0055d510(gptr<Object_0055d510_0> arg0) {
     } else {
         S2_3 = S0_1;
     }
-    arg0->float_8 = S2_3;
-    float S2_4 = arg0->float_c;
+    color4f->float_8 = S2_3;
+    float S2_4 = color4f->float_c;
     if (S2_4 < S0_1) {
-        arg0->float_c = S0_1;
+        color4f->float_c = S0_1;
         guest::cpu()->s[0] = S0_1;
         guest::cpu()->s[1] = S1_1;
         return;
@@ -2787,23 +2722,24 @@ void f_0055d510(gptr<Object_0055d510_0> arg0) {
     if (S2_4 > S1_1) {
         S2_4 = S1_1;
     }
-    arg0->float_c = S2_4;
+    color4f->float_c = S2_4;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
 }
 
 }  // namespace d_0055d510
-GUEST_EXPORT(0x0055d510, d_0055d510::f_0055d510);
+GUEST_EXPORT(0x0055d510, d_0055d510::Color4f__clamp);
 
 // f_0055d5c0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Interpolates between the two vectors by the clamped factor.
 namespace d_0055d5c0 {
 
-struct __attribute__((packed)) Object_0055d5c0_0 {
+struct __attribute__((packed)) Vec2 {
     float float_0;
     float float_4;
 };
-GUEST_OFFSET(Object_0055d5c0_0, float_0, 0x0);
-GUEST_OFFSET(Object_0055d5c0_0, float_4, 0x4);
+GUEST_OFFSET(Vec2, float_0, 0x0);
+GUEST_OFFSET(Vec2, float_4, 0x4);
 
 struct __attribute__((packed)) Object_0055d5c0_1 {
     float float_0;
@@ -2813,7 +2749,7 @@ GUEST_OFFSET(Object_0055d5c0_1, float_0, 0x0);
 GUEST_OFFSET(Object_0055d5c0_1, float_4, 0x4);
 
 
-void f_0055d5c0(gptr<Object_0055d5c0_0> arg0, gptr<Object_0055d5c0_1> arg1, float S0) {
+void Vec2__lerp(gptr<Vec2> vec2, gptr<Object_0055d5c0_1> arg1, float S0) {
     float S4_1 = S0;
     float S1_1 = 0.0f;
     float S0_1 = 1.0f;
@@ -2824,30 +2760,31 @@ void f_0055d5c0(gptr<Object_0055d5c0_0> arg0, gptr<Object_0055d5c0_1> arg1, floa
     } else {
         S4_1 = S1_1;
     }
-    float S0_2 = arg0->float_0;
+    float S0_2 = vec2->float_0;
     float S0_3 = S0_2 + (arg1->float_0 - S0_2) * S4_1;
-    float S1_2 = arg0->float_4;
+    float S1_2 = vec2->float_4;
     float S1_3 = S1_2 + (arg1->float_4 - S1_2) * S4_1;
     guest::cpu()->s[0] = S0_3;
     guest::cpu()->s[1] = S1_3;
 }
 
 }  // namespace d_0055d5c0
-GUEST_EXPORT(0x0055d5c0, d_0055d5c0::f_0055d5c0);
+GUEST_EXPORT(0x0055d5c0, d_0055d5c0::Vec2__lerp);
 
 // f_0055d634: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Interpolates between the two colors by the clamped factor.
 namespace d_0055d634 {
 
-struct __attribute__((packed)) Object_0055d634_0 {
+struct __attribute__((packed)) Color4f {
     float float_0;
     float float_4;
     float float_8;
     float float_c;
 };
-GUEST_OFFSET(Object_0055d634_0, float_0, 0x0);
-GUEST_OFFSET(Object_0055d634_0, float_4, 0x4);
-GUEST_OFFSET(Object_0055d634_0, float_8, 0x8);
-GUEST_OFFSET(Object_0055d634_0, float_c, 0xc);
+GUEST_OFFSET(Color4f, float_0, 0x0);
+GUEST_OFFSET(Color4f, float_4, 0x4);
+GUEST_OFFSET(Color4f, float_8, 0x8);
+GUEST_OFFSET(Color4f, float_c, 0xc);
 
 struct __attribute__((packed)) Object_0055d634_1 {
     float float_0;
@@ -2872,7 +2809,7 @@ GUEST_OFFSET(Object_0055d634_2, float_8, 0x8);
 GUEST_OFFSET(Object_0055d634_2, float_c, 0xc);
 
 
-void f_0055d634(gptr<Object_0055d634_0> arg0, gptr<Object_0055d634_1> arg1, gptr<Object_0055d634_2> arg2, float S0) {
+void Color4f__lerp(gptr<Color4f> color4f, gptr<Object_0055d634_1> arg1, gptr<Object_0055d634_2> arg2, float S0) {
     float S2_1 = 0.0f;
     float S1_1 = 1.0f;
     if (!(S0 < S2_1)) {
@@ -2883,41 +2820,42 @@ void f_0055d634(gptr<Object_0055d634_0> arg0, gptr<Object_0055d634_1> arg1, gptr
         S0 = S2_1;
     }
     float S1_2 = arg1->float_c;
-    arg0->float_c = S1_2 + (arg2->float_c - S1_2) * S0;
+    color4f->float_c = S1_2 + (arg2->float_c - S1_2) * S0;
     float S1_3 = arg1->float_0;
-    arg0->float_0 = S1_3 + (arg2->float_0 - S1_3) * S0;
+    color4f->float_0 = S1_3 + (arg2->float_0 - S1_3) * S0;
     float S1_4 = arg1->float_4;
-    arg0->float_4 = S1_4 + (arg2->float_4 - S1_4) * S0;
+    color4f->float_4 = S1_4 + (arg2->float_4 - S1_4) * S0;
     float S1_5 = arg1->float_8;
     float S1_6 = S1_5 + (arg2->float_8 - S1_5) * S0;
-    arg0->float_8 = S1_6;
+    color4f->float_8 = S1_6;
     guest::cpu()->s[0] = S0;
     guest::cpu()->s[1] = S1_6;
 }
 
 }  // namespace d_0055d634
-GUEST_EXPORT(0x0055d634, d_0055d634::f_0055d634);
+GUEST_EXPORT(0x0055d634, d_0055d634::Color4f__lerp);
 
 // f_0055debc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Allocates the aligned block from the end of a free block, splitting off what remains; the used block.
 namespace d_0055debc {
 
-struct __attribute__((packed)) Object_0055debc_0 {
+struct __attribute__((packed)) ExpHeap {
     u8 unknown_0[0x74];  // (not used here)
     u8 byte_74;
     u8 unknown_75[0xb];  // (not used here)
     u32 word_80;
     u32 word_84;
 };
-GUEST_OFFSET(Object_0055debc_0, byte_74, 0x74);
-GUEST_OFFSET(Object_0055debc_0, word_80, 0x80);
-GUEST_OFFSET(Object_0055debc_0, word_84, 0x84);
+GUEST_OFFSET(ExpHeap, byte_74, 0x74);
+GUEST_OFFSET(ExpHeap, word_80, 0x80);
+GUEST_OFFSET(ExpHeap, word_84, 0x84);
 
 struct __attribute__((packed)) Local_0055debc_r0_1 {
     u8 unknown_0[0xa];  // (not used here)
-    u16 half_a;
+    u16 res;
     u32 word_c;
 };
-GUEST_OFFSET(Local_0055debc_r0_1, half_a, 0xa);
+GUEST_OFFSET(Local_0055debc_r0_1, res, 0xa);
 GUEST_OFFSET(Local_0055debc_r0_1, word_c, 0xc);
 
 struct __attribute__((packed)) Local_0055debc_r4_1 {
@@ -2934,28 +2872,28 @@ GUEST_OFFSET(Local_0055debc_r4_1, half_a, 0xa);
 GUEST_OFFSET(Local_0055debc_r4_1, word_c, 0xc);
 
 inline constexpr guest::Function<0x0013bb00, u32(u32)> unlink_node_0013bb00;
-inline constexpr guest::Function<0x0055dfa4, u32(u32, u32)> call_0055dfa4;
-inline constexpr guest::Function<0x0074e45c, u32(u32, u32, u32, u32)> call_0074e45c;
+inline constexpr guest::Function<0x0055dfa4, u32(u32, u32)> sead__ExpHeap__add_used_block;
+inline constexpr guest::Function<0x0074e45c, u32(u32, u32, u32, u32)> sead__ExpHeap__allocate_from_block;
 
-u32 f_0055debc(gptr<Object_0055debc_0> arg0, u32 r1, u32 r2) {
-    u32 r3_1 = arg0->byte_74;
-    gptr<Local_0055debc_r0_1> r0_1 = gptr<Local_0055debc_r0_1>(call_0074e45c(arg0.addr(), r1, r2, r3_1));
+u32 sead__ExpHeap__alloc_aligned_from_tail(gptr<ExpHeap> exp_heap, u32 r1, u32 r2) {
+    u32 r3_1 = exp_heap->byte_74;
+    gptr<Local_0055debc_r0_1> r0_1 = gptr<Local_0055debc_r0_1>(sead__ExpHeap__allocate_from_block(exp_heap.addr(), r1, r2, r3_1));
     if (r0_1.addr() != 0) {
         u32 r3_2 = r0_1->word_c;
-        u32 r0_2 = u32(r0_1->half_a) + 0x10u;  // (from the original)
+        u32 r0_2 = u32(r0_1->res) + 0x10u;  // (from the original)
         u32 r1_2 = r0_1.addr() + r0_2 + (r3_2 - r1);
         u32 r2_1 = r1 + (r1_2 - (r1_2 & ~(r2 - 1u)));
         u32 r1_3 = r3_2 - r2_1;
         if (r1_3 <= 0x10u) {  // (from the original)
             u32 res_1 = r1_3 & 0xffffu;  // (from the original)
-            r0_1->half_a = u16(res_1);
+            r0_1->res = u16(res_1);
             if (res_1 != 0) {
                 *gptr<u32>(res_1 + 0x10u + r0_1.addr() - 4u) = r0_1.addr() + 1u;  // (from the original)
             }
             r0_1->word_c = r2_1;
-            unlink_node_0013bb00(arg0->word_84 + r0_1.addr());
-            arg0->word_80 = arg0->word_80 - 1u;
-            call_0055dfa4(arg0.addr(), r0_1.addr());
+            unlink_node_0013bb00(exp_heap->word_84 + r0_1.addr());
+            exp_heap->word_80 = exp_heap->word_80 - 1u;
+            sead__ExpHeap__add_used_block(exp_heap.addr(), r0_1.addr());
             return r0_1.addr();
         }
         r0_1->word_c = r1_3 - 0x10u;  // (from the original)
@@ -2968,46 +2906,48 @@ u32 f_0055debc(gptr<Object_0055debc_0> arg0, u32 r1, u32 r2) {
             r4_1->word_c = 0;
         }
         r4_1->word_c = r2_1;
-        call_0055dfa4(arg0.addr(), r4_1.addr());
+        sead__ExpHeap__add_used_block(exp_heap.addr(), r4_1.addr());
         r0_1 = gptr<Local_0055debc_r0_1>(r4_1.addr());
     }
     return r0_1.addr();
 }
 
 }  // namespace d_0055debc
-GUEST_EXPORT_FRAMED(0x0055debc, d_0055debc::f_0055debc, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055debc, d_0055debc::sead__ExpHeap__alloc_aligned_from_tail, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_0055dfa4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Adds the block to the used list (in address order when the heap keeps it sorted).
 namespace d_0055dfa4 {
 
-struct __attribute__((packed)) Local_0055dfa4_r4_1 {
+struct __attribute__((packed)) IntrusiveList {
     u8 unknown_0[0x8];  // (not used here)
     u32 word_8;
 };
-GUEST_OFFSET(Local_0055dfa4_r4_1, word_8, 0x8);
+GUEST_OFFSET(IntrusiveList, word_8, 0x8);
 
 inline constexpr guest::Function<0x00138560, u32(u32, u32)> insert_node_after_00138560;
-inline constexpr guest::Function<0x00560688, u32(u32, u32)> call_00560688;
+inline constexpr guest::Function<0x00560688, u32(u32, u32)> IntrusiveList__push_front;
 
-u32 f_0055dfa4(gptr<sead__ExpHeap> exp_heap, u32 r1) {
-    gptr<Local_0055dfa4_r4_1> r4_1 = gptr<Local_0055dfa4_r4_1>(exp_heap.addr() + 0x88u);  // (from the original)
+u32 sead__ExpHeap__add_used_block(gptr<sead__ExpHeap> exp_heap, u32 r1) {
+    gptr<IntrusiveList> intrusive_list = gptr<IntrusiveList>(exp_heap.addr() + 0x88u);  // (from the original)
     u32 r1_1 = r1 + exp_heap->word_94;
     if (exp_heap->byte_50 != 1u) {
-        call_00560688(r4_1.addr(), r1_1);
+        IntrusiveList__push_front(intrusive_list.addr(), r1_1);
         u32 r0_1 = exp_heap->word_90 + 1u;
         exp_heap->word_90 = r0_1;
         return r0_1;
     }
-    insert_node_after_00138560(r4_1.addr(), r1_1);
-    u32 r0_2 = r4_1->word_8 + 1u;
-    r4_1->word_8 = r0_2;
+    insert_node_after_00138560(intrusive_list.addr(), r1_1);
+    u32 r0_2 = intrusive_list->word_8 + 1u;
+    intrusive_list->word_8 = r0_2;
     return r0_2;
 }
 
 }  // namespace d_0055dfa4
-GUEST_EXPORT_FRAMED(0x0055dfa4, d_0055dfa4::f_0055dfa4, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055dfa4, d_0055dfa4::sead__ExpHeap__add_used_block, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_0055e9d0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Whether the task and its whole chain of children are loaded (state 4), under the lock.
 namespace d_0055e9d0 {
 
 struct __attribute__((packed)) Object_0055e9d0_1 {
@@ -3021,13 +2961,13 @@ GUEST_OFFSET(Object_0055e9d0_1, byte_60, 0x60);
 
 inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
-inline constexpr guest::Function<0x0055e9d0, u32(u32, u32)> call_0055e9d0;
+inline constexpr guest::Function<0x0055e9d0, u32(u32, u32)> call_ResourceTask__is_tree_loaded;
 
-u32 f_0055e9d0(u32 r0, gptr<Object_0055e9d0_1> arg1) {
+u32 ResourceTask__is_tree_loaded(u32 resource_task, gptr<Object_0055e9d0_1> arg1) {
     u32 r1 = arg1.addr();
     u32 r0_3 = 0;
-    u32 r6 = r0;
-    u32 r5 = r0 + 4u;
+    u32 r6 = resource_task;
+    u32 r5 = resource_task + 4u;
     u32 r4 = r1;
     lock_member_lock(r5, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
     r1 = guest::cpu()->r[1];
@@ -3039,7 +2979,7 @@ u32 f_0055e9d0(u32 r0, gptr<Object_0055e9d0_1> arg1) {
                 unlock_member_lock(r5, r1);
                 return 1u;
             }
-            r0_3 = call_0055e9d0(r6, *gptr<u32>(r0_2 + 0x10u));  // (from the original)
+            r0_3 = call_ResourceTask__is_tree_loaded(r6, *gptr<u32>(r0_2 + 0x10u));  // (from the original)
             r1 = guest::cpu()->r[1];
             guest::preempt();
         } while (r0_3 != 0);
@@ -3049,9 +2989,10 @@ u32 f_0055e9d0(u32 r0, gptr<Object_0055e9d0_1> arg1) {
 }
 
 }  // namespace d_0055e9d0
-GUEST_EXPORT_FRAMED(0x0055e9d0, d_0055e9d0::f_0055e9d0, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055e9d0, d_0055e9d0::ResourceTask__is_tree_loaded, 0x4070);  // pushes {r4, r5, r6, lr} first, as the original
 
 // f_0055ed48: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Starts loading the resource with its argument on the thread's heap, and chains it after its parent; the task.
 namespace d_0055ed48 {
 
 struct __attribute__((packed)) Object_0055ed48_1 {
@@ -3077,11 +3018,11 @@ GUEST_OFFSET(Object_0055ed48_2, word_14, 0x14);
 
 struct __attribute__((packed)) Local_0055ed48_ea_1 {
     u32 word_0;
-    u32 word_4;
+    u32 resource_mgr;
     u32 word_8;
 };
 GUEST_OFFSET(Local_0055ed48_ea_1, word_0, 0x0);
-GUEST_OFFSET(Local_0055ed48_ea_1, word_4, 0x4);
+GUEST_OFFSET(Local_0055ed48_ea_1, resource_mgr, 0x4);
 GUEST_OFFSET(Local_0055ed48_ea_1, word_8, 0x8);
 
 struct __attribute__((packed)) Local_0055ed48_ea_2 {
@@ -3098,13 +3039,13 @@ struct __attribute__((packed)) Local_0055ed48_ea_3 {
 GUEST_OFFSET(Local_0055ed48_ea_3, word_0, 0x0);
 GUEST_OFFSET(Local_0055ed48_ea_3, word_4, 0x4);
 
-inline constexpr u32 global_00975338_address = 0x00975338u;
-inline guest::global<u32, 0x00975338> global_00975338;
+inline constexpr u32 npc_package_loader_address = 0x00975338u;
+inline guest::global<u32, 0x00975338> npc_package_loader;
 inline constexpr guest::Function<0x0012c40c, u32(u32, u32)> service_call;
 inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32)> unlock_member_lock;
-inline constexpr guest::Function<0x00560b0c, u32(u32, u32)> call_00560b0c;
-inline constexpr guest::Function<0x00749bb4, u32(u32, u32)> call_00749bb4;
+inline constexpr guest::Function<0x00560b0c, u32(u32, u32)> TreeNode__append_child;
+inline constexpr guest::Function<0x00749bb4, u32(u32, u32)> ResourceArgs__heap;
 
 struct __attribute__((packed)) Frame_0055ed48 {
     u32 word_0;
@@ -3117,10 +3058,10 @@ GUEST_OFFSET(Frame_0055ed48, word_4, 0x4);
 GUEST_OFFSET(Frame_0055ed48, word_10, 0x10);
 GUEST_SIZE(Frame_0055ed48, 0x14);
 
-u32 f_0055ed48(u32 r0, gptr<Object_0055ed48_1> arg1, gptr<Object_0055ed48_2> arg2) {
+u32 ResourceMgr__start_load(u32 resource_mgr, gptr<Object_0055ed48_1> arg1, gptr<Object_0055ed48_2> arg2) {
     guest::StackFrameOf<Frame_0055ed48> frame;  // the original's stack frame
     u32 r8_1 = 0;
-    u32 r6_1 = r0 + 4u;
+    u32 r6_1 = resource_mgr + 4u;
     lock_member_lock(r6_1, arg1.addr(), arg2.addr(), guest::cpu()->r[3]);
     u32 r1_1 = arg1->word_4;
     frame->word_0 = arg1->word_0;
@@ -3130,17 +3071,17 @@ u32 f_0055ed48(u32 r0, gptr<Object_0055ed48_1> arg1, gptr<Object_0055ed48_2> arg
     if (r1_2 == 0) {
         r8_1 = 1u;
     } else {
-        u32 r0_2 = service_call(*global_00975338, r1_2);
+        u32 r0_2 = service_call(*npc_package_loader, r1_2);
         r8_1 = r0_2;
     }
     gptr<Local_0055ed48_ea_1> ea_1 = gptr<Local_0055ed48_ea_1>(frame.at(8).addr());
     ea_1->word_0 = arg2.addr();
-    ea_1->word_4 = r0;
+    ea_1->resource_mgr = resource_mgr;
     ea_1->word_8 = 0;
     frame->word_10 = arg1->word_60;
-    u32 r0_4 = call_00749bb4(frame.at(0).addr(), frame.at(8).addr());
+    u32 r0_4 = ResourceArgs__heap(frame.at(0).addr(), frame.at(8).addr());
     if (r8_1 != 1u) {
-        service_call(*global_00975338, r8_1);
+        service_call(*npc_package_loader, r8_1);
     }
     gptr<Local_0055ed48_ea_2> ea_2 = gptr<Local_0055ed48_ea_2>(frame.at(0).addr());
     u32 r0_6 = ea_2->word_0;
@@ -3151,34 +3092,35 @@ u32 f_0055ed48(u32 r0, gptr<Object_0055ed48_1> arg1, gptr<Object_0055ed48_2> arg
     *gptr<u8>(r0_4 + 0x61u) = u8(r9_1);  // (from the original)
     u32 r0_7 = arg1->word_5c;
     if (r0_7 != 0) {
-        call_00560b0c(r0_7 + 0x10u, r0_4 == 0 ? 0u : r0_4 + 0x10u);  // (from the original)
+        TreeNode__append_child(r0_7 + 0x10u, r0_4 == 0 ? 0u : r0_4 + 0x10u);  // (from the original)
     }
     unlock_member_lock(r6_1);
     return r0_4;
 }
 
 }  // namespace d_0055ed48
-GUEST_EXPORT_FRAMED(0x0055ed48, d_0055ed48::f_0055ed48, 0x4ff0);  // pushes {r4, r5, r6, r7, r8, r9, r10, r11, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0055ed48, d_0055ed48::ResourceMgr__start_load, 0x4ff0);  // pushes {r4, r5, r6, r7, r8, r9, r10, r11, lr} first, as the original
 
 // f_0055f1ac: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// When the task's lock is free: finishes the task and unlocks it.
 namespace d_0055f1ac {
 
-struct __attribute__((packed)) Object_0055f1ac_0 {
+struct __attribute__((packed)) ResourceTask {
     u8 unknown_0[0x20];  // (not used here)
     u32 word_20;
 };
-GUEST_OFFSET(Object_0055f1ac_0, word_20, 0x20);
+GUEST_OFFSET(ResourceTask, word_20, 0x20);
 
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
-inline constexpr guest::Function<0x0034ba38, u32(u32, u32, u32, u32)> call_0034ba38;
-inline constexpr guest::Function<0x0055f0e4, u32(u32, u32)> call_0055f0e4;
+inline constexpr guest::Function<0x0034ba38, u32(u32, u32, u32, u32)> OwnedLock__try_lock;
+inline constexpr guest::Function<0x0055f0e4, u32(u32, u32)> ResourceTask__finish;
 
-void f_0055f1ac(gptr<Object_0055f1ac_0> arg0, u32 r1) {
+void ResourceTask__try_finish(gptr<ResourceTask> resource_task, u32 r1) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 r0_2 = call_0034ba38(*gptr<u32>(arg0->word_20 + 0x20u) + 4u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    u32 r0_2 = OwnedLock__try_lock(*gptr<u32>(resource_task->word_20 + 0x20u) + 4u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     if (r0_2 != 0) {
-        call_0055f0e4(arg0.addr(), r1);
-        u32 r0_3 = *gptr<u32>(arg0->word_20 + 0x20u) + 4u;  // (from the original)
+        ResourceTask__finish(resource_task.addr(), r1);
+        u32 r0_3 = *gptr<u32>(resource_task->word_20 + 0x20u) + 4u;  // (from the original)
         frame.release();
         unlock_member_lock(r0_3, guest::cpu()->r[1]);
         return;
@@ -3186,7 +3128,7 @@ void f_0055f1ac(gptr<Object_0055f1ac_0> arg0, u32 r1) {
 }
 
 }  // namespace d_0055f1ac
-GUEST_EXPORT(0x0055f1ac, d_0055f1ac::f_0055f1ac);
+GUEST_EXPORT(0x0055f1ac, d_0055f1ac::ResourceTask__try_finish);
 
 // f_0055fcf4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0055fcf4 {
@@ -3317,8 +3259,8 @@ GUEST_OFFSET(Local_0055fcf4_r0_7, word_10, 0x10);
 GUEST_OFFSET(Local_0055fcf4_r0_7, word_14, 0x14);
 GUEST_OFFSET(Local_0055fcf4_r0_7, word_18, 0x18);
 
-struct __attribute__((packed)) Local_0055fcf4_r0_8 {
-    u32 word_0;
+struct __attribute__((packed)) IDisposer {
+    u32 vtable;
     u8 unknown_4[0x38];  // (not used here)
     u32 word_3c;
     u8 unknown_40[0x4];  // (not used here)
@@ -3326,11 +3268,11 @@ struct __attribute__((packed)) Local_0055fcf4_r0_8 {
     u32 word_48;
     u32 word_4c;
 };
-GUEST_OFFSET(Local_0055fcf4_r0_8, word_0, 0x0);
-GUEST_OFFSET(Local_0055fcf4_r0_8, word_3c, 0x3c);
-GUEST_OFFSET(Local_0055fcf4_r0_8, word_44, 0x44);
-GUEST_OFFSET(Local_0055fcf4_r0_8, word_48, 0x48);
-GUEST_OFFSET(Local_0055fcf4_r0_8, word_4c, 0x4c);
+GUEST_OFFSET(IDisposer, vtable, 0x0);
+GUEST_OFFSET(IDisposer, word_3c, 0x3c);
+GUEST_OFFSET(IDisposer, word_44, 0x44);
+GUEST_OFFSET(IDisposer, word_48, 0x48);
+GUEST_OFFSET(IDisposer, word_4c, 0x4c);
 
 struct __attribute__((packed)) Local_0055fcf4_r2_2 {
     u32 word_0;
@@ -3358,7 +3300,7 @@ inline constexpr u32 vtable_sead__MethodTreeNode = 0x009047b0u;
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
 inline constexpr u32 vtable_sead__TaskMgr = 0x00905b70u;
 inline constexpr u32 vtable_sead__Delegate_sead__MethodTreeNode_ = 0x00905bf0u;
-inline constexpr u32 global_00ae53b8_address = 0x00ae53b8u;
+inline constexpr u32 string_id_counter_address = 0x00ae53b8u;
 inline guest::global<u32, 0x008bb364> global_008bb364;
 inline guest::global<u32, 0x008bb368> global_008bb368;
 inline constexpr guest::Function<0x0012bfec, u32(u32, u32)> sead__CriticalSection__CriticalSection_0012bfec;
@@ -3368,11 +3310,11 @@ inline constexpr guest::Function<0x00135740, u32(u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32)> unlock_member_lock;
 inline constexpr guest::Function<0x002f6e78, u32(u32, u32, u32, u32)> create_heap;
 inline constexpr guest::Function<0x002fbb30, u32(u32, u32, u32)> copy_aligned_bytes;
-inline constexpr guest::Function<0x002fd108, u32(u32, u32, u32, u32)> allocate_from_heap_002fd108;
-inline constexpr guest::Function<0x005418f8, u32(u32, u32)> call_005418f8;
+inline constexpr guest::Function<0x002fd108, u32(u32, u32, u32, u32)> allocate_on_heap;
+inline constexpr guest::Function<0x005418f8, u32(u32, u32)> ResourceMgr__unload;
 inline constexpr guest::Function<0x0055f4dc, u32(u32, u32, u32)> sead__DelegateEvent_sead__TaskBase____TaskBase___0055f4dc;
 inline constexpr guest::Function<0x0055f900, u32(u32, u32, u32, u32)> int__0055f900;
-inline constexpr guest::Function<0x00560930, u32(u32, u32, u32)> call_00560930;
+inline constexpr guest::Function<0x00560930, u32(u32, u32, u32)> TaskEntry__construct;
 
 u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_unused, u32 r3) {
     u32 r0 = task_mgr.addr();
@@ -3391,7 +3333,7 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
     r13 -= 8;
     u32 r1_1 = task_mgr->word_10;
     guest::cpu()->r[13] = r13;
-    u32 block_2 = allocate_from_heap_002fd108(0x180u, r1_1, 4u, r3);  // (from the original)
+    u32 block = allocate_on_heap(0x180u, r1_1, 4u, r3);  // (from the original)
     gptr<Local_0055fcf4_ea_2> ea_2 = gptr<Local_0055fcf4_ea_2>(r13);
     r13 += 8;
     u32 r4_1 = ea_2->word_0;
@@ -3407,11 +3349,11 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
     ea_3->word_1c = r14;
     r13 -= 0x30u;  // (from the original)
     r8 = r0;
-    *gptr<u32>(block_2) = vtable_sead__TaskMgr;
-    u32 r0_2 = block_2 + 4u;
+    *gptr<u32>(block) = vtable_sead__TaskMgr;
+    u32 critical_section = block + 4u;
     guest::cpu()->r[13] = r13;
-    sead__CriticalSection__CriticalSection_0012bfec(r0_2, vtable_sead__TaskMgr);
-    u32 r0_3 = r0_2 - 4u;
+    sead__CriticalSection__CriticalSection_0012bfec(critical_section, vtable_sead__TaskMgr);
+    u32 r0_3 = critical_section - 4u;
     r9 = 0u;
     gptr<Local_0055fcf4_ea_4> ea_4 = gptr<Local_0055fcf4_ea_4>(r0_3 + 0x20u);  // (from the original)
     ea_4->word_0 = task_mgr->word_14;
@@ -3453,7 +3395,7 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
     u32 ea_19 = r0_3 + 0x90u;  // (from the original)
     *gptr<u32>(ea_19) = r1_8;
     guest::cpu()->r[13] = r13;
-    u32 r0_5 = call_00560930(ea_19 + 8u, r1_8, r2_2.addr());
+    u32 r0_5 = TaskEntry__construct(ea_19 + 8u, r1_8, r2_2.addr());
     u32 r1_9 = task_mgr->word_0;
     u32 r2_3 = task_mgr->word_4;
     u32 r3_3 = task_mgr->word_8;
@@ -3475,18 +3417,18 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
     r0_7->word_18 = 0x55ff30;  // (from the original)
     r0_7->word_10 = r0_6 + 0x130u;  // (from the original)
     r0_7->word_14 = r7;
-    gptr<Local_0055fcf4_r0_8> r0_8 = gptr<Local_0055fcf4_r0_8>(r0_7.addr() - 0x10u);  // (from the original)
+    gptr<IDisposer> i_disposer = gptr<IDisposer>(r0_7.addr() - 0x10u);  // (from the original)
     guest::cpu()->r[13] = r13;
-    sead__IDisposer__IDisposer_00132174(r0_8.addr(), 0x55ff30u);  // (from the original)
+    sead__IDisposer__IDisposer_00132174(i_disposer.addr(), 0x55ff30u);  // (from the original)
     u32 r2_5 = guest::cpu()->r[2];
     u32 r3_5 = guest::cpu()->r[3];
-    r0_8->word_0 = vtable_sead__MethodTreeNode;
-    r0_8->word_3c = r9;
-    r0_8->word_44 = r9;
-    r0_8->word_48 = r9;
-    u32 r1_10 = r0_8.addr() + 0x2cu;  // (from the original)
-    r0_8->word_4c = r9;
-    if (r0_8.addr() + 0x2cu != 0) {  // (from the original)
+    i_disposer->vtable = vtable_sead__MethodTreeNode;
+    i_disposer->word_3c = r9;
+    i_disposer->word_44 = r9;
+    i_disposer->word_48 = r9;
+    u32 r1_10 = i_disposer.addr() + 0x2cu;  // (from the original)
+    i_disposer->word_4c = r9;
+    if (i_disposer.addr() + 0x2cu != 0) {  // (from the original)
         *gptr<u32>(r1_10 + 4u) = r9;
         u32 r2_6 = *global_008bb364;
         r3_5 = *global_008bb368;
@@ -3496,9 +3438,9 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
         r2_5 = vtable_sead__Delegate_sead__MethodTreeNode_;
         *gptr<u32>(r1_10) = r2_5;
     }
-    r10 = global_00ae53b8_address;
-    *gptr<u32>(r0_8.addr() - 0x9cu) = r9;  // (from the original)
-    r5 = r0_8.addr() - 0x130u;  // (from the original)
+    r10 = string_id_counter_address;
+    *gptr<u32>(i_disposer.addr() - 0x9cu) = r9;  // (from the original)
+    r5 = i_disposer.addr() - 0x130u;  // (from the original)
     r4 = 0u;
     r6 = *gptr<u32>(r10);
     if (s32(r6) > 0) {
@@ -3535,7 +3477,7 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
     u32 r0_12 = *gptr<u32>(r6_2 + 0x64u);  // (from the original)
     if (r0_12 != 0) {
         guest::cpu()->r[13] = r13;
-        call_005418f8(r0_12, r6_2);
+        ResourceMgr__unload(r0_12, r6_2);
         guest::cpu()->r[13] = r13;
         unlock_member_lock(r4_4);
     } else {
