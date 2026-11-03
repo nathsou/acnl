@@ -1217,7 +1217,7 @@
 0013bbfc dLoadSplit__destructor
 0013bc00 destroy_load_split
 0013bc2c ActiveHolder__reset
-0013bee0 SoundEnvMgr__SoundEnvMgr_0013bee0
+0013bee0 SoundSystem__destroy_managers
 0013c0e4 do_nothing_0013c0e4
 0013c0e8 state_is_1_or_2
 0013c1d4 SoundSystem__player_info
@@ -7121,7 +7121,7 @@
 00321870 ObjectResource__ObjectResource_00321870
 00321920 ResourceLoadSkeletal__virtual_1_00321920
 00321934 ResourceLoadSkeletal__virtual_0_00321934
-00321944 ObjectResource__ObjectResource_00321944
+00321944 ObjectResource__destructor_b
 003219e8 register_sound_bank_entries
 00321a80 SoundSlot__start
 00321ad8 SoundDataLoadRequest__deleting_destructor
@@ -17042,7 +17042,7 @@
 005efec0 script__Insert__virtual_2
 005f05e4 script__Insert__Insert_005f05e4
 005f0800 script__WordFix_29u___WordFix
-005f0bc4 script__Insert__Insert_005f0bc4
+005f0bc4 script__Insert__destructor
 005f10b0 ResourceLoad__start
 005f1108 script__Loader__LoadSplit__virtual_3
 005f1124 script__Loader__LoadSplit__deleting_destructor

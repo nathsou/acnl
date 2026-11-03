@@ -804,6 +804,7 @@
 0013b8e0 Constructs a critical section registered with a heap (arg 1).
 0013b910 Constructs the audio effects memory manager: no memory.
 0013bb80 Returns at once.
+0013bee0 Destroys the sound system's managers: shared objects, environment, effects, BGM, melodies, animal speech \n and volume, detaching their sounds.
 0013c0e8 Whether the object's state (byte 0xc) is 1 or 2.
 0013c1d4 Reads the player's info from the system's sound archive.
 0013c1e8 Reads the player's info from the sound archive.
