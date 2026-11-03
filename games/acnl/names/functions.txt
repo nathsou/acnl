@@ -7443,8 +7443,8 @@
 00331a20 HalfFloat2__clear
 00331a40 SoundObjFurnitureAudio__start
 00331a68 AudioObjFurnitureAudio__forget
-00331ab0 AudioObjFurnitureAudio__virtual_22
-00331ad4 AudioObjFurnitureAudio__virtual_20
+00331ab0 AudioObjFurnitureAudio__play_room_music
+00331ad4 AudioObjFurnitureAudio__stop_room_music
 00331b00 SoundObjFurnitureAudio__virtual_15
 00331c1c SoundObjFurnitureAudio__stop
 00331c7c SoundObjFurnitureAudio__SoundObjFurnitureAudio
@@ -7453,7 +7453,7 @@
 00331d7c AudioObjFurnitureOrgel__virtual_37
 00331ea0 AudioObjFurnitureOrgel__virtual_35
 00332308 SoundObjFurnitureOrgel__virtual_15
-003324bc SoundObjFurnitureOrgel__virtual_3
+003324bc SoundObjFurnitureOrgel__stop
 00332500 AudioObjFurnitureOrgel__virtual_36
 0033254c SoundObjFurnitureOrgel__SoundObjFurnitureOrgel
 003325bc SoundObjFurnitureOrgel__deleting_destructor
@@ -12194,7 +12194,7 @@
 004ee39c Camera__virtual_3
 004ee3e8 TransformNode__set_scale
 004ee4b4 g3d__AmbientLight__virtual_2
-004ee4b8 escape__MapFogModel__virtual_2
+004ee4b8 MapFogModel__update_world
 004ee4c0 Model__set_world_matrix
 004ee4c8 TransformNode__update_transform
 004ee4ec construct_transform_node
@@ -14571,7 +14571,7 @@
 00572d64 BsNpcMgr__NpcPosGetCB__NpcPosGetCB_00572d64
 00572f48 AcFtr__virtual_46
 00572fb4 AcFtr__update_camera
-00573214 AcFtr__virtual_38
+00573214 AcFtr__set_target
 0057322c AcFtr__place_on_ground
 005734bc AcFtr__virtual_55
 005737f4 AcFtr__virtual_49
@@ -14634,13 +14634,13 @@
 00578850 AcNpc__virtual_50
 00578858 AcNpc__virtual_84
 0057885c Npc__place_at_saved_position
-00578948 AcNpc__virtual_74
+00578948 AcNpc__reset_walk
 00578988 Npc__owned_by_other
 00578af4 AcNpc__set_wait_95
 00578b04 clear_npc_flags_10_11
 00578b38 AcNpc__release_entry
 00578bc8 AcNpc_rec__notify_npc_manager
-00578c6c AcNpc__virtual_82
+00578c6c AcNpcSp__apply_pending_action
 00579024 copy_object_data_of_id
 0057906c AcNpc__virtual_39
 00579140 AcNpc__virtual_85
@@ -17479,7 +17479,7 @@
 0060de20 Window__update_pane_310
 0060e094 LayoutPart__restart_animation
 0060e0cc LayoutPart__finish_animation
-0060e190 MapIcon__virtual_3
+0060e190 MapIcon__update
 0060e1b4 MapIcon__virtual_6
 0060e47c MapIcon__draw
 0060e4bc MapIcon__virtual_5
@@ -20179,7 +20179,7 @@
 006f7e90 append_to_list
 006f8054 PtrList50__clear
 006f8094 PtrList50__construct
-006f80dc collision__Sphere__virtual_2
+006f80dc Sphere__translate
 006f8114 Sphere__set
 006f8134 collision__Sphere__Sphere_006f8134
 006f815c collision__Sphere__Sphere_006f815c
@@ -20190,7 +20190,7 @@
 006f8228 collision__Capsule__Capsule
 006f824c collision__Capsule__deleting_destructor
 006f8250 collision__Capsule__destructor
-006f8368 collision__Cylinder__virtual_2
+006f8368 Cylinder__translate
 006f83a8 Cylinder__set_from_rect
 006f83cc collision__Cylinder__Cylinder_006f83cc
 006f83f8 collision__Cylinder__Cylinder_006f83f8
@@ -22383,14 +22383,14 @@
 00751d78 kind_is_e
 00751d90 member_address_0x800_
 00751d98 AcNpcSpShop__virtual_22
-00751d9c AcNpc__virtual_22
+00751d9c AcNpc__talk_target_if_enabled
 00751dbc AcNpc__virtual_28
 00751f38 AcNpc__virtual_42
 00751f40 offset_to_object_xz
 0075219c AcNpc__virtual_45
 007521a4 angle_to_object
 007521d0 AcNpc__virtual_43
-0075221c AcNpc__virtual_24
+0075221c AcNpc__look_target_if_enabled
 00752258 AcNpc__virtual_64
 00752260 AcNpc__virtual_38
 00752268 AcNpc__virtual_66

@@ -2905,9 +2905,12 @@
 00331a20 Zeroes the two halves and the two floats.
 00331a40 Starts a furniture audio sound object (unless started): kind 9, then the furniture start.
 00331a68 Stops the room music player when this furniture audio is its source, and forgets it.
+00331ab0 Plays the room music (when the room music player exists).
+00331ad4 Makes this furniture audio the room music player's source and stops the music.
 00331c1c Stops a furniture audio sound object (when started): the room music player stops it if it is its source, \n then the furniture stop.
 00331c7c Constructs a furniture audio sound object: a furniture sound object with its own vtable.
 00331d0c Destroys a furniture audio sound object: stops it (as SoundObjFurnitureAudio__stop), then the furniture \n sound object.
+003324bc Stops a music box furniture's sound (when playing) and forgets its tune.
 00332688 Copies the letter (with its item and texts) into the first free of the 80 letter slots.
 003327e8 Adds an exhibition letter with the item to the 5 pending letters (0x280 bytes each); false when full.
 003328ec Constructs the 5 pending letters.
@@ -3259,6 +3262,7 @@
 004edd6c Destroys the NPC model's loader and its base.
 004eddd4 Adds the model and its visible materials to the render queue (opaque or translucent lists), updating the queue's node once.
 004ee2dc Sorts the render queue's entries.
+004ee4b8 Updates the map fog model's world transform (its transform node's).
 004ee4c0 Sets the model's world matrix and marks it for update.
 004ee534 True when the split load is ready and not in state 3.
 004ee55c Starts the split load, setting the read and write positions from its word (+0xec) the first time.
@@ -3860,6 +3864,7 @@
 005724ec The furniture's switch state when it has a switch, or 0.
 00572624 Initializes the furniture's contents and claims its flag.
 00572fb4 Updates the furniture's camera use and its sound.
+00573214 Sets a furniture actor's target (args 2 and 3) and clears its flag 0x7a4.
 0057322c Places the furniture on the tile's height outdoors, or the floor in a room.
 005739fc Tells the sound object whether the audio furniture is playing (states 1 and 4).
 00573aac Toggles the furniture's switch when it has one; whether it may be used.
@@ -3872,10 +3877,12 @@
 00577810 Allocates the cleared block from the scene pool when there is one, else from the heap.
 00578018 Removes the node from the list at +0x70 and clears its links.
 0057885c When the NPC's saved place is in the current area: places it there (on the ground unless flying) with its angle; whether it did.
+00578948 Resets an NPC's walk: back to its saved speed, no direction, and one step (40) less ahead when it is \n far.
 00578988 Whether the NPC belongs to another player; records the owner (4 for none).
 00578af4 Sets the NPC's wait to 95 frames.
 00578b38 When the NPC qualifies and is the main object's: releases its saved entry.
 00578bc8 When bit 4 of +0xb0a is set and there is an NPC manager: notifies it.
+00578c6c Changes a special NPC to its pending action, if it has one.
 00579024 Copies the data of the object found for an id (else uses +0x2e).
 005791c4 When the mode allows it: resets the deadline, marks the share pending and shares the NPC's schedules.
 005792fc Marks the NPC busy, plays the player's reaction for the slot and begins the NPC's reaction action.
@@ -4787,6 +4794,7 @@
 0060de20 Updates the window's pane at +0x310.
 0060e094 Notifies the part's panes and restarts its animation from the start.
 0060e0cc Sets the part's animation to its last frame, updates it and notifies its panes.
+0060e190 Updates a map icon: advances its blinking frame (in mode 1), then its layout.
 0060e47c Draws a map icon's layout on its screen (the lower one unless its mode is 1).
 0060e914 Turns the angle toward the target by up to the step, in the forced direction (1 or 2) when the target is beyond it; the change.
 0060ea4c Initializes the shaker with the default ranges and no motion.
@@ -5784,8 +5792,10 @@
 006f7e64 Constructs a collision world's body: no shape, no owner.
 006f8054 Clears the count and the 100 entries (+8).
 006f8094 Zeroes the list's two words and its 100 entries.
+006f80dc Moves a collision sphere's center by an offset (arg 1); returns the center.
 006f8114 Sets the sphere's center (+8) and radius (+0x14).
 006f81f0 Sets the capsule's two ends (+8, +0x14) and radius (+0x20).
+006f8368 Moves a collision cylinder's center by an offset (arg 1); returns the center.
 006f83a8 Sets the cylinder's base from the rectangle's corner and its radius and height.
 006f83f8 Constructs a collision cylinder (shape kind 2) with no radius or height.
 006f8540 The word shifted left by 14, as a half.
@@ -6306,7 +6316,9 @@
 007516f8 Whether the item under the furniture (facing its direction) is the same on the current and the previous map.
 00751864 The address of 8-byte entry `index` from +0x14.
 00751a64 The furniture's top surface at the position.
+00751d9c An NPC's talk target, when its parameters allow it (bit 1).
 00751f40 The offset from object `id` to the position (the object's own when none is given), with its horizontal distance in s0; a far default without the object.
+0075221c An NPC's look target, when its parameters allow it (bit 2): its own when set, else virtual 23's.
 007523a8 When there is a main object: checks bit 3 of +0xb07 and the pointer at +0xaa0.
 0075256c Whether the object's position lies outside the box (offsets from the camera's position); false without a camera.
 007525fc Whether the position lies outside the box (offsets from the camera's position); false without a camera.
