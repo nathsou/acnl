@@ -2896,7 +2896,10 @@
 005840f8 Clears the BGM parameter flag (when set), resets the list at 0x98a018 and clears two BGM flags.
 00584250 Clears the two 16-bit counters at 0x98a088.
 00584d78 For an entry of kind 0x2c whose owner has +0x20 set: queues BGM entry 3 (fade 12) and marks the owner.
+005852f4 Stops the music player's sound.
 00585410 Builds a heap allocator with kind 0x39 and alignment 4.
+00585438 Sets the music's mode.
+00585690 Updates the music (its queue and its player).
 00588d54 Requests or releases the object's flag by its state.
 005897b0 Whether byte +0x768 of the sound system is clear.
 005897c0 When the special BGM (0x94e4a9) is on: fades it out, queues BGM entry 0x11 and moves the flag request from 0x10 to 0x11.
@@ -2912,10 +2915,12 @@
 0058a3c4 Pushes BGM 0x100009e at priority 2.
 0058a400 Sets the fade of BGM 0x100009c (priority 3).
 0058a56c Fades the BGM of +0x10 (priority 6) and releases flag 0x15.
+0058a5d8 Pushes the music on the queue.
 0058a608 Sets the fade of BGM 0x100026a (priority 3) and sets +0x14.
 0058a72c Sets the fade of BGM 0x100009e (priority 2).
 0058a7f4 Sets the fade of the BGM of +0x10 (priority 6) to 0.
 0058a880 Removes the BGM of +0x10 (priority 6) from the queue.
+0058a918 Pushes the music of the kind on the queue.
 0058a96c Moves to the next BGM of the sequence table at 0x8458dc (row +4, step +0xc by 2), stops the current effect and pushes it at priority 0x14.
 0058aa20 Removes the BGM with priority 5 and id 0.
 0058acfc The object's data entry for its kind, or the default one.
@@ -2923,9 +2928,11 @@
 0058aea0 Marks (+0x1f) the queued entries with this priority and sound id.
 0058b06c The first free entry (kind 0x1d) of the queue's 29 entries of 0x24 bytes, or 0.
 0058b27c Forwards to 0058b280.
+0058b280 Updates the music queue's entries (8 of them).
 0058b618 Pushes an entry with its four float parameters onto the BGM queue.
 0058b694 Marks (+0x1f) the active entries with this priority and option byte (+0x23).
 0058b6fc Pushes a sound effect entry (priority 0x1b) and marks it as the pending effect.
+0058b764 Updates the music queue.
 0058bb2c Removes the queued entry with this priority and sound id.
 0058bc3c Sets the fade (+0xc) of the queued entry with this priority and sound id.
 0058bc7c Pushes an entry (priority, sound id, fade and options) onto the BGM queue, kept sorted by priority.
@@ -2933,8 +2940,10 @@
 0058be48 Chooses the tour desk's talk (the reward, the registered tours).
 0058c4cc Sets bit `index` of the 64-bit mask at +0x20.
 0058c704 Keeps only the bits of the 64-bit mask at +0x18 that are in the constant mask at 0x845f30.
+0058c730 Updates the music parameter list (up to 50).
 0058c90c Updates the flag manager and marks it updated (0x94e4b0).
 0058c9e0 When the weather changed: keeps it (0x94e489), copies its three sound parameters and switches the weather sound.
+0058ca50 Updates the hourly music.
 0058cb20 Signed byte +0x63d of the mic manager.
 0058cb38 Calls 001d9578 on the mic manager.
 0058cb60 Calls 001d960c on the mic manager.
@@ -2947,6 +2956,7 @@
 0058cc04 Calls 001d99ec on the mic manager.
 0058ce80 Destroys the river sound manager, then the sea sound manager when it exists.
 0058ceb4 Updates the sea sound manager when it exists.
+0058cf04 Plays the pending sound effect.
 0058cf80 Signed byte +0x10 of the live player.
 0058d090 Float +0x23bc of the live player (in s0).
 0058d0bc Float +0x23b8 of the live player (in s0).
@@ -2956,12 +2966,15 @@
 0058d270 Destroys the room music player.
 0058d2ac Creates the river sound manager on the stage heap.
 0058d2d4 Destroys the river sound manager.
+0058d2e8 Updates the river sound when the room's music player exists.
 0058d3b4 Stops the sound effect whose id is kept at 0x94e424+4 and forgets it (-1).
 0058d3e4 Stops a sound effect on the sound system (006b4c38).
 0058d3fc Calls 001d7a10 on the sound system's player at +0x754.
 0058d440 Plays the sound effect whose id is kept at 0x94e426 on the player at +0x754 and forgets it (-1).
+0058d488 Updates the sound system.
 0058d498 Plays a sound at a world point (moved to view space by the camera) through the emitter at +0xbc8 (002d3068).
 0058d52c Unpacks the town tune from the save data into 0x986a60 and gives the notes to the tune player.
+0058d5a0 Updates the ambient sounds when the sound system is up.
 0058d654 When sound is up and running and a BGM override is on (0x94e43c): ends it and resets the overrides.
 0058d6ac The negation of 005838c4.
 0058d6bc Once per scene (0x94e43d): ends any BGM override and starts the scene's sound with its kind state.
@@ -2972,6 +2985,7 @@
 0058d9f8 Starts a 30-frame period and copies the three constant words.
 0058dc54 Clears a sound handle record (ids -1).
 0058def8 Checks a daily event against the current game day; 0 when the global object byte is 3.
+0058e090 Counts the day's check of the kind, unless visiting.
 0058e228 Checks the daily event at 0x9524ec against today (from the day start); nothing when the global object byte is 3.
 0058e2e4 Calls the member handler (from 0x85e6ac) on the first event of the list at 0x9524dc with this kind (+0x1b).
 0058e3cc When there is a current event: whether today (day start) is its day (0x9b39f8); keeps the answer at 0x9524d6.
@@ -2990,6 +3004,7 @@
 0058f718 Finds the first free of the 20 effect slots (0x18 bytes, at 0x94ee4c+0x10), keeps its index at +0x11f and starts effect 0xf8 (0xf9 with flag 0x80) there.
 0058f81c Sets the field item's flags from its indexed kind (fence, plant, low ground item...).
 0058f948 Plays the sound of placing (or removing) the item by its kind.
+0058faa0 Initializes the field item at the cell with its options.
 0058fc38 Marks the item as in a room and records its cell and whether its furniture is special; or clears it.
 0058fcb0 Writes the item's render state (blend, depth, alpha) as GPU commands.
 0058fde0 Packs the color and its flags.
@@ -2997,7 +3012,11 @@
 00590720 Initializes the field item with its item, cell, kind and flags.
 00590c14 Places the field item at its height on the ground.
 00591330 Spawns the field item's actor at the cell.
+00591a80 Starts the field item's fall from its position.
 005929c0 Updates the field object by its item's kind and map entry.
+00592c14 Updates the field item by its indexed type.
+0059317c Updates the field item when it is of number 6.
+00593470 Sets up the field item with its item, cell and options.
 005937b4 Refreshes the field object's state from its item's kind.
 00593fbc Remembers the old position, moves to the new one with the scale, and starts its 15-frame growth animation.
 00594358 Builds an empty item with the extra bytes 0xa5, 0, 0.
@@ -3010,13 +3029,16 @@
 005959e0 Sets up the field object's model for its item (bushes by their size) and its animations.
 00596298 Collects the field drop of kind 0xb at the position: keeps or gives it by its flag, counting the find.
 00596334 Removes the field drop at the position: tells the other stations (message 0x3a) or applies it, then frees its slot.
+005964ec Updates the active field drop, when there is one.
 005969c0 Adds a field drop of kind 0xb (a buried item 0x9e) for the item at the cell.
 00596a60 Frees the field drop at the position and its slot; its index, or -1.
 00596bcc Adds a field drop of kind 0xc for a random item at a free spot; -1 when there is none.
 00596c64 Adds a field drop of kind 0xa for the item at a free spot (swapping item 0x339f for 0x33a0 in island scenes); -1 when there is none.
 00596e94 Adds a field drop from the current player's tool and the item's map entry, at random.
+005971e4 Places the item of the kind (by its mode) at the cell.
 00597678 Adds a dig drop at the cell: kind 0x1f for a buried item (0x9e), kind 0x1e for event items; -1 otherwise.
 00597784 Removes the field drop at the cell in the current area.
+00597790 Finds the field drop at the cell in the current area.
 00597864 Collects the field drop at the position: gives its item to the current player and counts it, telling the other stations.
 00597c30 Adds a field drop of kind 0x20 for a flagged item of category 0x41 at the cell; -1 otherwise.
 00597d28 Adds the field drop that spawns the special insect for the item.
@@ -3024,6 +3046,7 @@
 00598218 Adds a field drop of kind 7 for a buried item (0x9e) or hole (0x9d) at the cell; -1 otherwise.
 005982d8 Adds a field drop of kind 0xd (a hole 0x9d registered for the slot, the current one for 4) at a free spot; -1 when there is none.
 005983ac Adds a field drop of kind 0x1d for the low ground item at the cell (no marker there); -1 otherwise.
+00598464 Places the item at the position in the current area.
 005985c4 The cell in front of the player and its position.
 00598d20 Refreshes the field item at the position in the current area.
 00599294 Offsets the cell by the packed x and y steps (two 3-bit table indices); false when either is 0.
@@ -3038,6 +3061,7 @@
 0059a3f4 Sets the town bit (in the bits at +0x35c4 of the town object) when it exists.
 0059a420 Updates the field objects whose town bits are set.
 0059a9ac The world position of the item at the cell, on the surface (raised for some kinds).
+0059aab0 Sets up the field items' models from their tables.
 0059ab9c Creates a growing plant object for the item at the cell (inside the map) and adds it to the field objects; true when it did.
 0059ac18 Creates a scaling object for the item at the cell (inside the map) and adds it to the field objects; true when it did.
 0059b61c The field object table entry (0x16 bytes each, +0x414) for the item's map kind (below 0x87); null when none.
@@ -3047,11 +3071,14 @@
 0059c934 The field object at the cell (inside the map), marking it to refresh (state 0xa) when flagged; null when none.
 0059cae8 Binds the texture chosen by the town's setting (save +0x621ce) to the field object's material.
 0059ceb4 Calls the function on each of the field item's children of the kind.
+0059d164 Drops the item at the position with its height.
 0059da08 Removes the field item at the cell.
 0059dab8 Places the item among the field items at the cell, with the flag.
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
+0059e758 Moves the field item to the cell.
 0059ec48 The index of the first active field drop of the kinds 2, 4, 5, 0x15 or 0x17 to 0x1a; -1 when none.
 0059ecbc Finishes the field drop: buries or places its item by its kind and tells the other stations.
+0059eed8 The field drop's entry (0x12 bytes each) and its item.
 0059f194 Finds the first of the four 0x12-byte slots at 0x9b417c whose byte +0xf is clear and fills it; -1 when all are used.
 0059f4d8 Updates the field item by its kind (below 10).
 0059f71c Fills the drop message for the item at the cell (kind 0x21, the station's index) with the scene byte.
@@ -3064,6 +3091,7 @@
 005a0ef8 The index of the used entry for (x, z, layer) among the 32 field drops (0x16 bytes each); -1 when none.
 005a0f5c Updates the field drop by its kind (below 0x25).
 005a1174 For an item event of this station: counts it (counter 9) for special items, items of category 0x36 or item 0x3413, and records shell finds on beach terrain 0xac for the tour result.
+005a180c Updates the field drop in its scene.
 005a1ba0 Buries the drop's item (a placeholder when its number is not indexed) at its cell, then clears the tile; true when it could.
 005a213c Throws the drop's item from its cell, with its effect and sound, then clears the tile.
 005a224c Ends and clears the field drop at (x, z) when there is one.
@@ -3076,6 +3104,7 @@
 005a2864 Tracks repeated attempts at the same cell (up to 8); on a new cell rolls whether the worn item 0x335a gives a bonus (20%).
 005a294c Counts down the cell timer (0x9526b0) and, when it ends, updates the item at the tracked cell (006b9904) and puts it back.
 005a29dc When the cell timer is running: updates the item at the tracked cell now and stops the timer.
+005a2dc0 Writes the field items' shader commands.
 005a2fdc Copies the two words at 0x952898.
 005a2ff0 Copies the two words at 0x9528a0.
 005a3004 Copies the two words at 0x9528a8.
@@ -3088,8 +3117,10 @@
 005a36b8 Sets or clears the visibility bit of part `index` (its bit number from the part table) in the model's mask (+0x29c).
 005a3720 Clears 0x70 bytes of the object.
 005a3f08 Calls 005a4cf4 with a 0x64000-byte buffer and two output slots.
+005a4030 Finishes the JPEG decoder's work.
 005a4aec The size of `count` 16-byte entries plus `extra`, rounded up to 32 bytes.
 005a4bd0 Recomputes the CRC-16 of the database header (its CRC field taken as 0) and stores it at +0x14.
+005a4cf4 Encodes the image as JPEG into the buffer.
 005a4e5c The size of `count` 0x98-byte records plus `extra` and the 0x18-byte header.
 005a4e70 Initializes an image database in a buffer when it is large enough: its header (magic, count, offset) and `count` empty records with four entries each.
 005a4f70 Recomputes the CRC-16 of the database header (its CRC field taken as 0) and stores it at +0x14.
@@ -3107,14 +3138,22 @@
 005a566c Sets the camera's shot (its kind, position and target).
 005a58cc Verifies database `index` when it is open: 0xd when its storage is gone, else the file check result (clearing its dirty flag on success).
 005a593c Adds a picture to the database (the variant that also rebuilds the index when needed).
+005a5e9c Scans the photo folder's entries.
 005a6218 Repairs database `index`: checks its files and fixes the broken records.
+005a6350 Finds a free photo slot in the folder.
 005a68e8 Parses the photo file name under the cursor: an 8-character folder name, or a name with a 1-4 character extension; 1 when it is a valid photo name, 2 otherwise.
 005a6b8c Clears a photo name parser (state 2) and its path.
 005a6c4c The address of 18-byte entry `index` from +8.
+005a7540 Saves the screenshot, when not busy.
 005a7910 Fixes a broken record: rebuilds the photo's path and file record from its id, and removes the record when its file is gone; reports which was done.
 005a7aa8 Rebuilds the database index (the parts that are missing), returning 0xb when an error was flagged.
+005a7b2c Saves the screenshot (the second kind), when not busy.
+005a7e10 Saves the screenshot (the third kind), when not busy.
 005a7f70 Fixes an entry's files: rebuilds the record when its file exists but the flag is off, or rebuilds the file of extension 1 or 2 from the record.
 005a802c Rebuilds the database records from the files on the storage, flagging errors at 0x9816b8.
+005a8728 Shows the photo's entry in the view.
+005a8870 Shows the photo's entry in the view (the second kind).
+005a89b0 Shows the photo's entry in the view (the third kind).
 005a8af0 Clears the photo record and its parts.
 005a8b24 Clamps a 64-bit time between the earliest (005a8c34) and the latest (005a8b9c) times.
 005a8b9c The last photo folder's path, built once.
@@ -3153,6 +3192,7 @@
 005aa848 Clears a picture record and its four 0x12-byte entries.
 005aa878 The size plus a 4-byte header, rounded up to 4.
 005aa884 Initializes a flag buffer when it is large enough: its 16-bit count and `count` cleared flag bytes.
+005aa914 Formats the photo's file name from its folder and number.
 005aab40 Keeps a value at 0x9816b4 and marks it pending (0x9816aa).
 005aab58 Keeps a value at 0x9816b0 and marks it pending (0x9816a9).
 005aad7c Builds a wide photo path from its parts.
