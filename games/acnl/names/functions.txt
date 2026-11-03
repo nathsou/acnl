@@ -769,7 +769,7 @@
 001285c8 ExhibitionParkInfo__release
 00128608 SoundDoubutsugoMgr__SoundDoubutsugoMgr
 001287d8 SoundDataLoadRequest__SoundDataLoadRequest
-00128804 SoundConductor__SoundConductor_00128804
+00128804 SoundConductor__destructor
 001288a8 Record18__clear
 001288e8 NpcLockPlayerPermitBit__release
 00128924 Table6__Table6

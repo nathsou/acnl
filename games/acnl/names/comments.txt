@@ -518,6 +518,7 @@
 0012853c Releases the visitor's local info.
 001285a4 Constructs the shared sound objects manager: none.
 001285c8 Releases the exhibition park info.
+00128804 Destroys a sound conductor: stops its sound, BGM and clay figure sounds when playing, then detaches its \n handles.
 001288a8 Zeroes the record and its 10 bytes.
 001288e8 Releases the NPC lock permit bit manager.
 00128924 Constructs the table's 6 entries (0xec bytes each) and resets its 10 halves to -1.
@@ -564,6 +565,8 @@
 0012b83c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0012b940 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0012bd24 Constructs the game framework: a framework with empty names and the default frame handler.
+0012bd88 Constructs the audio player controller: a sound archive player, its lock and a sound data manager on a heap \n (r5).
+0012be14 Constructs the audio system controller: its default voice, stream and buffer counts and sizes, and a lock.
 0012bed8 Locks the lock the object holds at 0x3c, if any.
 0012bf54 Unlocks the lock the object holds at 0x3c, if any.
 0012bf68 Constructs a method tree node for an owner (arg 1): a disposer with an empty name and delegate.
@@ -670,6 +673,8 @@
 00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 00131dc4 Allocates the block from the heap, with its name.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
+00131f64 Creates the root heap over the memory arena (arg 0) and adds it to the root heaps; the heap manager is up.
+00131fe0 Creates the root heap over the memory (from arg 0's info) under the root lock, as create_root_heap.
 0013208c Constructs a framework: no run loop yet, an empty delegate list.
 001320cc Constructs a disposer and registers it with a heap: the given one, else (by mode, arg 2) the heap that \n contains it or the current thread's heap.
 00132174 Constructs a disposer and registers it with the heap that contains it (when the heap manager is up).

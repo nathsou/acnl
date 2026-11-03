@@ -602,9 +602,9 @@
 00975320 current_frame_buffer
 00975334 singleton_disposer_list
 00975338 heap_mgr_instance
-0097533c safe_string_empty
+0097533c root_memory_arena
 00975344 heap_mgr
-00975348 string_id_owner
+00975348 heap_mgr_current
 009753a8 shared_critical_section_pointer
 009753c0 save_data_init_state
 009753c8 resource_mgr_instance
@@ -976,9 +976,10 @@
 00ae0f64 memory_block_list
 00ae3fc0 sound_bank_entries
 00ae4e44 decode_table
-00ae53b8 string_id_counter
-00ae53bc string_id_limit
-00ae53c0 string_id_table
+00ae53ac root_memory_info
+00ae53b8 root_heaps_count
+00ae53bc root_heaps_capacity
+00ae53c0 root_heaps_data
 00ae53d4 list_28_lock
 00ae544c shared_critical_section
 00ae5484 command_buffer
