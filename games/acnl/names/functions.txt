@@ -14958,6 +14958,8 @@
 005aad60 imgdb__TwlNandArchiveMounter__virtual_0_005aad60
 005aad70 store_byte_constant_pack_0x0_005aad70
 005aad7c PhotoPath__build_wide
+005aae3c PhotoFile__decode_mpo
+005ab01c PhotoFile__decode_jpeg
 005ab1fc PictureInfo__read_from_file
 005ab304 PhotoFile__clear
 005ab334 imgdb__PhotoHeaderFileReader__read
@@ -14971,16 +14973,21 @@
 005ab5a4 nn__fs__Directory__Directory_005ab5a4
 005ab768 PhotoFile__read_header
 005abb6c cached_value_0x204
+005abba0 PhotoDatabase__set_flags
 005ac04c call_5abba0_with_bit
 005ac2b0 write_photo_file_1
+005ac2bc PhotoDatabase__load
 005ac4f4 PhotoPath__build_full
 005ac5dc PhotoPath__build_from_record
+005ac67c PhotoDatabase__scan
+005acb9c PhotoDatabase__path_of_kind
 005acca4 PhotoPath__format_file_name
 005accd0 photo_root_path
 005acde8 photo_database_path
 005ace98 photo_root_length_1
 005acf04 PhotoDir__scan_next
 005ad068 call_005ad0b4_now
+005ad0b4 PhotoDatabase__read_file
 005ad658 PhotoPath__format_folder_name
 005ad690 PhotoPath__build_folder
 005ad6d8 PhotoPath__build_folder_from_number
@@ -14988,6 +14995,8 @@
 005ad968 call_005af04c_with_time
 005ad9a0 PhotoName__number
 005ada54 PhotoName__number_wide
+005adb08 PhotoDatabase__open_file
+005adc90 PhotoDatabase__count_kind
 005add4c PhotoName__parse
 005add7c photo_root_length_0
 005adde8 PhotoStore__count
@@ -14998,17 +15007,21 @@
 005aead8 check_fs_result
 005aeb58 wide_path_parent
 005aebc8 PhotoDir__find_folder
+005aed38 PhotoName__number
 005aed44 PhotoRecord__from_name
 005aee20 PhotoRecord__from_wide_name
 005aef40 PhotoRecord__copy_from_info
 005aeff0 PhotoName__folder_number
+005af04c PhotoDatabase__write_file
 005af13c PhotoRecord__from_folder_name
+005af3d4 PhotoDatabase__add
 005af3e0 write_photo_file
 005af6dc parse_decimal
 005af748 parse_decimal_wide
 005af7b4 compare_wide_strings_ignore_case
 005af8c8 imgdb__Crc16Context__Crc16Context
 005af9c4 store_byte_constant_pack_0x4_005af9c4
+005af9d0 PhotoDatabase__save_index
 005afd20 PictureWriter__set_params
 005afd3c imgdb__MpSaver__MpSaver
 005afddc imgdb__MpSaver__deleting_destructor
@@ -15033,6 +15046,7 @@
 005b04d0 PhotoRecord__set_bits_1_to_8_of_28
 005b04e8 PhotoRecord__set_bits_21_to_24_of_2c
 005b0504 PhotoRecord__set_bits_5_to_20_of_2c
+005b0520 PhotoRecord__copy
 005b0588 set_extension_by_index
 005b05a8 PhotoRecord__set_extension_name
 005b05b4 PhotoRecord__set_extension_wide
@@ -15044,10 +15058,12 @@
 005b0654 photo_folder_number_valid
 005b0664 PhotoNumber__next
 005b06a0 PhotoNumber__next_folder
+005b06c4 PhotoDatabase__save_index_b
 005b0a14 PictureReader__set_params
 005b0a28 imgdb__JpegSaver__JpegSaver
 005b0ab8 imgdb__JpegSaver__deleting_destructor
 005b0b14 imgdb__JpegSaver__destructor
+005b0b6c PhotoDatabase__is_open
 005b0c94 ExifReader__read_thumbnail
 005b0d7c ExifReader__read_thumbnail_checked
 005b0dec ExifReader__thumbnail_size
@@ -15183,10 +15199,13 @@
 005b4d7c Scene__request_change
 005b4eb0 Stack__remove_top_matching
 005b5068 reset_entry_24
+005b5080 Scene__spawn_from_previous
 005b522c call_5b6378_with_scene
+005b59c4 Scene__return_to_previous
 005b5b78 SceneChange__request
 005b5d38 SceneChange__request_with_matrix
 005b5d60 Scene__request_change_at
+005b6378 Scene__change_to
 005b69f8 table_word_5b69f8
 005b6a10 scene_is_local_players_house
 005b7418 VillagerPart__set_byte_19764
@@ -15199,6 +15218,7 @@
 005b99b8 sead__FixedSafeString_32___FixedSafeString_005b99b8
 005b9e30 script__WordFix_9u___WordFix_005b9e30
 005b9ee0 VillagerRequest__complete
+005ba02c HouseRooms__room_is_built
 005ba098 Catalog__entry_of_item
 005ba234 VillagerRequest__start
 005ba2d0 sead__SafeStringBase_char___SafeStringBase_005ba2d0
@@ -15218,6 +15238,7 @@
 005bba50 sead__SafeStringBase_char___SafeStringBase_005bba50
 005bbd70 set_flag_bit_5b
 005bbdf8 TimedRecord__init_state_2
+005bc53c Villager__refresh_house
 005bc900 clear_first_entries_of
 005bc944 mark_first_entries_of
 005bc99c remove_second_entry_of
@@ -15386,6 +15407,7 @@
 005c354c call_005c40dc_0
 005c3554 call_005c48c8_9_1
 005c3560 player_call_6739b8
+005c3620 PlayerState__find_entry
 005c38c8 call_5c3620_with_bit
 005c394c PlayerRecords__set_slot_value
 005c3d4c slot_object_if_flags_66_bit_1_without_bit_5
@@ -15394,6 +15416,8 @@
 005c3e78 main_object_matches_masks_class_2_and_5_strict
 005c3e84 AcPlayer__can_act
 005c4034 main_object_state_entry_has_flag_9_bit_6
+005c40dc PlayerRecords__refresh
+005c4234 Player__give_item
 005c423c player_call_678300
 005c4340 store_pending_value_5be
 005c4400 release_player_slot
@@ -15416,6 +15440,7 @@
 005c5328 player_call_67ee38_if_action_21
 005c5390 player_hold_design_pattern
 005c5714 player_turn_to_point
+005c5794 Player__slot_index
 005c591c set_current_player_outfit
 005c5aa8 set_current_player_outfit_from
 005c5b3c copy_slot_snapshot
@@ -15432,6 +15457,8 @@
 005c617c save_previous_player_items
 005c6238 slot_object_state_class_2_to_5
 005c649c call_005c64a4_1
+005c64a4 PlayerRecords__update_slot
+005c6580 Player__can_use_tool_0
 005c6654 player_stop_or_request_state_31
 005c6760 update_current_player_position
 005c67b4 copy_within_second_row
@@ -15439,10 +15466,12 @@
 005c6850 main_object_has_flag_177_bit_3_or_is_missing
 005c6878 init_player_spawn_record
 005c6900 call_005c6908_1
+005c6908 Player__can_use_tool
 005c6a20 player_queue_action_2_with_target
 005c6a98 set_player_input_flag_5_bit_1
 005c6b24 can_take_off_class_7_item
 005c6c34 control_flag_a_bit_3
+005c6cac Player__is_in_water
 005c6e18 refresh_current_player_position_if_moved
 005c6f7c clear_player_input_flag_bit_3
 005c6fa0 player_enter_state_ea
@@ -15457,6 +15486,7 @@
 005c789c send_request_5c789c
 005c7920 try_lock_once
 005c7a8c design_pattern_item
+005c7c24 Player__start_reaction
 005c7cdc get_slot_object_position
 005c7d24 player_in_action_75_with_slot
 005c7d64 player_end_action_a4
@@ -15465,6 +15495,7 @@
 005c7f8c main_object_in_state_76_with_flag
 005c80b4 object_in_vehicle_position
 005c8170 player_call_687fb4
+005c81f4 Pockets__refresh_current
 005c8244 player_can_leave_action_af
 005c8460 player_move_to_state_unless_held
 005c8694 player_action_is_idle
@@ -15494,6 +15525,7 @@
 005ca478 map_structure_is_dobj
 005ca4b4 object_name_is_fobj
 005ca4f0 map_structure_is_hobj
+005ca52c scene_name_matches
 005ca530 map_structure_is_sobj
 005ca56c map_structure_s8_88c42a
 005ca584 map_structure_is_fobj_sp
@@ -15502,6 +15534,7 @@
 005ca62c save_counter_call_3463bc
 005ca648 increment_save_counter
 005ca688 write_save_buffer
+005ca6f8 thunk_002cd4ec
 005ca6fc word_95262c_unless_95262c_set
 005ca7a4 clear_current_player_8f38
 005ca9c0 return_constant_0x5033c_
@@ -15514,6 +15547,7 @@
 005cad0c read_u32_0x0095bf74_
 005cad1c clear_save_buffer
 005cad28 SaveData__init_new
+005caef4 SaveFile__checksum_range
 005caf28 Date__set
 005caf64 init_header_9e
 005caf80 Town__add_to_counter_62130
@@ -15531,6 +15565,7 @@
 005cbf78 script__WordFix_9u___WordFix_005cbf78
 005cc024 normalize_flags_270
 005cc070 store_byte_constant_pack_0x30_005cc070
+005cc160 SaveFile__write_block
 005cc2f4 namespace___SimpleFuncDelegate__SimpleFuncDelegate_005cc2f4
 005cc3a4 namespace___SimpleFuncDelegate__SimpleFuncDelegate_005cc3a4
 005cc454 Letter__mark_recipient_read
@@ -15564,6 +15599,7 @@
 005cddb4 GameTime__set_time_stamp
 005cdde8 TimeRecord__set_now
 005cde34 GameTime__set_now
+005cde64 FieldItems__plant
 005cdec0 GameTime__set_time_of_day
 005cdf48 game_time_set
 005cdf68 terrain_has_flag_bit_1
@@ -15572,6 +15608,7 @@
 005cdfd0 terrain_byte_890554
 005cdfe8 terrain_record
 005ce114 terrain_byte_95dc1b
+005ce12c item_kind_at_position
 005ce13c byte_95d91e
 005ce154 byte_95da1d
 005ce2b8 terrain_byte_95d81f
@@ -15704,6 +15741,7 @@
 005d6908 script__RenderMain__deleting_destructor
 005d6964 script__RenderMain__destructor
 005d69bc TextBox__set_message_words
+005d6bfc TextBox__unlock_b
 005d6cc0 start_window_message
 005d6d28 TextBox__layout_lines_b
 005d6fac script__RenderRuby__RenderRuby_005d6fac
@@ -15795,6 +15833,7 @@
 005dd558 AcInsectFishPlate__virtual_40
 005dd55c AcInsectFishPlate__virtual_56
 005dd560 AcInsectFishPlate__virtual_50
+005dd570 SafeString__assign_message
 005dd594 AcInsectFishPlate__virtual_41
 005dd598 AcInsectFishPlate__virtual_44
 005dd5a0 AcInsectFishPlate__virtual_52
@@ -15975,6 +16014,7 @@
 005e8194 script__DetectCode__DetectCode_005e8194
 005e822c script__DetectCode__DetectCode_005e822c
 005e82c4 script__StrNicknameEngine__virtual_6
+005e8348 MsgEngine__start
 005e8458 script__StrNicknameEngine__virtual_2
 005e8464 script__StrNicknameEngine__virtual_4
 005e8478 script__StrNicknameEngine__deleting_destructor

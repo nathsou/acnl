@@ -3156,6 +3156,8 @@
 005aab40 Keeps a value at 0x9816b4 and marks it pending (0x9816aa).
 005aab58 Keeps a value at 0x9816b0 and marks it pending (0x9816a9).
 005aad7c Builds a wide photo path from its parts.
+005aae3c Decodes the photo's MPO (3D) into the buffers.
+005ab01c Decodes the photo's JPEG into the buffer.
 005ab1fc Reads a photo file's header (extension 1 or 2) into the record; true when it worked.
 005ab304 Clears a photo file record and its time.
 005ab334 Builds the file's path and reads its header through the reader; the reader's result.
@@ -3164,16 +3166,21 @@
 005ab4c8 Maps a file-system result to a photo error: 0 for success or not-found codes, 8, 9 or 0xe for media errors, 5 otherwise.
 005ab768 Reads the photo file's header and its sizes.
 005abb6c The value of 003506c8 for 0x204, read once (0x97e0e0).
+005abba0 Sets the photo's flags by the mask.
 005ac04c Calls 005abba0 with the bit 1 << `index` as its last argument.
 005ac2b0 Writes a photo file through 005af3e0 with option 1.
+005ac2bc Loads the photo database's index from its archive.
 005ac4f4 Builds the full wide path of a photo: drive, folder (number + 100 and the folder suffix), file (prefix and number + 1) and extension.
 005ac5dc Builds the full wide path of a photo from its record (drive, folder, file name and extension); the length.
+005ac67c Scans the photo database's folder for the photos.
+005acb9c The path of the photo of the kind (0 or 1).
 005acca4 Formats a photo file name: the prefix and the number + 1 on four digits.
 005accd0 The photo root path for storage `which` (0 or 1), built once from the drive and the folder name; the empty path for others.
 005acde8 The path of the photo database file for storage `which` (0 or 1), built once; the empty path for others.
 005ace98 The length of the photo root path of storage 1, computed once.
 005acf04 Scans the next photo folder or file under the cursor, building their paths.
 005ad068 Calls 005ad0b4 with the current time.
+005ad0b4 Reads the photo's file into the buffer.
 005ad658 Formats a photo folder name: the number + 100 on three digits and the folder suffix of the storage.
 005ad690 Builds the wide path of a photo's folder (drive and folder name); the length.
 005ad6d8 Builds the wide path of a photo folder from its number; the length.
@@ -3181,6 +3188,8 @@
 005ad968 Calls 005af04c with the time from 005acb9c and the two arguments.
 005ad9a0 The four-digit number of a photo name (four non-empty characters then four digits), or -1.
 005ada54 The four-digit number of a wide photo name (four non-empty characters then four digits), or -1.
+005adb08 Opens the photo's file in the database's folder.
+005adc90 Counts the photos of the kind (0 or 1).
 005add4c Parses the photo's 8-character name; whether it is one.
 005add7c The length of the photo root path of storage 0, computed once.
 005adde8 Counts the photos of the kind in the store, once.
@@ -3191,15 +3200,19 @@
 005aead8 Reports a fatal error for a failing file-system result, except the media and not-found codes the photo code handles.
 005aeb58 Copies the parent directory of a wide path (up to its last slash).
 005aebc8 Looks through the photo folders under the cursor for the one with the given name.
+005aed38 The photo name's number (its digits).
 005aed44 Fills a photo record from its folder and file names (numbers and extension).
 005aee20 Fills a photo record from its wide folder and file names.
 005aef40 Copies the time, kinds and the four slots of a picture record into a photo record.
 005aeff0 The three-digit number at the start of a folder name, or -1.
+005af04c Writes the photo's file to the database's folder.
 005af13c Fills a photo record's folder fields from a folder name.
+005af3d4 Adds the photo to the database.
 005af3e0 Writes a photo file to the storage: makes its folder when missing, builds its path and writes the data (with the given option).
 005af6dc Parses up to `count` decimal digits (stopping at a terminator) into `out`; false on a non-digit.
 005af748 Parses up to `count` wide decimal digits (stopping at a terminator) into `out`; false on a non-digit.
 005af7b4 Compares two wide strings ignoring ASCII case; the difference of the first mismatching characters.
+005af9d0 Writes the photo database's index file.
 005afd20 Stores the writer's three words, its scale and its flag (+0x1c to +0x2c).
 005afe90 Clears an 18-byte picture entry.
 005aff24 Moves the directory cursor to the next entry, reading the next batch of 64 entries when needed; false at the end or on an error (reported unless quiet).
@@ -3218,6 +3231,7 @@
 005b04d0 Stores a value in bits 1-8 of +0x28.
 005b04e8 Stores a 4-bit value in bits 21-24 of +0x2c.
 005b0504 Stores a value in bits 5-20 of +0x2c.
+005b0520 Copies the photo record (0x50 bytes), with its flag.
 005b0588 Writes known extension `index` (without its '.') into the path's extension field (4 characters).
 005b05a8 Copies a 4-character extension name into the record.
 005b05b4 Copies a 4-character wide extension into the record.
@@ -3225,7 +3239,9 @@
 005b0628 Whether the value is at most 0x270e.
 005b0664 The next photo number: the file number counts to 99, then the folder number advances (wrapping below 900).
 005b06a0 Starts the next photo folder (wrapping below 900) at file 0.
+005b06c4 Writes the photo database's index file (the second one).
 005b0a14 Stores the reader's three words and its flag (+0x1c to +0x28).
+005b0b6c Whether the photo database is open.
 005b0c94 Reads the thumbnail (or another segment) of the picture's EXIF data into a buffer when it fits; gives its size; true when it worked.
 005b0d7c Reads the thumbnail when the picture's EXIF data is valid.
 005b0dec The larger of the two thumbnail segment ends of the picture's EXIF data, or 0.
@@ -3266,10 +3282,13 @@
 005b4d04 When no scene change is pending: requests the change kept in the object (scene +0x24, position, angle) and clears it; true when requested.
 005b4d7c Requests the change to the scene with its entrance and options.
 005b4eb0 Pops the top word into the first of the four slots (+0x64 to +0x70) that holds `value`.
+005b5080 The spawn point when coming from the previous scene.
 005b522c Calls 005b6378 with the current scene and the arguments.
+005b59c4 Returns to the previous scene.
 005b5b78 When no scene change is pending: stores the target position, angles and fade time, and requests the change (005b4d7c); true when it was.
 005b5d38 Requests a scene change with a 3x4 matrix and two values (005b5d60).
 005b5d60 Requests the change to the scene at the spawn point, with its fade and options.
+005b6378 Changes to the scene with its entrance, from the previous one.
 005b6a10 Whether `scene` is one of the six rooms (the table at 0x889c80, six per player) of the house of the player on this console.
 005b7418 Stores a byte at +0x19764 of the villager part.
 005b769c Adds `amount` (at least 1) to the 3-bit level in bits 11-13 of +0x2510, saturating at 7.
@@ -3278,6 +3297,7 @@
 005b81fc Clears bits 3-6 of +0x2510.
 005b96a8 Sends the villager's letter for the request (template by its id) to the player; marks the request state 9.
 005b9ee0 Completes a villager's request: raises the friendship with the player and records it.
+005ba02c Whether the house's room (below 8) is built (its stage 7).
 005ba098 The catalog entry of the item in the save's lists.
 005ba234 Starts a request from a villager: today's date, state 3, the villager's 0x2f-byte identity and a random length (14, 21 or 30 days).
 005ba980 Moves a request in state 4 to state 5.
@@ -3292,6 +3312,7 @@
 005bb9f0 Clears a request record (time unset, kind 0x21, state 0xff, length 9, replies -1).
 005bbd70 Sets bit `index` (below 3) of +0x5b.
 005bbdf8 Clears a timed record and starts it today in state 2.
+005bc53c Refreshes the villager's house record.
 005bcaa8 Adds a value to the signed level at +0xa8, clamped between -4 and 60 (40 for kinds other than 3, 6, 9 and 0xb).
 005bcaf0 Counts +0xa9 up; at 3 sets +0xa7.
 005bcbfc Clears a timed record, starts it today, finishes its event and sets state 4.
@@ -3369,9 +3390,12 @@
 005c354c Calls 005c40dc with 0.
 005c3554 Calls 005c48c8 with 9 and 1.
 005c3560 Calls 006739b8 on the player (when 005c3e84 allows it or when forced), with option 0 in scene 0x5c.
+005c3620 Finds the player state's entry.
 005c38c8 Calls 005c3620 with a 16-bit set holding only bit `index` (below 10).
 005c394c Sets the player's slot (below 4) value (below 8) and updates the player.
 005c3e84 Whether the player may act now (by the scene and the input lock).
+005c40dc Refreshes the player's records (below 2).
+005c4234 Gives the item to the player.
 005c423c Unless the player is locked: calls 00678300, passing its +0x8ce in action 0xe1.
 005c4400 Marks player slot `slot` (below 4) as gone (8); forgets the current player data when it was the current one, and finishes a remote player's record.
 005c44a0 The design pattern (0x870-byte record) of the player's worn item of the first kind, when it is a design item (category 0x47/0x48); else 0.
@@ -3385,6 +3409,7 @@
 005c5328 When the main object allows action 0x21 and the player is not locked: calls 0067ee38.
 005c5390 Unless the player is locked: queues an action with the item for design pattern `index` (below 10) of the current player (0x33ab, 0x33ac or 0x33ad by its kind).
 005c5714 Turns the player toward a point (state 0x12 with the angle between them).
+005c5794 The player's slot (below 4, else the main object's).
 005c591c Unless a request is reserved: replaces the current player's eight worn items (+0xa) and the flag byte with those of `outfit`; true when it did.
 005c5aa8 Builds an outfit from the arguments (0027b3a8) and puts it on the current player.
 005c5bb8 For each of the four players (and the current one): takes off the worn items of set A and refreshes the outfit.
@@ -3393,25 +3418,31 @@
 005c6024 Sends the player a special letter from the secretary (one of two templates, by bit 4 of +0x5700) with an attached item; true when it was sent.
 005c617c Copies the four items at +0x1c and the 16 at +0x4c (with four words) of the player state at 0xaaef18 into their previous copies.
 005c649c Calls 005c64a4 with 1.
+005c64a4 Updates the player's records slot (below 2).
+005c6580 Whether the first player may use a tool now.
 005c6654 Puts the player in state 15 when `stop`, else requests state 31 with speed 8.
 005c6760 Refreshes the current player's position (0xaaf140) and returns it.
 005c67d8 Clears the two floats at 0xaaf194.
 005c6878 Fills a spawn record: the slot's 0x26-byte identity, the slot, the position in quarter units, the angle and a flag.
 005c6900 Calls 005c6908 with 1.
+005c6908 Whether the player (below 2) may use a tool now.
 005c6a20 Unless the player is locked: queues two action entries (kind 2 with a word, then a target with option 4).
 005c6a98 Sets bit 1 of 0xaadad5.
 005c6b24 For the current player's worn item of class 7: 1 when there is none, 0 when the pockets are full, else 2 or 3 by its kind.
+005c6cac Whether the main player is in the water.
 005c6e18 Refreshes the current player's position (0xaaf140) when the stored one differs from the reference.
 005c6f7c Clears bit 3 of the player input flags; returns true.
 005c6fa0 When the player is in an action (bit 5 of +0x171) that allows it: enters state 0xea and starts it with speed 6.
 005c7010 Applies the template of kind (table 0x881b8c) to the 0x26-byte entry of slot (index & 3) at +0x292ac of the players.
 005c7258 Unless the player is locked: gives it the design item 0x33aa for design `index`.
 005c7a8c The item for design pattern `index` (below 10) of the current player: a 0x33ab/0x33ac/0x33ad item for kinds 6-7, an item from 005c7e48 for kinds up to 5, else empty.
+005c7c24 Starts the player's reaction of the kind with its item.
 005c7d24 Whether the player is in action 0x75 with slot 0 of its four (+0x1b4) in use.
 005c7d64 When the player (not locked) is in action 0xa4: moves it to state 0x12 with the constant parameters.
 005c7e48 The record value (below 10) of the player state.
 005c80b4 Whether the object of `id` is in actions 0x7c/0x7f/0xae (or a free 0xaf); copies its position to `out` when given.
 005c8170 Unless the player is locked: whether 00687fb4 accepts the argument.
+005c81f4 Refreshes the current player's pockets, unless a request is pending.
 005c8244 Whether the player in action 0xaf (mode 1) may leave it: not held (bit 0 of +0x8c7), locked, or bit 5 of +0x8c7.
 005c8460 Unless the player is held (bit 6 of +0x8c5, bit 5 of +0x8c7): moves it to state `state` with option `option`.
 005c8694 Whether the player is in action 0xe3 with no timer (+0x5c0) or in action 0xaf with item kind 0x2e and no timer (+0x5c4).
@@ -3433,6 +3464,7 @@
 005ca478 Whether map structure `kind`'s model type (table 0x95bae0) is the d-object type.
 005ca4b4 Whether entry `index` of the object name table (252 entries) is "fobj".
 005ca4f0 Whether map structure `kind`'s model type (table 0x95bae0) is the h-object type.
+005ca52c Whether the scene's name (below 0xfc) matches the fixed one.
 005ca530 Whether map structure `kind`'s model type (table 0x95bae0) is the s-object type.
 005ca56c Signed byte of map structure `kind` from the table at 0x88c42a; 0 from 0xfc.
 005ca584 Whether map structure `kind`'s model type (table 0x95bae0) is the special f-object type.
@@ -3440,6 +3472,7 @@
 005ca62c Calls 003463bc with the 64-bit counter at the start of the save data.
 005ca648 Increments the 64-bit counter at the start of the save data, skipping 0.
 005ca688 Copies `size` bytes into the save buffer at `offset` (within 0x89b00) and refreshes its two checksummed parts.
+005ca6f8 Jumps to 0x2cd4ec.
 005ca6fc The word at 0x95262c when the one at 0x952628 is 0, else 0.
 005ca7a4 Clears bit 1 of +0x570a and the word +0x8f38 of the current player; for players with bit 6 of +0x8f7b, sets a town flag (+0x621d0 bit 5).
 005ca9cc Calls 00119288 on the save data at +0x292a4.
@@ -3448,6 +3481,7 @@
 005cacfc Calls 002c24dc on the object at 0x95df64.
 005cad1c Clears a whole save buffer (0x89b00 bytes).
 005cad28 Starts new save data: two random words for the save identity, then the town part (+0x80) and the part at +0x71900.
+005caef4 The CRC-32 of the range (from the start).
 005caf64 Stores 0x9e at +4 and clears +6.
 005caf80 Adds a 64-bit amount to the counter at +0x62130, saturating at the largest positive value.
 005cb1dc Initializes the parts of a new town (villagers, map, letters, events and the rest).
@@ -3460,6 +3494,7 @@
 005cbe34 Sets the sender to a villager (kind 2) by copying its 48-byte identity.
 005cbe84 Changes the letter's kind bits from 1 to 2.
 005cbee4 Addresses a letter to the player of a slot and, unless `keep_header`, copies the current player's header.
+005cc160 Writes the save's block with its callback and the mode.
 005cc454 Moves the recipient kind (+0x30) to its read form: 1 or 3 -> 3, 2 or 4 -> 4, anything else -> 5.
 005cc524 Copies a letter field by field (identities, header, body, footer, flags, item and stamp).
 005cc82c Initializes through 0027d310 and sets +4 to -1.
@@ -3478,8 +3513,10 @@
 005cdbf8 Clears the 56 slots, the two extra slots, their counts and the rest of the block.
 005cdd70 Builds the 56 and 2 slot entries and the table at +0xf0.
 005cdde8 Stores the current game time (advanced by 0) in the record after resetting it.
+005cde64 Plants the item at the cell with its growth.
 005cdfd0 Byte of terrain kind `kind` (0 from 0xff) from the table at 0x890554.
 005ce114 Byte of terrain kind `kind` (0 from 0xff) from the table at 0x95dc1b.
+005ce12c The kind of the item at the position (from the kind table).
 005ce2b8 Byte of terrain kind `kind` (0 from 0xff) from the table at 0x95d81f.
 005ce32c Signed byte (table 0x95d720) of the terrain kind at a position.
 005ce368 Signed byte +0xfad of the error/EULA manager.
@@ -3516,6 +3553,7 @@
 005d60d4 Clears the text buffer and the line starts, marking the last line.
 005d6510 Text tag: sets the color (from the tag's two halves) and skips the tag.
 005d69bc Sets the text box's message with its words.
+005d6bfc Unlocks the text box (the second layout) and refreshes its pane.
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
 005d6d28 Lays out the text box's lines (the second layout) and sets the text's size.
 005d72a4 Text tag: places the ruby text above its base characters, centered, and skips the tag.
@@ -3524,6 +3562,7 @@
 005d7a4c Builds the text color command from the tag's value.
 005daf1c Empties the selected pocket slot (below 16) of the current player.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
+005dd570 Assigns the message to the string and records its flag.
 005dd5b8 Formats the number with three digits into the string.
 005e19a8 Sets the value as kind 1.
 005e1a00 Sets the value as kind 2.
@@ -3543,6 +3582,7 @@
 005e4a28 Resets the choice (no selection, 5 entries at most) and its entries.
 005e626c Starts the text with its options and runs it when there is one; the result.
 005e7dc4 Notes whether the character is native to the region's script or foreign.
+005e8348 Starts the message engine on the text (or marks it done without one).
 005e8498 Calls the dialog box's virtual function 5.
 005e90cc Refreshes the dialog box's state and its text.
 005e9974 Refreshes the talk window's text and its label when attached.
