@@ -957,12 +957,93 @@
 004e9a28 The furniture object at cell (x, z) of the room grid (from the table of up to 48); null when none.
 004e9a78 The room furniture at cell (x, z) of a layer, within the capped furniture count.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
+00510878 Shuts the online client down when nothing uses it: releases the service, the shared state at 0x96b930 and the buffer (+0x24).
+00510b68 Logs out of the online service (waiting for the call to finish), then resets the session's state and timeouts.
+0051139c Logs into the online service and waits for the result; reports the error (level 3) on failure. True when logged in (+0x6b).
+00511468 Joins the online gathering and waits for the result; reports the error on failure. Marks it joined (+0x6a).
+00511504 True when the online state check passes.
+00511a04 Leaves the online gathering and waits for the result; reports the error on failure.
 0051207c Maps the level from 00413478 (0 -> 0, 1/2 -> 1, else 3) and keeps the requested one when they differ.
+005122a8 Connects to the online service with the game's server key and credentials, then logs in and opens the gathering.
+005124b8 Creates the online gathering (its name, timeouts of 30000 and 2000 ms, and its parameters) once; marks it created (+0x69).
+00512940 Logs out and clears the joined flag.
+00512a98 Searches the online gatherings matching the parameters and waits for the results.
+00512e64 Reports event 0x66 with the string (when given).
+00513e6c Sets the session's application data (up to 0xb8 bytes).
+00514264 Joins the session with the setting; maps the service's errors to the game's codes (0x80000001 to 3, else reports it and gives 0x80000006).
+0051433c Creates a session for up to 4 players with the game's attributes (mode, region, version); true on success.
+00514524 Joins the session with the id.
+00514acc Creates the gathering and logs into it, remembering its id and station address; cleans up on failure.
+00514c3c Opens the session to participants and waits for the result; reports the error on failure.
+00515148 Reports the end of the session (event 0x65) when connected, logs out and clears its state.
+005152d4 Sets the service's timeout to 2000 ms when it exists.
+005152f4 Reports event 0x67 with the string and the two values.
+00515cdc Updates the session and, under its lock, the service at 0x974a14.
+0051659c Sets up the network clock once: its time source and callbacks.
+005166a8 Fills the status record with the clock's addresses, times and flags (cleared when not set up).
+005182f4 Constructs the network clock: its lock, notification handler, four address records and cleared times; registers it at 0x95365c.
+005183e0 Creates and sets up the network clock once (from the network heap); true when it is running.
+00518468 Requests operation 0x1e with the id and two bytes when logged in (flag 4) and the id is set; otherwise records the error.
+005184f0 Requests operation 4 (send) with the data and two bytes when connected (state 2, flag 1); otherwise records the error.
+0051868c Requests operation 3 with the data when connected (state 2, flag 1) and moves to state 3; true when already there or nothing to do.
+00518750 Requests the list operation with the entries when allowed; otherwise records the error.
+00518848 Requests operation 0x1b with the id, two floats and a half when logged in and the id is set; otherwise records the error.
+005189e4 Requests operation 0x19 with the three words, a float and a word when logged in; otherwise records the error.
+00518c3c Requests operation 0x1f with the three words and a float when logged in; otherwise records the error.
+00518ca8 Requests operation 0x1c with the id, a float and a vector when logged in; otherwise records the error.
+00518edc Requests operation 0x1d with the id, a float and a half when logged in and the id is set; otherwise records the error (true for a missing id).
+005197dc Releases the component's objects.
+005197f0 Clears the SpotPass opt-out flag (with the network daemon suspended).
+0051981c Reads the SpotPass data list of the kind (with the network daemon suspended).
+0051984c Runs the SpotPass data operation on the id (with the network daemon suspended).
+00519874 True unless the SpotPass opt-out flag is set.
+005198b0 Makes sure the SpotPass storage is registered (registering it with the id and size when it is not); true when it is.
+00519960 True when the SpotPass storage is registered.
+005199a0 True when the SpotPass task (the foreground one for a null id) is not running.
+00519a7c Registers the SpotPass download task (its URL action, interval and policy) unless it already exists.
+00519bdc Sets the SpotPass opt-out flag (with the network daemon suspended).
+00519c08 Checks the state of the SpotPass task; true when no storage is registered.
+00519c58 Starts the SpotPass task, or runs it in the foreground when it cannot be started.
+00519cc0 Reads the new SpotPass data of the list into a buffer.
+00519e3c Initializes the SpotPass task of the id and starts it; true on success.
+00519ed0 Registers the SpotPass task with its policy and action, then starts it; true on success (the known errors give false).
+00519fc0 Initializes the SpotPass task of the id and deletes its data; true on success.
+0051a2c4 Registers a SpotPass data store download task (its interval in hours and policy) and starts it.
+0051a740 Reads the SpotPass data (with the network daemon suspended).
+0051a874 Reads the string of the id into the UTF-16 buffer (up to `size` characters, terminated); the number of characters read.
+0051a9f0 Converts the string to UTF-8 into the buffer (terminated) and writes it; the number of bytes written.
+0051aa84 Resets the request (under the locks) and puts it back on the pool's free list.
+0051ad60 Takes a free request from the pool for the key and the two values (all set), moving it to the used list; null when none is free.
+0051ae04 Constructs the pool's 3 requests (0x30 bytes each), its two lists and lock, with every request free.
 0051b048 Forwards to the function at 0x47f3a0.
+0051b04c True when the flag at 0x953644 is clear.
+0051b060 Runs the check and, when it passes, sets the flag at 0x953644.
+0051b728 True when the scene state (0xa827f4) is one of the two idle handlers; otherwise marks it busy (0xa82b88).
+0051b87c When pending (+0xb0), finishes the work at +0xb4, remembers its value and starts the sleep check.
+0051bbbc Requests the scene change of `kind` (kind 3 not in New 3DS mode) when the scene is idle.
+0051bc4c From the second idle handler, starts the scene handler and marks it running.
+0051c098 Selects the entry (0xc bytes each) whose handler pair matches, remembering it and its index.
 0051ca20 Whether 00308e80 gives 0x26 or 0xa.
+0051cbdc The count at +0x9ac, or 399 when the cap flag (+0x9a8) is set.
+0051ccc0 Entry `index` (below 8, 0x30 bytes each) of the table at 0xa83108; out-of-range gives the first.
+0051cd48 Refreshes the slot records from the villager data at +0x62138; true.
+0051d168 The relation tier of the two villagers by their score: 0 (200 or more), 1 (61 or more), else 2.
+0051d18c The relation tier of the villagers in the two slots; 2 when either is missing.
+0051d264 Stores the current player's state (bits 2 to 5 of +0x8f88, when active and not 0xa) in the shared NPC info (+0x9a); 0xff otherwise.
 0051d710 Copies 0x32 bytes into entry `index` (below 4) of the table at 0xa82b90.
+0051d7f0 Clears entry `index` (below 4, 0x32 bytes) of the villager table and, for a nonzero index, refreshes it.
+0051d8e8 Address of word `index` (below 0x30) of the table at 0xa83288.
 0051dacc Clears the four 0x32-byte entries of the table at 0xa82b90.
+0051dbbc Picks a random villager for the villager, weighting by their relation score.
 0051dd50 Forwards to make_adjusted_words.
+0051e018 Destroys the particle handle at +0x1c.
+0051e6fc Resets the 11 villager ids (+0x7b8) and their checks, optionally the 10 ids at +0x7ce, and the shared NPC info's ids.
+0051f568 Adds to the counter byte, clamped to 0 to 32.
+0051f58c Halves the counter byte (at most 32).
+0051f84c The current state (below 8) of the record at +0x9ac, or 0 when capped (+0x9a8) or out of range.
+0051f874 The relation score of the two personality kinds from the table.
+0051fb04 Picks a random town villager for the villager, weighting each by their relation score and skipping the ones who are away or moving.
+0051fc14 Loads the resource of the table entry for the id.
 00520bec Builds the global string pool (0x97528c): its three 1024-entry tables, its four buckets and the 1024 bucket flags.
 00520ce8 The address of 12-byte entry `index` of the table at 0x975294 (count 0x97529c), or 0.
 00520d1c Calls the first handler of entry `index` of the handler table at 0x975298.
