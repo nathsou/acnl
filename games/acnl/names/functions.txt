@@ -853,7 +853,7 @@
 0012beec sead__CalculateTask__virtual_6
 0012bf54 unlock_lock_at_3c_if_present
 0012bf68 MethodTreeNode__construct
-0012bfec sead__CriticalSection__CriticalSection_0012bfec
+0012bfec CriticalSection__construct
 0012c018 sead__AudioResetterCtr__AudioResetterCtr
 0012c048 sead__AudioSoundHeapCtr__AudioSoundHeapCtr
 0012c0e8 SoundPlayer__load_data
@@ -1001,8 +1001,8 @@
 00131f64 create_root_heap
 00131fe0 create_root_heap_locked
 0013208c sead__Framework__Framework
-001320cc sead__IDisposer__IDisposer_001320cc
-00132174 sead__IDisposer__IDisposer_00132174
+001320cc IDisposer__construct_in_heap
+00132174 IDisposer__construct
 001321c8 sead__ThreadMgr__SingletonDisposer___SingletonDisposer_
 00132364 release_layout_parts
 001323b4 layout_at_10_virtual_8
@@ -2958,7 +2958,7 @@
 0020ae0c SoundObj__set_flag_39
 0020ae2c SoundObjBase__virtual_4
 0020aec0 SoundObj_1___virtual_3
-0020aedc stop_base
+0020aedc SoundObjBase__stop
 0020af18 SoundObjBase__SoundObjBase
 0020afb0 SoundObjBase__deleting_destructor
 0020afb4 SoundObjBase__destructor
@@ -6044,7 +6044,7 @@
 002fe7cc read_map_table
 002fe7dc static_guard_acquire
 002fe7f0 do_nothing_002fe7f0
-002fe7f4 script__WordFix_33u___WordFix_002fe7f4
+002fe7f4 construct_word_fix_33_into_text_box
 002fe874 call_target_with_two_0x94_
 002fe884 destroy_word_fix_33
 002fe8a4 find_by_id_2fe8a4
@@ -6224,7 +6224,7 @@
 003034d8 CounterTable__clear_003034d8
 00303530 weather_type_cycled_veneer
 00303534 EncryptedInt__set
-003035a4 unknown_3035a4
+003035a4 TourResult__clear_score
 003035dc init_reward_entry
 00303660 EncryptedInt__get
 003036c0 thunk_0075db08
@@ -14428,7 +14428,7 @@
 0056a3f8 ssys__ma__Vec3i__destructor
 0056a3fc sead__FixedSafeString_256___FixedSafeString_0056a3fc
 0056a48c store_constants_56a48c
-0056a4a4 sead__FixedSafeString_256___FixedSafeString_0056a4a4
+0056a4a4 file_first_byte
 0056a534 ObjectBinding__bind_from_word_4
 0056a53c FileRequest__query
 0056a58c FileRequest__open
@@ -22961,7 +22961,7 @@
 0075ef68 NetAddress__is_usable
 0075efdc word_1c_at
 0075f020 NetPart__allows
-0075f0b0 part_check_f0b0
+0075f0b0 PartMask__allows
 0075f17c part_check_f17c
 0075f1c4 flags_09_bit_is_set
 0075f1f8 NetPlayers__slot_identity_is_set

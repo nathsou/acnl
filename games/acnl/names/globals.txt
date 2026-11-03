@@ -600,8 +600,9 @@
 009752e0 file_device_mgr_instance
 00975320 current_frame_buffer
 00975334 singleton_disposer_list
-00975338 npc_package_loader
+00975338 heap_mgr_instance
 0097533c safe_string_empty
+00975344 heap_mgr
 00975348 string_id_owner
 009753a8 shared_critical_section_pointer
 009753c0 save_data_init_state

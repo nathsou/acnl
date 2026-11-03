@@ -24,6 +24,7 @@
 00100b8c Destroys a player record's parts (items, letters, patterns and the rest).
 00100e5c Formats into a buffer of `size` bytes, terminated when there is room; returns the length the output needed.
 00100e94 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
+00100ef8 Formats into a buffer (C sprintf); returns the count written.
 00100f68 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
 001011e4 printf's %o: the digits of the 64-bit value (r2, r3), least significant first, then the '0' prefix for the # flag.
 0010125c printf's %x, %X and %p: the digits of the 64-bit value (r2, r3), least significant first, then the 0x prefix for the # flag.
@@ -483,6 +484,7 @@
 0012b3dc Runs the function at 0x131154 on +0x10 under the lock at +4.
 0012b40c Shuts the system services down in order and releases their global objects.
 0012b7c4 Releases the font manager's fonts.
+0012bfec Constructs a critical section: a disposer with an initialized recursive lock.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
 0012ca6c Stores arg 1 at the object's offset 4 and returns 1.
 0012cb84 Releases the scene's objects.
@@ -516,6 +518,7 @@
 0012eeb0 Mounts the RomFS archive as rom:.
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
 0012f050 Clears the light event (atomically negates a positive count).
+0012f154 Initializes a recursive lock: unlocked, no owner, depth 0.
 0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
 0012f204 A failed result code (negative) is reported as fatal, unless its level is one the caller tolerates; a success passes through.
 0012f278 Unmounts the storage when mounted (0x974f76).
@@ -559,6 +562,8 @@
 00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 00131dc4 Allocates the block from the heap, with its name.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
+001320cc Constructs a disposer and registers it with a heap: the given one, else (by mode, arg 2) the heap that \n contains it or the current thread's heap.
+00132174 Constructs a disposer and registers it with the heap that contains it (when the heap manager is up).
 00132364 Clears the layout's links (+8, +0x158), destroys its split part at +0x15c and finalizes the list at +0x30.
 001323b4 Calls virtual 8 of the object at offset 0x10 (with 0).
 00132410 Releases the scroll bar's press and its pane.
@@ -622,6 +627,7 @@
 00137c78 Creates the resource with the factory's heap and its name.
 00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
 00137dc4 Clears a thread's parameter block (id -1).
+00137e84 Unlocks the recursive lock at the object's offset 0x10.
 00137ec0 Inserts at position `index` of the list at +0x40, under the object's lock when it has one.
 001382cc Marks 0x97e854, stores a value at +4 and the memory size (0x974f54) at +0.
 0013864c Releases what the handle holds (through the service when it owns a service handle, else through the owner's virtual function 7) and clears it.
@@ -1308,6 +1314,8 @@
 0020ace8 Sets the flag at +0x36 and calls virtual 6 when it changes.
 0020ada8 For the sounds 0x100067a to 0x100067d, sets the flag (+0x39) when the sound system's level is above 40 or missing.
 0020ae0c Sets the flag at +0x39 and calls virtual 6 when it changes.
+0020aedc Stops a sound object: the sound system forgets it if it was registered.
+0020af18 Constructs a sound object's base: distances 2000, volume 1, no handle, not registered.
 0020b0a4 Plays the symbol tree's sound unless it plays.
 0020b494 Starts the object and sets its speed to 6.
 0020b9b0 Clears the 0x14b0-byte block: its base, identity, records and its two time bytes (from the earliest time).
@@ -1406,6 +1414,7 @@
 0022c368 Hides the pane (+0x1c) and sets the flag at +0x122 of the owner (+0x18).
 0022c390 Sets the map icon from the record.
 0022c48c Sets the map icon's position and its flag.
+0022c53c Constructs a drag icon group: a layout list with a list node and seven layout animations, all enabled.
 0022c720 Stops the current animation and starts animation 0 to 3 from zero.
 0022d64c Refreshes the map screen's grid of structures.
 0022d734 Clears the counter (0xa182f8) and reseeds the random state at 0xa182fc.
@@ -1860,6 +1869,7 @@
 002b315c Shows (or hides) the message of the touched icon by its group: buildings, villagers or the player.
 002b39d0 Unselects the icon and its label and hides the message.
 002b64f8 The record (+0x14) of the list at 0x9981f4 matching the key at 0x950814; null when none.
+002b6ef8 Destroys a button action node: detaches and destroys its four animations.
 002b7598 Updates the layout at +0x270 and attaches it to the layout system.
 002b75bc Starts the state with the handler pair at 0x87a114.
 002b7910 Starts the state with the handler pair at 0x87a11c.
@@ -2071,6 +2081,7 @@
 002e66c0 Restarts the effect at the position with its owner.
 002e6808 Sets the float at +0x198 of the effect.
 002e6878 Sets the effect's rotation (+0x18c) and marks it rotated (bit 2 of +0x14).
+002e6944 Destroys a particle handle: unlinks it from the pending effect handles if it was queued.
 002e69cc Copies the 30 bytes of a ring buffer (data +0, size +4, start +8, count +0xc) in order, padding with 0xff, plus its trailing word and two bytes.
 002e6a3c Fills the 30 bytes with 0xff and clears the trailing fields.
 002e764c Stops the sound at +0x18 when the object says it is playing (+0xf4).
@@ -2141,6 +2152,7 @@
 002f74e0 Whether the scene (arg 2) has every flag of the mask (arg 1) in the scenes' flag table; never for the \n no-scene id 0xa5.
 002f7508 When `copy`, copies the four animation targets (and +0xc) of one model to another and resets their values to 0.
 002f7804 Moves the page's start to include the index and refreshes it.
+002f7a2e Formats (vprintf) with a character sink; returns the count written.
 002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
 002f7ccc The wide formatter's sink for a bounded buffer: stores the character while there is room.
 002f7cdc Formats to a file; -1 when the file is in error.
@@ -2193,6 +2205,8 @@
 002fe2e0 Updates the sound data loader when it is up.
 002fe7cc An entry of the map table, by index.
 002fe7dc A local static's guard: 1 the first time (and marks the guard), 0 afterwards.
+002fe7f4 Constructs a 33-character script word (filled with the empty character) and sets it into a text box.
+002fe9c8 Adds an item group to an item set, without flags.
 002fea94 Calls the function on each cell of the 2x2 blocks.
 002ff1cc Daily update of the second contest ranking: resets it for a new contest, updates the schedule and sends the prizes.
 002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.
@@ -2215,6 +2229,7 @@
 00300900 The net session's signed value for the object.
 00300a64 Calls the object's virtual function 34.
 00300ff8 Updates the house upgrade's state with the options.
+003013c0 Clears a bulletin board notice: its header, text and stamps.
 00301400 1 when the date is after (year, month, day), -1 when before, 0 when the same.
 003016d4 Sets (or clears) bit `index` of a bit array of 28 bits.
 00301da8 Whether the year is a leap year (divisible by 4, and by 400 when by 100).
@@ -2245,6 +2260,7 @@
 00303018 Clears the item slots to the empty item.
 0030306c The item's placement kind (2 bits), or 2 without data.
 00303274 Sends the prizes of the finished second contest to the ranked players by letter.
+003035a4 Clears a tour result's score for a kind (arg 1), except the kinds that keep theirs (0, 1, 5, 6, 8 and \n 0x16 on).
 003035dc Initializes an entry of kind `kind` (0, 1 or 2) with its two constants; kind 2 also updates two save flags.
 003036c0 Jumps to 0x75db08.
 003036c4 Jumps to 0x70c098.
@@ -2258,6 +2274,7 @@
 0030444c Clears the tables of the record at 0xa82000 (24, 10, 2, 4 and 6 entries).
 00304530 The two load splits shared by the callers, constructed on first use.
 00304594 Forwards to flag_bit_2_of_95c4d2.
+003045a8 The current thread's context (offset 0x68 of its thread-local block).
 003045c8 Sets byte +0xaa of the object at 0x95386c and sends event 4 with 0.
 003045f8 Clears byte +0xaa of the object at 0x95386c and sends event 4 with 1.
 00304628 Copies a byte into +0x9b of the object at 0x95386c.
@@ -3019,6 +3036,7 @@
 004eee9c Finds the named entry in the model's dictionary and binds it.
 004eef60 Binds the resource to the model.
 004ef3a4 Clears the model's animation slots.
+004ef50c Destroys a group skeletal animation: its elements, then its heap allocator.
 004ef77c Plays the model's animation with the blend.
 004efb0c Sets the scene environment's layer (its lights and fog), outside photo mode.
 004f000c The scene environment's default fog.
@@ -3392,6 +3410,8 @@
 00537e98 Allocates a zeroed buffer of `count` pointers (with the heap and alignment) and sets the array up empty on it.
 00538024 Inserts the pointer at `index` (up to the count, while there is room), moving the later ones up.
 00538088 Sets the array up empty on the buffer of `capacity` pointers.
+00538188 Locks the recursive lock at the object's offset 0x10.
+00538274 Unlocks the recursive lock at the object's offset 0x10.
 0053ac4c Allocates `size` bytes (aligned to 4) from the heap, or the current thread's heap.
 0053ac90 Allocates `size` bytes with the alignment from the heap, or the current thread's heap.
 0053acd8 Formats into the string's buffer (always terminated).
@@ -3515,7 +3535,9 @@
 00567cc8 Formats the string with the shared pair at 0x975c14.
 00567d60 Binds the source's resource (+0x22c) once, with its callback.
 00567d9c Forwards to sead__SafeStringBase_char___SafeStringBase_00567dac.
+00567e24 Builds a layout from an archive with the layout allocator.
 00567e34 Builds the layout with its allocator and archive.
+00567ef0 Destroys an archive resource accessor's reader part: its load split, then the accessor.
 00567f20 Calls virtual 2 of the object at +4.
 00567f34 Stops the flight (frames left -1).
 00567f40 Moves the point one frame along its flight, slowing down over its last frames; true when the flight is over.
@@ -3532,6 +3554,7 @@
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
 0056a1d4 Rotates the vector about the x axis by the angle.
 0056a2c0 Sets the transform's scale, rotation and translation.
+0056a4a4 The first byte (signed) of the file at a path (arg 0), through the file device manager; 0 when no \n device has it.
 0056a534 Binds the object to the source's second word.
 0056a53c Queries the file request's state (under the file lock); 0 without a request.
 0056a58c Opens the file request through the file device manager once (under the file lock); true when it did.
@@ -3540,6 +3563,7 @@
 0056a758 Starts the split load with the default heap (0x975c38), not compressed.
 0056a780 Binds the animation to its target unless it is done or stopped (states 3 to 5).
 0056a94c Starts the compressed split load with the default heaps.
+0056a974 Starts a layout animation's load with the default load-split heap.
 0056a99c Starts the compressed split load with the given heap.
 0056a9bc Cancels the split load: queues it for release (state 6) or, while it reads, marks it to cancel; true when it is already idle.
 0056aa98 Starts the split load without a heap.
@@ -3873,6 +3897,7 @@
 0059f4d8 Updates the field item by its kind (below 10).
 0059f71c Fills the drop message for the item at the cell (kind 0x21, the station's index) with the scene byte.
 0059f7c8 Fills the drop message from the drop slot (its cell, kind, slot and items) with the action.
+005a064c Initializes a field drop: three empty items, no kind (0xa5), counters cleared.
 005a06b4 Forwards to do_nothing_002f777c.
 005a06d4 The index of the used entry for (x, z, layer) among the 32 five-byte field markers; -1 when none (layer 0xa5: the current one).
 005a08dc Sends or applies the pending field drops (as field-drop records) to the stations.
@@ -4401,6 +4426,7 @@
 005e2e50 Restarts the message engine at +0x44 on the text the source's virtual function 3 returns, and runs it.
 005e2eb4 Sets the text box's scale when it changed and refreshes its pane.
 005e2f94 Lays out the text box's lines for its pane and sets the text's size.
+005e3128 Constructs a trace renderer: a main renderer with a message engine, nothing traced yet.
 005e3238 Formats the hour (below 60) with two digits, for the region's clock; kind 3.
 005e32a0 Formats the amount with its separators for the region; kind 5.
 005e3344 Formats the number for the region's conventions.
@@ -6151,6 +6177,7 @@
 0075ef68 Whether the address is set (not the empty pair -3, -1) and its host accepts it (or has none).
 0075efdc Word `index` (below 4) of the table at +0x1c, or 0.
 0075f020 Whether the network part allows `kind` (below 6): when its check passes, or its mask (+8) has the kind's bit.
+0075f0b0 Whether a part (arg 1, below 6) is allowed: by the first of eight entries that names it (its high bit \n clear), else by the ninth entry, else by the mask at offset 9.
 0075f1f8 Whether the slot's player (below 4) has an identity.
 0075f34c Whether the four 8-byte ids match the ids (+0x10) of the four 0x18-byte entries.
 0075f3cc Whether the station's identity differs from the other.
