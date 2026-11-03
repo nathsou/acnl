@@ -2116,10 +2116,83 @@
 006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
 006f9494 Byte `index` of a constant table.
 006f9c08 The save record (from the two byte tables at 0x952742/0x95276c) for the list position of `mode` (positions 2 to 25 only).
+00700238 Picks the cells for the spawn from the candidates.
+00700558 The model scale of insect `index` (below 83) for the size value: 1 + (size - base) / (spread * 10), clamped to 0.7 to 1.3.
+00700974 The period of the day of the hour (+7): 1 (4 to 7), 2 (8 to 15), 3 (16), 4 (17 and 18), 5 (19 to 22), else 0.
+00700adc The actor kind index of the item, as a byte.
+00700cdc True when the world position is inside the map on plain ground with no blocking item.
+00700f58 The insect spawn table for the time: the island's (by period), the tour's (by tour kind and period) or the month's (by period).
+007010f8 The two spawn bytes (+0x4a, +0x4b) of the insect item's table entry.
+007011e8 Records the insect in the current player's encyclopedia when it is not in the caught set (+0x6c20) yet.
+007017a8 Word `index` (below 3) of the table at 0x95321c; the first otherwise.
+007017c0 Updates the current player's record of the insect item.
+007017f8 Picks a random insect from the spawn table for the time, weighted by its chances.
+00701900 Builds the list of insects that can spawn now from the spawn table for the time.
+007019f0 Splits the spawn index into an item index and category: 72 insects (0x24), then 0x26, 8 of 0x25, 0x98 and 0x9a.
+00706368 Visits the cells of the rectangle in random order, marking them.
+007075b4 Sets the tile triangles of the large cell's blocks from its shape.
+00707ebc Adds the quad of the four corners as two collision triangles (raised for height 0x20) at `index`; the next index.
+0070a758 Loads the button position layout of the object at +0x318; true when there is none.
+0070aa00 False when the state pair (+0xc) is either of the two idle handler pairs (0x857a60, 0x857a88), else true.
+0070aa84 The value of the first sub object (+0x184c, else +0x1850).
+0070aabc True when the first sub object (+0x184c, else +0x1850) is ready.
 0070ab24 Slot `index` (fewer than 4; 0x18 bytes each, from +0xe0) passed on to call_007460e8; 0 for a larger index.
+0070ac44 The animation value of slot `index` (below 4, 0x18 bytes each, +0xe0); 0 otherwise.
+0070b140 The worn accessory item (slot +0x14 of class 5, unless the hat slot holds a category 8 item), or empty.
 0070b1a4 Entry `index` of an array of 12-byte entries (entry 0 when index is 10 or more).
 0070b334 Whether a range of kind 1 or 2 has a start and an end, start <= end.
+0070b3b8 True when the progress is reached (states 1 and 2) and its id is a valid one of kind 0x81.
+0070b49c For the slot's byte (slots 3 to 5), 0x17 to 0x14 for the first of its four 2-bit fields that is 2; 0 when none.
+0070b510 For the slot's byte (slots 3 to 5), 0x17 to 0x14 for the first of its four 2-bit fields that is 0; 0 when none.
+0070b574 For the slot's byte (slots 3 to 5), 0x17 to 0x14 for the first of its four 2-bit fields that is 3; 0 when none.
+0070b5e8 For the slot's byte (slots 3 to 5), 0x17 to 0x14 for the first of its four 2-bit fields that is 1; 0 when none.
+0070b65c The value (table 0x88e79c) of the top 2-bit field of the slot's byte.
+0070b694 The value (table 0x88e79c) of 2-bit field 2 of the slot's byte.
+0070b6d0 The value (table 0x88e79c) of 2-bit field 1 of the slot's byte.
+0070b70c The value (table 0x88e79c) of the low 2-bit field of the slot's byte.
+0070b744 Item slot `index` unless its lock byte (+0x40 + index) is set; the empty item otherwise.
+0070b7a8 Copies the 0xc8b8-byte work data block.
+0070b7bc True when the work data block's checksum (over 0xc8b8 bytes from +8) matches.
+0070b7dc The picker index of palette slot `slot` (+0x58).
+0070b7e8 Fills the region (offsets, size, mirroring) of the pattern's image part for its type (+0x69); false without a region.
+0070b8fc Writes the pattern's pixels (4 pages for clothing, else 1) as colors into the image.
+0070ba0c Writes the pixels of the pattern's part (by its region) as colors into the image.
+0070bcdc The color value of palette slot `slot` with the slot in its low 4 bits; 0xf (transparent) stays 0xf.
+0070bd0c The pattern's type when it is 6 or 7, else 0xb.
+0070bd20 The pattern's type when it is a clothing type (below 6), else 0xa.
+0070bd48 True when the pattern's creator (+0x2a) is the current player.
+0070bd74 Writes the pattern's pixels as colors into the texture (its high bits only).
+0070bf30 Decodes the entries of the table at 0x9752c1.
+0070c188 0 when the first byte is negative, else 1.
+0070c258 The kind paired with the value in the 18 pairs at 0x88f984; 0xfc when none.
+0070c2a8 Entry `index` (6 bytes each) when it is below the count (+0xd2); null otherwise.
+0070d7e4 True when the world position lies in the block (x, y).
 0070d904 The 16-bit cell (x, y) of the array.
+0070e484 Bits 4 and 5 of the byte at +0xe.
+0070e494 The top two bits of the word at +8.
+0070e4a0 The top bit of the half at +0xc.
+0070e4e4 Bits 23 to 26 of the word at +8.
+0070e6c0 True for action 0x123 when the player's held tool (slot 7 of class 7) is of category 0x14.
+0070e6f0 True when the player's outfit (top, or the dress slot) allows the action.
+0070ead8 True when the mode word (+0xc) is 2, 3 or 4.
+0070eafc The sound id of entry `index` (below 94): 0x10002cc + index; the first otherwise.
+0070eb14 The word at +8 of entry `index` (below 94, 0x14 bytes each) of the table at 0x83a980; 0x1e5f otherwise.
+0070eb3c Byte +6 of entry `index` of the table at 0x83a980; 2 otherwise.
+0070eb60 Byte +0x11 of entry `index` of the table at 0x83a980; 0x24 for index 94, 0x28 beyond.
+0070eb8c Byte +0x10 of entry `index` of the table at 0x83a980; 0x10 for index 94, 0x20 beyond.
+0070ebb8 Byte +0x12 of entry `index` of the table at 0x83a980; 0x10 otherwise.
+0070eca8 Byte +5 of entry `index` of the table at 0x83a980; 2 for index 94, 3 beyond.
+0070ecd4 Byte +4 of entry `index` of the table at 0x83a980; 4 for index 0x5a and out of range.
+0070ed28 The float at +0xc of entry `index` (below 91, 0x1c bytes each) of the table at 0x83b4c0; 1 otherwise.
+0070ed68 Wraps the value into the range (+0x10 to +0x14) of entry `index` of the table at 0x83b4c0 once it reaches the end.
+0070edac The word at +0x18 of entry `index` of the table at 0x83b4c0; 0x1020 otherwise.
+0070ee10 Entry `index` of the table at 0x83b4c0; the first otherwise.
+0070eed0 The mailbox of player `index` (0x1b88 bytes each, from +0x2058).
+0070eeec The letter block of player `index` (0x5a0 bytes each, from +0x8e78).
+0070ef54 Seals the mail data's blocks and writes the checksum of its mailboxes (0x16188 bytes from +0x2058) at +0x2054.
+0070efa0 True when every block of the mail data and its mailboxes' checksum are intact.
+0070f534 Bit 12 + `player` (below 4) of the half at +0x22.
+0070f678 The byte at (x, y) of a grid 16 bytes wide.
 00710614 Letter `index` of an array of letters (0x280 bytes each).
 007108c4 Whether the town flag (bit 0 of +0x621d0) is set, the town event (+0x62264) is in state 3 and its stamp (+0x62250) is not today.
 0071109c Checks the record (00710d50) unless the day has changed.
