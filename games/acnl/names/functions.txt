@@ -1639,7 +1639,7 @@
 001982d0 DesignEditor__stamp_brush
 00198868 BsMenuEdit__BsMenuEdit_2
 00198d54 BsMenuEdit__virtual_1_00198d54
-00198d64 BsMenuEdit__virtual_0_00198d64
+00198d64 BsMenuEdit__destructor
 001990d4 BsMenuItem__virtual_17
 001990f0 PocketMenu__merge_bells
 00199704 PocketMenu__can_merge
@@ -2756,14 +2756,14 @@
 001fbec8 MenuList__bind_panes
 001fc044 MenuList__show_page
 001fc598 BsMenuLetter__virtual_1_001fc598
-001fc5a8 BsMenuLetter__virtual_0_001fc5a8
+001fc5a8 BsMenuLetter__destructor
 001fd114 BsMenuMelody__do_draw
 001fd140 BsMenuMelody__do_create
 001fd7d4 BsMenuMelody__do_execute
 001fd8cc BsMenuMelody__do_delete
 001fdb00 BsMenuMelody__BsMenuMelody_2
 001fdc74 BsMenuMelody__virtual_1_001fdc74
-001fdc84 BsMenuMelody__virtual_0_001fdc84
+001fdc84 BsMenuMelody__destructor
 001fde44 Notice__show_message
 001fde7c reset_global_id_993068
 001fde9c Notice__close_message
@@ -3142,7 +3142,7 @@
 0021ca24 BsMenuCatalog__do_delete
 0021cba4 BsMenuCatalog__BsMenuCatalog_2
 0021cdb4 BsMenuCatalog__virtual_1_0021cdb4
-0021cdc4 BsMenuCatalog__virtual_0_0021cdc4
+0021cdc4 BsMenuCatalog__destructor
 0021d000 script__WordFix_33u___WordFix_0021d000
 0021d334 script__WordFix_40u___WordFix_0021d334
 0021df88 BsMenuCoolbox__do_draw
@@ -3151,7 +3151,7 @@
 0021e4ac BsMenuCoolbox__do_delete
 0021e5ac BsMenuCoolbox__BsMenuCoolbox_2
 0021e654 BsMenuCoolbox__virtual_1_0021e654
-0021e664 BsMenuCoolbox__virtual_0_0021e664
+0021e664 BsMenuCoolbox__destructor
 0021e83c BsMenuMailbox__virtual_17
 0021e910 script__WordFix_40u___WordFix_0021e910
 0021f5b0 BsMenuMailbox__do_draw
@@ -3160,7 +3160,7 @@
 0021f9cc BsMenuMailbox__do_delete
 0021fa30 Mailbox__entry_word
 0021fb50 BsMenuMailbox__virtual_1_0021fb50
-0021fb60 BsMenuMailbox__virtual_0_0021fb60
+0021fb60 BsMenuMailbox__destructor
 0021fe04 Mailbox__play_tab_animation
 00220274 MenuMessage__show
 002202dc script__WordFix_21u___WordFix_002202dc
@@ -3819,7 +3819,7 @@
 0025aaf4 BsMenuMyDesign__do_delete
 0025aef4 recreate_my_design_menu_heap
 0025b1b0 BsMenuMyDesign__virtual_1_0025b1b0
-0025b1c0 BsMenuMyDesign__virtual_0_0025b1c0
+0025b1c0 BsMenuMyDesign__destructor
 0025b410 script__WordFix_33u___WordFix_0025b410
 0025c1fc BsMenuPassport__update
 0025c3ac BsMenu__open_request_a
@@ -3845,7 +3845,7 @@
 0025efe0 BsMenuReaction__do_delete
 0025f180 BsMenuReaction__BsMenuReaction_2
 0025f380 BsMenuReaction__virtual_1_0025f380
-0025f390 BsMenuReaction__virtual_0_0025f390
+0025f390 BsMenuReaction__destructor
 0025f68c DebugText__format_rows
 0025f740 sead__FixedSafeString_32___FixedSafeString_0025f740
 0025f970 script__WordFix_9u___WordFix_0025f970
@@ -4341,7 +4341,7 @@
 00287a94 BsMenuBingoCard__do_delete
 00287b08 BsMenuBingoCard__BsMenuBingoCard_2
 00287c3c BsMenuBingoCard__virtual_1_00287c3c
-00287c4c BsMenuBingoCard__virtual_0_00287c4c
+00287c4c BsMenuBingoCard__destructor
 00288070 BsMenuLetterMgr__do_draw
 00288078 BsMenuLetterMgr__do_create
 0028817c BsMenuLetterMgr__do_execute
@@ -4355,7 +4355,7 @@
 002892d4 BsMenuMiiSelect__do_delete
 00289980 BsMenuMiiSelect__BsMenuMiiSelect_2
 00289b4c BsMenuMiiSelect__virtual_1_00289b4c
-00289b5c BsMenuMiiSelect__virtual_0_00289b5c
+00289b5c BsMenuMiiSelect__destructor
 00289ce8 DateWindow__show_day
 00289d90 show_ui_message_68
 0028a008 DateWindow__show_year
@@ -4375,7 +4375,7 @@
 0028cd9c BsMenuSetupTime__BsMenuSetupTime_2
 0028d00c ComButtonLytBase__ComButtonLytBase_0028d00c
 0028d11c BsMenuSetupTime__virtual_1_0028d11c
-0028d12c BsMenuSetupTime__virtual_0_0028d12c
+0028d12c BsMenuSetupTime__destructor
 0028d378 TourGame__on_point
 0028d568 TourGame__call_owner
 0028d840 BsPikoHanObjMgr__do_draw
@@ -4438,7 +4438,7 @@
 002953b4 sead__FixedSafeString_32___FixedSafeString_002953b4
 002955d0 BsTimeBelWindow__BsTimeBelWindow_2
 0029589c BsTimeBelWindow__virtual_1_0029589c
-002958ac BsTimeBelWindow__virtual_0_002958ac
+002958ac BsTimeBelWindow__destructor
 0029598c load_cherry_shader
 002959c8 BsWeatherSakura__virtual_18
 00296068 BsWeatherSakura__virtual_17
@@ -4761,7 +4761,7 @@
 002af4ac BsMenuItemChange__do_execute
 002af6a4 BsMenuItemChange__do_delete
 002afa60 BsMenuItemChange__virtual_1_002afa60
-002afa70 BsMenuItemChange__virtual_0_002afa70
+002afa70 BsMenuItemChange__destructor
 002b0080 script__WordFix_40u___WordFix_002b0080
 002b046c BsMenuItemSelect__do_draw
 002b04a8 BsMenuItemSelect__do_create
@@ -4769,7 +4769,7 @@
 002b08ac BsMenuItemSelect__do_delete
 002b0e30 BsMenuItemSelect__BsMenuItemSelect_2
 002b100c BsMenuItemSelect__virtual_1_002b100c
-002b101c BsMenuItemSelect__virtual_0_002b101c
+002b101c BsMenuItemSelect__destructor
 002b1270 script__WordFix_40u___WordFix_002b1270
 002b1538 BsMenuMailSelect__do_draw
 002b1580 BsMenuMailSelect__do_create
@@ -4777,7 +4777,7 @@
 002b1988 BsMenuMailSelect__do_delete
 002b1a28 BsMenuMailSelect__BsMenuMailSelect_2
 002b1bf8 BsMenuMailSelect__virtual_1_002b1bf8
-002b1c08 BsMenuMailSelect__virtual_0_002b1c08
+002b1c08 BsMenuMailSelect__destructor
 002b1ea0 MapScreen__fill_label_page
 002b2924 MapScreen__build_markers
 002b315c MapScreen__show_icon_message
@@ -4787,7 +4787,7 @@
 002b379c BsMenuMapVillage__do_delete
 002b39d0 MapScreen__clear_selection
 002b3a40 BsMenuMapVillage__virtual_1_002b3a40
-002b3a50 BsMenuMapVillage__virtual_0_002b3a50
+002b3a50 BsMenuMapVillage__destructor
 002b3cf4 script__WordFix_40u___WordFix_002b3cf4
 002b3fec BsMenuSendMailMe__do_draw
 002b4034 BsMenuSendMailMe__do_create
@@ -4795,7 +4795,7 @@
 002b4528 BsMenuSendMailMe__do_delete
 002b45c8 BsMenuSendMailMe__BsMenuSendMailMe_2
 002b4798 BsMenuSendMailMe__virtual_1_002b4798
-002b47a8 BsMenuSendMailMe__virtual_0_002b47a8
+002b47a8 BsMenuSendMailMe__destructor
 002b4bc4 script__WordFix_350u___WordFix
 002b535c BsMenuTourSelect__do_draw
 002b53a4 BsMenuTourSelect__do_create
@@ -4803,7 +4803,7 @@
 002b5af0 BsMenuTourSelect__do_delete
 002b5b7c BsMenuTourSelect__BsMenuTourSelect_2
 002b5e54 BsMenuTourSelect__virtual_1_002b5e54
-002b5e64 BsMenuTourSelect__virtual_0_002b5e64
+002b5e64 BsMenuTourSelect__destructor
 002b5fc4 read_u32_0x0095009c_
 002b5fd4 sead__SafeStringBase_char___SafeStringBase_002b5fd4
 002b6348 BsModelEffectMgr__do_draw
@@ -5126,13 +5126,13 @@
 002c83a8 LetterList__entry
 002c8428 BsMenuLetterStock__BsMenuLetterStock_2
 002c85ac BsMenuLetterStock__virtual_1_002c85ac
-002c85bc BsMenuLetterStock__virtual_0_002c85bc
+002c85bc BsMenuLetterStock__destructor
 002c898c BsMenuNumberInput__do_draw
 002c89bc BsMenuNumberInput__do_create
 002c8b38 BsMenuNumberInput__do_execute
 002c8d50 BsMenuNumberInput__do_delete
 002c8f60 BsMenuNumberInput__virtual_1_002c8f60
-002c8f70 BsMenuNumberInput__virtual_0_002c8f70
+002c8f70 BsMenuNumberInput__destructor
 002c90ec read_u32_0x009503ec_
 002c90fc BsSeadParticleMgr__do_draw
 002c9104 BsSeadParticleMgr__do_create
@@ -5425,7 +5425,7 @@
 002d97b8 BsMenuExplainPlate__do_execute
 002d9864 BsMenuExplainPlate__do_delete
 002d9a90 BsMenuExplainPlate__virtual_1_002d9a90
-002d9aa0 BsMenuExplainPlate__virtual_0_002d9aa0
+002d9aa0 BsMenuExplainPlate__destructor
 002d9c1c BsMenuInputComment__do_create
 002d9d88 BsMenuInputComment__do_execute
 002d9ee4 BsMenuInputComment__do_delete
@@ -5451,7 +5451,7 @@
 002dc574 BsMenuMyDesignKeep__do_delete
 002dc618 recreate_my_design_keep_menu_heap
 002dc8fc BsMenuMyDesignKeep__virtual_1_002dc8fc
-002dc90c BsMenuMyDesignKeep__virtual_0_002dc90c
+002dc90c BsMenuMyDesignKeep__destructor
 002dcea8 script__WordFix_33u___WordFix_002dcea8
 002dd444 BsMenuRentalHaniwa__do_draw
 002dd480 BsMenuRentalHaniwa__do_create
@@ -5459,7 +5459,7 @@
 002dd950 BsMenuRentalHaniwa__do_delete
 002ddafc BsMenuRentalHaniwa__BsMenuRentalHaniwa_2
 002ddb9c BsMenuRentalHaniwa__virtual_1_002ddb9c
-002ddbac BsMenuRentalHaniwa__virtual_0_002ddbac
+002ddbac BsMenuRentalHaniwa__destructor
 002ddfd4 BsMenuSantaBagView__do_draw
 002ddfe8 BsMenuSantaBagView__do_create
 002de1c8 BsMenuSantaBagView__do_execute
@@ -5473,7 +5473,7 @@
 002df454 BsMenuSendMailLand__do_delete
 002df960 BsMenuSendMailLand__BsMenuSendMailLand_2
 002dfa10 BsMenuSendMailLand__virtual_1_002dfa10
-002dfa20 BsMenuSendMailLand__virtual_0_002dfa20
+002dfa20 BsMenuSendMailLand__destructor
 002dfb8c ButtonActionNodeEx__virtual_9
 002dfbf0 ButtonActionNodeEx__virtual_3
 002dfc04 ButtonActionNodeEx__virtual_11
@@ -5737,7 +5737,7 @@
 002f0e84 BsMenuBulletinBoard__BsMenuBulletinBoard_2
 002f109c BsMenuBulletinBoard__virtual_1_002f109c
 002f10ac BsMenuBulletinBoard__virtual_0_002f10ac
-002f10b4 BsMenuBulletinBoard__virtual_0_002f10b4
+002f10b4 BsMenuBulletinBoard__destructor
 002f1bc8 script__WordCPtrSv__WordCPtrSv_002f1bc8
 002f1f98 script__WordFix_30u___WordFix_002f1f98
 002f2384 BsMenuFriendChatLog__do_draw
@@ -5746,7 +5746,7 @@
 002f27fc BsMenuFriendChatLog__do_delete
 002f2850 BsMenuFriendChatLog__BsMenuFriendChatLog_2
 002f299c BsMenuFriendChatLog__virtual_1_002f299c
-002f29ac BsMenuFriendChatLog__virtual_0_002f29ac
+002f29ac BsMenuFriendChatLog__destructor
 002f2b28 show_random_match_window
 002f2f2c BsMenuRandomHeadsUp__do_draw
 002f2f4c BsMenuRandomHeadsUp__do_create
@@ -5816,7 +5816,7 @@
 002f76ac destroy_array_elements
 002f76d0 destroy_button_action_control_and_list
 002f7708 do_nothing_002f7708
-002f770c ControlButtonBase__virtual_0_002f770c
+002f770c ControlButtonBase__destructor
 002f7710 destroy_button_action_control
 002f777c do_nothing_002f777c
 002f77e8 same_pointer
@@ -6948,7 +6948,7 @@
 00318550 assign_bit3_of_byte20_318550
 00318568 generated_weather_pattern
 00318798 BsMenuModelHomeBoard__virtual_1_00318798
-003187a8 BsMenuModelHomeBoard__virtual_0_003187a8
+003187a8 BsMenuModelHomeBoard__destructor
 003188f0 first_registered_id_of_class_0
 00318944 byte_08_unless_mode_above_1
 00318960 inner_kind
@@ -6975,7 +6975,7 @@
 0031af3c item_is_class_2_or_3
 0031af74 read_field_s8_0x16_
 0031af7c BsMenuMyDesignSelect__virtual_1_0031af7c
-0031af8c BsMenuMyDesignSelect__virtual_0_0031af8c
+0031af8c BsMenuMyDesignSelect__destructor
 0031b25c script__WordCPtrSv__WordCPtrSv_0031b25c
 0031b394 locale_mb_cur_max
 0031b3b2 LocaleSaver__LocaleSaver
@@ -7000,7 +7000,7 @@
 0031bf44 BsMenuSantaBagSelect__do_execute
 0031bfe4 BsMenuSantaBagSelect__do_delete
 0031c010 BsMenuSantaBagSelect__virtual_1_0031c010
-0031c020 BsMenuSantaBagSelect__virtual_0_0031c020
+0031c020 BsMenuSantaBagSelect__destructor
 0031c1c8 LocaleHolder__copy
 0031c1da CharRangeMap__map
 0031c214 ShaderParams__write_commands
@@ -7586,7 +7586,7 @@
 0033a500 BsMenuBestFriendRegister__do_delete
 0033a540 BsMenuBestFriendRegister__BsMenuBestFriendRegister_2
 0033a794 BsMenuBestFriendRegister__virtual_1_0033a794
-0033a7a4 BsMenuBestFriendRegister__virtual_0_0033a7a4
+0033a7a4 BsMenuBestFriendRegister__destructor
 0033b748 place_entry_model_below
 0033bb28 script__WordFix_60u___WordFix_0033bb28
 0033bd0c script__WordFix_60u___WordFix_0033bd0c
@@ -14606,7 +14606,7 @@
 0057742c UtlBase_DemoActor___UtlBase_0057742c
 005776bc AcFtr__virtual_1_005776bc
 005776f8 AcFtrAudio__virtual_0_005776f8
-005776fc AcFtr__virtual_0_005776fc
+005776fc AcFtr__destructor
 005777c8 AcFtrAudio__virtual_1_005777c8
 00577810 alloc_cleared_from_pool
 00577858 AcNpcSpExhibition__virtual_36
@@ -16727,7 +16727,7 @@
 005e2eb4 TextBox__set_scale
 005e2f94 TextBox__layout_lines
 005e3128 script__RenderTrace__RenderTrace
-005e3194 script__RenderMain__RenderMain_005e3194
+005e3194 script__RenderTrace__destructor_b
 005e3238 WordNumber__set_hour
 005e32a0 WordNumber__set_amount
 005e3304 script__WordNumDigit__virtual_7
@@ -19364,7 +19364,7 @@
 006b0824 state__Mode_Passport___Mode
 006b0b5c Passport__virtual_1_006b0b5c
 006b0b6c Passport__virtual_0_006b0b6c
-006b0b74 Passport__virtual_0_006b0b74
+006b0b74 Passport__destructor
 006b0d98 InsectFlight__update
 006b127c Area__set
 006b1468 SoundListener__construct
@@ -19742,7 +19742,7 @@
 006d1194 BsMenuAtm__do_execute
 006d1280 BsMenuAtm__do_delete
 006d12c0 BsMenuAtm__virtual_1_006d12c0
-006d12d0 BsMenuAtm__virtual_0_006d12d0
+006d12d0 BsMenuAtm__destructor
 006d15ec BsMenuMap__do_draw
 006d15f4 BsMenuMap__do_create
 006d18bc BsMenuMap__do_execute
@@ -19850,7 +19850,7 @@
 006d8d70 BsMenuTab__do_delete
 006d8d90 BsMenuTab__BsMenuTab_2
 006d8f58 BsMenuTab__virtual_1_006d8f58
-006d8f68 BsMenuTab__virtual_0_006d8f68
+006d8f68 BsMenuTab__destructor
 006d9058 item_actor_kind_index
 006d926c CatchMgr__catch_state
 006d96c0 CatchMgr__catch_position
