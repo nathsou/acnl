@@ -739,6 +739,7 @@
 00137848 Destroys a font resource: releases its textures, then the font base.
 00137878 Clears a set of network addresses (each the empty pair -3, -1) and its counters.
 0013796c Releases the net event handler (when set up): resets it and its clock handler, and clears the global \n handler.
+001379e4 Resets a part below state 4: state 0, no data, kind 6.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
 00137c78 Creates the resource with the factory's heap and its name.
 00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
@@ -748,6 +749,7 @@
 00137e9c Constructs the audio effects memory manager controller.
 00137ec0 Inserts at position `index` of the list at +0x40, under the object's lock when it has one.
 001382cc Marks 0x97e854, stores a value at +4 and the memory size (0x974f54) at +0.
+00138398 Constructs an audio effect: none, unassigned (0xff).
 001385fc Constructs the thread manager: an empty thread list, its lock, and a thread-local slot for the current \n thread.
 0013864c Releases what the handle holds (through the service when it owns a service handle, else through the owner's virtual function 7) and clears it.
 001386f4 Releases the split's handle and takes one from the count of handles in use.
@@ -763,10 +765,15 @@
 001391c4 Allocates size bytes (arg 0) on a heap (arg 1).
 001391d8 Allocates from the current heap, 4-byte aligned.
 001391ec Initializes the vertex attribute tables at 0x974a7c.
+00139448 The address of the thread's context block slot (in its thread-local storage).
 00139454 Sets vertex attribute `index` (0x10 clears all) from its description: its address and its stride (the given one, or the element count times the type size).
 00139504 Gets the thread's id (svc 0x37).
+00139674 Whether bit arg 0 of the CFL state (the instance's, else the global one) is set.
 001396a4 The CFL instance's byte 0xc0, when the CFL state flag is set; else 0.
+001396c0 Starts the CFL worker thread with a callback argument (arg 1), marking the CFL instance busy when its flag \n is set.
 00139724 Frees the object's buffer (+0xc) when it has one, then the object, through the free hook.
+00139bb0 Computes a CRC-16 (CCITT, polynomial 0x1021, from arg 0) over a buffer (arg 1, length arg 2 including the \n two-byte slot at its end) and stores it there, big-endian.
+00139c30 The CFL status: 10 while busy, 3 when it failed (bits 2 or 3), else the instance's result.
 00139dac Stops the camera when it is running: stops capture, releases its buffer and marks it stopped.
 00139ffc Opens the file in the archive found by its path, with the mode.
 0013a1f0 Sends command 0x861 with the buffer (0x20 bytes) to the service.
@@ -783,6 +790,7 @@
 0013a834 Takes the light lock (atomically), waiting when it is held; the result.
 0013a968 Sends command 4 (with the flag) to the service and returns its result.
 0013a9a4 Sends command 2 (with the flag) to the service and returns its result.
+0013ad90 Calls the release target's virtual 3 with an object (arg 0).
 0013adac Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
 0013ae10 Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
 0013b034 Loads an entry of the archive: through its own loader when it is packed, else its file (when flag 8 asks); true when loaded.
@@ -790,8 +798,10 @@
 0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
 0013b6e0 Stops the sounds of the player's list from `index` (under its lock).
 0013b72c Releases the font's texture sheets.
+0013b7a0 Switches a sound heap to another group (arg 1): unloads the current one, loads the new.
 0013b7dc Resets the network event handler.
 0013b80c Notifies the network event handler.
+0013b8e0 Constructs a critical section registered with a heap (arg 1).
 0013b910 Constructs the audio effects memory manager: no memory.
 0013bb80 Returns at once.
 0013c0e8 Whether the object's state (byte 0xc) is 1 or 2.
