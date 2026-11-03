@@ -1832,6 +1832,7 @@
 00267758 Draws a change list's layouts (on the lower screen).
 002677cc Releases a change list: its drag icons, layouts and buttons.
 00268270 Marks each of a change list's four slots by whether it holds something.
+002684c0 Destroys a change list's base: its buttons, animations, renderers, layouts and archive readers.
 002686d4 Sets the first button's value.
 0026876c Sets the messages of the buttons (up to 2) and marks them for update.
 002687c8 Sets the two flags of each button.
@@ -2051,6 +2052,7 @@
 0029d150 Zeroes the 64 bytes at +0x10.
 0029d228 Shares the NPCs' permits and schedules with the waited stations.
 0029d354 Requests the permit of NPC `slot`: marks its packet sent and asks the host (message 0x40), or, as the host, grants it directly.
+0029e154 Constructs a special NPC's talk receptor: an NPC talk receptor for an NPC (arg 2).
 0029e9a8 Clears bits 2 to 5 of the first byte and sets the 3-bit mode of +3 to 4.
 002a2850 Detaches the layout at +0x24 from the layout system.
 002a2ad0 Releases the layout at +0x24.
@@ -2083,6 +2085,7 @@
 002a77bc Places item `index` (below 7) in the room or the field once, when its owner is the current player.
 002a799c Picks one item from group 0xc (up to 0x73).
 002a7c74 Places item `index` (below 11) in the room or the field once, when its owner is the current player.
+002a8560 Constructs a simple talk actor: a demo actor for an owner (arg 1), talkable.
 002a9294 When enabled (bit 1 of +0x8a) and idle (+0x59c), stores the value and starts.
 002a93e8 Sets the shop dialog's mode (below 3).
 002a9cd8 Formats the value into the message buffer and stores the word.
@@ -2132,6 +2135,7 @@
 002ba3cc Attaches the layout at +0x34c to the layout system.
 002ba788 Loads the item selection window's layout archive; marks it loaded (+0x4e0).
 002bb4b0 Sets the 0x33 switches of the block on or off.
+002bc0b4 Constructs a poster's talk receptor: an object talk receptor with no word.
 002bc8e8 Marks the cell (x, y) of the candidate grid.
 002bc928 Constructs a window base for the sort and pages: both flags clear.
 002bc94c Requests the sound data of the id for bank `index` (below 6) and starts its loader; the request's index, or -1.
@@ -2186,6 +2190,7 @@
 002c4544 The item at the index of the current page when the player has seen it, else the empty item.
 002c4ad4 Clears the flag at 0x94d92e.
 002c61e8 Applies the theme's two colors to the window's panes and the text color.
+002c7060 Deletes a fixed ambient light: its camera node, then the light base.
 002c71ec Copies the letter of a page entry into the letter, with its sender and attachment.
 002c83a8 The letter list's entry at the index when on the page.
 002c9868 The window's first free slot.
@@ -2198,6 +2203,8 @@
 002cbccc The row of the index on the current page of 10, or -1.
 002cbea4 Stores the selected row (counting the earlier pages of 10) in the player's data (+0x6f10).
 002cc1b0 The entry (0x2b4 bytes) for the index on the current page of 10, or the one before the first when outside it.
+002cc5c4 Destroys a letter stock change window: its drag icon group, buttons, then the change list base.
+002cca88 Constructs a rental stock change window: a one-button rental window with eight item drag icons and an item \n drag icon group.
 002ccb84 Sets the two sharing flags (bits 0 and 2 of +0x9f) from the settings.
 002ccbd4 Disables the window's button (+0xd9).
 002ccc70 Selects or unselects the button `index` (0x518 bytes each), disabling the others' input when selected.
@@ -2216,6 +2223,7 @@
 002cd5e4 Destroys and frees the park data, and marks the park not ready.
 002cd640 Initializes the request (type 0x3800) with its three arguments.
 002cdcb0 Constructs an item drag icon group: a drag icon group with four more layout animations.
+002cdd00 Destroys an item drag icon group: its four animations, then the drag icon group.
 002cdd40 Adds the object's icon (+0x20) to the drag icon list.
 002cdf30 Whether the day's event counter of the current player is in progress (between 1 and 101); else forgets the event.
 002cf018 Sets channel 0's buffer and size, and resets its progress, under the lock.
@@ -2228,6 +2236,7 @@
 002d00bc Constructs a parts drag icon node: a drag icon node with its own vtable.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d0998 The record (+0x668) of the object held by the slot; null without one.
+002d0ba8 Updates a skeleton and material animation resource (when bound): its material and skeletal animations, \n then its model.
 002d0cf8 Constructs the model with its skeletal model, base animation (kind 0x16, enabled) and its second animation.
 002d13e0 Starts the sound furniture manager's slot (below 52).
 002d17c0 Registers the furniture sound in the first free of the 52 slots (id -1, cleared), counting it; 0x35 when full.
@@ -2295,6 +2304,7 @@
 002e0308 Loads message `id` of group `group` into the button's text (+0x404), unless the button has no text (+0x516); id -1 leaves it.
 002e0374 Sets the first button's child when it has a pane.
 002e037c Moves the button's drag icon (+0x258) out of its current list and into `list` (when not null), remembering the list at +0x500.
+002e03cc Starts loading the common button layout archive with the layout allocator.
 002e0428 When the selected state (+0x517) changes, plays (selected) or finishes (not) the animation at +0x3d4 and updates the layout.
 002e086c Finishes the animation at +0x3ac and updates the layout.
 002e08c8 Restarts the text (unless the button has none), then updates the layout.
@@ -2351,6 +2361,7 @@
 002e8cc8 Plays the sound with the id.
 002e8ce8 Constructs an insect or fish sound object: a sound object base with one sound slot, volume 1.
 002e8dfc Starts the town tree's sound (kind 8): the sound for its size, or the default one.
+002e9044 Constructs the town tree's sound object: a held-item sound object, no size yet.
 002e9118 Starts a melody sound object (unless started): kind 10 in the scenes so flagged, then the base, and binds \n its melody players.
 002e9268 Stops a melody sound object (when started): its tune and melody players, its sound, then the base.
 002e92b0 Constructs a melody sound object: a sound object base with one sound slot and two positioned melody \n players.
@@ -2394,6 +2405,7 @@
 002ee9a4 Releases the part, clears the word and destroys the split load.
 002ee9c4 Address of 0x18-byte entry `index` at +0x6e8 of the table held by 0x94ed40.
 002ee9ec Address of 0x18-byte entry `index` at +0x10 of the table held by 0x94ed40.
+002eea10 Constructs the insect and fish book parameters' access: binds the parameter file on the stage heap and \n registers itself.
 002eec34 Puts two panes of the layout at +0x2e4 at 0 and 350 and shows them, then updates the layout.
 002ef1b8 Marks the selected notice read when the player owns the slot, takes back the selection and plays the closing animation of the current tab.
 002ef27c Shows the new mark on each tab that has unread notices.
@@ -2427,9 +2439,12 @@
 002f7d80 The quotient of r0 by 10 (by shifts and adds), the remainder in r1.
 002f7e5c The quotient of the 64-bit value (r0, r1) by 10, by shifts and adds.
 002f7ef4 Calls virtual 24 of entry `index` among the four shown from +0x2434 (0x290 bytes each, +0x18b4); out-of-page indices use entry -1.
+002f7f40 Whether c is a decimal digit (C isdigit).
 002f80c8 Fills the thread start record (argument, entry functions) and starts it.
 002f81e4 Stores the design of entry `index` (relative to the shown page) into the selected design storage slot.
+002f83b0 Frees a block on the plain heap (under its lock).
 002f84e8 Converts the wide character to its multibyte bytes; their count.
+002f860c Destroys a design stock change window: its drag icon group, design slots and heap, then the change list \n base.
 002f86c0 Unsigned division.
 002f86f0 Stores the half at +0xa0 + index * 2 (index below 4) of the shared NPC info.
 002f8720 Copies count (arg 2) bytes from src (arg 1) to dst (C memcpy); returns dst.

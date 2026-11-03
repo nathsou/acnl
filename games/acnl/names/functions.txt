@@ -3894,7 +3894,7 @@
 002681e0 ChangeListBase__virtual_4
 00268270 ChangeListBase__refresh_slot_flags
 002682ac ChangeRentalBase__ChangeRentalBase_002682ac
-002684c0 ChangeListBase__ChangeListBase
+002684c0 ChangeListBase__destructor
 00268664 CheckEnterStrc__virtual_0
 002686c0 store_slot_word
 002686d4 ButtonList__set_first_value
@@ -5186,7 +5186,7 @@
 002cc43c ChangeStockLetter__virtual_8
 002cc4bc ChangeStockLetter__ChangeStockLetter
 002cc5b4 ChangeStockLetter__virtual_1_002cc5b4
-002cc5c4 ChangeStockLetter__virtual_0_002cc5c4
+002cc5c4 ChangeStockLetter__destructor
 002cca88 ChangeStockRental__ChangeStockRental
 002ccaf0 ChangeStockRental__deleting_destructor
 002ccb3c ChangeStockRental__destructor
@@ -5220,7 +5220,7 @@
 002cd9f4 FriendChatLogText__destructor
 002cdcb0 ItemDragIconGroup__ItemDragIconGroup
 002cdcf0 ItemDragIconGroup__virtual_1_002cdcf0
-002cdd00 ItemDragIconGroup__virtual_0_002cdd00
+002cdd00 ItemDragIconGroup__destructor
 002cdd40 DragIconList__add_own
 002cde98 LifeSupportWindow__virtual_8_002cde98
 002cdf30 DailyEvent__is_active
@@ -5269,7 +5269,7 @@
 002d0998 held_object_record_of_slot
 002d09b4 AcIsMuFirefly__virtual_2_002d09b4
 002d09c4 AcIsMuFirefly__virtual_2_002d09c4
-002d0ba8 ResourceGetSklMat__virtual_3_002d0ba8
+002d0ba8 ResourceGetSklMat__update
 002d0cf8 AnimatedModel__construct
 002d0d5c ResourceGetSklMat__virtual_1_002d0d5c
 002d0db4 ResourceGetSklMat__virtual_0_002d0db4
@@ -5850,7 +5850,7 @@
 002f84e8 wcrtomb
 002f8574 copy_bytes_at_any_alignment
 002f85fc ChangeStockMyDesign__virtual_1_002f85fc
-002f860c ChangeStockMyDesign__virtual_0_002f860c
+002f860c ChangeStockMyDesign__destructor
 002f86c0 udiv
 002f86f0 NpcNetShareInfo__set_half_a0
 002f8720 memcpy
