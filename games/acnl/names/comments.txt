@@ -1653,6 +1653,13 @@
 0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
 0053dffc Gets the file's size through the device (virtual 20) when the device is open.
+0053e990 Releases the file handle through its device when it has one.
+0053e9b0 Reads from the file handle through its device when it has one.
+0053ecf8 Converts the UTF-8 text into UTF-16.
+0053edf4 Converts the UTF-16 text into UTF-8.
+0053f59c Writes the GPU commands of the shared part at 0xaf52e8.
+0053f6c4 The number of set bits of the word.
+0053fda8 Sets the camera's center from the viewport's bounds and its look-at below it, then updates its view.
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
 005601b8 Sets the 8-bit color channels from the four floats, each clamped to 0 to 1 (stored in reverse order).
@@ -2738,6 +2745,20 @@
 006ae9c4 Sets up the window's close button: its control, pane, animation targets and sounds.
 006af218 Sets up the second window's close button: its control, pane, animation targets and sounds.
 006afbcc Detaches the layout at +0x4bc from the layout system.
+006b04f0 Loads the passport window's and the keyboard's layout archives; true when both loaded.
+006b127c Sets the area's id, squared radius and range (the larger end kept).
+006b1468 Constructs the listener: no ids, zero positions, a huge distance and cleared flags.
+006b14b8 Destroys the listener's part at +0x3c.
+006b17c4 Sets the text of label 0 (+0x198) or 1 (+0x25c).
+006b19c0 Detaches the layout at +0x24 from the layout system.
+006b1a64 Starts the message on both labels.
+006b1a98 Releases the layout at +0x24.
+006b1aa0 Sets the pane's position (+0x2c), shows it and updates the layout.
+006b1d88 Plays the sound on the handle through the sound player (+0xc0c) when it exists.
+006b1da4 Plays the sound on the handle through the sound player when it exists.
+006b1df0 Plays the sound in the slot already playing it, or a new one of the 8 slots.
+006b1ec0 Stops every one of the 8 slots playing the sound.
+006b2c68 Notifies the sound listeners (+0xc14, +0xc28) of the event by its kind.
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
 006bc4fc Sets the record state byte of an item of a recorded category to 5.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.

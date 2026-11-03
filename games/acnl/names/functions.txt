@@ -11758,6 +11758,8 @@
 0053e918 sead__FileDevice__deleting_destructor
 0053e954 sead__CtrFileDevice__destructor
 0053e958 sead__FileDevice__destructor
+0053e990 FileHandle__release
+0053e9b0 FileHandle__read
 0053eac0 sead__FileHandle__deleting_destructor
 0053eaf0 sead__FileHandle__destructor
 0053eb1c sead__MainThread__virtual_11
@@ -11770,6 +11772,9 @@
 0053eb60 sead__MainThread__destructor
 0053eb80 sead__Projection__deleting_destructor
 0053eb84 sead__Projection__destructor
+0053ecf8 utf8_to_utf16
+0053edf4 utf16_to_utf8
+0053f59c write_gpu_part_commands_af52e8
 0053f5a8 sead__DebugMenuSkinDefault__virtual_12
 0053f5c8 sead__DebugMenuSkinDefault__virtual_11
 0053f608 sead__TextWriter__TextWriter
@@ -11779,6 +11784,7 @@
 0053f6b8 sead__TextureCtr__deleting_destructor
 0053f6bc sead__TextureCtrGR__destructor
 0053f6c0 sead__TextureCtr__destructor
+0053f6c4 popcount32_b
 0053f708 sead__FrameBuffer__deleting_destructor
 0053f730 sead__FrameBuffer__destructor
 0053f758 sead__GraphicsCtr__virtual_3
@@ -11808,6 +11814,7 @@
 0053fd78 sead__GraphicsCtr__virtual_27
 0053fd7c sead__GraphicsCtr__deleting_destructor
 0053fd98 sead__GraphicsCtr__destructor
+0053fda8 Camera__set_from_viewport
 0053fe38 sead__Camera__Camera_0053fe38
 0053ff0c sead__Camera__Camera_0053ff0c
 0053ffb0 sead__OrthoCamera__deleting_destructor
@@ -16979,6 +16986,7 @@
 006afbec Passport__virtual_5_006afbec
 006afc04 Passport__virtual_6_006afc04
 006afc0c Passport__virtual_7_006afc0c
+006b04f0 PassportWindow__load_layouts
 006b0558 Passport__virtual_8_006b0558
 006b0644 Passport__virtual_9_006b0644
 006b064c Passport__virtual_10
@@ -16986,10 +16994,18 @@
 006b0b5c Passport__virtual_1_006b0b5c
 006b0b6c Passport__virtual_0_006b0b6c
 006b0b74 Passport__virtual_0_006b0b74
+006b127c Area__set
+006b1468 SoundListener__construct
+006b14b8 SoundListener__destroy
 006b1618 RoModule__virtual_2
 006b16c0 RoModule__virtual_3
 006b170c RoModule__deleting_destructor
 006b1728 RoModule__destructor
+006b17c4 LabelPair__set_text
+006b19c0 detach_layout_24_b
+006b1a64 LabelPair__start_both
+006b1a98 release_layout_24_b
+006b1aa0 LabelPair__set_position
 006b1abc RollText__deleting_destructor
 006b1af4 RollText__destructor
 006b1b28 RootTask__virtual_22
@@ -16998,6 +17014,11 @@
 006b1bd8 RootTask__deleting_destructor
 006b1be8 RootTask__destructor
 006b1bf4 script__RenderMain__RenderMain_005e3194_veneer_2
+006b1d88 SoundSystem__play_handle
+006b1da4 SoundSystem__play_handle_b
+006b1df0 SoundSlots8__play
+006b1ec0 SoundSlots8__stop
+006b2c68 SoundSystem__notify_listeners
 006b306c SoundMgr__SingletonDisposer___deleting_destructor
 006b30bc SoundMgr__SingletonDisposer___destructor
 006b5240 ClampedCounters__add_to_value_2bc
