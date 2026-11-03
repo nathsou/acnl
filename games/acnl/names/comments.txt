@@ -787,10 +787,12 @@
 00139448 The address of the thread's context block slot (in its thread-local storage).
 00139454 Sets vertex attribute `index` (0x10 clears all) from its description: its address and its stride (the given one, or the element count times the type size).
 00139504 Gets the thread's id (svc 0x37).
+0013959c Whether a file (path arg 0) opens, closing it again (not-found errors 100 to 179 of module 0x11 count as \n absent).
 00139674 Whether bit arg 0 of the CFL state (the instance's, else the global one) is set.
 001396a4 The CFL instance's byte 0xc0, when the CFL state flag is set; else 0.
 001396c0 Starts the CFL worker thread with a callback argument (arg 1), marking the CFL instance busy when its flag \n is set.
 00139724 Frees the object's buffer (+0xc) when it has one, then the object, through the free hook.
+00139a90 Waits for the CFL's result: while it is busy, then 3 when it failed, else its result.
 00139bb0 Computes a CRC-16 (CCITT, polynomial 0x1021, from arg 0) over a buffer (arg 1, length arg 2 including the \n two-byte slot at its end) and stores it there, big-endian.
 00139c30 The CFL status: 10 while busy, 3 when it failed (bits 2 or 3), else the instance's result.
 00139dac Stops the camera when it is running: stops capture, releases its buffer and marks it stopped.
@@ -822,6 +824,7 @@
 0013b80c Notifies the network event handler.
 0013b8e0 Constructs a critical section registered with a heap (arg 1).
 0013b910 Constructs the audio effects memory manager: no memory.
+0013b92c Constructs the main thread object for the current thread: its priority, stack and a pool of 32 messages.
 0013bb80 Returns at once.
 0013bee0 Destroys the sound system's managers: shared objects, environment, effects, BGM, melodies, animal speech \n and volume, detaching their sounds.
 0013c0e8 Whether the object's state (byte 0xc) is 1 or 2.
@@ -868,6 +871,7 @@
 0013d73c Destroys a sound data load request: takes it out of the request list (when queued or loading), under the \n list's lock.
 0013d7cc Destroys a melody player's base: stops its sound and frees its sound bank slot.
 0013d85c Closes the file stream's handle (+4; a pending failure is fatal).
+0013dd5c Constructs the content RomFS archive: empty, with its unit heap's lock, nothing open.
 0013dee0 The handle at 0x974ef8 (a fatal error when it is not set).
 0013df14 Converts a multibyte path to wide characters and opens it as a file stream.
 0013e0ec Frees the pages back to the pool, under its lock.
