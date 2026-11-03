@@ -19909,7 +19909,7 @@
 006ded90 BsStrcMgr__do_draw
 006dfad0 BsStrcMgr__do_execute
 006dfde8 value_of_source
-006dfe10 npc_count_allows_spawn
+006dfe10 NpcPosGetCB__check
 006e0324 BsStrcMgr__BsStrcMgr_2
 006e0758 BsStrcMgr__deleting_destructor
 006e0768 BsStrcMgr__destructor
