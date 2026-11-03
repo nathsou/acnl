@@ -276,6 +276,7 @@
 0011eaac Creates the save allocator heap (named SaveAllocator, `size` bytes) and keeps its allocator at 0x95bf7c.
 0011eafc Whether the applet state (0x94e3a8) is at least 2.
 0011edd8 Starts the timer at the current tick, once.
+0011ef18 Makes the camera current.
 0011ef40 Marks job `index` of the job list (0xadf95c) as done, or the whole list (+0x3c) for -1.
 0011ef7c Stores a value at +0x38 of the job list (0xadf95c) when there is one.
 0011ef94 Clears a memory block record and, when memory blocks are on, reserves `size` (rounded to 0x1000) for it (fatal on failure).
@@ -308,6 +309,7 @@
 00123838 Runs the call and stops with a fatal error when it fails.
 00123854 The value returned by the query at 0x129c30.
 00123870 The worker thread's loop: waits for work and runs it.
+001239e8 Reads the file's size.
 00123ae8 The worker thread's entry: sets it up, runs its loop and cleans up.
 00123e40 Gets the service handle (once, under the lock) and counts a user.
 00123ee8 Gets the service handle (once, under the lock) and counts a user.
@@ -334,10 +336,14 @@
 001275f0 Initializes the service object at 0x974a88 and its four parts.
 00127c70 0x3000000.
 00127cf8 Creates an event (svc 0x17) with the reset type.
+00127d1c Yields the thread (svc 0xa with no delay).
 001288a8 Zeroes the record and its 10 bytes.
 00128924 Constructs the table's 6 entries (0xec bytes each) and resets its 10 halves to -1.
 001289ac Sets the record's kind byte and its two words, clearing the rest.
+001289c4 Unmounts the archive found by its name.
 00128c0c Resets the once flag: finishes its pending wait when it was in progress.
+00128c70 Signals the light event, waking the waiters.
+00128cc4 Allocates the pages (rounded to 4 KiB) from the pool, under its lock.
 00128e80 Opens the file in the archive with its path and mode.
 00129094 The handle of a named service, through the service manager (fails when the handle is already open).
 001290f0 The shared lock at 0xae8344, initialized once (other threads wait for it).
@@ -358,6 +364,7 @@
 0012a4a0 Turns the sleep notification handling on or off, stopping with a fatal error on unexpected results.
 0012a518 Waits without a timeout on the handle (svc WaitSynchronization1), a failure reported.
 0012a54c Sends the query to the service and waits; stops with a fatal error when it fails.
+0012a5a0 Opens the file system archive with its path and the buffer.
 0012ab78 Closes the handle kept at 0x97d7f8 (svcCloseHandle) and releases the mutex at 0x97d7f4.
 0012ae20 Calls the service command at 0x130448 with the argument; stops with a fatal error when it fails.
 0012ae80 Calls the service command at 0x130658; stops with a fatal error when it fails.
@@ -380,6 +387,7 @@
 0012ee90 The object at 0x974f20; a fatal error when it is missing.
 0012eeb0 Mounts the RomFS archive as rom:.
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
+0012f050 Clears the light event (atomically negates a positive count).
 0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
 0012f204 A failed result code (negative) is reported as fatal, unless its level is one the caller tolerates; a success passes through.
 0012f278 Unmounts the storage when mounted (0x974f76).
@@ -405,6 +413,7 @@
 001325a0 Destroys the 56 and 2 slot entries and the table at +0xf0.
 0013293c Destroys the town map: the 20 small blocks, the 20 acre blocks and the 42 terrain ids.
 001330fc Whether the child at +4 has its field set.
+001332d4 Reads the archive's file into the buffer.
 00134250 Calls the fatal-error hook once (when one is set) and breaks into the debugger (svc 0x3c) with the failing result.
 001342a4 Calls 00135f34 with 1 as the stack argument.
 001342b8 Forwards to 00136344 with the three stack arguments.
@@ -412,8 +421,10 @@
 001342f8 Forwards to 00136188 with the four stack arguments.
 00134318 The mounted archive whose name is the path's prefix up to ':' (at most 8 characters); null when none.
 00134440 From `from` to `to` in `count` steps: the value at step `step` (`to` once done).
+001348cc Copies the bytes, handling overlap.
 00134c90 svcBreak.
 00134f04 Releases the object at 0x975270 (its virtual 1) and clears it.
+00134fa4 Destroys the heap's child heaps.
 00134fec Destroys eight 0x878-byte pattern records.
 00135010 For slot `index` (below 6) not playing: trims its queue past `count` (under its lock); true when the slot is set.
 001352dc Keeps a value at 0x974f10 and sends it with request 0xb0500c8.
@@ -454,6 +465,7 @@
 001386f4 Releases the split's handle and takes one from the count of handles in use.
 0013873c Updates the sound player's state.
 001389c0 Destroys eight 0x40-byte entries.
+00138bbc Removes the pointer from the list.
 00138c2c The last index of list `index` (fewer than 6), read under its lock; -1 without one.
 00138c78 The value of a thread-local slot for the current thread.
 001391d8 Allocates from the current heap, 4-byte aligned.
@@ -462,6 +474,7 @@
 00139504 Gets the thread's id (svc 0x37).
 00139724 Frees the object's buffer (+0xc) when it has one, then the object, through the free hook.
 00139dac Stops the camera when it is running: stops capture, releases its buffer and marks it stopped.
+00139ffc Opens the file in the archive found by its path, with the mode.
 0013a38c Takes the first free one of the 16 thread-local slots (fatal when none is free).
 0013a414 Sends the request to the service (0013a5a4) and keeps its value (+0xc, else +8) on success.
 0013a63c Closes the StreetPass message box: finishes its open part, releases its two buffers (under the lock) and the session when they are flagged.
@@ -474,7 +487,10 @@
 0013b034 Loads an entry of the archive: through its own loader when it is packed, else its file (when flag 8 asks); true when loaded.
 0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
 0013b6e0 Stops the sounds of the player's list from `index` (under its lock).
+0013b72c Releases the font's texture sheets.
 0013bb80 Returns at once.
+0013c1d4 Reads the player's info from the system's sound archive.
+0013c1e8 Reads the player's info from the sound archive.
 0013c240 Reads the sequence's info from the sound archive.
 0013c3c0 Entry `index` of the table at +word_c when its kind is 0x4900: its data; null otherwise.
 0013c3f4 Entry `index` of the table at +word_14 when its kind is 0x4902: its data; null otherwise.
@@ -501,6 +517,7 @@
 0013cbdc Initializes a sound channel: its owner, priority, two volume ramps (target 0x7fff) and its lock.
 0013cc9c Takes a block off the pool's free list under its lock (zeroed when the pool clears its blocks); null when none is left.
 0013cd00 Copies `source` into the string's buffer, at most `length` characters (all of it when negative) and fewer than its capacity, then terminates it; the number copied.
+0013d00c Gets the thread's priority (svc 0xb).
 0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
 0013d4f0 Whether the bank's slot (below 6) is loaded.
 0013d6d0 Unlinks the request from the pending list (when queued or running, under the list lock) and clears it.
@@ -510,6 +527,7 @@
 0013e164 The physical address for an offset in the video memory banks (by its range).
 0013e258 Converts a linear heap address to its physical address (unchanged below 0xaf9000).
 0013e274 When reports are on (0x97e038): hashes the archive's name and sends its entry and kind to the report hook.
+0013e6bc Removes the heap from the list of heaps, under its lock.
 0013e75c Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
 0013ea18 Calls the handler for the animation's kind (0x80000000 or 0x40000000) from the table at 0x97511c.
 0013ea4c Dispatches the animation's child (+0x28 offset) when it has one.
@@ -530,13 +548,23 @@
 0013fd78 Stops the microphone input in its active states.
 0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
 0013ff94 Calls the service handler for the command (+0xa0: table in its low nibble, entry above), or returns the not-found result.
+0014041c Reads the DSP's state when it is up.
 001404f0 Sends command 0xa (with the flag) to the service and returns its result.
 00140530 Sends command 5 to the service and returns its result.
+00140564 Finalizes the DSP service when it is up.
+00140f54 The sound archive, set up once.
+00140fac Sets the flag of the sound handle's active sound.
+001411ec Finds the archive player's sound player of the id.
 001416bc The offset of the archive's block of the kind 0x6801, or none.
 00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
+00142450 Makes room for the bytes in the buffer.
 001435c8 Sets the handle to none (-1).
 00148710 out = M * (v, 1) for a 3x4 matrix M.
+0014f378 Adds the two vectors into the output.
+0014f5dc Creates a mutex (svc 0x13), locked or not.
+0014f794 Jumps to the import.
+0014f79c Jumps to the import.
 0014fd9c Jumps to the import.
 0014fda4 Jumps to the import.
 0014fe74 Jumps to the import.
@@ -2487,14 +2515,17 @@
 00528d60 Generates the town map: picks the layout pieces at random and fills the grid.
 00529334 The wallpaper of the current room (the default 0x23eb, or the house room's, the villager's, the exhibit's) and its flag.
 0052953c The flooring of the current room (the default 0x234c, or the house room's, the villager's, the exhibit's) and its flag.
+0052984c Binds the named animation to the model.
 00529c80 The pool entry of message `id` (below the count at 0x887402) through 0051fc48, unless it is hidden (+0xf); 0 otherwise.
 00529d08 The pool entry of message `id` (below the count at 0x887402) through 0051fc14, unless it is hidden (+0xf); 0 otherwise.
 00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
 0052a508 Resets the fade layout: rewinds its fade animation to 0 and hides the fade pane.
+0052a5ac Loads the map view's layout.
 0052a870 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x85edc4, bit 1 when it is the one at 0x85edb4.
 0052ab60 Clears the record and gives it a random item of category 0x33 (of the first five).
 0052abd8 Sets the room's wall textures from its wallpaper (three wall materials).
 0052b948 Resets the wipe layout: rewinds its wipe animation to 0 and hides the wipe pane.
+0052b9ec Loads the map view's layout (the second one).
 0052bb0c Bit 0 when the member handler (+0xc, +0x10) is the one at 0x895bb0, bit 1 when it is the one at 0x895ba8.
 0052be5c Resets the entry list at 0x9ab170 and the counters at 0x9516a0.
 0052bf90 Sets bit 2 of 0x9516a0.
@@ -2539,6 +2570,7 @@
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
 0052ef44 The world position of the cell's corner.
 0052ef8c The world position of the cell's center.
+0052f260 Destroys the placement query.
 0053138c Calls slot 4 of the cloud model's transform node.
 00531398 Updates the cloud model's transform and model.
 005313b4 Releases the item model: its sub parts, model, animation, the two lists of loaded parts and its objects.
@@ -2580,6 +2612,7 @@
 0053acd8 Formats into the string's buffer (always terminated).
 0053ad24 Adds the child heap (by its node offset) to the heap's children, under the heap's lock when it has one.
 0053ad94 Removes the child heap from the heap's children, under the heap's lock when it has one.
+0053adf4 Finds the resource in the cache, under its lock.
 0053af90 Frees all of the heap's blocks and removes it from its parent's children (under both locks).
 0053b1d0 Clears the manager's words and the current heap (0x97e9fc).
 0053b4cc Decodes the Base64 text into the buffer.
@@ -2611,6 +2644,7 @@
 00544d8c Writes the wide string to the output.
 0054af38 Formats into the fixed string (vsnprintf), keeping it terminated.
 0054da14 Finds the set's resource with the id.
+0054f804 Notifies the system about the emitter's change.
 005500a0 Takes the next free emitter of the ring, links it into its group's list and resets it; null (with a warning) when all are in use.
 00550204 Creates the emitter set with the transform's position and no rotation.
 0055030c Reports the warning to the system's listeners.
@@ -2685,6 +2719,8 @@
 00569e90 Sets up the screen for 400 x 240 and resets its list.
 00569ebc Sets up the screen's viewport and projection for the size.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
+0056a1d4 Rotates the vector about the x axis by the angle.
+0056a2c0 Sets the transform's scale, rotation and translation.
 0056a534 Binds the object to the source's second word.
 0056a53c Queries the file request's state (under the file lock); 0 without a request.
 0056a58c Opens the file request through the file device manager once (under the file lock); true when it did.
@@ -2847,6 +2883,7 @@
 0058a880 Removes the BGM of +0x10 (priority 6) from the queue.
 0058a96c Moves to the next BGM of the sequence table at 0x8458dc (row +4, step +0xc by 2), stops the current effect and pushes it at priority 0x14.
 0058aa20 Removes the BGM with priority 5 and id 0.
+0058acfc The object's data entry for its kind, or the default one.
 0058ad84 Once a frame: reads the BGM option once, updates the tick flags, the BGM queue, the list at 0x98a018 and the flag manager.
 0058aea0 Marks (+0x1f) the queued entries with this priority and sound id.
 0058b06c The first free entry (kind 0x1d) of the queue's 29 entries of 0x24 bytes, or 0.
@@ -2974,6 +3011,7 @@
 0059c7a8 Calls the field objects' function at 0x14fc78 with the values (not for id -1).
 0059c934 The field object at the cell (inside the map), marking it to refresh (state 0xa) when flagged; null when none.
 0059cae8 Binds the texture chosen by the town's setting (save +0x621ce) to the field object's material.
+0059ceb4 Calls the function on each of the field item's children of the kind.
 0059da08 Removes the field item at the cell.
 0059dab8 Places the item among the field items at the cell, with the flag.
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
@@ -3023,6 +3061,7 @@
 005a4fd0 Keeps the two paths at 0x97e098 and 0x97e09c unless they are set.
 005a4ffc Clears a picture record (magic 3DS1) and fills it with the current time and date fields.
 005a50bc Stores a 5-bit value in bits 7-11 of +0x68.
+005a50e0 Sets the part word's kind bits.
 005a5130 Stores a value in bits 12-27 of +0x30.
 005a5148 Once: grows the buffer to 0xdac entries and opens the picture databases (500 and 3000 records) that are asked for.
 005a51f4 Writes a picture (kind 2) with its two scale values through 005a566c.
@@ -3088,6 +3127,7 @@
 005ab498 Calls virtual 3 of the photo storage object (0x982128).
 005ab4b0 Calls virtual 2 of the photo storage object (0x982128).
 005ab4c8 Maps a file-system result to a photo error: 0 for success or not-found codes, 8, 9 or 0xe for media errors, 5 otherwise.
+005ab768 Reads the photo file's header and its sizes.
 005abb6c The value of 003506c8 for 0x204, read once (0x97e0e0).
 005ac04c Calls 005abba0 with the bit 1 << `index` as its last argument.
 005ac2b0 Writes a photo file through 005af3e0 with option 1.
@@ -3108,7 +3148,9 @@
 005ada54 The four-digit number of a wide photo name (four non-empty characters then four digits), or -1.
 005add4c Parses the photo's 8-character name; whether it is one.
 005add7c The length of the photo root path of storage 0, computed once.
+005adde8 Counts the photos of the kind in the store, once.
 005adf1c The length of the photo drive path, computed once.
+005adf88 Reads the photo's record from its file.
 005ae46c The path of the photo index file for storage `which` (0 or 1), built once; the empty path for others.
 005ae51c Copies wide string `index` of the table at 0x981660 into `out` (empty for index 0 or 1 handled apart).
 005aead8 Reports a fatal error for a failing file-system result, except the media and not-found codes the photo code handles.
@@ -3129,6 +3171,7 @@
 005b00a8 Releases the handle's object when it holds one.
 005b0120 Clears slot `index` (+0x30 table) and its bit in bits 9-12 of +0x28.
 005b0164 Writes the photo's file name (the prefix and the number + 1, four digits) into the path's name field (8 characters).
+005b01b0 Copies the 16-bit string into the 8-character buffer.
 005b01c0 Copies up to `size` characters of a name into a field, padding the rest.
 005b027c Copies an 8-character wide folder name into the record (+4).
 005b028c Copies the 16-bit string into the buffer of the length.
@@ -3437,6 +3480,7 @@
 005d53d4 Constructs the text receptor with the given style and the default font settings.
 005d60d4 Clears the text buffer and the line starts, marking the last line.
 005d6510 Text tag: sets the color (from the tag's two halves) and skips the tag.
+005d69bc Sets the text box's message with its words.
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
 005d6d28 Lays out the text box's lines (the second layout) and sets the text's size.
 005d72a4 Text tag: places the ruby text above its base characters, centered, and skips the tag.
@@ -3553,6 +3597,7 @@
 00614730 Adds the collider to the collision list.
 0061476c Releases a resource from the list at 0x9870a8 (when there is one).
 006148e4 Clears a notice record and its four 16-byte entries.
+00614a64 Sweeps the shape between the two points against the collision world.
 0061532c Clears a 0x30-byte record.
 006154b0 Copies up to 16 letters and digits, clearing the rest from the first other character.
 00615534 Clears five words and a 16-bit value.
@@ -3563,6 +3608,7 @@
 006162e0 Builds the item of the catalog index (fish, sea creatures, then the others).
 006165c4 Word `index` (below 3; else the first) of the table at 0x952880.
 0061666c For a sea creature the current player's encyclopedia (+0x6c20) lacks: records it (006bd2c8).
+006166dc The item's category and offset.
 00616c68 The category and the offset in it of the catalog index (fish, sea creatures, then the others).
 00616e70 Clamps the signed 16-bit value to -limit..limit; whether it was already inside.
 00616fb0 Word +0xc of the object at 0x952b8c.
@@ -3721,6 +3767,7 @@
 006268b0 Calls 00618a1c on the network session with a value.
 006268c4 Resets the session's record at +0x28ec and checks network part 3.
 00626930 Resets the session's record at +0x28ec and handles network part 3.
+00626964 Passes the packet to the session's sender.
 0062697c For station `index` (below 4): releases its two template kinds (tables 0x881b8c and 0x881b90).
 00626bc8 Calls 00626a9c on the network session.
 00626bd8 After station `index` left: releases its templates, resets the global block, the NPC packets and its room data; when no station remains, resets the NPC share info.
@@ -3976,6 +4023,7 @@
 0068d170 Unless muted (bit 5 of +0x66), plays the voice sound and, when asked, marks the player busy.
 0068db1c Plays the player's animation with its blend and speed.
 0068dc14 Unless muted (bit 5 of +0x66), plays the sound and, when asked, marks the player busy.
+0068eaf0 Passes the request to the camera controller when it exists.
 0068eb30 True when the camera controller (0x950874) is in mode 5.
 0068eba8 Restores the default mode when the camera controller is in mode 5.
 0068ebc4 Updates the camera controller when it exists.
@@ -4057,6 +4105,7 @@
 006a5928 Creates the color and wipe faders on the fader heap.
 006a5b88 Starts the scene change: notifies the listeners (unless the current one holds it) and starts the change.
 006a5c00 Notifies the listeners of the end of the scene change and starts the scene's sound.
+006a5d0c Selects the scene environment of the kind (below 6).
 006a5dd4 The world position of cell (x, y) (32 units each) at the default height.
 006a6024 Applies the scene's environment (lights, fog) for the current scene.
 006a6408 Builds the maps of the map table (blocks, cells and their items) for the scene.
@@ -4153,6 +4202,7 @@
 006bead8 Stores the position at +0x73c.
 006beaf4 The side kind of the structure at the position: 1 for kinds 0 and 2, 2 for kinds 1 and 3 to 5, 0 otherwise.
 006bf18c The model scale of a category 0xe item by its growth level (from the table; 2 at the top); 0 for other items.
+006bffb4 Sets the model's matrix upright at the position.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.
 006c1678 Moves the held object to state 5 (in the hand) with its owner and the hand matrix.
 006c1688 Stores a timer (+0x6d0) and moves the held object to state 0.
@@ -4648,6 +4698,8 @@
 0071fe48 Stores the CRC-32 (MSB first) of the 0x7f0 bytes after the checksum word.
 0071fe68 Whether the stored CRC-32 (MSB first) matches the 0x7f0 bytes after it.
 007201d0 Whether the item at the index (below 40) is set (not empty, not a placeholder).
+007202d8 The record's signed halfword at the index.
+00720328 Whether the record's item is of category 0x2f.
 00720348 Whether byte +0x1f is set.
 00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
 00720448 Finds the item in the catalog's list.
@@ -4655,6 +4707,7 @@
 007207d8 Whether the effect the handle points to is still running.
 0072355c Updates the scroll bar's dragging.
 00723ad4 Whether the slot is unlocked with no item (a negative index).
+00723f68 The letter of the page's entry at the index.
 00723f84 Whether the index is on the page (its start to 10 after).
 00723fa0 The index's offset from the page's start.
 00724400 The current player's pocket item at the slot.
@@ -5201,6 +5254,7 @@
 0077b700 Raises the floating-point underflow by squaring a tiny float (in s0).
 0077b854 Copies the bytes (any alignment) when there are any.
 0077f2ac Writes the command for the depth mode when it changed since the last frame, and records it.
+007b0530 Writes the block of commands to the list.
 007b0bb0 The current value of the GPU register (0x600 and after) in the active state.
 007b1034 Jumps to 0x136088.
 007b1038 Marks the GPU state's parts dirty by the mask.
@@ -5222,6 +5276,8 @@
 007cfb30 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
 007cfd98 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
 007cfe94 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
+007d0f40 Sends the presence message (kind 1) for the main object.
+007d1090 Sends the presence message (kind 0x13) for the main object.
 007d1164 Sends the presence message (kind 0x23) to the stations, for the main object.
 007e666c Removes the callback from the list.
 007e85c0 Computes the bounds of the text in the font.
