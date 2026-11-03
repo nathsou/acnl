@@ -4765,11 +4765,33 @@
 0072f3a4 Whether the client is logged in, when NEX is up.
 00733cf0 Whether the session's connection is the current one.
 00733e00 The connection's status from its two states.
+007344dc The session's station of the address.
 0073663c The referenced resolution's width, or 0 when it is not ready.
 0073666c The referenced resolution's height, or 0 when it is not ready.
+00736694 The referenced resolution's value when ready.
 00736728 Reads the referenced resolution's value when ready.
+0073682c The resolution's aspect (in s0).
 00736a1c The entry of a resource dictionary (a radix tree on the name's bits) whose name is `name` (of `length` bytes); null when none.
+00737f20 Draws the text with the font renderer.
+0073be3c The texture's image data, or null.
+0073bf80 Whether the texture has mipmaps.
+0073bf94 The texture's format.
+0073c668 The rectangle from the pane's center and its size.
+0073df34 Reads the file's entry info.
 0073df8c Finds the sound in the archive and its info.
+0073e1c0 Calls the object's virtual function 5.
+0073e780 Writes the player's id (or -1 when it is not ready).
+0073eee8 The referenced block of kind 0x300, or null.
+0073ef1c The referenced block of kind 0x4100, or null.
+0073ef34 The file's block of kind 0x101, or null.
+0073ef84 The table's entry at the index when it is of kind 0x4102, or null.
+0073f1ac The file's entry 1, from its sparse table.
+0073f208 Finds the file's entry by its id (of kind 4).
+0073f4f4 The file's block of kind 0x2210, or null.
+0073f630 The archive's entry 2, from its sparse table.
+0073f650 The archive's entry 1, from its sparse table.
+0073f6b4 The archive's first entry, from its sparse table.
+0073f70c The archive's sound entry, from its sparse table.
 007400f8 The word at the adjusted +0x2c part of the resource file (+0x3c of +4).
 00740114 Finds an entry of the resource (+0x3c) and gives its id and value; true when found.
 00740144 Resolves an entry handle of the resource and copies its two words and two bytes; true when found.
@@ -4832,8 +4854,10 @@
 0074599c Whether one of the six objects (+0xc to +0x20) is in state 1 (+4).
 00745bd8 Computes the joint's world matrix from the skeleton's pose.
 00745d44 The index of the entry with this name in the resource's dictionary (16-byte entries); -1 when there is none.
+00745f10 Finds the model's skeleton node.
 00745f74 The address of +0xbc of the model (+4).
 00745f80 The address of the model's matrix (+0x4c of +4).
+007460b8 The mover's progress (in s0).
 007460e8 Whether the mover has reached its end (by its kind).
 00746d20 Removes the icon from its list (+0x174), clears its 16-byte name and its link, and removes it from the drag-icon list.
 00746d78 Calls virtual 11 of the icon's owner (+0x48) with 1.
@@ -4846,6 +4870,7 @@
 00746efc The online component's state, or 0 without one.
 00746f10 Calls 00747438 on the link state's sub object, or 0 without one.
 00746f24 The online component's current time, or 0 without one.
+00746f3c The online component's session key, or the empty one.
 00746fec Whether the wireless manager (0x974a58) exists and passes 0072f380.
 0074701c Whether the wireless manager (0x974a58) exists and passes 0072f380 or 0072f3a4.
 00747094 When the network clock (0x974a64) is synchronized: the value from 00733680 for the time at 0x97d428 (within range); else 0.
@@ -4855,6 +4880,7 @@
 007475e0 The link state (+0x28), read under its lock.
 00747608 Whether two addresses match: by their ids when both have one, else by the two words.
 00747660 Whether two addresses differ: by their ids when both have one, else by the two words.
+00747944 The next id of the table (wrapping at 0x400).
 007479b4 Whether the bucket of the key (folded to 1024 entries) holds a live entry before its end.
 00747a90 Bit 0 of the flag byte (+0x1102c) of the bucket of the key (folded to 1024 entries).
 00747c04 Whether the 16-bit values at +0xe and +0xc differ.
@@ -4872,6 +4898,7 @@
 00748dd8 Allocates from a free block of the heap.
 00749010 Word +0x64 of the current thread's object (thread-local).
 00749134 Whether the state (+0x1c) is not 3, 4, 5 or 6.
+00749bb4 The heap for the load arguments (by their kind).
 0074a3e8 The first node of the list (+0xc0) whose byte +0xc is `key`, or 0.
 0074b2bc Stores a value at +0x3c of the node and of every descendant (children +0x14, siblings +0x18).
 0074baa4 Word `index` (below 2; else the first) of the table at +0x20.
@@ -4886,13 +4913,16 @@
 0074e45c Allocates from a free block of the heap.
 0074e928 The position of `node` in the circular list, or -1.
 0074e960 Word +0x20 of +0x20 of the task's manager (+0x5c).
+0074f1c4 Applies the viewport to the current camera.
 0074fbbc Extracts the rotation angles (x, y, z, in 1/65536 turns) of a matrix, handling the gimbal-lock case.
 0074fc40 Converts a point from the pane's local space (relative to its rectangle) through its matrix (+0x74).
 0074fcd8 The frame of the animation at a time (looping or clamped).
 0074fd9c The last frame of the animation (+4, less 1 when looping), or 0 when it has none.
 0074fff8 Whether the time stamp is after the current time (or the given one).
+007500c8 Splits the time stamp into its date and time.
 007508b0 The furniture's item (+0x5e4) with the direction its angle (with its parent's, when it sits on one) gives, in a shared item.
 00750994 The furniture's state byte (from its data at +0x5f4; 0 when it reads 0xff), or 0xff without data.
+00750a48 The furniture's surface at the position (by the scene).
 00750d40 Copies the furniture's position (the translation column of its matrix at +0x548) to `out`.
 00750da8 Transforms a point by the furniture's matrix (+0x548).
 00750e1c The furniture's extents turned to its direction (absolute values) into `out`.
@@ -4903,6 +4933,7 @@
 00751578 The position of the furniture's sound.
 007516f8 Whether the item under the furniture (facing its direction) is the same on the current and the previous map.
 00751864 The address of 8-byte entry `index` from +0x14.
+00751a64 The furniture's top surface at the position.
 00751f40 The offset from object `id` to the position (the object's own when none is given), with its horizontal distance in s0; a far default without the object.
 007523a8 When there is a main object: checks bit 3 of +0xb07 and the pointer at +0xaa0.
 0075256c Whether the object's position lies outside the box (offsets from the camera's position); false without a camera.
@@ -4912,6 +4943,7 @@
 00752998 The height of the grid rectangle at +0x10.
 00752bf4 When the task is ready (+0xa8 = 1): reads its 24-bit value into an opaque RGBA colour (alpha 0xff); true when it did.
 007537c4 Whether +0x24 or +0x28 is set.
+00753a50 The index of the time's hour (wrapping before 6) in the table.
 00753c94 The bit of cell (x, z) in a bit map of the town's 112 x 96 cells (after a 4-byte header).
 00753cbc The 64-bit value at +0x20.
 00753ccc The count (0073663c on +8) divided by 2^shift (+0x64), rounded up.
@@ -4920,6 +4952,7 @@
 00754090 Bits 12-19 of +0x30.
 00754100 For entry `index` (0x48 bytes from +8): calls 00754988 when its field is set.
 0075412c Inserts an 8-byte value at the position found by 007541e8, growing the vector when needed and moving the rest up.
+007541e8 Finds a free entry in the photo list.
 007544a4 Whether the photo's folder name (8 characters) has the current date digits (0x98167c) and a valid number; gives the number when asked.
 0075454c Finds the photo file by its folder and file names.
 007546b4 The number of whole days (86,400 seconds) in the 64-bit second count (rounded toward minus infinity for a negative one).
@@ -4928,6 +4961,7 @@
 00754890 Writes the time as an EXIF date and time (year:month:day hour:minute:second) into `out`.
 00754908 Whether the 64-bit time is before the earliest time (005a8c34) or after the latest (005a8b9c).
 00754964 Whether bit 4 of the 16-bit flags (+0x14) of the entry (+0xc) is set.
+00754988 Updates the photo view's state.
 00754a3c The address of 12-byte entry `index` of the table at +0xc.
 00754b40 Bits 2-4 of +4.
 00754b50 Bits 0-1 of +4.
@@ -4999,6 +5033,7 @@
 00757c3c Whether the checksums of the town part (+0x80) and of the part at +0x71900 are valid.
 00757c74 The number of days between a date (at midnight) and a time.
 00757cc0 Whether byte +6 of the town part is 2.
+00757cd8 Whether the record's kind is 0x9e.
 00757f08 Recomputes every checksum of the town part: header, players, villagers, map section and the rest, and the CRC-32 at +0x533a4.
 00757f78 Whether every checksum of the town part is valid and its mode and speed nibbles (+0x6214e) agree.
 00758070 The letter when its sender kind (+0x30) is 2 or 4 (a villager), else 0.
@@ -5046,7 +5081,10 @@
 0075cf18 Whether the state (+4) is 0 or 7, or 8 with sub-state (+6) 5.
 0075cf7c Word +8 of the child at +0x35c.
 0075d11c The message count of the archive handle at +0x32c.
+0075d178 Bends the point by the scene's curve as seen from the camera; its tilt.
 0075d2e0 0.0 (the first float of the static zero vector, in s0).
+0075d2f8 The scene curve's tilt angle at the point.
+0075d378 Bends the point by the scene's curve around the origin.
 0075d4b0 The angle (in 1/182.04 degrees) of +4 times the z of a vector, as 16 bits.
 0075d4e8 0.0 (the second float of the static zero vector, in s0).
 0075d630 The three vertices (heights from corner 0's three 5-bit fields) of the tile's first triangle, on the half cell sizes.
@@ -5079,11 +5117,13 @@
 0075e8c0 The station (below 4) whose entry id is `id` and whose active bit (+4) is set; 4 when none.
 0075e91c The station (below 4) whose entry id is `id` and whose active bit (+4) is clear; 4 when none.
 0075e978 The index of the entry (of 32 four-byte entries) with this id pair, or -1 (the empty id never matches).
+0075eca4 Sends to the list's stations (up to 5).
 0075ef68 Whether the address is set (not the empty pair -3, -1) and its host accepts it (or has none).
 0075efdc Word `index` (below 4) of the table at +0x1c, or 0.
 0075f020 Whether the network part allows `kind` (below 6): when its check passes, or its mask (+8) has the kind's bit.
 0075f1f8 Whether the slot's player (below 4) has an identity.
 0075f34c Whether the four 8-byte ids match the ids (+0x10) of the four 0x18-byte entries.
+0075f3cc Whether the station's identity differs from the other.
 0075f448 Whether the address of peer `index` (below 4) is usable, read under the session lock.
 0075f578 The peer index of this console's address, or 4 when it has none.
 0075f5c0 Whether the player's identity differs from the other.

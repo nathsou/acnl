@@ -20486,6 +20486,7 @@
 00734158 nn__pia__local__LocalNetworkFactory__virtual_18
 00734160 nn__pia__local__LocalNetworkFactory__virtual_16
 00734168 nn__pia__local__LocalNetworkFactory__virtual_17
+007344dc PiaSession__station_of
 0073462c nn__pia__transport__StationManager__virtual_0
 00734630 nn__pia__transport__AttendanceTable__virtual_0
 00734634 nn__pia__transport__ProtocolManager__virtual_0
@@ -20527,7 +20528,9 @@
 00736444 nn__uds__CTR__ScanResultReaderInternal__ScanResultReaderInternal_00736444
 0073663c ResolutionRef__width
 0073666c ResolutionRef__height
+00736694 ResolutionRef__value
 00736728 ResolutionRef__read
+0073682c Resolution__aspect
 007368b8 nn__crypto__CcmDecryptor__virtual_5
 007368c0 nn__crypto__CcmDecryptor__virtual_4
 007368c8 nn__crypto__CcmDecryptor__virtual_3
@@ -20570,6 +20573,7 @@
 00737f00 nw__gfx__HemiSphereLight__virtual_11
 00737f08 nw__gfx__HemiSphereLight__virtual_2
 00737f14 nw__gfx__ParticleEmitter__virtual_2
+00737f20 FontRenderer__draw
 00739b70 nw__gfx__StandardSkeleton__virtual_8
 00739b78 nw__gfx__StandardSkeleton__virtual_12
 00739b80 nw__gfx__StandardSkeleton__virtual_10
@@ -20636,6 +20640,9 @@
 0073bce0 nw__gfx__ParticleSet__virtual_5
 0073bd0c nw__gfx__ParticleSet__virtual_7
 0073bd9c nw__gfx__ParticleSet__virtual_6
+0073be3c ResTexture__image
+0073bf80 ResTexture__has_mipmaps
+0073bf94 ResTexture__format
 0073bfa0 nw__lyt__Bounding__virtual_10
 0073c09c nw__lyt__Bounding__virtual_3
 0073c0a8 nw__lyt__Bounding__virtual_9
@@ -20643,6 +20650,7 @@
 0073c150 nw__lyt__Pane__virtual_2
 0073c15c nw__lyt__Bounding__virtual_7
 0073c164 nw__lyt__Bounding__virtual_26
+0073c668 Rect__from_center_size
 0073c6a4 nw__lyt__Window__virtual_10
 0073c6dc nw__lyt__Window__virtual_3
 0073c830 nw__lyt__Window__virtual_9
@@ -20662,9 +20670,11 @@
 0073dad8 nw__lyt__TextBox__virtual_7
 0073daf0 nw__lyt__TextBox__virtual_26
 0073db94 nw__lyt__Bounding__virtual_2
+0073df34 ResFile__entry_info
 0073df8c SoundArchive__find_sound
 0073e0ec nw__snd__SoundArchivePlayer__virtual_3
 0073e13c nw__snd__SoundDataManager__virtual_5
+0073e1c0 Object__virtual_5_veneer
 0073e1cc nw__snd__SoundDataManager__virtual_4_0073e1cc
 0073e1f8 nw__snd__MemorySoundArchive__virtual_5
 0073e308 nw__snd__MemorySoundArchive__virtual_2
@@ -20680,10 +20690,15 @@
 0073e73c nw__snd__internal__FsFileStream__virtual_4
 0073e744 nw__snd__internal__FsFileStream__virtual_20
 0073e74c nw__snd__internal__SequenceSound__virtual_5
+0073e780 SoundPlayer__set_id
 0073e7a8 nw__snd__internal__SequenceSound__virtual_0
 0073e7c8 adjusted_this_0x4__0073e7c8
 0073ecd8 nw__snd__internal__BiquadFilterHpf__virtual_2
 0073ed2c nw__snd__internal__BiquadFilterLpf__virtual_2
+0073eee8 ResRef__block_300
+0073ef1c ResRef__block_4100
+0073ef34 ResFile__block_101
+0073ef84 ResTable__entry_4102
 0073efb8 nw__snd__internal__CachedFileStream__virtual_21
 0073efe4 nw__snd__internal__CachedFileStream__virtual_3
 0073eff4 nw__snd__internal__CachedFileStream__virtual_19
@@ -20698,6 +20713,8 @@
 0073f064 nw__snd__internal__MemoryFileStream__virtual_5
 0073f06c nw__snd__internal__MemoryFileStream__virtual_4
 0073f074 nw__snd__internal__MemoryFileStream__virtual_20
+0073f1ac ResFile__entry_1
+0073f208 ResFile__find_by_id
 0073f484 adjusted_this_0x34_
 0073f490 adjusted_this_0x3c_
 0073f49c adjusted_this_0x24_
@@ -20705,6 +20722,11 @@
 0073f4b4 adjusted_this_0x2c_
 0073f4c0 adjusted_this_0x1c_
 0073f4cc adjusted_this_0x14_
+0073f4f4 ResFile__block_2210
+0073f630 SoundArchive__entry_2
+0073f650 SoundArchive__entry_1
+0073f6b4 SoundArchive__first_entry
+0073f70c SoundArchive__sound_entry
 0073f734 adjusted_this_0x10__0073f734
 0073f740 adjusted_this_0x10__0073f740
 0073f8b0 nw__snd__internal__BiquadFilterBpf512__virtual_2
@@ -20860,9 +20882,11 @@
 0074599c any_of_six_in_state_1
 00745bd8 Skeleton__joint_world_matrix
 00745d44 Resource__find_index
+00745f10 Model__find_skeleton
 00745f74 model_part_bc
 00745f80 model_matrix
 00745f8c slot_test_frame
+007460b8 Mover__progress
 007460e8 Mover__is_done
 0074619c AnimatedObject__animation_value_40
 007461b4 AnimatedObject__animation_value_38
@@ -20928,6 +20952,7 @@
 00746efc RequestPool__component_state
 00746f10 UnknownStateA22020__sub_check
 00746f24 RequestPool__current_time
+00746f3c RequestPool__session_key
 00746f8c UnknownStateA22020__flag_144_without_flag_30
 00746fa0 UnknownStateA22020__check_747548
 00746fb4 UnknownStateA22020__mode_3_or_matching_values
@@ -20945,6 +20970,7 @@
 007475e0 LinkSub__state_locked
 00747608 NetAddress__equals
 00747660 NetAddress__differs
+00747944 HashTable__next_id
 007479b4 HashTable__contains_live
 00747a90 HashTable__bucket_flag
 00747b44 read_field_u32_0x8_
@@ -21051,6 +21077,7 @@
 00749a40 sead__OrthoCamera__virtual_1
 00749a8c sead__OrthoCamera__virtual_0
 00749ba4 field_nonzero_749ba4
+00749bb4 ResourceArgs__heap
 00749c24 sead__CtrHidDevice__virtual_1
 00749c70 sead__CtrHidDevice__virtual_0
 00749d24 sead__LookAtCamera__virtual_4
@@ -21248,6 +21275,7 @@
 0074ed44 sead__UnitHeap__virtual_14
 0074ed4c sead__UnitHeap__virtual_22
 0074efb0 sead__UnitHeap__virtual_17
+0074f1c4 Viewport__apply
 0074f238 sead__FrameHeap__virtual_18
 0074f240 sead__FrameHeap__virtual_15
 0074f288 sead__FrameHeap__virtual_19
@@ -21286,12 +21314,14 @@
 00750090 read_field_s8_0x7a3_
 0075009c kind_is_41
 007500b4 furniture_has_class_4_or_5
+007500c8 TimeStamp__split
 00750894 record_flag_bit_2
 007508b0 AcFtr__item_with_direction
 00750970 AcFtr__virtual_22
 0075097c kind_is_15
 00750994 AcFtr__state
 00750a2c kind_is_10_or_11
+00750a48 AcFtr__surface_at
 00750d40 AcFtr__position
 00750d6c kind_is_f
 00750d84 kind_is_11_or_12
@@ -21327,6 +21357,7 @@
 00751a20 mode_7b4_below_2
 00751a30 kind_is_b_or_12
 00751a4c kind_is_c
+00751a64 AcFtr__top_surface
 00751d00 offset_height
 00751d34 furniture_class_19
 00751d48 kind_is_16
@@ -21423,6 +21454,7 @@
 007537bc event__EventBase__virtual_1
 007537c4 has_word_24_or_28
 00753a4c event__EventAnniversary__virtual_2
+00753a50 Clock__hour_index
 00753bb8 event__EventDate__virtual_0
 00753c4c event__EventDate__virtual_1
 00753c90 event__EventDate__virtual_2
@@ -21434,6 +21466,7 @@
 00754090 bits_12_to_19_of_30
 00754100 entry_72_call_754988
 0075412c Vector8__insert
+007541e8 PhotoList__find_free
 007544a4 PhotoPath__folder_is_current
 0075454c PhotoPath__find_file
 007546b4 seconds_to_days
@@ -21443,6 +21476,7 @@
 00754908 Stamp__is_out_of_range
 00754964 entry_flag_10
 00754978 field_nonzero_754978
+00754988 PhotoView__update
 00754a3c entry_12_at
 00754a4c entry_of_table_owner_00754a4c
 00754a70 entry_of_reference
@@ -21571,6 +21605,7 @@
 00757c3c SaveData__checksums_are_valid
 00757c74 days_since_date
 00757cc0 TownPart__has_version_2
+00757cd8 ItemRecord__is_kind_9e
 00757cfc seal_tiny_block
 00757d20 tiny_block_is_sealed
 00757f08 TownPart__seal
@@ -21823,7 +21858,10 @@
 0075d138 AcNpcSp__virtual_64
 0075d140 AcNpcSp__virtual_62
 0075d148 BsScene__virtual_15
+0075d178 SceneCurve__bend_by_camera
 0075d2e0 zero_float
+0075d2f8 SceneCurve__tilt_at
+0075d378 SceneCurve__bend_point
 0075d4b0 angle_units_of_scaled_z
 0075d4e8 zero_float_2
 0075d500 FtrList__virtual_6
@@ -21901,6 +21939,7 @@
 0075ea0c entry_pointer_plus_2
 0075ea44 entry_id_for_station_0
 0075ea7c table_byte_without_session_station
+0075eca4 NetStationList__send
 0075ef68 NetAddress__is_usable
 0075efdc word_1c_at
 0075f020 NetPart__allows
@@ -21909,6 +21948,7 @@
 0075f1c4 flags_09_bit_is_set
 0075f1f8 NetPlayers__slot_identity_is_set
 0075f34c four_ids_match
+0075f3cc NetStation__identity_differs
 0075f448 NetSession__peer_address_is_usable
 0075f4d4 entry_in_use
 0075f578 own_peer_index
