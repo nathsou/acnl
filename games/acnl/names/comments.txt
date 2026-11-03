@@ -1418,6 +1418,7 @@
 002ba344 Advances the list's counter by the step (mod 3) and moves every child pane by the offset.
 002ba3cc Attaches the layout at +0x34c to the layout system.
 002ba788 Loads the item selection window's layout archive; marks it loaded (+0x4e0).
+002bb4b0 Sets the 0x33 switches of the block on or off.
 002bc8e8 Marks the cell (x, y) of the candidate grid.
 002bc94c Requests the sound data of the id for bank `index` (below 6) and starts its loader; the request's index, or -1.
 002bcb60 Releases the flagged banks' sound data once their loaders are idle.
@@ -1431,6 +1432,7 @@
 002be89c Clears the local entries that are no longer valid.
 002be8f0 Constructs the 16 park entries.
 002bea00 Fills the park entry from the town data with the next id and stores it.
+002bea50 Stores the entry in the 16 park entries (by its identity).
 002beb4c Fills the park entry from a remote town with the next id and stores it.
 002beb90 The set and slot for an incoming entry: a free slot, else the oldest entry that may be replaced.
 002becec Prunes each of the 3 park entry sets (0x7dd80 bytes each).
@@ -1442,6 +1444,7 @@
 002bf468 Clears the block (4 slots) and stamps its CRC.
 002bf574 Constructs the block's 4 slot headers, clears it and stamps its CRC.
 002bfe9c Copies the record (0x280 bytes) into the first free of the 10 slots.
+002c0048 Resets the flags of the 0xbc kinds.
 002c2024 Stores and applies the value (system value 2), on the old 3DS only.
 002c2058 Applies the default value (30) and marks it unset.
 002c2078 Initializes the flags and colors to their defaults.
@@ -1477,6 +1480,7 @@
 002cd2e0 Sets the message of the button `index` and marks it for update.
 002cd30c Starts the window's closed animation.
 002cd378 Sets the window's selected flag (bit 3 of +0xd4) and selects or unselects every button.
+002cd3d0 Sets the first visible button from the end and refreshes the buttons.
 002cd4bc Resets the park data when asked, makes it the current one and marks it loaded.
 002cd520 Opens the park's save file over the data buffer.
 002cd574 Allocates and constructs the park data (0x17be10 bytes), from the scene heap or the stage heap.
@@ -1494,9 +1498,11 @@
 002d0998 The record (+0x668) of the object held by the slot; null without one.
 002d0cf8 Constructs the model with its skeletal model, base animation (kind 0x16, enabled) and its second animation.
 002d17c0 Registers the furniture sound in the first free of the 52 slots (id -1, cleared), counting it; 0x35 when full.
+002d1858 Stops the sound furniture manager's slot (below 52).
 002d1a70 Stops and frees slot `index` (below 52), uncounting it.
 002d1b3c Counts one more furniture of the kind in its slot of the 3 (taking a free one for a new kind).
 002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
+002d2d60 Plays the sound furniture's song with its volume.
 002d2e80 Sets the volume (and fade frames, 15 by default) of the slots playing the sound for the owner.
 002d31ec Plays the sound at the xz position (no height).
 002d3218 Plays the sound at the position.
@@ -1605,10 +1611,12 @@
 002ea294 Address of the 0x30-byte record of place `index` (+0xa4); out-of-range indices give place 0.
 002ea2bc Inserts the player with `score` (below 0x400) and their prize item at the place the score earns, moving the lower places down.
 002ea430 Address of the identity of place `index` (+0x1a, 0x2e bytes each); out-of-range indices give place 0.
+002eab00 Updates the villager house's state with the options.
 002eaec8 The first Saturday at or after the time stamp (skipping a week when today is already event 0xc) on which event 0xc is held.
 002eaf8c Clears the ranking, its places and prizes, and the contest flags of every player (and their entry bits too, when asked).
 002eb0b4 Updates the contest's schedule and state from the time.
 002eb5d0 Sends the prizes of the finished contest to the ranked players by letter.
+002eb830 Refreshes the player house's items for the current time.
 002eba64 Address of block (x, y) of the 2 x 2 blocks of 0x400 bytes (+0x22); out-of-range gives block 0.
 002eba7c Address of number pair `index` (0 or 1) at +0x1022.
 002eba90 Sets the size to 3 x 3, resets the 3 x 3 halves, clears the four blocks and the two number pairs.
@@ -1639,6 +1647,7 @@
 002f6a30 Sets or clears flag 0x10 (+0xd4) and the matching mask bits of +0xc4 (0x60000 or 0x14000, chosen once).
 002f6b14 Updates each usable node of the tree (its virtual function 2), skipping those that refuse.
 002f6b8c Clears bit 2 of the flags (+0xd4), sets the mode 0xc04 and the model's flag 0x10.
+002f6c78 Releases each node of the tree (its virtual function 21).
 002f6d18 Clears the menu state flag and notifies the state's handler (+0x1f4).
 002f6db4 Sets byte +0xd6 of each child with id `id` (all when -1) and remembers the last one at +0xb4.
 002f737c Bit `index` (fewer than 5) of the flag bytes; 0 for a larger index.
@@ -1654,12 +1663,14 @@
 002f7ef4 Calls virtual 24 of entry `index` among the four shown from +0x2434 (0x290 bytes each, +0x18b4); out-of-page indices use entry -1.
 002f80c8 Fills the thread start record (argument, entry functions) and starts it.
 002f81e4 Stores the design of entry `index` (relative to the shown page) into the selected design storage slot.
+002f84e8 Converts the wide character to its multibyte bytes; their count.
 002f86c0 Unsigned division.
 002f86f0 Stores the half at +0xa0 + index * 2 (index below 4) of the shared NPC info.
 002f872c Picks a random entry of the weighted table at 0x94d7b0.
 002f8b78 Adds the two doubles when both are finite.
 002f8ba8 Compares the two doubles when neither is infinite or NaN.
 002f8bd8 The class of a double (r0, r1): 0 zero, 4 subnormal, 5 normal, 3 infinity, 7 NaN.
+002f9234 Formats the arguments to the sink; the number of characters written.
 002f93bc Clears the player input lock, tells the NPC manager, then sends network message 4 with the NPC's slot and the current main object, resetting the permit record.
 002f9888 The value of digit character `c` (0-9, then letters either case from 10) when it is below `base`; -1 otherwise.
 002f98a8 Refreshes the shared NPC info: the 11 values, the two selected bytes, the 10 villagers' bytes (+0x84, +0x8e) and resets the rest.
@@ -1683,6 +1694,7 @@
 002fdd50 Finds set bit number `n` in 0x140 16-bit words, keeping the position in `cursor` (word index, bit, and an x/y position 16 bits to a row, 0x60 wide); true when found.
 002ff1cc Daily update of the second contest ranking: resets it for a new contest, updates the schedule and sends the prizes.
 002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.
+002ff3fc Clears the record (0x280 bytes) at the index.
 002ff408 Clears a letter: header, the opening line (0x42 bytes), the body (0x182 bytes), the closing line (0x42 bytes), flags, and an empty attached item.
 002ff4d4 Checks one of nine item properties (`property`, 0-8; with an option flag) of an item.
 002ff724 Removes entry `index` of the best three by moving the later ones up, and clears the last.
@@ -1696,7 +1708,9 @@
 00300768 Whether the two iterators point to the same place.
 00300814 Returns at once.
 00300888 Finds the `n`th cell holding `value` in the 16 x 16 byte grid (row by row): its column and row; false when there are fewer.
+00300900 The net session's signed value for the object.
 00300a64 Calls the object's virtual function 34.
+00300ff8 Updates the house upgrade's state with the options.
 00301400 1 when the date is after (year, month, day), -1 when before, 0 when the same.
 003016d4 Sets (or clears) bit `index` of a bit array of 28 bits.
 00301da8 Whether the year is a leap year (divisible by 4, and by 400 when by 100).
@@ -1722,6 +1736,7 @@
 00303014 Forwards to Item__is_id_a0_a6_ac_b3_or_bd.
 00303274 Sends the prizes of the finished second contest to the ranked players by letter.
 003035dc Initializes an entry of kind `kind` (0, 1 or 2) with its two constants; kind 2 also updates two save flags.
+003037e8 Refreshes the villager house's items for the current time.
 00303b10 Copies the empty item into `item`.
 00303f50 Stores a 16-bit value at +0x1d9c and marks +0x1d9e.
 00304280 Sends the special housing letter (with an attached item) to each of the four players whose flags ask for it, and marks it sent.
@@ -1787,6 +1802,7 @@
 00307888 Drops the caller's reference to a shared string buffer (call_0011c0fa), then releases the owned object.
 00307974 Forwards to find_in_list_ee354.
 00307978 Calls the function at 0x2fad16 on the shared object at 0xaf75ec.
+00307990 Copies the string.
 00307a00 printf to a stream: the format and the stream are the first two arguments, the values follow (vfprintf).
 00307c44 Forwards to update_save_range_6e224.
 00307c48 Forwards to clear_table_a82b90.
@@ -1876,8 +1892,10 @@
 0030d9f4 Forwards to record_is_due.
 0030d9f8 Forwards to letter_slot_for_entry.
 0030da04 Gives the villager the item when it accepts it (by category and properties), remembering the giver's record.
+0030dad8 Sets the entry (below 9) of the packed key.
 0030dbe8 Picks a villager to move out (valid, not protected) and schedules its move.
 0030dcdc Cancels the villager's move: clears its moving state and sends the cancel letter.
+0030ddb4 Jumps to 0x51f2b0 with the fixed argument.
 0030e184 For a record of kinds 0xe to 0x11 that names a town player: moves it to mode 2 when its flags say so, else resets it when its stage no longer fits.
 0030e454 Picks a random slot from the bit set of candidates of the given kind.
 0030eaf0 The index of the town villager matching the record, or -1.
@@ -2047,12 +2065,22 @@
 0033f368 Applies a received villager state message: sets its state (0x17, 2 or 0) and updates its NPC.
 0033fb8c Clears bit 6 of the shared NPC info unless the word is set.
 0033fbb4 Writes the secretary's letter to the player (its variant by the player's state), with its item.
+00342ed0 Stops the melody when it is the melody sound.
+003452f0 Stops the camera capture.
+00345820 Shuts the camera service down under its locks.
+00349878 Loads the shader binary and its programs.
 0034a784 Binds the attribute (by its kind, below 16) to the buffer's address with the format.
 0034a8b4 Binds the attribute's constant values (when it has no buffer).
 0034ac5c Initializes the command buffer (state 5) and its parts.
+0034ba38 Takes the lock when the current thread does not hold it; whether it did.
+0034cf7c Builds the data id from the value and the kind.
+0034d018 Finalizes the data store service when it is up.
+00350454 Copies the entry's owner identity (the second layout).
 003504e8 Initializes the table info with its defaults.
 003505bc Whether the background service is set up (under its lock).
 003506c8 Reads the background service's value of the kind; a fatal error on failure.
+003507b0 Reads the network status from the ac service.
+003548f0 Sets the NEX string to a copy of the wide string (or empty).
 00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
 00361988 Frees the NEX block through its own deleter, or the plain heap.
 003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
@@ -2060,11 +2088,15 @@
 003cf0b8 Clears the list's nodes into its free list.
 00403828 Sets word `index` (fewer than 6) of the array at +0x210.
 0040acc4 Sets the match attribute (below 6) to the value and marks it set.
+0044a814 Destroys the Pia session and frees it.
 0044badc Waits for the time (milliseconds) when Pia is ready.
 0044c1ec Leaves the session's gathering and its matchmaking.
+0044cc60 Ends Pia's transport when it is up.
 0044f0f4 The station's state in the session (by its address).
 0045ee4c Sends the packet over Pia's transport when it is ready.
 0046a174 Once (flag at 0x974b8c): opens the ndm:u service and suspends the network daemons.
+0046a424 Initializes the timeout (0x7d) with its seconds and value.
+0046aa80 Sets the session option to the value.
 0046aad8 The local station's id, or 0.
 0046bb74 The station's address when it is valid.
 0046eaf0 When ndm_suspend_once ran: resumes the daemons and closes the service.
@@ -2072,14 +2104,22 @@
 0046f9f8 Finds the station in Pia's list by its address.
 0046fe08 Updates the station's entry in Pia's list.
 0047ea68 The CRC-32 of `size` bytes (polynomial 0x04c11db7, most significant bit first, its table built on the stack), starting from `seed`; complemented.
+0047f3a0 Connects to the network (the ac service).
+00489ec8 Finalizes Pia's modules when it is up.
+00495534 Resets the scene environment's lists and marks it dirty.
+004a7064 Sets the fog's range (at least 0.01 wide) and its scale.
 004b4fc0 The pane of the layout's tree with this name (searching below the root pane).
 004b6598 Sets the pane's text from the string, with its format.
 004b71c8 Sets the pane's position and marks its matrix for update.
 004b9b64 Marks the event (+0x1c = 1) and passes its value (+0x18) to virtual 0x3c of the listener at +0x20.
 004bef3c The scroll bar knob's position from the pointer.
+004bf06c Sets the flag on each resource of the list.
 004bfd70 Finds the resource by its key and binds it.
 004bfe1c Binds the resource when its kind matches.
 004c331c Takes a reference to the resource the holder points to.
+004c7500 Loads the resource's child with its name.
+004dae58 The index of the letter paper item (0x3041 to 0x3093) in the table.
+004dbc3c Whether the tour desk is waiting (state 3 or 4).
 004ddc34 The local station of the online session.
 004e0288 True when the check at 0x1531b8 gives exactly 1.
 004e029c Stores the three components call_004dfb58 gives (from the arguments) into entry `index` (0x24 bytes) as half floats, with a flag.
@@ -2087,6 +2127,7 @@
 004e0998 Sets the motion parameters (target, word, three halves) with no float.
 004e09c8 Appends `node` to the queue unless it is in it already.
 004e0a48 Calls slot 4 of the transform node at 0x951530.
+004e0f68 Whether the current room is a player's (indoors, flag 0x80), outside the special room.
 004e10ac Leaves 64 and 2 in the float registers.
 004e1204 Empties the room's furniture grids (64 rows of 0x50 cells, and the 16 x 16 upper layer at +0x1400: -1 each) and its table of 48 furniture objects.
 004e12b4 The furniture object of the grid entry call_004e1768 gives (its index into the table); null when none.
@@ -2112,6 +2153,7 @@
 004e3a1c The state byte of the furniture at (x, z) when it has one (flag bit 2), else 0xff.
 004e3f8c Runs 006311a4 on the furniture (id 0x88709c) under `position`, with the offset (32, 0, 0) and whether table bit 4 is clear.
 004e408c Same as clear_room_flag_and_timers.
+004e40e8 Updates the room's timers for the idle main object.
 004e440c Runs 006311a4 on the furniture (id 0x88709c) under `position`, with the offset (-32, 0, 0) and whether table bit 4 is clear.
 004e4510 Whether the item maps of list positions `mode` and `mode - 1` hold the same items (same kind-11 top bits) over the area from 00284ee4.
 004e49fc Whether (x, z) is blocked: an open terrain cell with a terrain flag, or furniture of class 4/5 on terrain that is in the list for the current mode.
@@ -2165,11 +2207,13 @@
 004eb3a0 Starts the effect slot of the reference's key when it still exists.
 004eb3e0 Stops the effect slot of the reference's key (fading out over 10) and forgets the key; true when it did.
 004eb438 Updates the effect slot of the reference's key when it still exists.
+004eb6c4 Starts the effect of the kind at the position in the slots.
 004eb9d4 Starts fading the slot out over `frames` unless it already fades; true when it started.
 004eb9fc Binds the slot to render slot `index` and sets it up from it.
 004ec7ec Sets the model's color (+0xb8 of its resource, four floats) and its derived word.
 004ed168 Sets the float at +0x124 of the model's resource and refreshes it.
 004ed18c Sets the float at +0x120 of the model's resource and refreshes it.
+004eda50 Finds the model's node of the kind and records it.
 004edd6c Destroys the NPC model's loader and its base.
 004eddd4 Adds the model and its visible materials to the render queue (opaque or translucent lists), updating the queue's node once.
 004ee2dc Sorts the render queue's entries.

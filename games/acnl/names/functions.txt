@@ -4450,6 +4450,7 @@
 002bb454 init_packed_bytes
 002bb490 clear_byte_bits_2bb490
 002bb4a0 store_constants_2bb4a0
+002bb4b0 SwitchBlock__set_all
 002bbd1c PosterTalkRecept__virtual_4
 002bbd24 PosterTalkRecept__virtual_67
 002bbe74 PosterTalkRecept__virtual_68
@@ -4524,6 +4525,7 @@
 002be8f0 ParkEntries16__construct
 002be920 slot_address_002be920
 002bea00 ExhibitionPark__store_local
+002bea50 ParkEntries16__store
 002beb4c ExhibitionPark__store_remote
 002beb90 ParkSet__slot_for_incoming
 002becec ParkSets3__prune
@@ -4548,6 +4550,7 @@
 002bfe9c Records10__add
 002c002c small_record_address_002c002c
 002c0044 Letter__clear_veneer
+002c0048 FlagBlockBc__reset
 002c2024 SystemValueSetting__set
 002c2058 SystemValueSetting__reset
 002c2078 DrawFlags__init
@@ -4731,6 +4734,7 @@
 002cd2e0 ButtonList__set_message
 002cd30c ButtonList__start_closed
 002cd378 ButtonList__set_all_selected
+002cd3d0 ButtonList__set_first_visible
 002cd444 construct_control_button_base
 002cd4ac ControlButtonBase__virtual_1_002cd4ac
 002cd4bc ExhibitionParkFile__activate
@@ -4806,6 +4810,7 @@
 002d1240 ResourceGetSklVis__virtual_1_002d1240
 002d1298 ResourceGetSklVis__virtual_0_002d1298
 002d17c0 SoundFurnitureMgr__register
+002d1858 SoundFurnitureMgr__stop_slot
 002d1a70 SoundFurnitureMgr__unregister
 002d1ac4 SoundFurnitureMgr__SingletonDisposer___deleting_destructor
 002d1b08 SoundFurnitureMgr__SingletonDisposer___destructor
@@ -4832,6 +4837,7 @@
 002d2b8c SoundObjFurnitureInsect__destructor
 002d2b90 SoundObjFurniture__destructor
 002d2c34 SoundSharedObjMgr__virtual_5
+002d2d60 SoundFurniture__play
 002d2e80 SoundSlots4__set_volume
 002d2f4c update_entries
 002d2fa4 SoundSharedObjMgr__virtual_7
@@ -5190,11 +5196,13 @@
 002ea294 ContestRanking__record_at
 002ea2bc ContestRanking__insert
 002ea430 ContestRanking__identity_at
+002eab00 VillagerHouse__update_state
 002eaec8 next_event_saturday
 002eaf8c ContestRanking__reset
 002eb0b4 ContestRanking__update_schedule
 002eb3b0 namespace___KameyamaForeachFunction__KameyamaForeachFunction
 002eb5d0 ContestRanking__send_prizes
+002eb830 PlayerHouse__refresh_items
 002eba64 Grid2x2__block_at
 002eba7c Grid2x2__pair_at
 002eba90 Grid2x2__clear
@@ -5297,6 +5305,7 @@
 002f6b14 NodeTree__update_all
 002f6b8c Model__reset_mode_c04
 002f6ba8 ButtonActionControl__virtual_10
+002f6c78 NodeTree__release_all
 002f6d18 leave_menu_state
 002f6db4 set_child_flag_d6_by_id
 002f6e14 ButtonActionControl__virtual_3
@@ -5353,6 +5362,7 @@
 002f8398 nn__nex__HttpClient__deleting_destructor
 002f83b0 free_plain
 002f83f0 ChangeStockMyDesign__ChangeStockMyDesign
+002f84e8 wcrtomb
 002f8574 copy_bytes_at_any_alignment
 002f85fc ChangeStockMyDesign__virtual_1_002f85fc
 002f860c ChangeStockMyDesign__virtual_0_002f860c
@@ -5377,6 +5387,7 @@
 002f917c LetterDragIconGroup__virtual_1_002f917c
 002f91d4 return_constant_0xaf74c8_
 002f91e0 LetterDragIconGroup__virtual_0_002f91e0
+002f9234 vprintf_core
 002f93bc NpcLockPlayerPermitBit__send_lock
 002f9504 TryLockPlayerSyncSpeak__TryLockPlayerSyncSpeak_002f9504
 002f9558 TryLockPlayerSyncSpeak__TryLockPlayerSyncSpeak_002f9558
@@ -5560,6 +5571,7 @@
 002ff1cc ContestRanking2__update
 002ff34c cell_address_2x2
 002ff368 Letter__Letter
+002ff3fc Records280__clear
 002ff408 Letter__clear
 002ff4d4 Item__check_property
 002ff6a4 Item__is_in_id_set_c
@@ -5597,6 +5609,7 @@
 0030081c AcNpcSp__virtual_30
 00300880 read_field_u16_0xc_
 00300888 find_nth_cell_with_value
+00300900 NetSession__signed_value_veneer
 00300904 main_object_value
 00300914 forward_to_held_object_slot_21
 00300924 forward_to_held_object_slot_22
@@ -5607,6 +5620,7 @@
 00300a74 terrain_byte_db1c_unless_blocked
 00300f64 byte_at_index_at_least
 00300f9c has_flag_bit
+00300ff8 PlayerHouse__update_upgrade
 003013c0 BbsNotice__clear
 00301400 Date__compare
 00301444 clear
@@ -5721,6 +5735,7 @@
 00303754 table_value_for_field_14_303754
 00303770 player_record_for_slot
 003037e4 current_player_meets_unlock_conditions_veneer
+003037e8 VillagerHouse__refresh_items
 00303a50 call_target_with_two_0x50__veneer
 00303a54 script__WordFix_9u___WordFix_00303a54
 00303a58 call_target_with_two_0x8c__veneer
@@ -5922,6 +5937,7 @@
 00307888 release_shared_string
 00307974 find_in_list_ee354_veneer
 00307978 call_on_af75ec
+00307990 strcpy
 003079f8 reset_pair_a83370
 00307a00 stream_printf
 00307abc sead__FixedSafeString_32___FixedSafeString_00307abc
@@ -6155,12 +6171,14 @@
 0030d9f4 record_is_due_veneer
 0030d9f8 letter_slot_for_entry_veneer
 0030da04 Villager__take_gift_item
+0030dad8 PackedKey__set_entry
 0030dbe8 pick_villager_to_move_out
 0030dc84 find_player_by_identity
 0030dcdc Villager__cancel_move
 0030dda8 add_category_5_items_with_byte_19_low_veneer
 0030ddac keep_items_by_flag_1c_bit3_veneer
 0030ddb0 player_villager_check_30ddb0
+0030ddb4 thunk_0051f2b0
 0030e068 script__WordFix_30u___WordFix_0030e068
 0030e184 ScheduledRecord__update_for_player
 0030e21c script__WordCPtrSv__WordCPtrSv_0030e21c
@@ -7086,6 +7104,7 @@
 00342b7c script__WordFix_33u___WordFix_00342b7c
 00342bdc script__WordFix_9u___WordFix_00342bdc
 00342d90 SoundMelodyPlayerOneSeqBase__virtual_2
+00342ed0 SoundObjMelody__stop
 00342efc SoundMelodyPlayerOneSeqBase__deleting_destructor
 00342f20 SoundMelodyPlayerOneSeqBase__destructor
 00342f44 ButtonActionAllGroupBindNode__virtual_9
@@ -7117,6 +7136,8 @@
 00344e38 mw__qre__QREncoder__QREncoder
 00344e64 mw__qre__QREncoder__deleting_destructor
 00344e90 mw__qre__QREncoder__destructor
+003452f0 Camera3ds__stop
+00345820 Camera3ds__shutdown
 003458d4 nn__fs__FileStream__virtual_7_003458d4
 003458f8 nn__fs__FileStream__virtual_11_003458f8
 00345924 nn__fs__FileStream__virtual_3_00345924
@@ -7236,6 +7257,7 @@
 003492f0 nn__fs__IStream__virtual_0_003492f0
 003492f4 nn__fs__Directory__deleting_destructor
 0034931c nn__fs__Directory__destructor
+00349878 Shader__load
 0034a630 clear_block9_0034a630
 0034a784 VertexBuffer__bind_attribute
 0034a8b4 VertexBuffer__bind_attribute_values
@@ -7245,12 +7267,15 @@
 0034b77c nn__os__ThreadPool__virtual_0
 0034b850 nn__os__ThreadPool__deleting_destructor
 0034b8b4 nn__os__ThreadPool__destructor
+0034ba38 OwnedLock__try_lock
 0034bec0 nn__os__ThreadPool__ThreadPool
 0034bfa8 namespace___DefaultAutoStackManager__virtual_3
 0034c000 namespace___DefaultAutoStackManager__virtual_2
 0034c0a4 namespace___DefaultAutoStackManager__deleting_destructor
 0034c108 namespace___DefaultAutoStackManager__destructor
 0034c308 read_s8_0x00974f60_
+0034cf7c make_data_id
+0034d018 NetStoreService__finalize
 0034dc5c nn__cec__CTR__MessageBox__virtual_5
 0034e558 nn__cec__CTR__MessageBox__virtual_7
 0034ea24 nn__cec__CTR__MessageBox__virtual_6
@@ -7260,6 +7285,7 @@
 0034ed20 nn__cec__CTR__MessageBox__MessageBox
 0034ede4 nn__cec__CTR__MessageBox__deleting_destructor
 0034ee0c store_global_word_34ee0c
+00350454 NetStoreMeta__copy_owner_b
 003504e8 TableInfo__init
 003505bc Boss__is_ready
 00350640 table_word_350640
@@ -7267,6 +7293,7 @@
 003506a8 table_word_3506a8
 003506c8 Boss__get_value
 0035072c current_stamp
+003507b0 Ac__get_status
 003508ac query_003508ac
 003508e4 check_text_003508e4
 00350b70 store_constants_350b70
@@ -7286,6 +7313,7 @@
 003540d8 nn__hid__CTR__Gyroscope__destructor
 003547d0 nn__nex__ByteStream__deleting_destructor
 00354800 nn__nex__ByteStream__destructor
+003548f0 NexString__assign_wide
 00354940 nn__nex__JobHttp__JobHttp
 00354ad0 nn__nex__HttpClient__HttpClient
 00354ae0 nn__nex__HttpClient__destructor
@@ -10138,6 +10166,7 @@
 0044975c nn__pia__session__Mesh__Mesh
 00449850 nn__pia__session__Mesh__deleting_destructor
 00449860 nn__pia__session__Mesh__destructor
+0044a814 PiaSession__destroy
 0044aae8 call_virtual_6_44aae8
 0044b148 read_field_s8_0x100_
 0044bad0 member_address_0x101_
@@ -10149,6 +10178,7 @@
 0044c1ec OnlineSession__leave_gathering
 0044c744 nn__pia__session__Session__Session_0044c744
 0044c8a0 nn__pia__session__Session__Session_0044c8a0
+0044cc60 Pia__end_transport
 0044cd2c store_constants_3dc16c_0044cd2c
 0044cd88 pead__SafeStringBase_char___SafeStringBase_0044cd88
 0044ceb4 nn__pia__transport__RttProtocol__virtual_7
@@ -10351,6 +10381,7 @@
 0046a2bc nn__boss__TaskAction__deleting_destructor
 0046a2c0 nn__boss__NsaDownloadAction__destructor
 0046a2c4 do_nothing_0046a2c4
+0046a424 PiaTimeout__init
 0046a45c nn__boss__TaskPolicy__TaskPolicy
 0046a480 nn__boss__TaskPolicy__deleting_destructor
 0046a484 nn__boss__TaskPolicy__destructor
@@ -10361,6 +10392,7 @@
 0046a7f8 nn__boss__NsDataIdList__NsDataIdList
 0046a824 nn__boss__NsDataIdList__deleting_destructor
 0046a828 nn__boss__NsDataIdList__destructor
+0046aa80 PiaSession__set_option
 0046aad8 PiaSession__local_station_id
 0046ac20 nn__boss__NsaDownloadAction__virtual_2
 0046b16c nn__boss__TaskActionBase__deleting_destructor
@@ -10397,6 +10429,7 @@
 0047df5c sine_of_angle
 0047ea68 crc32_msb_first
 0047f328 read_s8_0x00974b00_
+0047f3a0 Ac__connect
 0047f558 read_u8_0x00974ae3_
 0047f67c read_s8_0x00974ae5_
 00480204 read_u8_0x00974add_
@@ -10453,6 +10486,7 @@
 00486cec return_constant_0xffffffd9_
 00486cfc return_constant_0xffffffe4_
 00486de4 nn__socket__detail__DnsUserClient__DnsUserClient
+00489ec8 Pia__finalize
 0048b18c nw__snd__internal__FsFileStream__virtual_18
 0048b238 nw__snd__internal__FsFileStream__virtual_17
 0048b23c nw__snd__internal__CachedFileStream__virtual_12
@@ -10523,6 +10557,7 @@
 004951d8 nw__gfx__ParticleShape__ParticleShape
 0049538c nw__gfx__ParticleShape__virtual_1
 00495400 nw__gfx__ParticleShape__virtual_0
+00495534 SceneEnv__reset
 004967e4 nw__gfx__RenderContext__RenderContext
 00496dc0 nw__gfx__RenderContext__virtual_1
 00496dcc nw__gfx__RenderContext__virtual_0
@@ -10676,6 +10711,7 @@
 004a4c64 nw__gfx__Fog__Fog_004a4c64
 004a4fbc nw__gfx__Fog__virtual_1
 004a4fc8 nw__gfx__Fog__virtual_0
+004a7064 Fog__set_range
 004aa350 nw__gfx__Light__virtual_4
 004aa3a4 nw__gfx__Light__virtual_1
 004aa3b0 nw__gfx__Light__virtual_0
@@ -10833,6 +10869,7 @@
 004be878 nw__lyt__Bounding__virtual_20
 004be8dc nw__lyt__Bounding__virtual_18
 004bef3c ScrollBar__knob_position
+004bf06c ResourceList__set_all
 004bf99c read_s8_0x00975175_
 004bfc7c nw__snd__SoundArchive__SoundArchive
 004bfcb0 nw__snd__SoundArchive__deleting_destructor
@@ -10922,6 +10959,7 @@
 004c6b94 nw__snd__internal__FsFileStream__destructor
 004c73e0 nw__snd__internal__SequenceSound__virtual_3
 004c74ac nw__snd__internal__SequenceSound__virtual_11
+004c7500 Resource__load_child
 004c7798 nw__snd__internal__SequenceSound__virtual_9
 004c7824 nw__snd__internal__SequenceSound__virtual_8
 004c782c nw__snd__internal__SequenceSound__virtual_6
@@ -11120,6 +11158,7 @@
 004d90dc nw__font__PairFont__PairFont
 004d9108 nw__font__PairFont__deleting_destructor
 004d9118 nw__font__PairFont__destructor
+004dae58 letter_paper_index
 004daf70 lyt__AnmObject__virtual_10
 004daf78 lyt__AnmObject__virtual_7
 004daf80 lyt__AnmObject__virtual_8
@@ -11144,6 +11183,7 @@
 004dbc1c _anonymous_namespace___CecAllocator__deleting_destructor
 004dbc20 _anonymous_namespace___CecAllocator__destructor
 004dbc24 namespace___SimpleFuncDelegate__virtual_0
+004dbc3c TourDesk__is_waiting
 004dbe10 FdBkSearchCand__FdBkSearchCand_004dbe10
 004dc528 FdBkSearchCand__FdBkSearchCand_004dc528
 004dcbdc script__WordFix_33u___WordFix_004dcbdc
@@ -11202,6 +11242,7 @@
 004e0cec item_covering_tile
 004e0e90 is_free_to_use_4e0e90
 004e0f14 entry_for_item_value_06
+004e0f68 Room__is_player_room
 004e10ac constant_64_and_2
 004e10c8 return_constant_0x9529d8_
 004e1204 RoomGrid__reset
@@ -11237,6 +11278,7 @@
 004e3a7c BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c
 004e3f8c touch_furniture_at_position_plus_x
 004e408c clear_room_flag_and_timers_2
+004e40e8 Room__update_timers
 004e424c furniture_first_tile
 004e440c touch_furniture_at_position_minus_x
 004e4510 item_maps_match_in_area
@@ -11310,6 +11352,7 @@
 004eb478 g3d__modelEffect__ModelEffectHandle__ModelEffectHandle
 004eb494 g3d__modelEffect__ModelEffectHandle__deleting_destructor
 004eb5b4 g3d__modelEffect__ModelEffectHandle__destructor
+004eb6c4 EffectSlots__start
 004eb9d4 EffectSlot__start_fade_out
 004eb9fc EffectSlot__bind_render_slot
 004eba34 call_node_if_active
@@ -11350,6 +11393,7 @@
 004ed3fc construct_fragment_light
 004ed430 g3d__FragmentLight__deleting_destructor
 004ed454 g3d__FragmentLight__destructor
+004eda50 Model__find_node_of_kind
 004edcfc AcIsMuAnt__virtual_4_004edcfc
 004edd20 escape__MapCloudModel__virtual_2
 004edd3c construct_skeletal_model
