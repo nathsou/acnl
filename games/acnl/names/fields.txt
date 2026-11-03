@@ -4680,6 +4680,7 @@ Frame_0059a644 0 object_0_vtable
 Frame_0059c7e0 10 object_10_vtable
 Frame_0059c7e0 8 object_8_vtable
 Frame_0059cae8 0 object_deco_name_address
+Frame_0059cd24 0 station
 Frame_005a3474 a8 program
 Frame_005ab5a4 0 object_0_vtable
 Frame_005ccfc4 0 object_0_vtable
@@ -4692,6 +4693,7 @@ Frame_005f4860 0 object_0_vtable
 Frame_00603598 0 object_0_vtable
 Frame_0060bdd0 0 object_0_vtable
 Frame_0061290c 0 object_0_vtable
+Frame_00618b38 0 friend_key
 Frame_006213c8 8 station
 Frame_006401f4 10 object_10_vtable
 Frame_006401f4 18 object_18_vtable
@@ -4995,6 +4997,7 @@ Local_0060e5c0@r0@60e61c 0 vtable
 Local_00610d2c@r0@610de4 0 vtable
 Local_00610d2c@r0@610e3c 0 vtable
 Local_00618578@r6@61857c 268 own
+Local_0061df58@r8@61e078 60 station
 Local_0061e488@r0@61e498 3c slot
 Local_00660c10@ea@660c10 0 ac_player
 Local_00660d78@ea@660d78 0 ac_player
@@ -5077,6 +5080,7 @@ Object_00256588_0 18 fix_light_hio_node_vtable
 Object_00256588_0 5c directional_fragment_light_vtable
 Object_0026f6fc_0 840c list
 Object_002763bc_0 118 sound_haniwa_mgr
+Object_0027680c_0 c4 tune_notes_address
 Object_00297b60_0 26c icon
 Object_002990d8_0 764 child
 Object_002990d8_0 768 child_768
@@ -5092,6 +5096,7 @@ Object_002990d8_0 78c pane
 Object_002990d8_0 790 pane_790
 Object_002990d8_0 794 pane_794
 Object_002aafd4_0 11f4 time_period
+Object_002bea00_0 7dd7 slot_byte
 Object_002bf468_0 0 crc
 Object_002cd5e4_0 0 park_sets3
 Object_002d70b8_0 0 vtable
@@ -5175,6 +5180,7 @@ Object_005e6bf8_0 c word_c_ptr_vtable
 Object_005f1138_0 14 load_split_vtable
 Object_00606ec8_0 18 talk_window
 Object_00607218_0 18 talk_window
+Object_00617120_0 1329c slot_byte
 Object_00618578_0 13268 own
 Object_0061e488_0 3 slot
 Object_0061f4c0_0 14 confirm_machine_vtable_14
@@ -5328,6 +5334,7 @@ libms__FlowNodeEntry 0 vtable
 libms__FlowNodeEvent 0 vtable
 libms__FlowNodeJump 0 vtable
 lyt__AnmObject 0 vtable
+lyt__AnmObject 2c pane
 lyt__Object 0 vtable
 net__SearchDataResult 0 vtable
 netgame__AvatarMgr 0 vtable
