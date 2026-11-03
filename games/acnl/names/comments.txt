@@ -1024,7 +1024,34 @@
 0025cdf8 Updates the reactions menu: its icons, dragging and selection.
 0025d9e4 Finds the first player with the flag and acts on their data.
 0025efb8 Sets the mode (+0x7e0e) and, for mode 1, resets the sub-menu at +0x6e2c.
+0026451c Resets the global render settings (fog, lights and their colors) to their defaults.
+00264668 Ends the photo capture: restores the scene environment and the camera.
+00264698 Begins the photo capture: sets up the scene environment, its camera and viewport.
+00265d54 Loads the paper shader on the weather heap.
+00267188 Shows the page and page count (up to 10 digits) and sets the previous and next pages, wrapping.
+002686d4 Sets the first button's value.
+0026876c Sets the messages of the buttons (up to 2) and marks them for update.
+00268818 Sets the second messages of the buttons (up to 2) and marks them for update.
+00268878 Sets the values of the buttons (up to 2).
+00268a08 Sets the messages of the buttons (up to 3) and marks them for update.
+00268ab8 Sets the values of the buttons (up to 3).
+00268d94 Sets the action's target and its model.
+0026a5dc Stops each of the 4 slots' effects and marks them stopped (or idle when unused).
+0026a66c Constructs the 4 slots (0xfc bytes each) and clears the state.
+0026a694 Destroys the 4 slots.
+0026ae58 Begins the target's next action and clears the action.
+0026b2e0 Constructs the candidate locator for the target with the default ranges.
+0026b3a0 Loads the edit switch layout, binds its button and its eight animations, and shows its first side.
+0026b500 Flips the switch to its other side: its animations and its message.
+0026d328 Refreshes the 16 pocket buttons from the current player's pockets.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
+0026e250 Calls virtual function 24 of the pocket button (of the layout in use).
+0026e2d8 Whether the scene allows giving and the item is of the giftable set.
+0026e410 Starts closing the grid, clears its flags and hides its cursor.
+0026eadc Updates the dragged icon (dropping it when ready) and clears the drag flag.
+0026eb6c When the pocket button accepts it: selects it with the value.
+0026f6fc Removes the grid's drag icon and releases its layouts and parts; true.
+0026f8a8 Whether the item is set, the scene allows it, and its category is flagged.
 0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
 00270ce0 Unloads the split part at +0x14.
 00271290 Sets the color of the current model slot's material (from its resource file) to the slot's color pair; false without a model.
@@ -3004,8 +3031,34 @@
 005cfcf0 When visits are pending (0x9514c6): adds the new visits (above the counted ones) to the town's visit count, capped at 20, and clears the pending state.
 005cfef0 Forwards to 0071a084.
 005cfef4 Records a visitor (id and two bytes) and, when new, counts the visit for the visitor's player and the town counters.
+005d03f0 When the store opens: deletes each existing entry of the local table, then ends the operation.
+005d0470 When online is allowed: deletes the remote table's entries that exist or are unreadable and sets the town's identity; whether it did.
+005d055c Allocates the villager buffer (0x2520 bytes) once; the buffer.
+005d05b0 Opens the store once and ends the operation.
+005d05ec Closes the store (when it opened) and ends the operation.
+005d0e38 The byte of the table at 0x8578dc for the index.
+005d1ee0 Places a random kind of item (from the 4) in the cells of each of the 2x2 blocks, with a random flag.
+005d1f84 The value times 0.05 (in s0).
+005d1f9c The value times 0.127 (in s0).
+005d205c The value times 0.127 (in s0).
+005d2218 Sets the first word and clears the other two.
+005d23e4 Sets the first word and clears the other two.
+005d4608 The start speed (in s0) that covers the distance in the frames under the acceleration.
+005d4a68 Calls the object's virtual function 11 with true.
 005d4a78 Calls the object's virtual at +8.
+005d5374 Constructs the text receptor with the default font settings and the values.
+005d53b0 Advances to the next page when there is one, and puts it.
+005d53d4 Constructs the text receptor with the given style and the default font settings.
+005d60d4 Clears the text buffer and the line starts, marking the last line.
+005d6510 Text tag: sets the color (from the tag's two halves) and skips the tag.
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
+005d72a4 Text tag: places the ruby text above its base characters, centered, and skips the tag.
+005d79bc Sets the style to the preset of the index (below 7), else the default.
+005d79e0 Builds the text scale command (in 1/32 units), once; the command.
+005d7a4c Builds the text color command from the tag's value.
+005daf1c Empties the selected pocket slot (below 16) of the current player.
+005dc9d4 Adds the item to the current player's pockets and refreshes them.
+005dd5b8 Formats the number with three digits into the string.
 005e2e50 Restarts the message engine at +0x44 on the text the source's virtual function 3 returns, and runs it.
 005e34c4 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
 005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
