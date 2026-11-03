@@ -11367,6 +11367,7 @@
 004ee3e8 TransformNode__set_scale
 004ee4b4 g3d__AmbientLight__virtual_2
 004ee4b8 escape__MapFogModel__virtual_2
+004ee4c0 Model__set_world_matrix
 004ee4c8 TransformNode__update_transform
 004ee4ec construct_transform_node
 004ee500 g3d__TransformNode__deleting_destructor
@@ -11416,6 +11417,8 @@
 004efa28 g3d__SpotFragmentLight__virtual_5
 004efac8 g3d__SpotFragmentLight__deleting_destructor
 004efaec g3d__SpotFragmentLight__destructor
+004efb0c SceneEnv__set_layer
+004f000c SceneEnv__default_fog
 004f001c g3d__GroupTransformAnim__virtual_8
 004f0054 g3d__GroupTransformAnim__virtual_5
 004f0230 g3d__GroupTransformAnim__virtual_4
@@ -11485,6 +11488,7 @@
 004f2760 g3d__FuncNode__virtual_1
 004f276c g3d__FuncNode__virtual_0
 004f2a18 SceneEnv__reset_frame
+004f2b8c Material__get_value_of_kind
 004f2c10 Material__set_value_of_kind
 004f2d48 set_color_from_bytes
 004f2ef0 Model__set_visible_if_any
@@ -11853,6 +11857,7 @@
 0050e248 nn__nex__ResultRange__ResultRange_0050e248
 0050e778 NetGame__start_session
 0050ed5c NetGame__init_nex
+0050ee4c NetGame__allocate_heap
 0050f004 NetGame__end_session
 0050f118 NetGame__login
 0050f21c nn__nex___DDL_DataStorePrepareUpdateParam___DDL_DataStorePrepareUpdateParam
@@ -12075,16 +12080,20 @@
 00521ddc current_viewport_rect
 00521e74 current_viewport_scale
 00521ef8 current_viewport_size
+00522074 TextEdit__line_of
 00522168 LineTable__line_length
 005221d8 u16_table_entry
 005224bc u16_table_entry_2
+005224e8 TextEdit__layout_from
 0052267c sys__LineManager__deleting_destructor
 005226bc sys__LineManager__destructor
+0052296c TextEdit__commit_input
 00522ae0 TextEdit__clear_selection
 00523020 TextEdit__set_cursor
 00523090 sys__TextManager__CellPhoneInput__CellPhoneInput
 005230cc sys__TextManager__CellPhoneInput__deleting_destructor
 005230d0 sys__TextManager__CellPhoneInput__destructor
+005230d4 TextEdit__delete_range
 005234d8 TextEdit__finish
 005235e8 TextEdit__delete_selection
 00523658 TextEdit__set_text
@@ -12159,6 +12168,7 @@
 005272e8 isfactory__MazeBuilder__virtual_4
 00527528 find_cell_of_id
 00527a2c MapStructures__mark_block_cells_a
+00527c34 Map__generate_block
 005284b8 MapStructures__mark_block_cells_b
 00528838 namespace___GraphicsContextForTextWriter__deleting_destructor
 00528848 namespace___GraphicsContextForTextWriter__destructor
@@ -12375,6 +12385,7 @@
 005359fc category_info
 00535a1c item_table_entry
 00535a68 Item__wear_class_entry
+00535ab0 Map__place_structure_at
 00536054 return_constant_0xa183dc_
 00536060 item_default_value
 005360e0 kind_table_878198_word
@@ -12608,6 +12619,7 @@
 0053e23c sead__SafeStringBase_char___SafeStringBase_0053e23c
 0053e288 sead__FileDevice__virtual_10
 0053e554 sead__FileDevice__virtual_11
+0053e71c TouchPanel__hit_test
 0053e824 sead__MainFileDevice__virtual_16
 0053e918 sead__FileDevice__deleting_destructor
 0053e954 sead__CtrFileDevice__destructor
@@ -12690,6 +12702,8 @@
 00540968 sead__GameFramework__virtual_16
 005409d4 sead__ProcessMeter__SingletonDisposer___deleting_destructor
 00540a18 sead__ProcessMeter__SingletonDisposer___destructor
+00540b14 IntArray__fill_range
+00540bd0 IntArray__shuffle
 00540c1c init_array_header
 00540c3c sead__TextureCtrGR__TextureCtrGR
 00540c70 sead__TextureCtrGR__deleting_destructor
@@ -13183,6 +13197,7 @@
 0054e41c sead__ptcl__PtclEditor__deleting_destructor
 005500a0 EffectSystem__alloc_emitter
 00550204 EffectSystem__create_emitter_at
+0055030c EffectSystem__warn
 00550438 EffectSystem__alloc_particle
 005504e8 EffectSystem__reset_counts
 00550564 sead__ptcl__PtclSystem__PtclSystem
@@ -13364,6 +13379,7 @@
 0056201c sead__ThreadMgr__deleting_destructor
 0056202c sead__ThreadMgr__destructor
 00564804 acre_kind_index_among_same
+0056549c category_display_kind
 00565668 Vec3__turn_toward_xz
 005657ac Vec3__move_toward_xz
 00565958 Vec3__ease_toward_xz
@@ -13624,6 +13640,7 @@
 00570544 AcFtr__toggle
 005706fc character_animation_value
 005707b8 AcFtr__virtual_54
+005707f0 AcFtr__start_action
 00570950 AcFtr__virtual_52
 00570aa8 AcFtr__virtual_61
 00570aac AcFtr__virtual_53
@@ -13863,6 +13880,7 @@
 00582dc4 store_byte_constant_pack_0xa8_00582dc4
 00582e4c play_sound_at
 00582e9c play_sound_at_world
+00582efc SoundSystem__update
 00582f18 barcarolle_player_state_is_2
 00582f38 barcarolle_player_byte_1ebf
 00582f50 barcarolle_player_half_12
@@ -14437,12 +14455,14 @@
 00590720 FieldItem__init
 00590aac fgobj__ObjectScale__virtual_5
 00590ad8 fgobj__ObjectBase__virtual_5
+00590c14 FieldItem__place_on_ground
 00590f1c fgobj__ObjectBase__ObjectBase
 00591088 fgobj__ObjectBase__deleting_destructor
 005910b8 fgobj__ObjectBase__destructor
 005910e4 fgobj__ObjectBury__virtual_8
 005912d4 fgobj__ObjectBury__deleting_destructor
 00591304 fgobj__ObjectBury__destructor
+00591330 FieldItems__spawn
 00591514 fgobj__ObjectDeco__virtual_4
 0059151c fgobj__ObjectDeco__virtual_8
 00591548 fgobj__ObjectDeco__deleting_destructor
@@ -14554,6 +14574,7 @@
 005982d8 FieldDrops__add_hole_for_slot
 005983ac FieldDrops__add_low_ground
 005985c4 AcPlayer__front_cell
+00598d20 FieldItem__refresh_at
 00599294 cell_offset_from_packed
 005992fc refresh_cell_unless_type_1d
 00599544 refresh_tree_at_position
@@ -14588,6 +14609,7 @@
 0059cd24 fgobj__ObjectCoinStone__ObjectCoinStone
 0059d4dc fgobj__Proc__do_draw
 0059d554 fgobj__Proc__do_create
+0059da08 FieldItems__remove_at
 0059daa0 table_holder_word_set
 0059dab8 FieldItems__place_at
 0059dfbc fgobj__Proc__do_execute
@@ -14622,6 +14644,7 @@
 005a2620 fgobj__DrawList__destructor
 005a2624 TownBits__set
 005a2664 TownBits__clear
+005a2670 FieldItems__find_at
 005a2708 clear_grid_bit
 005a2748 fgobj__FieldBit__deleting_destructor
 005a274c fgobj__FieldBit__destructor
@@ -14690,6 +14713,7 @@
 005a53c4 PictureDb__add_picture
 005a55cc imgdb__write_picture_1
 005a5618 PictureDb__check_files
+005a566c Camera__set_shot
 005a58cc PictureDb__verify
 005a593c PictureDb__add_picture_2
 005a6218 PictureDb__repair
@@ -14726,8 +14750,11 @@
 005a91f8 imgdb__PhotoFileReader__deleting_destructor
 005a9250 imgdb__PhotoFileReader__destructor
 005a92a4 imgdb__PictureDbRecord__PictureDbRecord
+005a992c PhotoFile__find_free_folder
 005a9c14 PictureDb__set_record_values
+005a9c48 PhotoFile__find_free_index
 005a9e1c PhotoStore__path_of
+005aa0b8 PhotoFile__compute_sizes
 005aa198 imgdb__PictureDbRecord__virtual_1
 005aa1a4 imgdb__PictureDbRecord__virtual_3
 005aa1b0 return_constant_0x97e09c_
@@ -14806,9 +14833,11 @@
 005ad658 PhotoPath__format_folder_name
 005ad690 PhotoPath__build_folder
 005ad6d8 PhotoPath__build_folder_from_number
+005ad74c PhotoStore__open
 005ad968 call_005af04c_with_time
 005ad9a0 PhotoName__number
 005ada54 PhotoName__number_wide
+005add4c PhotoName__parse
 005add7c photo_root_length_0
 005adf1c photo_drive_length
 005ae46c photo_index_path
@@ -14957,6 +14986,7 @@
 005b3e28 photo__Allocator__destructor
 005b3ec4 read_u32_0x00957328_
 005b3ed4 leave_scene
+005b3ef4 SceneList__find
 005b3f88 scene_index_of_kind_15
 005b4018 mode_page_player_is_main_slot
 005b4088 advance_scene
@@ -15002,6 +15032,7 @@
 005b522c call_5b6378_with_scene
 005b5b78 SceneChange__request
 005b5d38 SceneChange__request_with_matrix
+005b5d60 Scene__request_change_at
 005b69f8 table_word_5b69f8
 005b6a10 scene_is_local_players_house
 005b7418 VillagerPart__set_byte_19764
@@ -15104,6 +15135,8 @@
 005bf7cc SpawnPoint__set
 005bf82c SpawnSet__set
 005bf8f0 SpawnSet__clear
+005bf954 PlayerState__clear_inputs
+005bfb94 PlayerInput__reset
 005bfbd4 reset_player_slots_2
 005bfc8c player_in_states_29_2a_with_slot
 005bff24 player_call_6503b0
@@ -15273,6 +15306,7 @@
 005c7cdc get_slot_object_position
 005c7d24 player_in_action_75_with_slot
 005c7d64 player_end_action_a4
+005c7e48 PlayerState__record_value
 005c7f50 main_object_in_state_74_with_flag
 005c7f8c main_object_in_state_76_with_flag
 005c80b4 object_in_vehicle_position
@@ -16226,6 +16260,7 @@
 005ffbe0 script__ChoiceSeq__virtual_4
 005ffbf4 script__ChoiceSeq__deleting_destructor
 005ffc04 script__ChoiceSeq__destructor
+005ffc14 TalkScript__find_label
 005ffd2c script__CmpEngine__deleting_destructor
 005ffd3c script__CmpEngine__destructor
 005ffd4c script__CountCode__virtual_5
@@ -16488,6 +16523,7 @@
 00614588 bgcheck__DynamicCylinder__deleting_destructor
 006145ac destroy_dynamic_cylinder
 006145cc direction_between_points
+00614730 Collider__register
 00614760 return_constant_0x1d7c_
 0061476c release_resource_987a8
 00614794 AcFtr__virtual_3
@@ -16724,6 +16760,7 @@
 00625678 net_peer_in_use
 00625690 current_mode
 006256a0 current_target
+006256d0 NpcEntryRef__clear
 006256dc ShortId__clear_006256dc
 006256f8 ShortId__set
 0062570c set_half_pair
@@ -16804,6 +16841,7 @@
 00626ba8 state_214_above_2
 00626bc8 net_session_call_626a9c
 00626bd8 on_station_left
+00626c2c NetSession__reset_shared_state
 00626ca4 NetSession__set_byte_221
 00626cbc NetPeer__set_address
 00626ce0 NetPeer__copy
@@ -16841,6 +16879,7 @@
 0062a164 netgame__AvatarMgr__virtual_6
 0062a18c NetPeerList__update
 0062a51c netgame__AvatarMgr__virtual_7
+0062a550 NetPlayers__entry_of_identity
 0062a5cc NetPeerList__remove_address
 0062a724 part_finish_a724
 0062a7e4 netgame__AvatarMgr__virtual_3
@@ -16915,6 +16954,7 @@
 0062fea0 pattern_for
 0062fed4 weather_pattern_of_day
 0062ff8c weather_pattern_cycled
+0063001c scene_is_night_area
 00630148 table_89515c_float
 00630164 is_sakura_petal_time
 006301e8 special_event_hour_today
@@ -16926,6 +16966,7 @@
 00630f20 AcFtrBed__virtual_62
 006310c0 AcFtr__start_kind_1f_b
 006310d8 AcFtrBed__virtual_44
+006311a4 FurniturePlacement__find_spot
 0063142c AcFtrBed__virtual_1_0063142c
 0063143c AcFtrBed__virtual_0_0063143c
 00631480 AcNpcNml__virtual_72
@@ -17602,6 +17643,7 @@
 0067be7c constant_886c48_float
 0067be90 step_length_double
 0067beac constant_886c48_float_b
+0067c674 AcPlayer__start_wait
 0067c8c0 AcPlayer_rec__state_131_update
 0067c9a8 AcPlayer_rec__state_124_update
 0067ce50 AcPlayer_rec__state_127_update
@@ -17887,6 +17929,7 @@
 0068ce74 AcPlayer_rec__try_place_behind
 0068d0a4 AcPlayer__do_execute
 0068d170 AcPlayer_rec__play_voice
+0068db1c AcPlayer__play_animation
 0068dc14 AcPlayer_rec__play_sound
 0068e180 UtlBase_DemoActor___UtlBase_DemoActor__2
 0068e728 AcPlayer__virtual_1_0068e728
@@ -17940,6 +17983,7 @@
 006904b4 FurniturePlacement__start
 0069056c BsFtrMgr__virtual_17
 00690674 BsFtrMgr__virtual_16
+00690fb8 AcPlayer__check_front
 00691210 AcPlayer__check_toward_player
 0069125c RoomFurniture__toggle_at
 00691394 BsFtrMgr__virtual_21
@@ -18064,6 +18108,7 @@
 006a5e34 get_object_009b4a24
 006a5e44 cell_corner_of_position
 006a5f0c cell_corner
+006a6024 SceneEnv__apply_for_scene
 006a6408 MapTable__build_maps
 006a69a8 MapTable__has_main_map
 006a69c0 build_map_with_builder
@@ -18263,6 +18308,7 @@
 006b41a4 SoundSystem__start_object_sound_with
 006b4aa8 lerp_by_range
 006b4adc lerp_int_by_float_range
+006b4c38 SoundSystem__play_at
 006b4e18 SoundSystem__stop_object_sound
 006b5240 ClampedCounters__add_to_value_2bc
 006b563c block_72510_of_word_95bf74
@@ -18433,6 +18479,7 @@
 006c69e4 terrain_is_in_list_at_position
 006c6a34 terrain_is_in_list_at_world
 006c6a84 terrain_is_in_list_at_block_tile
+006c6fe8 terrain_kind_at_position
 006c7540 height_at
 006c75e0 MapTable__height_at
 006c778c terrain_is_in_list_a_at
@@ -18718,6 +18765,7 @@
 006db950 BsStrcMgr__virtual_16
 006dc224 call_14fe38_on_6b4c
 006dc240 BsStrcMgr__virtual_21
+006dc248 water_at_position
 006dc8cc label_by_town_setting_6214e
 006dc90c BsStrcMgr__virtual_20
 006dcac0 BsStrcMgr__virtual_19
