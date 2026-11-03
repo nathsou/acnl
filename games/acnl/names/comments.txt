@@ -1220,7 +1220,10 @@
 001d9934 Whether the microphone manager is idle or stopped.
 001d99ec Stops the microphone recorder and marks it stopped.
 001d9a08 Updates the microphone sampling and its flags.
+001d9c9c Starts an NPC's sound object (unless started): takes its owner and starts the base.
 001d9cdc Sets the mode (+0x80) when it is at most 2.
+001d9fb0 Stops an NPC's sound object (when started): drops its owner, detaches its two sounds and stops the base.
+001da01c Constructs an NPC's sound object: a sound object base with two sound slots, a fade and a town tune player.
 001da158 Destroys the river sound object and detaches it.
 001da208 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 001dae5c Updates the sea sound unless the system mutes it.
@@ -1409,6 +1412,7 @@
 0020ace8 Sets the flag at +0x36 and calls virtual 6 when it changes.
 0020ada8 For the sounds 0x100067a to 0x100067d, sets the flag (+0x39) when the sound system's level is above 40 or missing.
 0020ae0c Sets the flag at +0x39 and calls virtual 6 when it changes.
+0020ae2c Sets a sound object's distances (from arg 2, the far one widened by its kind's margin) and position (arg 1).
 0020aedc Stops a sound object: the sound system forgets it if it was registered.
 0020af18 Constructs a sound object's base: distances 2000, volume 1, no handle, not registered.
 0020b0a4 Plays the symbol tree's sound unless it plays.
@@ -1522,6 +1526,7 @@
 0022e05c Starts the message in the message store.
 0022e070 Whether the message store's window is open.
 0022e08c Constructs a mail load adapter: a mail receptor with three empty words, nothing loaded.
+0022e138 Destroys a mail load adapter.
 0022e168 Copies a 0x26c-byte pattern header.
 0022e194 Resets the pattern's flags (type 4, shareable).
 0022e1c0 Takes the online state's mode and value (when connected), keeping the mode below 3 and marking it, and copies the pending word.
@@ -1748,6 +1753,7 @@
 0026fa8c Sets the current player's pocket slot to the item.
 0026fe3c Destroys an item drag window: its drag icon control and groups, nodes, animations, archive readers and \n layouts.
 0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
+002706ec Destroys an object resource: releases its object, then its heap allocator.
 00270ce0 Unloads the split part at +0x14.
 00271290 Sets the color of the current model slot's material (from its resource file) to the slot's color pair; false without a model.
 00271c78 Builds the model's matrix (copied, rotated around z) and applies it.
@@ -2060,6 +2066,7 @@
 002cab78 The grass wear texture in the list (+0x13c), or null.
 002cae6c Sets the touch area from the pane's size and position, in screen coordinates (origin at the top left of 320x240).
 002cb8e4 Hides the cursor on the first row; otherwise shows it at the selected row's height.
+002cbad8 Destroys a census content list: its animations, scroll bar, buttons, layout and window.
 002cbccc The row of the index on the current page of 10, or -1.
 002cbea4 Stores the selected row (counting the earlier pages of 10) in the player's data (+0x6f10).
 002cc1b0 The entry (0x2b4 bytes) for the index on the current page of 10, or the one before the first when outside it.
@@ -2100,6 +2107,7 @@
 002d1a70 Stops and frees slot `index` (below 52), uncounting it.
 002d1b3c Counts one more furniture of the kind in its slot of the 3 (taking a free one for a new kind).
 002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
+002d1db0 Constructs an external-volume sound object: a sound object base with two sound slots and two faders.
 002d1f40 Starts a furniture sound object for a furniture sound (arg 3): registers it and finds its sound table entry.
 002d2a4c Constructs a furniture sound object: a sound object base with two sound slots, nothing playing.
 002d2b90 Destroys a furniture sound object: stops it, detaches its two sounds and stops the base.
@@ -4683,6 +4691,7 @@
 0060de20 Updates the window's pane at +0x310.
 0060e094 Notifies the part's panes and restarts its animation from the start.
 0060e0cc Sets the part's animation to its last frame, updates it and notifies its panes.
+0060e47c Draws a map icon's layout on its screen (the lower one unless its mode is 1).
 0060e914 Turns the angle toward the target by up to the step, in the forced direction (1 or 2) when the target is beyond it; the change.
 0060ea4c Initializes the shaker with the default ranges and no motion.
 006124bc For a valid weather kind and `slot` (below 2): stores its layout name (or the default) in the slot's name field (+0x52c, 0xf4 bytes each); true otherwise.
@@ -6705,6 +6714,7 @@
 0081b648 Plays the animation with the key on the animator (the fifth kind).
 0081b750 Plays the animation with the key on the animator (the fourth kind).
 0081c0a0 Moves the save step to the one after the current in its table.
+0081d248 Constructs a 21-character script word (filled with the empty character).
 0081d8c0 Constructs a 33-character script word, empty.
 00825aa4 Unlinks the node from its owner's list and clears its owner.
 00825acc Unlinks the node and links it into the new owner's list (+0x70).

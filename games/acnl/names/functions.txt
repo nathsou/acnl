@@ -2342,11 +2342,11 @@
 001d9b44 SoundMuInfo__SingletonDisposer___destructor
 001d9b78 SoundObjCar__deleting_destructor
 001d9c0c SoundObjCar__destructor
-001d9c9c SoundObjNpc__virtual_2
+001d9c9c SoundObjNpc__start
 001d9cdc set_mode_80_below_3
 001d9e44 SoundObjNpc__virtual_4
-001d9fb0 SoundObjNpc__virtual_3
-001da01c SoundObj_2___SoundObj_001da01c
+001d9fb0 SoundObjNpc__stop
+001da01c SoundObjNpc__construct
 001da0ac SoundObjNpc__deleting_destructor
 001da158 SoundObjRiver__destroy
 001da15c SoundObjNpc__destructor
@@ -2956,7 +2956,7 @@
 0020ad4c update_flag_and_state
 0020ada8 SoundObj__update_for_sound
 0020ae0c SoundObj__set_flag_39
-0020ae2c SoundObjBase__virtual_4
+0020ae2c SoundObjBase__set_distances
 0020aec0 SoundObj_1___virtual_3
 0020aedc SoundObjBase__stop
 0020af18 SoundObjBase__SoundObjBase
@@ -5289,7 +5289,7 @@
 002d1c1c SoundObj__fade_channel
 002d1c6c SoundObjExtVolume__virtual_13
 002d1c94 SoundObjExtVolume__virtual_4
-002d1db0 SoundObj_2___SoundObj_002d1db0
+002d1db0 SoundObjExtVolume__construct
 002d1e1c SoundObjExtVolume__deleting_destructor
 002d1eb0 SoundObjExtVolume__destructor
 002d1f40 SoundObjFurniture__virtual_14
@@ -17481,7 +17481,7 @@
 0060e0cc LayoutPart__finish_animation
 0060e190 MapIcon__virtual_3
 0060e1b4 MapIcon__virtual_6
-0060e47c MapIcon__virtual_4
+0060e47c MapIcon__draw
 0060e4bc MapIcon__virtual_5
 0060e5c0 IconBase__IconBase
 0060e688 MapIcon__deleting_destructor
