@@ -10,6 +10,15 @@
 001002a4 Creates the sound heap (0x580000 bytes) under a parent heap (arg 0).
 001002e8 Creates the stage heap (0xeb8000 bytes) under a parent heap (arg 0).
 0010032c Creates the script heap under a parent heap (arg 0), then its sub heaps.
+00100378 Creates the net game heap (0xd4800 bytes) under a parent heap (arg 0).
+001003bc Creates the weather heap (0x7600 bytes) under a parent heap (arg 0).
+00100400 Creates the no-device heap over a memory block (arg 0) and adds it to the root heaps.
+00100448 Creates the real estate heap (0xa5000 bytes) under a parent heap (arg 0).
+00100490 Creates the model effect unit heap: 9 units of 0x2710 bytes.
+001004dc Creates the particle heap (0x23fc00 bytes) under a parent heap (arg 0).
+00100528 Creates the human animation bank heap (0x238333 bytes) under a parent heap (arg 0).
+00100574 Creates the model effect resource heap (0x3c000 bytes) under a parent heap (arg 0).
+001005c0 Creates the particle handle heap: 16 units of 0x18 bytes.
 00100608 Initializes the system services chosen by the flags (bits 1 and 0: the main service set and the extra one); returns true.
 00100918 Destroys the heap at 0x952c88 and clears it.
 00100930 Destroys the heap at 0x952c90 and clears it.
@@ -361,6 +370,7 @@
 0011e81c Requests power mode 0x700 (or 0x702 when `alternate`).
 0011e838 Constructs the upper-screen double-buffered framework controller: the double-buffered one with its own vtable.
 0011e8cc Converts the UTF-16 string to UTF-8 into the buffer.
+0011ea30 Creates a heap of a size (arg 0) under a parent (arg 1) with a name (arg 2).
 0011eaac Creates the save allocator heap (named SaveAllocator, `size` bytes) and keeps its allocator at 0x95bf7c.
 0011eafc Whether the applet state (0x94e3a8) is at least 2.
 0011eb28 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
@@ -394,6 +404,7 @@
 00120158 Sends command 0x101 (header 0x1010000) to the service at 0x97d7f8 and returns its result.
 00120198 Sends command 0x4f (header 0x4f0080) to the service at 0x97d7f8 and returns its result.
 001201d0 Sends command 0x3 (header 0x30040) to the service at 0x97d7f8 and returns its result.
+0012051c Constructs the graphics singleton's base: a disposer, nothing set up.
 0012089c Creates the script heap's children: libms, static, message, mail and flow.
 001209f8 Loads the font resources of the table.
 00120fcc Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
@@ -503,6 +514,7 @@
 0012ab78 Closes the handle kept at 0x97d7f8 (svcCloseHandle) and releases the mutex at 0x97d7f4.
 0012ae20 Calls the service command at 0x130448 with the argument; stops with a fatal error when it fails.
 0012ae80 Calls the service command at 0x130658; stops with a fatal error when it fails.
+0012b228 Whether the friends session is open (under the friends lock).
 0012b264 Sends command 8 with the buffer to the service.
 0012b31c Sends command 0x32 (header 0x320042) to the service at 0x97d89c and returns its result.
 0012b3dc Runs the function at 0x131154 on +0x10 under the lock at +4.
@@ -584,6 +596,7 @@
 001307c8 Sends command 0x3b to the service and writes its output.
 00130804 The file's first entry, or null.
 00131154 Records the frame heap's state; -1 when it cannot.
+0013121c Constructs a time-tone melody player: a one-sequence player with two faders.
 00131280 Allocates size bytes (arg 0) on a heap (arg 1) with an alignment (arg 2): an entry before Heap__allocate, \n which it runs into.
 0013133c Clears the address book, under its lock.
 00131580 Destroys five font sets (a font resource, its load split and its other part each), last to first.
@@ -591,9 +604,11 @@
 0013187c Gives an empty array room for `capacity` pointers from the heap.
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
 00131b3c Builds the sound effect manager's parts: an offset list, the effect memory manager and the 2 x 3 slots.
+00131be0 Constructs the sound data manager controller: a dispose callback, nothing loaded.
 00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 00131dc4 Allocates the block from the heap, with its name.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
+0013208c Constructs a framework: no run loop yet, an empty delegate list.
 001320cc Constructs a disposer and registers it with a heap: the given one, else (by mode, arg 2) the heap that \n contains it or the current thread's heap.
 00132174 Constructs a disposer and registers it with the heap that contains it (when the heap manager is up).
 001321c8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
