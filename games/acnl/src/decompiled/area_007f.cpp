@@ -1,5 +1,6 @@
 // Functions decompiled by tools/decomp (docs/decomp.md), each proved equal to the recompiled original (prove-cpp). The
-// names are generated (d_<address>::f_<address>, Object_<address>_<argument>, word_<offset>) and still to be chosen.
+// names come from games/acnl/names (tools/decomp/names.py); the others are generated (d_<address>::f_<address>,
+// Object_<address>_<argument>, word_<offset>) and still to be chosen.
 #include "guest/guest.hpp"
 
 #include <bit>
@@ -209,7 +210,7 @@ GUEST_EXPORT_FRAMED(0x007fb4fc, d_007fb4fc::f_007fb4fc, 0x4030);  // pushes {r4,
 // f_007fc258: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_007fc258 {
 
-inline constexpr guest::Function<0x003d0d6c, u32(u32)> call_003d0d6c;
+inline constexpr guest::Function<0x003d0d6c, u32(u32)> nn__nex__String__virtual_0;
 inline constexpr guest::Function<0x003d32f0, u32(u32)> call_003d32f0;
 inline constexpr guest::Function<0x007fc258, u32(u32, u32, u32, u32)> call_007fc258;
 
@@ -227,7 +228,7 @@ void f_007fc258(u32 r0, u32 r1) {
         r4 = *gptr<u32>(r4 + 8u);
         *gptr<u32>(r5_1 + 0xcu) = *gptr<u32>(r6 + 4u);  // (from the original)
         call_003d32f0(r7_1 + 8u);
-        call_003d0d6c(r7_1);
+        nn__nex__String__virtual_0(r7_1);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
     } while (r4 != 0);
@@ -240,7 +241,7 @@ GUEST_EXPORT_FRAMED(0x007fc258, d_007fc258::f_007fc258, 0x41f0);  // pushes {r4,
 namespace d_007fcd40 {
 
 inline constexpr guest::Function<0x00361988, u32(u32, u32)> call_00361988;
-inline constexpr guest::Function<0x003d0d6c, u32(u32)> call_003d0d6c;
+inline constexpr guest::Function<0x003d0d6c, u32(u32)> nn__nex__String__virtual_0;
 inline constexpr guest::Function<0x007fcd40, u32(u32, u32, u32, u32)> call_007fcd40;
 
 void f_007fcd40(u32 r0, u32 r1) {
@@ -258,7 +259,7 @@ void f_007fcd40(u32 r0, u32 r1) {
         r4 = *gptr<u32>(r4 + 8u);
         *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
         call_00361988(*gptr<u32>(r7_1 + 8u), r1_2);
-        call_003d0d6c(r7_1);
+        nn__nex__String__virtual_0(r7_1);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
     } while (r4 != 0);
@@ -270,7 +271,7 @@ GUEST_EXPORT_FRAMED(0x007fcd40, d_007fcd40::f_007fcd40, 0x41f0);  // pushes {r4,
 // f_007fd790: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_007fd790 {
 
-inline constexpr guest::Function<0x003d0d6c, u32(u32, u32)> call_003d0d6c;
+inline constexpr guest::Function<0x003d0d6c, u32(u32, u32)> nn__nex__String__virtual_0;
 inline constexpr guest::Function<0x007fd790, u32(u32, u32, u32, u32)> call_007fd790;
 
 void f_007fd790(u32 r0, u32 r1) {
@@ -286,7 +287,7 @@ void f_007fd790(u32 r0, u32 r1) {
         u32 r0_1 = r4 + 0x10u;  // (from the original)
         r4 = *gptr<u32>(r4 + 8u);
         *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
-        call_003d0d6c(r0_1, r1_2);
+        nn__nex__String__virtual_0(r0_1, r1_2);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
     } while (r4 != 0);
@@ -298,7 +299,7 @@ GUEST_EXPORT_FRAMED(0x007fd790, d_007fd790::f_007fd790, 0x4070);  // pushes {r4,
 // f_007fe0ac: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_007fe0ac {
 
-inline constexpr guest::Function<0x003d0d6c, u32(u32)> call_003d0d6c;
+inline constexpr guest::Function<0x003d0d6c, u32(u32)> nn__nex__String__virtual_0;
 inline constexpr guest::Function<0x007fe0ac, u32(u32, u32, u32, u32)> call_007fe0ac;
 
 void f_007fe0ac(u32 r0, u32 r1) {
@@ -314,8 +315,8 @@ void f_007fe0ac(u32 r0, u32 r1) {
         u32 r7_1 = r4 + 0x10u;  // (from the original)
         r4 = *gptr<u32>(r4 + 8u);
         *gptr<u32>(r5_1 + 0xcu) = *gptr<u32>(r6 + 4u);  // (from the original)
-        call_003d0d6c(r7_1 + 8u);
-        call_003d0d6c(r7_1);
+        nn__nex__String__virtual_0(r7_1 + 8u);
+        nn__nex__String__virtual_0(r7_1);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
     } while (r4 != 0);
@@ -327,7 +328,7 @@ GUEST_EXPORT_FRAMED(0x007fe0ac, d_007fe0ac::f_007fe0ac, 0x41f0);  // pushes {r4,
 // f_007fed54: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_007fed54 {
 
-inline constexpr guest::Function<0x003d0d6c, u32(u32, u32)> call_003d0d6c;
+inline constexpr guest::Function<0x003d0d6c, u32(u32, u32)> nn__nex__String__virtual_0;
 inline constexpr guest::Function<0x007fed54, u32(u32, u32, u32, u32)> call_007fed54;
 
 void f_007fed54(u32 r0, u32 r1) {
@@ -343,7 +344,7 @@ void f_007fed54(u32 r0, u32 r1) {
         u32 r0_1 = r4 + 0x10u;  // (from the original)
         r4 = *gptr<u32>(r4 + 8u);
         *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
-        call_003d0d6c(r0_1, r1_2);
+        nn__nex__String__virtual_0(r0_1, r1_2);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
     } while (r4 != 0);
