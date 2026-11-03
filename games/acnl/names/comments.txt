@@ -2512,9 +2512,38 @@
 0065176c In flagged scenes, stops the special BGM.
 0065179c For states whose motion allows it, moves the object by its target's motion, flagging it moved when it did.
 006518d8 Requests player state 0x92 with the word and the camera's angle.
+00651928 Requests player state 0x20 with the byte and the fixed-point value.
+006519c8 Turns the x angle toward the target over the frames left (+0x5b4), one step per call.
+006531d0 Sets the object's collision center and radius and registers its collision shape.
+00653724 Remembers the two bytes and spawns the actor with the parameters when the stage exists.
+006537b8 In flagged scenes, sets the BGM's kind 6 (when asked), pushes the special BGM once and fades it when asked.
+00653888 Requests player state 0x81 with the position, angle and two bytes.
+006538e0 Turns the object toward the angle (the given one or its stored one, +0x8c2).
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
+006540d8 Sets the target x angle (+0x958) and step and starts turning; true when already there.
+00654170 Starts the tool's animation (index below 0x41, with its frame count) and its state.
+006542dc Unless muted, plays the step sound of the ground (the given one or the one under the object) and marks it busy.
+006543a4 Unless muted, plays the sound and marks the object busy.
+006543f0 Unless muted, plays the second step sound of the ground and marks it busy.
+006544b8 Unless muted, plays the second sound and marks the object busy.
+0065472c The point on the circle of radius 12 around the position at the angle.
+006547d0 The items (+0xa) of the player of the slot; null without one.
+006547e4 Turns the y angle toward the angle (fraction, minimum and maximum step) and stops the automatic turn; true when there.
+0065487c In flagged scenes, requests mode 3 of the mode controller and marks it (bit 7 of +0x178).
 006548ac Changes to `state` unless the player is in it already (true then).
+006548c4 Requests player state 0x87 with the position, angle and three bytes.
+00654924 Requests player state 0x44 with the kind, position, angle and two bytes.
 00656c20 Fills the state parameter buffer at +0x64 with the 0x26 bytes from +0x8bc of the object (the rest cleared) and returns it.
+00657748 For flagged kinds, runs the check at 0x1b76ec.
+0065776c Runs the tour record's check with the value when it exists.
+00657790 In flagged scenes, stores the position at 0x9856f4.
+006577c4 In flagged scenes, requests mode 0x12 of the mode controller and marks it.
+006577f4 In flagged scenes, requests mode 2 of the mode controller and marks it.
+0065795c Requests player state 0x62 with the position and angle.
+006579a8 Requests player state 0x73 with the word, the position (fixed point, x4) and two bytes.
+00659674 Refreshes the cell at the position and, when asked, marks it stepped on in the two wear bit maps (112 x 112).
+00659750 Packs the player's motion (angles and speeds) into the record.
+006598a8 In flagged scenes, sets the BGM's kind 6 (when asked) and pushes the special BGM 0x26a once, setting mode 2.
 00659c08 Requests player state 0x1f unless the player is locked (bit 5 of +0x8c5).
 00659d9c Requests player state 0x14 with a target position, an angle and options.
 00659e34 Requests player state 0x15 with an angle and three option bytes.
