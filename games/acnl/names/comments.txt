@@ -976,6 +976,7 @@
 0020ace8 Sets the flag at +0x36 and calls virtual 6 when it changes.
 0020ada8 For the sounds 0x100067a to 0x100067d, sets the flag (+0x39) when the sound system's level is above 40 or missing.
 0020ae0c Sets the flag at +0x39 and calls virtual 6 when it changes.
+0020b0a4 Plays the symbol tree's sound unless it plays.
 0020b494 Starts the object and sets its speed to 6.
 0020b9b0 Clears the 0x14b0-byte block: its base, identity, records and its two time bytes (from the earliest time).
 0020bb24 Clears the number pair.
@@ -989,6 +990,7 @@
 0020bec8 Zeroes the 0x29-byte record.
 0020bf68 Clears the flag (+0x86c) of each of the 10 patterns.
 0020bfb4 Constructs the 10 patterns and their order bytes (+0x5460).
+0020c024 Constructs the 10 design patterns (0x870 bytes each).
 0020c03c Finds the pattern matching the id.
 0020c118 Copies the 0x6b88-byte main part of a player.
 0020c124 With a 10% chance, adds a friendship point.
@@ -998,14 +1000,17 @@
 0020cd9c Copies the three bytes of color `index` (below 6) of the table at 0xad55d8; the first otherwise.
 0020cde4 Copies the three bytes of color `index` (below 16) of the table at 0xad5602; the first otherwise.
 0020ce2c Copies the three bytes of color `index` (below 8) of the table at 0xad55ea; the first otherwise.
+0020ce94 Clears the item slots to the empty item.
 0020d084 Updates the part at +0x4650, then clears entry `index` (below 4) of the item pairs at +0x45fc: its two items, flag, record and word.
 0020d104 Places item `index` (below 4) of the pairs in the room or the field (its first item, or the second when the flag is clear) when its owner is the current player, then marks it used.
+0020d27c Updates the item flags (0x20 of them).
 0020d328 Clears the four item pairs, their flags, records and words.
 0020d600 Puts one of three reward items (chosen at random) in the record's slot.
 0020d71c Sets item slot `index` (below 13) and, when the owner is the current player, shows it.
 0020d8a4 Flags the date when it is before the first valid month of 2012, then checks it.
 0020fb10 Gives the present's contents: items to the pockets, or the room's wallpaper and floor.
 00210c2c Sets up the balloon string's vertex buffers.
+00210e64 Updates the balloon string's segments from the camera.
 002127f4 Writes the balloon string's shader setup and light commands; their end.
 00212ed0 Adds the balloon string to the draw list when it is shown.
 002132d0 Takes the next animation of the queue into the slot; whether there was one.
@@ -1014,26 +1019,32 @@
 00213b54 Inserts the node into the depth-sorted tree (by +0x3d0); the subtree's root.
 00214e88 Whether the scene, the online state or a pending request blocks balloons.
 002161a4 In a multiplayer session: refreshes the template and each of the 4 players' slots and presence flags.
+00218220 Places the firework in the sky from the camera.
 002194d8 Launches the firework with its light and its sound.
 002198b4 Plays the firework's sound at its position, unless the scene mutes it.
 0021fa30 The word of the entry: a letter on the page, or an item.
 0021fe04 Plays the tab's animation on its pane.
 00220274 Shows the menu's message of the index (below 15) in the message store.
+00220be0 Updates the mailbox's icons.
 00220c28 Selects icon `index` of the second group (+0x2b1c): unselects the previous one and starts the new one's highlight (kind 2).
 0022105c Selects icon `index` of the first group (+4): unselects the previous one and starts the new one's highlight (kind 1).
 002213bc Places the mailbox's icons at the node's position.
 002214e4 In room scenes, selects the player icon (+0xac64): unselects the previous one and starts its highlight (kind 5).
 00221790 Updates the visible map icons.
+00221904 Places the icon on the map screen (scaled to 160).
 00222ebc Releases the map screen's layouts: its icons of every group, the player icon and the frame.
 002236c0 The index of the visible label (of 7) of the kind near the height; -1 when none.
 00223778 Plays animation `index` (0x28 bytes each, +0xc) on its pane.
 0022384c Hides the 7 labels.
 00223c68 Resets the 7 labels to their home positions and clears their kinds, then releases the button.
+00223cec Shows or hides the map screen's pane.
+00223e38 Resets the map screen's zoom.
 00224204 Adds a marker (id and two bytes) when fewer than 28 exist.
 0022426c Attaches the layout and updates the 7 visible icons.
 0022468c Updates the map screen's icon at the index.
 002248ec Releases the layout, the 7 labels' layouts and their texts.
 00224950 Scrolls the list up one step and hides its arrow.
+00224a7c Sets the map screen's mode with its zoom.
 0022526c Sets the flag at +0xabc of the child (+0x38) when it exists.
 00225948 Starts the effect of field item effect slot `index` (of the table at 0x997c30) when the manager exists.
 00225984 Scans the map's cells for the items that show effects.
@@ -1061,16 +1072,24 @@
 0022c0f8 Releases the three buttons and their layout parts.
 0022c118 Updates the position button.
 0022c368 Hides the pane (+0x1c) and sets the flag at +0x122 of the owner (+0x18).
+0022c390 Sets the map icon from the record.
+0022c48c Sets the map icon's position and its flag.
 0022c720 Stops the current animation and starts animation 0 to 3 from zero.
+0022d64c Refreshes the map screen's grid of structures.
 0022d734 Clears the counter (0xa182f8) and reseeds the random state at 0xa182fc.
 0022d74c Writes the letter (header, body, footer) from the message and the sender, numbering its paper when asked; clears it when it failed.
 0022d958 Writes the villager's letter (header, body, footer) from the message, with its item, sender and paper; clears it when it failed.
 0022dacc Calls the function at 0x22dd30 with the stacked vector.
+0022dd30 Places the map marker at the position with its kind.
+0022e048 Starts the bulletin board's message in the message store.
+0022e05c Starts the message in the message store.
+0022e070 Whether the message store's window is open.
 0022e168 Copies a 0x26c-byte pattern header.
 0022e194 Resets the pattern's flags (type 4, shareable).
 0022e1c0 Takes the online state's mode and value (when connected), keeping the mode below 3 and marking it, and copies the pending word.
 0022fcb8 Finds the named animation in the model's resources and binds it; marks it bound (+0x4f9).
 002306c4 Sets the talk's word slot to the number with its digits; whether there was a talk to set.
+00231918 Tells the talk target it is talking (its virtual function 23).
 00231ad4 Stores the gift item and its flag, and tells the gift manager for the main player and the NPC.
 00237008 Sets the talk's mode and marks each listener NPC as in a talk.
 00237d58 Stores the pending text and its value when none is pending; whether it was stored.
@@ -1104,6 +1123,7 @@
 0023c9e4 Updates the screen's layout and its animations.
 0023cb48 Applies the cloth colors of the slot's model when it is loaded; whether it was.
 0023d5ec Whether the pockets hold an item the NPC may be given (by kind and the event's rules).
+0023d74c The player's badge progress (10 when visiting).
 0023d99c Whether the player has progress on the badge.
 0023f704 Copies one pattern image (64x32) into another, filling where the source is smaller with the background color, and imports it.
 0023f820 Copies one pattern image into another (the second layout), filling outside the source with the background color, and imports it.
@@ -1115,15 +1135,21 @@
 0024088c Finds the structure matching the record in the main list (0xab7df4) and removes it.
 00240c80 Places structures at random free spots.
 00240de4 Finds the placed structure of the kind in the structure list.
+00240fdc The real estate's state for the scene.
 002412fc Counts the structures of list `index` (below 14) in block (x, y), not counting the field objects.
 002413e0 The structure kind at the position (clamped to 0xfc).
+00241870 Places the real estate's plots in the map.
 00241cf0 True when the kind is one of the 8 at 0x887460.
 00241d34 The first of the 4 layers in use.
 00242004 Calls virtual 7 of the object at 0xab7e04.
 0024201c Adds the structure of the kind at the position: registers it, marks its cells and, when it is the construction site's, finishes the site.
+0024220c Whether the plot fits at the cell.
+0024246c Finds a plot in the real estate's lists.
 00242744 Counts the structures of each of the 0xfc kinds (into 0xab7e2c), not counting the one under construction.
 00242cc4 Refreshes the cells of every structure in the list at 0xab7e00.
 00243038 The item of the terrain kind (0x94 to 0x9b), or 0xfc.
+002430ac Resets the real estate's 14 plot lists.
+00243bd0 Updates the real estate's plots on its heap.
 002443b8 Damps the velocity (by 0.995), eases the position toward the target (by the blend +0x38), keeps the height, clamps the distance to 2900 and fills the listener record.
 00244a00 Creates the gyroid sound manager on the stage heap once and registers the object with it.
 00244bb4 Starts (or stops) the sound object's sound in the sound system and updates the object.
@@ -1142,8 +1168,10 @@
 00248fb0 True when a cell of the rectangle (in the top blocks) is blocked in the structure's cell layout.
 0024910c True when the structure (a field or special object) is the active construction site's, at the same place.
 0024919c Checks the terrain and tiles under the structure's rectangle.
+00249728 Checks the placement's neighboring cells (for the kinds 0 to 3).
 00249eec Checks the cells under the structure's rectangle against the map (second rule set).
 0024a0cc Checks the cells under the structure's rectangle against the map (third rule set).
+0024a45c Initializes the placement for the position and the structure.
 0024a528 Resets the record's constants and clears its bytes and word.
 0024a548 Resets the record's constants and clears its bytes and word.
 0024a56c Zeroes the 0x320-byte block.
@@ -1175,11 +1203,14 @@
 0024df54 Puts the current player's item up for sale in the slot with its price.
 0024e500 Clears every sale slot of player `index` (its item, price and pattern) and the player's total.
 0024e8cc Clears every sale slot of villager `index` (owners 4 and up): its item, price and pattern.
+0024e9fc Clears the town record.
 0024ee14 Records which area kind (0xfa or 0xfb, by the town's mode at save +0x53480) the current player's cell is in, with its cell (0x985df0).
 0024f010 Removes the category 0x48 items of the letter id from the player's 4 letter slots, refreshing their views when asked.
 0024f400 Constructs the actor sound object from its parameters, with its listener and cleared fade.
 0024f70c Calls handler `index` of the table at 0x8452f8.
 0024fbd4 Plays the sound at the position (converted by the camera) and marks it playing.
+0024fc50 Updates the audio furniture's song.
+00250024 Plays the audio furniture's song.
 00250334 Constructs the sound object at full volume.
 00250354 Places the sound object at the world position, seen from the camera.
 002503b0 Calls the sound object's virtual function 9.
@@ -1198,12 +1229,15 @@
 00251fa4 Releases a claimed slot, resets it from its template and tells its actor.
 00252034 Whether the fish is hooked (state 2) and within the radius of the point (on the ground plane).
 002520fc Copies the record of the slot that belongs here (or its template).
+0025222c Claims the slot for the main object.
+00252338 Releases the slot when it belongs to the main object.
 0025244c Picks a species that appears at the place, the season and the time.
 00252850 Sets the fish's state to gone (3).
 0025286c Whether the slot does not belong here; writes whether its guest entry is still pending.
 00253bc4 The fish manager's flag at +0x118a, or 0 without a manager.
 002549b4 When the slot (below 15) is in use: its cell's x and z.
 002549f0 Whether the species appears at one of the day's three sample hours (in the place, or in the season); with `rain_only`, only in rain or snow.
+0025577c The fish info of the offset for the current date.
 0025591c The fish information of a fish item (category 0x27), or 0.
 0025594c The actor of the slot.
 00255dfc Starts a cast at the position, with the flag.
@@ -1241,7 +1275,12 @@
 00268928 Sets the two children of each button of the list.
 00268a08 Sets the messages of the buttons (up to 3) and marks them for update.
 00268ab8 Sets the values of the buttons (up to 3).
+00268b68 Sets the three children of each button.
+00268c8c Initializes the emoticon action for its owner.
 00268d94 Sets the action's target and its model.
+00268db4 Starts the emoticon action of the kind.
+00269208 Updates the emoticon action (by its kind).
+0026a418 Updates the emoticon slots' effects.
 0026a5dc Stops each of the 4 slots' effects and marks them stopped (or idle when unused).
 0026a66c Constructs the 4 slots (0xfc bytes each) and clears the state.
 0026a694 Destroys the 4 slots.
@@ -1288,6 +1327,8 @@
 00276cdc Sets the volume of the playing handle (of the two) that plays the current sound.
 00277e1c Restarts the furniture's animation with its key.
 00277e54 Restarts the furniture's animation with its key.
+00278140 Destroys the ambient sound object.
+002782dc Plays the sound object's sound of the kind with the count.
 002783c4 Looks the sound id up in the bank and remembers its entry and data.
 00278484 Registers the sound with its group byte (kind 3).
 002796a0 Starts the ducking fade of the channel (unless held in states 4 and 5): with the channel's frame counts, or the fader's own.
@@ -1308,10 +1349,12 @@
 0027a930 The first of the 4 players whose villager item record (+0x8d6c, not stage 1) is for the villager's town slot; null when none.
 0027a9fc The first of the 4 players with the name pair record; null when none.
 0027aac0 Updates the current player's position, then runs the update on each of the 4 players who exist.
+0027ac30 Copies the record's pair into the output.
 0027b3a8 Builds the 8-item outfit from the given items (the fourth empty) and marks it set.
 0027b528 Places item `index` (below 3) in the room or the field once, when its owner is the current player.
 0027c2c8 Loads the town's map templates (sea sides) and grass texture and resets its slots.
 0027c554 Clears the flag at 0x95df50.
+0027c8f8 Places the creatures in the map's cells.
 0027d310 Draws the 4 random seeds (0xad5b90) and picks one of the two layout sides at random.
 0027d394 True when the fish shadow is not finished, or its fish slot (+0x116) is still in use in the fish manager.
 0027d44c True for ordinary fish; for the kinds 0x48 to 0x4a, whether their condition holds.
@@ -1338,6 +1381,7 @@
 00280ea0 Raises the NPC's visibility over 20 frames, then begins its next action.
 002812b0 Clears the save flag (+0x6acd) the NPC holds.
 0028130c Clears flag 4 of 0x9516a0 when the NPC holds it.
+00281384 Takes the NPC's next pending line from its list.
 0028176c Clears the lock at 0x94fd88 when the NPC holds it.
 002817a0 Clears the lock at 0x94fd8c when the NPC holds it.
 002817d4 Clears flag 0x10 of 0xaadad4 when the NPC holds it.
