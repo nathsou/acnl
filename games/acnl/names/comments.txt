@@ -2545,6 +2545,37 @@
 006a69c0 Builds the map with the basic builder and registers it.
 006a6b48 Destroys the extra map (+0x7c) and maps 0x20 to 0x29 of the map table.
 006a6cc8 Plays sound 0x102a at the position.
+006a7174 Puts the saved map (0x9526f4) back as map 0x9b4a9c, destroying the current one and the work table.
+006a71ec Saves the map 0x9b4a9c and replaces it by a new 4 x 4 grid map, creating the work table once.
+006a733c The world position of cell (x, y) on the ground.
+006a739c The world position of tile (tx, ty) of block (x, y) on the ground.
+006a7410 Refreshes the work table; true.
+006a742c Generates the work table from the seed, then starts the two random events; true.
+006a83fc Spawns effect `kind` of the set (first variant) at the position with a unit scale.
+006a8444 Spawns effect `kind` of the set (first variant) with the given parameters.
+006a8474 Sets the matrix of the current effect (+0x184) when it still exists.
+006a84e8 Spawns effect `kind` of the set (second variant) at the position with a unit scale.
+006a8534 Spawns effect `kind` of the set (second variant) with the given parameters.
+006a8568 Sets the mode (+0x188) and kills the 16 effects of the set.
+006a8a90 Releases the handle (+0x14) and the object (+0x3c).
+006a8b34 Releases the handle (+0x24) and the object (+0x44).
+006a8b50 Releases the handle (+4) and the object (+0x34).
+006a8d28 When both panes (+0x254, +0x258) are visible, runs the check on the second.
+006a97a0 Sets the block's coordinates, its offsets and its corner position.
+006a9834 Clears the header and constructs the 256 cells (10 bytes each).
+006a987c Destroys the 256 cells.
+006a98b0 Switches the toggle on (1) or off (0) when it is not moving, instantly or with a 15-frame move; true when it changed.
+006a996c Switches the toggle on or off instantly when it is not already there.
+006a99dc Resets the toggle on (speed 0.2), instantly or with a 15-frame move.
+006a9a40 Resets the toggle off (speed 0.2), with its value at 1 when asked; true when it was.
+006ab00c Collects the changed flags of the current player's 10 patterns into a bit set, clears them and shares the set; true when any pattern is in use.
+006ac088 Finishes the pending work (+0x4c8) with mode 2 and clears it.
+006ac760 Releases the split load's part (+0x3d4) and the model (+0x384), setting state 3.
+006ac8e8 Resets the bounds to empty (min at the largest float, max at the smallest).
+006ac950 Resets the query's bounds, takes the target's position for kind 2 and registers the query with the manager (0x9502f8) when it is not yet.
+006acac0 Computes the selection from the page (+0xe30) into +0x6359 and hides the pane (+0x6340).
+006acf28 Shows the two mode panes by the mode (+0x6358) and, in mode 0, hides the 24 entries' panes.
+006adc30 Clears the selected entry (+0x16b8, 0x19 for none): its drag icon, button and flag; then resets the selection animation.
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
 006bc4fc Sets the record state byte of an item of a recorded category to 5.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.
