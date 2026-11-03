@@ -2909,6 +2909,31 @@
 006d39a8 True when a window in the menu's list is of the special id (0x88735a).
 006d4724 Splits the number into its thousands, hundreds, tens and units digits (0x94fd60).
 006d5364 Releases the active children of the two controls (+0x494, +0x618) when they have them.
+006d5df4 When button `index` is animating (+0x19b2), advances it until its slot is done, then hides it and clears its bit; true when finished.
+006d6404 Shows the first or second tab by the scene's flags (outside scenes 0x73 and 0x74), else disables the tab bit.
+006d7354 Enables the menu's buttons by what the network session allows.
+006d78bc Locks the two controls and enables the 11 buttons except the tenth, then refreshes the menu.
+006d860c Shows the peer button when the session part allows it and any of the 32 stations is connected, resetting its animation when it hides.
+006d8d48 Sets or clears the lock bit (3) of the two controls.
+006d926c The catch state of the slot (1 to 3, 6 and up; 3 otherwise).
+006d96c0 The position of the slot's catch (its actor's, or its record's).
+006d9748 Starts the catch for fish and sea creatures (categories 0x27 and 0x28).
+006d99fc Clears the slot's catch state and, when it is the current main object's, sends message 0x3d.
+006d9a78 True when the player's catch slot is in state 3.
+006d9abc Checks the catch of the slot by the item's category (insects by their kind; fish by the held item).
+006d9b90 Places the slot's catch from the packed network message (kind, position) with its table parameters.
+006d9cac Packs the slot's catch (kind, position) and sends it to the other stations.
+006d9f38 Applies a received insect catch: hands the insect to the slot's catch when it exists, else marks the record missed; without a ready guest entry, answers 0x3b.
+006dab3c Calls virtual 39 of entry `index` of the list (+0x67d4, count +0x67cc).
+006dc224 Calls the function at 0x14fe38 on the object at +0x6b4c when it exists.
+006dc8cc The label chosen by the town's setting (low nibble of save +0x6214e) from the table of 10.
+006dcaf8 The low nibble of byte `index` of the table at 0x997c70.
+006dcc94 Resets the global block and clears the 0x12 bytes at 0x997c70.
+006dcd28 Calls the function at 0x14fe40 on the object at +0x6b4c when it exists.
+006dcd50 The label chosen by the daily record (save +0x62250): by its kind on other days, by its stage today.
+006dd0c8 Calls the function at 0x14fe50 on the object at +0x6b4c when it exists.
+006dd294 The label chosen by the town event record (save +0x666e4): by its kind on other days, by its stage today.
+006dd2f8 The label chosen by the save byte at +0x6682c from the table of 3.
 006e08b4 Stores the mode (below 6) at 0x9507f0 and applies it to the object at 0x95c6d0.
 006f09d4 Picks a random item from the set bits of the item bit set, of the wanted type.
 006f14b0 Sets the bits of the category's items that pass its check (the insect flag for insects).
