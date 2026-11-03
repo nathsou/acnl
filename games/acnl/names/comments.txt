@@ -1142,6 +1142,25 @@
 002d4d00 Forwards to the function at 0x2d4bf4.
 002d4d04 Increments count `index` and refreshes the total.
 002d4d18 Decrements count `index` (not below 0) and refreshes the total.
+002d4d30 Sets the room's wallpaper item (+0x2f2).
+002d4d3c Counts the room's furniture by group into its counts.
+002d4f3c Clears the room: its counts, the 10 x 10 floor items, the 8 x 8 wall items, the default wallpaper and floor, and its music.
+002d5058 Sets the item at (x, y) of layer 0 (10 x 10 floor) or 1 (8 x 8 wall).
+002d5184 Sets the room's floor item (+0x2f6).
+002d5190 Converts the room's floor and wall items, wallpaper and floor by the rule.
+002d5278 Constructs the room's rows, its 100 floor and 64 wall items and its four extra items.
+002d5770 Default room item `index` of the table at 0x985a10.
+002d5848 Builds the 8 default room items (0x985a10) from their ids.
+002d5920 Sets the flag at +0x37 and calls virtual 6 when it changes.
+002d596c Updates the insect or fish sound at the position (converted by the camera).
+002d59a4 Stops the sound when it plays: detaches it and stops its base.
+002d59d4 Constructs the insect or fish sound, stopped.
+002d5b40 Plays the melody sound at the position (converted by the camera) and marks it playing; true.
+002d5d48 Updates the melody sound at the position (converted by the camera).
+002d5f68 Stops the melody sound when it plays.
+002d5f90 Constructs the melody sound, stopped.
+002d7d7c Sets up the window's button controls and panes.
+002da33c Plays the window's in animation from 0 and marks it opening; true.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
 002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
 002e0288 Sets the flag at +0x508 and mirrors it in bit 0 of the owner's +0xb7 byte.
