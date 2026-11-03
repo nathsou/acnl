@@ -1,7 +1,11 @@
+00100048 Heaps__create_heap_952ca8
 00100088 create_net_heap
 001000c4 create_ugc_heap
+00100104 Heaps__create_heap_952c88
+00100148 Heaps__create_heap_952c90
 0010018c create_work_heap
 001001d0 create_fader_heap
+00100214 Heaps__create_heap_952c4c
 00100260 Heaps__create_heap_952c8c
 001002a4 create_sound_heap
 001002e8 create_stage_heap
@@ -90,14 +94,19 @@
 001032ee file_error_flag
 001032f6 wctomb
 00103334 strcoll
+00103374 format_float_f
 0010369c call_00103374
 001036a0 call_001036ac
+001036ac format_float_e
+00103a1c Town__update_day_a
+00103e38 Town__update_day_b
 001059b4 count_item_sold_badges
 00105d0c pick_random_item_from_groups
 00105f54 place_items_in_cells
 00106318 current_slot_byte_853e36
 001063bc find_in_pointer_list_veneer
 001063dc allocate_and_free_1
+00106400 Town__update_day_c
 00106940 pointer_list_remove
 00106998 update_daily_shop_stock
 00106bb0 TwoItemRecord__clear
@@ -112,6 +121,9 @@
 00107ed0 Bbs__post_public_works_notice_once
 00107f84 Bbs__update_notices
 00107fac Bbs__post_public_works_notice
+00108018 BulletinBoard__post_town_event_a
+001080ec BulletinBoard__post_town_event_b
+001081d8 BulletinBoard__post_town_event_c
 001082c8 clear_bbs_notices
 001082e8 Bbs__post_default_notices
 00108354 reset_bbs_notices
@@ -152,6 +164,7 @@
 0010a0dc store_four_bytes_swapped
 0010a1a4 ExhibitionEntries6__advance
 0010a2cc TownFlags__init_new
+0010a300 Event__give_item_once
 0010a400 RewardRecord__clear
 0010a44c RewardRecord__advance_days
 0010a4a8 clear_record_8b54
@@ -185,6 +198,7 @@
 0010b524 OtherNpcSearchCB__virtual_0
 0010b544 pick_category_slot_items
 0010b6d0 clear_28_bytes
+0010b6dc Players__refresh_identities
 0010b730 send_exhibition_letter
 0010b86c AcNpcDemoDollBase__virtual_32
 0010b8dc AcNpcBoardingDemoDollPlayer__virtual_31
@@ -201,6 +215,7 @@
 0010bf40 namespace___NoticeEyecatcher__virtual_0
 0010bf48 held_object_shop_check_2
 0010bf98 allocate_or_fail
+0010bfbc Path__split_device
 0010c12c free_memory_veneer_30
 0010c228 release_string_4
 0010c234 release_strings_4_8_c

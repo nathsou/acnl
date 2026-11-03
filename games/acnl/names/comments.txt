@@ -1,3 +1,7 @@
+00100048 Creates the heap at 0x952ca8 (0x1b8000 bytes) in the parent.
+00100104 Creates the heap at 0x952c88 (of the mode's size) in the parent.
+00100148 Creates the heap at 0x952c90 (32 KiB) in the parent.
+00100214 Creates the heap at 0x952c4c (of its size) in the parent.
 00100260 Creates the heap at 0x952c8c (of its size) in the parent.
 00100608 Initializes the system services chosen by the flags (bits 1 and 0: the main service set and the extra one); returns true.
 00100918 Destroys the heap at 0x952c88 and clears it.
@@ -31,14 +35,19 @@
 001024e0 Returns 0xc.
 0010284c Parses the input with the format into the arguments.
 001032f6 Converts one wide character; -1 and errno EILSEQ when it has no multibyte form.
+00103374 Formats the float in fixed form.
 0010369c Forwards to 00103374.
 001036a0 Forwards to 001036ac.
+001036ac Formats the float in exponent form (handling infinity).
+00103a1c Updates the town's day (its entries).
+00103e38 Updates the town's day (its items and records).
 001059b4 Counts an item sale for the badges: the town's featured item adds 3 to its counter (part to the stock counter for type 4), other items add 2 or 3 to the general counter.
 00105d0c Picks a random item into `out`, from group 5 (35%), 3 (20%), 4 (20%), 6 (15%) or kind 0x33 (10%), never `exclude`.
 00105f54 Places the items of a list in the map cells (set C items as they are).
 00106318 The byte of the current slot (below 4) from the table at 0x853e36, or 0.
 001063bc Looks the key up in a pointer list.
 001063dc Allocates and frees one byte; returns -1.
+00106400 Updates the town's day (its flags and records).
 00106940 Frees the block `pointer` names in the pointer list and closes the gap.
 00106998 Updates the shop stock for the day (new items by date and the stock groups).
 00106bb0 Clears a record with two items and their flag bytes, and its time part (+0x18).
@@ -51,6 +60,9 @@
 0010767c Sets the bulletin-board update state (0x95c210) to -1.
 00107ed0 Posts the public works notice for the first player who qualifies, once (its flag is set after).
 00107fac Posts the public works notice (variant 0x10) on the bulletin board when the town's flag asks for it.
+00108018 Posts the town event's note (by its kind) to the bulletin board for the player.
+001080ec Posts the town event's note to the bulletin board for the player.
+001081d8 Posts the town event's note to the bulletin board for the player.
 001082c8 Clears the bulletin board's 15 notices.
 001082e8 Posts the bulletin board's two default notices, dated today.
 001083fc When the update state (0x95c210) is above 1: expires the old bulletin-board notices of the town.
@@ -73,6 +85,7 @@
 0010a0dc Stores four bytes, the stack one second.
 0010a1a4 Advances the 6 exhibition entries (0x1228 bytes each).
 0010a2cc Initializes the new-town parts of the town flags block (+0x9c, +0x4650, +0x8b32).
+0010a300 Gives the event's item once (when its flag is claimed).
 0010a400 Clears a 0x20-byte reward record (kind 0) and its four items.
 0010a44c Advances the reward by `days`: from state 1 counts its days down (to state 2 when the daily check fails), from state 0 starts it when flagged.
 0010a4a8 Clears three words and the part after them.
@@ -94,12 +107,14 @@
 0010b448 Advances the record at +0x8b60 for the new day (counts, encrypted values and town flags).
 0010b544 Picks items for the category slots from the item sets (empty ones refilled).
 0010b6d0 Clears 0x28 bytes.
+0010b6dc Refreshes each player's identity record.
 0010b730 Sends the exhibition letter to the players it concerns.
 0010b9b0 Advances an exhibition entry for the elapsed days: raises its level (2 to 4), records it for the slot and flags the player.
 0010bb34 Word `index` of the table at 0x9502e8.
 0010beb8 Checks the held object's shop state (forwarding to the held object's slots 21 and 22).
 0010bf48 Checks the held object's shop state (the variant without forwarding).
 0010bf98 Allocates memory, reporting error 3 when it fails.
+0010bfbc Splits the path at its device separator (the last ':').
 0010c12c Forwards to free_memory.
 0010c228 Releases the shared string at +4.
 0010c234 Releases the shared strings at +0xc, +8 and +4.
