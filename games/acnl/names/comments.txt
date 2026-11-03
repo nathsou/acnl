@@ -428,13 +428,17 @@
 00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
 00148710 out = M * (v, 1) for a 3x4 matrix M.
+0018eab0 Forwards to the function at 0x8161b8.
 001c4bc8 ORs `bits` into the 16-bit cell (x, y), keeping only its low 4 bits.
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
 001c4c14 Calls 005bf518.
+001d7ba4 Forwards to the function at 0x1d560c.
 001e5894 Transforms a point by the camera manager's view matrix (+0x29c), when there is a camera manager.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
+002738b8 Forwards to the function at 0x817cd8.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
+002d4d00 Forwards to the function at 0x2d4bf4.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
 002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
 002e0288 Sets the flag at +0x508 and mirrors it in bit 0 of the owner's +0xb7 byte.
@@ -583,6 +587,7 @@
 00300888 Finds the `n`th cell holding `value` in the 16 x 16 byte grid (row by row): its column and row; false when there are fewer.
 00301400 1 when the date is after (year, month, day), -1 when before, 0 when the same.
 003016d4 Sets (or clears) bit `index` of a bit array of 28 bits.
+00301f08 Posts the notice on the bulletin board (save +0x6e238), making room by dropping the oldest when it is full.
 00301f80 Forwards to send_nintendo_letter.
 00301f84 Stores three words at +4, +8 and +0xc.
 00301f98 The start of the first Saturday from `from` (at the day's start) that check_words12 accepts, a week after the other.
@@ -596,6 +601,7 @@
 003026bc Forwards to Item__is_id_in_b_to_1a_set.
 00302fe8 Forwards to Item__check_data_nibbles.
 00303014 Forwards to Item__is_id_a0_a6_ac_b3_or_bd.
+00303274 Sends the prizes of the finished second contest to the ranked players by letter.
 003035dc Initializes an entry of kind `kind` (0, 1 or 2) with its two constants; kind 2 also updates two save flags.
 00303b10 Copies the empty item into `item`.
 00303f50 Stores a 16-bit value at +0x1d9c and marks +0x1d9e.
@@ -647,6 +653,7 @@
 0030694c Forwards to reset_entry_lists_9ab170.
 00306c78 Forwards to mode_308e80_is_26_or_a.
 00306cf0 Stores the slot at +0x95e and points +0xaa0 to its 16-byte entry of the table at 0x953864 (0 for slots from 0x3f).
+00307220 The world position of the cell holding the building of `id`, at its ground height; false when there is none.
 00307560 Forwards to index_of_value_in_3.
 003075cc Allocates `size` bytes from the current heap, 4-byte aligned.
 00307688 Assigns a shared string: shares the buffer when its count is not -1, else copies it into a new one.
@@ -654,8 +661,11 @@
 003076c8 Calls 0031c3a8 and returns its object.
 0030774c Releases the shared string held at +0.
 003077b8 Forwards to player_has_entry_kind_21_or_more.
+00307838 Constructs `count` elements of `size` bytes with the constructor.
+0030784c Assigns the shared (reference-counted) string: shares the other's buffer when it can, else copies its characters.
 00307888 Drops the caller's reference to a shared string buffer (call_0011c0fa), then releases the owned object.
 00307974 Forwards to find_in_list_ee354.
+00307978 Calls the function at 0x2fad16 on the shared object at 0xaf75ec.
 00307a00 printf to a stream: the format and the stream are the first two arguments, the values follow (vfprintf).
 00307c44 Forwards to update_save_range_6e224.
 00307c48 Forwards to clear_table_a82b90.
@@ -666,15 +676,89 @@
 00308198 Stores a 3-bit value in bits 3-5 of byte +5.
 00308380 Copies two 22-byte names, a 16-bit id and a byte into a record.
 003089cc Forwards to run_action_of_kind.
+003089d4 Picks a villager from the table (of the allowed types) for an empty slot, moves it in and schedules its arrival.
 00308d4c Clears a villager's record (0x2518 bytes): its identity, player memories, letter, design pattern and items.
 00308e80 The kind (+0x1b) of the first event in the list at 0x9524dc for slot 0; 0x26 (none) when the global object byte is 3, the list is empty, or the kind is 1, 3, 6 or 0xe.
 003090fc Clears bits 8-10 of the ten entries of the table at 0xa82b90 and resets the two ranges.
 00309168 For each of the 10 villagers in use: clears two bits of its flags word (+0x2510) when set, and a bit of each of its 16 player memories (0xf2 bytes each, from +0x8ee).
+003094f0 Finds the cell of building `id`, unless today's construction replaces it (only the kinds 0x50 to 0x57 and 0x84 stay findable).
+003095a4 Forwards to record_is_ready.
+003095a8 Forwards to record_check_same_day.
+003095ac Forwards to shop_is_open_now.
+0030984c Forwards to town_event_ready_for_player.
+00309850 Forwards to town_event_check_same_day.
+00309854 Forwards to the function at 0x69f26c.
+003099d0 The value (0xa83370 or 0xa83374) of the first of bits 9 and 10 set in the bit set; -1 when neither is.
+00309a44 True when the villager's birthday (month and day of its table entry) is the given day (today when null).
+00309bbc Forwards to the function at 0x5e90cc.
+0030a344 Forwards to the function at 0x76880c.
+0030a484 Forwards to set_half_7db.
+0030a70c Picks a random valid town villager (by the index rules) and stores it at 0xa83388.
+0030a8f8 Releases the menu's active buttons and children, then updates its layout.
+0030af7c When the toggle (+0xae5) matches `on`, plays its animation (+0x458) to the other side and flips it.
+0030b018 Resets the network menu: its buttons, toggle (from the session's state), the peer indicator (any of the 32 stations) and animations.
+0030b154 Forwards to the function at 0x6b9904.
+0030b36c For records of kinds 0xe to 0x11 in their early stages: applies the record's mode once its scheduled time has passed, else marks it waiting (bit 2 of +0x24).
+0030b410 Forwards to the function at 0x6b9934.
+0030b414 Runs the update of the villager table at 0xa82b90 with the argument.
+0030b4a8 When the peer toggle (+0xbc5) matches `on`, plays its animation (+0x458) to the other side and flips it.
+0030b544 Clears the waiting bit (bit 2 of +0x24) of records of kinds 0xe and 0x10 in their early stages.
+0030baa8 Selects the first (on) or second button of the pair at +0x84c and +0x92c.
+0030bb48 Forwards to the function at 0x6b9d30.
 0030bc44 Whether villager `id` (below 0x18f) has a type (the low nibble of its data's +0x1c) of 0, 1 or 2.
+0030bc90 Schedules the villager's move (in days) and sets its moving flags and state.
+0030bd9c Moves a new villager into the slot: clears it and copies its identity, names, catchphrase and house from the table entry.
+0030be90 Forwards to the function at 0x6ab5b8.
+0030be94 Forwards to the function at 0x6515ec.
+0030bec8 Forwards to the function at 0x68a3fc.
+0030c09c Forwards to the function at 0x651600.
 0030c0a4 Forwards to set_value_of_4.
+0030c0a8 Forwards to the function at 0x6733b0.
+0030c0b0 Forwards to the function at 0x6021d0.
+0030c0c0 Forwards to the function at 0x602144.
+0030c0c4 Forwards to the function at 0x602938.
+0030c0cc Marks in the bit set the villager slots that can be picked (valid, not in the excluded pair).
+0030c198 Forwards to TimeRecord__set_now.
+0030c39c Forwards to the function at 0x5b59c4.
+0030c3b4 Forwards to the function at 0x605628.
 0030c3e4 Sets villager `id`'s bit in the two bit arrays of the save data (+0x196fc and +0x1972e).
+0030c4bc Forwards to the function at 0x7ce640.
+0030c4c0 Forwards to the function at 0x7ce7f0.
+0030c4c4 Forwards to the function at 0x7d1e64.
+0030c4d0 Updates the record with value 0x4e, then sets its kind byte (+0x59) to 0xfe and its mode (+0x4f) to 5.
+0030c4f0 Forwards to the function at 0x695584.
+0030c4f4 Clears the 4 x 2 records of 0x40 bytes (kind 0x21, empty identity) and the trailing index byte.
+0030c578 Sets the record's kind 0x21, count 1 and index 0xff.
+0030c824 The villager's entry (0x50 bytes) in the runtime table at 0xa82c58, found by its id; null when it is not in the town.
+0030c9f8 Forwards to the function at 0x6055e0.
+0030ca08 Forwards to the function at 0x6a2c58.
+0030ca0c Forwards to grid_block_address.
+0030ca10 Forwards to the function at 0x6a2c48.
+0030ca14 Forwards to the function at 0x70f678.
+0030ca1c Forwards to terrain_byte_890554.
+0030ca20 Forwards to the function at 0x6a2c2c.
+0030ca24 Forwards to Town__acre_small_block.
+0030ca30 Counts the players of the town's slot records.
+0030cc0c Forwards to the function at 0x6f9e94.
+0030cc10 Forwards to the function at 0x6fa728.
+0030cc14 Forwards to the function at 0x6fb0cc.
+0030cc18 Forwards to the function at 0x6fae98.
 0030cc34 Forwards to send_star_letter.
 0030ce40 Forwards to badge_level_total.
+0030ce54 Forwards to check_stamp_time.
+0030d1b8 Forwards to the function at 0x51f58c.
+0030d9f0 Forwards to find_matching_name_pair.
+0030d9f4 Forwards to record_is_due.
+0030d9f8 Forwards to letter_slot_for_entry.
+0030da04 Gives the villager the item when it accepts it (by category and properties), remembering the giver's record.
+0030dbe8 Picks a villager to move out (valid, not protected) and schedules its move.
+0030dcdc Cancels the villager's move: clears its moving state and sends the cancel letter.
+0030e184 For a record of kinds 0xe to 0x11 that names a town player: moves it to mode 2 when its flags say so, else resets it when its stage no longer fits.
+0030e454 Picks a random slot from the bit set of candidates of the given kind.
+0030eaf0 The index of the town villager matching the record, or -1.
+0030ebec Builds the records of the villager's move (items, halves) for the players who know it.
+0030ef70 Schedules the move of the villager whose table entry allows it.
+0030feb4 Sets the state byte (+0x24) of the 10 runtime villager entries to 0x21, sparing (unless forced) those in state 0x12 or of class 0xb.
 00310530 Flag `index` (fewer than 10) of the villager (bits of +0x1f and +0x20); false for no villager.
 00311744 The 0x58-byte data entry of villager `id` (below 0x18f); null without the table.
 003120a8 Sets item `slot` (0-3, from +0x24d6) of the villager, then moves its non-empty items to the front.
@@ -734,9 +818,11 @@
 004e9a78 The room furniture at cell (x, z) of a layer, within the capped furniture count.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
 0051207c Maps the level from 00413478 (0 -> 0, 1/2 -> 1, else 3) and keeps the requested one when they differ.
+0051b048 Forwards to the function at 0x47f3a0.
 0051ca20 Whether 00308e80 gives 0x26 or 0xa.
 0051d710 Copies 0x32 bytes into entry `index` (below 4) of the table at 0xa82b90.
 0051dacc Clears the four 0x32-byte entries of the table at 0xa82b90.
+0051dd50 Forwards to make_adjusted_words.
 00520bec Builds the global string pool (0x97528c): its three 1024-entry tables, its four buckets and the 1024 bucket flags.
 00520ce8 The address of 12-byte entry `index` of the table at 0x975294 (count 0x97529c), or 0.
 00520d1c Calls the first handler of entry `index` of the handler table at 0x975298.
@@ -832,8 +918,10 @@
 0052e3ec When the current mode has flag 2: calls 0075d24c with the static zero vector and the two arguments.
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
 00537028 Takes the part off the menu list when it is on it, then unloads it.
+005376d4 Forwards to word_95262c_unless_95262c_set.
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
+00567d9c Forwards to sead__SafeStringBase_char___SafeStringBase_00567dac.
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
 0056c6f0 Bit 2 of the byte at 0x95c4d2.
