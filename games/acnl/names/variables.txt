@@ -236,6 +236,7 @@
 00108ae0 r5@entry slots
 00108b58 arg0 reward_entry
 00109614 arg0 town_record9c
+00109930 r0@109948 j
 00109930 r0@109958 player_record4c
 00109930 r0@entry bits
 00109a90 r0@109a96 context
@@ -318,6 +319,7 @@
 0010c6b0 r0@entry ac_npc
 0010c720 r0@10c730 first_time_2
 0010c764 r0@10c782 player_record4c
+0010c764 r0@10c802 j
 0010cbd4 arg0 villager_part
 0010cbd4 r0@10cbe6 event_kind
 0010cbd4 r0@10cbfa now_2
@@ -353,6 +355,7 @@
 0010e7ac r0@10e832 is_villager
 0010e7ac r0@10e8f8 is_villager_2
 0010e7ac r0@10e916 net_entries10
+0010e7ac r1@entry j
 0010e7ac r5@entry i
 0010e9a8 r0@entry villager_part
 0010e9a8 r1@entry i
@@ -590,6 +593,7 @@
 0011e6f4 r4@entry i
 0011e790 arg0 default_gfx_memory_mgr_ctr
 0011e838 r0@entry ulcd_double_cmd_game_framework_ctr_nw4c
+0011ea30 r1@entry context
 0011eaac r0@11eacc block
 0011eaac r1@entry context
 0011eea8 r0@11eecc block_2
@@ -839,6 +843,7 @@
 00137e9c arg0 audio_fx_memory_mgr_ctr
 00137ec0 arg0 owner
 00137ec0 r1@entry index
+001382cc arg0 root_memory_info_address
 00138398 arg0 audio_fx
 001385fc arg0 thread_mgr
 001385fc r0@138630 slot
@@ -1699,9 +1704,11 @@
 0020ae2c arg0 sound_obj_base
 0020ae2c r1@20ae70 position
 0020aedc arg0 sound_obj_base
+0020aedc r0@20aee4 started
 0020af18 arg0 sound_obj_base
 0020afb8 arg0 sound_obj_fall
 0020b0d4 arg0 sound_obj_hold
+0020b0d4 r1@20b0fc kind
 0020b280 arg0 sound_obj
 0020b3ac arg0 sound_obj_pond
 0020b9b0 arg0 block14b0
@@ -2018,13 +2025,18 @@
 002458e4 arg0 sound_dj_player
 00246774 arg0 sound_dj_player
 00246934 arg0 sound_obj_river
+00246934 r0@24693c started
 00246934 r0@246964 sound_handle
 002469c4 arg0 sound_obj_river
+002469c4 r0@2469d0 started
 002469c4 r0@entry sound_obj_base
 00246b90 arg0 sound_obj_river
+00246b90 r0@246b98 started
+00246b90 r0@246bb4 slot_table
 00246b90 r1@246ba4 sound_handle
 00246bd4 arg0 sound_obj_river
 00246c68 arg0 sound_obj_river
+00246c68 r0@246c94 slot_table
 00246c68 r1@246c84 sound_handle
 00246cb8 r0@246cdc block_2
 00246cb8 r0@entry singleton_disposer
@@ -3287,6 +3299,7 @@
 00306e2c arg0 search_cand_grid
 00307220 r0@307248 found
 00307220 r0@307310 save_data
+00307220 r1@entry slot_byte
 003075cc r0@entry size
 00307688 arg0 shared_string
 003076c8 r0@entry shared_string
@@ -3645,6 +3658,7 @@
 0032bd68 r0@32bdd4 random
 0032c348 arg0 tune_player
 0032c72c arg0 sound_obj_furniture_inst
+0032c72c r0@32c734 started
 0032c78c r0@32c798 sound_obj_slot
 0032c78c r0@entry sound_obj_furniture_inst
 0032c804 arg0 sound_obj_furniture_inst
@@ -4295,6 +4309,7 @@
 00527088 r0@52724c is_empty
 00527088 r0@527264 is_empty_2
 00527088 r4@52716c tile
+00527528 r2@entry slot_byte
 00527528 r5@entry i
 00527528 r6@527554 list
 00527528 r6@entry cursor
@@ -5297,6 +5312,7 @@
 005b4594 r0@5b4630 save_data
 005b4678 r0@entry scene
 005b4724 r0@5b4768 slot_byte
+005b4724 r4@entry scene_4
 005b4854 r0@5b486c npc_pos_get_cb
 005b4854 r0@entry shop_talk
 005b493c r0@entry scene
@@ -7134,6 +7150,7 @@
 006f2908 r0@6f2ad0 item_data
 006f2908 r0@6f2adc data_base_2
 006f2908 r0@entry item_set
+006f2908 r1@entry j
 006f2908 r5@entry i
 006f4f48 r0@6f4f64 now_2
 006f4f48 r0@entry mailbox
@@ -7472,6 +7489,7 @@
 00717254 r0@entry slot_set6
 007179a0 r0@7179b0 map_table
 007179a0 r0@7179e0 place_structure_2
+007179a0 r2@entry j
 007187e8 r0@entry k
 007187e8 r1@entry i
 007187e8 r4@entry j

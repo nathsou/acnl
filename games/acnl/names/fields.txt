@@ -4682,6 +4682,7 @@ Frame_0059c7e0 8 object_8_vtable
 Frame_0059cae8 0 object_deco_name_address
 Frame_0059cd24 0 station
 Frame_005a3474 a8 program
+Frame_005a8b24 4 second
 Frame_005ab5a4 0 object_0_vtable
 Frame_005ccfc4 0 object_0_vtable
 Frame_005ccfc4 4 save_process
@@ -4983,6 +4984,7 @@ Local_0059a2d8@r4@59a36c 0 vtable
 Local_0059b2c4@ea@59b2c4 0 object_deco
 Local_0059cd24@ea@59cd24 0 object_coin_stone
 Local_0059cd24@r0@59cdc4 0 vtable
+Local_005a8da4@ea@5a8df8 4 second
 Local_005af3e0@ea@5af3e0 8 upper
 Local_005cfaec@r4@5cfc84 0 crc
 Local_005d6fac@ea@5d700c 0 render_base
@@ -5013,6 +5015,7 @@ Local_006f15c4@ea@6f15c4 0 item_set
 Local_00716060@ea@7160d4 0 level
 Local_00716060@ea@7160d4 4 level_4
 Local_00716060@ea@7160d4 8 level_8
+Local_00754b78@ea@754bbc 4 second
 Local_0075bedc@r0@75bf20 0 vtable
 Local_00765370@ea@765370 4 position
 Local_00765548@ea@765548 4 position
@@ -5124,6 +5127,7 @@ Object_0031b854_0 0 locale_impl
 Object_0031d8f8_0 1c model
 Object_0031fcc4_0 278 icon
 Object_0031fcc4_0 3d0 list
+Object_0032ba1c_0 c tune_notes_address
 Object_0050d478_0 b8 online_component
 Object_005164c0_0 10 notification_event_handler_vtable
 Object_005164c0_0 2c message_recv_handler_vtable
