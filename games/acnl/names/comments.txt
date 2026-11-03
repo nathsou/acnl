@@ -2355,9 +2355,11 @@
 002d5f68 Stops the melody sound when it plays.
 002d5f90 Constructs the melody sound, stopped.
 002d7d7c Sets up the window's button controls and panes.
+002d9aa0 Destroys the explanation plate menu: its button, layouts, archive readers, talk receptor and menu base.
 002da33c Plays the window's in animation from 0 and marks it opening; true.
 002da424 While animating, advances the in (or out) animation until its slot is done, then stops it (releasing the button after the out animation) and marks it settled.
 002db05c Refreshes entry `index` (below 10): renders the current player's pattern of the slot into its texture and shows it by its type.
+002ddbac Destroys the clay figure rental menu: its name window, drag icon control, item drag window, stock window \n and menu base.
 002dfbf0 Calls the button action node's virtual 7 (with zeros).
 002dfe08 Sets up the icon set's three icons with their values.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
@@ -2375,6 +2377,8 @@
 002e0d04 Counts the used slots (bit 0 set and kind not 4) in the 16 slots of each of the 3 records, into +0xa0.
 002e173c Removes the first entry whose two bytes are (row, value) from the row's list (+0x10 + row * 0x24), else from the shared list at +0x7c.
 002e1818 Resets the candidate, counts the used slots into +0xa0 and marks the count done (+0xa1).
+002e1ba4 Shows UI message 0xe2 with a value (arg 1) set in the message store, in the window's text view.
+002e1ca4 Shows UI message 0xe1 with a value (arg 1) set in the message store, in the window's text view.
 002e2d24 Attaches the layouts at +0x4c4 (active) and +0x610 (inactive) to the layout system.
 002e2d54 Updates the mail view.
 002e326c Updates the object, then its layouts at +0x4c4 and +0x610.
