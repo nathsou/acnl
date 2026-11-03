@@ -6316,9 +6316,9 @@
 007516f8 Whether the item under the furniture (facing its direction) is the same on the current and the previous map.
 00751864 The address of 8-byte entry `index` from +0x14.
 00751a64 The furniture's top surface at the position.
-00751d9c An NPC's talk target, when its parameters allow it (bit 1).
+00751d9c An NPC's part at offset 0x14, when its parameters' flag bit 1 is set; else null.
 00751f40 The offset from object `id` to the position (the object's own when none is given), with its horizontal distance in s0; a far default without the object.
-0075221c An NPC's look target, when its parameters allow it (bit 2): its own when set, else virtual 23's.
+0075221c When its parameters' flag bit 2 is set: an NPC's part at 0x80c when its flag 0xb07 bit 7 is set, else \n virtual 23's; else null.
 007523a8 When there is a main object: checks bit 3 of +0xb07 and the pointer at +0xaa0.
 0075256c Whether the object's position lies outside the box (offsets from the camera's position); false without a camera.
 007525fc Whether the position lies outside the box (offsets from the camera's position); false without a camera.

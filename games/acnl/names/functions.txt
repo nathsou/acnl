@@ -22383,14 +22383,14 @@
 00751d78 kind_is_e
 00751d90 member_address_0x800_
 00751d98 AcNpcSpShop__virtual_22
-00751d9c AcNpc__talk_target_if_enabled
+00751d9c AcNpc__part_14_if_flag_1
 00751dbc AcNpc__virtual_28
 00751f38 AcNpc__virtual_42
 00751f40 offset_to_object_xz
 0075219c AcNpc__virtual_45
 007521a4 angle_to_object
 007521d0 AcNpc__virtual_43
-0075221c AcNpc__look_target_if_enabled
+0075221c AcNpc__part_80c_if_flag_2
 00752258 AcNpc__virtual_64
 00752260 AcNpc__virtual_38
 00752268 AcNpc__virtual_66
