@@ -640,6 +640,41 @@
 0020c124 With a 10% chance, adds a friendship point.
 0020c158 With a 10% chance, adds a friendship point; true when it changed.
 0020c500 Clears the player's 0x6b88-byte main part: identity, items, counters, its 300 records and blocks.
+0020cbf0 Constructs the player's 0x6b88-byte main part: its 8 items, patterns, records, times, counters and blocks.
+0020cd9c Copies the three bytes of color `index` (below 6) of the table at 0xad55d8; the first otherwise.
+0020cde4 Copies the three bytes of color `index` (below 16) of the table at 0xad5602; the first otherwise.
+0020ce2c Copies the three bytes of color `index` (below 8) of the table at 0xad55ea; the first otherwise.
+0020d084 Updates the part at +0x4650, then clears entry `index` (below 4) of the item pairs at +0x45fc: its two items, flag, record and word.
+0020d104 Places item `index` (below 4) of the pairs in the room or the field (its first item, or the second when the flag is clear) when its owner is the current player, then marks it used.
+0020d328 Clears the four item pairs, their flags, records and words.
+0020d600 Puts one of three reward items (chosen at random) in the record's slot.
+0020d71c Sets item slot `index` (below 13) and, when the owner is the current player, shows it.
+00240080 Runs the function at 0x7206e0 on structure list `index` (below 4, from 0xab7de4) when it exists.
+002404b0 True when the construction site (save +0x6e2a4) is set (or finished) and is in block (x, y) for the structure kind.
+0024088c Finds the structure matching the record in the main list (0xab7df4) and removes it.
+00240c80 Places structures at random free spots.
+00240de4 Finds the placed structure of the kind in the structure list.
+002412fc Counts the structures of list `index` (below 14) in block (x, y), not counting the field objects.
+002413e0 The structure kind at the position (clamped to 0xfc).
+00241cf0 True when the kind is one of the 8 at 0x887460.
+00242004 Calls virtual 7 of the object at 0xab7e04.
+0024201c Adds the structure of the kind at the position: registers it, marks its cells and, when it is the construction site's, finishes the site.
+00242744 Counts the structures of each of the 0xfc kinds (into 0xab7e2c), not counting the one under construction.
+00242cc4 Refreshes the cells of every structure in the list at 0xab7e00.
+002443b8 Damps the velocity (by 0.995), eases the position toward the target (by the blend +0x38), keeps the height, clamps the distance to 2900 and fills the listener record.
+00244a00 Creates the gyroid sound manager on the stage heap once and registers the object with it.
+00244bb4 Starts (or stops) the sound object's sound in the sound system and updates the object.
+002454f8 Builds the song's playback info from its table entry and tune values (under the info's lock).
+002458e4 Resets the player's counters and sets its beat length (900 / tempo, rounded up).
+00246df4 Stores the object in the first free of the 60 slots (+0x14) and counts it; 0x3d when full or null.
+00246f34 Frees slot `index` (below 60) and uncounts it.
+00246f64 Starts the furniture sound object (with the shared parameters) unless it already runs.
+00247240 While running, skips a pending frame (+0x94) or updates the furniture sound with its id.
+0024727c Stops the furniture sound object while running.
+00247294 Constructs the holder and its sound object.
+002472b0 Stops and destroys the sound object and detaches the holder.
+00248cd4 Builds the rectangle of map kind `kind` from its table entry (position and size bytes).
+00248d34 The point in front of the structure's door (one or two cells below its reported point, by its kind); true.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
 002738b8 Forwards to the function at 0x817cd8.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
