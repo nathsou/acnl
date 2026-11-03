@@ -4243,6 +4243,7 @@
 005792fc Marks the NPC busy, plays the player's reaction for the slot and begins the NPC's reaction action.
 00579514 Begins the NPC's next action, frees the main player and clears the busy mark.
 00579e44 Sets the secondary animation id and its parameters (from the two presets, or none).
+00579eb4 Sets an animation set's third animation (arg 1) and, for the animations that have one, its blend \n parameters (else none).
 00579fd0 Sets the animation set's id, primary and secondary animations with their parameters.
 0057a0a0 Sets the primary animation id and its parameters (from the preset, or none).
 0057a3f8 Sets the segment's two points.
@@ -6124,6 +6125,7 @@
 006dd7e8 The data (+0x6b64) of structure entry `index` (below 3, 0x10 bytes each) when its kind is of type 0xf; null otherwise.
 006de398 Finds the free cell nearest to the position, searching outward.
 006de930 Notifies each NPC of the manager.
+006dfe10 Whether one more NPC may appear: none on the special days, the NPC manager has no free count left, and the \n scene kind's slot table allows at most one.
 006e08b4 Stores the mode (below 6) at 0x9507f0 and applies it to the object at 0x95c6d0.
 006e140c Formats the number into the buffer, digit by digit.
 006e1d28 Writes the server URL for the network environment (0x97e988) into the buffer (+0x180) and appends the path.

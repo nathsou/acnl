@@ -14667,7 +14667,7 @@
 00579b64 AcNpc__virtual_55
 00579b98 AcNpc__virtual_54
 00579e44 AnimSet__set_secondary
-00579eb4 apply_code_00579eb4
+00579eb4 AnimSet__set_tertiary
 00579fd0 AnimSet__init
 0057a0a0 AnimSet__set_primary
 0057a2e0 AcNpcSpTourDesk__do_draw
@@ -19909,7 +19909,7 @@
 006ded90 BsStrcMgr__do_draw
 006dfad0 BsStrcMgr__do_execute
 006dfde8 value_of_source
-006dfe10 BsNpcMgr__NpcPosGetCB__NpcPosGetCB_006dfe10
+006dfe10 npc_count_allows_spawn
 006e0324 BsStrcMgr__BsStrcMgr_2
 006e0758 BsStrcMgr__deleting_destructor
 006e0768 BsStrcMgr__destructor
