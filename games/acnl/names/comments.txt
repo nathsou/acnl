@@ -4750,6 +4750,7 @@
 0076bab4 Bits 8-11 of the item's flags.
 0076bb90 The colour multiplier of an item with a valid value-06 entry and a colour variant (bits 10-13 of its flags) of 0xa-0xd; otherwise the static white (1, 1, 1, 1).
 0076bc84 The museum exhibit kind of a collectible by its category and size class (+0x1b >> 6): fish 0x4a-0x4c, insects 0x4d-0x4f, fossils 0x50-0x52, art 0x53-0x54; 0xa5 for others.
+0076c030 Builds the item for the furniture record's entry by its size class.
 0076c234 Whether the item has size class 1, variant 1 and its value-06 entry has flag 8.
 0076c288 For an item of size class 8 with a variant below 0x30: whether it is in the main room (variants below 0x28, as row and column of 10) or the side room (variant - 0x28); true when it is one.
 0076c564 Whether the item id (bit 15 ignored) is 0x7c-0x7f.
@@ -4762,6 +4763,7 @@
 0076c8a0 The value from 0076cb70 times 10000.
 0076c8b8 Whether every fish (category 0x27) is recorded.
 0076c958 Copies the identity of the player who donated a collectible (by its record state); true when there is one.
+0076cb70 Finds the state of the category's items in the records.
 0076cd0c Whether every fossil (category 0x2c) is recorded.
 0076ce68 Whether every insect (category 0x24, 72) is recorded.
 0076d134 Whether every painting (category 0x54) and statue (0x58) is recorded.
@@ -4811,10 +4813,64 @@
 0076f68c Bit 3 of +0x64.
 0076f69c Bit 2 of +0x64.
 0076f7e8 0 when bit 0 of +0x64 is set, else 1 with bit 1 or 2.
+0076f9fc Computes the record's check value.
 0076fd38 Whether the item set lists every item of `category` (its last slot, from the category's count, is filled).
+00770060 Computes the item's price from its data and index.
+0077025c The item of the category list at the index, or the empty id when the category differs or it is out of range.
+007702a4 The number of items in the list before its first empty entry.
 00770300 The low 16 bits of the word at +0 (bounded by +4) plus byte +9 shifted left by 8.
+007703c8 The state, or 0 for state 1 with the flag.
+00770934 The index of the first free record of the 10, or -1.
+00770974 Whether any of the 10 records is in use.
+007709b4 Whether the color's two channels (scaled to 0.5..1.25) are within 10% of each other.
+00770b68 Whether the animation is one of the two fixed ones; bit 0 for the second.
+00770c04 The object's value at +0xc.
+00770c10 Whether the counter has reached 100.
 00779500 Allocates from the current heap, 4-byte aligned.
+00779704 Appends a no-op GPU command of the length (padded to 8 bytes), or marks the list full.
+00779764 Appends the GPU commands to the list.
+00779848 The GPU state's value at +0xc.
+00779860 The GPU state's value at +0x1c.
+0077a214 Rounds the float up (in s0).
+0077a2a4 Converts the float to fixed point and stores it.
+0077a650 Rounds the float down (in s0).
+0077ab5c Splits the float into its integer part (stored) and its fraction (in s0).
+0077b6e8 Raises the floating-point overflow by squaring a huge double (in d0).
+0077b700 Raises the floating-point underflow by squaring a tiny float (in s0).
+0077b854 Copies the bytes (any alignment) when there are any.
+0077f2ac Writes the command for the depth mode when it changed since the last frame, and records it.
+007c28f0 Runs the flagged segment hooks.
+007c3094 Inserts the node into its bucket (of 512) keeping the bucket sorted by key.
+007c513c The length of the 16-bit string.
+007c5518 Sets the light's color and its packed 24-bit float commands, and marks the lights dirty.
+007c5cd0 Negates and permutes the vector's axes by the global axis setup.
+007c769c Finds the list's record with the key.
+007c7740 Copies the first record (0x18 bytes) of the kind in the range, or the end record.
+007c77b4 Releases the nodes of each flagged list (of 3) and clears the lists.
 007ce068 Marks the cell (x, y) of a grid of 20-byte cells with state 3.
+007ce358 Inserts the node into the open list, sorted by its cost (+0x8), and marks it open.
+007ce860 Resets every node that is not blocked (state 3) and empties the lists.
+007cee58 Blocks the cell (state 3) and clears the links of its 8 neighbors toward it (and the diagonals beside).
+007cf170 Inserts the node into the open list of the rectangle grid, sorted by its cost, and marks it open.
+007cf434 Resets every node of the rectangle grid that is not blocked and empties the lists.
+007cfab8 Checks the sound handle against the system's count (below 128); 0 when valid, -1 otherwise.
+007cfb30 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
+007cfd98 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
+007cfe94 Checks the sound handle against the system's count; 0 when valid, -1 otherwise.
+007f6f40 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007f7aec Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007f82c4 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007f8960 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007f94f4 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007f9f44 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007faacc Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007fb4fc Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
+007fc258 Recycles the tree's nodes into the pool's free list, destroying its string key and its value.
+007fcd40 Recycles the tree's nodes into the pool's free list, destroying its string key and its value.
+007fd790 Recycles the tree's nodes into the pool's free list, destroying its string key.
+007fe0ac Recycles the tree's nodes into the pool's free list, destroying its two strings.
+007fed54 Recycles the tree's nodes into the pool's free list, destroying its string key.
+007ff900 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00800304 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00800e5c Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
 00801604 Recycles the tree's nodes (recursively, by the left links) into the pool's free list.
@@ -4838,4 +4894,36 @@
 0080d3cc Places the items of the layout table in the cells of the rectangle.
 0080d59c Loads the shared layout block of each large cell in the rectangle.
 0080d68c Clears the items of the cells in the block's rectangle.
+00810aa0 Constructs the pool of 20 nodes (8 bytes each) with its free list.
+00810b1c Constructs the pool of 256 nodes (8 bytes each) with its free list.
+00810b98 Constructs the pool of 50 nodes (8 bytes each) with its free list.
+00810c14 Constructs the pool of 10 nodes (0x78 bytes each) with its free list.
+00812698 The curve's value at the frame: clamped to its ends, else the Hermite interpolation of the surrounding keys (frame, value, slope).
+00812ae8 The curve's value at the frame, with the keys' slopes scaled by the span between them.
+00813340 Sets the matrix to the translation by (x, y, z) (in s0 to s2).
+00813384 Sets the matrix to the scale (diagonal) and the translation.
+008133d8 Sets the rectangle from two corners, ordering each axis.
+0081360c Restores r4 and r5 from the stack and jumps to the target.
+00813d2c Sets or clears the bit (below 96).
+0081c0a0 Moves the save step to the one after the current in its table.
+00825aa4 Unlinks the node from its owner's list and clears its owner.
+00825acc Unlinks the node and links it into the new owner's list (+0x70).
+00825b04 Unlinks the node from its owner's list and clears its owner; the node.
 00825c64 Whether one of the 8 slots holds an object whose id (+0xb0) is `id`.
+00826038 Reads the entry's header (0x18 bytes) and, when asked, its extra data; the result.
+00826270 Reads the entry's header, its name and its data; the result.
+008266bc Reads the entry's data by its blocks.
+00826c34 Whether the id passes the filter: equal to it (kind 2) or in one of its ranges (kind 3).
+00827060 The width of the text's bounds (in s0) in the font.
+008270cc The height of the text's bounds (in s0) in the font.
+0082d6d4 Copies the map's security contexts into the other's nodes.
+0082d8a0 Copies the tree into the other, reusing its nodes.
+0082d9e8 Copies the tree into the other, reusing its nodes.
+0082db30 Copies the tree into the other, reusing its nodes.
+0082dc78 Copies the tree into the other, reusing its nodes.
+0082ddc0 Adds a block of nodes (0x70 bytes each) to the pool: 32 at first, then half again, or one when asked.
+0082e454 Adds a block of nodes (0x10 bytes each) to the pool: 32 at first, then half again, or one when asked.
+0082f1e0 Adds a block of nodes (0xa0 bytes each) to the pool: 32 at first, then half again, or one when asked.
+0082f424 Adds a block of nodes (0xc bytes each) to the pool: 32 at first, then half again, or one when asked.
+0082f49c Unlinks every node of the list and returns it to the free list.
+0082f504 Clears the list, returns its sentinel and frees the pool's blocks.
