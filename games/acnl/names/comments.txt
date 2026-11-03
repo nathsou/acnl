@@ -4209,6 +4209,7 @@
 006b4c38 Plays the sound at the position with the volume, when the system is ready.
 006b4e18 Stops the object's sound through the sound player when it exists.
 006b9038 Constructs the daily counters' base part.
+006b9798 The item's group (0x9b when none).
 006b9904 Clears the item's flags except their top two bits.
 006b9934 For items of id set d, resets their variant (id 0x70 becomes 0x26, else the flags reset to variant 3).
 006b9b5c Clears bit 15 of the item's flags.
@@ -4216,6 +4217,7 @@
 006b9d30 Sets the item's flags (keeping their top two bits) with bit 10 set.
 006b9d78 True for kinds 3, 5, 7, 0x16 and 0x1a.
 006b9de8 True for kind 0x17.
+006ba294 The item's group info (below 0x9b).
 006bacd8 Sets the item's flags, keeping their top two bits.
 006bb1a0 Moves the items 0x3057, 0x305a, 0x3064 and 0x3067 to their next ids.
 006bb3bc Sets the item's room index (in its flags, keeping its variant) when it has a valid value; true when it did.
@@ -4233,12 +4235,15 @@
 006bc9b4 Adds the frames to the play time (saturating) and counts the minutes in event 0x10.
 006bd2c8 The player's record (the size, by kind) of the insect, fish or sea creature item; 0 for other items.
 006bd550 The player's name pair record (+0x8d84) when they have one; null otherwise.
+006bd56c Checks the item's flags value.
 006bddec Sends the player's pending star and secretary letters, clearing their flags once sent.
+006be888 Whether the field object has an item of the kind.
 006bead8 Stores the position at +0x73c.
 006beaf4 The side kind of the structure at the position: 1 for kinds 0 and 2, 2 for kinds 1 and 3 to 5, 0 otherwise.
 006bf18c The model scale of a category 0xe item by its growth level (from the table; 2 at the top); 0 for other items.
 006bffb4 Sets the model's matrix upright at the position.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.
+006c06dc The wind's strength at the position.
 006c1678 Moves the held object to state 5 (in the hand) with its owner and the hand matrix.
 006c1688 Stores a timer (+0x6d0) and moves the held object to state 0.
 006c1938 The point (9, 0, 36.8) of the object's model matrix, moved for mode flag 2; true when the model has one.
@@ -4251,6 +4256,8 @@
 006c2be4 Moves the held object toward its target position over the remaining frames (+0x6d0), or onto it; counts the frames down.
 006c3118 Stores a float at +0x5dc.
 006c3a58 The position of the spawn tile (from 006fa1fc) with height 9, using kind 1 for group 1 of the object at 0x95c6d0 (else 6).
+006c3c00 Starts the tour of the kind.
+006c3e4c Updates the tour's goal (for its entry, below 64).
 006c4200 Clears the record (+0x10 = 0, +0x1c = 0xff) and its item (empty).
 006c48ac Checks the group of the entry's slot (+0xc) against 12 (no effect kept).
 006c4ed0 Picks random items by group into an item bit set (with its own random generator).
@@ -4260,11 +4267,13 @@
 006c5e2c The value (table 0x95da1d) of the terrain at a block tile, unless one of the two cells above is of terrain 3.
 006c5ef8 The water surface's height at the position, when it is above the ground.
 006c6188 Calls 006c61d8 with the block and tile of a world position.
+006c61d8 The terrain record at the block's tile.
 006c6640 The height at a position: the ground's, or for water, cliffs and similar terrain the surface's.
 006c6714 Spawns the mode's items on the map (by its record and blocks).
 006c69e4 Whether the terrain at a position (cell and tile) is in the list at 0x89068f.
 006c6a34 Whether the terrain at a world position (block and tile) is in the list at 0x89068f.
 006c6a84 Whether any of the four parts of the terrain at a block tile is in the 90-entry list at 0x89068f.
+006c6b84 The ground's kind at the position (by the scene).
 006c6fe8 The terrain kind of the position's cell in the map.
 006c75e0 The height of the map at the position.
 006c7868 The ground height at a position (cell and tile; 006c7908).
@@ -4273,12 +4282,14 @@
 006c7a14 The value (0075d7fc) of the tile at a world position in its large cell, or 0.
 006c7a9c The value (0075d7fc) of a block tile in its large cell, or 0.
 006c7bd0 Whether the four corners of the tile under a position have the same height.
+006c81f8 Finds the water's edge at the position (by its item).
 006c83f0 Bit 7 of the tile at a world position (Grid__tile_flag_7), or 0.
 006c8590 Whether the kind (table 0x95d91e) of the item at a position is 2.
 006c8760 Whether the kind (table 0x95d91e) of the item at a position is set.
 006c8778 The cell kind (006c87ac) at the cell under a position.
 006c87ac The kind of cell (x, z): from the map's byte grid (+0x28) outdoors, the room handler in scenes with bit 0x10000000, or 0xff for terrain 0xfc in scenes with bit 0x200.
 006c8938 Moves the icon (+0x44) from its drag list to a new one (when given), keeping whether it is in one (+0x431).
+006c8c5c Draws the talk window's layout on the top screen.
 006c8e30 Updates the scroll offset (+0x438) for the current handler (0 at the start, else the content height less the view) and moves the bar.
 006c8ef0 Removes the icon from its drag list, closes the layout and clears 0x95df7f.
 006c9050 Updates the scroll offset (+0x438) for the current handler (0 at the start, else the content width less the view) and moves the bar.
@@ -4290,7 +4301,9 @@
 006c9898 Whether the save state (0x95719c) is 3.
 006c98b4 Sets the save state (0x95719c) to 2 and clears its sub-state.
 006c9b0c Unless busy (0x9571cd): flushes the pending data (0x974b90) when flagged (0x9571cc) and clears the flag.
+006c9c94 Creates the render target of the size (at least 16).
 006c9e74 Copies the object's command block (+0xc8, size +0xcc) to `out`; returns the end.
+006c9ea0 Captures the render target into the buffer.
 006ca128 Clears a command list object and its buffer part (+0x10).
 006ca1c0 Creates the two 640x480 render targets (0xab7d0c) with the two display rectangles and marks them ready (0x9571f4).
 006ca230 Flips the current render target index (0xab7dc4).
@@ -4354,10 +4367,13 @@
 006d337c The selected quantity (low half of 0x94fd38), at least 1.
 006d37e4 Counts the sale of the flagged item in the badge counters by its category (0x36, or 0x37, 0x38 and 0x92).
 006d39a8 True when a window in the menu's list is of the special id (0x88735a).
+006d3cd4 The value of the entry with the id in the table at 0x850f0c.
 006d4724 Splits the number into its thousands, hundreds, tens and units digits (0x94fd60).
 006d5364 Releases the active children of the two controls (+0x494, +0x618) when they have them.
 006d5df4 When button `index` is animating (+0x19b2), advances it until its slot is done, then hides it and clears its bit; true when finished.
 006d6404 Shows the first or second tab by the scene's flags (outside scenes 0x73 and 0x74), else disables the tab bit.
+006d6500 Refreshes the museum tank's display.
+006d6a8c Updates the museum tank's creatures.
 006d7354 Enables the menu's buttons by what the network session allows.
 006d78bc Locks the two controls and enables the 11 buttons except the tenth, then refreshes the menu.
 006d860c Shows the peer button when the session part allows it and any of the 32 stations is connected, resetting its animation when it hides.
@@ -4365,12 +4381,15 @@
 006d926c The catch state of the slot (1 to 3, 6 and up; 3 otherwise).
 006d96c0 The position of the slot's catch (its actor's, or its record's).
 006d9748 Starts the catch for fish and sea creatures (categories 0x27 and 0x28).
+006d9864 Updates the catch for the main object (insects and fish).
 006d99fc Clears the slot's catch state and, when it is the current main object's, sends message 0x3d.
 006d9a78 True when the player's catch slot is in state 3.
 006d9abc Checks the catch of the slot by the item's category (insects by their kind; fish by the held item).
 006d9b90 Places the slot's catch from the packed network message (kind, position) with its table parameters.
 006d9cac Packs the slot's catch (kind, position) and sends it to the other stations.
+006d9e38 Sets the catch of the item's actor kind for the player.
 006d9f38 Applies a received insect catch: hands the insect to the slot's catch when it exists, else marks the record missed; without a ready guest entry, answers 0x3b.
+006da030 Starts showing the catch (state 2) for the player.
 006dab3c Calls virtual 39 of entry `index` of the list (+0x67d4, count +0x67cc).
 006dc224 Calls the function at 0x14fe38 on the object at +0x6b4c when it exists.
 006dc248 Finds the water at the position: its kind, its surface and its flags; whether there is any.
@@ -4380,13 +4399,18 @@
 006dccb4 Finds the NPC with the slot among the manager's NPCs.
 006dcd28 Calls the function at 0x14fe40 on the object at +0x6b4c when it exists.
 006dcd50 The label chosen by the daily record (save +0x62250): by its kind on other days, by its stage today.
+006dcdac The manager's first active NPC.
+006dce18 Finds the manager's NPC with the id.
 006dd0c8 Calls the function at 0x14fe50 on the object at +0x6b4c when it exists.
 006dd294 The label chosen by the town event record (save +0x666e4): by its kind on other days, by its stage today.
 006dd2f8 The label chosen by the save byte at +0x6682c from the table of 3.
 006dd334 Resets the constants at 0x997c70.
+006dd3a4 Hides each NPC of the manager.
+006dd470 Shows each NPC of the manager.
 006dd7b4 The label chosen by the save byte at +0x6adb4 from the table of 3.
 006dd7e8 The data (+0x6b64) of structure entry `index` (below 3, 0x10 bytes each) when its kind is of type 0xf; null otherwise.
 006de398 Finds the free cell nearest to the position, searching outward.
+006de930 Notifies each NPC of the manager.
 006e08b4 Stores the mode (below 6) at 0x9507f0 and applies it to the object at 0x95c6d0.
 006e140c Formats the number into the buffer, digit by digit.
 006e1d28 Writes the server URL for the network environment (0x97e988) into the buffer (+0x180) and appends the path.
@@ -4408,6 +4432,7 @@
 006e4d80 Half `index & 3` of the table at 0x865cf8.
 006e4d98 True for kinds 0x6a and 0x6b.
 006e4e70 0x1a for 0, else 0x1b.
+006e50f0 Sets the flags of the kind (below 14) in the manager's table.
 006e5920 Sets the name window's frame animation to the value and updates the layout.
 006e59c0 Sets the window's color animation to the value, updates the layout and remembers it (+0xaf0).
 006e5e94 Shows or hides the page icon and plays the message animation when it changes.
@@ -4415,16 +4440,20 @@
 006e64c4 Moves the drag icon back to its list, releases the menu flag 0x24 when held, and releases the drag icon and the two layouts.
 006e7c8c Sets the action's angle (+0x500), and its start angle in the early stages.
 006e7d98 Sets the action's position (+0x4ec), and its start in the early stages; shares the NPC's packed state and target in a session.
+006e8560 Changes the special NPC's action when it differs.
 006e9cf0 Sets the action's angle (+0x500), and its second start angle in the early stages.
 006ea210 Copies the action's target, angles and speeds into the move record and starts it; true.
 006ea318 Updates the action's timer, then calls its member callback when it has one.
+006ea9dc Updates the NPC's head looking toward its target.
 006ed200 In a session, packs the NPC's state, a new sequence number and its target position into its shared record.
 006ee02c Sets the action's cell (+0x4e0), and its start cell in the early stages.
 006eedc8 Copies the 8-byte entries of variant `index` of the layout table at 0xab7fc0 into the buffer when it fits; their count, or 0.
 006eeef4 Initializes the 99 shadows (0x8c bytes each) of the pool at 0xabe1a4 and its 27 layer lists, with all shadows free.
 006ef0a0 Queues the shadow in its layer's draw list (once), drawing it at once when it is ready.
+006ef108 Sets the shadow's size and its offsets.
 006ef39c Takes a free shadow, sets it up with the alpha (clamped to 0 to 1) and parameters, and queues it.
 006ef48c Takes a free shadow from the pool, reset with full alpha; null when none is left.
+006ef4d8 Places the shadow under the position with its size.
 006ef61c Gives the shadow back to the free list unless it is queued.
 006ef650 Empties the 27 layer lists, giving the finished shadows back to the free list.
 006ef8e8 Builds the availability of the category's items by their rules.
@@ -4437,14 +4466,17 @@
 006efd40 Fills the valid cells of the 16 x 16 block with the default item (0x95bfd2).
 006efd9c Constructs the 256 item cells.
 006efdb0 Converts the items of the block's cells.
+006f0030 Clears the badge record.
 006f0130 The current player's counter of the kind (in their counter block).
 006f0450 The player's flag of the kind (below 18).
+006f073c The index of the player in the records.
 006f09d4 Picks a random item from the set bits of the item bit set, of the wanted type.
 006f14b0 Sets the bits of the category's items that pass its check (the insect flag for insects).
 006f15c4 Builds the candidate item set from the trait bytes and picks an item.
 006f1cfc Counts the items of the category (by its sections for category 0x27) that pass the check.
 006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
 006f2178 Counts the insects that pass the check.
+006f2c1c Finds the item of the set in the category.
 006f3d0c Resets the town's flags (of the 0x55 kinds).
 006f432c Decodes the record's packed bit fields.
 006f4f48 When the pending letter (+0x1900) is due, moves it into the first free of the 10 letters and clears it.
@@ -4470,6 +4502,7 @@
 006f81f0 Sets the capsule's two ends (+8, +0x14) and radius (+0x20).
 006f83a8 Sets the cylinder's base from the rectangle's corner and its radius and height.
 006f8540 The word shifted left by 14, as a half.
+006f8a58 Casts the ray against the collision world, up to the hits.
 006f8c24 The room record of `mode`: a house room (positions 2 to 25), or the record of the flagged structure; null otherwise.
 006f8eb8 Builds the rectangle from (0x12, 0xa) to (0x12, 0xb).
 006f9230 Looks for a flagged item kind around the position.
@@ -4494,6 +4527,7 @@
 006fa728 Byte `index` of the table at 0x95276c.
 006fa738 Copies one of the two default 16-byte records (0x85f7f8, 0x85f808) by the kind.
 006fa76c The world position of the first free cell (in an 8 x 6 block).
+006fa7ac The state of the record (below 4).
 006faa70 Builds the 7 x 9 rectangle around the spawn position's cell.
 006fac2c Clamps each value of the map's 128 x 128 height grid to the terrain's limit.
 006fad7c The owner of the current scene: the player of the house room, the player of the flagged page, or the flagged structure's record; null otherwise.
@@ -4506,9 +4540,11 @@
 006fb4bc Triggers the event of the item at the position when its table holder is set.
 006fb50c Picks the item at the position up into the 16 item slots (by its category), clearing the tile.
 006fb604 Clears the tile at the position when its item's table holder is set.
+006fc144 Plans the town's free plots.
 006fc854 Scatters random items of the groups over the grid cells.
 006fd258 Visits the grid cells' items, checking their data.
 006fef38 Fills the room's cells with the owner's items.
+006ff188 Plans the villager's move-in (its plot and house).
 006ff640 Converts the room's items to their current forms.
 006ffb40 Checks the room's items against its size.
 006ffd84 Refreshes the flags of the players at 0x952c16.
@@ -4521,6 +4557,7 @@
 00700cdc True when the world position is inside the map on plain ground with no blocking item.
 00700f58 The insect spawn table for the time: the island's (by period), the tour's (by tour kind and period) or the month's (by period).
 007010f8 The two spawn bytes (+0x4a, +0x4b) of the insect item's table entry.
+00701150 The insect's table entry (of 0x53), and its size scale.
 007011e8 Records the insect in the current player's encyclopedia when it is not in the caught set (+0x6c20) yet.
 00701694 Builds the item of the insect catalog index (insects, then the others).
 007017a8 Word `index` (below 3) of the table at 0x95321c; the first otherwise.
@@ -4539,6 +4576,7 @@
 0070ab44 The world position of the model's joint (none for a negative index); whether it has one.
 0070ac44 The animation value of slot `index` (below 4, 0x18 bytes each, +0xe0); 0 otherwise.
 0070ac68 The world matrix of the model's joint (none for a negative index); whether it has one.
+0070ae88 Points the camera from the position at the target with its angles.
 0070b140 The worn accessory item (slot +0x14 of class 5, unless the hat slot holds a category 8 item), or empty.
 0070b1a4 Entry `index` of an array of 12-byte entries (entry 0 when index is 10 or more).
 0070b334 Whether a range of kind 1 or 2 has a start and an end, start <= end.
@@ -4583,6 +4621,7 @@
 0070eb60 Byte +0x11 of entry `index` of the table at 0x83a980; 0x24 for index 94, 0x28 beyond.
 0070eb8c Byte +0x10 of entry `index` of the table at 0x83a980; 0x10 for index 94, 0x20 beyond.
 0070ebb8 Byte +0x12 of entry `index` of the table at 0x83a980; 0x10 otherwise.
+0070ebdc The clothing slot of the kind (below 0x18), or 0.
 0070eca8 Byte +5 of entry `index` of the table at 0x83a980; 2 for index 94, 3 beyond.
 0070ecd4 Byte +4 of entry `index` of the table at 0x83a980; 4 for index 0x5a and out of range.
 0070ed28 The float at +0xc of entry `index` (below 91, 0x1c bytes each) of the table at 0x83b4c0; 1 otherwise.
@@ -4594,6 +4633,7 @@
 0070ef54 Seals the mail data's blocks and writes the checksum of its mailboxes (0x16188 bytes from +0x2058) at +0x2054.
 0070efa0 True when every block of the mail data and its mailboxes' checksum are intact.
 0070f534 Bit 12 + `player` (below 4) of the half at +0x22.
+0070f5b0 Checks the save's block at +0x71900.
 0070f678 The byte at (x, y) of a grid 16 bytes wide.
 00710614 Letter `index` of an array of letters (0x280 bytes each).
 007108c4 Whether the town flag (bit 0 of +0x621d0) is set, the town event (+0x62264) is in state 3 and its stamp (+0x62250) is not today.

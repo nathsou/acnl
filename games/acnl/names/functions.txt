@@ -18505,6 +18505,7 @@
 006b8cb8 ClampedCounters__set_current_count
 006b8d80 ClampedCounters__add_to_current_split_50_
 006b9038 DailyCountersBase__construct
+006b9798 Item__group
 006b9858 convert_item_category
 006b9904 Item__clear_flags_keep_top
 006b9914 clear_half_bits_6b9914
@@ -18522,6 +18523,7 @@
 006b9df8 clear_kind_11_flags_top
 006ba0cc set_item_group_and_value
 006ba118 Item__sanitize
+006ba294 Item__group_info
 006ba4c8 convert_to_alternate_form
 006ba62c convert_to_earlier_form
 006ba888 convert_category_34_to_35
@@ -18573,10 +18575,12 @@
 006bd3e4 add_listed_item
 006bd450 reserve_listed_item
 006bd550 Player__name_pair_record
+006bd56c ItemFlags__check
 006bd910 player_operation_c
 006bdd44 script__WordFix_33u___WordFix_006bdd44
 006bdd98 subtract_from_counter_6b94
 006bddec Player__send_pending_letters
+006be888 FieldObject__has_item_kind
 006be950 ToolBank__virtual_4
 006bead8 set_position_73c
 006beaf4 structure_side_at_position
@@ -18585,6 +18589,7 @@
 006bffb4 Model__set_upright_matrix
 006c00b8 HeldObject__set_state
 006c01b4 ToolBank__virtual_7
+006c06dc Wind__strength_at
 006c0eb8 ToolBank__virtual_5
 006c1164 ToolBank__virtual_3
 006c1678 HeldObject__attach_to_hand
@@ -18605,8 +18610,10 @@
 006c39c4 entry_byte_14
 006c3a58 group_spawn_tile_position
 006c3be4 entry_byte_15
+006c3c00 Tour__start_kind
 006c3d70 TourData__SingletonDisposer___deleting_destructor
 006c3ddc TourData__SingletonDisposer___destructor
+006c3e4c Tour__update_goal
 006c4200 reset_held_item_record
 006c4280 record_value
 006c48ac check_entry_group_c
@@ -18634,12 +18641,14 @@
 006c602c tile_height_at_world
 006c60b8 tile_height_of_block_tile
 006c6188 terrain_check_at_world_position
+006c61d8 terrain_record_at
 006c6590 terrain_blocks_at
 006c6640 surface_height_at
 006c6714 spawn_items_for_mode
 006c69e4 terrain_is_in_list_at_position
 006c6a34 terrain_is_in_list_at_world
 006c6a84 terrain_is_in_list_at_block_tile
+006c6b84 ground_kind_at
 006c6fe8 terrain_kind_at_position
 006c7540 height_at
 006c75e0 MapTable__height_at
@@ -18652,6 +18661,7 @@
 006c7a14 large_cell_value_at_world
 006c7a9c large_cell_value_at_block_tile
 006c7bd0 tile_is_flat_at
+006c81f8 water_edge_at
 006c8368 tile_has_flag_6_at_world
 006c83f0 tile_flag_7_at_world
 006c8560 terrain_record_starts_with_f
@@ -18662,6 +18672,7 @@
 006c87ac cell_kind_at
 006c8928 terrain_value_at
 006c8938 DragIcon__move_to_list
+006c8c5c TalkWindow__draw
 006c8e30 ScrollBar__update_vertical
 006c8ef0 DragIcon__release_and_close
 006c9050 ScrollBar__update_horizontal
@@ -18686,7 +18697,9 @@
 006c9c60 qrdecode__Camera__Thread__deleting_destructor
 006c9c70 qrdecode__Camera__Thread__destructor
 006c9c74 read_u32_0x009571d4_
+006c9c94 RenderTargets__create
 006c9e74 copy_command_block
+006c9ea0 RenderTargets__capture
 006ca128 CommandList__clear
 006ca174 qrdecode__Thread__virtual_16
 006ca1ac qrdecode__Thread__deleting_destructor
@@ -18867,6 +18880,7 @@
 006d3b80 mark_object_ready
 006d3bd4 request_storing_halfword_26_for_item
 006d3c1c try_request_71
+006d3cd4 table_850f0c_lookup
 006d3d70 begin_request_73
 006d3d98 try_request_65
 006d3dc4 begin_request_71
@@ -18886,6 +18900,8 @@
 006d5df4 ItemMenu__finish_button
 006d5f74 script__WordFix_64u___WordFix_006d5f74
 006d6404 ItemMenu__update_tabs
+006d6500 MuseumTank__refresh
+006d6a8c MuseumTank__update
 006d7354 ItemMenu__update_net_buttons
 006d78bc ItemMenu__enable_all_buttons
 006d860c ItemMenu__update_peer_button
@@ -18902,12 +18918,15 @@
 006d96c0 CatchMgr__catch_position
 006d96fc main_object_entry_set
 006d9748 CatchMgr__start_fish_catch
+006d9864 CatchMgr__update_for_main
 006d99fc CatchMgr__clear_slot_state
 006d9a78 CatchMgr__player_is_holding
 006d9abc CatchMgr__check_catch
 006d9b90 CatchMgr__place_from_message
 006d9cac CatchMgr__share_catch
+006d9e38 CatchMgr__set_catch
 006d9f38 CatchMgr__apply_insect_message
+006da030 CatchMgr__start_show
 006da49c BsShowMgr__do_draw
 006da4a4 BsShowMgr__do_create
 006da710 BsShowMgr__do_execute
@@ -18935,15 +18954,20 @@
 006dccb4 BsNpcMgr__find_by_slot
 006dcd28 call_14fe40_on_6b4c
 006dcd50 label_by_daily_record_62250
+006dcdac BsNpcMgr__first_active
+006dce18 BsNpcMgr__find_npc
 006dd0c8 call_14fe50_on_6b4c
 006dd294 label_by_town_event_666e4
 006dd2f8 label_by_save_byte_6682c
 006dd334 reset_constants_997c70
+006dd3a4 BsNpcMgr__hide_all
+006dd470 BsNpcMgr__show_all
 006dd7b4 label_by_save_byte_6adb4
 006dd7e8 structure_entry_if_kind_f
 006de398 find_nearest_free_cell
 006de6f4 payload_2d4
 006de8bc payload_2dc
+006de930 BsNpcMgr__notify_all
 006ded90 BsStrcMgr__do_draw
 006dfad0 BsStrcMgr__do_execute
 006dfde8 value_of_source
@@ -19045,6 +19069,7 @@
 006e4e70 kind_1a_or_1b
 006e50a8 kind_is_d_to_10_or_12_or_6b
 006e50dc kind_is_c_or_6a
+006e50f0 BsNpcMgr__set_kind_flags
 006e5500 wear_class_second_word
 006e5528 sead__SafeStringBase_char___SafeStringBase_006e5528
 006e567c wear_class_first_word
@@ -19071,6 +19096,7 @@
 006e7204 ActorObject__begin_action
 006e7c8c NpcAction__set_angle
 006e7d98 NpcAction__set_position
+006e8560 AcNpcSp__change_action
 006e9648 begin_scaled_action_0x21_
 006e9b7c begin_scaled_action_0x32_
 006e9be8 begin_action_4
@@ -19082,6 +19108,7 @@
 006ea37c begin_action_10
 006ea7ac begin_action_with_item_STATE_11_
 006ea834 begin_action_with_values_STATE_0D_
+006ea9dc AcNpc__update_look
 006eb164 begin_scaled_action_with_angles_0x61_
 006eb898 begin_action_15
 006eb910 begin_action_1a
@@ -19125,8 +19152,10 @@
 006eedc8 read_item_layout_ab7fc0
 006eeef4 ShadowPool__init
 006ef0a0 ShadowPool__queue
+006ef108 Shadow__set
 006ef39c ShadowPool__draw_new
 006ef48c ShadowPool__take
+006ef4d8 Shadow__place
 006ef61c ShadowPool__give_back
 006ef650 ShadowPool__flush
 006ef6e0 clear_items_of_listed_categories
@@ -19145,10 +19174,12 @@
 006efd9c Block16x16__construct
 006efdb0 Block16x16__convert_items
 006f0024 store_word_constant_pack_0x0_006f0024
+006f0030 BadgeRecord__clear
 006f00ec notify_record
 006f0130 Player__counter
 006f0450 Player__flag_of_kind
 006f0578 keep_items_seen_by_player
+006f073c PlayerRecords__index_of
 006f0900 add_category_5_items_with_byte_19_low
 006f09d4 pick_random_set_item
 006f0b08 keep_items_at_least
@@ -19168,6 +19199,7 @@
 006f2674 add_items_with_byte_17_high
 006f2728 keep_items_with_flags_1c_bit4_only
 006f2908 ItemSet__add_group
+006f2c1c ItemSet__find_in_category
 006f3110 keep_items_of_category
 006f3244 keep_items_with_field_15
 006f337c keep_items_with_field_18
@@ -19232,6 +19264,7 @@
 006f84fc collision__Triangle__destructor
 006f8540 packed_low_18_bits_to_half
 006f86a4 player_of_mode
+006f8a58 Collision__ray_cast
 006f8c24 room_record_of_mode
 006f8eb8 rect_18_10_to_18_11
 006f8f0c return_float_constant_0x42000000__006f8f0c
@@ -19262,6 +19295,7 @@
 006fa728 byte_of_95276c
 006fa738 copy_default_rect
 006fa76c free_cell_position
+006fa7ac Record302__state
 006faa70 rect_around_spawn
 006faafc return_float_constant_0x00000000_
 006fac2c clamp_height_map_to_terrain
@@ -19277,9 +19311,11 @@
 006fb50c pick_up_item_into_slots
 006fb604 clear_table_item_tile_at
 006fb66c Item__event_index_of_rule
+006fc144 Town__plan_plots
 006fc854 scatter_items_in_grid
 006fd258 count_grid_items
 006fef38 fill_room_items
+006ff188 Villager__plan_move_in
 006ff640 convert_room_items
 006ffb40 check_room_items
 006ffd84 refresh_player_flags_952c16
@@ -19292,6 +19328,7 @@
 00700cdc can_spawn_on_ground_at
 00700f58 insect_spawn_table_for_time
 007010f8 insect_spawn_params
+00701150 Insect__info
 007011e8 Player__record_new_insect
 00701694 Item__from_insect_index
 007017a8 word_of_3_95321c
@@ -19401,6 +19438,7 @@
 0070acf8 AnimationSlots__slot_state
 0070ae20 is_below_limit_72
 0070ae4c AnimationSlots__target_object_not_70
+0070ae88 Camera__look_at
 0070af54 LetterList__virtual_8
 0070af70 LetterList__virtual_25
 0070af88 owner_slot_4_if_class_4
@@ -19516,6 +19554,7 @@
 0070eb60 table_83a980_byte_11
 0070eb8c table_83a980_byte_10
 0070ebb8 table_83a980_byte_12
+0070ebdc Clothing__slot_of_kind
 0070eca0 return_constant_0x0__0070eca0
 0070eca8 table_83a980_byte_5
 0070ecd4 table_83a980_byte_4
@@ -19541,6 +19580,7 @@
 0070f51c record_2160_address_of_8_0070f51c
 0070f534 half_22_player_bit
 0070f56c check_block_0070f56c
+0070f5b0 SaveBlock71900__check
 0070f624 seal_small_block
 0070f648 small_block_is_sealed
 0070f678 ByteGrid16__get
