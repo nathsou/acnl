@@ -33,6 +33,7 @@
 00100948 Heaps__destroy_work_heap
 00100960 Heaps__destroy_fader_heap
 00100978 Heaps__destroy_heap_952c4c
+00100998 Heaps__destroy_heap_952c8c
 001009b0 Heaps__destroy_sound_heap
 001009c8 Heaps__destroy_script_heap
 001009e4 Heaps__destroy_weather_heap
@@ -233,9 +234,13 @@
 0010c50c call_0010c514
 0010c514 Heaps__create_heap_952c40
 0010c560 call_0010c568
+0010c568 Heaps__destroy_my_design_work_heap
 0010c580 call_0010c588
+0010c588 Heaps__create_heap_952ca4
 0010c5d4 call_0010c5dc
+0010c5dc Heaps__destroy_sound_ext_stage_heap
 0010c5f4 call_0010c5fc
+0010c5fc Heaps__destroy_heap_952c40
 0010c630 sead__FixedSafeString_20___virtual_1
 0010c63c sead__FixedSafeString_20___virtual_0
 0010c644 sead__FixedSafeString_7___virtual_1
@@ -263,18 +268,22 @@
 0010e360 id_in_table_95c230
 0010e7ac VillagerPart__update_network_records
 0010e9a8 VillagerPart__reset_daily_ratings
+0010edd4 Players__update_records
 0010eeec VillagerPart__start_event_countdown
 0010f044 call_0010f04c
+0010f04c Villager__clear_player_slot
 0010f0b0 VillagerPart__on_new_day
 0010f138 VillagerPart__advance_event_days
 0010f16c VillagerPart__on_load
 0010f3d0 VillagerPart__update_slot_flags
 0010f48c clear_flag_bd_bit6_of_all_player_records
+0010f9fc set_flag_2
 0010fed0 sead__FixedSafeString_32___FixedSafeString_0010fed0
 00110654 sead__FixedSafeString_32___FixedSafeString_00110654
 00110cdc clear_flag_95c219
 00110dc0 take_over_flag_ba_bit7
 00111050 update_villager_moving_requests
+00111610 Town__reset_villager_parts
 0011188c Villagers__update_day
 00111d48 VillagerPart__construct
 00111f4c villager_id_bit
@@ -297,6 +306,7 @@
 00112792 guarded_flag_21_bit_7
 0011279e flag_1f_bit_3_if_present
 001127ac call_001127b4
+001127b4 Villager__refresh_memory
 00112d34 Villager__set_item_slot
 00112d9c Villager__clear_letters
 00112df8 byte_4_if_present
@@ -315,6 +325,7 @@
 00113468 SaveVillager__clear_flag_bc_bit5_of_used_records
 00113494 Villager__refresh_items
 00113828 call_00113830_if_set
+00113830 Villager__find_player_entry
 001138a4 Villager__mark_flag_ad555c
 001138dc Villager__copy
 001138ec Villager__init_from_template
@@ -329,6 +340,7 @@
 00114088 Villager__reset_for_move_in
 00114160 clear_villager_at
 00114184 call_0011418c
+0011418c Vec4__copy_from_global
 001141a4 friendship_tier_of_value
 00114374 ItemRow__push_front
 001143f8 ScBoot__pre_execute
@@ -338,12 +350,16 @@
 00114466 ScBoot__do_delete
 0011446a ScBoot__virtual_1
 00114476 ScBoot__virtual_0
+00114488 Town__update_dated_event
 00114694 TownFlags__update_day_records
 001146fc TownFlags__renew
 001147a8 set_option_byte_105ccd
 00114810 leave_town_to_main_menu
+001148c4 Town__scatter_items
+0011493c Town__check_special_item
 00114ae0 call_2fd648_with_10617d
 00114af0 read_value_105bf5
+00114b14 Date__set_from
 00114b28 sum_three_scores_capped_100
 00114bd0 read_value_105e15
 00114c70 query_105c31
@@ -396,7 +412,9 @@
 00118770 set_flag_of_1aa
 00118792 construct_word_ptr_at_24
 0011879c call_001187a4
+001187a4 Player__set_flag_1aa
 001187b4 player_operation_d
+001187cc Player__add_play_time
 00118a5c call_0030ce50_return_self
 00118a64 WeatherRecord__init_new
 00118a74 WeatherRecord__clear
@@ -416,6 +434,7 @@
 0011916c unknown_thumb_11916c
 0011922c first_entry_with_flag_4
 00119254 VillagerPart__has_moving_in_villager
+00119288 Villagers__reset_daily
 00119308 VillagerPart__days_left_for_event
 00119360 first_entry_with_flag_3
 00119388 VillagerPart__refresh_villager_phrases
@@ -426,6 +445,7 @@
 001194ec VillagerPart__has_active_villager
 00119534 Villager__find_letter_slot
 001195bc VillagerPart__history_id
+00119714 Villager__player_record
 00119858 refresh_crc
 00119874 crc_matches
 00119898 VillagerPart__find_board_entry
@@ -433,6 +453,7 @@
 001198e8 SaveVillager__has_flag_1
 001198f8 SaveVillager__item_8d6_at
 00119910 SaveVillager__count_items_8c6
+001199ac Villager__copy_letter
 00119fcc SaveVillager__has_flag_0_only
 00119fe4 indexed_object_constant
 0011a050 record_280_address
@@ -449,6 +470,7 @@
 0011a7de SaveVillager__has_slot_flag
 0011ab04 villager_passes_checks
 0011abc8 find_record_for_identity
+0011ac4c Villager__choose_greeting
 0011af48 first_record_in_use
 0011af88 villager_matches_identity
 0011b22c has_flag_1_only
@@ -487,6 +509,7 @@
 0011bfe2 locale__release_string_10
 0011bffc locale__release_10
 0011c00c locale__facet_base_construct
+0011c02c Array__allocate
 0011c0fa delete_array
 0011c116 nn__pia__local__LocalNetworkSetting__virtual_0
 0011c120 construct_array
@@ -494,6 +517,7 @@
 0011c218 word_array_at
 0011c220 locale__resize_facet_table
 0011c464 SharedString__grow
+0011c498 SharedString__replace
 0011c614 SharedString__assign_c_string
 0011c7a8 namespace___ExitHandler__virtual_0_0011c7a8
 0011cb18 init_os_info_af74c8
@@ -1432,6 +1456,7 @@
 00150bc0 strncpy
 00150c2c memmove_returning_destination
 00150d2c double_divide
+001510d0 double_normalize
 0015120c double_multiply
 001515bc clear_word_pair_001515bc
 001515cc nn__nex__String___String__001515cc
@@ -5881,14 +5906,17 @@
 002fabac AcPlayer__virtual_7
 002fabd8 AcPlayer__virtual_42
 002fac78 Table__find_entry_af74c8
+002fad16 BitSet__test_word
 002fae18 store_u32_argument_at_0_2fae18
 002fae20 AcPlayer__virtual_43
 002fae74 set_pointer_af7f3c
 002fae84 get_data_base
 002faea4 block_at
 002faec8 cell_at_002faec8
+002faedc Grid2x2__for_each_block
 002faf48 AcPlayer__virtual_8_002faf48
 002faf74 assign_bit_7_of_byte_0f
+002faf8c Town__count_block_items
 002fb2a4 AcPlayer__virtual_38
 002fb310 slot_records_of
 002fb328 get_save_data
@@ -5977,6 +6005,7 @@
 002fd5c4 make_time_with_milliseconds
 002fd600 ResourceGetSkeletal__virtual_0_002fd600
 002fd638 has_bits_18
+002fd648 Grid2x2__for_each_block_c
 002fd6bc script__WordFix_33u___WordFix_002fd6bc
 002fd844 seed_date_random
 002fdd50 nth_set_bit_position
@@ -6024,6 +6053,7 @@
 002fe9c8 ItemSet__add_group_without_flags
 002fe9dc clear_bit_keeping_one
 002fea2c pick_random_item
+002fea94 Grid2x2__for_each_cell
 002feb00 GridMap__process_world_position
 002febc4 SoundTv19ShoppingCM__virtual_4
 002ff0b8 Item__is_in_id_set_d_without_low_flags
@@ -6054,6 +6084,7 @@
 002ffbf8 FlagByteHolder__add_flags
 002ffc08 clear_flags_18
 002ffc18 block_kind_is_in_list_b_or_category_24_28
+002ffc8c ItemSet__fill_random
 002ffde0 Top3__record_at
 002ffdf4 Top3__insert
 002fff68 Top3__identity_at
@@ -6102,6 +6133,7 @@
 00301e64 read_field_u16_0x2c_
 00301e6c entry_34_at
 00301e94 store_constants_301e94
+00301ea8 BulletinBoard__post_message
 00301efc assign_bit4_of_byte02_301efc
 00301f04 member_address_0xf0__veneer
 00301f08 NoticeBoard__post_notice
@@ -6442,12 +6474,15 @@
 0030755c FlagBits10__set
 00307560 index_of_value_in_3_veneer
 00307564 clear_flag_of_10
+00307568 debug_log
 003075c8 ItemSet__add_groups_veneer
 003075cc heap_allocate
+00307650 SharedString__append
 00307688 SharedString__assign
 003076c4 daily_event_check_58def8_veneer
 003076c8 call_0031c3a8_return_self
 0030774c release_shared_string_at_0
+00307760 format_allocated
 003077b8 player_has_entry_kind_21_or_more_veneer
 00307838 construct_array_veneer
 0030784c SharedString__assign
@@ -6494,7 +6529,9 @@
 003084f8 init_sub_object
 003085b4 do_nothing_00716760_veneer
 003085b8 read_field_u8_0x4__veneer
+003085bc Villagers__for_each_record
 00308728 SaveVillager__init_player_memory
+0030878c SaveVillager__find_memory_slot
 003088bc script__WordFix_9u___WordFix_003088bc
 0030893c member_address_0x50_
 00308944 construct_word_ptr_sv_9_00308944
@@ -6642,6 +6679,7 @@
 0030c19c compare_time_stamp_to_stored_veneer
 0030c1a4 sead__SafeStringBase_char___SafeStringBase_005e1974_veneer
 0030c1ac current_weather_type_veneer
+0030c1b4 Villagers__collect_slots
 0030c398 thunk_005876c8
 0030c39c veneer_5b59c4
 0030c3a0 thunk_00694660
@@ -6692,6 +6730,7 @@
 0030ca20 veneer_6a2c2c
 0030ca24 Town__acre_small_block_veneer
 0030ca30 count_town_players
+0030ca58 Schedule__update_all
 0030cc0c veneer_6f9e94
 0030cc10 veneer_6fa728
 0030cc14 veneer_6fb0cc
@@ -6743,12 +6782,14 @@
 0030e5cc test_29
 0030e7e4 WordFlagsAt44__set_flag
 0030e7f8 WordFlagsAt44__clear_flag
+0030e80c Villagers__find_same
 0030ead0 test_33
 0030eaf0 find_villager_record_slot
 0030ebc4 set_33
 0030ebec Villager__write_move_records
 0030ef70 schedule_villager_move_out
 0030eff4 script__WordFix_60u___WordFix_0030eff4
+0030f320 Villager__set_memory_entry
 0030f48c format_string
 0030f4d8 VirtualWithWord__refresh_and_get_word
 0030f4f8 do_nothing_0030f4f8
@@ -6763,6 +6804,8 @@
 0030fc18 player_check_30fc18
 0030fca0 first_active_entry
 0030feb4 VillagerTable__reset_states
+0030ff24 Villager__days_since
+003100dc Villager__pick_random_style
 0031014c store_reference_value
 0031032c script__WordFix_60u___WordFix_0031032c
 00310530 Villager__flag
@@ -6811,6 +6854,7 @@
 00312ae0 Villager__set_flag_100
 00312af8 Villager__may_leave
 00312b20 Villager__set_item_249a
+00312b2c Villager__find_item_slot
 00312bd0 construct_word_fix_19
 00312c4c init_text_with_buffer
 00312ca0 forward_to_target_virtual_19
@@ -6819,6 +6863,7 @@
 00312e04 BsMenuBestFriendList__do_delete
 00312e54 BsMenuBestFriendList__BsMenuBestFriendList_2
 00313124 item_has_flags_and_check_b
+00313160 Villager__compact_items
 003131bc BsMenuBestFriendList__virtual_1_003131bc
 003131cc BsMenuBestFriendList__virtual_0_003131cc
 00313414 TimeStamp__set_invalid
@@ -6849,6 +6894,7 @@
 00314c04 map_kind_byte_88c626
 00314c1c held_item_table_value
 00314c68 return_constant_0x88e622_
+00314c74 Grid2x2__for_each_block_b
 00314ce4 store_u32_argument_at_0_314ce4
 00314cec GameTime__round_down_to_day_start
 00314d40 MenuWindow__update
@@ -6950,6 +6996,7 @@
 0031bc3c BsMenuSantaBagSelect__do_create
 0031bdb8 LocaleImpl__construct
 0031bea0 LocaleImpl__destroy
+0031bebc Locale__classic
 0031bf44 BsMenuSantaBagSelect__do_execute
 0031bfe4 BsMenuSantaBagSelect__do_delete
 0031c010 BsMenuSantaBagSelect__virtual_1_0031c010
