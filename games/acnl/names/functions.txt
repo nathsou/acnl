@@ -201,7 +201,7 @@
 0010b6d0 clear_28_bytes
 0010b6dc Players__refresh_identities
 0010b730 send_exhibition_letter
-0010b86c AcNpcDemoDollBase__virtual_32
+0010b86c AcNpcDemoDollBase__setup
 0010b8dc AcNpcBoardingDemoDollPlayer__virtual_31
 0010b930 AcNpcBoardingDemoDollPlayer__virtual_30
 0010b968 AcNpcBoardingDemoDollPlayer__virtual_34
@@ -405,7 +405,7 @@
 00117ae8 PlHouseGhostSetForeachCB__PlHouseGhostSetForeachCB
 00117c24 BsNpcMgr__do_create
 00118158 BsNpcMgr__virtual_1
-00118164 BsNpcMgr__virtual_0
+00118164 BsNpcMgr__destructor
 0011872a set_flag_40_of_1aa
 00118738 Record1ac__init
 0011875c Record1ac__clear
@@ -1749,7 +1749,7 @@
 001abcd0 HumanModel__virtual_1
 001abcd4 HumanModel__reset_parts
 001abd24 NpcModel__set_face
-001abfb4 HumanModel__virtual_0
+001abfb4 HumanModel__set_face_at
 001ac250 NpcModelBase__virtual_4
 001ac2c4 NpcAmbCamModelBase_PlayerModel___virtual_3
 001ac668 MoveParams__set
@@ -2942,7 +2942,7 @@
 00209f40 pending_target_still_far
 00209ff8 shopfollower__ShopFollowerAStarForeachCBRoadOnly__ShopFollowerAStarForeachCBRoadOnly
 0020a35c RoadSearch__construct
-0020a418 SoundFaderEx__virtual_3
+0020a418 SoundFaderEx__update
 0020a474 FloatFade__start
 0020a4c8 SoundFaderEx__deleting_destructor
 0020a4cc SoundObjBase__virtual_2
@@ -3382,14 +3382,14 @@
 00236e18 NpcTalkRecept__virtual_16
 00236e1c NpcTalkRecept__virtual_10
 00236e20 NpcTalkRecept__virtual_9
-00236f78 NpcTalkRecept__virtual_67
+00236f78 NpcTalkRecept__apply_bells
 00237008 NpcTalkRecept__set_mode_and_mark
 00237048 script__WordFix_9u___WordFix_00237048
 002370d0 sead__SafeStringBase_char___SafeStringBase_002370d0
 00237218 AcNpcPlayerGhost__TalkRecept__virtual_11
 0023736c NpcTalkRecept__AsyncSaveHandleHook__virtual_0
 002375ac script__WordFix_9u___WordFix_002375ac
-00237a1c NpcTalkRecept__virtual_66
+00237a1c NpcTalkRecept__apply_bells_first
 00237aac sead__SafeStringBase_char___SafeStringBase_00237aac
 00237bd4 AcNpcPlayerGhost__TalkRecept__virtual_38
 00237c1c script__WordFix_9u___WordFix_00237c1c
@@ -3437,7 +3437,7 @@
 0023ad18 AcNpcSpMaiko__TalkRecept__virtual_0_0023ad18
 0023ad1c NpcTalkRecept__virtual_0_0023ad1c
 0023adb8 AcAutoCampEntrySignboard__virtual_63
-0023adbc AcAutoCampEntrySignboard__virtual_67
+0023adbc AcAutoCampEntrySignboard__handle_talk
 0023ae64 TalkRecept__start_script
 0023af1c AcAutoCampEntrySignboard__virtual_70
 0023b0d4 PosterTalkRecept__set_message_word
@@ -5292,7 +5292,7 @@
 002d1db0 SoundObjExtVolume__construct
 002d1e1c SoundObjExtVolume__deleting_destructor
 002d1eb0 SoundObjExtVolume__destructor
-002d1f40 SoundObjFurniture__virtual_14
+002d1f40 SoundObjFurniture__start
 002d2008 AudioObjFurniture__virtual_17
 002d23cc AudioObjFurniture__virtual_18
 002d23d4 SoundObjFurniture__virtual_9
@@ -7078,7 +7078,7 @@
 0031faf4 is_state_879560
 0031fb14 LetterDragPostWindow__LetterDragPostWindow
 0031fbbc LetterDragPostWindow__virtual_7
-0031fbcc LetterDragPostWindow__virtual_6
+0031fbcc LetterDragPostWindow__destructor_b
 0031fcc4 move_drag_icon_to_list
 0031fcfc ItemPage__set_entry_flag
 0031fd44 ItemPage__entry_virtual_24

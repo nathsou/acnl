@@ -133,6 +133,7 @@
 0010b6d0 Clears 0x28 bytes.
 0010b6dc Refreshes each player's identity record.
 0010b730 Sends the exhibition letter to the players it concerns.
+0010b86c Sets up a demo doll NPC (after the NPC setup): by its flags, starts its action, takes object 4's rotation, \n queues a command and marks its model.
 0010b9b0 Advances an exhibition entry for the elapsed days: raises its level (2 to 4), records it for the slot and flags the player.
 0010bb34 Word `index` of the table at 0x9502e8.
 0010beb8 Checks the held object's shop state (forwarding to the held object's slots 21 and 22).
@@ -257,6 +258,7 @@
 00117674 Runs the handlers for the current scene's kind (0x20 / 0x10000000 -> 0030c3a0, 0x200 -> 0030c3a4).
 001176c4 Chooses the villager's spot near its house or the main object.
 00117ac0 In scenes with bit 0x80: sets bit 6 of +0x570a of the current player.
+00118164 Destroys the NPC manager: its guard boxes, resource loaders, heaps and NPC tables.
 0011872a Sets flag 0x40 of the bits at +0x1aa.
 00118738 Clears a 0x1ac-byte record, marks it used and stamps it with the date.
 00118770 Sets flag 2 << `index` (2, 4, 8 or 0x10 only) of the bits at +0x1aa.
@@ -1035,6 +1037,7 @@
 001ab70c Loads the model part of the grouped record and binds it; true when it did.
 001abcd4 Resets the 8 part ids (0x276 for none) and releases the model and its loader.
 001abd24 Sets the NPC model's face (by its mode).
+001abfb4 Sets a model's face (arg 1) at an offset (two floats on the stack).
 001ac668 Sets the move's angle, target position and its two halves.
 001aca90 Destroys an eight-entry selection catalog: its buttons, scroll bar, animations, layouts and archive reader.
 001acb90 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
@@ -1422,6 +1425,7 @@
 0020968c Releases the window's layout parts (when loaded) and layout, and its list (when not).
 00209f40 Counts a frame (up to 300) and, while the target (+0x1470) is farther than the threshold, gives its position; clears it when near.
 0020a35c Constructs a road search: 256 candidate cells and a 16 by 16 search grid for an owner (arg 1).
+0020a418 Advances a fader one frame: waits out its delay, then steps toward the target until its count runs out; \n returns the volume.
 0020a474 Starts fading the value to the target over `frames` (immediately for 0), then holding for `hold` frames.
 0020a64c Sets the sound kind (below 14, +0x3c) and counts the change (+0x40).
 0020acb0 Sets the kind at +0x3c to 0xb.
@@ -1557,7 +1561,9 @@
 00231918 Tells the talk target it is talking (its virtual function 23).
 00231ad4 Stores the gift item and its flag, and tells the gift manager for the main player and the NPC.
 00236ca4 Calls the talk receptor's pending member-function handler (and clears it).
+00236f78 Pays or charges the player the talk's pending bells (positive adds, negative pays), counted in the \n player's counters.
 00237008 Sets the talk's mode and marks each listener NPC as in a talk.
+00237a1c Pays or charges the player the talk's pending bells (as NpcTalkRecept__apply_bells), at the talk's first \n step.
 00237d58 Stores the pending text and its value when none is pending; whether it was stored.
 002383c0 Starts the word fix at the position, numbering it on first use.
 002389f8 Sets the talk's word slot to the fashion word of the index (1 to 10); 0 leaves it.
@@ -1571,6 +1577,7 @@
 0023a254 When idle (4): starts turning (mode 0) toward the object at the speed.
 0023a440 Begins the end action of the talking NPC and of each listener still in their talk idle (action 0xc); whether any began.
 0023a680 Updates the talk turn's state (below 4).
+0023adbc Handles a talk event at the camp sign: the move handler first, then for id 0x13 takes the pending flag or \n begins a request.
 0023ae64 Starts the talk: with no script, attaches it to the talk window and asks it to close; else runs the script. Then calls its virtual function 71.
 0023b0d4 Sets the talk's word slot to the message of the archive; whether there was a talk to set.
 0023b164 Sets the talk's word slot to the word.
@@ -2833,6 +2840,7 @@
 0031fa14 True when the state at +0x213c runs the handler pair at 0x879558.
 0031fa34 Releases a letter post drag window (as its base).
 0031faf4 True when the state at +0x213c runs the handler pair at 0x879560.
+0031fbcc Destroys a letter post drag window: its animations, drag icon control and group, buttons, layout and \n archive reader.
 0031fcc4 Moves the window's drag icon (+0x278) from its list (+0x3d0) into `list` (when not null).
 0031fcfc Sets the flag (+0x12d) of entry `index` among the 10 shown from +0xc (0x2b4 bytes each, +0x3d4); other indices set the first.
 0031fd44 Calls virtual 24 of entry `index` of the shown page.
