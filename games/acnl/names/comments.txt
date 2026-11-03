@@ -2958,6 +2958,7 @@
 00320a4c Sets a design drag icon's sounds (the drop sound by whether it is accepted, arg 1).
 00320cec Sets the icon button's state and plays its animation.
 00320d54 Refreshes the icon button for the current scene and player.
+00321944 Destroys an asynchronous skeletal resource load through its construction table (arg 1, the default one \n when none): its resource loader, skeletal animation and (for the default) its object resource.
 003219e8 Registers the 7 sound bank entries (ids 0x40 to 0x46) with their parameters from 0x94ccc0.
 00321a80 Starts the sound slot with its value, unless it plays.
 00321ae8 Forwards to SoundSystem__sound_value on the sound system.
