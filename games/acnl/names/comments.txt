@@ -291,6 +291,7 @@
 0011f880 Registers an object with the service (00123ca8); keeps it at 0x974f7c and marks 0x97e038 when it has +0x14; the object, or 0 on failure.
 0011f8d4 Opens the service named at 0x8b2340 on first use (under its lock) and counts the users (0x97d818); the result.
 0011fa68 Opens the service in the first mode that works (0, 1 or 2, kept at +0); a failure code when none does.
+0011fad0 Queries the service's flag (command 2).
 0011fad4 Reads a byte through 00123fe4.
 0011faf0 Applies the 16-bit value to the object's part at +0x18 (fatal on failure) and clears +0x54.
 0011fb18 Opens the ndm:u service handle (once, under a lock).
@@ -306,10 +307,22 @@
 001209f8 Loads the font resources of the table.
 001210d4 Writes the GPU commands of the part at +0x68 into the command buffer.
 00121110 Sets the mode at 0xadf9e4 from the request: 0x400 and 0x401 give 0 and 1, 0x410 gives 2.
+00121140 Destroys the graphics object of the id.
+00121304 Releases the graphics object of the id.
+0012140c Binds the object to the active state's target.
+001214f4 Sets the texture's format and its data.
+001215b8 Deletes the graphics objects of the ids.
+001216ec Deletes the graphics objects (the second kind) of the ids.
+001218b0 Sets the graphics context's two callbacks.
 00122554 Sets the display mode (0x700 to 0x702) and its width: 400, or 800 for the stereoscopic mode 0x701.
 00122620 Appends an item when the array is not full.
 00122ca8 The word at +0x94 of the object held at +0x1c of 0x953384; 0 when missing.
+00122f70 Releases the sea sound manager and clears its flag.
+00123020 Releases the river sound manager.
 00123344 Creates the two audio sound heaps (named from 0x8391f8) when missing.
+001234e0 Releases the room music player and clears its flag.
+00123528 Releases the barcarolle player.
+00123590 Builds the record and sends it to the service.
 00123600 Initializes the screen parameters for a 240 x 400 screen.
 00123678 Initializes the render state block to its defaults.
 001237d4 Sets up the thread's local block (at +0x60 of the thread storage).
@@ -318,9 +331,11 @@
 00123870 The worker thread's loop: waits for work and runs it.
 001239e8 Reads the file's size.
 00123ae8 The worker thread's entry: sets it up, runs its loop and cleans up.
+00123ca8 Sends command 2 with the buffer to the service at 0x97e03c.
 00123e40 Gets the service handle (once, under the lock) and counts a user.
 00123ee8 Gets the service handle (once, under the lock) and counts a user.
 00123fe4 Sends command 0x2 (header 0x20000) to the service at 0x97d81c and returns its result.
+00124068 Appends the bytes (aligned to 4) to the parameter block.
 00124130 Waits for the friend event for the time (milliseconds).
 00124244 Signals the event at 0x97d8b4 when its owner (0x97d8a0) exists.
 00124270 The low 3 bits of the flags at 0x974af0.
@@ -345,10 +360,20 @@
 00127c70 0x3000000.
 00127cf8 Creates an event (svc 0x17) with the reset type.
 00127d1c Yields the thread (svc 0xa with no delay).
+00127d54 Releases the island data.
+00127f88 Releases the tour result.
+001282a8 Destroys the object at 0x957308 (its virtual function 1).
+00128454 Releases the NPC net packet manager.
+00128490 Releases the NPC net share info.
+001284cc Releases the NPC permit bit manager.
+0012853c Releases the visitor's local info.
+001285c8 Releases the exhibition park info.
 001288a8 Zeroes the record and its 10 bytes.
+001288e8 Releases the NPC lock permit bit manager.
 00128924 Constructs the table's 6 entries (0xec bytes each) and resets its 10 halves to -1.
 001289ac Sets the record's kind byte and its two words, clearing the rest.
 001289c4 Unmounts the archive found by its name.
+00128b54 Closes the handle when it is open.
 00128c0c Resets the once flag: finishes its pending wait when it was in progress.
 00128c70 Signals the light event, waking the waiters.
 00128cc4 Allocates the pages (rounded to 4 KiB) from the pool, under its lock.
@@ -360,6 +385,7 @@
 001297c4 Opens the microphone service (mic:u) once.
 00129870 Reads the value at 0x974f34 when it is set; an error code otherwise.
 00129898 Gives the microphone service its sample buffer (address and size aligned to 4 KiB).
+00129be4 Sends command 0xb with the buffer (0xc bytes) to the service.
 00129c30 Sends command 0xc (header 0xc0000) to the service at 0x97e004 and returns its result.
 00129c7c Connects to the service manager's port (srv:) once, retrying every half millisecond while the port does not exist yet; counts the users.
 00129fa0 Registers the sleep notification (when the applet is up) and tells the handler it is on; an error code when the applet is not initialized.
@@ -377,23 +403,39 @@
 0012ab78 Closes the handle kept at 0x97d7f8 (svcCloseHandle) and releases the mutex at 0x97d7f4.
 0012ae20 Calls the service command at 0x130448 with the argument; stops with a fatal error when it fails.
 0012ae80 Calls the service command at 0x130658; stops with a fatal error when it fails.
+0012b264 Sends command 8 with the buffer to the service.
 0012b31c Sends command 0x32 (header 0x320042) to the service at 0x97d89c and returns its result.
 0012b3dc Runs the function at 0x131154 on +0x10 under the lock at +4.
 0012b40c Shuts the system services down in order and releases their global objects.
+0012b7c4 Releases the font manager's fonts.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
 0012ca6c Stores the value at +4; returns true.
+0012cb84 Releases the scene's objects.
+0012cc78 Finalizes the save data and its blocks.
+0012d19c Releases the talk window holder's windows.
+0012d3ac Releases the object held at 0x94ed44.
 0012d3ec Releases the layout at +0x27c.
 0012d3f4 When loaded (+0xeb18), unloads the split part, releases its object and clears flag 4 at +0xf126.
+0012d444 Releases the tour's object.
 0012d4ac Runs the finish step, then the destroy step.
+0012d4bc Closes the save's service when open.
+0012d4e8 Finishes the save state's pending work.
+0012d5bc Writes the blend commands; their end.
 0012d89c Converts the sound parameters (volume, pitch) and writes them.
+0012da6c Initializes the framebuffer's state.
+0012db48 Sets the GPU state's depth buffer flags.
+0012db70 Reserves the command list's entries (0x28 bytes).
 0012e640 Signed 64-bit division through the unsigned one, the operands and the quotient negated as their signs need.
 0012e904 When the BGM flag (0x94cd06) is set, clears it and the sound system's two words, and stops the sound (+0x1c).
+0012e968 Releases the gyroid sound manager's object.
+0012ea28 Restarts the sound object's fade.
 0012eacc Destroys the two number pairs, the four blocks and the 16 halves.
 0012eb28 Destroys the four 0x1228-byte entries.
 0012eb50 Stops the sound with the fade.
 0012ebf4 Releases the slot's sound data request (all of it when asked, else its own, +0x14).
 0012ecd4 Clears the 0x3000-byte buffer at 0xad6670 and its four counters.
 0012edc0 Constructs the file with an empty path record.
+0012ee00 Sends command 0x80c with its buffers to the service.
 0012ee60 Sends command 0x80e (header 0x80e0080) to the service of the given handle and returns its result.
 0012ee90 The object at 0x974f20; a fatal error when it is missing.
 0012eeb0 Mounts the RomFS archive as rom:.
@@ -403,7 +445,10 @@
 0012f204 A failed result code (negative) is reported as fatal, unless its level is one the caller tolerates; a success passes through.
 0012f278 Unmounts the storage when mounted (0x974f76).
 0012f384 Calls the applet service with the arguments under its light lock (retrying every millisecond); an error when the applet is not up.
+0012f474 Updates the input state from the shared memory.
+0012f518 Resets the input state.
 0012f600 Allocates a block of `size` with its alignment, direction and group, counting it (+0x54).
+0012f664 Reserves the parameter block's entries.
 0012f814 Sets the block's alignment (+0x34).
 0012f824 Sets the block's direction bit (+0x36 bit 0).
 0012f844 Sets the block's group id (+0x38).
@@ -416,10 +461,13 @@
 0012fea0 Sends command 0x16 (header 0x160042) to the service of the given handle and returns its result.
 0012fee4 Sends command 0x17 (header 0x170000) to the service of the given handle and returns its result.
 0012ff0c Sends command 0xb (header 0xb0040) to the service of the given handle and returns its result.
+0012ff6c Sends command 2 with the buffer to the service.
 00130054 Calls 00128c0c on the object at 0x97d7e0.
+0013028c Sends command 0x4b with its buffers to the service.
 00130360 Sends command 0xf (header 0xf0100) to the service at 0x97d7f8 and returns its result.
 00130448 Sends command 0x3e (header 0x3e0080) to the service at 0x97d7f8 and returns its result.
 00130658 Sends command 0x3f (header 0x3f0040) to the service at 0x97d7f8 and returns its result.
+00130690 Closes the service's handle when it is open.
 001306e0 When enabled (0x97d801): reads two system flags into 0x97d800 and applies them (retrying on result 0xc9405001).
 00130750 Sends command 0x3c (header 0x3c0000) to the service at 0x974b90 and returns its result.
 0013078c Sends command 0x3d (with the flag) to the service and returns its result.
