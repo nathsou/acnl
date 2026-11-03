@@ -1651,6 +1651,7 @@
 00268d94 Sets the action's target and its model.
 00268db4 Starts the emoticon action of the kind.
 00269208 Updates the emoticon action (by its kind).
+002694b8 Destroys an emoticon action: its emoticon slots.
 0026a418 Updates the emoticon slots' effects.
 0026a5dc Stops each of the 4 slots' effects and marks them stopped (or idle when unused).
 0026a66c Constructs the 4 slots (0xfc bytes each) and clears the state.
@@ -4510,6 +4511,7 @@
 005e35dc Clears the message reference (kind 2, no message).
 005e49c0 Sets up a choice list: `count` choices with `default` selected (none when out of range).
 005e4a28 Resets the choice (no selection, 5 entries at most) and its entries.
+005e4bd4 Constructs a standard choice for arg 1 choices: their 65-character words, none selected, five shown at a \n time.
 005e626c Starts the text with its options and runs it when there is one; the result.
 005e7dc4 Notes whether the character is native to the region's script or foreign.
 005e8348 Starts the message engine on the text (or marks it done without one).
@@ -4522,6 +4524,7 @@
 005ea158 Formats the number with three digits into the string.
 005ea8f8 Attaches the window to the message store and restamps its time.
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
+005ec990 Starts reading a UTF-16 text (arg 1): the first character's width (2, or 4 for a surrogate pair).
 005f10b0 Starts loading the resource (split or plain); whether it started.
 005f11b4 Sets the talk target's word slot (its virtual function 33).
 005f1344 Sets the talk target's text (its virtual function 39).
@@ -4529,6 +4532,7 @@
 005f6b44 Formats the amount with its separators for the region.
 005f6dcc Scans the text table for the entry.
 005f6eb0 Formats the number with its digits and the region's separators.
+005f723c Constructs a text buffer over the shared 19-character buffer, starting with the default object id, with a \n word pointer to it.
 005fbc20 Closes the message window: resets its engine and clears its text.
 005fbfbc Lays out the message window's lines.
 005fc110 Clears the page's line offsets and shows its end (the last line's width, or the default).
@@ -4838,6 +4842,7 @@
 0062a550 The entry (of the 4) with the identity, or null.
 0062a5cc Removes a peer address from the list (under the session lock), moving the following entries down and clearing the last.
 0062a698 The player entry (below 4), or null.
+0062a724 Resets a net peer list: releases and resets its four peers, and clears their slots and ids.
 0062abd8 Connects peer `index` (below 4) of the list, under the session lock.
 0062ad70 Clears station `index`'s friend flags and sets bit 3 when the friend list knows the peer's key.
 0062add8 Updates the session's friend entries from the friend list.
@@ -4872,6 +4877,7 @@
 00631d5c Updates the talk codes for the NPC's kind and loads the kind's handler.
 006322a0 Resets the talk state when it was active, and clears it.
 006323d8 Extends the countdown by the wait (in frames) for the index when available, and marks it waiting.
+00632428 Resets a talk's effect: when arg 1 is 0, releases it unless still flagged; else kills it now when it is \n the current one.
 00632594 Plays the effect at the NPC's head, or moves the one already running.
 00632648 Updates the talk codes for the NPC and resets the talk state.
 00636bf0 Adds a random choice (of 3) to the talk's choices.
@@ -5201,6 +5207,7 @@
 006a8534 Spawns effect `kind` of the set (second variant) with the given parameters.
 006a8568 Sets the mode (+0x188) and kills the 16 effects of the set.
 006a8598 Begins the NPC's action of the kind (0 to 2) with its parameters.
+006a8954 Destroys a foot mark: its sixteen particle handles.
 006a8a90 Releases the handle (+0x14) and the object (+0x3c).
 006a8b34 Releases the handle (+0x24) and the object (+0x44).
 006a8b50 Releases the handle (+4) and the object (+0x34).
@@ -5629,6 +5636,7 @@
 0070aa00 False when the state pair (+0xc) is either of the two idle handler pairs (0x857a60, 0x857a88), else true.
 0070aa84 The value of the first sub object (+0x184c, else +0x1850).
 0070aabc True when the first sub object (+0x184c, else +0x1850) is ready.
+0070ab10 The friend key for the object's friend slot (byte 0x664), when it has one; else 0.
 0070ab24 Slot `index` (fewer than 4; 0x18 bytes each, from +0xe0) passed on to call_007460e8; 0 for a larger index.
 0070ab44 The world position of the model's joint (none for a negative index); whether it has one.
 0070ac44 The animation value of slot `index` (below 4, 0x18 bytes each, +0xe0); 0 otherwise.

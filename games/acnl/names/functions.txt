@@ -3920,7 +3920,7 @@
 00269208 EmoticonAction__update
 00269474 EmoticonAction__virtual_0
 00269478 EmoticonAction__EmoticonAction_00269478
-002694b8 EmoticonAction__EmoticonAction_002694b8
+002694b8 EmoticonAction__destructor
 0026a418 EmoticonSlots__update
 0026a5dc EmoticonSlots__stop_all
 0026a66c EmoticonSlots__construct
@@ -16931,7 +16931,7 @@
 005ec964 script__UiSeq__virtual_2
 005ec970 script__UiSeq__deleting_destructor
 005ec980 script__UiSeq__destructor
-005ec990 read_source
+005ec990 Utf16Reader__init
 005ec9fc script__Insert__virtual_19
 005eca38 script__Insert__virtual_28
 005eca4c script__Insert__virtual_27
@@ -17162,7 +17162,7 @@
 005f6d1c sead__WFixedSafeString_32___WFixedSafeString
 005f6dcc TextBuffer__scan_table
 005f6eb0 WordNumber__format
-005f723c sead__BufferedSafeStringBase_wchar_t___BufferedSafeStringBase_005f723c
+005f723c TextBuffer__construct
 005f728c script__Project__SingletonDisposer___deleting_destructor
 005f72f0 script__Project__SingletonDisposer___destructor
 005f734c script__Project__SearchContentFolder__deleting_destructor
@@ -17940,7 +17940,7 @@
 0062a550 NetPlayers__entry_of_identity
 0062a5cc NetPeerList__remove_address
 0062a698 NetPlayers__entry
-0062a724 part_finish_a724
+0062a724 NetPeerList__reset
 0062a7e4 netgame__AvatarMgr__virtual_3
 0062aa1c netgame__AvatarMgr__virtual_5
 0062abd8 NetPeerList__connect_peer
@@ -20365,7 +20365,7 @@
 0070aa00 state_is_not_idle_857a60
 0070aa84 query_first_sub_value
 0070aabc first_sub_is_ready
-0070ab10 query_70ab10
+0070ab10 friend_key_if_set
 0070ab24 slot_of_4_at_e0
 0070ab44 Model__joint_position
 0070ac44 animation_value_of_slot
