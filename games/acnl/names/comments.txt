@@ -830,6 +830,41 @@
 0020d328 Clears the four item pairs, their flags, records and words.
 0020d600 Puts one of three reward items (chosen at random) in the record's slot.
 0020d71c Sets item slot `index` (below 13) and, when the owner is the current player, shows it.
+00220c28 Selects icon `index` of the second group (+0x2b1c): unselects the previous one and starts the new one's highlight (kind 2).
+0022105c Selects icon `index` of the first group (+4): unselects the previous one and starts the new one's highlight (kind 1).
+002214e4 In room scenes, selects the player icon (+0xac64): unselects the previous one and starts its highlight (kind 5).
+00221790 Updates the visible map icons.
+00222ebc Releases the map screen's layouts: its icons of every group, the player icon and the frame.
+002236c0 The index of the visible label (of 7) of the kind near the height; -1 when none.
+00223778 Plays animation `index` (0x28 bytes each, +0xc) on its pane.
+0022384c Hides the 7 labels.
+00223c68 Resets the 7 labels to their home positions and clears their kinds, then releases the button.
+00224204 Adds a marker (id and two bytes) when fewer than 28 exist.
+0022426c Attaches the layout and updates the 7 visible icons.
+002248ec Releases the layout, the 7 labels' layouts and their texts.
+00224950 Scrolls the list up one step and hides its arrow.
+0022526c Sets the flag at +0xabc of the child (+0x38) when it exists.
+00225948 Starts the effect of field item effect slot `index` (of the table at 0x997c30) when the manager exists.
+00225984 Scans the map's cells for the items that show effects.
+00226750 Clears bit 4 of each of the 6 effect slots' flags.
+002267e4 Resets the 2 special slots and the 6 effect slots.
+00226828 Picks up the effect items in the block.
+00226ee8 Releases the two models: their animations, models, loads and menu parts, resetting their states.
+00228f74 Loads the rain shader (on the weather heap).
+00229c50 The weather particle kind: the override (+0x48a0) in mode 1, else 0x20 for rain and 0x80 for snow.
+0022a250 Loads the snow shader (on the weather heap).
+0022bac4 Plays the shutter animation on its pane.
+0022bb00 Detaches the shutter layout from the layout system.
+0022bb1c Loads the shutter layout and its animation.
+0022bba4 Releases the shutter layout.
+0022bbac Unless busy, starts the shutter animation from 0.
+0022bc08 Advances the shutter animation and updates the layout.
+0022bc80 Loads the button position layout and binds the button to its pane.
+0022bcec Releases the button and its layout parts; true.
+0022bdf0 Shows the button pair on the right and left panes.
+0022be5c Shows the single button on its pane.
+0022bea0 Loads the button position layout and binds the button pair to the right and left panes.
+0022bf34 Releases the button pair and its layout parts; true.
 00240080 Runs the function at 0x7206e0 on structure list `index` (below 4, from 0xab7de4) when it exists.
 002404b0 True when the construction site (save +0x6e2a4) is set (or finished) and is in block (x, y) for the structure kind.
 0024088c Finds the structure matching the record in the main list (0xab7df4) and removes it.
