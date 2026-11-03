@@ -1304,11 +1304,15 @@
 001f4e30 r0@entry ac_object_base
 001f4fec arg0 actor_base
 001f581c arg0 ac_object_show
+001f581c r0@1f582c creature_size
 001f581c r0@1f5838 insect_info
 001f581c r0@1f584c fish_info
 001f581c r0@1f58c8 category_2
+001f581c r1@1f5824 is_insect
 001f6cc8 arg0 ac_object_show
 001f6cc8 r0@1f6cd8 is_empty_2
+001f6cc8 r0@1f6ce4 state_b
+001f6cc8 r0@1f6cf8 state_a
 001f6cc8 r0@1f6d24 sound_obj_insect_fish
 001f815c arg0 auto_camp_book
 001f8798 arg0 icon_button
@@ -3769,6 +3773,7 @@
 00573214 arg0 ac_ftr
 0057322c arg0 ac_ftr
 005739fc arg0 ac_ftr_audio
+005739fc r0@573a00 sound_object
 00573aac arg0 ac_ftr
 00573aec r0@entry ac_ftr
 0057456c arg0 ac_ftr_audio
@@ -3806,6 +3811,7 @@
 0057afd4 arg0 ac_npc_demo_doll_base
 0057afd4 r0@57afe0 now
 0057b990 arg0 actor_rec
+0057b990 r1@57b9d0 rotation_z
 0057b9dc r0@entry string_pool
 0057bd78 arg0 pair8
 0057bd94 arg0 npc_entry
@@ -5077,6 +5083,7 @@
 00673b5c r0@673b70 params_2
 00673b5c r0@entry ac_player
 006742c0 arg0 ac_player_rec
+006742c0 r0@6742e0 wake_flags
 00678300 arg0 slot_object
 00678300 r0@678314 params_2
 0067837c arg0 ac_player
