@@ -216,6 +216,8 @@
 00111f4c Villager `id`'s bit (below 0x18f) in a bit array; 0 without one.
 00111f94 Whether the event of building 0x4e is kind 0x26, the first player's flag is set, and the player's stats \n have not yet updated today (offline only).
 00111ff0 Whether the record at 0x62250 is ready, from today, and of kind 1 to 4.
+001120f0 Whether, offline during event kind 0x26 with the first player's two flags set, the shops are open (for \n the player and in general) and the record at 0x6ae54 is not kind 0x2002.
+00112298 Whether the town event at 0x666e4 is ready and from today, of kind 4, not blocked, and its daily check \n (0xb) has not run today.
 0011253c Clears the villager part (0x22bcc bytes) and the four villagers kept at +0x1976c (two sets of two).
 00112584 Builds the villager part and its four extra villagers, then clears it all.
 00112714 Forwards to SaveVillager__remove_item_8d6.
@@ -437,6 +439,7 @@
 00120198 Sends command 0x4f (header 0x4f0080) to the service at 0x97d7f8 and returns its result.
 001201d0 Sends command 0x3 (header 0x30040) to the service at 0x97d7f8 and returns its result.
 00120364 Constructs a draw lock context: a critical section, nothing locked.
+0012038c Constructs a graphics context: the default blending, depth and culling states, full color mask.
 0012051c Constructs the graphics singleton's base: a disposer, nothing set up.
 0012089c Creates the script heap's children: libms, static, message, mail and flow.
 001209f8 Loads the font resources of the table.
@@ -468,6 +471,7 @@
 00123590 Builds the record and sends it to the service.
 00123600 Initializes the screen parameters for a 240 x 400 screen.
 00123678 Initializes the render state block to its defaults.
+00123788 Clears the thread's first 16 thread-local words.
 001237d4 Sets up the thread's local block (at +0x60 of the thread storage).
 00123838 Runs the call and stops with a fatal error when it fails.
 00123854 The value returned by the query at 0x129c30.

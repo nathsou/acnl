@@ -291,9 +291,9 @@
 00111f94 building_event_26_day_check
 00111ff0 check_111ff0
 001120a4 check_1120a4
-001120f0 check_1120f0
+001120f0 building_event_26_shops_check
 001121f0 index_of_villager_with_id_in
-00112298 check_112298
+00112298 town_event_kind_4_due
 0011253c VillagerPart__clear
 00112584 VillagerPart__construct_and_clear
 00112618 SaveVillager__add_item_8d6
