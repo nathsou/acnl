@@ -534,18 +534,98 @@
 0051ca20 Whether 00308e80 gives 0x26 or 0xa.
 0051d710 Copies 0x32 bytes into entry `index` (below 4) of the table at 0xa82b90.
 0051dacc Clears the four 0x32-byte entries of the table at 0xa82b90.
+00520bec Builds the global string pool (0x97528c): its three 1024-entry tables, its four buckets and the 1024 bucket flags.
+00520ce8 The address of 12-byte entry `index` of the table at 0x975294 (count 0x97529c), or 0.
+00520d1c Calls the first handler of entry `index` of the handler table at 0x975298.
+00520d30 Calls the second handler of entry `index` of the handler table at 0x975298 with an argument.
 00520d5c Puts `node` (links: next +0, previous +4) at the front of the list (head +0, tail +4).
 00520df4 Puts `node` (links: next +0, previous +4) at the back of the list (head +0, tail +4).
+00520e24 Copies the entries of one string pool table to another.
+00521000 Builds an object with the parameter set at 0x8a3af8 (00520f7c).
+00521030 Builds an object with the parameter set at 0x8a3b10 (00520f7c).
+00521070 Builds an object with the parameter set at 0x8a3b28 (00520f7c).
+005210a8 Releases a string from the global string pool.
+00521a48 Builds an object with the parameter set at 0x8a3b40 (00520f7c).
 00521ae4 Appends `node` to `parent`'s children (first child +8, next sibling +0x10, previous +0xc), or to the roots (`roots`) without a parent.
+00521ddc The current viewport's rectangle (of the first render target when it has one), or a static empty one when the error/EULA screen is up.
+00521e74 The current render target's scale (+0x11c), or a static zero when the error/EULA screen is up.
+00521ef8 The current render target's size (+0x14 when set), or a static default when the error/EULA screen is up.
+00522168 The number of characters of line `index` (from its start to the next line's, without the final one).
 005221d8 Entry `index` of the 16-bit table at +word_c (filled up to it first when it lies past +word_10); -1 for an index out of range or an empty entry past the first.
 005224bc Entry `index` of the 16-bit table at +word_c (filled up to it first when it lies past +word_10).
 00523020 Moves the cursor to `position` (kept within the text); with `keep` the selection starts there too.
 005235e8 Deletes the selected text (between the cursor and the anchor) and collapses the selection.
 00523658 Replaces the edit's text with `text` (`length` characters, all of it when negative, at most the capacity), the cursor and selection at 0.
+0052370c Handles the delete key in a text edit: deletes the selection or the character, with its sound.
+0052389c Word +4 of the keyboard object (0x95e0fc), or 0.
+005238b4 Builds the keyboard's first key table (0xad6140).
+00523b6c Builds the keyboard's second key table (0xad6540) for the current mode.
+00523d60 Stores the keyboard mode (0x95e0c9) and, for a mode with a value, the value (0xad6278).
+005242b8 Clears +0x99 of the keyboard object (0x95e0fc) when there is one.
+00524478 Frees the keyboard's buffer (0x95e0e0) and its two layout parts, and clears 0x95e0e4.
+005244c0 The glyph of a character in the keyboard's font (0x95e0e0).
+00524528 Initializes a key event for a character (kind 0).
+00524598 Initializes a key event for a command (kind 1).
+00524838 Sets the keyboard layout pair (+0x4c) from the language table (0x890530), with the regional variants for languages 4 and 1.
+00524b80 Finds the key under a point in the key table.
+00524d58 The button's value (+8) when its key is in the pressed mask, else its current entry (or 0).
+00525ae4 Creates a cell grid and fills every cell with the 16-bit ids of the source array, then finishes it.
+005269e8 Places items on the map by the terrain of each cell (a long routine over the map rectangle).
+00526ea0 Whether the two cells below a point are not shore (terrains 0x14, 0x31-0x33) holding a tree-like item (types 4, 6 or 8).
+00527088 Places items on the map by the terrain of each cell (the second routine).
+00527a2c Marks the cells of the structures in a block (first pass).
+005284b8 Marks the cells of the structures in a block (second pass).
+00528860 Converts a UTF-16 string (up to the BMP) to UTF-8 within the buffer size; the number of bytes written.
 00528924 Converts a UTF-8 string of one- to three-byte characters into at most `capacity - 1` UTF-16 units and a terminator; an invalid lead byte leaves the output empty.
+00528b00 Finds the scene entry (0x950464 table) whose name matches, for the current mode.
+00528c6c The size in bytes of a vertex data type (0x1400-0x1406, from the table at 0x854107).
+00528ce0 Writes a GPU command (register 0xf004e) with the depth offset in 24-bit float format.
+00528d60 Generates the town map: picks the layout pieces at random and fills the grid.
+00529334 The wallpaper of the current room (the default 0x23eb, or the house room's, the villager's, the exhibit's) and its flag.
+0052953c The flooring of the current room (the default 0x234c, or the house room's, the villager's, the exhibit's) and its flag.
+00529c80 The pool entry of message `id` (below the count at 0x887402) through 0051fc48, unless it is hidden (+0xf); 0 otherwise.
+00529d08 The pool entry of message `id` (below the count at 0x887402) through 0051fc14, unless it is hidden (+0xf); 0 otherwise.
 00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
+0052a508 Resets the fade layout: rewinds its fade animation to 0 and hides the fade pane.
+0052a870 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x85edc4, bit 1 when it is the one at 0x85edb4.
+0052ab60 Clears the record and gives it a random item of category 0x33 (of the first five).
+0052abd8 Sets the room's wall textures from its wallpaper (three wall materials).
+0052b948 Resets the wipe layout: rewinds its wipe animation to 0 and hides the wipe pane.
+0052bb0c Bit 0 when the member handler (+0xc, +0x10) is the one at 0x895bb0, bit 1 when it is the one at 0x895ba8.
 0052be5c Resets the entry list at 0x9ab170 and the counters at 0x9516a0.
+0052bf90 Sets bit 2 of 0x9516a0.
+0052bfa8 Queues an entry of kind 0xd for the player (its id +0x54) in the list at 0x9ab170; true when it did.
+0052c01c Unless in talk state 0xe: queues an entry of kind 7 with a value for the player in the list at 0x9ab170; true when it did.
+0052c0a4 Unless in talk state 0xe: queues a talk entry of kind 4 for the player (its id +0x54) in the talk queue (0x9ab170); true when it did.
+0052c1a0 Queues a talk entry of kind 1 (option 3) for an NPC (its id +0x54); true when it did.
+0052c268 In talk state 1 or 2: notifies the current talk partner (0x9516a8, else 0x9516a4).
+0052c2c0 Clears bit 2 of 0x9516a0.
+0052c3e0 Queues a talk entry of kind 0xb for the player; true when it did.
+0052c454 Resets the talk queue and its partners, and queues the first entry (kind 3: state 3 with a partner, else 0).
+0052c4d8 Queues a talk entry of kind 2 (option 3) between an NPC and the player; true when it did.
+0052c584 In talk state 6: marks the current entry finished (+0x1a); true.
+0052c648 Whether the counter at 0x9516b0 is above 0.
+0052c790 Whether the object may talk now: always in scenes with bits 0x10 or 0x8000000; in talk states 1-2 when it is the current entry's partner (marking it).
+0052c82c Keeps the object's id (+0x54) as the second talk partner (0x9516a8).
+0052c844 The odd kind paired with an even kind (2 -> 1, 4 -> 3, 6 -> 5, 8 -> 7; else 1).
+0052c878 In talk state 1 or 2: notifies the first talk partner (0x9516a4) when there is one.
+0052c8c4 Queues a talk entry of kind 2 (option 3, value 3) between an NPC and the player; true when it did.
+0052c974 Unless in talk state 0xe: queues a talk entry of kind 8 for the player; true when it did.
+0052cc5c Bit 1 of the talk flags (0x9516a0).
+0052cc74 Unless in talk state 0xe: queues a talk entry of kind 6 (option 1) for the player; true when it did.
+0052ccfc Keeps an object as the listener (0x9516b4) when there is none; true when it did.
+0052cd58 Outside scenes with bit 0x10, in talk state 1-2: marks the current entry cancelled (3) when the object is its partner and there is no main-object value.
+0052ce18 Clears the six talk slots (0x9ab598) and, in multiplayer, tells the others (message 0x39) when the main object is busy; else clears 0x9ab588.
+0052ceb8 Claims talk slot 0 for an object id: in multiplayer with a busy main object asks the others (message 0x39) and returns 0; else 1 when it was claimed, 2 when taken.
+0052d0b8 Whether in multiplayer the guest entry is not ready.
+0052d0dc Releases talk slot 0: directly offline or with an idle main object, else tells the others (message 0x39).
+0052d150 In multiplayer: sends a talk-slot request (message 0x39, kind 5) with the object id and two bytes.
+0052d220 The partner of `id` in the six talk slot pairs (0x9ab598), or 0.
+0052d420 Claims talk slot `index` for `id` when it is free and `id` is not in another slot or pair; true when it did.
+0052d550 Clears a talk entry (kind 0xe).
 0052db0c Copies entry `index` (three words, and the matching words at +0x3c) of the table at 0x9516c0.
+0052ddf8 Copies a position, or (in modes with flag 2) moves it through 0075d2f8 and returns its angle.
+0052de50 Builds a matrix at the (mode-adjusted) position, rotated by the angle about x and by `angle_y` about y.
 0052e3ec When the current mode has flag 2: calls 0075d24c with the static zero vector and the two arguments.
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
 00537028 Takes the part off the menu list when it is on it, then unloads it.

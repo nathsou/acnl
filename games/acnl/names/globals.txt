@@ -39,6 +39,7 @@
 009514bc caution_instance
 00951668 compass_mgr_instance
 00951694 data_store_instance
+009516ac current_talk_entry
 009524d6 event_day_is_today
 009524dc event_list
 009524e0 current_event
@@ -105,6 +106,9 @@
 00986a80 tune_notes
 00989bd8 bgm_queue_object
 0098a030 flag_manager_object
+009ab170 talk_queue
+009ab588 talk_slots
+009ab598 talk_slot_pairs
 009c79ac offset_minus_x
 009c79b8 offset_plus_x
 009c79d4 room_timers
