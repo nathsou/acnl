@@ -604,15 +604,135 @@
 00594358 Builds an empty item with the extra bytes 0xa5, 0, 0.
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
 0059f194 Finds the first of the four 0x12-byte slots at 0x9b417c whose byte +0xf is clear and fills it; -1 when all are used.
+005a06b4 Forwards to do_nothing_002f777c.
 005a06d4 The index of the used entry for (x, z, layer) among the 32 five-byte field markers; -1 when none (layer 0xa5: the current one).
+005a08dc Sends or applies the pending field drops (as field-drop records) to the stations.
+005a0ab8 For the 32 five-byte entries at 0x9b41c4: clears those of kind 0x23 and places an empty item for those of kind 0x24 (00168868), freeing them.
+005a0d3c Spawns the effects of an object at random positions around it (with its matrix).
 005a0ef8 The index of the used entry for (x, z, layer) among the 32 field drops (0x16 bytes each); -1 when none.
+005a1174 For an item event of this station: counts it (counter 9) for special items, items of category 0x36 or item 0x3413, and records shell finds on beach terrain 0xac for the tour result.
 005a1ba0 Buries the drop's item (a placeholder when its number is not indexed) at its cell, then clears the tile; true when it could.
 005a213c Throws the drop's item from its cell, with its effect and sound, then clears the tile.
 005a224c Ends and clears the field drop at (x, z) when there is one.
+005a2438 Builds a field drop from an entry (cell and kind, empty items) and sends it (message 0x3a) when another station leads, else applies it.
 005a2534 Ends every field drop in use (sending what it needs) and clears it.
 005a2624 Sets the bit of cell (x, z) in a bit map of the town's 112 x 96 cells (after a 4-byte header); nothing out of range.
 005a2664 Clears a bit map of the town's 112 x 96 cells (0x540 bytes after its 4-byte header).
+005a2804 The nested part (+0x28 twice) of the model of block (row, column) of the block table at 0x94ee58, or 0.
+005a2864 Tracks repeated attempts at the same cell (up to 8); on a new cell rolls whether the worn item 0x335a gives a bonus (20%).
+005a294c Counts down the cell timer (0x9526b0) and, when it ends, updates the item at the tracked cell (006b9904) and puts it back.
+005a29dc When the cell timer is running: updates the item at the tracked cell now and stops the timer.
+005a2fdc Copies the two words at 0x952898.
+005a2ff0 Copies the two words at 0x9528a0.
+005a3004 Copies the two words at 0x9528a8.
+005a3018 Copies the two words at 0x9528b0.
+005a337c Whether the word at 0x952894 is set.
+005a3394 Stores 0xf at 0x952894.
+005a3474 When enabled (0x95288c): writes a command block (0x208) with the prepared data and the buffer at 0x9c797c into the GPU command list.
+005a3508 For the four player models (0x128e8 bytes from 0x9c9fe0): binds the 12, 14 and 13 named parts to their slots (tables 0x952af0, 0x952b20, 0x952b58).
+005a360c Points the record at player model `index` and at its 12 and 14 part slots.
+005a36b8 Sets or clears the visibility bit of part `index` (its bit number from the part table) in the model's mask (+0x29c).
+005a3720 Clears 0x70 bytes of the object.
+005a3f08 Calls 005a4cf4 with a 0x64000-byte buffer and two output slots.
+005a4aec The size of `count` 16-byte entries plus `extra`, rounded up to 32 bytes.
+005a4bd0 Recomputes the CRC-16 of the database header (its CRC field taken as 0) and stores it at +0x14.
+005a4e5c The size of `count` 0x98-byte records plus `extra` and the 0x18-byte header.
+005a4e70 Initializes an image database in a buffer when it is large enough: its header (magic, count, offset) and `count` empty records with four entries each.
+005a4f70 Recomputes the CRC-16 of the database header (its CRC field taken as 0) and stores it at +0x14.
+005a4fd0 Keeps the two paths at 0x97e098 and 0x97e09c unless they are set.
+005a4ffc Clears a picture record (magic 3DS1) and fills it with the current time and date fields.
+005a50bc Stores a 5-bit value in bits 7-11 of +0x68.
+005a5130 Stores a value in bits 12-27 of +0x30.
+005a5148 Once: grows the buffer to 0xdac entries and opens the picture databases (500 and 3000 records) that are asked for.
+005a51f4 Writes a picture (kind 2) with its two scale values through 005a566c.
+005a53c4 Adds a picture to the database: checks its record, writes it, and inserts its entry in the sorted index.
+005a55cc Writes a picture (kind 1) with its two scale values through 005a566c.
+005a5618 Checks database `index`'s files (005a9e1c), also the second file when it has one; the first error.
+005a58cc Verifies database `index` when it is open: 0xd when its storage is gone, else the file check result (clearing its dirty flag on success).
+005a593c Adds a picture to the database (the variant that also rebuilds the index when needed).
+005a6218 Repairs database `index`: checks its files and fixes the broken records.
+005a68e8 Parses the photo file name under the cursor: an 8-character folder name, or a name with a 1-4 character extension; 1 when it is a valid photo name, 2 otherwise.
+005a6b8c Clears a photo name parser (state 2) and its path.
+005a6c4c The address of 18-byte entry `index` from +8.
+005a7910 Fixes a broken record: rebuilds the photo's path and file record from its id, and removes the record when its file is gone; reports which was done.
+005a7aa8 Rebuilds the database index (the parts that are missing), returning 0xb when an error was flagged.
+005a7f70 Fixes an entry's files: rebuilds the record when its file exists but the flag is off, or rebuilds the file of extension 1 or 2 from the record.
+005a802c Rebuilds the database records from the files on the storage, flagging errors at 0x9816b8.
+005a8b24 Clamps a 64-bit time between the earliest (005a8c34) and the latest (005a8b9c) times.
+005a8da4 The current time as a 64-bit count (from the system clock converted to a date and time).
+005a8e08 Stores the current time as a 64-bit count.
+005a8e60 Converts a count into a date and time and stores it as a 64-bit time.
+005a8ea0 Parses a 19-character date YYYY:MM:DD HH:MM:SS into a 64-bit time; true when it is valid.
+005a8fd0 Builds the entry's path and record, checks the storage and writes it; the writer's result.
+005a90b0 Stores a value at +0x10 of the record (+0xc) and marks it changed.
+005a90c4 Sets or clears flag 0x10 of the record's flags (+0x14 of +0xc).
+005a91e0 Keeps a value at 0x9816ac and marks it pending (0x9816a8).
+005a9c14 Copies a value into the two open records (+0x2c when +0x20, +0x40 when +0x34).
+005aa460 Stores a 3-bit value in bits 2-4 of the key's second word.
+005aa47c Stores the packed id and count (two halves) in bits 5-28 of the key's second word.
+005aa4bc Stores a 2-bit value in bits 0-1 of the key's second word.
+005aa4d4 Stores a value in bits 18-31 of the key's first word.
+005aa4ec Stores an 18-bit value in bits 0-17 of the key's first word.
+005aa50c Halves the width and height (rounding up) until they fit within the limits; the number of halvings.
+005aa638 Stores field `index` (+0x50 table) and marks it set in +0x4e.
+005aa65c Writes the low 20 bits of a value as five lowercase hexadecimal digits and a terminator.
+005aa6f0 Stores a 64-bit time at +0x40.
+005aa700 Stores a value at +0x48 and marks it changed (+0x78).
+005aa710 Stores the kind (0 or 1 only) at +0xa.
+005aa73c Stores the packed id and count (two halves) in bits 1-17 of +0xc.
+005aa778 Clears a picture record (0x6c bytes), sets +0xd to 4 and the kind byte +0x20 from `mode` (9 for mode 3).
+005aa7c0 Clears a picture record (0x6c bytes) with +0xd = 4 and +0x20 = 0.
+005aa7ec Clears slot `index` (+0x10 table) and its bit in +0xf.
+005aa814 Stores slot `index` (+0x10 table) and sets its bit in +0xf.
+005aa838 Stores the kind (0 or 1 only) at +0xe.
+005aa848 Clears a picture record and its four 0x12-byte entries.
+005aa878 The size plus a 4-byte header, rounded up to 4.
+005aa884 Initializes a flag buffer when it is large enough: its 16-bit count and `count` cleared flag bytes.
+005aab40 Keeps a value at 0x9816b4 and marks it pending (0x9816aa).
+005aab58 Keeps a value at 0x9816b0 and marks it pending (0x9816a9).
+005aad7c Builds a wide photo path from its parts.
+005ab1fc Reads a photo file's header (extension 1 or 2) into the record; true when it worked.
+005ab304 Clears a photo file record and its time.
+005ab334 Builds the file's path and reads its header through the reader; the reader's result.
+005ab498 Calls virtual 3 of the photo storage object (0x982128).
+005ab4b0 Calls virtual 2 of the photo storage object (0x982128).
+005ab4c8 Maps a file-system result to a photo error: 0 for success or not-found codes, 8, 9 or 0xe for media errors, 5 otherwise.
+005abb6c The value of 003506c8 for 0x204, read once (0x97e0e0).
+005ac04c Calls 005abba0 with the bit 1 << `index` as its last argument.
+005ac2b0 Writes a photo file through 005af3e0 with option 1.
+005ac4f4 Builds the full wide path of a photo: drive, folder (number + 100 and the folder suffix), file (prefix and number + 1) and extension.
+005ac5dc Builds the full wide path of a photo from its record (drive, folder, file name and extension); the length.
+005acca4 Formats a photo file name: the prefix and the number + 1 on four digits.
+005accd0 The photo root path for storage `which` (0 or 1), built once from the drive and the folder name; the empty path for others.
+005acde8 The path of the photo database file for storage `which` (0 or 1), built once; the empty path for others.
+005ace98 The length of the photo root path of storage 1, computed once.
+005acf04 Scans the next photo folder or file under the cursor, building their paths.
+005ad068 Calls 005ad0b4 with the current time.
+005ad658 Formats a photo folder name: the number + 100 on three digits and the folder suffix of the storage.
+005ad690 Builds the wide path of a photo's folder (drive and folder name); the length.
+005ad6d8 Builds the wide path of a photo folder from its number; the length.
+005ad968 Calls 005af04c with the time from 005acb9c and the two arguments.
+005ad9a0 The four-digit number of a photo name (four non-empty characters then four digits), or -1.
+005ada54 The four-digit number of a wide photo name (four non-empty characters then four digits), or -1.
+005add7c The length of the photo root path of storage 0, computed once.
+005adf1c The length of the photo drive path, computed once.
+005ae46c The path of the photo index file for storage `which` (0 or 1), built once; the empty path for others.
 005ae51c Copies wide string `index` of the table at 0x981660 into `out` (empty for index 0 or 1 handled apart).
+005aead8 Reports a fatal error for a failing file-system result, except the media and not-found codes the photo code handles.
+005aeb58 Copies the parent directory of a wide path (up to its last slash).
+005aebc8 Looks through the photo folders under the cursor for the one with the given name.
+005aed44 Fills a photo record from its folder and file names (numbers and extension).
+005aee20 Fills a photo record from its wide folder and file names.
+005aef40 Copies the time, kinds and the four slots of a picture record into a photo record.
+005aeff0 The three-digit number at the start of a folder name, or -1.
+005af13c Fills a photo record's folder fields from a folder name.
+005af3e0 Writes a photo file to the storage: makes its folder when missing, builds its path and writes the data (with the given option).
+005af6dc Parses up to `count` decimal digits (stopping at a terminator) into `out`; false on a non-digit.
+005af748 Parses up to `count` wide decimal digits (stopping at a terminator) into `out`; false on a non-digit.
+005af7b4 Compares two wide strings ignoring ASCII case; the difference of the first mismatching characters.
+005afd20 Stores the writer's three words, its scale and its flag (+0x1c to +0x2c).
+005afe90 Clears an 18-byte picture entry.
+005aff24 Moves the directory cursor to the next entry, reading the next batch of 64 entries when needed; false at the end or on an error (reported unless quiet).
 005b0164 Writes the photo's file name (the prefix and the number + 1, four digits) into the path's name field (8 characters).
 005b034c The index (0-3) of the wide file extension `text` (a leading '.' ignored) in the table of known extensions; 0 when unknown.
 005b03fc Writes `value` as three decimal digits into bytes 0xc-0xe.
@@ -915,6 +1035,24 @@
 006298a8 Clears a peer list header (stations 4 and 4, state 3).
 006298cc Finishes the list's part and stores this console's address (by link mode) as its own peer.
 0062a04c Drops peer `index` (below 4, under the session lock): forgets its address in the table and releases its link.
+0062a18c Updates the peer list: adds and removes stations, sets and releases peer addresses, and keeps the masks.
+0062a5cc Removes a peer address from the list (under the session lock), moving the following entries down and clearing the last.
+0062abd8 Connects peer `index` (below 4) of the list, under the session lock.
+0062ad70 Clears station `index`'s friend flags and sets bit 3 when the friend list knows the peer's key.
+0062af78 Once per station (bit 0): when the friend list accepts this slot's 0x200-byte record, sends it (message 0x7f) and notes it.
+0062b014 Builds the four 0x2c-byte friend entries (+0x800) and the four station flags (+0x8b1), station 4.
+0062b064 Destroys the four friend entries.
+0062b08c Clears a visitor log entry (its header, counters and time).
+0062b200 Allocates the two logs of 100 entries (0x7c bytes) when missing, then resets their counters and the log state under its lock.
+0062bb00 Clears the two counts of the visitor log (+0x28ec), under its lock.
+0062bc68 Resets the log's current state (and its flag when asked), keeping it when the network part still allows it.
+0062c0cc When there is no main-object value and part 3 is up (or the log was waiting): opens the log state (+0x3ec) and, when asked, handles part 3.
+0062c14c When the current player has bit 6 of +0x571f and the gated save record allows it (and the connection checks pass): resets network part 3.
+0062c20c Adds a visitor entry (address and id) to the session's visitor log when its id is valid.
+0062c274 Clears the visitor log's four counts and two flags, under its lock.
+0062c790 Copies up to `count` entries (0x7c bytes) of the circular log from `start` into `out` (under the lock), gives the total and clears the new flag when asked.
+0062c868 Clears the visitor log, initializes its lock and clears its state.
+0062c8cc Clears the log state and frees its two entry buffers.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
 0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.

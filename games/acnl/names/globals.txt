@@ -106,6 +106,7 @@
 009c7a14 room_furniture
 009c7ad4 room_grid
 009c8fd4 room_light_slots
+009c9fe0 player_models
 00a84790 player_records
 00aad990 player_slots
 00aadad4 player_input_flags
