@@ -2433,8 +2433,46 @@
 006ce770 Signed byte +0xa10 of the black-wait object (0x94e4b8), or 0.
 006ceedc Whether the black-wait object is ready (+0xa13), marking it when its two flags allow it.
 006e08b4 Stores the mode (below 6) at 0x9507f0 and applies it to the object at 0x95c6d0.
+006f09d4 Picks a random item from the set bits of the item bit set, of the wanted type.
+006f14b0 Sets the bits of the category's items that pass its check (the insect flag for insects).
+006f15c4 Builds the candidate item set from the trait bytes and picks an item.
+006f1cfc Counts the items of the category (by its sections for category 0x27) that pass the check.
 006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
+006f2178 Counts the insects that pass the check.
+006f432c Decodes the record's packed bit fields.
+006f4f48 When the pending letter (+0x1900) is due, moves it into the first free of the 10 letters and clears it.
+006f5090 Copies the letter into the pending slot (+0x1900).
+006f5130 Sets the pending letter's due time (+0x1b80).
+006f5138 Copies the letter into slot `index` (0x280 bytes each), normalizing its flags unless asked not to.
+006f51f8 Address of letter `index` (0x280 bytes each).
+006f5204 Clears the 10 letters, the pending letter and its due time.
+006f536c The current digit of the number key (+0x428), reset by key 10 and moved back by key 11.
+006f56bc Starts the number key with its digit count and the first digit.
+006f56d4 Marks the number key confirmed.
+006f58e0 Attaches the layout at +0x26c.
+006f5b24 Releases the number key's layout parts and layout.
+006f5c7c Loads the number key's layout archive.
+006f6810 The height at the position on the plane of the triangle (its normal into the frame).
+006f7d34 Sets the box (+8 to +0x1c) centered on the point with the width, depth and height.
+006f7e04 Stores the word at +0xc.
+006f7e40 Sets the triangle reference's triangle, kind and mask.
+006f8054 Clears the count and the 100 entries (+8).
+006f8094 Zeroes the list's two words and its 100 entries.
+006f8114 Sets the sphere's center (+8) and radius (+0x14).
+006f81f0 Sets the capsule's two ends (+8, +0x14) and radius (+0x20).
+006f83a8 Sets the cylinder's base from the rectangle's corner and its radius and height.
+006f8540 The word shifted left by 14, as a half.
+006f8c24 The room record of `mode`: a house room (positions 2 to 25), or the record of the flagged structure; null otherwise.
+006f8eb8 Builds the rectangle from (0x12, 0xa) to (0x12, 0xb).
+006f9230 Looks for a flagged item kind around the position.
+006f9330 Refreshes the tile of the cell in both maps (marking the second with state 2).
 006f9494 Byte `index` of a constant table.
+006f94a4 The position of the first acre (of the 7 x 6 town) of kind 0x9b or 0xa5.
+006f9550 The acre kind of the town's side: 0x9f for mode 1, else 0xa0.
+006f9580 The rectangle of the town's entrance, on the side the town's layout (save +0x53400) puts it.
+006f973c The world position of the acre's center.
+006f9900 Triggers the event of the item at the position when its map object has the event flag.
+006f9978 Visits the cells of the block, checking their terrain.
 006f9c08 The save record (from the two byte tables at 0x952742/0x95276c) for the list position of `mode` (positions 2 to 25 only).
 00700238 Picks the cells for the spawn from the candidates.
 00700558 The model scale of insect `index` (below 83) for the size value: 1 + (size - base) / (spread * 10), clamped to 0.7 to 1.3.
