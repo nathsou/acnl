@@ -19011,7 +19011,7 @@
 0068dc14 AcPlayer_rec__play_sound
 0068e180 UtlBase_DemoActor___UtlBase_DemoActor__2
 0068e728 AcPlayer__virtual_1_0068e728
-0068e738 AcPlayer__virtual_0_0068e738
+0068e738 AcPlayer__destructor
 0068eacc script__RenderMain__RenderMain_005e3194_veneer_4
 0068eaf0 CameraController__request_veneer
 0068eb30 CameraCtl__is_mode_5
@@ -19361,7 +19361,7 @@
 006b0558 Passport__virtual_8_006b0558
 006b0644 Passport__virtual_9_006b0644
 006b064c Passport__virtual_10
-006b0824 state__Mode_Passport___Mode
+006b0824 Passport__construct
 006b0b5c Passport__virtual_1_006b0b5c
 006b0b6c Passport__virtual_0_006b0b6c
 006b0b74 Passport__destructor

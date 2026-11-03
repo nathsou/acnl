@@ -5667,11 +5667,14 @@
 0063cd2c The days since the designated villager moved in.
 0063d364 Gives the request's reward: to the pockets or by letter, and counts it.
 0063da4c Picks a random item of the 5 from the mask (for kinds 1 and 2) and sets it as the talk's word.
+006401f4 Selects an NPC game's talk label by the player's outfit, item and the event.
 006405f4 Records the letter's slot and state (none, sent, or sent without its present) for the talk.
 00641f88 Sets the talk's words to the NPC's skill, family and dream, and its two values.
 0064664c Counts the active NPCs for the scene (or the player's house).
+006483f4 Selects a villager's talk label by its mood, its present and the day.
 0064bed4 Adds the item to the player's pockets, records it with the partner and removes it from the villager.
 0064c130 Flags the villager for the player and ends the talk's wait when it was set.
+0064c450 Destroys a normal NPC: its action, foot marks, face animations, model, collision body and demo actor base.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
 0064d78c Chooses the NPC's comment on the item (by kind and the weather).
 0064dc88 Updates the player's state 0xc and its speed.
@@ -5712,6 +5715,7 @@
 00653888 Requests player state 0x81 with the position, angle and two bytes.
 006538e0 Turns the object toward the angle (the given one or its stored one, +0x8c2).
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
+00653f24 Leaves the player's talk state 0x13: faces the target and starts talking.
 006540d8 Sets the target x angle (+0x958) and step and starts turning; true when already there.
 00654170 Starts the tool's animation (index below 0x41, with its frame count) and its state.
 00654230 Changes the player's state to the talk with the NPC.
@@ -5779,6 +5783,7 @@
 00665380 Changes the player's state to 0x3b with the three values, unless already in it.
 006654ac Changes the player's state to 0x3a with the value, toward the position (or the origin) and the angle.
 00665560 When the player is not hidden and over water: replaces the effect with the splash at the water's surface, and plays its sound.
+00668740 Updates the player's state 0x199: turns, spawns its effect at the hand, then idles.
 00668fc4 A quarter of the step length (in s0); the table's address.
 0066a074 Drops the pending item, if any, and resets the drop position.
 0066a0f4 For the local player: counts the catch in their counter when it qualifies.
@@ -5861,6 +5866,7 @@
 00685d7c Requests player state 0xb8 with the angle and two bytes.
 00687394 In tours of kinds 5 and 9, counts the goal (marking the main object when asked).
 0068752c The position of the NPC source, or the default position (0xae5658).
+00687bac Updates the player's state 0x189: turns to the event NPC by the hand position, then changes state.
 00687f04 True when catching the item gives the player the last missing item of the category (in the caught set, +0x6c20).
 00687fb4 Requests player state 0xa7 with the byte.
 00687fe0 Requests player state 0xc5 with the two halves, the angle (of the given item or the player's) and three bytes.
@@ -5879,6 +5885,7 @@
 0068d170 Unless muted (bit 5 of +0x66), plays the voice sound and, when asked, marks the player busy.
 0068db1c Plays the player's animation with its blend and speed.
 0068dc14 Unless muted (bit 5 of +0x66), plays the sound and, when asked, marks the player busy.
+0068e738 Destroys the player actor: its sounds, emoticons, foot marks, model, collision body and demo actor base.
 0068eaf0 Passes the request to the camera controller when it exists.
 0068eb30 True when the camera controller (0x950874) is in mode 5.
 0068eba8 Restores the default mode when the camera controller is in mode 5.
@@ -6026,12 +6033,21 @@
 006acabc Jumps to do_nothing_006f7e8c.
 006acac0 Computes the selection from the page (+0xe30) into +0x6359 and hides the pane (+0x6340).
 006acf28 Shows the two mode panes by the mode (+0x6358) and, in mode 0, hides the 24 entries' panes.
+006acfc4 Builds the country text box: its flower breeding description in the window.
 006ad3a0 Scales the value by the camera's zoom when it has one.
 006adc30 Clears the selected entry (+0x16b8, 0x19 for none): its drag icon, button and flag; then resets the selection animation.
+006add20 Builds the player name text box: the player's name in the window, scaled to the camera.
+006ae344 Builds a UI text box: a UI message in the window.
+006ae6a0 Builds the registration date text box.
+006ae870 Builds the birthday text box.
 006ae9c4 Sets up the window's close button: its control, pane, animation targets and sounds.
+006aee8c Builds the dream text box: its title and the dream address.
 006af218 Sets up the second window's close button: its control, pane, animation targets and sounds.
+006af568 Builds the dream number text box: the dream address digits, when set.
 006afbcc Detaches the layout at +0x4bc from the layout system.
 006b04f0 Loads the passport window's and the keyboard's layout archives; true when both loaded.
+006b0824 Constructs the passport window: its layout, explanation window, buttons and renderers.
+006b0b74 Destroys the passport window: its buttons, explanation window, renderers and layout.
 006b0d98 Updates the insect's flight path.
 006b127c Sets the area's id, squared radius and range (the larger end kept).
 006b1468 Constructs the listener: no ids, zero positions, a huge distance and cleared flags.
@@ -6209,6 +6225,7 @@
 006cef28 Whether the window at 0x94e4b8 is in its open animation.
 006cf2c0 Finds the block with the kind around the cell.
 006cf534 Whether the block's kind is the current one.
+006d12d0 Destroys the ATM menu: its button, renderer, layout and menu base.
 006d1bc8 True unless the menu is in state 2, then asks the menu object (0x94fc2c).
 006d1ce4 True when the menu's selection (0x94fd3c) accepts kind 8.
 006d1cf8 Adds the window to the menu's window list (once) and wakes the menu from state 3.
@@ -6544,6 +6561,7 @@
 00712800 Whether the 16-bit value is below 0xfc.
 00712810 Whether bit `index` (below 6) of the bits at +0x28 is set.
 0071287c Whether one of the 10 design patterns (0x870 bytes each) has a type set.
+00712c88 Compares two strings as talk labels.
 007132e4 On the same day: whether the hour is within the opening hours (7-20 with town flag 1, 10-23 with flag 2, else 10-20).
 0071348c The item `index` of the recent stock (+0x4c) while it is within its age window, else of the slots at +0x3cf4; empty when out of range.
 00713bf0 The byte after the current one (+0x54) in the ring buffer (data +0x20, size +0x24, start +0x28, count +0x2c); 0xff past the end.
@@ -6569,6 +6587,7 @@
 00716128 Whether any of the player's 24 badge kinds is ready to update.
 00716168 Word `column` from +0x18 of entry `index` (0x28 bytes) of the table from global_word_0c.
 0071618c Word `column` from +0x28 of entry `index` (0x28 bytes) of the table from global_word_0c.
+00716260 Search candidates of kind 4: items in the player's pockets, picked at random.
 007164c0 The house loan still to pay: the cost of each built room and its upgrades (table 0x88f040) plus the bonus for flag 7 of +0x5727, less 10000 without flag 4 of +0x5704, less the amount at +0x6b94; kept in the catalog state.
 007165d0 The house's level (+0x36): 1 for 0, 2-3 as they are, 4 with +0x338 = 1, else 5 plus the number of upgraded rooms.
 007166a4 The record of the index (below 6, else the default) and its values.
@@ -6578,6 +6597,7 @@
 00716894 The position in the reference table at 0x88f29c of the id at `index` of the list; -1 when absent.
 007168dc Whether byte `index` of the list is set.
 00716928 Whether any of the 40 bytes of the list is set.
+00716b74 Whether the save flags 0x621cf (bits 1 and 2) allow the check today.
 00716c60 Whether the shop is closed at this hour (opening hours by weekday 6 and the town flags 1 and 2).
 00716d80 How many of the six 16-bit slots (+4 to +0xe) are used (not 0xffff).
 00716de4 Whether it is from 20:00 on day 6 of the clock's week (and not the day the record at 0x6add4 marks, nor a \n day change).
@@ -6870,6 +6890,7 @@
 00748c70 The free block of at least `size` bytes: the first one (mode 0), the smallest (mode 1) or the largest (mode 2).
 00748dd8 Allocates from a free block of the heap.
 00749010 Word +0x64 of the current thread's object (thread-local).
+00749030 The heap that contains an address, among the resource cache's heaps (under its lock).
 00749134 Whether the state (+0x1c) is not 3, 4, 5 or 6.
 00749bb4 The heap for the load arguments (by their kind).
 0074a3e8 The first node of the list (+0xc0) whose byte +0xc is `key`, or 0.
@@ -7056,6 +7077,7 @@
 0075b8b0 Finds a talk script's label (arg 1) in a message (arg 0) with a temporary comparing message engine.
 0075bdac The number of messages of the archive called `name` (under its lock), 0 when there is none.
 0075be20 Gives the message `index` of the archive called `name` as a reference (the empty text when there is none); true when found.
+0075bedc Loads a nickname message: finds its label and starts it in a message engine.
 0075bfc0 The data of message `index` of the archive called `name` (under its lock), or 0.
 0075c158 Sets the message of the archive with the count of words.
 0075c348 Gives the message labelled `label` of the archive called `name` as a reference (the empty text when there is none); true when found.
@@ -7440,6 +7462,7 @@
 008133d8 Sets the rectangle from two corners, ordering each axis.
 0081360c Restores r4 and r5 from the stack and jumps to the target.
 00813d2c Sets or clears the bit (below 96).
+008156fc Recreates the resource manager's heap and releases what it held.
 008161b8 Plays the animation with the key on the animator (the tenth kind).
 00816b18 Plays the animation with the key on the animator (the ninth kind).
 00816c20 Plays the animation with the key on the animator.
