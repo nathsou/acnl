@@ -509,6 +509,7 @@
 00127cf8 Creates an event (svc 0x17) with the reset type.
 00127d1c Yields the thread (svc 0xa with no delay).
 00127d54 Releases the island data.
+00127db8 Constructs the sound effects manager: its parts and a fader.
 00127f88 Releases the tour result.
 001282a8 Destroys the object at 0x957308 (its virtual function 1).
 001282dc Constructs the melody manager: its melody players and the default tune.
@@ -518,12 +519,14 @@
 0012853c Releases the visitor's local info.
 001285a4 Constructs the shared sound objects manager: none.
 001285c8 Releases the exhibition park info.
+00128608 Constructs the animal speech sound manager: its voice slots and fades.
 00128804 Destroys a sound conductor: stops its sound, BGM and clay figure sounds when playing, then detaches its \n handles.
 001288a8 Zeroes the record and its 10 bytes.
 001288e8 Releases the NPC lock permit bit manager.
 00128924 Constructs the table's 6 entries (0xec bytes each) and resets its 10 halves to -1.
 001289ac Sets the record's kind byte and its two words, clearing the rest.
 001289c4 Unmounts the archive found by its name.
+00128a30 Constructs a file server archive: its IPC buffers from the fixed pool.
 00128b54 Closes the handle when it is open.
 00128c0c Resets the once flag: finishes its pending wait when it was in progress.
 00128c70 Signals the light event, waking the waiters.
@@ -576,6 +579,7 @@
 0012c144 Constructs an audio setting parameter: an empty list, four entries by default.
 0012c17c Constructs the audio resource loader controller: no resources, volume 1, the default name.
 0012c40c Sets the current thread's context (arg 1); returns the previous one.
+0012c48c Constructs a task: a disposer with its name, tree node and method nodes.
 0012c984 Constructs a layout: a list node over a layout with draw info, at scale 1, nothing loaded.
 0012ca6c Stores arg 1 at the object's offset 4 and returns 1.
 0012ca7c Constructs a load split: a list node, a file handle and a 128-character path, nothing loaded.
@@ -658,12 +662,14 @@
 001307c8 Sends command 0x3b to the service and writes its output.
 00130804 The file's first entry, or null.
 00130c70 Constructs a layout: no root pane, an empty animation list, size zero.
+00130d6c Constructs the sound archive player: its sound players, loaders and note callback, nothing set up.
 00131154 Records the frame heap's state; -1 when it cannot.
 0013121c Constructs a time-tone melody player: a one-sequence player with two faders.
 00131280 Allocates size bytes (arg 0) on a heap (arg 1) with an alignment (arg 2): an entry before Heap__allocate, \n which it runs into.
 0013133c Clears the address book, under its lock.
 00131580 Destroys five font sets (a font resource, its load split and its other part each), last to first.
 001316b8 Calls virtual 10 of the file device when it is mounted (+0x4c), else 0.
+001316d8 Constructs a resource factory: a disposer with its name, registered with the heap that contains it.
 0013187c Gives an empty array room for `capacity` pointers from the heap.
 001318c0 Constructs an audio resetter: nothing to reset.
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
@@ -673,6 +679,7 @@
 00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
 00131dc4 Allocates the block from the heap, with its name.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
+00131eb8 Constructs an expanding heap over a block, under the heap list lock.
 00131f64 Creates the root heap over the memory arena (arg 0) and adds it to the root heaps; the heap manager is up.
 00131fe0 Creates the root heap over the memory (from arg 0's info) under the root lock, as create_root_heap.
 0013208c Constructs a framework: no run loop yet, an empty delegate list.
@@ -811,6 +818,7 @@
 0013a834 Takes the light lock (atomically), waiting when it is held; the result.
 0013a968 Sends command 4 (with the flag) to the service and returns its result.
 0013a9a4 Sends command 2 (with the flag) to the service and returns its result.
+0013a9e0 Constructs a frame heap over a block.
 0013ad90 Calls the release target's virtual 3 with an object (arg 0).
 0013adac Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
 0013ae10 Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
@@ -1109,6 +1117,8 @@
 001a77a0 Counts the real item: marks its number in the bit set (+0x40) and counts it by its class and kind.
 001a8ddc From an idle handler, sets the menu mode by the window's kind and restarts its state machine (first or second handler pair); otherwise marks it to resume (+0x185e).
 001a9368 Resets the record: its ids to -1, its words to 0, enabled.
+001a998c Constructs a one-button control: a control button base with its layout loaded once.
+001a9f44 Constructs a common dialog: a layout with its animations, archive accessor and a 1536-character text.
 001aa100 Destroys a common dialog: its animations, archive readers, layouts and its text.
 001aa440 Constructs a color fader: a fader base with a color (arg 2, four bytes) and a mode (arg 3).
 001aa4a0 Refreshes the friend list and reads the friend key of the entry (under the lock); zero when not found.
@@ -1270,6 +1280,7 @@
 001c53b8 Draws a catalog's layout on the lower screen.
 001c53dc Starts the state with the handler pair at 0x87a024.
 001c551c Starts the state with the handler pair at 0x87a02c.
+001c55b0 Constructs a catalog base: layouts, animations and a scroll bar.
 001c8cd4 Relocates the table's entries to addresses.
 001c987c Sets the gift manager's entry for the slot.
 001c98d8 Moves the effect to the NPC's mouth (or the default point) and counts its timer down.
@@ -1295,6 +1306,7 @@
 001cd744 Appends a copy of the last command unless the queue is full.
 001cd810 Sets the queue's target (+4).
 001cd81c Syncs the target's model, then calls the handler of the last command's kind (member table at 0x881128).
+001cd888 Constructs an NPC head control: no target, not turning.
 001cda40 Binds the cloth texture of the resource to the current model slot's cloth material.
 001cddc4 Sets the 2-bit field at bits 4 and 5 of +0xe.
 001cde00 Clears the low 24 bits of the word (+8) and the low byte of the half (+0xc).
@@ -1315,6 +1327,7 @@
 001d051c Finishes the pending work (+0x1bc) with mode 2 and clears it; 0.
 001d2694 Plays motion 0xae with the speeds.
 001d2e8c Sets the face byte (+0x224) and the hair word (+0x228).
+001d333c Constructs a player model: a human model with its clothing rows and entries.
 001d3720 Resets the camera controller's state.
 001d5348 Stops the sound (state 5) or, when idle, ends the special sound (in scene 0x27, playing the end sound) and forgets it.
 001d560c Stops the two sounds, gives back the event's sound data (0x100026b or 0x100026c) and resets its state.
@@ -1347,6 +1360,7 @@
 001db118 Starts the 3D sound once its data is loaded.
 001db214 Starts the 3D sound at the position with its kind.
 001db3d4 Stops the 3D sound when it plays.
+001db5b4 Constructs a TV sound object: an external-volume sound object with a fader.
 001dba70 Marks the structures' rectangles in the placement grid.
 001dbc04 Marks the structures' rectangles in the grid (the second rule).
 001dc6e8 Visits the structure's rectangle, placing its cells.
@@ -1532,6 +1546,7 @@
 0020933c Draws the item label's layout on the bottom screen.
 0020968c Releases the window's layout parts (when loaded) and layout, and its list (when not).
 00209770 Starts loading the select window's layout archive with the layout allocator.
+00209c98 Constructs a select window: an archive accessor, a layout with animations, choice buttons and a button.
 00209f40 Counts a frame (up to 300) and, while the target (+0x1470) is farther than the threshold, gives its position; clears it when near.
 0020a35c Constructs a road search: 256 candidate cells and a 16 by 16 search grid for an owner (arg 1).
 0020a418 Advances a fader one frame: waits out its delay, then steps toward the target until its count runs out; \n returns the volume.
@@ -1585,6 +1600,7 @@
 00210c2c Sets up the balloon string's vertex buffers.
 00210e64 Updates the balloon string's segments from the camera.
 002127f4 Writes the balloon string's shader setup and light commands; their end.
+00212ba4 Constructs a balloon string: its heap, GPU state and vertex buffers.
 00212ed0 Adds the balloon string to the draw list when it is shown.
 002132d0 Takes the next animation of the queue into the slot; whether there was one.
 00213868 Caps the zoom so the map fits in 400 units and keeps the offset within 200.
@@ -1608,6 +1624,7 @@
 00221790 Updates the visible map icons.
 00221904 Places the icon on the map screen (scaled to 160).
 00222ebc Releases the map screen's layouts: its icons of every group, the player icon and the frame.
+002230d8 Constructs the map menu base: its icons and a 21-character word.
 002236c0 The index of the visible label (of 7) of the kind near the height; -1 when none.
 00223778 Plays animation `index` (0x28 bytes each, +0xc) on its pane.
 0022384c Hides the 7 labels.
@@ -1620,6 +1637,7 @@
 002248ec Releases the layout, the 7 labels' layouts and their texts.
 00224950 Scrolls the list up one step and hides its arrow.
 00224a7c Sets the map screen's mode with its zoom.
+00224b10 Constructs the map list: its button nodes and control.
 0022526c Sets the flag at +0xabc of the child (+0x38) when it exists.
 00225948 Starts the effect of field item effect slot `index` (of the table at 0x997c30) when the manager exists.
 00225984 Scans the map's cells for the items that show effects.
@@ -1694,6 +1712,7 @@
 0023a254 When idle (4): starts turning (mode 0) toward the object at the speed.
 0023a440 Begins the end action of the talking NPC and of each listener still in their talk idle (action 0xc); whether any began.
 0023a680 Updates the talk turn's state (below 4).
+0023a9dc Constructs an NPC talk receptor: a talk receptor with a flow receptor, a particle handle, its save hook \n and label, and its flags.
 0023ad1c Destroys an NPC talk receptor: gives back its pending flags, its particle handle, then the talk receptor.
 0023adbc Handles a talk event at the camp sign: the move handler first, then for id 0x13 takes the pending flag or \n begins a request.
 0023ae64 Starts the talk: with no script, attaches it to the talk window and asks it to close; else runs the script. Then calls its virtual function 71.
@@ -1723,6 +1742,7 @@
 0023d99c Whether the player has progress on the badge.
 0023f704 Copies one pattern image (64x32) into another, filling where the source is smaller with the background color, and imports it.
 0023f820 Copies one pattern image into another (the second layout), filling outside the source with the background color, and imports it.
+0023fa30 Constructs a pro design button node: its layout, drag icons, heap and choice.
 0023fc84 Queries the cell of the layer (below 4) for its contents.
 0023ffb8 The cell of the structure id; whether it was found.
 00240080 Runs the function at 0x7206e0 on structure list `index` (below 4, from 0xab7de4) when it exists.
@@ -1752,6 +1772,7 @@
 00244bb4 Starts (or stops) the sound object's sound in the sound system and updates the object.
 002454f8 Builds the song's playback info from its table entry and tune values (under the info's lock).
 002458e4 Resets the player's counters and sets its beat length (900 / tempo, rounded up).
+00246774 Constructs the DJ sound player: nothing playing.
 00246934 Starts a river's sound object (kind 7): registers it with the river sound manager.
 00246b90 Stops a river's sound object: the river sound manager forgets it, then the base stops.
 00246bd4 Constructs a river's sound object: a sound object base with no handle, distances 2000.
@@ -1853,6 +1874,7 @@
 00255ebc The sound kind of the water at the position (0x4a, 0x50 or 0x56), or 0 when there is none.
 00255f1c Starts the cast at the position when idle, finding the water there and its kind.
 0025654c Deletes a fixed light: its fragment light, then the light base.
+00256588 Constructs a fixed light: a light base with a directional fragment light.
 00256664 Sets the fade step (-1/frames).
 0025668c Sets the two fade steps (1/frames) and resets their progress.
 002566e0 Applies the transform and the two values of the current season's variant (0x3c bytes each).
@@ -1878,6 +1900,7 @@
 00267758 Draws a change list's layouts (on the lower screen).
 002677cc Releases a change list: its drag icons, layouts and buttons.
 00268270 Marks each of a change list's four slots by whether it holds something.
+002682ac Constructs a rental change window base: a change list with a layout, archive accessor, button, drag icon \n group and renderer.
 002684c0 Destroys a change list's base: its buttons, animations, renderers, layouts and archive readers.
 002686d4 Sets the first button's value.
 0026876c Sets the messages of the buttons (up to 2) and marks them for update.
@@ -1916,6 +1939,7 @@
 0026f8a8 Whether the item is set, the scene allows it, and its category is flagged.
 0026f9c4 Loads the item window's layouts (the plain or the selection screen, and the icons); whether both loaded.
 0026fa8c Sets the current player's pocket slot to the item.
+0026fc4c Constructs the item drag window: its layouts, drag icon groups, nodes and control.
 0026fe3c Destroys an item drag window: its drag icon control and groups, nodes, animations, archive readers and \n layouts.
 0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
 00270550 Destroys a simple NPC model: its parts, face animations, resource loaders and skeletal animation.
@@ -1979,6 +2003,7 @@
 0027ac30 Copies the record's pair into the output.
 0027b3a8 Builds the 8-item outfit from the given items (the fourth empty) and marks it set.
 0027b528 Places item `index` (below 3) in the room or the field once, when its owner is the current player.
+0027c060 Constructs a tool button node: a button node with its layout, animations and control.
 0027c2c8 Loads the town's map templates (sea sides) and grass texture and resets its slots.
 0027c554 Clears the flag at 0x95df50.
 0027c8f8 Places the creatures in the map's cells.
@@ -2088,6 +2113,7 @@
 002992f8 Hides the window at once and tells its owner when it matches.
 002993ac When the thumb's pressed state changes, plays its press animation (and, while dragging, its sound).
 002999ac Sets the bar's style (+0x444) and plays it on the bar and its two arrows.
+00299b30 Constructs a common scroll bar: a layout with an archive accessor, its animations and button control.
 0029a5f8 Starts the menu state (kind 0x20c, 0xb, 7) and tells the menu selection.
 0029aeac Drops the dragged icon when ready.
 0029b480 Resets the sub-menu and its child window.
@@ -2191,6 +2217,7 @@
 002ba344 Advances the list's counter by the step (mod 3) and moves every child pane by the offset.
 002ba3cc Attaches the layout at +0x34c to the layout system.
 002ba788 Loads the item selection window's layout archive; marks it loaded (+0x4e0).
+002bab00 Constructs an item select window: an archive accessor, a layout with animations and choice buttons.
 002bb4b0 Sets the 0x33 switches of the block on or off.
 002bc0b4 Constructs a poster's talk receptor: an object talk receptor with no word.
 002bc8e8 Marks the cell (x, y) of the candidate grid.
@@ -2264,6 +2291,7 @@
 002cbea4 Stores the selected row (counting the earlier pages of 10) in the player's data (+0x6f10).
 002cc00c Constructs a cooler stock change window: a rental change window with ten item slots and an item drag icon \n group, its layout names and the cooler state.
 002cc1b0 The entry (0x2b4 bytes) for the index on the current page of 10, or the one before the first when outside it.
+002cc4bc Constructs a letter stock change window: a rental change window with a letter drag icon group.
 002cc5c4 Destroys a letter stock change window: its drag icon group, buttons, then the change list base.
 002cca88 Constructs a rental stock change window: a one-button rental window with eight item drag icons and an item \n drag icon group.
 002ccb84 Sets the two sharing flags (bits 0 and 2 of +0x9f) from the settings.
@@ -2355,6 +2383,7 @@
 002d5d48 Updates the melody sound at the position (converted by the camera).
 002d5f68 Stops the melody sound when it plays.
 002d5f90 Constructs the melody sound, stopped.
+002d70b8 Constructs a diffuse light: a light base with a directional fragment light.
 002d7d7c Sets up the window's button controls and panes.
 002d9aa0 Destroys the explanation plate menu: its button, layouts, archive readers, talk receptor and menu base.
 002da33c Plays the window's in animation from 0 and marks it opening; true.
@@ -2469,6 +2498,7 @@
 002edccc True when the word pair at +0xc equals the default pair (0x84517c).
 002ee3a8 Releases the window's layout, its five part layouts (+0x4a4) and its extra one (+0x4b8), and resets the menu state flag.
 002ee564 Loads the item selection window's layout archive; marks it loaded (+0xce4).
+002ee5a8 Constructs the address select window: a layout, archive accessor, buttons, choices and a renderer.
 002ee898 Starts loading a split (path arg 1) unless one is loaded, and sets its count from the loaded size \n (size / 40).
 002ee91c Releases the split load's part and clears its word (+0xec); true.
 002ee938 Starts loading a split (path arg 1) on a heap (arg 2), and sets its count from the loaded size (size / 40).
@@ -2515,6 +2545,7 @@
 002f80c8 Scans a string by a format (C vsscanf): sets up the string reader's callbacks and runs the scanner; \n returns the count assigned.
 002f81e4 Stores the design of entry `index` (relative to the shown page) into the selected design storage slot.
 002f83b0 Frees a block on the plain heap (under its lock).
+002f83f0 Constructs a design stock change window: a rental change window with a drag icon group and a heap.
 002f84e8 Converts the wide character to its multibyte bytes; their count.
 002f860c Destroys a design stock change window: its drag icon group, design slots and heap, then the change list \n base.
 002f86c0 Unsigned division.
@@ -2767,6 +2798,7 @@
 00306c74 Jumps to 0x5bc010.
 00306c78 Forwards to mode_308e80_is_26_or_a.
 00306cf0 Stores the slot at +0x95e and points +0xaa0 to its 16-byte entry of the table at 0x953864 (0 for slots from 0x3f).
+00306e2c Constructs search candidates for the book.
 00306f5c Jumps to weather_class_of_today.
 00307100 Jumps to is_new_year_countdown_time.
 00307108 Jumps to 0x5bc1fc.
@@ -3094,11 +3126,13 @@
 0031c75c Adds a reference to the representation (not to the empty one).
 0031c770 Replaces a part of the string (position, length) with the given characters, making the representation its own.
 0031c7dc Sets up the window's parts with dummy layouts.
+0031c878 Constructs a custom button action node.
 0031c92c Destroys a custom button action node: releases its four animations' linked objects and textures, then \n destroys them.
 0031cd1c Constructs a storage stock change window: a rental change window with ten item slots and an item drag icon \n group, its layout names and the storage state.
 0031d00c Updates the button control at +0x608 and releases its active child once it is ready.
 0031d048 Sets up the button controls and their panes and animation targets.
 0031d258 Sets up the message box's layout and font.
+0031d5d4 Constructs a wide common scroll bar.
 0031d6e8 Stores the chosen appearance value (bits 3 to 5) in the part (bits 0 to 2) of the player's look, then updates the player model for that part.
 0031d8f8 Stops the model's animation (when asked) and resets the second slot (+0x60) when it is playing.
 0031df9c Stops the slot's animation in the model and releases its resource.
@@ -3117,12 +3151,14 @@
 0031f1a4 Starts the state at +0x213c with the handler pair at 0x879538.
 0031f2bc Starts the state at +0x213c with the handler pair at 0x879540.
 0031f2dc Sets up the window's B button pane and its values.
+0031f480 Constructs a letter item drag window: a letter drag window base with a parts drag icon node and group.
 0031f55c Destroys a letter item drag window: its icon groups and node, drag icon control, layout and archive reader.
 0031f69c Sets the flag of the entry for the key (0x2b4 bytes each) and updates its node.
 0031f7f0 Draws a letter post drag window's layout on the lower screen.
 0031fa14 True when the state at +0x213c runs the handler pair at 0x879558.
 0031fa34 Releases a letter post drag window (as its base).
 0031faf4 True when the state at +0x213c runs the handler pair at 0x879560.
+0031fb14 Constructs a letter post drag window: a letter drag window base with three animations.
 0031fbcc Destroys a letter post drag window: its animations, drag icon control and group, buttons, layout and \n archive reader.
 0031fcc4 Moves the window's drag icon (+0x278) from its list (+0x3d0) into `list` (when not null).
 0031fcfc Sets the flag (+0x12d) of entry `index` among the 10 shown from +0xc (0x2b4 bytes each, +0x3d4); other indices set the first.
@@ -3164,6 +3200,7 @@
 0032821c Sets the layout's animation frame when it is bound.
 003288a4 Destroys a letter stock drag window: its animations, drag icon control and group, buttons, layout and archive \n reader.
 003289a8 Gives the villager of the record (+2) the item (+0) into slot +3; a category 0x2f item without a slot goes to its +0x249e item.
+0032a174 Constructs a demo doll talk receptor: an NPC talk receptor with an item.
 0032a3c8 Copies the record with a new item and its three color bytes.
 0032ae24 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0032ae8c Updates the barcarolle player's music.
@@ -3177,6 +3214,7 @@
 0032c348 Stops the tune's sound and gives back its sound data request.
 0032c654 Clears the two flag bytes when the first is set.
 0032c72c Stops an instrument furniture's sound object: releases its slot, then the furniture stop.
+0032c78c Constructs an instrument furniture sound object: a furniture sound object with a sound slot.
 0032c850 Resets the record (empty, its 10 bytes at -1) unless its stamp is today, then stamps it with today.
 0032c8c8 Removes player `index` (below 4) from the 10 entries and moves the later entries up.
 0032cb6c Sets the state byte (+0xd); entering state 1 from idle resets the counters.
@@ -3187,7 +3225,9 @@
 0032cef4 Draws the random state into 0x9525d0 and, in a network session with the main object idle, sends it as message 4.
 0032d638 Starts a furniture audio object at a point (arg 1, seen through the camera).
 0032d774 Stops a furniture audio object (when started).
+0032d7c8 Constructs a furniture audio object.
 0032f240 Writes the GPU commands of the depth settings, with the depth offset (scaled when enabled) as a 24-bit float.
+0032f808 Constructs a particle drawing base: a framework process with a heap and a draw function.
 0032fd1c Constructs a multi-item drag icon group: a drag icon group with its own vtables.
 003302c8 Starts the sound player unless it plays.
 00331550 Gives the villager of the record (+2) the item (+0) as its +0x8e6 item.
@@ -3204,6 +3244,7 @@
 00331c7c Constructs a furniture audio sound object: a furniture sound object with its own vtable.
 00331d0c Destroys a furniture audio sound object: stops it (as SoundObjFurnitureAudio__stop), then the furniture \n sound object.
 003324bc Stops a music box furniture's sound (when playing) and forgets its tune.
+0033254c Constructs a music box furniture sound object: a furniture sound object with a fader.
 00332688 Copies the letter (with its item and texts) into the first free of the 80 letter slots.
 003327e8 Adds an exhibition letter with the item to the 5 pending letters (0x280 bytes each); false when full.
 003328ec Constructs the 5 pending letters.
@@ -3213,7 +3254,9 @@
 003352f0 Finishes the pending work (+0xeb) when it can; true when nothing is pending.
 00335328 Starts loading a camping car visitor's info file (for the name arg 1), falling back to the default \n visitor's when the file is absent, on a heap (arg 2, else the stage heap); 1 once started.
 0033543c Copies the resource's model name into the string, or the default model name when it has none.
+00335494 Constructs the camping car info loader: a load split.
 003354c8 Refreshes an insect furniture's sound: the furniture refresh, then sets the sound of the slot playing its \n entry's sound (id 0xd) and marks whether it is audible.
+0033557c Constructs an insect furniture sound object.
 003355ac Plays the town tune's note with its pitch and length.
 00335634 Copies a 0x7dc8-byte block.
 00335640 Clears the block's parts (+0x1238, +0x7dc0) and its four header words.
@@ -3544,11 +3587,13 @@
 004eb3a0 Starts the effect slot of the reference's key when it still exists.
 004eb3e0 Stops the effect slot of the reference's key (fading out over 10) and forgets the key; true when it did.
 004eb438 Updates the effect slot of the reference's key when it still exists.
+004eb478 Constructs a model effect handle: no effect.
 004eb5b4 Destroys a model effect handle: fades its effect out (over 10 frames) when it is still playing.
 004eb6c4 Starts the effect of the kind at the position in the slots.
 004eb858 Decomposes the matrix into its scale, rotation and translation.
 004eb9d4 Starts fading the slot out over `frames` unless it already fades; true when it started.
 004eb9fc Binds the slot to render slot `index` and sets it up from it.
+004ec374 Constructs the model effect container: a heap allocator.
 004ec574 Applies the scene environment's layer (outside photo mode).
 004ec7ec Sets the model's color (+0xb8 of its resource, four floats) and its derived word.
 004ecbe0 Destroys a material animation: its heap allocator.
@@ -3628,6 +3673,7 @@
 004fae8c Constructs a board text area: empty.
 004fb304 Maps the menu kind 3 to 2 and 5 to 4.
 004fd458 Constructs a phone-style key set for a keyboard (arg 1): its key tables, no key held.
+004fdec0 Constructs a keyboard key from a description (arg 1): its labels copied, its characters on the layout heap.
 004fe28c Constructs a normal keyboard key from a description (arg 1): a key with its characters copied to a \n buffer on the layout heap.
 004fe440 Updates the selection from the input, when no error screen is up.
 004fe5b8 Whether the selection accepts any of the eight direction inputs.
@@ -3659,6 +3705,7 @@
 005091fc Creates an animation object for the resource on the pane (or the resource's own target) and adds it to the layout's list; the object, or null.
 005092c4 Binds the layout's animations to its panes.
 005095dc Sets up the layout's animation list and inserts it among the drawn layouts by priority.
+00509c54 Constructs a layout object: a layout with no panes.
 0050a5ac Whether the current letter is hidden from the list.
 0050a710 The number of letters in the list, less one when the current one is hidden.
 0050bcb4 Constructs a layout text area: a layout object with a tag processor, an empty bounding box and no text.
@@ -3727,8 +3774,10 @@
 005124b8 Creates the online gathering (its name, timeouts of 30000 and 2000 ms, and its parameters) once; marks it created (+0x69).
 00512940 Logs out and clears the joined flag.
 00512a98 Searches the online gatherings matching the parameters and waits for the results.
+00512d88 Constructs a station address from a session: its station and friend profile.
 00512e64 Reports event 0x66 with the string (when given).
 00513160 Builds the station URL for the session.
+005132e8 Constructs session search criteria: its game mode, player counts, attributes and openness.
 00513e6c Sets the session's application data (up to 0xb8 bytes).
 00514264 Joins the session with the setting; maps the service's errors to the game's codes (0x80000001 to 3, else reports it and gives 0x80000006).
 0051433c Creates a session for up to 4 players with the game's attributes (mode, region, version); true on success.
@@ -3742,6 +3791,7 @@
 005158b8 Connects to the NEX server with its access key.
 00515cdc Updates the session and, under its lock, the service at 0x974a14.
 00515d1c Releases the NEX client when it exists.
+005164c0 Constructs the notification event handler: a messaging notification handler with a lock.
 0051659c Sets up the network clock once: its time source and callbacks.
 005166a8 Fills the status record with the clock's addresses, times and flags (cleared when not set up).
 005182f4 Constructs the network clock: its lock, notification handler, four address records and cleared times; registers it at 0x95365c.
@@ -3889,11 +3939,13 @@
 00529d8c A base's virtual 2: always ready.
 00529da0 A base's virtual 5: always ready.
 00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
+0052a3b8 Constructs the fade: its layout, archive accessor and animations.
 0052a508 Resets the fade layout: rewinds its fade animation to 0 and hides the fade pane.
 0052a5ac Loads the map view's layout.
 0052a870 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x85edc4, bit 1 when it is the one at 0x85edb4.
 0052ab60 Clears the record and gives it a random item of category 0x33 (of the first five).
 0052abd8 Sets the room's wall textures from its wallpaper (three wall materials).
+0052b818 Constructs the wipe: its layout, archive accessor and animations.
 0052b948 Resets the wipe layout: rewinds its wipe animation to 0 and hides the wipe pane.
 0052b9ec Loads the map view's layout (the second one).
 0052bb0c Bit 0 when the member handler (+0xc, +0x10) is the one at 0x895bb0, bit 1 when it is the one at 0x895ba8.
@@ -4011,6 +4063,7 @@
 0053c568 Allocates `size` bytes with the alignment from the back of a free block, splitting off the rest.
 0053c7b8 Frees the heap's blocks.
 0053cd54 Creates an expanded heap in the memory (more than 0xa4 bytes, under the global lock) and registers it with its parent.
+0053cef0 Constructs an expanding heap over a block, under its lock.
 0053cfe8 Creates the root heap over the memory arena (arg 0) and adds it to the root heaps; the heap manager is up.
 0053d230 Unlinks every node of the list and empties it.
 0053d2b4 Stores the current system tick.
@@ -4019,6 +4072,7 @@
 0053d490 Constructs a disposer and registers it as a child of the heap that contains it (when the heap manager is \n up).
 0053d530 Destroys a disposer: its heap forgets it, and it is left with the disposer list as its heap.
 0053d580 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+0053d66c Constructs the main thread: the main thread object for the current thread, registered as current.
 0053d7c8 Constructs the thread manager: an empty thread list and a thread-local slot for the current thread.
 0053df24 Constructs a controller for a manager (arg 1): a controller base for its pad's buttons, with empty device \n and addon lists.
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
@@ -4031,6 +4085,7 @@
 0053ecf8 Converts the UTF-8 text into UTF-16.
 0053edf4 Converts the UTF-16 text into UTF-8.
 0053f59c Writes the GPU commands of the shared part at 0xaf52e8.
+0053f608 Constructs a text writer: no font, the default context.
 0053f6c4 The number of set bits of the word.
 0053f730 Destroys a frame buffer: no longer the current one.
 0053fda8 Sets the camera's center from the viewport's bounds and its look-at below it, then updates its view.
@@ -4064,6 +4119,7 @@
 0055224c Particle command: at each interval, adds a random offset scaled per axis to the velocity; the next command.
 005547e0 The emitter's own matrix, or its set's when it follows the set.
 005547f8 Resets the emitter's state and timers.
+00554a64 Constructs the particle preview: its model manager, texture data and emitters.
 00554de0 Constructs a particle project for a resource (arg 1) with its two ids (args 2 and 3) and a scale: three \n empty names and 64 empty emitter slots.
 00554fbc Constructs a particle texture's data: a texture with no image.
 00555024 Destroys a particle texture's data: frees its image, then the texture.
@@ -4090,6 +4146,7 @@
 0055c1b8 Once per state change: writes the commands binding the shader and its lights; their end.
 0055c27c Copies the shader's light commands into the buffer; their end.
 0055c2b0 Writes the shader's uniforms as GPU commands.
+0055c4ec Constructs a graphics resource factory: a disposer with its name and allocator.
 0055c5ec Destroys the particle model manager's resource factory.
 0055c670 Constructs a mutex: a disposer with a kernel mutex.
 0055c73c Decodes the base64 text into bytes.
@@ -4104,6 +4161,7 @@
 0055ed48 Starts loading the resource with its argument on the thread's heap, and chains it after its parent; the task.
 0055f0e4 Finishes the resource task: its callbacks and its state, under the lock.
 0055f1ac When the task's lock is free: finishes the task and unlocks it.
+0055fcf4 Constructs the task manager: its heap, lock, task entries and method nodes.
 005601b8 Sets the 8-bit color channels from the four floats, each clamped to 0 to 1 (stored in reverse order).
 0056029c Builds the shared name table from the source entries for the kind.
 005603f0 The shared critical section at 0xae544c, constructed once.
@@ -4425,14 +4483,19 @@
 0058dc54 Clears a sound handle record (ids -1).
 0058def8 Checks a daily event against the current game day; 0 when the global object byte is 3.
 0058e090 Counts the day's check of the kind, unless visiting.
+0058e1ac Constructs an every-day event.
 0058e228 Checks the daily event at 0x9524ec against today (from the day start); nothing when the global object byte is 3.
 0058e2e4 Calls the member handler (from 0x85e6ac) on the first event of the list at 0x9524dc with this kind (+0x1b).
 0058e3cc When there is a current event: whether today (day start) is its day (0x9b39f8); keeps the answer at 0x9524d6.
 0058e508 The days until the player's flagged event date.
+0058e854 Constructs an anniversary event.
+0058e98c Constructs an NPC birthday event.
 0058ead4 True unless the event is running or was due today; recomputes whether today is its day.
 0058eb60 Signed byte +0x3a of the current event, or 0.
 0058ebd8 Checks the current event (00753a50) against the current time; 0 when there is none.
 0058ec08 Calls the member handler (from 0x85e6a4) on the first event of the event list with this kind (+0x1b).
+0058ed38 Constructs a monthly weekday event.
+0058edc4 Constructs a player birthday event.
 0058eef8 Word +0x2c of the current event.
 0058ef28 Word +0x28 of the current event.
 0058efc8 Word +0x24 of the current event.
@@ -4441,6 +4504,7 @@
 0058f3c0 Zeroes a record of three words, five halves and a byte.
 0058f3ec 1 << the current mode (from the save data when 0x95bf80 is set, else from value_for_mode); 0 when the global object byte is 3.
 0058f464 Constructs an event from its kind (arg 1), id (arg 2), dates (arg 3 and two records) and position.
+0058f4cc Constructs a dated event.
 0058f718 Finds the first free of the 20 effect slots (0x18 bytes, at 0x94ee4c+0x10), keeps its index at +0x11f and starts effect 0xf8 (0xf9 with flag 0x80) there.
 0058f81c Sets the field item's flags from its indexed kind (fence, plant, low ground item...).
 0058f948 Plays the sound of placing (or removing) the item by its kind.
@@ -4453,20 +4517,26 @@
 00590c14 Places the field item at its height on the ground.
 00591330 Spawns the field item's actor at the cell.
 00591a80 Starts the field item's fall from its position.
+005921e0 Constructs a plant field object for a field item: its model, collider and placement.
+005923fc Constructs a scale field object for a field item: its model, collider and placement.
 005929c0 Updates the field object by its item's kind and map entry.
 00592c14 Updates the field item by its indexed type.
 0059317c Updates the field item when it is of number 6.
 00593470 Sets up the field item with its item, cell and options.
 005937b4 Refreshes the field object's state from its item's kind.
+00593b6c Constructs a swing field object for a field item: its model, collider and placement.
 00593fbc Remembers the old position, moves to the new one with the scale, and starts its 15-frame growth animation.
 00594358 Builds an empty item with the extra bytes 0xa5, 0, 0.
 00594378 Jumps to do_nothing_002f777c.
 00594504 Constructs the record with an empty item and kind 0xa5.
 00594524 Jumps to do_nothing_002f777c.
+005948ec Constructs a present field object for a field item: its model, collider and placement.
 00594c54 True when (x, y) is in the rectangle, with x shrunk by the slope (+0x10) times the row.
 00594d9c Applies the drop record (its four bytes and half).
 00594dcc Clears the drop record (kind 0xa5).
 00594dec Records the cell in the town's ring of the 3 latest cells (save +0x621c2).
+00594f3c Constructs a swinging decoration field object for a field item: its model, collider and placement.
+00595194 Constructs a honeycomb field object for a field item: its model, collider and placement.
 00595528 Finds the field object's main joint in its model.
 005959e0 Sets up the field object's model for its item (bushes by their size) and its animations.
 00596298 Collects the field drop of kind 0xb at the position: keeps or gives it by its flag, counting the find.
@@ -4500,18 +4570,22 @@
 00599c6c True when a free spot exists for a drop.
 00599ca0 The buried form of the item by its category (0x36 to 0x38 and 0x40), marking unregistered items; true for category 0x40.
 00599da0 Buries the field drop of kind 0xb or 0x1c at the position and, when done, frees its slot, tells the other stations and clears the tile.
+00599ee8 Constructs a dig spot field object for a field item: its model, collider and placement.
+0059a2d8 Constructs a buried item field object for a field item: its model, collider and placement.
 0059a3f4 Sets the town bit (in the bits at +0x35c4 of the town object) when it exists.
 0059a420 Updates the field objects whose town bits are set.
 0059a9ac The world position of the item at the cell, on the surface (raised for some kinds).
 0059aab0 Sets up the field items' models from their tables.
 0059ab9c Creates a growing plant object for the item at the cell (inside the map) and adds it to the field objects; true when it did.
 0059ac18 Creates a scaling object for the item at the cell (inside the map) and adds it to the field objects; true when it did.
+0059b2c4 Constructs a decoration field object for a field item: its model, collider and placement.
 0059b61c The field object table entry (0x16 bytes each, +0x414) for the item's map kind (below 0x87); null when none.
 0059baa8 Calls the field objects' function at 0x14fc70 with the two values; -1 without the field objects.
 0059c090 The angle from the object to the item's cell (with the item's offset by its kind).
 0059c7a8 Calls the field objects' function at 0x14fc78 with the values (not for id -1).
 0059c934 The field object at the cell (inside the map), marking it to refresh (state 0xa) when flagged; null when none.
 0059cae8 Binds the texture chosen by the town's setting (save +0x621ce) to the field object's material.
+0059cd24 Constructs a coin stone field object for a field item: its model, collider and placement.
 0059ceb4 Calls the function on each of the field item's children of the kind.
 0059d164 Drops the item at the position with its height.
 0059da08 Removes the field item at the cell.
@@ -5087,6 +5161,7 @@
 005d79e0 Builds the text scale command (in 1/32 units), once; the command.
 005d7a4c Builds the text color command from the tag's value.
 005d7a8c Reads a text command at a position (arg 1): its kind, parameter size and data, and where the text \n continues.
+005d8274 Constructs a talk insert: its words.
 005daf1c Empties the selected pocket slot (below 16) of the current player.
 005dc374 Copies two C strings (args 1 and 2) into the object's strings at 0xc and 0x38.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
@@ -5109,14 +5184,18 @@
 005e350c Initializes the message reference with its archive, label, arguments and speed.
 005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
 005e35dc Clears the message reference (kind 2, no message).
+005e3888 Constructs a script word pointer.
 005e3ae4 Constructs a text replacement engine: nothing to replace.
 005e49c0 Sets up a choice list: `count` choices with `default` selected (none when out of range).
 005e4a28 Resets the choice (no selection, 5 entries at most) and its entries.
 005e4bd4 Constructs a standard choice for arg 1 choices: their 65-character words, none selected, five shown at a \n time.
 005e626c Starts the text with its options and runs it when there is one; the result.
+005e6bf8 Constructs a constant script word pointer.
+005e7984 Constructs a standard choice window: a select window with renderers and choices.
 005e7dc4 Notes whether the character is native to the region's script or foreign.
 005e8348 Starts the message engine on the text (or marks it done without one).
 005e8498 Calls the dialog box's virtual function 5.
+005e8934 Constructs a standard item choice: an item select window with a renderer and choices.
 005e90cc Refreshes the dialog box's state and its text.
 005e915c Constructs a constant script word pointer from another (arg 1).
 005e9848 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
@@ -5143,9 +5222,11 @@
 005fbc20 Closes the message window: resets its engine and clears its text.
 005fbfbc Lays out the message window's lines.
 005fc110 Clears the page's line offsets and shows its end (the last line's width, or the default).
+005fc75c Constructs a talk window: a message window.
 005ffc14 Finds the script's label between the two nodes.
 005ffd94 Links the talk script with its window and, during a talk with no special partner, marks the talk as shown.
 006001f0 Sets the talk script's option.
+006002e4 Constructs the flow engine: its loader, names and sequence.
 0060143c Binds the resource of the current mode's entry (from the normal or the alternative table) as the talk's argument.
 00601f20 Clears the wait and, unless asked to keep it, the flag and the window's vertical scroll.
 00602144 Links the talk window and its owner and, during a talk with no special partner, marks the talk as shown.
@@ -5199,8 +5280,10 @@
 0060e0cc Sets the part's animation to its last frame, updates it and notifies its panes.
 0060e190 Updates a map icon: advances its blinking frame (in mode 1), then its layout.
 0060e47c Draws a map icon's layout on its screen (the lower one unless its mode is 1).
+0060e5c0 Constructs an icon base: a layout with its animations.
 0060e914 Turns the angle toward the target by up to the step, in the forced direction (1 or 2) when the target is beyond it; the change.
 0060ea4c Initializes the shaker with the default ranges and no motion.
+00610d2c Constructs the palette: its layout, buttons, heap, renderer and color names.
 006124bc For a valid weather kind and `slot` (below 2): stores its layout name (or the default) in the slot's name field (+0x52c, 0xf4 bytes each); true otherwise.
 00612738 Updates the weather's items for the day.
 0061290c Starts loading the camping car's four info files on the stage heap, and sets the weather layout names from \n the saved record; 1 once all have started.
@@ -5320,6 +5403,7 @@
 0061ee74 Handles a guest's message in a multiplayer session.
 0061f2a0 In mode 2 with a main-object value and state 0: whether the session may end (00618b9c).
 0061f3f8 Clears the guest records (states, flag pairs, stations 4, counters).
+0061f4c0 Constructs a net confirmation state machine: its six flag pairs cleared.
 0061f608 Accepts a friend key that is new to the three known ones (when the link allows it): sends it (0050d1b4) and records it; true when done or already known.
 0061f6a0 Records an accepted friend key in a free entry.
 0061f974 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
@@ -5837,6 +5921,7 @@
 006a739c The world position of tile (tx, ty) of block (x, y) on the ground.
 006a7410 Refreshes the work table; true.
 006a742c Generates the work table from the seed, then starts the two random events; true.
+006a8280 Constructs relative road search candidates (15 by 15) for the scene.
 006a83fc Spawns effect `kind` of the set (first variant) at the position with a unit scale.
 006a8444 Spawns effect `kind` of the set (first variant) with the given parameters.
 006a8474 Sets the matrix of the current effect (+0x184) when it still exists.
@@ -6158,6 +6243,7 @@
 006e5e94 Shows or hides the page icon and plays the message animation when it changes.
 006e5f58 Switches the scroll bar between vertical and horizontal when it changes.
 006e64c4 Moves the drag icon back to its list, releases the menu flag 0x24 when held, and releases the drag icon and the two layouts.
+006e69cc Constructs a message window: a layout with its animations and a wait icon.
 006e7c8c Sets the action's angle (+0x500), and its start angle in the early stages.
 006e7d98 Sets the action's position (+0x4ec), and its start in the early stages; shares the NPC's packed state and target in a session.
 006e8560 Changes the special NPC's action when it differs.
@@ -6167,6 +6253,7 @@
 006ea9dc Updates the NPC's head looking toward its target.
 006ed200 In a session, packs the NPC's state, a new sequence number and its target position into its shared record.
 006ee02c Sets the action's cell (+0x4e0), and its start cell in the early stages.
+006ee264 Constructs an NPC action: its emoticon action, item and particle handle.
 006ee4b8 Destroys an NPC action: its particle handle and emoticon action.
 006ee4f8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 006eedc8 Copies the 8-byte entries of variant `index` of the layout table at 0xab7fc0 into the buffer when it fits; their count, or 0.
@@ -7329,6 +7416,7 @@
 00826c34 Whether the id passes the filter: equal to it (kind 2) or in one of its ranges (kind 3).
 00827060 The width of the text's bounds (in s0) in the font.
 008270cc The height of the text's bounds (in s0) in the font.
+0082d508 Constructs a NEX string from a wide string.
 0082d6d4 Copies the map's security contexts into the other's nodes.
 0082d8a0 Copies the tree into the other, reusing its nodes.
 0082d9e8 Copies the tree into the other, reusing its nodes.

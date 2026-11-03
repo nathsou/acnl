@@ -3893,7 +3893,7 @@
 00267808 ChangeListBase__virtual_6
 002681e0 ChangeListBase__virtual_4
 00268270 ChangeListBase__refresh_slot_flags
-002682ac ChangeRentalBase__ChangeRentalBase_002682ac
+002682ac ChangeRentalBase__construct
 002684c0 ChangeListBase__destructor
 00268664 CheckEnterStrc__virtual_0
 002686c0 store_slot_word
@@ -15347,7 +15347,7 @@
 0058dd08 place_is_open
 0058def8 daily_event_check_58def8
 0058e090 DailyCheck__count
-0058e1ac event__EventBase__EventBase_0058e1ac
+0058e1ac EventEveryDate__construct
 0058e228 daily_event_check_58e228
 0058e2e4 call_event_handler_of_kind
 0058e348 scheduled_place_at
@@ -15356,8 +15356,8 @@
 0058e500 event__EventAnniversary__virtual_0
 0058e508 Event__days_until
 0058e6e8 get_flagged_player_date
-0058e854 event__EventBase__EventBase_0058e854
-0058e98c event__EventBase__EventBase_0058e98c
+0058e854 EventAnniversary__construct
+0058e98c EventNpcBirthday__construct
 0058ead4 event_day_has_passed
 0058eb60 current_event_byte_3a
 0058eb78 registry_head_below_limit
@@ -15367,8 +15367,8 @@
 0058ecec set_byte_9524d8_to_1
 0058ed00 registry_enabled
 0058ed24 read_s8_0x009524d5_
-0058ed38 event__EventBase__EventBase_0058ed38
-0058edc4 event__EventBase__EventBase_0058edc4
+0058ed38 EventMonthlyWeekday__construct
+0058edc4 EventPlayerBirthday__construct
 0058eef8 current_event_word_2c
 0058ef0c set_byte_9524d5_to_1
 0058ef28 current_event_word_28
@@ -15380,7 +15380,7 @@
 0058f3c0 clear_23_byte_record
 0058f3ec current_mode_bit
 0058f464 event__EventBase__EventBase_0058f464
-0058f4cc event__EventBase__EventBase_0058f4cc
+0058f4cc EventDate__construct
 0058f718 attach_effect_to_free_slot
 0058f810 fgobj__ObjectBase__virtual_6
 0058f818 fgobj__ObjectBase__virtual_7
