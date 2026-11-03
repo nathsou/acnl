@@ -900,7 +900,7 @@
 0012e858 offset_identity_thunk_0012e858
 0012e8b0 dLoadSplit__dLoadSplit_0012e8b0
 0012e8c8 DuckingFader__DuckingFader
-0012e8e8 DuckingFader__virtual_2
+0012e8e8 DuckingFader__set
 0012e904 SoundSystemBgm__stop
 0012e968 SoundHaniwaMgr__release
 0012e9a4 SoundFaderPlayer__SoundFaderPlayer
@@ -4068,12 +4068,12 @@
 00277b4c SoundObj_2___SoundObj_00277b4c
 00277c0c SoundObjHaniwa__deleting_destructor
 00277c1c SoundObjHaniwa__destructor
-00277d98 SoundObjPlayer__virtual_2
+00277d98 SoundObjPlayer__start
 00277e1c AcFtr__start_animation
 00277e54 AcFtr__start_animation_b
 00277e8c SoundObjPlayer__virtual_4
 00277f80 stop_player
-00277fe4 SoundObj_4___SoundObj
+00277fe4 SoundObjPlayer__construct
 0027804c SoundObjPlayer__deleting_destructor
 00278140 SoundObjAmbient__destroy
 00278144 SoundObjPlayer__destructor
@@ -5714,7 +5714,7 @@
 002ee6f8 AddressSelectWindow__deleting_destructor
 002ee7ac AddressSelectWindow__destructor
 002ee864 copy_table_entry
-002ee898 sead__SafeStringBase_char___SafeStringBase_002ee898
+002ee898 SplitLoader__start
 002ee91c LoadSplitWord__release
 002ee938 sead__SafeStringBase_char___SafeStringBase_002ee938
 002ee990 LoadSplitWord__LoadSplitWord
@@ -14250,7 +14250,7 @@
 00561204 sead__UnitHeap__deleting_destructor
 00561234 sead__UnitHeap__destructor
 00561264 Viewport__apply_rotation
-00561310 sead__Viewport__Viewport_00561310
+00561310 Viewport__construct
 00561364 sead__Viewport__Viewport_00561364
 00561480 sead__Viewport__deleting_destructor
 00561484 sead__Viewport__destructor

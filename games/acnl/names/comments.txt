@@ -545,6 +545,7 @@
 0012db48 Sets the GPU state's depth buffer flags.
 0012db70 Reserves the command list's entries (0x28 bytes).
 0012e640 Signed 64-bit division through the unsigned one, the operands and the quotient negated as their signs need.
+0012e8e8 Sets a ducking fader's volume and target to a value (S0), with no fade running.
 0012e904 When the BGM flag (0x94cd06) is set, clears it and the sound system's two words, and stops the sound (+0x1c).
 0012e968 Releases the gyroid sound manager's object.
 0012ea28 Restarts the sound object's fade.
@@ -1780,8 +1781,10 @@
 0027689c Plays the step sound for the ground kind (below 14), with its pitch from the table; kind 13 has its own sound.
 00276c98 Unless muted (+0x34), plays sound variant `index` (below 0x83, from 0x1000a96).
 00276cdc Sets the volume of the playing handle (of the two) that plays the current sound.
+00277d98 Starts a player's sound object (unless started): takes its owner and starts the base.
 00277e1c Restarts the furniture's animation with its key.
 00277e54 Restarts the furniture's animation with its key.
+00277fe4 Constructs a player's sound object: a sound object base with four sound slots and a fade.
 00278140 Destroys the ambient sound object.
 002782dc Plays the sound object's sound of the kind with the count.
 002783c4 Looks the sound id up in the bank and remembers its entry and data.
@@ -2150,6 +2153,7 @@
 002d596c Updates the insect or fish sound at the position (converted by the camera).
 002d59a4 Stops the sound when it plays: detaches it and stops its base.
 002d59d4 Constructs the insect or fish sound, stopped.
+002d59e8 Destroys a one-sound sound object: detaches its sound and stops the base.
 002d5b40 Plays the melody sound at the position (converted by the camera) and marks it playing; true.
 002d5d48 Updates the melody sound at the position (converted by the camera).
 002d5f68 Stops the melody sound when it plays.
@@ -2253,6 +2257,7 @@
 002edccc True when the word pair at +0xc equals the default pair (0x84517c).
 002ee3a8 Releases the window's layout, its five part layouts (+0x4a4) and its extra one (+0x4b8), and resets the menu state flag.
 002ee564 Loads the item selection window's layout archive; marks it loaded (+0xce4).
+002ee898 Starts loading a split (path arg 1) unless one is loaded, and sets its count from the loaded size \n (size / 40).
 002ee91c Releases the split load's part and clears its word (+0xec); true.
 002ee990 Constructs the split load with a cleared word (+0xec).
 002ee9a4 Releases the part, clears the word and destroys the split load.
@@ -2771,6 +2776,8 @@
 0031e810 Hides the layout's root pane group (clears its visible bit) and lays the layout out again, when it was shown.
 0031e8bc Attaches the layout at +0x270 to the layout system.
 0031eb20 Releases the window's layout parts (when loaded), layout and text; true.
+0031ec78 Loads an item select window's layout archive; marks it loaded.
+0031ecbc Constructs an item name select window: an archive accessor, a layout with two animations and a \n 21-character trace renderer.
 0031f1a4 Starts the state at +0x213c with the handler pair at 0x879538.
 0031f2bc Starts the state at +0x213c with the handler pair at 0x879540.
 0031f2dc Sets up the window's B button pane and its values.
@@ -2830,6 +2837,7 @@
 0032ccb0 Constructs the option bytes and clears the saved copy.
 0032cef4 Draws the random state into 0x9525d0 and, in a network session with the main object idle, sends it as message 4.
 0032f240 Writes the GPU commands of the depth settings, with the depth offset (scaled when enabled) as a 24-bit float.
+0032fd1c Constructs a multi-item drag icon group: a drag icon group with its own vtables.
 003302c8 Starts the sound player unless it plays.
 00331550 Gives the villager of the record (+2) the item (+0) as its +0x8e6 item.
 00331778 Copies the half at +0x2e of the target (+0x4e4) to +0x4ec and marks it set.
@@ -3180,6 +3188,7 @@
 004ecbe0 Destroys a material animation: its heap allocator.
 004ed168 Sets the float at +0x124 of the model's resource and refreshes it.
 004ed18c Sets the float at +0x120 of the model's resource and refreshes it.
+004ed3dc A directional fragment light's per-frame update: unloads its split part, then updates it as a camera node.
 004ed570 Whether the model has a skeleton.
 004eda50 Finds the model's node of the kind and records it.
 004edaec Finds the model's node of the kind (the second layout).
@@ -3685,6 +3694,7 @@
 00560bac Unlinks each of the node's children.
 00560bec Unlinks the node and detaches all its children.
 00561264 Applies the viewport's screen rotation (below 6).
+00561310 Constructs a viewport: an empty rectangle, rotated for the current screen.
 005615e4 Calls the function at 0x561900 with the stacked word.
 00561900 Sets the viewport's rectangle and depth range.
 00561ba4 Zeroes the record with its last word at 0x1000.
@@ -3801,6 +3811,7 @@
 0057a3f8 Sets the segment's two points.
 0057a42c Sets the segment to the default one.
 0057afd4 Clears the pending share once its deadline has passed; whether the NPC is not held.
+0057b990 An actor's pre-execute step: when the base is ready, remembers its position and rotation as the last ones.
 0057b9dc When `enable`: keeps the two extra arguments at 0x94dfd8 and runs 00529c80 in mode 2; else returns 0.
 0057bb70 Whether the mode is 0 or 2.
 0057bb84 Whether the mode is 0 or 1.
@@ -4402,6 +4413,7 @@
 005c22dc Calls 006579a8 on the player with its entry set and the arguments.
 005c23c4 When the player (not locked) is in action 0x92: finishes it with the held item (+0x8ca).
 005c257c Sends the player the special star letter with an attached item picked at random from kind 9 (that the player can still get); true when it was sent.
+005c2718 Clears the player input flag 0x10.
 005c2730 The cell (x, z) of a point computed by 0065472c.
 005c2768 Copies the player's position (007634d0) into the static vector at 0xa843c8 and returns it.
 005c29f8 Calls 0067bcf4 on the object of the given id (from the stack) with the arguments.
@@ -5596,6 +5608,7 @@
 006e449c Packs the id above the low 18 bits of the value.
 006e44bc Moves the entry to the back of the pending list with its new packed key.
 006e46c8 The value (+0x10) of the pending entry with the key; 0 when none.
+006e47a0 Constructs a demo actor: an actor with a list node, at no offset.
 006e4b0c Entry `index` (below 5, 0xec bytes each) of the table at 0x9b3b08; the first otherwise.
 006e4b30 Reads the item layout entries of the variant from the table at 0x9b3b08.
 006e4b48 Reads the item layout entries of the variant from the table at 0x9b3dcc.
