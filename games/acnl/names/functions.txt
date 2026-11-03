@@ -2790,7 +2790,7 @@
 001fec94 CensusWindow__virtual_7_001fec94
 001fee74 CensusWindow__virtual_8_001fee74
 001feefc CensusWindow__virtual_10
-001fefa4 state__Mode_CensusWindow___Mode
+001fefa4 CensusWindow__construct
 001ff0d0 CensusWindow__virtual_1_001ff0d0
 001ff124 CensusWindow__destructor
 001ff174 DowntownBook__virtual_2
@@ -2966,7 +2966,7 @@
 0020b000 SoundObjFall__deleting_destructor
 0020b054 SoundObjFall__destructor
 0020b0a4 SoundObjSymbolTree__play
-0020b0d4 SoundObjFall__virtual_4
+0020b0d4 SoundObjFall__update_by_distance
 0020b280 SoundObjHold__construct
 0020b308 SoundObjHold__deleting_destructor
 0020b35c SoundObjHold__destructor
@@ -3552,7 +3552,7 @@
 002468d8 SoundDJPlayer__destructor
 00246934 SoundObjRiver__start
 002469ac SoundObjRiver__virtual_5
-002469c4 SoundObjRiver__virtual_4
+002469c4 SoundObjRiver__update_by_distance
 00246b90 SoundObjRiver__stop
 00246bd4 SoundObjRiver__SoundObjRiver
 00246c14 SoundObjRiver__deleting_destructor
@@ -4949,7 +4949,7 @@
 002bcd40 SoundFader__fade_to
 002bcddc SoundFaderPlayer__deleting_destructor
 002bcde0 SoundObjFieldObj__start
-002bcdfc SoundObjFieldObj__virtual_4
+002bcdfc SoundObjFieldObj__update_by_distance
 002bcf54 SoundObjFieldObj__virtual_7
 002bcf8c SoundObjFieldObj__virtual_8
 002bcfd8 SoundObjFieldObj__construct
@@ -5230,7 +5230,7 @@
 002cea78 LifeSupportWindow__virtual_6
 002cea80 LifeSupportWindow__virtual_7_002cea80
 002cec44 LifeSupportWindow__virtual_10
-002ced34 state__Mode_LifeSupportWindow___Mode
+002ced34 LifeSupportWindow__construct
 002ceec8 LifeSupportWindow__virtual_1_002ceec8
 002ceed8 LifeSupportWindow__virtual_0_002ceed8
 002ceee0 LifeSupportWindow__destructor

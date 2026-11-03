@@ -46,17 +46,20 @@
 00100e94 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
 00100edc Prints formatted text to the standard output (C printf).
 00100ef8 Formats into a buffer (C sprintf); returns the count written.
+00100f24 Formats into a buffer of size bytes, truncated and terminated (C snprintf); returns the length it would have.
 00100f68 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
 001011e4 printf's %o: the digits of the 64-bit value (r2, r3), least significant first, then the '0' prefix for the # flag.
 0010125c printf's %x, %X and %p: the digits of the 64-bit value (r2, r3), least significant first, then the 0x prefix for the # flag.
 001012f4 Scans a string by a format (C sscanf).
 00101334 strtol in base 10, errno left as it was.
 001013c4 Calls 0010218c and returns its object.
+00101482 Converts a wide string to multibyte characters, at most size bytes (C wcstombs).
 0010179a The first occurrence of needle in haystack, or null (C strstr).
 00101800 Copies at most count (arg 2) wide characters, padding with the terminator (C wcsncpy); returns dst.
 0010181c Copies count (arg 2) 16-bit characters.
 00101826 Moves count (arg 2) 16-bit characters, overlapping allowed (C wmemmove).
 00101890 The first occurrence of a wide needle in a wide haystack, or null (C wcsstr).
+001018bc Splits a wide string into tokens by delimiters, with a saved position (C wcstok).
 0010193a Fills count (arg 2) wide characters with c (C wmemset).
 00101978 Compares two wide strings ignoring ASCII case (C wcsicmp).
 00101a00 Forwards to store_word_af75e8.
@@ -102,6 +105,7 @@
 001081d8 Posts the town event's note to the bulletin board for the player.
 001082c8 Clears the bulletin board's 15 notices.
 001082e8 Posts the bulletin board's two default notices, dated today.
+00108354 Resets the bulletin board notices: clears them and posts the initial notice from its message.
 001083fc When the update state (0x95c210) is above 1: expires the old bulletin-board notices of the town.
 00108434 Constructs fifteen bulletin board notices.
 00108448 Clears the flag byte and the record after it (001e4524).
@@ -299,12 +303,14 @@
 00118f7c The index of the first of 16 16-bit slots (from +0x17656) holding 0xffff; 16 when none.
 00118fb4 The index of the first of the 10 villagers whose flags (+0x2510) mark it (bit 0 without bit 1, or bits 0x600); -1 when none.
 00118ff8 When the main object is idle: the visitor record (+0x173a0 for kinds 0xe/0xf, +0x173c6 for 0x10/0x11) of the villager of the object; else 0.
+0011916c Rebuilds a 399-bit set from the valid villager records.
 0011922c The first of the ten entries of the table at 0xa82b90 with flag 4 (+0x44), or -1.
 00119254 Whether the villager kept at +0x17676 is valid and bit 4 of +0x172f0 is set.
 00119288 Resets the villagers' daily values.
 00119308 The days left of the event at +0x19760: 7 (or 10 when its villager is close to a player) minus the elapsed days; -1 without a valid villager.
 00119360 The first of the ten entries of the table at 0xa82b90 with flag 3 (+0x44), or -1.
 00119388 For each of the ten villagers: rebuilds its phrase from its personality (+0x24f0) and applies it.
+00119404 Whether today (or, by arg, tomorrow) has a special event.
 0011945c Finds the villager that passes the check, from the start index.
 001194e0 Forwards to global_word_7e0 with the second argument.
 001194ec Whether one of the ten villagers passes 00309a44 and is not in state 2 (nor marked leaving by bits 0-1 of +0x2510).
@@ -373,6 +379,7 @@
 0011d538 Installs the home-menu, sleep and power callbacks, then waits for a pending request and resumes the object at 0xac1930.
 0011d61c Reads the system region (0x95721c) and language (0x95721d); a language other than 1, 2, 5 or 9 falls back to 1.
 0011d65c Clears the word at 0x951670; returns 0.
+0011d670 Creates the graphics memory manager on a heap: the two VRAM regions, and makes it the boot object.
 0011d7bc Opens the service named at 0x8a275c, starts its client once and reads its 16-bit value into 0x952ad8 (0 on failure).
 0011d7ec The default locale (0x944408) for an empty name or the default name; 0 for any other.
 0011d834 Controls memory (svc 1): maps, frees or protects the range.
@@ -457,6 +464,7 @@
 00122620 Appends an item when the array is not full.
 00122ca8 The word at +0x94 of the object held at +0x1c of 0x953384; 0 when missing.
 00122d60 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+00122dbc Initializes the microphone: its shared memory buffer and service.
 00122e5c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00122f14 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00122f70 Releases the sea sound manager and clears its flag.
@@ -755,6 +763,8 @@
 00136d2c Inserts a sound in the player's list by priority, releasing one when full.
 00136e0c Constructs a sound data manager: a dispose callback with a sound archive loader, nothing loaded.
 00136e58 Stops a playing sound, fading out over `fade_frames` (now when 0 or less).
+00136f2c Loads a sound archive item of kind 2 (a sequence with its banks and groups).
+001370dc Loads a sound archive item of kind 1 (a sequence) by its file.
 001376d8 Replaces the owner's frame heap (destroying the old one) by a new one on the region (start, size), 4-byte aligned; false when the region is too small or it fails.
 0013775c Initializes a linked list: empty, its sentinel pointing at itself.
 00137830 Releases the handle at +4 (0013b72c) when it is set.
@@ -1078,6 +1088,7 @@
 00195dd4 Exports the part of the pattern into the preview and, with the guide on, draws the guide's lines over it.
 00197fa4 Copies the region of the pattern image, clearing the rest.
 001982d0 Paints the brush's 16x16 mask at the pixel with the current color, skipping transparent pixels.
+00198d64 Destroys the design edit menu: its windows, buttons, layouts and menu base.
 001990f0 Merges two bell items of the pockets into one, the rest staying in the first slot (bags up to 10 or 99).
 00199704 Whether the two pocket items may be merged (same stackable kind, not full).
 00199928 Records the selection and opens the action for the slot (an item, the wallet, the letters).
@@ -1281,6 +1292,7 @@
 001c53dc Starts the state with the handler pair at 0x87a024.
 001c551c Starts the state with the handler pair at 0x87a02c.
 001c55b0 Constructs a catalog base: layouts, animations and a scroll bar.
+001c6748 Destroys a catalog list: its buttons, animations, layout and archive reader.
 001c8cd4 Relocates the table's entries to addresses.
 001c987c Sets the gift manager's entry for the slot.
 001c98d8 Moves the effect to the NPC's mouth (or the default point) and counts its timer down.
@@ -1328,6 +1340,7 @@
 001d2694 Plays motion 0xae with the speeds.
 001d2e8c Sets the face byte (+0x224) and the hair word (+0x228).
 001d333c Constructs a player model: a human model with its clothing rows and entries.
+001d3468 Destroys a player model: its part handles, then the human model.
 001d3720 Resets the camera controller's state.
 001d5348 Stops the sound (state 5) or, when idle, ends the special sound (in scene 0x27, playing the end sound) and forgets it.
 001d560c Stops the two sounds, gives back the event's sound data (0x100026b or 0x100026c) and resets its state.
@@ -1361,6 +1374,7 @@
 001db214 Starts the 3D sound at the position with its kind.
 001db3d4 Stops the 3D sound when it plays.
 001db5b4 Constructs a TV sound object: an external-volume sound object with a fader.
+001db650 Destroys a TV sound object: stops its sounds and frees its bank slot.
 001dba70 Marks the structures' rectangles in the placement grid.
 001dbc04 Marks the structures' rectangles in the grid (the second rule).
 001dc6e8 Visits the structure's rectangle, placing its cells.
@@ -1493,6 +1507,7 @@
 001fde9c Closes the notice's message and forgets its handle.
 001fdf44 Whether the notice's message is closed; asks it to close once otherwise.
 001fe718 Seeds the day's random generator and rolls the weather of the coming days.
+001fefa4 Constructs the census window: an in-and-out window with its background, content list and renderers.
 001ff124 Destroys a census window: its content list, background animations, window and archive reader.
 001ff5c0 Adds the bone's movement since the last frame to the actor's motion and records its new position.
 001ff92c Constructs a drag icon node: a button node with an icon animation, enabled, at no offset.
@@ -1562,6 +1577,7 @@
 0020af18 Constructs a sound object's base: distances 2000, volume 1, no handle, not registered.
 0020afb8 Starts a waterfall's sound object (kind 5, unless started).
 0020b0a4 Plays the symbol tree's sound unless it plays.
+0020b0d4 Updates a waterfall's sound by the listener's distance: volume and pan by range.
 0020b280 Constructs a held-item sound object: a sound object base with one sound slot, distances 2000.
 0020b3ac Starts a pond's sound object (kind 6, unless started).
 0020b494 Starts the object and sets its speed to 6.
@@ -1613,7 +1629,9 @@
 002194d8 Launches the firework with its light and its sound.
 002198b4 Plays the firework's sound at its position, unless the scene mutes it.
 0021cdc4 Destroys the catalog menu: its buttons, renderers, animations, layouts and menu base.
+0021e664 Destroys the cooler menu: its windows, buttons, layouts and menu base.
 0021fa30 The word of the entry: a letter on the page, or an item.
+0021fb60 Destroys the mailbox menu: its windows, buttons, layouts and menu base.
 0021fe04 Plays the tab's animation on its pane.
 00220274 Shows the menu's message of the index (below 15) in the message store.
 00220be0 Updates the mailbox's icons.
@@ -1625,6 +1643,7 @@
 00221904 Places the icon on the map screen (scaled to 160).
 00222ebc Releases the map screen's layouts: its icons of every group, the player icon and the frame.
 002230d8 Constructs the map menu base: its icons and a 21-character word.
+0022328c Destroys the map menu base: its icons and animations.
 002236c0 The index of the visible label (of 7) of the kind near the height; -1 when none.
 00223778 Plays animation `index` (0x28 bytes each, +0xc) on its pane.
 0022384c Hides the 7 labels.
@@ -1774,6 +1793,7 @@
 002458e4 Resets the player's counters and sets its beat length (900 / tempo, rounded up).
 00246774 Constructs the DJ sound player: nothing playing.
 00246934 Starts a river's sound object (kind 7): registers it with the river sound manager.
+002469c4 Updates a river's sound by the listener's distance: its distances, volume and pan by range.
 00246b90 Stops a river's sound object: the river sound manager forgets it, then the base stops.
 00246bd4 Constructs a river's sound object: a sound object base with no handle, distances 2000.
 00246c68 Destroys a river's sound object: the river sound manager forgets it, and the base stops.
@@ -1883,6 +1903,7 @@
 002599ec When the scene does not start the NPC itself: picks the message for its start mode (2 or 3) and starts the dialog; whether the NPC starts on its own.
 00259dac Hides the item label and sets up the dialog's five choices (the second set).
 00259f30 Hides the item label and sets up the dialog's three choices.
+0025b1c0 Destroys the design menu: its windows, buttons, layouts and menu base.
 0025c1fc Updates the passport menu once its parts are ready.
 0025c3ac Posts the menu's request (0x14, or 0x16 without `first`) and starts it.
 0025c418 Posts the menu's request (0x15, or 0x17 without `first`) and starts it.
@@ -1891,6 +1912,7 @@
 0025cdf8 Updates the reactions menu: its icons, dragging and selection.
 0025d9e4 Finds the first player with the flag and acts on their data.
 0025efb8 Sets the mode (+0x7e0e) and, for mode 1, resets the sub-menu at +0x6e2c.
+0025f390 Destroys the reaction menu: its windows, buttons, layouts and menu base.
 0025f68c Formats the rows of debug text.
 0026451c Resets the global render settings (fog, lights and their colors) to their defaults.
 00264668 Ends the photo capture: restores the scene environment and the camera.
@@ -1973,6 +1995,7 @@
 0027689c Plays the step sound for the ground kind (below 14), with its pitch from the table; kind 13 has its own sound.
 00276c98 Unless muted (+0x34), plays sound variant `index` (below 0x83, from 0x1000a96).
 00276cdc Sets the volume of the playing handle (of the two) that plays the current sound.
+00277c1c Destroys a clay figure sound object: stops its sounds and removes it from its slot table.
 00277d98 Starts a player's sound object (unless started): takes its owner and starts the base.
 00277e1c Restarts the furniture's animation with its key.
 00277e54 Restarts the furniture's animation with its key.
@@ -2054,6 +2077,7 @@
 00284ee4 The first and last cells (inclusive) the camera sees.
 00286558 Scans the table for the value.
 00286668 Starts the object's fixed animation.
+00287c4c Destroys the bingo card menu: its windows, buttons, layouts and menu base.
 002882b4 Resets the id the object points to (+0x3a0) to the default.
 00289b5c Destroys the resident select menu: its buttons, name window, layouts, archive readers and menu base.
 00289ce8 Wraps the day within the month's length (one more in February of a leap year) and shows it with two digits.
@@ -2065,6 +2089,7 @@
 0028b220 Sets up the date window's buttons and fields from the current date.
 0028c3e8 Sets up the model's button actions and animation targets.
 0028c538 Sets up the model's button actions and animation targets (the second variant).
+0028d12c Destroys the time setting menu: its windows, buttons, layouts and menu base.
 0028d378 Counts the point and, for the main player before the end, records it in the tour result.
 0028d568 Calls the owner's fixed function.
 0028f500 Updates the shadow views.
@@ -2189,11 +2214,16 @@
 002ad0a0 The catalog item of the offset for the current date.
 002ad1fc For an insect item (category 0x24), the flag of its insect index; 0 otherwise.
 002ae274 Puts the remembered item (0x94fd64) into the current player's pocket slot (+0xc8) and refreshes.
+002afa70 Destroys the item change menu: its windows, buttons, layouts and menu base.
+002b101c Destroys the item select menu: its windows, buttons, layouts and menu base.
+002b1c08 Destroys the mail select menu: its windows, buttons, layouts and menu base.
 002b1ea0 Fills the 7 labels of the current page from the markers (their names by kind), blanking the rest.
 002b2924 Builds the map's markers from the visible icons and fills the label page.
 002b315c Shows (or hides) the message of the touched icon by its group: buildings, villagers or the player.
 002b39d0 Unselects the icon and its label and hides the message.
 002b3a50 Destroys the town map menu: its buttons, map base, name window, layouts and archive readers.
+002b47a8 Destroys the mail to self menu: its windows, buttons, layouts and menu base.
+002b5e64 Destroys the tour select menu: its windows, buttons, layouts and menu base.
 002b64f8 The record (+0x14) of the list at 0x9981f4 matching the key at 0x950814; null when none.
 002b6ef8 Destroys a button action node: detaches and destroys its four animations.
 002b7598 Updates the layout at +0x270 and attaches it to the layout system.
@@ -2226,6 +2256,7 @@
 002bcb60 Releases the flagged banks' sound data once their loaders are idle.
 002bcd40 Fades to the volume over frames scaled by how far it has to go, and applies the volume (times the master when it has one).
 002bcde0 Starts a field object's sound object (unless started).
+002bcdfc Updates a field object's sound by the listener's distance: volume by range.
 002bcfd8 Constructs a field object's sound object: a sound object base with one sound slot, distances 2000.
 002be4a4 Writes the record of the player (the first matching or free of the 32 records).
 002be534 Clears the 32 records (0x14b0 bytes each).
@@ -2279,6 +2310,8 @@
 002c7060 Deletes a fixed ambient light: its camera node, then the light base.
 002c71ec Copies the letter of a page entry into the letter, with its sender and attachment.
 002c83a8 The letter list's entry at the index when on the page.
+002c85bc Destroys the letter stock menu: its windows, buttons, layouts and menu base.
+002c8f70 Destroys the number input menu: its windows, buttons, layouts and menu base.
 002c9868 The window's first free slot.
 002caabc The resource named `name` (by CRC) in the builder's list (+0x1368), or null.
 002cab78 The grass wear texture in the list (+0x13c), or null.
@@ -2315,6 +2348,7 @@
 002cdd00 Destroys an item drag icon group: its four animations, then the drag icon group.
 002cdd40 Adds the object's icon (+0x20) to the drag icon list.
 002cdf30 Whether the day's event counter of the current player is in progress (between 1 and 101); else forgets the event.
+002ced34 Constructs the life support window: an in-and-out window with its explanation window, buttons and \n renderers.
 002ceee0 Destroys the life support window: its explanation window, renderers, message engines, content list and \n windows.
 002cf018 Sets channel 0's buffer and size, and resets its progress, under the lock.
 002cf050 Sets channel 1's buffer and size, and resets its progress, under the lock.
