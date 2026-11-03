@@ -32,6 +32,7 @@
 0094ddfb net_presence_mode
 0094ddfc net_presence_bits
 0094ddfd net_presence_flag
+0094df04 cast_distance
 0094e3ad applet_callbacks_installed
 0094e3c8 err_eula_mgr_instance
 0094e424 pending_sound_effect
@@ -42,10 +43,12 @@
 0094e43c bgm_override_on
 0094e43d scene_sound_started
 0094e43f sound_suspended
+0094e440 bgm_override_kind
 0094e441 bgm_override_active
 0094e444 river_sound_exists
 0094e445 room_music_player_exists
 0094e446 sea_sound_exists
+0094e474 announcement_message_id_b
 0094e476 last_message_id
 0094e489 last_weather_sound
 0094e4a9 special_bgm_on
@@ -57,6 +60,7 @@
 0094edd8 camera_manager
 0094ee44 talk_manager
 0094ee4f field_item_mode
+0094ee58 block_model_part
 0094ee60 field_item_model_table
 0094f268 fish_manager
 0094f310 scene_object_pool
@@ -66,6 +70,7 @@
 0094f524 insect_manager
 0094f860 packed_display_value
 0094fd2b menu_resume_flag
+0094fd38 item_menu_quantity
 0094fd3c menu_selection
 0094fd50 selected_pocket_slot
 0094fd58 town_runtime_flags
@@ -91,6 +96,7 @@
 009503d0 announcement_value
 00950470 current_camera
 0095063c catch_manager
+00950640 catch_manager_data
 009506b0 event_npc_mode
 009506b4 event_npc_source
 00950708 tour_state
@@ -125,12 +131,15 @@
 009524dc event_list
 009524e0 current_event
 009525d0 random_seed_value
+0095261c catalog_mode_bits
 00952620 exhibition_park_info_instance
 0095262c exhibition_park_data
 00952641 scene_change_active
+00952668 scene_change_kind
 009526b0 fish_bite_streak
 009526b2 fish_bite_state_a
 009526b3 fish_bite_state_b
+009526b4 fish_bite_count
 009526b5 fish_bite_armed
 009526b6 fish_bite_flag
 009526f4 current_map
@@ -174,6 +183,7 @@
 00953380 memory_layout_limit
 009535e0 shared_service
 009535e4 net_store
+00953600 net_value_953600
 00953624 matching_list_instance
 0095362c net_session
 00953644 online_flag
@@ -197,11 +207,13 @@
 00957322 current_scene
 00957323 next_scene
 00957328 scene_change_step
+0095732c scene_change_target
 00957344 scene_environments
 0095bf68 season_state
 0095bf70 save_archive
 0095bf74 save_data_pointer
 0095bf78 save_buffer
+0095bf80 current_mode_bits
 0095bfdc empty_item
 0095c210 bbs_update_state
 0095c219 villager_part_loaded
@@ -251,6 +263,7 @@
 00974b64 applet_callback_b_arg
 00974b6c applet_callback_c_arg
 00974eec friends_init_count
+00974f00 time_ticks_ready
 00974f10 file_server_archive_count
 00974f38 ndm_refcount
 00974f60 memory_block_reserved
@@ -272,6 +285,7 @@
 0097d40c thread_local_heap_key
 0097d41c pead_thread_mgr_instance
 0097d46c block_list
+0097d478 gpu_depth_state
 0097d784 gpu_state
 0097d818 service_8b233c_refcount
 0097d81c service_handle_97d81c
@@ -280,6 +294,8 @@
 0097dffc storage_service
 0097e064 srv_state
 0097e06c srv_port
+0097e0a0 photo_root_a
+0097e0b8 photo_root_b
 0097e0e5 photo_root_path_ready_a
 0097e0e6 photo_root_path_ready_b
 0097e6ec effect_render_state_a
@@ -290,7 +306,9 @@
 0097ea30 service_b_refcount
 0097ea38 error_report_handle
 0097ea3c error_report_buffer
+00981690 photo_file_number
 009816ac pending_picture
+009816b0 pending_picture_info
 00981cfc effect_random_state
 00981e98 service_ab_handle
 00981fc8 global_locale
@@ -301,6 +319,7 @@
 00982018 data_loader
 0098203c data_block_flags
 00982040 data_block
+00982128 photo_storage
 009825ec tile_tables_ready
 00982898 sound_handle_count
 00984628 anim_preset_primary
@@ -310,6 +329,7 @@
 009856c4 spot_search_x
 009856c8 spot_search_y
 009856cc spot_search_z
+009856e8 spot_search_origin
 009856f4 player_reference_x
 009856f8 player_reference_y
 009856fc player_reference_z
@@ -321,12 +341,20 @@
 00986a80 tune_notes
 00989bd8 bgm_queue_object
 0098a030 flag_manager_object
+0098c500 item_menu_special_window
+0098c508 item_menu_id
+0098c554 item_menu_position_x
+0098c558 item_menu_position_y
+0098c55c item_menu_position_z
 00997ae1 shadow_view_flag
 00997ae3 shadow_view_kind
 00998548 default_camera_param
 009ab170 talk_queue
 009ab588 talk_slots
 009ab598 talk_slot_pairs
+009b39f8 event_date_year
+009b39fc event_date_month
+009b3a00 event_date_day
 009b4a24 map_table
 009b4a9c saved_map
 009c79ac offset_minus_x
@@ -351,6 +379,10 @@
 00a83af0 item_list_400
 00a84790 player_records
 00aad990 player_slots
+00aad994 player_slot_a
+00aad998 player_slot_b
+00aad99c player_slot_c
+00aad9a0 player_slot_d
 00aadad4 player_input_flags
 00aadad5 player_input_flags_b
 00aadaf4 changed_cells_a
@@ -364,6 +396,7 @@
 00aaf144 current_player_position_y
 00aaf148 current_player_position_z
 00aaf14c current_player_data
+00aaf198 screen_scale
 00ab7d0c render_targets
 00ab7dc4 render_target_index
 00ab7df4 structure_lists
