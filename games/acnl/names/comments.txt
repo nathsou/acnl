@@ -567,13 +567,40 @@
 0014f378 Adds the two vectors into the output.
 0014f4d0 Writes the second vector plus the first times the scale (in s0).
 0014f5dc Creates a mutex (svc 0x13), locked or not.
+0014f6fc Jumps to the imported function (the word that follows).
+0014f704 Jumps to the imported function (the word that follows).
+0014f70c Jumps to the imported function (the word that follows).
 0014f794 Jumps to the import.
 0014f79c Jumps to the import.
+0014f7fc Jumps to the imported function (the word that follows).
+0014f89c Jumps to the imported function (the word that follows).
+0014f8a4 Jumps to the imported function (the word that follows).
+0014f8ec Jumps to the imported function (the word that follows).
+0014f914 Jumps to the imported function (the word that follows).
+0014f92c Jumps to the imported function (the word that follows).
+0014f9ac Jumps to the imported function (the word that follows).
+0014f9b4 Jumps to the imported function (the word that follows).
+0014f9bc Jumps to the imported function (the word that follows).
+0014f9d4 Jumps to the imported function (the word that follows).
+0014f9fc Jumps to the imported function (the word that follows).
+0014fa04 Jumps to the imported function (the word that follows).
+0014fa8c Jumps to the imported function (the word that follows).
+0014fa9c Jumps to the imported function (the word that follows).
 0014fafc Jumps to the import.
+0014fb4c Jumps to the imported function (the word that follows).
+0014fb84 Jumps to the imported function (the word that follows).
+0014fbac Jumps to the imported function (the word that follows).
+0014fd24 Jumps to the imported function (the word that follows).
 0014fd9c Jumps to the import.
 0014fda4 Jumps to the import.
 0014fe74 Jumps to the import.
+0014fea4 Jumps to the imported function (the word that follows).
+0014feac Jumps to the imported function (the word that follows).
+00150b94 Fills the bytes with the value and returns the destination.
 00150bc0 Copies the string, up to the length.
+00150c2c Moves the bytes and returns the destination.
+00150d2c Divides the two doubles (soft float).
+0015120c Multiplies the two doubles (soft float).
 00152770 Clamps the face index to the table's size.
 00152a10 Loads the face data of the kind into the buffer.
 00152dc8 Sets the face library's state when its flag is set.
