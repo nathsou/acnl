@@ -541,7 +541,11 @@
 0014fda4 Jumps to the import.
 0014fe74 Jumps to the import.
 00150bc0 Copies the string, up to the length.
+001597e0 Whether the current entry is after the value.
+00159824 The value at the offset, or 0.
+00159960 The current entry's value, or -1.
 00168868 Places the item as a field drop at the cell, with its flag.
+0016dad0 Spawns the field item's actor at the position.
 00186d7c The distance between the two points (in s0).
 00188850 Whether the cell is blocked in the grid's bitmap; false outside the grid.
 001888ac Whether the cell is free in the grid's bitmap; true outside the grid.
@@ -566,6 +570,7 @@
 0018f898 For the player's slot held by the NPC: sets the gift's message.
 0018f8e0 For the player's slot held by the NPC: sets the gift's state; whether it did.
 0018fb98 For the player's slot held by the NPC: sets the gift's item and flag.
+0018fc94 The music kind of the scene (by its group).
 001904f0 Adds the id to the set of 4 when absent and there is room; whether it is in.
 001905b0 Adds the id to the set of 12 when absent and there is room; whether it is in.
 00190670 Adds the id to the second set of 4 when absent and there is room; whether it is in.
@@ -611,6 +616,7 @@
 001aa94c True when the entry is a friend (by its id, or its key among the list).
 001aa9fc True when the entry is in the friend list (refreshing it first, under the lock).
 001aadd0 Sets the frame of slot `index`'s animation (below 4, 0x18 bytes each, +0xe0) when the frame is not negative.
+001aae00 Updates the 3D sound's volume by its distance.
 001aaed4 Finds the resource index of the scene's model.
 001ab060 Applies the material (+0x24) to the model (+0x1c) when it exists.
 001ab2ec Moves the target by the offset rotated by the angle and, when asked, resets both models' positions.
@@ -632,6 +638,7 @@
 001afc70 Adds the item's base form (normalized for its category) to the list when no equal item is in it yet, counting it.
 001b1010 Loads the six static data tables; true when all loaded.
 001b1184 The save's entry (at +0x5d900) for the index, or the first one.
+001b1208 Finds a spot in the town for the kind.
 001b1900 Takes the received letter (version 3, newer than the current one) when its checksum over 0x28c bytes matches and its letter is valid; true when taken.
 001b19ac Constructs an empty received letter record.
 001b19dc Adds to the progress; in states 1 and 2 it moves to state 2 once the goal (+4) is reached.
@@ -648,6 +655,7 @@
 001b2690 Clears the work data's player part (+8) and its 0x1228-byte entry (+0xa488).
 001b26c8 Constructs the 0xc8b8-byte work data: its records, letters, item sets, id lists and counters.
 001b2a5c Destroys the work data's arrays of items, letters and records.
+001b2c7c Clears the town's records.
 001b3174 Sets color slot `index` (below 15) of the palette to `color`, or 0 when the picker marks that color unusable.
 001b31a4 Loads the design color picker (256 colors into 0x95c010) and the 12 preset palettes (into 0xad53a4).
 001b32c8 Fills the pattern's pixels (0x800 bytes at +0x6c) with 0xcc and copies the header (0x26c bytes) from the source.
@@ -672,6 +680,7 @@
 001b5d94 True for ids below 399, 0x1000 to 0x100f and 0x2000 to 0x2010.
 001b5f7c Clears the record: its items, pattern and name, with the default shirt and hat items.
 001b625c Sets bit `index` (below 10) of the bit set.
+001b6278 Sets the player's score in the tour result (below 0x23 entries).
 001b732c Clears the record: its ids at -1 and its two levels at 200.
 001b7530 True when adding is allowed (0xad56fb set, 0xad56fa clear) and the count (+0x18) is at most 15.
 001b7568 Adds the sale to the tally of the kind (+0x10): by count, price or a quarter of the item's price, by the shop's mode; true when the tally changed.
@@ -757,6 +766,7 @@
 001cdf98 Sets the low nibble of +0xe.
 001ce934 Sets the colors of the model's cloth and legs materials from the two color tables.
 001ceb78 Sets up the player's model for their gender (+0x55ba) with the parameters.
+001cf9c4 Plays the player's motion with its blend.
 001d051c Finishes the pending work (+0x1bc) with mode 2 and clears it; 0.
 001d2694 Plays motion 0xae with the speeds.
 001d2e8c Sets the face byte (+0x224) and the hair word (+0x228).
@@ -774,6 +784,7 @@
 001d9cdc Sets the mode (+0x80) when it is at most 2.
 001dba70 Marks the structures' rectangles in the placement grid.
 001dc6e8 Visits the structure's rectangle, placing its cells.
+001dc87c Finds the rectangles where the structures may go.
 001de400 Copies the 4-byte entries of variant `index` of the layout table at 0xac3750 into the buffer when it fits; their count, or 0.
 001de4a8 Clears the bits of field `index` (2 bits each) given by the value plus 1.
 001de4c0 The total of the 6 two-bit fields (3 counts 2, 1 or 2 count 1).
@@ -804,6 +815,7 @@
 001df5e8 Adds to the 3-bit field at bits 1 to 3 of +4, clamped to 0 to 7.
 001df61c Adds to the 3-bit field at bits 3 to 5 of +0, clamped to 0 to 7.
 001df668 Adds to the 3-bit field at bits 4 to 6 of +4, clamped to 0 to 7.
+001df69c Resets the flags of the 0x29 kinds.
 001e00c8 Resets the record's constants and constructs its part.
 001e00e4 Constructs the 8 patterns' names.
 001e0114 Clears the 8 patterns: their names, creators, palettes, flags and pixels.
@@ -813,6 +825,7 @@
 001e02f0 Clears the mail data's stamp, record header and flags.
 001e0318 Zeroes the mail data's header, stamp and flags.
 001e0354 Increments the byte at (x, y) of a grid 16 bytes wide, saturating at 0xff.
+001e0370 Applies the town event of the kind (up to 0x96 and beyond).
 001e17fc Adds to the 4-bit field at bits 5 to 8 of +0x18, clamped to 0 to 14.
 001e18ac Adds to the 4-bit field at bits 7 to 10 of +0x17, clamped to 0 to 15.
 001e1b84 Adds to the high nibble of +0x11, clamped to 0 to 14.
@@ -831,6 +844,7 @@
 001e57e8 Resets the request record with mode 0x20001800.
 001e5820 When loaded, releases the loader at 0x982018 and resets its state to 4.
 001e5894 Transforms a point by the camera manager's view matrix (+0x29c), when there is a camera manager.
+001e58fc The light color of the kind (below 0x1c) for the time.
 001e5ba0 Initializes the scene's shared resources.
 001e5dc8 Sets the two scene flags (0x95210c, 0x9520c6).
 001e5de0 Stores the value plus 1 at 0x95210c.
@@ -854,8 +868,10 @@
 001ed520 Sets the town flag (bit 7 of save +0x62155) when one of the 4 players has the state 0xa (bits 3 to 6 of +0x5710).
 001ed594 Clears the DJ controller's state words.
 001ed5b4 Dresses the current player in the default outfit for their gender (+0x55ba).
+001edaec Selects the talk's message by its mode.
 001f4fec Constructs the actor with the class's vtables and zeroes its motion, rotation and scale.
 001f581c Scales the shown insect or fish by its size, starts its sound (local when it is the main player's) and takes its item.
+001f6844 Places the actor at the position with the rotation (clearing the old one) and its scale.
 001f6cc8 When the shown item changed or ended: stops its sound, clears it and, when asked, sets up the new one.
 001f8798 Sets up the icon button's actions, its node values and messages.
 001f891c Sets the icon button's node values.
@@ -883,6 +899,7 @@
 00200ca0 Loads the large cell's 0xa00-byte block from the shared layout of the cell's id.
 00201ea0 Empties both layers of every tile of the cell.
 00201fa0 Allocates a grid rectangle and builds it (the 0x5814d0 builder); destroys it and gives null on failure.
+00201ff4 Counts the items in the 2x2 blocks.
 002021d4 Marks the tiles next to the kinds 0x21 and 0x20 in the 7 x 6 grid with 0x3d and 0x47.
 00202370 Places random tiles of the kind in the 7 x 6 grid.
 002025bc Allocates a grid rectangle and builds it with its buffer; destroys it and gives null on failure.
@@ -905,6 +922,7 @@
 002068b8 Sends network message 0x40 with the NPC's slot, the main object and the time (the longest wait of the stations plus 300) and tells the NPC manager.
 00206f7c Sets up the item button: its control, its item pane and position, animation targets and sounds.
 00207168 Calls the function at 0x207190 with a record holding the half.
+00207190 Spawns the effect at the position (with the flag).
 00207330 Creates the particle system (0x24 bytes) into 0x957308; true when it did.
 002073dc Starts the effect of the id at the position with its owner, replacing the running one.
 0020758c Spawns the effect through a temporary particle handle.
@@ -952,6 +970,7 @@
 00210c2c Sets up the balloon string's vertex buffers.
 002127f4 Writes the balloon string's shader setup and light commands; their end.
 00212ed0 Adds the balloon string to the draw list when it is shown.
+002132d0 Takes the next animation of the queue into the slot; whether there was one.
 00213868 Caps the zoom so the map fits in 400 units and keeps the offset within 200.
 00213930 Moves the view toward its target by up to 6 units a frame (snapping on the first), then places it.
 00213b54 Inserts the node into the depth-sorted tree (by +0x3d0); the subtree's root.
@@ -964,6 +983,7 @@
 00220274 Shows the menu's message of the index (below 15) in the message store.
 00220c28 Selects icon `index` of the second group (+0x2b1c): unselects the previous one and starts the new one's highlight (kind 2).
 0022105c Selects icon `index` of the first group (+4): unselects the previous one and starts the new one's highlight (kind 1).
+002213bc Places the mailbox's icons at the node's position.
 002214e4 In room scenes, selects the player icon (+0xac64): unselects the previous one and starts its highlight (kind 5).
 00221790 Updates the visible map icons.
 00222ebc Releases the map screen's layouts: its icons of every group, the player icon and the frame.
@@ -1046,11 +1066,13 @@
 0023c9e4 Updates the screen's layout and its animations.
 0023cb48 Applies the cloth colors of the slot's model when it is loaded; whether it was.
 0023d5ec Whether the pockets hold an item the NPC may be given (by kind and the event's rules).
+0023d99c Whether the player has progress on the badge.
 0023f704 Copies one pattern image (64x32) into another, filling where the source is smaller with the background color, and imports it.
 0023f820 Copies one pattern image into another (the second layout), filling outside the source with the background color, and imports it.
 0023fc84 Queries the cell of the layer (below 4) for its contents.
 0023ffb8 The cell of the structure id; whether it was found.
 00240080 Runs the function at 0x7206e0 on structure list `index` (below 4, from 0xab7de4) when it exists.
+002400b0 The terrain kind of the structure (0x90 to 0xa7).
 002404b0 True when the construction site (save +0x6e2a4) is set (or finished) and is in block (x, y) for the structure kind.
 0024088c Finds the structure matching the record in the main list (0xab7df4) and removes it.
 00240c80 Places structures at random free spots.
@@ -1063,6 +1085,7 @@
 0024201c Adds the structure of the kind at the position: registers it, marks its cells and, when it is the construction site's, finishes the site.
 00242744 Counts the structures of each of the 0xfc kinds (into 0xab7e2c), not counting the one under construction.
 00242cc4 Refreshes the cells of every structure in the list at 0xab7e00.
+00243038 The item of the terrain kind (0x94 to 0x9b), or 0xfc.
 002443b8 Damps the velocity (by 0.995), eases the position toward the target (by the blend +0x38), keeps the height, clamps the distance to 2900 and fills the listener record.
 00244a00 Creates the gyroid sound manager on the stage heap once and registers the object with it.
 00244bb4 Starts (or stops) the sound object's sound in the sound system and updates the object.
@@ -1164,6 +1187,7 @@
 0025cdf8 Updates the reactions menu: its icons, dragging and selection.
 0025d9e4 Finds the first player with the flag and acts on their data.
 0025efb8 Sets the mode (+0x7e0e) and, for mode 1, resets the sub-menu at +0x6e2c.
+0025f68c Formats the rows of debug text.
 0026451c Resets the global render settings (fog, lights and their colors) to their defaults.
 00264668 Ends the photo capture: restores the scene environment and the camera.
 00264698 Begins the photo capture: sets up the scene environment, its camera and viewport.
@@ -1180,6 +1204,7 @@
 0026a5dc Stops each of the 4 slots' effects and marks them stopped (or idle when unused).
 0026a66c Constructs the 4 slots (0xfc bytes each) and clears the state.
 0026a694 Destroys the 4 slots.
+0026a824 Finds the follower's path toward its target over the grid.
 0026ae58 Begins the target's next action and clears the action.
 0026b2e0 Constructs the candidate locator for the target with the default ranges.
 0026b3a0 Loads the edit switch layout, binds its button and its eight animations, and shows its first side.
@@ -1220,6 +1245,8 @@
 0027689c Plays the step sound for the ground kind (below 14), with its pitch from the table; kind 13 has its own sound.
 00276c98 Unless muted (+0x34), plays sound variant `index` (below 0x83, from 0x1000a96).
 00276cdc Sets the volume of the playing handle (of the two) that plays the current sound.
+00277e1c Restarts the furniture's animation with its key.
+00277e54 Restarts the furniture's animation with its key.
 002783c4 Looks the sound id up in the bank and remembers its entry and data.
 00278484 Registers the sound with its group byte (kind 3).
 002796a0 Starts the ducking fade of the channel (unless held in states 4 and 5): with the channel's frame counts, or the fader's own.
@@ -1302,6 +1329,7 @@
 0028d568 Calls the owner's fixed function.
 0028f500 Updates the shadow views.
 0028f6f8 The shadow kind (0 to 4) of the current scene.
+0028f7fc Refreshes the time display from the clock.
 0028f8bc Sets the fade from the distance between the two points (none within about 167 units, full at about 333).
 0028ff00 Resets the tour state and, for an idle main object, its entry template.
 002900d4 Clears the pending flag (0x950710) or, when the tour is in state 1 or 3, resets it to state 0.
@@ -1309,6 +1337,7 @@
 00290584 Finishes the tour (unless a network peer is busy): selects the BGM, shares the end template entry and marks it done.
 002915b0 While the tour plays (state 2, not done), counts one in the first counter (0x950718, at most 999).
 00291990 Updates the window's counters (its two values, or the result count in state 3).
+00291a18 Formats the number with the digits into the word slot.
 0029223c The tour's result kind (0x950713) when the tour object shows it; 5 otherwise.
 00292ccc While the tour plays (state 2, not done), counts one in the second counter (0x95071c, at most 999).
 00292d08 Resets the tour to state 0 and marks it done.
@@ -1340,6 +1369,7 @@
 002993ac When the thumb's pressed state changes, plays its press animation (and, while dragging, its sound).
 002999ac Sets the bar's style (+0x444) and plays it on the bar and its two arrows.
 0029a5f8 Starts the menu state (kind 0x20c, 0xb, 7) and tells the menu selection.
+0029b480 Resets the sub-menu and its child window.
 0029b840 Sets bit `index` (below 399) of the bit set.
 0029b868 Clears the 50-byte bit set.
 0029bde8 The half-tile coordinates of the cell (two per tile, by the tile's shape).
@@ -1394,6 +1424,7 @@
 002ab16c Sets the flag at 0x94f520.
 002ab240 The next insect id (+0x1202) used by no insect and no special slot.
 002ab3bc Counts the spawn timer down, then tries the special spawn (outside tours and some weathers) or kind 0x53, resetting the timer.
+002ab460 Starts the NPC's talk of the kind with the value.
 002abba8 Keeps the spawn point (0x94f530) on the ground, or picks a new one when asked.
 002abdfc Picks a random insect from the spawn table for the time, skipping the ones already out or not allowed.
 002abf60 The insect with the id: in the list, or one of the two special slots; null when none.
@@ -1413,6 +1444,7 @@
 002b7fa0 The index of the first clear bit of the 32 bits at 0x952aec; 0 when all are set.
 002b8044 Sets the record's four words and takes a free slot index.
 002b8898 Clears the word at 0x953230.
+002b8958 Shows or hides the button's pane and records it.
 002b8e84 Shows the pane and writes the number (up to 10 digits) into the label's text.
 002b9aa4 Shows or hides the item name pane.
 002ba344 Advances the list's counter by the step (mod 3) and moves every child pane by the offset.

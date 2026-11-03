@@ -1194,6 +1194,9 @@
 00155230 masked_byte_155230
 00159158 set_byte_97e988_to_0
 001594a8 release_handle_001594a8
+001597e0 ItemOffsetTable__is_after
+00159824 ItemOffsetTable__value_at
+00159960 ItemOffsetTable__current_value
 00159984 acquire_handle
 00159a0c acquire_handle_kind_b
 00159acc acquire_handle_kind_c
@@ -1203,6 +1206,7 @@
 0016894c return_constant_0xae4e20_
 0016c458 script__WordFix_33u___WordFix_0016c458
 0016d974 script__WordFix_128u___WordFix_0016d974
+0016dad0 FieldItem__spawn_at
 00176310 sead__BufferedSafeStringBase_char___BufferedSafeStringBase_00176310
 00178d78 sead__RuntimeTypeInfo__Derive_sead__Heap___Heap__00178d78
 00179018 sead__SafeStringBase_char___SafeStringBase_00179018
@@ -1291,6 +1295,7 @@
 0018fc10 BsHandItem__deleting_destructor
 0018fc4c BsHandItem__destructor
 0018fc84 read_u32_0x0094f58c_
+0018fc94 scene_music_kind
 00190050 sead__FixedSafeString_256___FixedSafeString_00190050
 00190080 sead__FixedSafeString_256___FixedSafeString_00190080
 001900d4 sead__FixedSafeString_256___FixedSafeString_001900d4
@@ -1421,6 +1426,7 @@
 001aa9fc FriendList__has_entry
 001aaa40 sead__SafeStringBase_char___SafeStringBase_001aaa40
 001aadd0 set_slot_animation_frame
+001aae00 Sound3d__update
 001aaed4 find_scene_resource_index
 001ab060 apply_material_to_model
 001ab2ec ModelPair__move_by_angle
@@ -1508,6 +1514,7 @@
 001b0fa4 SoundFxMgr__deleting_destructor
 001b1010 load_static_tables
 001b1184 SaveBlock5d900__entry
+001b1208 Town__find_spot
 001b1308 sead__SafeStringBase_char___SafeStringBase_001b1308
 001b1900 ReceivedLetter__accept
 001b19ac ReceivedLetter__ReceivedLetter
@@ -1533,6 +1540,7 @@
 001b2690 WorkData__clear_players
 001b26c8 WorkData__WorkData
 001b2a5c WorkData__destroy
+001b2c7c Town__clear_records
 001b3174 DesignPalette__set_color
 001b31a4 load_design_palettes
 001b32c8 Pattern__init_from_header
@@ -1578,6 +1586,7 @@
 001b601c member_address_0xb74__001b601c
 001b60fc remove_player_entry
 001b625c BitSet10__set
+001b6278 TourResult__set_score
 001b63b4 remove_numbered_entry
 001b64a8 remove_entry_of_id
 001b65e8 store_constants_300800_001b65e8
@@ -1947,6 +1956,7 @@
 001ce6f8 PlayerModel__virtual_9
 001ce934 ModelSlot__set_cloth_colors
 001ceb78 setup_player_model
+001cf9c4 AcPlayer__play_motion
 001d051c finish_pending_1bc
 001d1cb4 AcPlayer_rec__state_0_enter
 001d2694 play_motion_ae
@@ -2010,6 +2020,7 @@
 001db650 SoundTvBase__destructor
 001dba70 StructurePlacement__mark_rects
 001dc6e8 place_structure_cells
+001dc87c StructurePlacement__find_rects
 001ddfcc sead__SafeStringBase_char___SafeStringBase_001ddfcc
 001de39c sead__SafeStringBase_char___SafeStringBase_001de39c
 001de400 read_item_layout_ac3750
@@ -2053,6 +2064,7 @@
 001df61c Packed__add_3bits_at_0_3
 001df650 assign_bit7_of_byte06_1df650
 001df668 Packed__add_3bits_at_4_4
+001df69c EventFlags29__reset
 001e00c8 Record00c8__construct
 001e00e4 PatternSet8__construct
 001e0114 PatternSet8__clear
@@ -2065,6 +2077,7 @@
 001e02f0 MailData__clear_header
 001e0318 MailData__construct_header
 001e0354 ByteGrid16__increment
+001e0370 TownEvent__apply_kind
 001e0880 clear_byte_bits_40645f6c
 001e17e4 assign_bit0_of_byte12_1e17e4
 001e17fc Packed__add_4bits_at_18_5
@@ -2134,6 +2147,7 @@
 001e5894 camera_transform_point
 001e58cc bsobjchkmgr__ActorBody__ActorBody
 001e58ec bsobjchkmgr__ActorBody__deleting_destructor
+001e58fc SceneLight__color_of_kind
 001e5ba0 init_scene_resources
 001e5dc8 set_scene_flags_9520bc
 001e5de0 set_scene_value_95210c
@@ -2195,6 +2209,7 @@
 001ed5b4 dress_current_player_default
 001ed870 AcNpcSpHonma__TalkRecept__select_message_set
 001ed958 AcNpcSpHonma__TalkRecept__virtual_80
+001edaec TalkRecept__select_message
 001edd7c AcNpcSpHonma__TalkRecept__virtual_81
 001edf48 AcNpcSpHonma__TalkRecept__virtual_83
 001edfd4 AcNpcSpHonma__TalkRecept__virtual_87
@@ -2248,6 +2263,7 @@
 001f50a8 AcObjectBase__virtual_0_001f50a8
 001f581c AcObjectShow__setup_creature
 001f5ed8 AcObjectShow__virtual_17
+001f6844 Actor__place_with_rotation
 001f6cc8 AcObjectShow__update_item
 001f707c AcObjectShow__do_draw
 001f71d0 AcObjectShow__virtual_3_001f71d0
@@ -2472,6 +2488,7 @@
 00200d0c namespace___ElmFieldBuilder__ElmFieldBuilder
 00201ea0 CellItems__clear
 00201fa0 create_grid_map_5814d0
+00201ff4 Grid2x2__count_items
 002021d4 mark_cliff_edges
 00202370 place_random_tiles_in_grid
 002025bc create_grid_map_with_buffer
@@ -2535,6 +2552,7 @@
 0020710c SantaBagIcon__destructor
 0020714c read_word_957308
 00207168 call_207190_with_half
+00207190 Effect__spawn_at
 00207330 create_particle_system
 002073dc EffectHandle__start
 0020758c spawn_effect_temp
@@ -2694,6 +2712,7 @@
 00213298 smaller_of
 002132ac BankTableBase__virtual_0
 002132b4 BankTableBase__clear_and_notify
+002132d0 AnimQueue__next
 002133ac AcNpcSpJonny__MyModel__virtual_18
 0021349c BankTableBase__virtual_3
 002134a0 construct_bank_table_base
@@ -2775,6 +2794,7 @@
 00220c28 MapScreen__select_icon_b
 0022105c MapScreen__select_icon_a
 002210c4 script__WordFix_21u___WordFix_002210c4
+002213bc Mailbox__place_icons
 002214e4 MapScreen__select_player_icon
 0022155c script__WordFix_21u___WordFix_0022155c
 00221790 MapScreen__update_icons
@@ -3090,6 +3110,7 @@
 0023d518 PlayerCapBank__deleting_destructor
 0023d584 PlayerCapBank__destructor
 0023d5ec Pockets__has_giftable_item
+0023d99c Player__has_badge_progress
 0023e170 Pockets__has_unlocked_item_of_category_98
 0023e1e0 player_has_unlocked_item_of_category_98
 0023e254 holder_has_item_with_special_rule
@@ -3103,6 +3124,7 @@
 0023ffb8 cell_position_of_id
 00240010 word_ab7de4
 00240080 StructureLists__call_on_list
+002400b0 structure_terrain_kind
 002404b0 construction_site_is
 0024088c StructureList__remove_matching
 00240c80 place_random_structures
@@ -3117,6 +3139,7 @@
 00242194 word_ab7df4_00242194
 00242744 count_structures_by_kind
 00242cc4 StructureList__refresh_cells
+00243038 terrain_item_for_kind
 0024400c SeaDemoCamera__virtual_0
 002443b8 SoundListener__update_position
 00244994 SetDateTimeBg__deleting_destructor
@@ -3419,6 +3442,7 @@
 0025f180 BsMenuReaction__BsMenuReaction_2
 0025f380 BsMenuReaction__virtual_1_0025f380
 0025f390 BsMenuReaction__virtual_0_0025f390
+0025f68c DebugText__format_rows
 0025f740 sead__FixedSafeString_32___FixedSafeString_0025f740
 0025f970 script__WordFix_9u___WordFix_0025f970
 0025fadc script__WordFix_9u___WordFix_0025fadc
@@ -3490,6 +3514,7 @@
 0026a5dc EmoticonSlots__stop_all
 0026a66c EmoticonSlots__construct
 0026a694 EmoticonSlots__destroy
+0026a824 Follower__find_path
 0026adf8 nnmfolw__FollowerAStarForeachCB__FollowerAStarForeachCB_0026adf8
 0026ae58 EmoticonAction__end
 0026b2e0 CandLocator__construct
@@ -3633,6 +3658,8 @@
 00277c0c SoundObjHaniwa__deleting_destructor
 00277c1c SoundObjHaniwa__destructor
 00277d98 SoundObjPlayer__virtual_2
+00277e1c AcFtr__start_animation
+00277e54 AcFtr__start_animation_b
 00277e8c SoundObjPlayer__virtual_4
 00277f80 stop_player
 00277fe4 SoundObj_4___SoundObj
@@ -3950,6 +3977,7 @@
 0028edfc sead__SafeStringBase_char___SafeStringBase_0028edfc
 0028f500 BsShadowViewMgr__update
 0028f6f8 scene_shadow_kind
+0028f7fc TimeDisplay__refresh
 0028f8bc set_fade_by_distance
 0028f954 BsShadowViewMgr__do_draw
 0028f96c BsShadowViewMgr__do_create
@@ -3965,6 +3993,7 @@
 00290cfc begin_request
 002915b0 TourState__count_a
 00291990 TourWindow__update_counters
+00291a18 WordNumber__set_digits
 0029223c TourState__result_kind
 00292300 sead__FixedSafeString_256___FixedSafeString_00292300
 00292bac request_owner_state
@@ -4053,6 +4082,7 @@
 0029b12c DragIconControl__virtual_11
 0029b1a4 DragIconControl__virtual_14
 0029b464 call_child_virtual_60
+0029b480 SubMenu__reset
 0029b5a4 LetterDragWindowBase__virtual_3
 0029b5c4 call_virtual_58_of_each_node
 0029b5fc DragIconControl__virtual_3
@@ -4267,6 +4297,7 @@
 002ab188 set_byte_94f521_to_1
 002ab240 InsectMgr__next_free_id
 002ab3bc InsectMgr__update_spawns
+002ab460 NpcTalk__start_kind
 002abba8 InsectMgr__update_spawn_point
 002abdfc InsectMgr__pick_from_spawn_table
 002abf60 InsectMgr__find_by_id
@@ -4414,6 +4445,7 @@
 002b806c GetVisitNpcIdxCB__virtual_0
 002b836c ishutfact2__BasicBuilder__BasicBuilder
 002b8898 clear_word_953230
+002b8958 LayoutButton__set_visible
 002b898c ChangeStockItem__virtual_12
 002b89ec sead__FixedSafeString_32___FixedSafeString_002b89ec
 002b8e84 NumberLabel__set
