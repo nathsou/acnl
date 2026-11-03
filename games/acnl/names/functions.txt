@@ -491,6 +491,7 @@
 0011db88 store_thread_local_storage
 0011db9c read_service_value_16
 0011dc5c start_service_client_once
+0011dc88 Cfg__get_region
 0011dedc open_service_97e004
 0011df2c start_os_event_thread
 0011dff4 OsObjectList__add
@@ -917,6 +918,7 @@
 00136490 applet_state_is_2
 00136530 call_13a968_or_fatal
 0013654c call_13a9a4_or_fatal
+00136598 ipc_command_13_flag
 001365d4 retry_service_call_twice
 00136718 LinkedList__clear
 00136764 ResModel__dispatch_by_kind
@@ -1158,6 +1160,7 @@
 001408d4 list_remove
 0014152c sead__AudioFxCtr__destructor
 001416b0 return_constant_0x97e098_
+001416bc SoundArchive__block_offset
 00141728 HandleTable__resolve
 00141a9c SparseArray__get
 00142430 nn__fnd__UnitHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection____destructor
@@ -1167,12 +1170,15 @@
 001433c8 do_nothing_001433c8
 00143530 adjusted_this_0xc__00143530
 001435b4 translate_address
+001435c8 Handle__invalidate
 001445ac read_u32_0x0097dff0_
 001445bc read_u32_0x0097dfec_
 00148710 mtx34_mult_vec3
 001487bc nn__crypto__Sha256Context__virtual_7
 0014ef20 multiply
 0014f3cc apply_matrix
+0014fd9c thunk_0014fd9c
+0014fda4 thunk_0014fda4
 0014fe74 thunk_0014fe74
 001509dc compare_entry
 00150bc0 strncpy
@@ -2002,6 +2008,7 @@
 001db63c SoundTvBase__deleting_destructor
 001db64c SoundTv02News__destructor
 001db650 SoundTvBase__destructor
+001dba70 StructurePlacement__mark_rects
 001dc6e8 place_structure_cells
 001ddfcc sead__SafeStringBase_char___SafeStringBase_001ddfcc
 001de39c sead__SafeStringBase_char___SafeStringBase_001de39c
@@ -2761,6 +2768,7 @@
 0021fb50 BsMenuMailbox__virtual_1_0021fb50
 0021fb60 BsMenuMailbox__virtual_0_0021fb60
 0021fe04 Mailbox__play_tab_animation
+00220274 MenuMessage__show
 002202dc script__WordFix_21u___WordFix_002202dc
 00220338 script__WordFix_9u___WordFix_00220338
 002204c0 script__WordFix_21u___WordFix_002204c0
@@ -2784,6 +2792,7 @@
 00223c68 MapScreen__reset_labels
 00224204 MapScreen__add_marker
 0022426c MapScreen__attach_icons
+0022468c MapScreen__update_icon
 002248ec MapScreen__release_labels
 00224950 ScrollList__scroll_up
 00224b10 BsMenuMapList__BsMenuMapList
@@ -4011,6 +4020,7 @@
 00297d84 CommonScrollBar__virtual_3
 00297f04 CommonScrollBar__set_position
 002982e4 CatalogBase__virtual_14
+002982f0 ScrollBar__set_position
 00298834 CommonScrollBarWidth__bar_is_touched
 0029884c CommonScrollBar__virtual_5
 00298950 CommonScrollBar__drag
@@ -7228,6 +7238,7 @@
 0034931c nn__fs__Directory__destructor
 0034a630 clear_block9_0034a630
 0034a784 VertexBuffer__bind_attribute
+0034a8b4 VertexBuffer__bind_attribute_values
 0034ac5c GpuCommandBuffer__init
 0034b124 read_u8_0x00981eb0_
 0034b404 nn__os__ThreadPool__virtual_3
@@ -7491,6 +7502,7 @@
 00361714 nn__nex__InstanceTable__deleting_destructor
 00361790 nn__nex__InstanceTable__destructor
 00361934 nn__nex__String__String_00361934
+00361988 nex_free
 003619b0 allocate_with_header
 00361a00 nn__nex__NATProperties__NATProperties_00361a00
 00361a60 nn__nex__NATProperties__deleting_destructor
@@ -7714,6 +7726,7 @@
 0037705c do_nothing_0037705c
 00377060 nn__nex__InputEmulationDevice__virtual_2
 0037706c nn__nex__ThreadVariableList__ThreadVariableList_0037706c
+00377160 Nex__shutdown_threads
 00377220 nn__nex__String__String_00377220
 00377564 nn__nex__GlobalVariables__deleting_destructor
 00377594 nn__nex__GlobalVariables__destructor
@@ -18954,6 +18967,7 @@
 006f3698 keep_items_of_group
 006f39dc assign_bit1_of_byte04_6f39dc
 006f3a0c assign_bit2_of_byte03_6f3a0c
+006f3d0c TownFlags__reset
 006f432c decode_record_bits
 006f4f48 Mailbox__deliver_pending
 006f5090 Mailbox__set_pending
@@ -18976,6 +18990,7 @@
 006f7dd8 collision__AABB__deleting_destructor
 006f7ddc collision__AABB__destructor
 006f7e04 set_word_c
+006f7e10 Collider__set_cylinder
 006f7e40 CollisionTriangleRef__set
 006f7e4c collision__World__Body__Body_006f7e4c
 006f7e64 collision__World__Body__Body_006f7e64
@@ -19027,6 +19042,7 @@
 006f9db4 position_in_1b_to_1d
 006f9de8 return_float_constant_0xbf800000_
 006f9df4 remove_event_item_at
+006f9e94 CellGrid__first_free_cell
 006f9f34 mark_cells_by_terrain
 006fa0a0 item_shown_at
 006fa1fc find_free_cell_in_rect
@@ -19068,6 +19084,7 @@
 00700f58 insect_spawn_table_for_time
 007010f8 insect_spawn_params
 007011e8 Player__record_new_insect
+00701694 Item__from_insect_index
 007017a8 word_of_3_95321c
 007017c0 Player__update_insect_record
 007017f8 pick_insect_to_spawn
@@ -19324,6 +19341,7 @@
 00710a34 copy_table18_item
 00710d10 copy_table6_item
 00710d50 TimeWindow__contains_now
+00710fcc TownTime__is_within
 0071109c record_check_same_day
 007110c4 Stamp__is_after_today
 0071112c Stamp__is_before_today
@@ -19443,6 +19461,7 @@
 007164c0 Player__house_loan_left
 007165d0 House__exterior_level
 00716684 record_302_address_00716684
+007166a4 Records6__get
 00716760 do_nothing_00716760
 00716764 has_all_required_ids
 00716804 required_id_index
@@ -19548,6 +19567,7 @@
 0071ae0c matrix_translation
 0071ae30 can_open_menu_now
 0071af38 value_c8_of_pointer_104
+0071af4c ChildList__first_position
 0071af84 value_c8_of_pointer_b4
 0071b2a8 current_menu_id
 0071b2fc LobbyIslandBook__virtual_5
@@ -19688,6 +19708,7 @@
 0071fd34 main_slot_flag_bit_1
 0071fe48 Block7f4__seal
 0071fe68 Block7f4__is_sealed
+007201d0 ItemList40__is_set
 0072031c member_address_0x2f2_
 00720348 byte_1f_is_set
 00720358 grid_cell_address
@@ -19696,6 +19717,7 @@
 007203fc BsLightAmbientClub__virtual_16
 0072041c BsLightDiffuseBase__virtual_19
 0072043c BsLightDiffuseBase__virtual_16
+00720448 Catalog__find_item
 007205b8 CommonButtonSingle__virtual_14
 007205c8 ExhibitionEastBook__virtual_5
 0072062c ExhibitionEastBook__virtual_4
@@ -19712,9 +19734,11 @@
 00723250 return_constant_0x0__00723250
 007232ac element_address_7232ac
 00723550 ChoiceStandardWin__LocalChoice__virtual_9
+0072355c ScrollBar__update_drag
 007237e0 sub_is_ready
 0072392c ExhibitionNorthBook__virtual_5
 00723990 ExhibitionNorthBook__virtual_4
+00723ad4 ItemSlot__is_empty_or_unset
 00723af8 masked_byte_723af8
 00723b18 SoundConductor__virtual_8
 00723c04 ChangeStockWarehouse__virtual_11
@@ -19763,6 +19787,7 @@
 00725900 ExhibitionOtherEastBook__virtual_4
 00725910 ExhibitionOtherWestBook__virtual_5
 00725960 ExhibitionOtherWestBook__virtual_4
+00725984 Identity__is_valid_player
 007259cc AcAutoCampEntrySignboard__virtual_18
 00725a4c ExhibitionOtherNorthBook__virtual_5
 00725a9c ExhibitionOtherNorthBook__virtual_4
@@ -19801,15 +19826,23 @@
 00725d8c write_state_commands
 00725e90 FrameBufferShadow__virtual_5
 00726d2c Shader__find_uniform
+00726e94 Shader__write_bind_commands
+00726f34 Shader__write_setup_commands
 00727c84 write_part_6c
+00728014 NetStore__slot_meta
 00728128 NetStore__slot_state
 0072820c nn__cec__CTR__MessageBox__virtual_13
 00728284 nn__cec__CTR__MessageBox__virtual_12
+007283f4 NetStore__slot_flag
 007284d8 field_nonzero_7284d8
 007284e8 nn__cec__CTR__MessageBox__virtual_2
 00728568 nn__cec__CTR__MessageBox__virtual_11
 007285ec nn__cec__CTR__MessageBox__virtual_3
 00728648 nn__cec__CTR__MessageBox__virtual_4
+007286a0 NetStoreMeta__find_tag_of_kind
+0072871c NetStoreMeta__find_tag
+0072879c NetStoreMeta__copy_data
+007287cc NetStoreMeta__copy_owner
 00728a24 nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock___virtual_6
 00728a28 nn__fnd__ExpHeapBase__virtual_6
 00728a44 nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__NoLock___virtual_4
@@ -19822,6 +19855,9 @@
 00728a90 nn__fnd__UnitHeapBase__virtual_4
 00728a98 nn__fnd__UnitHeapBase__virtual_3
 00728aa0 nn__fnd__UnitHeapBase__virtual_5
+00728af8 NexDateTime__day
+00728c48 NexDateTime__year
+00728ca0 NexDateTime__month
 00728dd0 nn__nex__String__String_00728dd0
 00728fd0 nn__nex__String__String_00728fd0
 007291d0 nn__nex__String__String_007291d0
@@ -20069,6 +20105,7 @@
 0072f300 call_virtual_15_72f300
 0072f37c nn__pia__local__LocalNetwork__virtual_2
 0072f380 NexClient__is_connected
+0072f3a4 NexClient__is_logged_in
 0072f3c8 nn__pia__local__LocalEventJob__virtual_5
 0072f3cc nn__pia__local__UdsSessionInfo__virtual_2
 0072f3e8 nn__pia__local__UdsSessionInfo__virtual_3
@@ -20227,6 +20264,7 @@
 00733a94 field_nonzero_733a94
 00733cec nn__pia__session__Session__virtual_0
 00733cf0 NexSession__is_current
+00733e00 NexConnection__status
 00733eb8 nn__pia__transport__RttProtocol__virtual_3
 00733ec0 nn__pia__transport__RttProtocol__virtual_2
 00733f18 nn__pia__transport__PacketHandler__virtual_11
@@ -20412,6 +20450,7 @@
 0073dad8 nw__lyt__TextBox__virtual_7
 0073daf0 nw__lyt__TextBox__virtual_26
 0073db94 nw__lyt__Bounding__virtual_2
+0073df8c SoundArchive__find_sound
 0073e0ec nw__snd__SoundArchivePlayer__virtual_3
 0073e13c nw__snd__SoundDataManager__virtual_5
 0073e1cc nw__snd__SoundDataManager__virtual_4_0073e1cc
@@ -20586,9 +20625,11 @@
 00744bac nw__font__PairFont__virtual_3
 00744be4 Frustum__intersects_box
 00744ce4 Frustum__intersects_sphere
+00744df8 FurnitureSlot__kind_size
 00744f60 FurnitureSlot__kind_offset
 007450c4 FurnitureSlot__kind_value
 00745210 return_constant_0x0__00745210
+00745218 FurnitureSlot__kind_flags_b
 007452e8 FurnitureSlot__kind_flags
 007453a4 FurnitureRecord__is_open_slot
 007453f0 FurnitureRecord__has_slot_kind
@@ -20605,6 +20646,7 @@
 00745948 slot_value_at
 00745970 free_keyed_slot
 0074599c any_of_six_in_state_1
+00745bd8 Skeleton__joint_world_matrix
 00745d44 Resource__find_index
 00745f74 model_part_bc
 00745f80 model_matrix
@@ -20668,7 +20710,9 @@
 00746e44 DataStore__DataInfo__virtual_3
 00746e4c word_array_entry_190
 00746e74 RequestPool__local_identity
+00746e90 RequestPool__is_local_identity
 00746ed0 RequestPool__is_online
+00746ee4 RequestPool__connection_state
 00746efc RequestPool__component_state
 00746f10 UnknownStateA22020__sub_check
 00746f24 RequestPool__current_time
@@ -21026,6 +21070,7 @@
 0074fe88 float3_scale
 0074feb0 float3_add
 0074fee0 is_not_current_game_day
+0074fff8 TimeStamp__is_after_now
 00750090 read_field_s8_0x7a3_
 0075009c kind_is_41
 007500b4 furniture_has_class_4_or_5
@@ -21048,10 +21093,12 @@
 00751058 member_address_0x5e4_
 00751224 values_7a2_and_7a3_differ
 00751240 furniture_is_class_1
+0075127c AcFtr__seat_slots
 007513e4 kind_is_14
 007513fc AcFtr__virtual_36
 00751410 AcFtr__surface_height
 00751500 is_special_mode
+00751578 AcFtr__sound_position
 007516a4 global_byte_is_unlisted_kind
 007516f8 AcFtr__matches_previous_map
 00751808 kind_is_29_or_2a
@@ -21178,6 +21225,7 @@
 007544a4 PhotoPath__folder_is_current
 0075454c PhotoPath__find_file
 007546b4 seconds_to_days
+007546f0 Time__split_days_seconds
 00754830 date_fields_to_count
 00754890 format_exif_date_time
 00754908 Stamp__is_out_of_range
@@ -21518,6 +21566,7 @@
 0075c158 MessageArchive__message_with_count
 0075c294 script__WordRes__WordRes_0075c294
 0075c348 MessageArchive__message_by_label
+0075c400 MessageArchive__message_with_number
 0075c4f8 MessageArchive__message_data_by_label
 0075c63c script__Project__SearchContentFolder__SearchContentFolder
 0075c7dc sead__BufferedSafeStringBase_char___BufferedSafeStringBase_0075c7dc
@@ -21574,6 +21623,7 @@
 0075d6a4 GridTile__corner_2_triangle
 0075d718 GridTile__corner_1_triangle
 0075d788 GridTile__corner_3_triangle
+0075d7fc LargeCell__tile_kind
 0075d81c masked_byte_75d81c
 0075d828 tile_corner_height_0
 0075d838 tile_corner_height_2
@@ -21622,6 +21672,7 @@
 0075e4a0 NetPeer__is_known
 0075e57c NetPeer__index_of_friend
 0075e644 member_address_0x38e0_
+0075e650 NetSession__station_entry
 0075e74c address_of_member_3860
 0075e758 mask_bit_set
 0075e78c entry_word_sum
@@ -21649,6 +21700,7 @@
 0075f448 NetSession__peer_address_is_usable
 0075f4d4 entry_in_use
 0075f578 own_peer_index
+0075f63c NetSession__player_identity
 0075f644 NetPlayers__identity_of_slot
 0075f728 NetPart__can_leave
 0075f780 LockedValue__get
@@ -22872,6 +22924,7 @@
 0079f9fc time__TimeHioNode__TimeHioNode
 007b0bb0 gpu_register_value
 007b1034 thunk_00136088
+007b1038 GpuState__mark_dirty
 007c28f0 SegmentHooks__run
 007c3094 HashBuckets512__insert_sorted
 007c513c wcslen16
@@ -23059,6 +23112,7 @@
 007d0b14 true___virtual_8_007d0b14
 007d0b20 true___virtual_1_007d0b20
 007d0b8c true___virtual_0_007d0b8c
+007d1164 NetPresence__send_message
 007d15bc NpcAmbCamModelBase_PlayerModel___virtual_9
 007d161c NpcAmbCamModelBase_NpcTopsChangeModel___virtual_9
 007d167c NpcAmbCamModelBase_NpcModel___virtual_9
@@ -23479,6 +23533,7 @@
 007e67a8 nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader___virtual_2
 007e680c nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader___deleting_destructor
 007e681c nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader___destructor
+007e85c0 Font__text_bounds
 007e8c2c nw__font__TagProcessorBase_char___virtual_2
 007e8d04 nw__font__TagProcessorBase_char___virtual_3
 007e8ed4 nw__font__TagProcessorBase_char___deleting_destructor
@@ -24157,11 +24212,13 @@
 00815a64 sead__SafeStringBase_char___SafeStringBase_00815a64
 00815cc8 sead__SafeStringBase_char___SafeStringBase_00815cc8
 00815f2c sead__SafeStringBase_char___SafeStringBase_00815f2c
+008161b8 LayoutAnimator__play_j
 008165e4 dispatch_offset_a4_008165e4
 008166f0 dispatch_offset_14
 008167fc dispatch_offset_0_first
 00816904 dispatch_offset_0_second
 00816a0c dispatch_offset_28
+00816b18 LayoutAnimator__play_i
 00816c20 LayoutAnimator__play
 0081704c state__Mode_CensusWindow___deleting_destructor
 00817050 state__Mode_CensusWindow___destructor
@@ -24170,6 +24227,7 @@
 008179b8 dispatch_offset_28_second
 00817ac4 dispatch_offset_a40
 00817bd0 dispatch_offset_0_00817bd0
+00818b78 LayoutAnimator__play_h
 00818fa0 LayoutAnimator__play_b
 008191b4 state__Mode_LifeSupportWindow___deleting_destructor
 008191b8 state__Mode_LifeSupportWindow___destructor
@@ -24178,9 +24236,13 @@
 00819d38 dispatch_offset_a4_00819d38
 00819e44 dispatch_offset_28_c
 00819f50 dispatch_offset_0_00819f50
+0081a058 LayoutAnimator__play_g
+0081a168 LayoutAnimator__play_f
 0081b218 LayoutAnimator__play_c
 0081b640 state__Mode_Passport___deleting_destructor
 0081b644 state__Mode_Passport___destructor
+0081b648 LayoutAnimator__play_e
+0081b750 LayoutAnimator__play_d
 0081bc80 CallbackTable__dispatch_0081bc80
 0081bd88 CallbackTable__dispatch_0081bd88
 0081be90 CallbackTable__dispatch_0081be90
