@@ -1631,6 +1631,28 @@
 00537d70 Allocates `count` empty pointer slots and sets the pool up on them.
 00537dd8 Zeroes the pool, with its index at -1.
 00537e0c Releases the part and the buffer, then destroys the part.
+00537e98 Allocates a zeroed buffer of `count` pointers (with the heap and alignment) and sets the array up empty on it.
+00538024 Inserts the pointer at `index` (up to the count, while there is room), moving the later ones up.
+00538088 Sets the array up empty on the buffer of `capacity` pointers.
+0053ac4c Allocates `size` bytes (aligned to 4) from the heap, or the current thread's heap.
+0053ac90 Allocates `size` bytes with the alignment from the heap, or the current thread's heap.
+0053acd8 Formats into the string's buffer (always terminated).
+0053ad24 Adds the child heap (by its node offset) to the heap's children, under the heap's lock when it has one.
+0053ad94 Removes the child heap from the heap's children, under the heap's lock when it has one.
+0053af90 Frees all of the heap's blocks and removes it from its parent's children (under both locks).
+0053b1d0 Clears the manager's words and the current heap (0x97e9fc).
+0053b4cc Decodes the Base64 text into the buffer.
+0053b6fc Encodes the bytes as Base64 (the URL-safe alphabet when asked), padding with '='.
+0053b844 Seeds the 4-word random state from the system tick (with the Mersenne Twister initializer).
+0053c024 Calls the function at 0x537c28 with the two words as a pair.
+0053c300 Allocates `size` bytes with the alignment from the front of a free block, splitting off the rest.
+0053c568 Allocates `size` bytes with the alignment from the back of a free block, splitting off the rest.
+0053cd54 Creates an expanded heap in the memory (more than 0xa4 bytes, under the global lock) and registers it with its parent.
+0053d230 Unlinks every node of the list and empties it.
+0053d2cc The CRC-16 (polynomial 0xa001, table built once) of the bytes.
+0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
+0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
+0053dffc Gets the file's size through the device (virtual 20) when the device is open.
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
 005601b8 Sets the 8-bit color channels from the four floats, each clamped to 0 to 1 (stored in reverse order).
