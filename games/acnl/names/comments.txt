@@ -2779,8 +2779,21 @@
 006bacd8 Sets the item's flags, keeping their top two bits.
 006bb1a0 Moves the items 0x3057, 0x305a, 0x3064 and 0x3067 to their next ids.
 006bb3bc Sets the item's room index (in its flags, keeping its variant) when it has a valid value; true when it did.
+006bb5c4 Moves the items 0x33a9, 0x33b5 to 0x33b7 and 0x33b8 to 0x33bb to their next ids.
+006bb91c Registers the item for the current slot (below 8, else slot 0).
+006bbbd8 Turns the item into id 0x2000 with the flags (keeping their top two bits).
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
+006bc04c Packs the town tune (save +0x6e29a, or the default tune when there is no save) as 16 nibbles into 8 bytes.
+006bc104 Packs the 16 nibble bytes into 8 bytes.
+006bc16c Updates the states of the clothing records' items.
+006bc3b4 Clears the records' header.
 006bc4fc Sets the record state byte of an item of a recorded category to 5.
+006bc5a0 Constructs the 4 clothing records (0xb98 bytes each, +0x55c).
+006bc5d8 Clears the header and the 4 clothing records.
+006bc9b4 Adds the frames to the play time (saturating) and counts the minutes in event 0x10.
+006bd2c8 The player's record (the size, by kind) of the insect, fish or sea creature item; 0 for other items.
+006bd550 The player's name pair record (+0x8d84) when they have one; null otherwise.
+006bddec Sends the player's pending star and secretary letters, clearing their flags once sent.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.
 006c1678 Moves the held object to state 5 (in the hand) with its owner and the hand matrix.
 006c1688 Stores a timer (+0x6d0) and moves the held object to state 0.
