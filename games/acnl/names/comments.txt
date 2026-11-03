@@ -1076,6 +1076,7 @@
 001c0f3c Stops the NPC sound when it plays.
 001c0f64 Marks the sound moved (+0x94); its kind byte.
 001c0fdc Constructs the NPC sound holder with full volume, stopped.
+001c1e54 Starts loading the indoor jump data (unless loaded) on a heap (arg 1); 1 once started or loaded.
 001c1fcc The 0xa00-byte layout block of id (from the first table for ids up to 0x108, else the second); null when it is not loaded.
 001c2040 The 0xa00-byte layout block of id from the first table; null when it is not loaded.
 001c2074 The 0xa00-byte layout block of id from the second table; null when it is not loaded.
@@ -1585,6 +1586,7 @@
 002503b0 Calls the sound object's virtual function 9.
 00250438 Plays the sound at the world position, seen from the camera.
 002504d4 Plays the sound (the sound object's virtual function 7).
+00250560 Destroys a one-sound sound object: detaches its sound and stops the base.
 00250b34 Claims the tour's reward and clears the pending flag.
 00250b58 Spawns and updates the fish in the slots (species, shadows, places).
 00251690 Whether the object's id (+0x34) is one of two fixed ids.
@@ -3424,6 +3426,7 @@
 0052e038 Converts the position to world space when the scene is curved (flag 2), else copies it.
 0052e0b4 The tilt angle of the curved scene at the position, or 0 when flat.
 0052e1ec The position bent by the scene's curve (by the camera or the mode) and its tilt angle; else the position unchanged.
+0052e294 Builds a matrix at the point of a scene curve (arg 1), rotated by the curve's x angle and then by angle_y.
 0052e32c The matrix placing an object at the position on the scene's curve, with its rotation.
 0052e3ec When the current mode has flag 2: calls 0075d24c with the static zero vector and the two arguments.
 0052e5ac Calls the handler of the NPC's state (a member function pointer).
@@ -3997,6 +4000,7 @@
 005a360c Points the record at player model `index` and at its 12 and 14 part slots.
 005a36b8 Sets or clears the visibility bit of part `index` (its bit number from the part table) in the model's mask (+0x29c).
 005a3720 Clears 0x70 bytes of the object.
+005a3b10 Constructs a photo database file reader for a file (arg 1) with a buffer (arg 2), opened (or not, arg 3).
 005a3f08 Calls 005a4cf4 with a 0x64000-byte buffer and two output slots.
 005a4030 Finishes the JPEG decoder's work.
 005a4aec The size of `count` 16-byte entries plus `extra`, rounded up to 32 bytes.
@@ -4133,6 +4137,7 @@
 005af6dc Parses up to `count` decimal digits (stopping at a terminator) into `out`; false on a non-digit.
 005af748 Parses up to `count` wide decimal digits (stopping at a terminator) into `out`; false on a non-digit.
 005af7b4 Compares two wide strings ignoring ASCII case; the difference of the first mismatching characters.
+005af8c8 Constructs a CRC-16 context (building the shared table, polynomial 0xa001, the first time) and runs it over \n a buffer (arg 1, length arg 2).
 005af9d0 Writes the photo database's index file.
 005afd20 Stores the writer's three words, its scale and its flag (+0x1c to +0x2c).
 005afe90 Clears an 18-byte picture entry.
@@ -6590,6 +6595,7 @@
 0081b648 Plays the animation with the key on the animator (the fifth kind).
 0081b750 Plays the animation with the key on the animator (the fourth kind).
 0081c0a0 Moves the save step to the one after the current in its table.
+0081d8c0 Constructs a 33-character script word, empty.
 00825aa4 Unlinks the node from its owner's list and clears its owner.
 00825acc Unlinks the node and links it into the new owner's list (+0x70).
 00825b04 Unlinks the node from its owner's list and clears its owner; the node.
