@@ -509,6 +509,7 @@
 0011e81c set_power_mode
 0011e838 sead__UlcdDoubleCmdGameFrameworkCtrNw4c__UlcdDoubleCmdGameFrameworkCtrNw4c
 0011e850 sead__GraphicsContext__GraphicsContext_0011e850
+0011e8cc Utf16__to_utf8
 0011ea30 sead__SafeStringBase_char___SafeStringBase_0011ea30
 0011eaa4 sead__SafeStringBase_char___SafeStringBase_0011eaa4
 0011eaac create_save_allocator
@@ -1170,6 +1171,7 @@
 0013fefc query_handle
 0013ff84 read_u32_0x00974f54_
 0013ff94 ServiceTable__dispatch
+001402b0 MessageBox__release
 0014041c Dsp__get_state
 001404f0 ipc_command_a_flag
 00140530 ipc_command_5
@@ -1199,12 +1201,15 @@
 001445bc read_u32_0x0097dfec_
 00148710 mtx34_mult_vec3
 001487bc nn__crypto__Sha256Context__virtual_7
+0014e910 Matrix34__copy
 0014ef20 multiply
 0014f378 Vec3__add
 0014f3cc apply_matrix
+0014f4d0 Vec3__multiply_add
 0014f5dc svc_create_mutex
 0014f794 thunk_0014f794
 0014f79c thunk_0014f79c
+0014fafc thunk_0014fafc
 0014fd9c thunk_0014fd9c
 0014fda4 thunk_0014fda4
 0014fe74 thunk_0014fe74
@@ -1235,6 +1240,8 @@
 0016c458 script__WordFix_33u___WordFix_0016c458
 0016d974 script__WordFix_128u___WordFix_0016d974
 0016dad0 FieldItem__spawn_at
+00172398 write_shape_commands
+001746f4 SceneRecord__set
 00176310 sead__BufferedSafeStringBase_char___BufferedSafeStringBase_00176310
 00178d78 sead__RuntimeTypeInfo__Derive_sead__Heap___Heap__00178d78
 00179018 sead__SafeStringBase_char___SafeStringBase_00179018
@@ -1407,6 +1414,7 @@
 001a3118 entry_half_for_global_byte_b
 001a32c8 CameraCtl__clamp_x
 001a360c CameraCtl__request_at
+001a3f90 Scene__player_spawn
 001a40e8 CameraCtl__distance_to_player
 001a4904 midpoint_of_offset
 001a4e7c CameraCtl__clamp_xz
@@ -2165,6 +2173,7 @@
 001e5074 namespace___NoticeRenewal__NoticeRenewal_001e5074
 001e50ec namespace___NoticeRenewal__NoticeRenewal_001e50ec
 001e546c namespace___NoticeRenewal__NoticeRenewal_001e546c
+001e5600 TownTime__update
 001e57e8 setup_request_record_mode_1800
 001e5820 release_loader_982018
 001e5874 VillageBook__virtual_2
@@ -2517,6 +2526,7 @@
 00201ea0 CellItems__clear
 00201fa0 create_grid_map_5814d0
 00201ff4 Grid2x2__count_items
+00202078 ResourceName__format
 002021d4 mark_cliff_edges
 00202370 place_random_tiles_in_grid
 002025bc create_grid_map_with_buffer
@@ -3329,6 +3339,7 @@
 0025038c SoundObjectWithHandle__has_handle_id
 002503ac change_mode_002503ac
 002503b0 SoundObj_1___virtual_9_veneer
+00250438 SoundObj__play_at
 002504d4 SoundObj__play
 002504e0 SoundObjectWithHandle__stop
 00250510 SoundObj_1___SoundObj_00250510
@@ -3525,8 +3536,10 @@
 002686e0 Control1Button__virtual_1_002686e0
 00268728 Control1Button__virtual_0_00268728
 0026876c ButtonList__set_messages_2
+002687c8 ButtonList__set_flags
 00268818 ButtonList__set_sub_messages_2
 00268878 ButtonList__set_values_2
+002688cc ButtonList__set_message_range
 00268928 ButtonList__set_children
 0026897c Control2Button__virtual_1_0026897c
 002689c4 Control2Button__virtual_0_002689c4
@@ -3974,6 +3987,7 @@
 0028a0d4 script__WordFix_10u___WordFix
 0028a600 DateWindow__show_month
 0028a6c0 script__WordFix_15u___WordFix_0028a6c0
+0028aae4 LayoutObject__attach_child
 0028ab90 DateWindow__is_valid
 0028ac60 DateWindow__layout_fields
 0028b220 DateWindow__setup
@@ -4091,6 +4105,7 @@
 00299094 CommonScrollBar__play_down_sound
 002990d8 CommonScrollBar__find_panes
 002991f4 CommonScrollBar__release_touch
+002992f8 TalkWindow__hide_now
 0029937c update_position_714
 002993ac CommonScrollBar__set_pressed
 00299944 CatalogBase__virtual_18
@@ -4608,6 +4623,7 @@
 002bfcb8 set_capped_counter
 002bfcfc Pockets__pay
 002bfe9c Records10__add
+002bff84 Letters__set
 002c002c small_record_address_002c002c
 002c0044 Letter__clear_veneer
 002c0048 FlagBlockBc__reset
@@ -4718,6 +4734,7 @@
 002c7d6c BsMenuLetterStock__do_create
 002c80b4 BsMenuLetterStock__do_execute
 002c8338 BsMenuLetterStock__do_delete
+002c83a8 LetterList__entry
 002c8428 BsMenuLetterStock__BsMenuLetterStock_2
 002c85ac BsMenuLetterStock__virtual_1_002c85ac
 002c85bc BsMenuLetterStock__virtual_0_002c85bc
@@ -5202,6 +5219,7 @@
 002e6368 EffectHandle__kill
 002e6450 EffectHandle__kill_now
 002e64bc EffectHandle__reset
+002e6500 EffectHandle__move_to
 002e668c EffectHandle__get_position
 002e6808 EffectHandle__set_float_198
 002e6878 EffectHandle__set_rotation_xyz
@@ -5214,6 +5232,7 @@
 002e7670 SoundDoubutsugoMgr__virtual_7
 002e7c80 SoundDoubutsugoMgr__deleting_destructor
 002e7cd0 SoundDoubutsugoMgr__destructor
+002e7d20 SoundHandle__update_volume
 002e7db0 SoundHandleBindSeq__SoundHandleBindSeq
 002e7dc8 SoundHandleBindSeq__deleting_destructor
 002e7df4 SoundHandleBindSeq__destructor
@@ -5767,11 +5786,13 @@
 003028f0 MessageStore__is_open
 0030290c level_allows_flag
 00302944 mark_category_in_set
+00302a5c PtrArray__compact
 00302de0 svfscnve__UomasaForeachFunction__UomasaForeachFunction
 00302fe8 Item__check_data_nibbles_veneer
 00302fec item_property_17
 00303014 Item__is_id_a0_a6_ac_b3_or_bd_veneer
 00303064 copy_item_002fc8e8_veneer
+0030306c Item__placement_kind
 00303094 ItemBitSet__add
 003030d4 ItemBitSet__count_all_bits
 0030310c Item__is_in_id_set_a_veneer
@@ -6112,6 +6133,7 @@
 0030a8f8 NetMenu__release_buttons
 0030aa54 read_u32_0x009526f8__veneer
 0030aa58 villager_is_close_to_a_player
+0030aac8 Schedule__update
 0030ac48 PairRing__push
 0030ac4c store_constants_594e34_veneer
 0030af7c NetMenu__set_toggle
@@ -6341,7 +6363,9 @@
 00313ac8 delete_object
 00313acc script__WordFix_16u___WordFix_00313acc
 00314228 set_item_12_to_27a4
+00314258 TimeStamp__step_back_days
 00314278 word_and_byte_pairs_equal
+003142e0 Villager__roll_daily_values
 00314a04 word_ab7df4_00314a04
 00314a1c ListCursor__end
 00314a9c ListCursor__begin
@@ -6558,6 +6582,8 @@
 00320ac4 MyDesignDragIconNode__deleting_destructor
 00320b0c MyDesignDragIconNode__destructor
 00320ce8 do_nothing_002f777c_veneer_3
+00320cec IconButton__set_state
+00320d54 IconButton__refresh
 00320f70 ReactionDragIconNode__ReactionDragIconNode
 00320fa4 ReactionDragIconNode__deleting_destructor
 00320fc8 ReactionDragIconNode__destructor
@@ -7237,6 +7263,7 @@
 003466fc nn__fs__CTR__MPCore__detail__ContentRomFsArchive__virtual_6
 00346708 nn__fs__CTR__MPCore__detail__ContentRomFsArchive__virtual_2
 00346714 nn__fs__CTR__MPCore__detail__ContentRomFsArchive__virtual_3
+00346720 DataStore__read
 003467d4 nn__fs__CTR__MPCore__detail__ContentRomFsArchive__virtual_1
 0034689c nn__fs__CTR__MPCore__detail__ContentRomFsArchive__virtual_17
 003468ac nn__fs__CTR__MPCore__detail__ContentRomFsArchive__virtual_7
@@ -7345,6 +7372,7 @@
 0034ed20 nn__cec__CTR__MessageBox__MessageBox
 0034ede4 nn__cec__CTR__MessageBox__deleting_destructor
 0034ee0c store_global_word_34ee0c
+0034ff6c NetStore__read_table
 00350454 NetStoreMeta__copy_owner_b
 003504e8 TableInfo__init
 003505bc Boss__is_ready
@@ -10238,6 +10266,7 @@
 0044c1ec OnlineSession__leave_gathering
 0044c744 nn__pia__session__Session__Session_0044c744
 0044c8a0 nn__pia__session__Session__Session_0044c8a0
+0044cc08 Pia__begin_transport
 0044cc60 Pia__end_transport
 0044cd2c store_constants_3dc16c_0044cd2c
 0044cd88 pead__SafeStringBase_char___SafeStringBase_0044cd88
@@ -10465,6 +10494,7 @@
 0046bb60 nn__boss__DataStoreDownloadAction__deleting_destructor
 0046bb70 nn__boss__DataStoreDownloadAction__destructor
 0046bb74 PiaStation__address_of
+0046beec PiaStation__update
 0046c1ec nn__boss__Task__Task
 0046c210 nn__boss__Task__deleting_destructor
 0046c214 nn__boss__FgOnlyTask__destructor
@@ -10930,6 +10960,7 @@
 004be8dc nw__lyt__Bounding__virtual_18
 004bef3c ScrollBar__knob_position
 004bf06c ResourceList__set_all
+004bf4bc Animation__set_rate
 004bf99c read_s8_0x00975175_
 004bfc7c nw__snd__SoundArchive__SoundArchive
 004bfcb0 nw__snd__SoundArchive__deleting_destructor
@@ -11073,6 +11104,7 @@
 004c9520 nw__snd__internal__Task__deleting_destructor
 004c9530 nw__snd__internal__driver__WaveSoundLoader__DataLoadTask__destructor
 004c9534 store_word_0x00902250_
+004cad5c default_texture_instance
 004caf94 nw__snd__internal__driver__SequenceSoundPlayer__virtual_3_004caf94
 004cb38c nw__snd__internal__LoaderManager_nw__snd__internal__driver__SequenceSoundLoader___virtual_3
 004cc2e4 nw__snd__internal__driver__SequenceTrack__SequenceTrack
@@ -11082,6 +11114,7 @@
 004cc6fc nw__snd__internal__driver__DisposeCallback__deleting_destructor
 004cc700 nw__snd__internal__driver__DisposeCallback__destructor
 004ccb6c store_constants_6170f4_004ccb6c
+004cce74 SlotTable__set
 004cd204 nw__snd__internal__driver__WaveSoundLoader__DataLoadTask__virtual_2
 004cd320 nw__snd__internal__driver__WaveSoundLoader__DataLoadTask__deleting_destructor
 004cd364 nw__snd__internal__driver__WaveSoundPlayer__virtual_2_004cd364
@@ -11218,6 +11251,7 @@
 004d90dc nw__font__PairFont__PairFont
 004d9108 nw__font__PairFont__deleting_destructor
 004d9118 nw__font__PairFont__destructor
+004dac10 Pane__set_size_by_scale
 004dae58 letter_paper_index
 004daf70 lyt__AnmObject__virtual_10
 004daf78 lyt__AnmObject__virtual_7
@@ -11279,6 +11313,7 @@
 004df7e0 cfl__MiiModelSimple__deleting_destructor
 004df7f0 store_word_0x00902814_
 004df800 return_constant_0x9ab040_
+004dfb58 Vec3__scale_and_offset
 004e0288 check_is_1
 004e029c set_entry_half_float_xyz
 004e0960 MotionParams__set_float
@@ -24411,6 +24446,7 @@
 00818fa0 LayoutAnimator__play_b
 008191b4 state__Mode_LifeSupportWindow___deleting_destructor
 008191b8 state__Mode_LifeSupportWindow___destructor
+008196f4 LayoutAnimator__play_k
 00819b20 dispatch_offset_28_a
 00819c2c dispatch_offset_28_b
 00819d38 dispatch_offset_a4_00819d38
@@ -24874,7 +24910,9 @@
 00825da0 false___virtual_9_00825da0
 00825dd0 true___virtual_9_00825dd0
 00825e04 true___virtual_9_00825e04
+00825ecc ArchiveFile__read_index
 00826038 ArchiveFile__read_entry_header
+008260f8 ArchiveFile__read_block
 00826270 ArchiveFile__read_entry
 008266bc ArchiveFile__read_entry_data
 00826854 nn__fnd__ExpHeapTemplate_nn__os__LockPolicy__Object_nn__os__CriticalSection____virtual_6

@@ -273,6 +273,7 @@
 0011e6f4 Prepares the request (001216ec), then runs 001214f4 for each of the `count` handles with the extra arguments.
 0011e760 Keeps the argument at 0x9752ec and installs the two callbacks 0x12049c and 0x120464.
 0011e81c Requests power mode 0x700 (or 0x702 when `alternate`).
+0011e8cc Converts the UTF-16 string to UTF-8 into the buffer.
 0011eaac Creates the save allocator heap (named SaveAllocator, `size` bytes) and keeps its allocator at 0x95bf7c.
 0011eafc Whether the applet state (0x94e3a8) is at least 2.
 0011edd8 Starts the timer at the current tick, once.
@@ -548,6 +549,7 @@
 0013fd78 Stops the microphone input in its active states.
 0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
 0013ff94 Calls the service handler for the command (+0xa0: table in its low nibble, entry above), or returns the not-found result.
+001402b0 Releases the message box's resource.
 0014041c Reads the DSP's state when it is up.
 001404f0 Sends command 0xa (with the flag) to the service and returns its result.
 00140530 Sends command 5 to the service and returns its result.
@@ -561,10 +563,13 @@
 00142450 Makes room for the bytes in the buffer.
 001435c8 Sets the handle to none (-1).
 00148710 out = M * (v, 1) for a 3x4 matrix M.
+0014e910 Copies the 3x4 matrix.
 0014f378 Adds the two vectors into the output.
+0014f4d0 Writes the second vector plus the first times the scale (in s0).
 0014f5dc Creates a mutex (svc 0x13), locked or not.
 0014f794 Jumps to the import.
 0014f79c Jumps to the import.
+0014fafc Jumps to the import.
 0014fd9c Jumps to the import.
 0014fda4 Jumps to the import.
 0014fe74 Jumps to the import.
@@ -574,6 +579,8 @@
 00159960 The current entry's value, or -1.
 00168868 Places the item as a field drop at the cell, with its flag.
 0016dad0 Spawns the field item's actor at the position.
+00172398 Writes the shape's draw commands with its vertices.
+001746f4 Sets the scene record's values for the mode.
 00186d7c The distance between the two points (in s0).
 00188850 Whether the cell is blocked in the grid's bitmap; false outside the grid.
 001888ac Whether the cell is free in the grid's bitmap; true outside the grid.
@@ -624,6 +631,7 @@
 001a25dc Moves the camera's target toward the player's position by the scene's rules.
 001a32c8 Keeps the camera's x inside the room's bounds (+0x158 to +0x15c, with the margin), centering it when the room is narrow.
 001a360c Requests the camera controller's mode `kind` aimed at the position, with its parameter.
+001a3f90 The player's spawn point for the scene.
 001a40e8 The distance from the player's head (32 above) to the point (rotated by the room's angle, the height weighted 1.5); 321 without a player.
 001a4904 Half of the position plus the offset (the midpoint).
 001a4e7c Keeps the camera's x and z inside the room's bounds (with their margins), centering them when the room is too small.
@@ -869,6 +877,7 @@
 001e4524 Sets the state byte; state 1 also sets bit 5 of the town flag at +0x62152 and updates the town's record.
 001e4578 Places item `index` (below 18) in the room or the field once, when its owner is the current player.
 001e46e8 Places item `index` (below 6) in the room or the field once, when its owner is the current player.
+001e5600 Updates the town's time from its stamp.
 001e57e8 Resets the request record with mode 0x20001800.
 001e5820 When loaded, releases the loader at 0x982018 and resets its state to 4.
 001e5894 Transforms a point by the camera manager's view matrix (+0x29c), when there is a camera manager.
@@ -928,6 +937,7 @@
 00201ea0 Empties both layers of every tile of the cell.
 00201fa0 Allocates a grid rectangle and builds it (the 0x5814d0 builder); destroys it and gives null on failure.
 00201ff4 Counts the items in the 2x2 blocks.
+00202078 Formats the resource's name with the pattern, once.
 002021d4 Marks the tiles next to the kinds 0x21 and 0x20 in the 7 x 6 grid with 0x3d and 0x47.
 00202370 Places random tiles of the kind in the 7 x 6 grid.
 002025bc Allocates a grid rectangle and builds it with its buffer; destroys it and gives null on failure.
@@ -1173,6 +1183,7 @@
 00250334 Constructs the sound object at full volume.
 00250354 Places the sound object at the world position, seen from the camera.
 002503b0 Calls the sound object's virtual function 9.
+00250438 Plays the sound at the world position, seen from the camera.
 002504d4 Plays the sound (the sound object's virtual function 7).
 00250b34 Claims the tour's reward and clears the pending flag.
 00250b58 Spawns and updates the fish in the slots (species, shadows, places).
@@ -1223,8 +1234,10 @@
 00267188 Shows the page and page count (up to 10 digits) and sets the previous and next pages, wrapping.
 002686d4 Sets the first button's value.
 0026876c Sets the messages of the buttons (up to 2) and marks them for update.
+002687c8 Sets the two flags of each button.
 00268818 Sets the second messages of the buttons (up to 2) and marks them for update.
 00268878 Sets the values of the buttons (up to 2).
+002688cc Sets the messages of the buttons from the archive range.
 00268928 Sets the two children of each button of the list.
 00268a08 Sets the messages of the buttons (up to 3) and marks them for update.
 00268ab8 Sets the values of the buttons (up to 3).
@@ -1348,6 +1361,7 @@
 00289ce8 Wraps the day within the month's length (one more in February of a leap year) and shows it with two digits.
 0028a008 Wraps the year within 2012 to 2050, shows it and clamps the day to the month.
 0028a600 Wraps the month within 1 to 12, shows it and clamps the day to the month.
+0028aae4 Attaches the child to the layout object and resets its offset.
 0028ab90 Whether the chosen date (or time, for the time mode) is not before the reference.
 0028ac60 Lays out the date window's fields for the mode.
 0028b220 Sets up the date window's buttons and fields from the current date.
@@ -1394,6 +1408,7 @@
 00299094 Plays the down arrow's sound (pressed or released, by the bar's kind).
 002990d8 Finds the scroll bar's panes: its button, shadows, three buttons, bar and arrows.
 002991f4 Ends the current touch by its kind (bar, arrows or thumb) and resets it.
+002992f8 Hides the window at once and tells its owner when it matches.
 002993ac When the thumb's pressed state changes, plays its press animation (and, while dragging, its sound).
 002999ac Sets the bar's style (+0x444) and plays it on the bar and its two arrows.
 0029a5f8 Starts the menu state (kind 0x20c, 0xb, 7) and tells the menu selection.
@@ -1504,6 +1519,7 @@
 002bf468 Clears the block (4 slots) and stamps its CRC.
 002bf574 Constructs the block's 4 slot headers, clears it and stamps its CRC.
 002bfe9c Copies the record (0x280 bytes) into the first free of the 10 slots.
+002bff84 Copies the letter (0x280 bytes) into the storage at the index.
 002c0048 Resets the flags of the 0xbc kinds.
 002c2024 Stores and applies the value (system value 2), on the old 3DS only.
 002c2058 Applies the default value (30) and marks it unset.
@@ -1523,6 +1539,7 @@
 002c4ad4 Clears the flag at 0x94d92e.
 002c61e8 Applies the theme's two colors to the window's panes and the text color.
 002c71ec Copies the letter of a page entry into the letter, with its sender and attachment.
+002c83a8 The letter list's entry at the index when on the page.
 002caabc The resource named `name` (by CRC) in the builder's list (+0x1368), or null.
 002cab78 The grass wear texture in the list (+0x13c), or null.
 002cae6c Sets the touch area from the pane's size and position, in screen coordinates (origin at the top left of 320x240).
@@ -1649,12 +1666,14 @@
 002e6368 Kills the handle's effect and takes the handle off the pending list.
 002e6450 Kills the handle's effect, takes the handle off the pending list and forgets the effect; true when it had one.
 002e64bc Kills the effect, clears the handle's flags and the effect's +0xf8 word.
+002e6500 Moves the running effect to the position.
 002e668c Reads the effect's position when the handle still has one.
 002e6808 Sets the float at +0x198 of the effect.
 002e6878 Sets the effect's rotation (+0x18c) and marks it rotated (bit 2 of +0x14).
 002e69cc Copies the 30 bytes of a ring buffer (data +0, size +4, start +8, count +0xc) in order, padding with 0xff, plus its trailing word and two bytes.
 002e6a3c Fills the 30 bytes with 0xff and clears the trailing fields.
 002e764c Stops the sound at +0x18 when the object says it is playing (+0xf4).
+002e7d20 Updates the sound's volume by the sound system.
 002e7e20 Starts the tune player: picks the town tune (the 16 notes at +0x738 of the sound system) or, when it has fewer than 5 real notes (not 0xe or 0xf), a default tune, and resets the playback position.
 002e7f04 Plays the tune with random variations (when not repeating the plain tune).
 002e8444 Zeroes the tune player, with a 120 tempo and its 12 volumes at 100.
@@ -1792,8 +1811,10 @@
 0030279c Sets the word from the table for the value.
 0030289c Starts the bulletin board's message in the message store.
 003028f0 Whether the message store's window is open.
+00302a5c Removes the null entries of the array of the count.
 00302fe8 Forwards to Item__check_data_nibbles.
 00303014 Forwards to Item__is_id_a0_a6_ac_b3_or_bd.
+0030306c The item's placement kind (2 bits), or 2 without data.
 00303274 Sends the prizes of the finished second contest to the ranked players by letter.
 003035dc Initializes an entry of kind `kind` (0, 1 or 2) with its two constants; kind 2 also updates two save flags.
 003037e8 Refreshes the villager house's items for the current time.
@@ -1896,6 +1917,7 @@
 0030a484 Forwards to set_half_7db.
 0030a70c Picks a random valid town villager (by the index rules) and stores it at 0xa83388.
 0030a8f8 Releases the menu's active buttons and children, then updates its layout.
+0030aac8 Updates the schedule's entries (below 0x21) for the day.
 0030af7c When the toggle (+0xae5) matches `on`, plays its animation (+0x458) to the other side and flips it.
 0030b018 Resets the network menu: its buttons, toggle (from the session's state), the peer indicator (any of the 32 stations) and animations.
 0030b154 Forwards to the function at 0x6b9904.
@@ -1981,7 +2003,9 @@
 00313414 Sets the time stamp to the invalid value.
 00313a40 Whether villager `id` (below 0x18f) has type 0 (the low nibble of its data's +0x1c).
 00313a8c The address of the shared object at 0xab7f30.
+00314258 Steps the time stamp back by its day count.
 00314278 Whether (word r0, signed bytes 0 and 1 of r1) equals (word r3, the same bytes of the stack argument).
+003142e0 Rolls the villager's daily random values (from 90 to 110 and more).
 00314a1c A cursor past the last element of the list: its index is the list's count (virtual function 4).
 00314a9c A cursor on the first element of the list (virtual function 5 copies the element), at index 0.
 00314b40 The signed byte of map kind `kind` (below 0xfc) in the table at 0x88c528; 0 otherwise.
@@ -2065,6 +2089,8 @@
 003205cc Sets byte +0xd9 of entry `index` of the shown page.
 0032069c Sets the visibility bit of the pane at +0x280.
 003207d8 Sets the visibility bit of the pane at +0x150 and updates the layout at +0x130.
+00320cec Sets the icon button's state and plays its animation.
+00320d54 Refreshes the icon button for the current scene and player.
 003219e8 Registers the 7 sound bank entries (ids 0x40 to 0x46) with their parameters from 0x94ccc0.
 00321ae8 Forwards to SoundSystem__sound_value on the sound system.
 00321af8 Runs the function at 0x13c1d4 on the sound system.
@@ -2128,6 +2154,7 @@
 00342ed0 Stops the melody when it is the melody sound.
 003452f0 Stops the camera capture.
 00345820 Shuts the camera service down under its locks.
+00346720 Reads the data store's bytes at the offset.
 00349878 Loads the shader binary and its programs.
 0034a784 Binds the attribute (by its kind, below 16) to the buffer's address with the format.
 0034a8b4 Binds the attribute's constant values (when it has no buffer).
@@ -2135,6 +2162,7 @@
 0034ba38 Takes the lock when the current thread does not hold it; whether it did.
 0034cf7c Builds the data id from the value and the kind.
 0034d018 Finalizes the data store service when it is up.
+0034ff6c Reads the store's table of the kind with its range.
 00350454 Copies the entry's owner identity (the second layout).
 003504e8 Initializes the table info with its defaults.
 003505bc Whether the background service is set up (under its lock).
@@ -2151,6 +2179,7 @@
 0044a814 Destroys the Pia session and frees it.
 0044badc Waits for the time (milliseconds) when Pia is ready.
 0044c1ec Leaves the session's gathering and its matchmaking.
+0044cc08 Begins Pia's transport when it is up.
 0044cc60 Ends Pia's transport when it is up.
 0044f0f4 The station's state in the session (by its address).
 0045ee4c Sends the packet over Pia's transport when it is ready.
@@ -2159,6 +2188,7 @@
 0046aa80 Sets the session option to the value.
 0046aad8 The local station's id, or 0.
 0046bb74 The station's address when it is valid.
+0046beec Updates the station when it is valid.
 0046eaf0 When ndm_suspend_once ran: resumes the daemons and closes the service.
 0046f8e8 Reads the packet's header from the buffer when it fits.
 0046f9f8 Finds the station in Pia's list by its address.
@@ -2174,13 +2204,18 @@
 004b9b64 Marks the event (+0x1c = 1) and passes its value (+0x18) to virtual 0x3c of the listener at +0x20.
 004bef3c The scroll bar knob's position from the pointer.
 004bf06c Sets the flag on each resource of the list.
+004bf4bc Sets the animation's rate (at least 0).
 004bfd70 Finds the resource by its key and binds it.
 004bfe1c Binds the resource when its kind matches.
 004c331c Takes a reference to the resource the holder points to.
 004c7500 Loads the resource's child with its name.
+004cad5c The default texture, set up once.
+004cce74 Sets the table's slot to the value (for a positive index).
+004dac10 Sets the pane's size from its scale and its alignment.
 004dae58 The index of the letter paper item (0x3041 to 0x3093) in the table.
 004dbc3c Whether the tour desk is waiting (state 3 or 4).
 004ddc34 The local station of the online session.
+004dfb58 Scales the vector by the other (component-wise) and adds the offset, when asked.
 004e0288 True when the check at 0x1531b8 gives exactly 1.
 004e029c Stores the three components call_004dfb58 gives (from the arguments) into entry `index` (0x24 bytes) as half floats, with a flag.
 004e0960 Sets the motion parameters (target, mode 5, two halves, the float).
@@ -5334,6 +5369,7 @@
 00816c20 Plays the animation with the key on the animator.
 00818b78 Plays the animation with the key on the animator (the eighth kind).
 00818fa0 Plays the animation with the key on the animator (the second kind).
+008196f4 Plays the animation with the key on the animator (the eleventh kind).
 0081a058 Plays the animation with the key on the animator (the seventh kind).
 0081a168 Plays the animation with the key on the animator (the sixth kind).
 0081b218 Plays the animation with the key on the animator (the third kind).
@@ -5344,7 +5380,9 @@
 00825acc Unlinks the node and links it into the new owner's list (+0x70).
 00825b04 Unlinks the node from its owner's list and clears its owner; the node.
 00825c64 Whether one of the 8 slots holds an object whose id (+0xb0) is `id`.
+00825ecc Reads the archive's index.
 00826038 Reads the entry's header (0x18 bytes) and, when asked, its extra data; the result.
+008260f8 Reads the archive's block.
 00826270 Reads the entry's header, its name and its data; the result.
 008266bc Reads the entry's data by its blocks.
 00826c34 Whether the id passes the filter: equal to it (kind 2) or in one of its ranges (kind 3).
