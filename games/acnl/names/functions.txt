@@ -2490,7 +2490,7 @@
 001e5074 namespace___NoticeRenewal__NoticeRenewal_001e5074
 001e50ec namespace___NoticeRenewal__NoticeRenewal_001e50ec
 001e51f0 SceneTime__set
-001e546c namespace___NoticeRenewal__NoticeRenewal_001e546c
+001e546c TownFlags__renew_notices
 001e5600 TownTime__update
 001e57e8 setup_request_record_mode_1800
 001e5820 release_data_loader
@@ -2941,7 +2941,7 @@
 00209e98 SelectWindow__destructor
 00209f40 pending_target_still_far
 00209ff8 shopfollower__ShopFollowerAStarForeachCBRoadOnly__ShopFollowerAStarForeachCBRoadOnly
-0020a35c IRootLocateZero___Cand__Cand_0020a35c
+0020a35c RoadSearch__construct
 0020a418 SoundFaderEx__virtual_3
 0020a474 FloatFade__start
 0020a4c8 SoundFaderEx__deleting_destructor
@@ -3926,7 +3926,7 @@
 0026a66c EmoticonSlots__construct
 0026a694 EmoticonSlots__destroy
 0026a824 Follower__find_path
-0026adf8 nnmfolw__FollowerAStarForeachCB__FollowerAStarForeachCB_0026adf8
+0026adf8 Follower__find_path_to
 0026ae58 EmoticonAction__end
 0026b2e0 CandLocator__construct
 0026b328 FriendListText__FriendListText

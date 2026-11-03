@@ -1357,6 +1357,7 @@
 0020933c Draws the item label's layout on the bottom screen.
 0020968c Releases the window's layout parts (when loaded) and layout, and its list (when not).
 00209f40 Counts a frame (up to 300) and, while the target (+0x1470) is farther than the threshold, gives its position; clears it when near.
+0020a35c Constructs a road search: 256 candidate cells and a 16 by 16 search grid for an owner (arg 1).
 0020a474 Starts fading the value to the target over `frames` (immediately for 0), then holding for `hold` frames.
 0020a64c Sets the sound kind (below 14, +0x3c) and counts the change (+0x40).
 0020acb0 Sets the kind at +0x3c to 0xb.
@@ -1684,6 +1685,7 @@
 0026a66c Constructs the 4 slots (0xfc bytes each) and clears the state.
 0026a694 Destroys the 4 slots.
 0026a824 Finds the follower's path toward its target over the grid.
+0026adf8 Finds a follower's path to a target (arg 1, three words): from the event NPC's mode, else its source \n (marking that source as pathing).
 0026ae58 Begins the target's next action and clears the action.
 0026b2e0 Constructs the candidate locator for the target with the default ranges.
 0026b3a0 Loads the edit switch layout, binds its button and its eight animations, and shows its first side.
@@ -4509,6 +4511,7 @@
 005d05b0 Opens the store once and ends the operation.
 005d05ec Closes the store (when it opened) and ends the operation.
 005d0e38 The byte of the table at 0x8578dc for the index.
+005d1d08 Constructs an escape event's base: a framework process, nothing escaping yet.
 005d1ee0 Places a random kind of item (from the 4) in the cells of each of the 2x2 blocks, with a random flag.
 005d1f84 The value times 0.05 (in s0).
 005d1f9c The value times 0.127 (in s0).
