@@ -15788,7 +15788,7 @@
 005ab498 photo_storage_virtual_3
 005ab4b0 photo_storage_virtual_2
 005ab4c8 fs_result_to_photo_error
-005ab5a4 nn__fs__Directory__Directory_005ab5a4
+005ab5a4 directory_exists
 005ab768 PhotoFile__read_header
 005abb6c cached_value_0x204
 005abba0 PhotoDatabase__set_flags
@@ -16574,7 +16574,7 @@
 005d79bc TextStyle__set_preset
 005d79e0 TextCommand__scale
 005d7a4c TextCommand__color
-005d7a8c read_command
+005d7a8c TextCommand__read
 005d7af4 script__TalkInsert__virtual_73
 005d7b58 script__TalkInsert__virtual_51
 005d7bb4 script__TalkInsert__virtual_65

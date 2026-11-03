@@ -89,6 +89,7 @@
 001082c8 Clears the bulletin board's 15 notices.
 001082e8 Posts the bulletin board's two default notices, dated today.
 001083fc When the update state (0x95c210) is above 1: expires the old bulletin-board notices of the town.
+00108434 Constructs fifteen bulletin board notices.
 00108448 Clears the flag byte and the record after it (001e4524).
 00108a9c Clears a record of 18 items with their flags and its two 0x18-byte parts.
 00108ae0 Clears six item slots, then fills four with distinct items of group 0xb and two with distinct items of group 0xa.
@@ -1672,6 +1673,7 @@
 002503b0 Calls the sound object's virtual function 9.
 00250438 Plays the sound at the world position, seen from the camera.
 002504d4 Plays the sound (the sound object's virtual function 7).
+00250510 Constructs a one-sound sound object: a sound object base with one sound slot.
 00250560 Destroys a one-sound sound object: detaches its sound and stops the base.
 00250b34 Claims the tour's reward and clears the pending flag.
 00250b58 Spawns and updates the fish in the slots (species, shadows, places).
@@ -3221,11 +3223,13 @@
 004ee4c0 Sets the model's world matrix and marks it for update.
 004ee534 True when the split load is ready and not in state 3.
 004ee55c Starts the split load, setting the read and write positions from its word (+0xec) the first time.
+004ee8c0 Destroys a visibility animation: its heap allocator.
 004eee9c Finds the named entry in the model's dictionary and binds it.
 004eef60 Binds the resource to the model.
 004ef3a4 Clears the model's animation slots.
 004ef50c Destroys a group skeletal animation: its elements, then its heap allocator.
 004ef77c Plays the model's animation with the blend.
+004efa0c Destroys a morph skeletal animation: its heap allocator.
 004efb0c Sets the scene environment's layer (its lights and fog), outside photo mode.
 004f000c The scene environment's default fog.
 004f0310 Points the camera at its alternative target, marks the mode on and saves and sets the friend list's flag.
@@ -3327,6 +3331,7 @@
 0050d420 Posts the upload request to the online component; 1 without one.
 0050d478 Releases the online component's objects and, once disconnected, frees it.
 0050d8f0 Ends the store's open operation, if any, and shuts the service down.
+0050d91c Creates the CEC (StreetPass) heap and message box (unless they exist) on the net heap.
 0050d9c4 Reads the slot's entry when it is in range and fits; 0 on success, 1 when it does not exist, else 8.
 0050db18 Writes the entry to the slot.
 0050dd68 Deletes the slot's entry; whether it succeeded.
@@ -4220,6 +4225,7 @@
 005aa878 The size plus a 4-byte header, rounded up to 4.
 005aa884 Initializes a flag buffer when it is large enough: its 16-bit count and `count` cleared flag bytes.
 005aa914 Formats the photo's file name from its folder and number.
+005aa970 Constructs a photo file reader for the pending picture: a file reader over the picture's buffer.
 005aab40 Keeps a value at 0x9816b4 and marks it pending (0x9816aa).
 005aab58 Keeps a value at 0x9816b0 and marks it pending (0x9816a9).
 005aad7c Builds a wide photo path from its parts.
@@ -4228,9 +4234,11 @@
 005ab1fc Reads a photo file's header (extension 1 or 2) into the record; true when it worked.
 005ab304 Clears a photo file record and its time.
 005ab334 Builds the file's path and reads its header through the reader; the reader's result.
+005ab388 Constructs a photo header file reader for the pending picture info: a 0x20000-byte file reader.
 005ab498 Calls virtual 3 of the photo storage object (0x982128).
 005ab4b0 Calls virtual 2 of the photo storage object (0x982128).
 005ab4c8 Maps a file-system result to a photo error: 0 for success or not-found codes, 8, 9 or 0xe for media errors, 5 otherwise.
+005ab5a4 Whether a directory (path arg 1) opens; reports the error unless asked not to (arg 0).
 005ab768 Reads the photo file's header and its sizes.
 005abb6c The value of 003506c8 for 0x204, read once (0x97e0e0).
 005abba0 Sets the photo's flags by the mask.
@@ -4636,6 +4644,7 @@
 005d79bc Sets the style to the preset of the index (below 7), else the default.
 005d79e0 Builds the text scale command (in 1/32 units), once; the command.
 005d7a4c Builds the text color command from the tag's value.
+005d7a8c Reads a text command at a position (arg 1): its kind, parameter size and data, and where the text \n continues.
 005daf1c Empties the selected pocket slot (below 16) of the current player.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
 005dd570 Assigns the message to the string and records its flag.
@@ -4674,6 +4683,7 @@
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
 005ec990 Starts reading a UTF-16 text (arg 1): the first character's width (2, or 4 for a surrogate pair).
 005f10b0 Starts loading the resource (split or plain); whether it started.
+005f1138 Constructs a script loader's load split: a font source and a load split, nothing loaded.
 005f11b4 Sets the talk target's word slot (its virtual function 33).
 005f1344 Sets the talk target's text (its virtual function 39).
 005f32f8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
@@ -6457,6 +6467,7 @@
 00763360 Calls 0072413c on the pockets of the player of the object's slot (+0x1ac); 0 when there is none.
 00763398 The position 32 units in front of the spot near the cell (along its direction), kept in a static vector; 0 when none.
 007634d0 The player's reference point for its action (+0x1a9): its position raised by +0x1538, the point at +0x424, or the last one.
+00763580 Whether the player is in one of the states 0xc7 to 0xca.
 007635a8 Whether the byte at 0x94fd2b is clear.
 007635c4 The point 12 units ahead of the object (in its facing direction), on the ground.
 007635f4 Calls 00597790 with the cell (x, z) under a position.
@@ -6763,6 +6774,7 @@
 0081b648 Plays the animation with the key on the animator (the fifth kind).
 0081b750 Plays the animation with the key on the animator (the fourth kind).
 0081c0a0 Moves the save step to the one after the current in its table.
+0081c9bc Constructs a 13-character script word, empty.
 0081d12c Constructs a 20-character script word (filled with the empty character).
 0081d248 Constructs a 21-character script word (filled with the empty character).
 0081d8c0 Constructs a 33-character script word, empty.
