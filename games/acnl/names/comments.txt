@@ -1599,8 +1599,38 @@
 0052de50 Builds a matrix at the (mode-adjusted) position, rotated by the angle about x and by `angle_y` about y.
 0052e3ec When the current mode has flag 2: calls 0075d24c with the static zero vector and the two arguments.
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
+0053138c Calls slot 4 of the cloud model's transform node.
+00531398 Updates the cloud model's transform and model.
+005313b4 Releases the item model: its sub parts, model, animation, the two lists of loaded parts and its objects.
+0053149c Constructs the item model: its allocators, skeletal model, animation, the two part slots and lists.
+0053152c Destroys the item model's parts, allocators and animation.
+005360e0 The first or second word of the entry of the kind (below 0xaa, 0xc bytes each) of the table at 0x878198.
+00536110 Half `index` (below 0x56) of the table at 0xa184e4; the default otherwise.
+00536130 The model word of the item (by its model index, with the variant for indices 0x136 and 0x151); the default otherwise.
+005361e8 Entry `index` (below 0x9b, 3 bytes each) of the table held at 0xa183a0; null otherwise.
+005369d0 The byte at +0x34 of the model's material `index` (only for materials of the right kind).
+00536a28 The texture of the model's material `index` (only for materials of the right kind); null otherwise.
+00536cfc For tools (category 0x1c), binds the tool's texture to the model's material.
+00536da0 Writes the item's extra model path: its cap, accessory or tool part for clothing (category 0x40), its tool part (0x1c), or its catalog model (0x29).
 00537028 Takes the part off the menu list when it is on it, then unloads it.
+00537220 Refreshes the exhibition park's state and its entries when it exists.
+00537328 True when the ready exhibition park has fewer than 16 used slots.
+00537358 Marks the entry free (state 4) when it is the marked slot, and recounts the park's used slots.
+0053742c When the visitor list is not empty and the check passes, clears the visit record and flags the players with the identity.
+00537464 The exhibition park when it exists and is ready (+0xa1); null otherwise.
+005374f0 Stores the entry in the park's least full design block, for its owner.
 005376d4 Forwards to word_95262c_unless_95262c_set.
+005376d8 The number of free slots of the ready park (16 minus the used ones).
+005377fc Records the visit with the time in the save (+0x6e29a).
+0053784c When the check passes, clears the current player's bit (12 + slot) of the record's flags (+0x22).
+0053787c When the park has room, gives the entry to the current slot and recounts the park's used slots.
+005378e4 Updates the exhibition park when it exists.
+00537b6c The number of set bits of the word.
+00537bb0 The index of the n-th set bit (from 1) of the word; -1 when there are fewer.
+00537ce0 Releases the part (+4) and frees the buffer from its heap.
+00537d70 Allocates `count` empty pointer slots and sets the pool up on them.
+00537dd8 Zeroes the pool, with its index at -1.
+00537e0c Releases the part and the buffer, then destroys the part.
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
 005601b8 Sets the 8-bit color channels from the four floats, each clamped to 0 to 1 (stored in reverse order).
