@@ -512,6 +512,7 @@
 0012eb28 Destroys the four 0x1228-byte entries.
 0012eb50 Stops the sound with the fade.
 0012ebf4 Releases the slot's sound data request (all of it when asked, else its own, +0x14).
+0012ec48 Constructs a melody player's base: no sound, volume 1, no notes, no bank slot.
 0012ecd4 Clears the 0x3000-byte buffer at 0xad6670 and its four counters.
 0012edc0 Constructs the file with an empty path record.
 0012ede8 Calls virtual 12 of an object, unless the object is null.
@@ -520,6 +521,7 @@
 0012ee90 The object at 0x974f20; a fatal error when it is missing.
 0012eeb0 Mounts the RomFS archive as rom:.
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
+0012f038 Stores 1 into a lock word.
 0012f050 Clears the light event (atomically negates a positive count).
 0012f154 Initializes a recursive lock: unlocked, no owner, depth 0.
 0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
@@ -528,6 +530,7 @@
 0012f384 Calls the applet service with the arguments under its light lock (retrying every millisecond); an error when the applet is not up.
 0012f474 Updates the input state from the shared memory.
 0012f518 Resets the input state.
+0012f598 Reports a fatal result (arg 0) with its location info (arg 1), and raises the fatal error.
 0012f600 Allocates a block of `size` with its alignment, direction and group, counting it (+0x54).
 0012f664 Reserves the parameter block's entries.
 0012f814 Sets the block's alignment (+0x34).
@@ -593,6 +596,7 @@
 00134fa4 Destroys the heap's child heaps.
 00134fec Destroys eight 0x878-byte pattern records.
 00135010 For slot `index` (below 6) not playing: trims its queue past `count` (under its lock); true when the slot is set.
+00135134 Constructs a one-sequence melody player's base: no sequence, not playing.
 001352dc Keeps a value at 0x974f10 and sends it with request 0xb0500c8.
 00135308 Opens the file in the archive found by its name, with the mode.
 00135384 Checks a list of results, reporting a fatal error for a failing one.
@@ -643,14 +647,17 @@
 00138c78 The value of a thread-local slot for the current thread.
 00138f30 A list's last index (its count minus one).
 00138f3c Finds the factory's resource by its name.
+001391c4 Allocates size bytes (arg 0) on a heap (arg 1).
 001391d8 Allocates from the current heap, 4-byte aligned.
 001391ec Initializes the vertex attribute tables at 0x974a7c.
 00139454 Sets vertex attribute `index` (0x10 clears all) from its description: its address and its stride (the given one, or the element count times the type size).
 00139504 Gets the thread's id (svc 0x37).
+001396a4 The CFL instance's byte 0xc0, when the CFL state flag is set; else 0.
 00139724 Frees the object's buffer (+0xc) when it has one, then the object, through the free hook.
 00139dac Stops the camera when it is running: stops capture, releases its buffer and marks it stopped.
 00139ffc Opens the file in the archive found by its path, with the mode.
 0013a1f0 Sends command 0x861 with the buffer (0x20 bytes) to the service.
+0013a37c Sets the thread's value in a thread-local slot.
 0013a38c Takes the first free one of the 16 thread-local slots (fatal when none is free).
 0013a414 Sends the request to the service (0013a5a4) and keeps its value (+0xc, else +8) on success.
 0013a5a4 Sends command 3 with the handle to the service.
@@ -708,6 +715,7 @@
 0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
 0013d4f0 Whether the bank's slot (below 6) is loaded.
 0013d6d0 Unlinks the request from the pending list (when queued or running, under the list lock) and clears it.
+0013d7cc Destroys a melody player's base: stops its sound and frees its sound bank slot.
 0013d85c Closes the file stream's handle (+4; a pending failure is fatal).
 0013dee0 The handle at 0x974ef8 (a fatal error when it is not set).
 0013df14 Converts a multibyte path to wide characters and opens it as a file stream.
@@ -2000,6 +2008,7 @@
 002d1a70 Stops and frees slot `index` (below 52), uncounting it.
 002d1b3c Counts one more furniture of the kind in its slot of the 3 (taking a free one for a new kind).
 002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
+002d2a4c Constructs a furniture sound object: a sound object base with two sound slots, nothing playing.
 002d2b90 Destroys a furniture sound object: stops it, detaches its two sounds and stops the base.
 002d2d60 Plays the sound furniture's song with its volume.
 002d2e80 Sets the volume (and fade frames, 15 by default) of the slots playing the sound for the owner.
@@ -2599,6 +2608,7 @@
 00317a50 Starts the split load, setting the read and write positions from its word (+0xec) the first time.
 00317a88 Draws the string with the renderer's font and color.
 00317cc8 Entry `index` of the resource file's dictionary (offset +0x20, 0x10-byte entries from +0x28), resolved from its self-relative offset; null when absent.
+00317e2c Destroys a resource loader: its load split, then (when a resource is set) releases the resource file under \n its graphics context.
 00317eac The byte cell (x, y) of the array.
 00317ec4 `value` limited to [low, high] (signed).
 00317fd8 Scans the items of the cells around the world position, checking their properties.
@@ -2611,6 +2621,7 @@
 00319568 Sets the bit-table bits of the villagers of the town.
 00319aa4 Sets or clears bit (column, row, page) of the bit table of `kind` (halves of 16 bits, 16 per page).
 0031a334 Fills the item description for its category (recursing for kinds 5 and 6).
+0031b25c Constructs a script word pointing at a constant nine-character word (arg 1).
 0031b394 The locale's multibyte maximum: its stored value for multibyte locales, else 1.
 0031b3b2 Remembers the current locale of the category (copying its name) and switches to the given one.
 0031b3ea Restores the remembered locale and frees its name.
@@ -3082,6 +3093,7 @@
 004f0eb8 Sorts the model's draw entries by address and stores them as relative offsets.
 004f1104 Sets the model's animation frame.
 004f1164 Sets the value of the model's current animation member at its frame.
+004f1270 A model's per-frame update: sorts its draw entries when it has any, then updates it as a camera node.
 004f1294 Updates the model's animation frame and its result.
 004f1510 The index of the named material in the model's dictionary, or -1.
 004f1648 Sets the named material's color (or one of its texture coordinates) from the values.
@@ -6560,6 +6572,7 @@
 00825acc Unlinks the node and links it into the new owner's list (+0x70).
 00825b04 Unlinks the node from its owner's list and clears its owner; the node.
 00825c64 Whether one of the 8 slots holds an object whose id (+0xb0) is `id`.
+00825d6c The exchange bank's current entry (by the bank's toggle bit), or null when the entry has no data.
 00825ecc Reads the archive's index.
 00826038 Reads the entry's header (0x18 bytes) and, when asked, its extra data; the result.
 008260f8 Reads the archive's block.

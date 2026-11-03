@@ -5302,7 +5302,7 @@
 002d27e0 SoundObjFurniture__virtual_3
 002d2998 AudioObjFurniture__virtual_15
 002d2a0c AudioObjFurniture__virtual_16
-002d2a4c SoundObj_2___SoundObj_002d2a4c
+002d2a4c SoundObjFurniture__construct
 002d2ae4 SoundObjFurniture__deleting_destructor
 002d2b8c SoundObjFurnitureInsect__destructor
 002d2b90 SoundObjFurniture__destructor
