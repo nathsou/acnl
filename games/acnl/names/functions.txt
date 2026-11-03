@@ -5716,7 +5716,7 @@
 002ee864 copy_table_entry
 002ee898 SplitLoader__start
 002ee91c LoadSplitWord__release
-002ee938 sead__SafeStringBase_char___SafeStringBase_002ee938
+002ee938 SplitLoader__start_on_heap
 002ee990 LoadSplitWord__LoadSplitWord
 002ee9a4 LoadSplitWord__destroy
 002ee9c4 table_94ed40_entry_6e8

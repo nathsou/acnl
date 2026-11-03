@@ -2379,6 +2379,7 @@
 002e1818 Resets the candidate, counts the used slots into +0xa0 and marks the count done (+0xa1).
 002e1ba4 Shows UI message 0xe2 with a value (arg 1) set in the message store, in the window's text view.
 002e1ca4 Shows UI message 0xe1 with a value (arg 1) set in the message store, in the window's text view.
+002e2974 Constructs an explanation book's content: a layout with five animations, seven text renderers and an empty \n item.
 002e2d24 Attaches the layouts at +0x4c4 (active) and +0x610 (inactive) to the layout system.
 002e2d54 Updates the mail view.
 002e326c Updates the object, then its layouts at +0x4c4 and +0x610.
@@ -2388,6 +2389,7 @@
 002e35d0 Plays (on) or finishes (off) the animation at +0x280 of the layout at +0x134 when it has one, and stores the inverse state at +0xd9 and +0x12d.
 002e38b4 Scatters random items in the 2x2 blocks' cells.
 002e43d0 Releases the handle at +0x30 once it is unlocked, then acquires a new one for the key at +0x10 from the manager at 0xa22020; true when it got one.
+002e58f0 Destroys a player model as an ambient-camera NPC model: clears its parts' handles, then the human model.
 002e5a4c Sets the byte at (column, row) of a 112 x 96 grid; out-of-range coordinates fall back to row or column 0.
 002e5a68 Fills the 112 x 96 grid with 0xff.
 002e5ab4 Zeroes the 112 x 96 grid (0x2a00 bytes).
@@ -2432,6 +2434,7 @@
 002e9268 Stops a melody sound object (when started): its tune and melody players, its sound, then the base.
 002e92b0 Constructs a melody sound object: a sound object base with one sound slot and two positioned melody \n players.
 002e9324 Destroys the 3D sound object.
+002e9328 Destroys a melody sound object: stops it (as SoundObjWithMelody__stop), then its melody players and sound.
 002e9954 Releases the slot's sound handle (index below 0x30) and marks the slot free (-1).
 002e99d0 Initializes a free slot (-1).
 002e9a14 Releases the slot's handle and detaches it from its parent.
@@ -2467,6 +2470,7 @@
 002ee564 Loads the item selection window's layout archive; marks it loaded (+0xce4).
 002ee898 Starts loading a split (path arg 1) unless one is loaded, and sets its count from the loaded size \n (size / 40).
 002ee91c Releases the split load's part and clears its word (+0xec); true.
+002ee938 Starts loading a split (path arg 1) on a heap (arg 2), and sets its count from the loaded size (size / 40).
 002ee990 Constructs the split load with a cleared word (+0xec).
 002ee9a4 Releases the part, clears the word and destroys the split load.
 002ee9c4 Address of 0x18-byte entry `index` at +0x6e8 of the table held by 0x94ed40.
@@ -2476,6 +2480,7 @@
 002ef1b8 Marks the selected notice read when the player owns the slot, takes back the selection and plays the closing animation of the current tab.
 002ef27c Shows the new mark on each tab that has unread notices.
 002efe0c Sets up the house with its free record.
+002f29ac Destroys the friend chat log menu: its button, scroll bar, layouts, archive readers and menu base.
 002f3398 Sets the ready flag (0x9500e0) when the first resource is ready, or both flags when only the second one is.
 002f33e8 Releases the two resources and clears their flags.
 002f341c Resets the request record at 0xaf7618 with its default mode, allocating the 0xc8b8-byte work block (from the stage heap by default) and the local slot once; the second resource flag switches the mode.
