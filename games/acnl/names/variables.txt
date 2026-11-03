@@ -2172,6 +2172,7 @@
 005c311c r0@5c3148 object
 005c324c r0@5c3264 object
 005c423c r0@5c4258 object
+005c44a0 player player
 005c44a0 r0@5c44a4 player
 005c4534 r0@5c453c is_item
 005c4840 r0@5c4858 object
@@ -2189,6 +2190,7 @@
 005c5df8 r0@5c5e04 object
 005c5efc r0@5c5f18 is_empty
 005c5efc r0@5c5f44 object
+005c6024 arg0 player
 005c6654 r0@5c6664 object
 005c6a20 r0@5c6a38 object
 005c6b24 r0@5c6b58 is_empty
@@ -2207,9 +2209,14 @@
 005c8460 r0@5c8478 object
 005c8694 r0@5c86a0 object
 005ca4b4 r0@entry index
+005ca5d8 crc computed
 005ca5d8 r0@5ca604 crc
+005ca5d8 r5@5ca5e8 stored
 005ca7a4 r0@5ca7a8 player
 005ca9e4 r0@5caae8 player
+005cad28 arg0 save
+005caf80 arg0 town
+005cb26c arg0 town
 005cbc54 r0@5cbc68 category
 005cbc54 r0@5cbc84 offset
 005cbc54 r0@5cbca0 player
@@ -2941,9 +2948,13 @@
 0074e00c arg0 exp_heap
 0074e960 arg0 task_base
 007508b0 r0@entry ac_ftr
+00750994 arg0 furniture
+00750d40 arg0 furniture
+00750d40 arg1 out
 00750e1c ac_ftr furniture
 00750e1c arg0 ac_ftr
 00750e1c r1@entry out
+00750eb4 arg0 furniture
 00750ed0 arg0 furniture
 00750ed0 r0@750edc map_2
 00750ed0 r0@750f54 item
@@ -3017,6 +3028,7 @@
 00757b34 arg1 record
 00757b34 r0@757b5c surface_height
 00757c74 arg0 date
+00757c74 r1@entry time
 00757f08 r0@757f60 crc
 00757f78 r0@758044 crc
 00758128 r0@758130 save_data
