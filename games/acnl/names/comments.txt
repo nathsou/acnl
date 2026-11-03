@@ -4584,6 +4584,7 @@
 005a5e9c Scans the photo folder's entries.
 005a6218 Repairs database `index`: checks its files and fixes the broken records.
 005a6350 Finds a free photo slot in the folder.
+005a66d4 Constructs the photo image database: two file slots, room for 32 entries, nothing open.
 005a68e8 Parses the photo file name under the cursor: an 8-character folder name, or a name with a 1-4 character extension; 1 when it is a valid photo name, 2 otherwise.
 005a6b8c Clears a photo name parser (state 2) and its path.
 005a6c4c The address of 18-byte entry `index` from +8.
@@ -5003,6 +5004,7 @@
 005cbe34 Sets the sender to a villager (kind 2) by copying its 48-byte identity.
 005cbe84 Changes the letter's kind bits from 1 to 2.
 005cbee4 Addresses a letter to the player of a slot and, unless `keep_header`, copies the current player's header.
+005cbf78 Sets a villager's name (arg 2) into a nine-character word and passes it to a message target (arg 1).
 005cc160 Writes the save's block with its callback and the mode.
 005cc454 Moves the recipient kind (+0x30) to its read form: 1 or 3 -> 3, 2 or 4 -> 4, anything else -> 5.
 005cc524 Copies a letter field by field (identities, header, body, footer, flags, item and stamp).
@@ -5056,9 +5058,11 @@
 005d205c The value times 0.127 (in s0).
 005d2218 Sets the first word and clears the other two.
 005d23e4 Sets the first word and clears the other two.
+005d458c Where a value (S0) falls between two bounds (S1, S2), clamped to 0..1 (1 when the bounds are equal); \n returned in S0.
 005d4608 The start speed (in s0) that covers the distance in the frames under the acceleration.
 005d4a68 Calls the object's virtual function 11 with true.
 005d4a78 Calls the object's virtual at +8.
+005d4edc Constructs a choice entry: an empty 65-character word, no id.
 005d5374 Constructs the text receptor with the default font settings and the values.
 005d53b0 Advances to the next page when there is one, and puts it.
 005d53d4 Constructs the text receptor with the given style and the default font settings.

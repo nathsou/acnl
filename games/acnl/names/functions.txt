@@ -16380,7 +16380,7 @@
 005cbe84 Letter__mark_kind_1_as_2
 005cbea4 note_item_offset
 005cbee4 Letter__init_for_player_slot
-005cbf78 script__WordFix_9u___WordFix_005cbf78
+005cbf78 Message__send_villager_word
 005cc024 normalize_flags_270
 005cc070 store_byte_constant_pack_0x30_005cc070
 005cc160 SaveFile__write_block
@@ -16497,7 +16497,7 @@
 005d4240 fill_packed_record
 005d4350 build_and_apply_matrix
 005d43f4 offset_on_circle
-005d458c map_value_in_range
+005d458c normalize_in_range
 005d4608 start_speed_for_distance
 005d4668 step_offset
 005d46dc value_for_mode
@@ -16507,7 +16507,7 @@
 005d4a78 call_virtual_slot_2
 005d4a94 script__InsertEngine__InsertEngine_005d4a94
 005d4b64 script__ChoiceSeq__ChoiceSeq
-005d4edc script__WordFix_65u___WordFix_005d4edc
+005d4edc ChoiceEntry__construct
 005d4f58 script__WordFix_65u___WordFix_005d4f58
 005d5088 script__CopyEngine__virtual_4
 005d50a8 script__CopyEngine__deleting_destructor
