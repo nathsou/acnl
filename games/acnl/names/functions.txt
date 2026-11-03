@@ -7630,7 +7630,7 @@
 0033d7e0 ForeachOnStrugglePitfall__virtual_0
 0033d7f0 LifeSupportExplainWindow__virtual_10
 0033d9d0 sead__WFixedSafeString_50___WFixedSafeString
-0033dab8 script__WordFix_94u___WordFix
+0033dab8 BadgeWindow__show_title
 0033db9c BadgeWindow__show_badge
 0033dcb0 script__WordFix_188u___WordFix
 0033de44 script__WordFix_50u___WordFix_0033de44
@@ -12265,7 +12265,7 @@
 004f0568 SceneEnv__light_if_enabled
 004f05cc SceneEnv__set_value_107
 004f0734 PhotoMode__setup_scene
-004f0818 g3d__DirectionalFragmentLight__virtual_5
+004f0818 DirectionalFragmentLight__setup
 004f087c g3d__DirectionalFragmentLight__deleting_destructor
 004f08a0 g3d__DirectionalFragmentLight__destructor
 004f08c0 g3d__MorphTransformAnimEvaluator__virtual_5
@@ -12359,7 +12359,7 @@
 004f4bf8 gui__GridKeySet__virtual_8
 004f4c00 gui__GridKeySet__virtual_6
 004f4c10 gui__GridKeySet__virtual_4
-004f4e58 gui__KeySet__KeySet_004f4e58
+004f4e58 GridKeySet__construct
 004f4f14 gui__GridKeySet__deleting_destructor
 004f4fc8 gui__GridKeySet__destructor
 004f5074 gui__KanaKeySet__virtual_5
@@ -12371,7 +12371,7 @@
 004f639c gui__KanaKeySet__virtual_8
 004f63a4 gui__KanaKeySet__virtual_6
 004f63b4 gui__KanaKeySet__virtual_4
-004f6674 gui__KeySet__KeySet_004f6674
+004f6674 KanaKeySet__construct
 004f6720 gui__KanaKeySet__deleting_destructor
 004f67e0 gui__KanaKeySet__destructor
 004f68f8 gui__TextAreaEx__virtual_6
