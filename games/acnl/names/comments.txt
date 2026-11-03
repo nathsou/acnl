@@ -501,8 +501,18 @@
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
 00148710 out = M * (v, 1) for a 3x4 matrix M.
 0018eab0 Forwards to the function at 0x8161b8.
-001a360c Requests the controller's mode `kind` aimed at the position, with its parameter.
+001a08bc Clears the camera state's flags and restarts its state machine (+0x14) with the default handler pair.
+001a1204 The default camera parameters (0x998540), with a height of 29 in scene 1.
+001a1abc Sets the camera's target and, for a mode (not -1), remembers it with the current view as the start of the move.
+001a2068 In flagged scenes, updates the camera's room view from its target, angle and distances.
+001a25dc Moves the camera's target toward the player's position by the scene's rules.
+001a32c8 Keeps the camera's x inside the room's bounds (+0x158 to +0x15c, with the margin), centering it when the room is narrow.
+001a360c Requests the camera controller's mode `kind` aimed at the position, with its parameter.
+001a40e8 The distance from the player's head (32 above) to the point (rotated by the room's angle, the height weighted 1.5); 321 without a player.
+001a4904 Half of the position plus the offset (the midpoint).
+001a4e7c Keeps the camera's x and z inside the room's bounds (with their margins), centering them when the room is too small.
 001a5144 Requests the default mode (+0xf0) back and releases the two flags it holds (0x27, 0x2b).
+001a5e64 Keeps the camera's x (margin 160) and z inside the room's bounds, centering them when the room is too small.
 001b1010 Loads the six static data tables; true when all loaded.
 001b1900 Takes the received letter (version 3, newer than the current one) when its checksum over 0x28c bytes matches and its letter is valid; true when taken.
 001b19ac Constructs an empty received letter record.
@@ -2681,7 +2691,7 @@
 0065472c The point on the circle of radius 12 around the position at the angle.
 006547d0 The items (+0xa) of the player of the slot; null without one.
 006547e4 Turns the y angle toward the angle (fraction, minimum and maximum step) and stops the automatic turn; true when there.
-0065487c In flagged scenes, requests mode 3 of the mode controller and marks it (bit 7 of +0x178).
+0065487c In flagged scenes, requests mode 3 of the camera controller and marks it (bit 7 of +0x178).
 006548ac Changes to `state` unless the player is in it already (true then).
 006548c4 Requests player state 0x87 with the position, angle and three bytes.
 00654924 Requests player state 0x44 with the kind, position, angle and two bytes.
@@ -2689,8 +2699,8 @@
 00657748 For flagged kinds, runs the check at 0x1b76ec.
 0065776c Runs the tour record's check with the value when it exists.
 00657790 In flagged scenes, stores the position at 0x9856f4.
-006577c4 In flagged scenes, requests mode 0x12 of the mode controller and marks it.
-006577f4 In flagged scenes, requests mode 2 of the mode controller and marks it.
+006577c4 In flagged scenes, requests mode 0x12 of the camera controller and marks it.
+006577f4 In flagged scenes, requests mode 2 of the camera controller and marks it.
 0065795c Requests player state 0x62 with the position and angle.
 006579a8 Requests player state 0x73 with the word, the position (fixed point, x4) and two bytes.
 00659674 Refreshes the cell at the position and, when asked, marks it stepped on in the two wear bit maps (112 x 112).
@@ -2751,35 +2761,35 @@
 0068ce74 Tries to place the player at a free spot behind the position, stopping the special music.
 0068d170 Unless muted (bit 5 of +0x66), plays the voice sound and, when asked, marks the player busy.
 0068dc14 Unless muted (bit 5 of +0x66), plays the sound and, when asked, marks the player busy.
-0068eb30 True when the mode controller (0x950874) is in mode 5.
-0068eba8 Restores the default mode when the controller is in mode 5.
-0068ebc4 Updates the mode controller when it exists.
-0068ec10 True when the mode controller has a target (+0x135 not -1).
-0068ec64 Passes the request to the mode controller when it exists.
-0068ec98 Requests mode 3 of the mode controller.
-0068ecbc Queries the mode controller when it exists.
-0068eec8 Passes the value to the mode controller when it exists.
-0068ef60 Requests mode 0x12 of the mode controller.
-0068ef84 Requests mode 2 of the mode controller.
-0068efa8 Runs the controller's check with the value when it exists.
-0068efc8 Attaches the position and target to the mode controller when it exists.
-0068eff0 Restores the default mode when the controller is in mode 0xc.
-0068f00c In mode 0x19, sets the controller's handler and restores the default mode.
-0068f088 Requests mode 2 of the mode controller.
-0068f0d8 The signed byte at +0x1ba of the mode controller; 0 without one.
-0068f114 Restores the controller's default mode when it exists.
-0068f130 Requests mode 0xc of the mode controller.
-0068f14c Runs the controller's function at 0x1a51d0 when it exists.
-0068f168 Requests mode 6 of the mode controller.
-0068f1c8 Requests mode 0xf of the mode controller, with step 5.
-0068f1ec Runs the controller's function at 0x1a5f58 when it exists.
-0068f208 Runs the controller's function at 0x1a5f98 when it exists.
+0068eb30 True when the camera controller (0x950874) is in mode 5.
+0068eba8 Restores the default mode when the camera controller is in mode 5.
+0068ebc4 Updates the camera controller when it exists.
+0068ec10 True when the camera controller has a target (+0x135 not -1).
+0068ec64 Passes the request to the camera controller when it exists.
+0068ec98 Requests mode 3 of the camera controller.
+0068ecbc Queries the camera controller when it exists.
+0068eec8 Passes the value to the camera controller when it exists.
+0068ef60 Requests mode 0x12 of the camera controller.
+0068ef84 Requests mode 2 of the camera controller.
+0068efa8 Runs the camera controller's check with the value when it exists.
+0068efc8 Attaches the position and target to the camera controller when it exists.
+0068eff0 Restores the default mode when the camera controller is in mode 0xc.
+0068f00c In mode 0x19, sets the camera controller's handler and restores the default mode.
+0068f088 Requests mode 2 of the camera controller.
+0068f0d8 The signed byte at +0x1ba of the camera controller; 0 without one.
+0068f114 Restores the camera controller's default mode when it exists.
+0068f130 Requests mode 0xc of the camera controller.
+0068f14c Runs the camera controller's function at 0x1a51d0 when it exists.
+0068f168 Requests mode 6 of the camera controller.
+0068f1c8 Requests mode 0xf of the camera controller, with step 5.
+0068f1ec Runs the camera controller's function at 0x1a5f58 when it exists.
+0068f208 Runs the camera controller's function at 0x1a5f98 when it exists.
 0068f290 In mode 0x1a, requests mode 0 with step 0x17.
-0068f2ac Restores the controller's default mode when it exists.
-0068f2c8 Requests mode 0x1b aimed above the position (raised by the controller's offset).
+0068f2ac Restores the camera controller's default mode when it exists.
+0068f2c8 Requests mode 0x1b aimed above the position (raised by the camera controller's offset).
 0068f398 Requests mode 0x4d aimed at object 0x59.
 0068f3fc 100.
-0068f460 Requests mode 0x69 aimed at the controller's own target.
+0068f460 Requests mode 0x69 aimed at the camera controller's own target.
 0069a764 Looks through the pointer list at +0xee354 for an entry matching the two arguments.
 006a04c4 Updates the villagers' states for the day (moving, events) and marks them in the bit set.
 006a0848 Outside flagged scenes, spawns the actor in front of the current player's house and records it in the actor list (+0xeb54).
