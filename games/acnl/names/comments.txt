@@ -2934,7 +2934,42 @@
 006dd0c8 Calls the function at 0x14fe50 on the object at +0x6b4c when it exists.
 006dd294 The label chosen by the town event record (save +0x666e4): by its kind on other days, by its stage today.
 006dd2f8 The label chosen by the save byte at +0x6682c from the table of 3.
+006dd334 Resets the constants at 0x997c70.
+006dd7b4 The label chosen by the save byte at +0x6adb4 from the table of 3.
+006dd7e8 The data (+0x6b64) of structure entry `index` (below 3, 0x10 bytes each) when its kind is of type 0xf; null otherwise.
+006de398 Finds the free cell nearest to the position, searching outward.
 006e08b4 Stores the mode (below 6) at 0x9507f0 and applies it to the object at 0x95c6d0.
+006e140c Formats the number into the buffer, digit by digit.
+006e1d28 Writes the server URL for the network environment (0x97e988) into the buffer (+0x180) and appends the path.
+006e23dc When idle and allowed, starts the request (its first handler pair), clearing its result; true when it started.
+006e247c Resets the data store and sets its state to 8.
+006e2534 When idle, and the session part allows it, starts the request (its second handler pair); true when it started.
+006e2724 Polls the request's results: converts the received entries when done, or reads the error code (-1 while failing).
+006e2820 Sets up the request's query: the key, the filter ids (all four kinds for 0xffff, else the given one) and its bytes.
+006e35fc When idle, prepares the upload record (its stamp, kind and save id) and starts the request; true when it started.
+006e4490 Clears the pending list at 0x9ab57c.
+006e449c Packs the id above the low 18 bits of the value.
+006e44bc Moves the entry to the back of the pending list with its new packed key.
+006e46c8 The value (+0x10) of the pending entry with the key; 0 when none.
+006e4b0c Entry `index` (below 5, 0xec bytes each) of the table at 0x9b3b08; the first otherwise.
+006e4b30 Reads the item layout entries of the variant from the table at 0x9b3b08.
+006e4b48 Reads the item layout entries of the variant from the table at 0x9b3dcc.
+006e4c94 Unloads each of the 14 parts flagged in the bits at +0x35e0, clearing their loaded bits (+0x35e2).
+006e4d30 Bit 3 of the flags (+0x10) of entry `index` (below 0x276).
+006e4d80 Half `index & 3` of the table at 0x865cf8.
+006e4d98 True for kinds 0x6a and 0x6b.
+006e4e70 0x1a for 0, else 0x1b.
+006e5920 Sets the name window's frame animation to the value and updates the layout.
+006e59c0 Sets the window's color animation to the value, updates the layout and remembers it (+0xaf0).
+006e5e94 Shows or hides the page icon and plays the message animation when it changes.
+006e5f58 Switches the scroll bar between vertical and horizontal when it changes.
+006e64c4 Moves the drag icon back to its list, releases the menu flag 0x24 when held, and releases the drag icon and the two layouts.
+006e7c8c Sets the action's angle (+0x500), and its start angle in the early stages.
+006e7d98 Sets the action's position (+0x4ec), and its start in the early stages; shares the NPC's packed state and target in a session.
+006e9cf0 Sets the action's angle (+0x500), and its second start angle in the early stages.
+006ea210 Copies the action's target, angles and speeds into the move record and starts it; true.
+006ea318 Updates the action's timer, then calls its member callback when it has one.
+006ed200 In a session, packs the NPC's state, a new sequence number and its target position into its shared record.
 006f09d4 Picks a random item from the set bits of the item bit set, of the wanted type.
 006f14b0 Sets the bits of the category's items that pass its check (the insect flag for insects).
 006f15c4 Builds the candidate item set from the trait bytes and picks an item.
