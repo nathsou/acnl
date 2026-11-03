@@ -123,6 +123,7 @@
 00aaf140 current_player_position
 00aaf14c current_player_data
 00ab7d0c render_targets
+00abe0ac pending_effect_handles
 00ae0ab8 fatal_error_info
 00ae0b5c frd_lock
 00aed620 srv_lock

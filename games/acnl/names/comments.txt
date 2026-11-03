@@ -435,7 +435,102 @@
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
+002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
+002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
+002e0288 Sets the flag at +0x508 and mirrors it in bit 0 of the owner's +0xb7 byte.
+002e0308 Loads message `id` of group `group` into the button's text (+0x404), unless the button has no text (+0x516); id -1 leaves it.
+002e037c Moves the button's drag icon (+0x258) out of its current list and into `list` (when not null), remembering the list at +0x500.
+002e0428 When the selected state (+0x517) changes, plays (selected) or finishes (not) the animation at +0x3d4 and updates the layout.
+002e086c Finishes the animation at +0x3ac and updates the layout.
+002e08c8 Restarts the text (unless the button has none), then updates the layout.
+002e0908 Restarts the text and the animation at +0x384, stopping the button node when the list says so, and resets the timing words.
+002e0d04 Counts the used slots (bit 0 set and kind not 4) in the 16 slots of each of the 3 records, into +0xa0.
+002e173c Removes the first entry whose two bytes are (row, value) from the row's list (+0x10 + row * 0x24), else from the shared list at +0x7c.
+002e1818 Resets the candidate, counts the used slots into +0xa0 and marks the count done (+0xa1).
+002e2d24 Attaches the layouts at +0x4c4 (active) and +0x610 (inactive) to the layout system.
+002e326c Updates the object, then its layouts at +0x4c4 and +0x610.
+002e35d0 Plays (on) or finishes (off) the animation at +0x280 of the layout at +0x134 when it has one, and stores the inverse state at +0xd9 and +0x12d.
+002e43d0 Releases the handle at +0x30 once it is unlocked, then acquires a new one for the key at +0x10 from the manager at 0xa22020; true when it got one.
+002e5a4c Sets the byte at (column, row) of a 112 x 96 grid; out-of-range coordinates fall back to row or column 0.
+002e5a68 Fills the 112 x 96 grid with 0xff.
+002e5ab4 Zeroes the 112 x 96 grid (0x2a00 bytes).
+002e5af4 Stores the object's first word in the global at 0x9525d0.
+002e5b08 Releases the handle's effect (+0xc, still matching its id at +0x10): kills it when it is ready (+0x1ce), else marks it to die and queues the handle on the pending list at 0xabe0ac. True when the handle had an effect.
+002e5bec Copies the matrix into the effect (+0x12c and +0xfc), resets its scale bases (+0x15c) from defaults and recomputes its scaled size (+0x178).
+002e5ed8 Stops the handle's effect when it still has one; true when it did.
+002e5f14 Takes the handle off the pending list and forgets its effect.
+002e5f84 Sets the effect's target position (+0x1b4) and marks it moved (+0x1cd); true when the handle has an effect.
+002e5fd0 Sets the effect's vector at +0x180.
+002e6014 Sets the 8.8 fixed-point word at +0x30 of each of the effect's emitters (0x18 bytes each) from the float.
+002e6078 Sets both scale factors (+0x168) and recomputes the scaled size from the bases (+0x15c).
+002e60c4 Sets the two scale factors (+0x168) and recomputes the scaled size from the bases (+0x15c).
+002e6110 Sets the float at +0x1a0 of the effect.
+002e613c Sets the effect's ready flag (+0x1ce).
+002e6168 Sets the 8.8 fixed-point word at +0x34 of each of the effect's emitters from the float.
+002e61cc Converts the angle to a rotation (+0x18c) of the effect, marks it rotated (bit 3 of +0x14) and queues the handle when it is not pending yet.
+002e6250 Sets the float at +0x19c of the effect.
+002e627c Sets the effect's life (+0x1c0) to the maximum (on) or 0 (off).
+002e62b4 Sets the word at +0x40 of emitter `index`, or of every emitter when the index is negative.
+002e6368 Kills the handle's effect and takes the handle off the pending list.
+002e6450 Kills the handle's effect, takes the handle off the pending list and forgets the effect; true when it had one.
+002e64bc Kills the effect, clears the handle's flags and the effect's +0xf8 word.
+002e668c Reads the effect's position when the handle still has one.
+002e6808 Sets the float at +0x198 of the effect.
+002e6878 Sets the effect's rotation (+0x18c) and marks it rotated (bit 2 of +0x14).
+002e69cc Copies the 30 bytes of a ring buffer (data +0, size +4, start +8, count +0xc) in order, padding with 0xff, plus its trailing word and two bytes.
+002e6a3c Fills the 30 bytes with 0xff and clears the trailing fields.
+002e764c Stops the sound at +0x18 when the object says it is playing (+0xf4).
+002e7e20 Starts the tune player: picks the town tune (the 16 notes at +0x738 of the sound system) or, when it has fewer than 5 real notes (not 0xe or 0xf), a default tune, and resets the playback position.
+002e7f04 Plays the tune with random variations (when not repeating the plain tune).
+002e8444 Zeroes the tune player, with a 120 tempo and its 12 volumes at 100.
+002e9954 Releases the slot's sound handle (index below 0x30) and marks the slot free (-1).
+002e99d0 Initializes a free slot (-1).
+002e9a14 Releases the slot's handle and detaches it from its parent.
+002e9d08 Clears entry `index` of the four 6-byte entries at +0xc90.
+002e9d28 Clears the 50 0x30-byte records (+8), the four 6-byte entries (+0xc90), the 50 16-byte entries (+0x968) and the two counts (+0xc88).
+002e9dcc Constructs the 50 records, the 50 16-byte entries and the four 6-byte entries, then resets the 16-byte entries.
+002e9e64 Daily update of the contest ranking: resets it for a new contest, updates the schedule and sends the prizes.
+002e9fe4 Removes place `index` (0 to 2) of the ranking (identities +0x1a, 0x30-byte records +0xa4, scores +0x134, prizes +0x13a): the later places move up and the last is cleared.
+002ea0c0 Recomputes the ranking, then finishes it when it is in use (bit 0) and not locked (bit 7).
+002ea10c Removes the places whose players are no longer valid, moving the later ones up.
+002ea294 Address of the 0x30-byte record of place `index` (+0xa4); out-of-range indices give place 0.
+002ea2bc Inserts the player with `score` (below 0x400) and their prize item at the place the score earns, moving the lower places down.
+002ea430 Address of the identity of place `index` (+0x1a, 0x2e bytes each); out-of-range indices give place 0.
+002eaec8 The first Saturday at or after the time stamp (skipping a week when today is already event 0xc) on which event 0xc is held.
+002eaf8c Clears the ranking, its places and prizes, and the contest flags of every player (and their entry bits too, when asked).
+002eb0b4 Updates the contest's schedule and state from the time.
+002eb5d0 Sends the prizes of the finished contest to the ranked players by letter.
+002eba64 Address of block (x, y) of the 2 x 2 blocks of 0x400 bytes (+0x22); out-of-range gives block 0.
+002eba7c Address of number pair `index` (0 or 1) at +0x1022.
+002eba90 Sets the size to 3 x 3, resets the 3 x 3 halves, clears the four blocks and the two number pairs.
+002ebd48 Clears entry `index` (0 to 3) of the four 0x1228-byte entries.
+002ebd68 Clears the four 0x1228-byte entries.
+002ebd9c Resets each of the four 0x1228-byte entries for its index.
+002ebdd0 Runs the entry function on each of the four 0x1228-byte entries with its index and the argument.
+002ed1ec Unless locked (+0xce5), stores the value at +0x3bc, refreshes from it and restarts with the default pair.
+002edcb0 Attaches the layout at +0x270 to the layout system.
+002edccc True when the word pair at +0xc equals the default pair (0x84517c).
+002ee3a8 Releases the window's layout, its five part layouts (+0x4a4) and its extra one (+0x4b8), and resets the menu state flag.
+002ee564 Loads the item selection window's layout archive; marks it loaded (+0xce4).
+002ee91c Releases the split load's part and clears its word (+0xec); true.
+002ee990 Constructs the split load with a cleared word (+0xec).
+002ee9a4 Releases the part, clears the word and destroys the split load.
+002ee9c4 Address of 0x18-byte entry `index` at +0x6e8 of the table held by 0x94ed40.
+002ee9ec Address of 0x18-byte entry `index` at +0x10 of the table held by 0x94ed40.
+002eec34 Puts two panes of the layout at +0x2e4 at 0 and 350 and shows them, then updates the layout.
+002ef1b8 Marks the selected notice read when the player owns the slot, takes back the selection and plays the closing animation of the current tab.
+002ef27c Shows the new mark on each tab that has unread notices.
+002f3398 Sets the ready flag (0x9500e0) when the first resource is ready, or both flags when only the second one is.
+002f33e8 Releases the two resources and clears their flags.
+002f341c Resets the request record at 0xaf7618 with its default mode, allocating the 0xc8b8-byte work block (from the stage heap by default) and the local slot once; the second resource flag switches the mode.
+002f4158 Sets the mode byte (+0x19d6) for tab `index`: 0xb, 0xc, 8 or 9.
+002f4ab0 Restarts the animation of the current tab (+0x1094 + mode * 0x20) from 0 at speed 1.
+002f4d2c Finds the design edit base in the model's cloth dictionary.
+002f4dcc Finds the cloth entry in the model's cloth dictionary.
 002f6a30 Sets or clears flag 0x10 (+0xd4) and the matching mask bits of +0xc4 (0x60000 or 0x14000, chosen once).
+002f6b8c Clears bit 2 of the flags (+0xd4), sets the mode 0xc04 and the model's flag 0x10.
+002f6d18 Clears the menu state flag and notifies the state's handler (+0x1f4).
+002f6db4 Sets byte +0xd6 of each child with id `id` (all when -1) and remembers the last one at +0xb4.
 002f737c Bit `index` (fewer than 5) of the flag bytes; 0 for a larger index.
 002f73b8 Releases what the part loaded (its graphics context current while it does) and destroys the load split base part at +0x1c.
 002f7508 When `copy`, copies the four animation targets (and +0xc) of one model to another and resets their values to 0.
@@ -446,19 +541,39 @@
 002f7d68 The unsigned argument cut to the length its flags give: a char for hh (0x400), a short for h (0x100), else as it is.
 002f7d80 The quotient of r0 by 10 (by shifts and adds), the remainder in r1.
 002f7e5c The quotient of the 64-bit value (r0, r1) by 10, by shifts and adds.
+002f7ef4 Calls virtual 24 of entry `index` among the four shown from +0x2434 (0x290 bytes each, +0x18b4); out-of-page indices use entry -1.
+002f80c8 Fills the thread start record (argument, entry functions) and starts it.
+002f81e4 Stores the design of entry `index` (relative to the shown page) into the selected design storage slot.
+002f86f0 Stores the half at +0xa0 + index * 2 (index below 4) of the shared NPC info.
+002f872c Picks a random entry of the weighted table at 0x94d7b0.
 002f8bd8 The class of a double (r0, r1): 0 zero, 4 subnormal, 5 normal, 3 infinity, 7 NaN.
+002f93bc Clears the player input lock, tells the NPC manager, then sends network message 4 with the NPC's slot and the current main object, resetting the permit record.
 002f9888 The value of digit character `c` (0-9, then letters either case from 10) when it is below `base`; -1 otherwise.
+002f98a8 Refreshes the shared NPC info: the 11 values, the two selected bytes, the 10 villagers' bytes (+0x84, +0x8e) and resets the rest.
 002f99b8 Marks the stream as failed and empties its buffer.
 002f99cc Writes `size` bytes of the stream's buffer through its handle (seeking first when a read left the position elsewhere); 0 when all of it went, -1 (the stream marked failed) otherwise.
 002f9a18 Writes out what the stream's buffer holds (when it is writing) and empties it.
+002f9aa8 Zeroes the shared NPC info, with its byte ring cleared and its four halves at the default.
+002fa47c Empties the record's string, sets its ids (+0xc8 to +0xfc) to -1 and its item to empty.
 002fa5b0 Whether `value` is one of the `count` 16-bit values: !negate when it is, negate when it is not.
+002fae74 Points the object at the shared record at 0xaf7f3c.
+002fb4d8 Places the item in the world or swaps it with a pocket or storage slot, by the item's category.
+002fb7b0 Releases flag-manager flag 0x24 when the record holds it (bit 2 of +0x79), clearing bits 1 and 2.
+002fbf60 Starts the task at 0x2fbf7c with argument 1.
+002fc194 Zeroes the record's bytes and identity (+0x16), with its index bytes at 0xff and its two ids at -1.
 002fc2a4 Adds to the set (one bit per item id, up to 0x172b) every item of `kind` (its data's byte 0xd); kinds 1-8 add fixed groups through ItemSet__add_group.
+002fc948 The map of the current map index (0x952b9d), else the shared default map at 0xa14860 (constructed once).
+002fcc54 Switches the model's animation to kind `kind` (below 0x16, names at 0x953a94) when it changes, and restores its toggle mode.
+002fd11c Clears the cells whose block kind is in the list (or of categories 0x24 and 0x28).
 002fd41c Whether (word r0, signed bytes 0 and 1 of r1) is not less than (word r3, the same bytes of the stack argument), compared in that order.
 002fdd50 Finds set bit number `n` in 0x140 16-bit words, keeping the position in `cursor` (word index, bit, and an x/y position 16 bits to a row, 0x60 wide); true when found.
+002ff1cc Daily update of the second contest ranking: resets it for a new contest, updates the schedule and sends the prizes.
 002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.
 002ff408 Clears a letter: header, the opening line (0x42 bytes), the body (0x182 bytes), the closing line (0x42 bytes), flags, and an empty attached item.
 002ff4d4 Checks one of nine item properties (`property`, 0-8; with an option flag) of an item.
 002ff724 Removes entry `index` of the best three by moving the later ones up, and clears the last.
+002ff864 Recomputes the second ranking, then finishes it when it is in use (bit 0) and not locked (bit 7).
+002ff950 Removes the places whose players are no longer valid, moving the later ones up.
 002ffde0 The 0x30-byte record of entry `index` of the best three; the first's for a larger index.
 002ffdf4 Puts (identity, record, item) with `score` into the best three (scores at +0x138, +0x13a, +0x13c, best first), moving the lower ones down; nothing when it scores no better than the third.
 002fff68 The identity (0x2e bytes) of entry `index` of the best three; the first's for a larger index.
