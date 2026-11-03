@@ -131,6 +131,7 @@
 0010193a r2@entry count
 0010193a r4@101940 left
 0010193a r5@10193c cursor
+00101978 r0@101986 c
 00101978 r0@101988 ca
 00101978 r0@101992 cb
 00101978 r0@101996 difference
@@ -138,6 +139,7 @@
 00101978 r1@entry b
 00101978 r5@entry i
 00101978 r6@entry a_at
+00101a1e r0@entry c
 00101a2c r0@101a48 written
 00101a2c r0@entry buffer
 00101a2c r1@entry size
@@ -277,6 +279,8 @@
 0010b9b0 r0@entry room_layout
 0010beb8 r0@10bec0 save_data_2
 0010bf48 r0@10bf50 save_data_2
+0010c228 r0@10c228 shared_string
+0010c234 r0@10c238 shared_string
 0010c6b0 r0@entry ac_npc
 0010c764 r0@10c782 player_record4c
 0010cbd4 arg0 villager_part
@@ -461,6 +465,7 @@
 0011bcfc r0@11bd38 length
 0011bcfc r0@11bd40 length_2
 0011bcfc r0@11bd48 block
+0011bfe2 r0@11bfe6 shared_string
 0011c220 r0@11c270 locale_holder
 0011c464 r0@entry shared_string
 0011c614 arg0 shared_string
@@ -761,6 +766,7 @@
 0013b6e0 r0@entry sound_player
 0013b6e0 r5@13b6e8 lock
 0013b8e0 arg0 critical_section
+0013b8e0 r1@entry singleton_disposer
 0013b910 arg0 audio_fx_memory_mgr
 0013b92c arg0 thread
 0013b92c r1@entry heap
@@ -981,6 +987,7 @@
 001a77a0 r0@1a77f0 is_item_4
 001a77a0 r0@1a7800 number_2
 001a8ddc arg0 callback_table
+001a8ddc r12@1a8de4 key1
 001a9368 arg0 record1c
 001a998c r0@1a9a08 block_4
 001a998c r0@1a9a6c block_3
@@ -1061,6 +1068,7 @@
 001b23ac r0@entry item_slots16
 001b23f0 arg0 word_fix_9u
 001b23f0 r0@1b25a0 player_2
+001b23f0 r10@entry letter
 001b264c arg0 record200
 001b266c arg0 record200
 001b2690 arg0 work_data
@@ -1476,9 +1484,12 @@
 00225948 r0@entry field_item_fx
 00225984 r0@225998 save_data_2
 00225984 r0@225a08 map_2
+00225984 r0@225b34 string_pool
 00225984 r0@entry field_item_fx
 00226828 r0@226834 map_2
 00226828 r0@226898 cell_2
+00226828 r2@226930 map
+00226828 r2@226948 map_10
 00226ee8 r0@entry model_pair
 00228dec arg0 bs_strc_catalog
 00229c50 r0@229c84 weather_2
@@ -1644,6 +1655,7 @@
 00246934 arg0 sound_obj_river
 00246934 r0@24693c slot_table60
 002469c4 arg0 sound_obj_river
+002469c4 r0@2469d0 slot_table60
 002469c4 r0@entry sound_obj_base
 00246b90 arg0 sound_obj_river
 00246b90 r0@246bb4 slot_table60
@@ -1725,6 +1737,7 @@
 00250b58 r0@250b68 position_3
 00250b58 r0@250bcc position_4
 00250b58 r0@250bf0 data_base_2
+00250b58 r0@250cf0 string_pool
 00250b58 r0@entry fish_mgr
 00250b58 r11@entry two_bit_flags6
 00251690 arg0 object
@@ -2107,6 +2120,7 @@
 002b1ea0 r0@entry map_screen
 002b2924 arg0 map_screen
 002b315c arg0 map_screen
+002b315c r0@2b31e0 source
 002b315c r6@2b3194 message_window
 002b39d0 arg0 map_screen
 002b3a50 arg0 bs_menu_map_village
@@ -2541,6 +2555,7 @@
 002fb4d8 r0@2fb61a map_3
 002fb4d8 r0@2fb630 item_5
 002fb4d8 r0@2fb638 category_11
+002fb4d8 r0@2fb640 map
 002fb4d8 r0@2fb656 item_6
 002fb4d8 r0@2fb65e category_12
 002fb4d8 r0@2fb690 map_4
@@ -2812,6 +2827,7 @@
 00318f18 arg0 scheduled_stamp
 00319568 r0@31956e save_data_2
 00319568 r5@entry bit_table
+00319aa4 r0@319ab0 scene
 00319aa4 r0@entry bit_table
 00319aa4 r2@entry layer
 0031a334 r0@31a358 data_base_3
@@ -3007,8 +3023,12 @@
 003357cc r0@entry versatile_flow_talk_recept
 00338d48 r0@338de4 view
 0033a7a4 arg0 bs_menu_best_friend_register
+0033b748 r1@entry source
 0033b748 r5@33b76c label_pair
 0033d150 arg1 date
+0033d150 r1@33d180 year
+0033d150 r1@33d194 month
+0033d150 r1@33d1a8 day
 0033dab8 r0@entry badge_window
 0033db9c arg0 badge_window
 0033db9c r0@33dba8 player_2
@@ -3075,6 +3095,7 @@
 004e2504 r0@entry x
 004e2504 r10@entry neighbour_offsets
 004e2504 r1@entry z
+004e2504 r3@4e2598 map
 004e2504 r4@entry direction
 004e2504 r8@4e2540 nx
 004e2504 r9@4e2544 nz
@@ -3128,6 +3149,7 @@
 004e5818 r1@entry x
 004e5818 r2@entry z
 004e5924 r0@4e599c position_2
+004e5924 r6@entry layer
 004e5924 r9@4e5a40 bit_table
 004e5b74 r0@4e5ba0 map_2
 004e5b74 r0@4e5c04 is_empty_2
@@ -3325,6 +3347,7 @@
 0050ed5c r0@entry header
 0050f004 arg0 net_game
 0050f118 arg0 net_game
+0050f118 r0@entry header
 00510878 arg0 online_client
 00510b68 r0@entry online_session
 0051139c r0@entry online_session
@@ -3351,6 +3374,7 @@
 005166a8 arg0 net_clock
 005166a8 arg1 net_address_set
 005182f4 arg0 block
+005182f4 r0@518310 notification_event_handler
 005183e0 arg0 online_component
 005183e0 r0@518420 block_2
 005183e0 r0@51842c net_clock
@@ -3409,6 +3433,7 @@
 0051fb04 r0@51fb1c villager_record_2
 0051fc14 r0@entry resource_table
 0051fc14 r1@entry string_pool
+0051fc14 r2@entry notice
 00520bec r0@entry string_pool
 00520ce8 r0@entry resource_table
 00520d5c arg0 list
@@ -3543,6 +3568,7 @@
 0052e294 r1@52e2b8 angle_x
 0052e294 r2@entry angle_y
 0052e32c arg0 matrix34
+0052e32c arg2 angle_y
 0052e5ac arg0 npc_action
 0052ed04 arg0 grid_point
 0052ed04 arg1 tile
@@ -3571,6 +3597,7 @@
 005374f0 arg0 exhibition_park
 005374f0 r0@537524 save_data_3
 005374f0 r0@537598 save_data_4
+005374f0 r0@53760c park_entry
 005377fc r0@53781c save_data_2
 005377fc r0@entry exhibition_park
 0053784c r0@entry exhibition_park
@@ -3578,6 +3605,7 @@
 005378e4 r0@entry exhibition_park
 00537ce0 arg0 owned_buffer
 00537d70 r0@entry ptr_pool
+00537d70 r4@entry capacity
 00537dd8 arg0 ptr_pool
 00537e0c arg0 owned_buffer
 00537e98 r0@entry ptr_array
@@ -3813,6 +3841,7 @@
 0057b990 arg0 actor_rec
 0057b990 r1@57b9d0 rotation_z
 0057b9dc r0@entry string_pool
+0057b9dc r1@entry talk
 0057bd78 arg0 pair8
 0057bd94 arg0 npc_entry
 0057d55c arg0 ac_npc
@@ -3824,9 +3853,11 @@
 00581050 r0@581074 block_2
 005810ac r0@58110c block_2
 005810ac r0@entry block_map
+005810ac r1@entry grid_map
 005810ac r4@entry grid_rect
 005812ec arg0 map
 005812ec r0@58131c block_2
+005812ec r1@entry grid_map
 00581354 arg0 map
 00581354 r1@entry item
 00581354 r5@5813a4 x
@@ -3880,6 +3911,7 @@
 0058bb2c arg0 opus_base
 0058bc3c arg0 ac_npc_sp_resetsan
 0058bc7c r0@entry bgm_param_list
+0058bc7c r2@entry sound_id
 0058be00 r0@entry bgm_param_list
 0058c08c arg0 ev_opus_cleaning
 0058c90c r0@entry self_flag_manager
@@ -4100,6 +4132,7 @@
 005a6b8c arg0 photo_name
 005a7910 r0@5a792c picture_record
 005a7910 r0@entry picture_db
+005a7aa8 r2@entry upper
 005a7f70 r0@5a7fd4 text
 005a7f70 r0@5a7fe0 extension
 005a7f70 r0@entry picture_db
@@ -4325,6 +4358,7 @@
 005c0da0 r0@5c0db4 object_2
 005c0e0c arg0 player
 005c111c r0@5c1154 object_2
+005c1198 r0@5c11c4 player
 005c121c r0@5c1228 object_2
 005c1428 r0@5c143c object_2
 005c159c r0@5c15a8 object_2
@@ -4341,6 +4375,7 @@
 005c2224 r0@5c2230 object_2
 005c2298 r0@5c22a4 object_2
 005c22dc r0@5c22f4 object_2
+005c22dc r0@entry catch_mgr
 005c23c4 r0@5c23d8 object_2
 005c257c r0@5c25a4 random_2
 005c257c r0@entry player
@@ -4351,6 +4386,7 @@
 005c2e40 r0@5c2e54 object_2
 005c2f70 r0@5c2f80 object_2
 005c305c r0@5c3070 object_2
+005c305c r0@entry catch_mgr
 005c30a0 r0@5c30c0 object_2
 005c30a0 r0@5c30e4 category_2
 005c311c r0@5c3148 object_2
@@ -4720,7 +4756,10 @@
 0061a71c arg0 slot_blocks
 0061a7b0 arg0 net_peer
 0061a7cc arg0 net_peer
+0061a810 r0@61a868 net_link
 0061d9e0 r0@entry net_guest
+0061dae4 r0@entry net_guest
+0061dae4 r6@61db9c villager_table
 0061dc30 r0@entry net_guest
 0061de7c arg0 net_guest
 0061df58 arg0 net_guest
@@ -4740,6 +4779,7 @@
 0061f608 arg0 net_guest
 0061f6a0 arg0 net_guest
 0061fc98 arg0 net_guest
+0061fd68 r0@61fdc4 net_link
 00620660 r1@entry slot
 00620678 r1@entry slot
 00620678 r2@entry value
@@ -4778,6 +4818,7 @@
 006235cc arg0 net_visit
 006237ec arg0 net_visit
 006237ec r1@623804 slot
+006238d0 r1@entry room_timers
 006239fc arg0 net_visit
 00623bb4 arg0 confirm_machine
 00623c3c r0@entry station_buffers
@@ -4795,6 +4836,7 @@
 00623dcc arg0 buffers
 00623e3c arg0 buffers
 00624600 arg0 net_visit
+0062463c r5@624650 room_timers
 00624814 arg0 net_visit
 00624f30 arg0 station_buffers
 00624f30 r1@entry own
@@ -4819,6 +4861,7 @@
 006265d0 arg0 small_payload
 0062697c arg0 room_timers
 00626bd8 arg1 station_mask
+00626bd8 r0@626c04 count
 00626bd8 r0@626c14 draw_flags
 00626bd8 r0@entry room_timers
 00626cbc arg0 net_peer
@@ -4946,15 +4989,18 @@
 0064f3b4 arg0 slot_object
 006502a8 arg0 slot_object
 00650310 arg0 slot_object
+00650310 r0@65031c flags_17a
 006512e8 r0@651344 is_item_2
 006515ec r0@6515f0 player_2
 0065179c arg0 slot_object
+0065179c r0@6517a4 state_1a9
 006518d8 r0@6518e4 params_2
 006518d8 r0@entry player
 00651928 r0@651938 params_2
 00651928 r0@entry player
 006519c8 arg0 slot_object
 006531d0 arg0 slot_object
+00653724 r0@653764 string_pool
 00653888 r0@6538a0 params_2
 00653888 r0@entry player
 006538e0 r0@entry slot_object
@@ -4982,6 +5028,7 @@
 006579a8 r0@6579c0 params_2
 006579a8 r0@entry player
 00659674 r0@entry grass_wear
+00659674 r4@659690 field_objects
 00659d14 r0@659d2c params_2
 00659d14 r0@entry player
 00659e34 r0@659e4c params_2
@@ -5036,6 +5083,7 @@
 0066a1d0 arg0 ac_player
 0066a1d0 r3@entry item
 0066a2c8 arg0 slot_object
+0066a2c8 r0@66a2d4 effect_slot_ref
 0066a554 arg0 ac_player
 0066aa7c arg0 ac_player
 0066aac0 r0@66aadc params_2
@@ -5098,6 +5146,7 @@
 0067bda8 arg0 ac_player
 0067e900 arg0 ac_player
 0067e9e8 r0@entry event_npc
+0067e9e8 r1@entry ac_player_rec
 0067eb40 arg0 ac_player
 0067ee38 r0@67ee50 params_2
 0067ee38 r0@entry ac_player
@@ -5181,6 +5230,7 @@
 006904b4 arg0 furniture_placement
 006904b4 r0@6904c8 item_data_2
 006904b4 r0@6904f8 scene
+006904b4 r0@690530 string_pool
 00691210 r0@entry ac_player
 0069125c r0@69126c room_grid
 0069125c r0@691278 ac_ftr_audio
@@ -5194,6 +5244,7 @@
 00691cb4 r0@691de0 ac_npc_rec
 00691cb4 r0@691e84 room_grid
 00691cb4 r0@entry ac_player
+00691cb4 r1@691e2c room_furniture
 00694178 arg0 bit_pool
 0069438c arg0 cloud_model
 00694918 arg0 page_tabs
@@ -5204,6 +5255,7 @@
 00694b54 r0@694ba0 pane_4
 006953b8 arg0 page_tabs
 00695584 arg0 object_list
+00695584 r1@entry string_pool
 00695ce4 r0@entry scene
 0069697c r0@696980 data_base_2
 0069697c r0@696a0c player_2
@@ -5236,7 +5288,9 @@
 0069aec4 r0@entry event
 0069b0ac arg0 event
 0069b0ac r0@69b0d0 player_2
+0069b0ac r0@69b37c string_pool
 0069b3f0 arg0 event
+0069b3f0 r0@69b544 string_pool
 0069c838 r0@69c83c player_2
 0069c838 r0@entry event
 0069f26c r0@69f278 player_2
@@ -5250,6 +5304,7 @@
 006a04c4 r0@6a0544 valid_villager_4
 006a04c4 r7@entry villagers
 006a0848 r0@6a086c player_2
+006a0848 r0@6a0934 string_pool
 006a0ecc r0@6a0f04 data_base_2
 006a0ecc r0@6a0f08 records_2
 006a0ecc r0@6a0f24 save_data_3
@@ -5717,6 +5772,7 @@
 006fb50c r0@6fb55c data_base_4
 006fb50c r0@6fb5cc data_base_3
 006fb50c r0@6fb5d8 records_2
+006fb50c r2@entry map_10
 006fb50c r5@6fb538 item
 006fb604 r0@6fb628 item_2
 006fc854 r0@6fc890 cell
@@ -5914,6 +5970,7 @@
 007179a0 r0@7179b0 map_2
 007179a0 r0@7179e0 place_structure
 00718e20 arg0 search_cand_core
+00718e20 r3@entry count
 00718e20 search_cand_core core
 0071a310 r0@71a370 crc_2
 0071a310 r0@entry players
@@ -6163,6 +6220,7 @@
 00757160 arg0 record
 00757160 r0@757164 id
 007571a0 arg0 saved_record_inner
+007571a0 r1@7571a8 value
 007573c0 r0@7573d8 is_villager_2
 00757b34 arg0 position
 00757b34 arg1 record
@@ -6171,7 +6229,10 @@
 00757c1c r0@entry save_data
 00757c3c r0@entry save_data
 00757c74 arg0 date
+00757c74 r1@757c9c year
 00757c74 r1@entry time
+00757c74 r2@757c98 month
+00757c74 r3@757c94 day
 00757cc0 arg0 town_part
 00757f08 r0@757f60 crc_2
 00757f08 r0@entry town_part
@@ -6234,6 +6295,7 @@
 0075ef68 arg0 net_address
 0075ef68 r0@75ef8c link_sub
 0075f020 arg0 net_part
+0075f448 r0@75f47c net_address
 0075f644 r0@entry net_players
 0075f728 arg0 net_part
 0075f780 arg0 locked_value
@@ -6288,6 +6350,7 @@
 00763770 r0@763790 item
 00763c44 r0@entry slot_object
 00763d80 r0@entry slot_object
+00763d80 r1@entry ac_player_rec
 00764500 arg0 ac_player
 00764500 r0@76456c ground_height_2
 00764500 r0@764574 room_grid
@@ -6306,6 +6369,7 @@
 0076538c arg1 x
 0076538c arg2 z
 0076538c arg3 position
+0076538c r0@7653fc grid
 0076538c slot_object object
 007654a8 r0@7654d0 number_2
 00765518 r0@765524 player_2

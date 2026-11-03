@@ -82,7 +82,11 @@ def rename_draft(text, addr, names):
     # checks: identifiers, and no two names (old or new) the same
     if not all(valid(v) for v in mapping.values()):
         return text, 'invalid name'
-    final = [mapping.get(w, w) for w in present]
+    # (members are names of their own: a local may have a field's name, so the check leaves out the struct definitions,
+    # their GUEST_OFFSET checks and the words after `->` and `.`)
+    code = re.sub(r'//[^\n]*', '', text)
+    code = re.sub(r'struct (?:__attribute__\(\(packed\)\) )?\w+ \{\n(?:[^\n]*\n)*?\}|GUEST_OFFSET\([^\n]*', '', code)
+    final = [mapping.get(w, w) for w in set(re.findall(r'(?<!->)(?<!\.)\b[A-Za-z_]\w*', code))]
     if len(set(final)) != len(final):
         return text, 'collision'
     # (the first line, `// f_<address>: decompiled ...`, stays: it marks the draft; so does the `// keys:` line under

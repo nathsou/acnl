@@ -197,7 +197,11 @@
 00952b9d map_default_kind
 00952c38 no_device_heap
 00952c3c stage_heap
+00952c40 village_season_heap
+00952c44 vr_box_heap
 00952c48 weather_heap
+00952c4c field_heap
+00952c50 island_field_heap
 00952c54 real_estate_heap
 00952c5c strc_heap
 00952c60 my_design_work_heap
@@ -209,10 +213,15 @@
 00952c7c fader_heap
 00952c80 ugc_heap
 00952c84 script_heap
+00952c88 font_heap
+00952c8c photo_heap
+00952c90 save_heap
 00952c94 sound_heap
 00952c98 sound_ext_stage_heap
 00952c9c net_heap
 00952ca0 net_game_heap
+00952ca4 exhibition_park_heap
+00952ca8 dll_heap
 00952cac work_heap
 00952cc0 home_btn_prohibition_instance
 0095321c words_95321c

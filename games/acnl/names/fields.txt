@@ -4954,6 +4954,7 @@ Local_0055ed48@ea@55eda4 4 resource_mgr
 Local_0055fcf4@r0@55fdf0 0 vtable
 Local_005810ac@ea@5810ac 0 block_map
 Local_005810ac@ea@5810ac 10 grid_rect
+Local_005810ac@ea@5810ac 4 grid_map
 Local_005822c4@r0@5822f4 0 vtable
 Local_0058b6fc@r1@58b710 8 sound_id
 Local_0058b6fc@r1@58b710 c fade
