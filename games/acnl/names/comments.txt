@@ -2848,6 +2848,7 @@
 00309a3c Jumps to demote_kind_2_item.
 00309a40 Jumps to Item__is_in_category_list_a.
 00309a44 True when the villager's birthday (month and day of its table entry) is the given day (today when null).
+00309ac8 Whether a shop (arg 0, below 8) is open at a time (arg 1, else now): by its opening hours (the longer \n hours when upgraded), with the event exceptions; never in net mode 3.
 00309bb8 Jumps to store_word_constant_pack_0xc.
 00309bbc Forwards to the function at 0x5e90cc.
 00309bd4 Whether the day's check of the kind allows it (not on a visit, and the counter for today).
@@ -5335,6 +5336,7 @@
 006216d0 Sends the visit state records for the stations in the mask.
 00621b98 Handles a station's state as the host: records it in the station mask and sends the answer records.
 00621cf4 Initializes the station's parts.
+00621da4 Activates a station slot and, when the session station takes over another one, tells the other stations \n both slots' new states.
 006220f8 Constructs a net confirmation state machine: no station, its three flag pairs cleared.
 00622158 Returns at once.
 0062217c Stores the current player's short id (or clears it), resets the peer table (006221e4) and marks it ready (+0x42aa).

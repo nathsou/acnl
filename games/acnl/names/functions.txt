@@ -6580,7 +6580,7 @@
 00309a3c demote_kind_2_item_veneer
 00309a40 Item__is_in_category_list_a_veneer
 00309a44 villager_birthday_is_on
-00309ac8 villager_check_309ac8
+00309ac8 shop_is_open_at
 00309bb8 store_word_constant_pack_0xc_veneer
 00309bbc call_005e90cc_veneer
 00309bd4 DailyCheck__allows

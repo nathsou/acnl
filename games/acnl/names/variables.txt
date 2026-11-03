@@ -3333,7 +3333,6 @@
 00309ac8 r0@309b24 now_3
 00309ac8 r0@309b30 save_data_2
 00309ac8 r0@309b88 now_4
-00309ac8 r0@entry valid_villager
 0030a390 arg0 villager
 0030a390 r0@30a410 data_base
 0030a390 r0@30a414 records
