@@ -22760,7 +22760,7 @@
 0075b810 script__ContainTagEngine__ContainTagEngine
 0075b8a0 script__WordCPtr__virtual_10
 0075b8a8 script__WordCPtr__virtual_11
-0075b8b0 script__CmpEngine__CmpEngine_0075b8b0
+0075b8b0 find_talk_label
 0075b93c field_equals_4_u32_0xa_75b93c
 0075b950 script__Insert__virtual_162
 0075b968 script__Insert__virtual_152
@@ -22932,7 +22932,7 @@
 0075e23c word_11ae0
 0075e260 entry_188_at
 0075e274 netgame__MatchingList__ScanBuf__virtual_3
-0075e2fc part_value
+0075e2fc free_station_slot
 0075e35c part_test
 0075e38c station_entry_id
 0075e410 all_stations_in_bits

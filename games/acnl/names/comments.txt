@@ -594,6 +594,8 @@
 0012fee4 Sends command 0x17 (header 0x170000) to the service of the given handle and returns its result.
 0012ff0c Sends command 0xb (header 0xb0040) to the service of the given handle and returns its result.
 0012ff6c Sends command 2 with the buffer to the service.
+0012ffcc Locks the segment hooks.
+0012ffdc Unlocks the segment hooks.
 00130054 Calls 00128c0c on the object at 0x97d7e0.
 0013028c Sends command 0x4b with its buffers to the service.
 00130360 Sends command 0xf (header 0xf0100) to the service at 0x97d7f8 and returns its result.
@@ -1529,6 +1531,7 @@
 0022c5d8 Destroys a drag icon group's seven layout animations.
 0022c720 Stops the current animation and starts animation 0 to 3 from zero.
 0022c7c8 Constructs an explanation window: an in-and-out window with two more animations.
+0022c87c Destroys an explanation window: its four animations and its layout.
 0022d64c Refreshes the map screen's grid of structures.
 0022d734 Clears the counter (0xa182f8) and reseeds the random state at 0xa182fc.
 0022d74c Writes the letter (header, body, footer) from the message and the sender, numbering its paper when asked; clears it when it failed.
@@ -2014,6 +2017,7 @@
 002b7938 Constructs a rental change window with one button: an archive accessor, a layout with two animations.
 002b79e8 Destroys a rental change window with one button: its button, animations, layout and archive reader.
 002b7cb0 Updates the layout at +4 and attaches it to the layout system.
+002b7cd4 Loads the common button position layout archive.
 002b7fa0 The index of the first clear bit of the 32 bits at 0x952aec; 0 when all are set.
 002b8044 Sets the record's four words and takes a free slot index.
 002b8090 Sets the button's scale and position from the camera.
@@ -2179,6 +2183,7 @@
 002da33c Plays the window's in animation from 0 and marks it opening; true.
 002da424 While animating, advances the in (or out) animation until its slot is done, then stops it (releasing the button after the out animation) and marks it settled.
 002db05c Refreshes entry `index` (below 10): renders the current player's pattern of the slot into its texture and shows it by its type.
+002dfbf0 Calls the button action node's virtual 7 (with zeros).
 002dfe08 Sets up the icon set's three icons with their values.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
 002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
@@ -6409,6 +6414,7 @@
 0075b438 Byte +7 of the condition data when it is below 3, else 0.
 0075b450 Whether byte +1 of the condition data is 1.
 0075b558 The value (table 0x890f12) of the kind (+4, or the first byte of +0 when +4 is out of range); 0 when out of range.
+0075b8b0 Finds a talk script's label (arg 1) in a message (arg 0) with a temporary comparing message engine.
 0075bdac The number of messages of the archive called `name` (under its lock), 0 when there is none.
 0075be20 Gives the message `index` of the archive called `name` as a reference (the empty text when there is none); true when found.
 0075bfc0 The data of message `index` of the archive called `name` (under its lock), or 0.
@@ -6446,6 +6452,7 @@
 0075e208 Whether the id is 0 or one of the three words at +0.
 0075e23c Word +0x11ae0.
 0075e260 The address of 0xbc-byte entry `index` from +0x10.
+0075e2fc The first of four station slots the table leaves free (4 when none), offline; online, the object's slot.
 0075e38c The entry id of the visitor's station (or of the first station without an entry when there is no session station); 0xa5 when none.
 0075e448 Whether, without a session station, one of the four stations has a free entry.
 0075e4a0 Whether the peer found for `id` has a recorded address (+0x3860 table, under the lock) that matches; true when found.
