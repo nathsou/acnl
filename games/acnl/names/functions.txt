@@ -12675,6 +12675,7 @@
 0053ad90 pead__Heap__virtual_21
 0053ad94 Heap__remove_child
 0053adf4 ResourceCache__find
+0053aef0 ExpHeap__set_flags
 0053af90 ExpHeap__destroy
 0053b040 pead__SafeStringBase_char___SafeStringBase_0053b040
 0053b18c pead__Heap__deleting_destructor
@@ -12710,6 +12711,7 @@
 0053c2f8 pead__ExpHeap__virtual_22
 0053c300 ExpHeap__allocate_head
 0053c568 ExpHeap__allocate_tail
+0053c7b8 ExpHeap__free_all
 0053c84c pead__ExpHeap__virtual_5
 0053ca20 pead__ExpHeap__virtual_4
 0053ca90 pead__ExpHeap__virtual_10
@@ -12724,6 +12726,7 @@
 0053d230 IntrusiveList__clear_b
 0053d268 insert_node_after_0053d268
 0053d284 unlink_node_0053d284
+0053d2b4 Tick__now
 0053d2cc crc16
 0053d3b0 crc32_b
 0053d490 pead__IDisposer__IDisposer
@@ -12890,6 +12893,7 @@
 00541820 sead__FaderTaskBase__virtual_15
 00541888 sead__FaderTaskBase__virtual_17
 00541890 sead__FaderTaskBase__virtual_8
+005418f8 ResourceMgr__unload
 005419dc sead__FaderTaskBase__virtual_20
 005419f0 sead__FaderTaskBase__virtual_24
 00541b10 sead__FaderTaskBase__virtual_12
@@ -12901,6 +12905,8 @@
 005421bc sead__FaderTaskBase__destructor
 00542260 sead__FileDeviceMgr__SingletonDisposer___deleting_destructor
 005422e0 sead__FileDeviceMgr__SingletonDisposer___destructor
+00542358 FileDevice__open
+005423b8 FileDevice__close
 00542400 sead__GameFramework__virtual_20
 00542404 sead__GameFramework__virtual_15
 00542408 sead__GameFramework__virtual_17
@@ -13333,13 +13339,19 @@
 0054d700 sead__FrameHeap__virtual_24
 0054d910 sead__Heap__deleting_destructor
 0054d93c sead__Heap__destructor
+0054d964 EmitterSet__kill
 0054da14 ResourceSet__find_by_id
+0054da5c EmitterSet__set_matrix
 0054dd5c sead__SafeStringBase_char___SafeStringBase_0054dd5c
 0054e05c sead__ptcl__PtclEditor__virtual_3
 0054e0c8 sead__ptcl__PtclEditor__PtclEditor
 0054e40c sead__ptcl__PtclEditor__virtual_2
 0054e41c sead__ptcl__PtclEditor__deleting_destructor
+0054ee44 EffectSystem__release_resource
+0054ee94 EffectSystem__load_resource
 0054f804 EffectSystem__notify_emitter
+0054f994 EffectSystem__has_resource
+0054fbb0 EffectSystem__create_emitter_set
 005500a0 EffectSystem__alloc_emitter
 00550204 EffectSystem__create_emitter_at
 0055030c EffectSystem__warn
@@ -13354,6 +13366,7 @@
 0055224c particle_jitter_command
 00552810 move_vector_towards
 005547e0 Emitter__matrix
+005547f8 Emitter__reset
 00554a64 sead__ptcl__PtclPreview__PtclPreview
 00554be4 sead__ptcl__PtclPreview__deleting_destructor
 00554c04 sead__ptcl__PtclPreview__destructor
@@ -13372,8 +13385,10 @@
 00555824 EffectRenderer__write_state_commands
 00555f90 EffectRenderer__write_matrix_commands
 00556050 EffectSystem__renderer_begin
+00556058 EffectRenderer__begin
 00556094 EffectRenderer__copy_setup_commands
 00556128 EffectRenderer__write_light_commands
+00556a90 EmitterSet__draw_emitters
 00556bb0 sead__FixedSafeString_64___FixedSafeString_00556bb0
 00556d80 EffectResource__relocate
 00556ea0 EffectResource__set_emitter_data
@@ -13389,6 +13404,7 @@
 00559f20 sead__SafeStringBase_char___SafeStringBase_00559f20
 0055ac84 sead__ptcl__EmitterSimpleGPUCalc__virtual_0
 0055b6e0 EmitterSet__draw
+0055b898 ParticleShader__fill_index_buffer
 0055ba48 random_unit_float
 0055badc ParticleShader__bind_uniforms
 0055bc90 ParticleShader__setup_vertex_buffers
@@ -13443,6 +13459,7 @@
 0055eb58 sead__DelegateEvent_sead__TaskBase____TaskBase___0055eb58
 0055ed48 ResourceMgr__start_load
 0055ee18 sead__DelegateEvent_sead__TaskBase____TaskBase___0055ee18
+0055f0e4 ResourceTask__finish
 0055f1ac ResourceTask__try_finish
 0055f4dc sead__DelegateEvent_sead__TaskBase____TaskBase___0055f4dc
 0055f900 int__0055f900
@@ -13470,7 +13487,9 @@
 00560990 sead__TaskBase__deleting_destructor
 00560a20 sead__TaskBase__destructor
 00560aa8 TreeNode__unlink
+00560b0c TreeNode__append_child
 00560b6c TreeNode__append_child
+00560bac TreeNode__unlink_children
 00560bec TreeNode__clear
 00560c44 RootTask__virtual_7
 00560cb8 RootTask__virtual_16
@@ -13492,6 +13511,7 @@
 005610e8 sead__UnitHeap__virtual_6
 00561204 sead__UnitHeap__deleting_destructor
 00561234 sead__UnitHeap__destructor
+00561264 Viewport__apply_rotation
 00561310 sead__Viewport__Viewport_00561310
 00561364 sead__Viewport__Viewport_00561364
 00561480 sead__Viewport__deleting_destructor
@@ -13505,6 +13525,7 @@
 005615f8 sead__FrameHeap__virtual_4
 0056164c sead__FrameHeap__virtual_11
 005616dc sead__FrameHeap__virtual_6
+00561900 Viewport__set
 00561ab8 sead__FrameHeap__deleting_destructor
 00561ae8 sead__FrameHeap__destructor
 00561b18 sead__Framework__virtual_13
@@ -13589,6 +13610,7 @@
 00567684 Matrix34__rotate_y_x_z
 005676b8 Matrix34__rotate_z
 005677bc Matrix34__set_rotation_z_then_y_x
+00567a10 Layout__set_priority
 00567a80 ssys__ma__lyt__LayoutList__virtual_2
 00567ab0 ssys__ma__lyt__LayoutList__deleting_destructor
 00567ab4 ssys__ma__lyt__LayoutList__destructor
@@ -13605,6 +13627,7 @@
 00567d9c sead__SafeStringBase_char___SafeStringBase_00567dac_veneer
 00567dac sead__SafeStringBase_char___SafeStringBase_00567dac
 00567e24 load_layout_archive
+00567e34 Layout__build
 00567ebc ssys__ma__lyt__ArcResAccReader__deleting_destructor
 00567ef0 ssys__ma__lyt__ArcResAccReader__destructor
 00567f20 call_virtual_2_of_word_4
@@ -13617,17 +13640,20 @@
 0056853c ssys__ma__lyt__ArcResourceAccessorVRAM__destructor
 00568630 notify_objects_of_list
 00568688 BadgeExplainWindow__virtual_4
+00568690 Layout__update_animations
 0056878c LayoutObjectWithChild__forward_to_child
 005687a0 ssys__ma__lyt__Layout__virtual_6
 00568984 notify_list_objects
 00568a24 find_of_type_a
 00568a80 find_of_type_b
+00568adc Layout__find_button
 00568b38 LayoutList__take
 00568c10 Layout__virtual_3
 00568ebc Layout__virtual_2
 00569184 Layout__virtual_4
 005692b0 Layout__virtual_5
 005692b4 ssys__ma__lyt__Layout__virtual_5
+0056939c LayoutButton__start_animation
 00569420 notify_object_00569420
 00569434 ssys__ma__lyt__Layout__deleting_destructor
 00569480 ssys__ma__lyt__Layout__destructor
@@ -13731,6 +13757,7 @@
 0056c6f0 flag_bit_2_of_95c4d2
 0056c76c year_cycle_index
 0056c7b0 GameClock__set_flag_4
+0056c7c8 TimeLimit__check_clock
 0056ca10 game_time_advanced
 0056ca68 make_time
 0056caac nanoseconds_of_date_time
@@ -13750,6 +13777,7 @@
 0056d0fc current_season
 0056d19c set_reference_time
 0056d230 set_clock_from_span
+0056d2ec TextBox__set_player_town
 0056d374 TextBox__set_player_name
 0056d488 TextBox__set_word_9
 0056d4f0 script__WordFix_25u___WordFix
@@ -13763,6 +13791,7 @@
 0056daa8 Message__set_special_npc_name
 0056dd60 script__WordFix_11u___WordFix_0056dd60
 0056dd80 script__WordFix_33u___WordFix_0056dd80
+0056de54 TextBox__set_word
 0056e04c script__WordCPtrSv__WordCPtrSv_0056e04c
 0056e098 script__WordCPtrSv__WordCPtrSv_0056e098
 0056e0f0 script__WordCPtrSv__WordCPtrSv_0056e0f0
@@ -13788,6 +13817,7 @@
 005706fc character_animation_value
 005707b8 AcFtr__virtual_54
 005707f0 AcFtr__start_action
+005708e8 AcFtr__action_info
 00570950 AcFtr__virtual_52
 00570aa8 AcFtr__virtual_61
 00570aac AcFtr__virtual_53
@@ -13796,7 +13826,9 @@
 00570f10 AcFtr__virtual_33
 00571d1c AcFtr__virtual_58
 00571d28 AcFtr__find_neighbor
+00571ea4 AcFtr__switch_state
 005723a0 AcFtr__virtual_60
+005724ec AcFtr__switch_state_b
 00572624 AcFtr__init_contents
 00572d64 BsNpcMgr__NpcPosGetCB__NpcPosGetCB_00572d64
 00572f48 AcFtr__virtual_46
@@ -13996,6 +14028,7 @@
 0057f30c BsSkb__do_create
 0057f4b4 ComButtonLytBase__ComButtonLytBase_0057f4b4
 00580324 BsSkb__do_execute
+00580490 AcNpc__set_leave_flag
 00580524 BsSkb__do_delete
 00580fb8 BsSkb__virtual_1_00580fb8
 00580fc8 BsSkb__virtual_0_00580fc8
@@ -14025,6 +14058,8 @@
 00582d40 poll_task
 00582db8 store_byte_constant_pack_0xa8_00582db8
 00582dc4 store_byte_constant_pack_0xa8_00582dc4
+00582de4 SoundSystem__set_listener
+00582e38 SoundSystem__play_veneer
 00582e4c play_sound_at
 00582e9c play_sound_at_world
 00582efc SoundSystem__update
@@ -14058,11 +14093,14 @@
 00583658 sound_754_call_1d5e0c
 00583670 sound_754_set_mode
 00583704 tune_player_is_busy
+00583778 SoundSystem__part_veneer
 00583790 sound_word_6c0
 005837b8 sound_word_788_is_set
+005837e4 SoundSystem__stop_veneer
 00583824 sound_754_call_1d6868
 0058383c sound_byte_708_is_set
 00583890 set_current_sound_effect_id
+005838c4 thunk_00767044
 005838d4 sound_byte_836
 0058394c sound_allowed_for
 00583a08 set_sound_effect_id_428
@@ -14086,6 +14124,7 @@
 0058406c audio__bgm__EvOpusHide__deleting_destructor
 00584070 audio__bgm__EvOpusHide__destructor
 00584074 bgm_queue
+00584080 Bgm__init
 005840ac read_s8_0x0094e487_
 005840f0 audio__bgm__EvOpusEaster__deleting_destructor
 005840f4 audio__bgm__EvOpusEaster__destructor
@@ -14094,6 +14133,7 @@
 00584140 read_s8_0x0094e486_
 00584150 sead__SafeStringBase_char___SafeStringBase_00584150
 00584250 clear_98a088_counters
+0058440c BgmPlayer__update
 00584d78 start_bgm_for_kind_2c
 005852f4 BgmPlayer__stop
 00585410 construct_heap_allocator_39

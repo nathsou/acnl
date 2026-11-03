@@ -2648,6 +2648,7 @@
 0053ad24 Adds the child heap (by its node offset) to the heap's children, under the heap's lock when it has one.
 0053ad94 Removes the child heap from the heap's children, under the heap's lock when it has one.
 0053adf4 Finds the resource in the cache, under its lock.
+0053aef0 Sets the heap's flags and refreshes its state.
 0053af90 Frees all of the heap's blocks and removes it from its parent's children (under both locks).
 0053b1d0 Clears the manager's words and the current heap (0x97e9fc).
 0053b4cc Decodes the Base64 text into the buffer.
@@ -2656,8 +2657,10 @@
 0053c024 Calls the function at 0x537c28 with the two words as a pair.
 0053c300 Allocates `size` bytes with the alignment from the front of a free block, splitting off the rest.
 0053c568 Allocates `size` bytes with the alignment from the back of a free block, splitting off the rest.
+0053c7b8 Frees the heap's blocks.
 0053cd54 Creates an expanded heap in the memory (more than 0xa4 bytes, under the global lock) and registers it with its parent.
 0053d230 Unlinks every node of the list and empties it.
+0053d2b4 Stores the current system tick.
 0053d2cc The CRC-16 (polynomial 0xa001, table built once) of the bytes.
 0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
@@ -2673,13 +2676,22 @@
 00540b14 Fills the array with the range of values from the start.
 00540bd0 Shuffles the array with the random generator (Fisher-Yates).
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
+005418f8 Unloads the resource, under the manager's lock.
+00542358 Opens the file on the device with its mode.
+005423b8 Closes the file on the device.
 0054488c Destroys the task: detaches it from its manager and its children.
 00544a20 Finishes the formatted output into the buffer; whether it fit.
 00544d08 Writes the string to the output.
 00544d8c Writes the wide string to the output.
 0054af38 Formats into the fixed string (vsnprintf), keeping it terminated.
+0054d964 Kills the emitter set's emitters.
 0054da14 Finds the set's resource with the id.
+0054da5c Sets the emitter set's matrix and its scale.
+0054ee44 Releases the effect resource at the index.
+0054ee94 Loads the effect resource on the heap.
 0054f804 Notifies the system about the emitter's change.
+0054f994 Whether the system has the resource at the index.
+0054fbb0 Creates the emitter set with its emitters and parameters.
 005500a0 Takes the next free emitter of the ring, links it into its group's list and resets it; null (with a warning) when all are in use.
 00550204 Creates the emitter set with the transform's position and no rotation.
 0055030c Reports the warning to the system's listeners.
@@ -2690,17 +2702,21 @@
 00552190 Particle command: moves the particle's velocity toward the target on the flagged axes by the rate; the next command.
 0055224c Particle command: at each interval, adds a random offset scaled per axis to the velocity; the next command.
 005547e0 The emitter's own matrix, or its set's when it follows the set.
+005547f8 Resets the emitter's state and timers.
 005551f4 Resets the emitter's fade.
 00555824 Writes the renderer's GPU state commands (blend, depth and the color constants) into the buffer; its end.
 00555f90 Writes the renderer's base state and the 3x4 matrix as GPU commands; their end.
 00556050 Begins the renderer's frame.
+00556058 Begins the renderer's frame and copies its setup commands.
 00556094 Copies the renderer's setup commands into the buffer once per frame and resets the render state; their end.
 00556128 Writes the commands enabling the 12 lights and their colors; their end.
+00556a90 Draws the set's emitters with their shaders.
 00556d80 Allocates and relocates the effect resource's data and its textures.
 00556ea0 Replaces the emitter's data and, when asked, notifies the system for the two screens.
 0055746c Sets the particle's texture offset from its animation frame (by age or by life).
 005574f0 Initializes the camera's field of view, distances and position.
 0055b6e0 Counts the set's live emitters and draws the set with them.
+0055b898 Fills the particle index buffer (two triangles per quad, up to 0x400).
 0055ba48 The next value of the effect random generator, in [0, 1].
 0055badc Loads the particle shader and finds its uniforms by name.
 0055bc90 Sets up the three vertex buffers (position and two UV sets) of each of the 3 frames, and the index buffer.
@@ -2719,6 +2735,7 @@
 0055dfa4 Adds the block to the used list (in address order when the heap keeps it sorted).
 0055e9d0 Whether the task and its whole chain of children are loaded (state 4), under the lock.
 0055ed48 Starts loading the resource with its argument on the thread's heap, and chains it after its parent; the task.
+0055f0e4 Finishes the resource task: its callbacks and its state, under the lock.
 0055f1ac When the task's lock is free: finishes the task and unlocks it.
 005601b8 Sets the 8-bit color channels from the four floats, each clamped to 0 to 1 (stored in reverse order).
 0056029c Builds the shared name table from the source entries for the kind.
@@ -2728,9 +2745,13 @@
 00560868 Calls virtual 4 of the task's root object.
 00560930 Constructs the task entry: its 4 sub entries, cleared words and index -1, enabled.
 00560aa8 Unlinks the node from its parent and siblings.
+00560b0c Unlinks the node and appends it as the last child.
 00560b6c Unlinks the child, then appends it as the last child of the node.
+00560bac Unlinks each of the node's children.
 00560bec Unlinks the node and detaches all its children.
+00561264 Applies the viewport's screen rotation (below 6).
 005615e4 Calls the function at 0x561900 with the stacked word.
+00561900 Sets the viewport's rectangle and depth range.
 00561ba4 Zeroes the record with its last word at 0x1000.
 00564804 The index of acre (x, y) among the acres of the same kind in the 16 x 16 grid; -1 when it is not of the kind.
 0056549c The display kind of the item category (fish, insects, furniture...).
@@ -2740,14 +2761,19 @@
 00565a68 Moves the point a fraction of the way toward the target in the xz plane, by at most the cap.
 0056677c Under the lock, flushes the pending GPU commands (the queued ones or the buffer's range) and counts the flush.
 00567224 Unless busy, starts the loader's load (virtual 3) once when everything it needs is ready.
+00567a10 Sets the layout's draw priority and refreshes it.
 00567cc8 Formats the string with the shared pair at 0x975c14.
 00567d60 Binds the source's resource (+0x22c) once, with its callback.
 00567d9c Forwards to sead__SafeStringBase_char___SafeStringBase_00567dac.
+00567e34 Builds the layout with its allocator and archive.
 00567f20 Calls virtual 2 of the object at +4.
 00567f34 Stops the flight (frames left -1).
 00567f40 Moves the point one frame along its flight, slowing down over its last frames; true when the flight is over.
 00567fe4 Starts the flight from the start to the target at the speed (frames clamped), with its slowing frames, and computes its step.
+00568690 Updates the layout's animations.
+00568adc Finds the layout's named button.
 00568b38 Takes the entry out of the layout list (when found) and returns it.
+0056939c Starts the button's animation unless it is locked.
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 00569b44 Sets the fade's start, target (at least 0), speed and mode.
 00569e6c Draws the layout on the top (0) or the bottom (1) screen.
@@ -2782,13 +2808,16 @@
 0056c6f0 Bit 2 of the byte at 0x95c4d2.
 0056c76c (year - 2008) mod 12.
 0056c7b0 Sets bit 2 of the clock flags.
+0056c7c8 Checks the clock against the time limit.
 0056cf7c Flags the clock (bit 0, and the save's bit) while the date is before January 6, 2012; clears both otherwise.
+0056d2ec Sets the text box's word to the slot player's town name.
 0056d374 Sets the text box's word to the name of the slot's player.
 0056d488 Sets the text box's word 9 to the string.
 0056d828 Sets the message word to the villager of the record (by its table id), or runs the default.
 0056d874 For a villager id below 0x18f: clears byte +0xf of its 0x22-byte entry in the table at 0xa83aec+4 and fills its word from the word resources.
 0056d9cc Sets the message word to the name of the field object of the kind, or runs the default.
 0056daa8 Sets the message word to the special NPC's name.
+0056de54 Sets the text box's word slot with its value.
 0056e5c4 For furniture not being carried, aims the camera at it (wall furniture by its angle) when it allows it.
 0056e6a8 Calls virtual 15 of the object at +0x300 when it exists.
 0056f1b8 Updates the furniture's shadow from its position and size.
@@ -2796,8 +2825,11 @@
 0056fd94 Finds the furniture's slot in the room grid and furniture list.
 00570544 Switches the furniture on or off (lights, sounds, animations) by its kind.
 005707f0 Starts the furniture's action of the kind with the offset.
+005708e8 The furniture action's info (below 13).
 00570adc Whether each flagged slot of the furniture (seat, sides, top) is free or already the object's.
 00571d28 Finds the furniture beside this one in the room grid, in the direction.
+00571ea4 The furniture's switch state when it has a switch, or 0.
+005724ec The furniture's switch state when it has a switch, or 0.
 00572624 Initializes the furniture's contents and claims its flag.
 00572fb4 Updates the furniture's camera use and its sound.
 0057322c Places the furniture on the tile's height outdoors, or the floor in a room.
@@ -2835,6 +2867,7 @@
 0057ddf4 Lays out the keyboard's glyphs for the current mode.
 0057f2a0 Whether the NPC's action is in state 2.
 0057f2b8 Whether the NPC's second action is in state 2.
+00580490 Sets the NPC's leave flag and the global leaving state.
 00581050 Creates the grid map (005814d0) and its 0x4000-byte work buffer; on failure releases the cells.
 005810ac Builds the block map's cells and fills them with their default items.
 005812ec Creates the grid map (005810ac) and its 0x4000-byte work buffer; on failure releases the cells.
@@ -2851,6 +2884,8 @@
 00582b1c Bit (x & 15) of row (z & 15) in half (layer & 1) of the table of `kind`.
 00582c9c Starts a task through 00152dc8; marks +0xa8 = 1 when it could not.
 00582d40 While +0xa8 is 2, polls the task: true once it finished (and marks +0xa8 = 1).
+00582de4 Sets the sound system's listener.
+00582e38 Passes the play to the sound system.
 00582e4c Plays sound `id` at the position given (r1, through the camera when there is one).
 00582e9c Plays the sound at the world position, seen from the camera, for the object with the volume.
 00582efc Updates the sound system when it exists.
@@ -2881,11 +2916,14 @@
 00583658 Calls 001d5e0c on the sound system's player at +0x754.
 00583670 Stores a mode (below 3) at +0x58 of the sound system's player at +0x754.
 00583704 Whether the tune player (sound system +0x68c) is playing or has frames left.
+00583778 Passes the call to the sound system's part.
 00583790 Word +0x6c0 of the sound system.
 005837b8 Whether word +0x788 of the sound system is set.
+005837e4 Passes the stop to the sound system.
 00583824 Calls 001d6868 on the sound system's player at +0x754.
 0058383c Whether byte +0x708 of the sound system is set.
 00583890 Stores the 16-bit sound effect id at 0x94e426.
+005838c4 Jumps to 0x767044 with the fixed object.
 005838d4 Signed byte +0x836 of the sound system.
 0058394c Whether the sound `id` may play now (never for 0x27, 0x9d, 0x9e); depends on the sound system, a flag and the current player's state.
 00583a08 Stores a 16-bit sound effect id at 0x94e428.
@@ -2893,8 +2931,10 @@
 00583b8c Signed byte +0x835 of the sound system.
 00583ca8 Byte +0x90 of the DJ player.
 00583dc4 Float +0x94 of the DJ player (in s0); returns the object.
+00584080 Initializes the music queue and the flag manager.
 005840f8 Clears the BGM parameter flag (when set), resets the list at 0x98a018 and clears two BGM flags.
 00584250 Clears the two 16-bit counters at 0x98a088.
+0058440c Updates the music player's sound when it plays.
 00584d78 For an entry of kind 0x2c whose owner has +0x20 set: queues BGM entry 3 (fade 12) and marks the owner.
 005852f4 Stops the music player's sound.
 00585410 Builds a heap allocator with kind 0x39 and alignment 4.
