@@ -4635,6 +4635,7 @@
 00715bc4 How many counters of tier 0 are past their threshold.
 00715c98 Whether badge `kind`'s counter (+0x1c) has reached its threshold.
 00715cc8 The level of badge `index` earned by its counter (against the badge's thresholds).
+00715dac Updates the player's record of the kind (below 3).
 00715ffc The sum of the levels (1-3) of the 24 badges (+0xc0).
 00716044 Word +0x28 of entry `index` (0x28 bytes) of the table from global_word_0c.
 00716060 The value of the 24 badges by level (50,000, 150,000, 350,000), and the counts of each level stored with the catalog state.
@@ -4661,11 +4662,13 @@
 00718364 Whether the 16-bit value is at most 0xfc.
 007186c4 Applies the template of kind (table 0x846bcb) to the 6-byte entry of `index` (below 8) at +0xe4.
 007187e8 Builds the character set used for passwords in the current mode.
+00718a58 Finds the list's node by its name.
 00718c1c Whether the member handler (+0xc, +0x10) is the one at 0x87919c.
 00718c6c Bit 0 when the member handler (+0xc, +0x10) is the one at 0x8791bc, bit 1 when it is the one at 0x8791b4.
 00718d38 Whether the target is ready: the state object (+4) when +0x10e is set, else the object at +0x84.
 00718dd8 Whether the value of the owner at +0x458 is 0.
 00718e20 The index of the `n`-th set bit of the candidate bits, or -1.
+00718e78 Picks a random value in the range.
 00718f9c How many of the children (64 slots from +0x14, count +0x114) have +0x80 set.
 0071900c Calls virtual 4 of the handler at +0x118, or 0x18 without one.
 0071902c Calls virtual 5 of the handler at +0x118, or 0x18 without one.
@@ -4694,6 +4697,7 @@
 0071c620 Whether the town event passes its check on the same day, the current player has flag 2 of +0x5701 (or there is none) and town flag bit 6 of +0x621d9 is clear.
 0071cba4 Applies the template of kind (table 0x846fb6) to the 6-byte entry of `index` (below 12) at +0x1370.
 0071cff8 Pushes a point out of the plane (a, c, d in x-z) when it crossed it from the side of the reference point.
+0071d090 Whether the button's pane is visible.
 0071d0b8 Whether the member handler (+0xc, +0x10) is the one at 0x8793f4.
 0071d108 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x879414, bit 1 when it is the one at 0x87940c.
 0071d1a4 Whether the member handler (+0xc, +0x10) is the one at 0x879404.
@@ -4732,27 +4736,48 @@
 0071fd0c Whether the entry's stamp (+0x7dc8) is before the other's.
 0071fe48 Stores the CRC-32 (MSB first) of the 0x7f0 bytes after the checksum word.
 0071fe68 Whether the stored CRC-32 (MSB first) matches the 0x7f0 bytes after it.
+007200fc The first empty item of the row (of 10), or -1.
 007201d0 Whether the item at the index (below 40) is set (not empty, not a placeholder).
 007202d8 The record's signed halfword at the index.
 00720328 Whether the record's item is of category 0x2f.
 00720348 Whether byte +0x1f is set.
 00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
+007203bc Whether the record's state is neither 1 nor 5.
+007203d4 The state of the record at the index.
 00720448 Finds the item in the catalog's list.
 007206b8 Whether the map's cell (x below 0x70, z below 0x60) is set (not 0xff).
+007206e0 Sets the map's cell (x below 0x70, z below 0x60).
+0072072c Whether the handle's effect is running.
+0072079c The running effect's flag, or 0.
 007207d8 Whether the effect the handle points to is still running.
+007234f8 The scroll bar's dragged value, or -2 when it is not dragged.
 0072355c Updates the scroll bar's dragging.
+0072382c Whether the index is on the page (its start to 4 after).
+00723998 Lays out the item grid's slots.
 00723ad4 Whether the slot is unlocked with no item (a negative index).
 00723f68 The letter of the page's entry at the index.
 00723f84 Whether the index is on the page (its start to 10 after).
 00723fa0 The index's offset from the page's start.
+007240f8 Whether the button's pane is visible.
+0072413c Finds the first pocket item of the category, from the start.
 00724400 The current player's pocket item at the slot.
+00724bf8 Finds the layout model's skeleton node and its joint.
 0072543c Whether the date bytes at +0xe match those at +5.
+00725978 The pair's two values (+8 and +0xc).
 00725984 Whether the identity is a player's (its kind) and its id is set.
+007259b4 The record's CRC-32 (from +8).
+007259d4 Finds the record matching the default (by its table).
+00726438 Writes the blend state's commands; their end.
+00726490 Writes the depth state's commands; their end.
+00726a54 Writes the shader program's commands into the buffer; their end.
 00726d2c Finds the named uniform of the shader (vertex or geometry) and writes its location.
 00726e94 Writes the commands binding the shader and its buffers; their end.
 00726f34 Writes the shader's setup commands (its program and uniforms); their end.
+00727528 Finds the shader's program and binds it.
+00727dc8 Writes the stencil state's commands; their end.
 00728014 Copies the store's slot meta for the table; the result.
 00728128 The state of the store's slot in the table, or 0.
+0072813c The size of the store's slot in the table, or 0.
 007283f4 The flag of the store's slot in the table, or 0.
 007286a0 Finds the entry's tag of the kind and its value.
 0072871c Finds the entry's tag and its value.
@@ -4761,8 +4786,23 @@
 00728af8 The day of the date time (milliseconds since 1900).
 00728c48 The year of the date time (milliseconds since 1900).
 00728ca0 The month of the date time (milliseconds since 1900).
+0072ef34 Calls the client's method when its object is valid; an error otherwise.
 0072f380 Whether the client is connected, when NEX is up.
 0072f3a4 Whether the client is logged in, when NEX is up.
+00733680 Sends over Pia's transport when it is ready; an error otherwise.
+0073394c The connection's status from its two states (the second mapping).
+00733a8c Sets the session's state to 0x5.
+00733aac Sets the session's state to 0x3.
+00733ae4 Whether the session's state (+0xa4) is 0x5; the result for it.
+00733b14 Sets the session's state to 0x23.
+00733b4c Whether the session's state (+0xa4) is 0x3; the result for it.
+00733b7c Sets the session's state to 0x1.
+00733b84 Sets the session's state to 0x6.
+00733b8c Whether the session's state (+0xa4) is 0x23; the result for it.
+00733bbc Sets the session's state to 0x8.
+00733bf0 Whether the session's state (+0xa4) is 0x1; the result for it.
+00733c20 Whether the session's state (+0xa4) is 0x6; the result for it.
+00733c50 Whether the session's state (+0xa4) is 0x8; the result for it.
 00733cf0 Whether the session's connection is the current one.
 00733e00 The connection's status from its two states.
 007344dc The session's station of the address.
