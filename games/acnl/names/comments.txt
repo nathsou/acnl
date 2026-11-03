@@ -865,6 +865,20 @@
 0022be5c Shows the single button on its pane.
 0022bea0 Loads the button position layout and binds the button pair to the right and left panes.
 0022bf34 Releases the button pair and its layout parts; true.
+0022bf54 Updates the position button.
+0022c040 Loads the button position layout and binds the three buttons to the left, center and right panes.
+0022c0f8 Releases the three buttons and their layout parts.
+0022c118 Updates the position button.
+0022c368 Hides the pane (+0x1c) and sets the flag at +0x122 of the owner (+0x18).
+0022c720 Stops the current animation and starts animation 0 to 3 from zero.
+0022d734 Clears the counter (0xa182f8) and reseeds the random state at 0xa182fc.
+0022d74c Writes the letter (header, body, footer) from the message and the sender, numbering its paper when asked; clears it when it failed.
+0022d958 Writes the villager's letter (header, body, footer) from the message, with its item, sender and paper; clears it when it failed.
+0022dacc Calls the function at 0x22dd30 with the stacked vector.
+0022e168 Copies a 0x26c-byte pattern header.
+0022e194 Resets the pattern's flags (type 4, shareable).
+0022e1c0 Takes the online state's mode and value (when connected), keeping the mode below 3 and marking it, and copies the pending word.
+0022fcb8 Finds the named animation in the model's resources and binds it; marks it bound (+0x4f9).
 00240080 Runs the function at 0x7206e0 on structure list `index` (below 4, from 0xab7de4) when it exists.
 002404b0 True when the construction site (save +0x6e2a4) is set (or finished) and is in block (x, y) for the structure kind.
 0024088c Finds the structure matching the record in the main list (0xab7df4) and removes it.
