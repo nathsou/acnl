@@ -1817,7 +1817,30 @@
 0058f3c0 Zeroes a record of three words, five halves and a byte.
 0058f3ec 1 << the current mode (from the save data when 0x95bf80 is set, else from value_for_mode); 0 when the global object byte is 3.
 0058f718 Finds the first free of the 20 effect slots (0x18 bytes, at 0x94ee4c+0x10), keeps its index at +0x11f and starts effect 0xf8 (0xf9 with flag 0x80) there.
+005929c0 Updates the field object by its item's kind and map entry.
+005937b4 Refreshes the field object's state from its item's kind.
+00593fbc Remembers the old position, moves to the new one with the scale, and starts its 15-frame growth animation.
 00594358 Builds an empty item with the extra bytes 0xa5, 0, 0.
+00594504 Constructs the record with an empty item and kind 0xa5.
+00594c54 True when (x, y) is in the rectangle, with x shrunk by the slope (+0x10) times the row.
+00594d9c Applies the drop record (its four bytes and half).
+00594dcc Clears the drop record (kind 0xa5).
+00594dec Records the cell in the town's ring of the 3 latest cells (save +0x621c2).
+00595528 Finds the field object's main joint in its model.
+005959e0 Sets up the field object's model for its item (bushes by their size) and its animations.
+00596298 Collects the field drop of kind 0xb at the position: keeps or gives it by its flag, counting the find.
+00596334 Removes the field drop at the position: tells the other stations (message 0x3a) or applies it, then frees its slot.
+005969c0 Adds a field drop of kind 0xb (a buried item 0x9e) for the item at the cell.
+00596a60 Frees the field drop at the position and its slot; its index, or -1.
+00596bcc Adds a field drop of kind 0xc for a random item at a free spot; -1 when there is none.
+00596c64 Adds a field drop of kind 0xa for the item at a free spot (swapping item 0x339f for 0x33a0 in island scenes); -1 when there is none.
+00596e94 Adds a field drop from the current player's tool and the item's map entry, at random.
+00597678 Adds a dig drop at the cell: kind 0x1f for a buried item (0x9e), kind 0x1e for event items; -1 otherwise.
+00597864 Collects the field drop at the position: gives its item to the current player and counts it, telling the other stations.
+00597c30 Adds a field drop of kind 0x20 for a flagged item of category 0x41 at the cell; -1 otherwise.
+00597d28 Adds the field drop that spawns the special insect for the item.
+00598164 Finds item 0xcd in the map and starts its drop; true when found.
+00598218 Adds a field drop of kind 7 for a buried item (0x9e) or hole (0x9d) at the cell; -1 otherwise.
 0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
 0059f194 Finds the first of the four 0x12-byte slots at 0x9b417c whose byte +0xf is clear and fills it; -1 when all are used.
 005a06b4 Forwards to do_nothing_002f777c.
@@ -2576,6 +2599,9 @@
 006acac0 Computes the selection from the page (+0xe30) into +0x6359 and hides the pane (+0x6340).
 006acf28 Shows the two mode panes by the mode (+0x6358) and, in mode 0, hides the 24 entries' panes.
 006adc30 Clears the selected entry (+0x16b8, 0x19 for none): its drag icon, button and flag; then resets the selection animation.
+006ae9c4 Sets up the window's close button: its control, pane, animation targets and sounds.
+006af218 Sets up the second window's close button: its control, pane, animation targets and sounds.
+006afbcc Detaches the layout at +0x4bc from the layout system.
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
 006bc4fc Sets the record state byte of an item of a recorded category to 5.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.
