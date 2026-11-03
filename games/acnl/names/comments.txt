@@ -2177,26 +2177,70 @@
 00403828 Sets word `index` (fewer than 6) of the array at +0x210.
 0040acc4 Sets the match attribute (below 6) to the value and marks it set.
 0044a814 Destroys the Pia session and frees it.
+0044b868 Updates the facade's matchmaking state.
 0044badc Waits for the time (milliseconds) when Pia is ready.
+0044bca4 Sets the facade's callback when none is set.
 0044c1ec Leaves the session's gathering and its matchmaking.
+0044c5e8 Starts the matchmaking, unless already busy.
 0044cc08 Begins Pia's transport when it is up.
 0044cc60 Ends Pia's transport when it is up.
 0044f0f4 The station's state in the session (by its address).
+004502b4 Finds the connection with the id and kind.
+00450314 Removes the connection from the list.
+00452958 Resets the connection (its state and peers).
 0045ee4c Sends the packet over Pia's transport when it is ready.
+0045f368 Finalizes Pia's transport when it is up.
+0045fd24 Clears the packet info.
+00467590 Whether the reliable transport is ready.
 0046a174 Once (flag at 0x974b8c): opens the ndm:u service and suspends the network daemons.
+0046a2c8 Sets the session's attribute of the kind (below 6).
 0046a424 Initializes the timeout (0x7d) with its seconds and value.
+0046a7cc The table's station entry at the index.
+0046a82c Creates the session with its settings.
+0046aa14 Reads the session's local station id.
 0046aa80 Sets the session option to the value.
 0046aad8 The local station's id, or 0.
+0046b174 Closes the socket.
+0046b218 Reads the socket's address.
+0046b320 Opens the socket with its buffer size.
+0046b3b0 Sets the socket's name (up to 0x200).
+0046b8ac Binds the socket to the address and port.
+0046baec Checks the station is ready (state 0xa); its result.
 0046bb74 The station's address when it is valid.
+0046bcc4 Sets the station's address when it is valid.
 0046beec Updates the station when it is valid.
+0046bf88 Disconnects the station when it is valid.
+0046c21c Sets the station's buffer and clears its counters.
+0046c23c Receives the station's data.
+0046c380 Sends the data to the station.
+0046c44c Connects to the station.
+0046c570 Closes the station.
 0046eaf0 When ndm_suspend_once ran: resumes the daemons and closes the service.
 0046f8e8 Reads the packet's header from the buffer when it fits.
 0046f9f8 Finds the station in Pia's list by its address.
+0046fc50 Adds the station to Pia's list.
 0046fe08 Updates the station's entry in Pia's list.
+00472b38 Reads the referenced resolution when ready.
+0047e100 Suspends the network daemon.
+0047e224 Sleeps the thread for the time (in s0, when positive).
 0047ea68 The CRC-32 of `size` bytes (polynomial 0x04c11db7, most significant bit first, its table built on the stack), starting from `seed`; complemented.
+0047ec00 Writes the network config from the buffer.
+0047edb8 Reads the network config into the buffer.
+0047f274 Opens the network settings (the ac service's config).
 0047f3a0 Connects to the network (the ac service).
 00489ec8 Finalizes Pia's modules when it is up.
+0048a1b4 Whether the network is connected (from the ac status).
+0048a394 Reads the local friend key, under the friend lock.
+0048a574 Reads the friends' presence, under the friend lock.
+0048a604 Whether the friend service is up and online, under the lock.
+0048a6d8 Reads the friend's key, under the friend lock.
+0048a908 Reads the friend's profile, under the friend lock.
+00495474 Sets the scene environment's value of the kind (and its flags).
 00495534 Resets the scene environment's lists and marks it dirty.
+004957e4 Writes the scene environment's light commands.
+004959d4 Sets the scene environment's camera and writes its commands.
+0049a0f0 Copies the light's colors from the other (their current values).
+0049b8f4 Updates the scene environment's lights.
 0049fffc Sets the camera's perspective from its field of view.
 004a5b04 Sets up the fog with its table.
 004a669c Finds the model's shape by its name.
