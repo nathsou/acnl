@@ -1940,7 +1940,39 @@
 004ee534 True when the split load is ready and not in state 3.
 004ee55c Starts the split load, setting the read and write positions from its word (+0xec) the first time.
 004eee9c Finds the named entry in the model's dictionary and binds it.
+004f0310 Points the camera at its alternative target, marks the mode on and saves and sets the friend list's flag.
+004f0568 The scene environment's light of the index when it is enabled and visible, or null.
+004f05cc Sets the scene environment's value 0x107.
+004f0b90 Creates the fog with a white color and a linear range (10 to 1000).
+004f0de0 Resets the model's two animation results.
+004f0eb8 Sorts the model's draw entries by address and stores them as relative offsets.
+004f1164 Sets the value of the model's current animation member at its frame.
+004f1510 The index of the named material in the model's dictionary, or -1.
+004f1648 Sets the named material's color (or one of its texture coordinates) from the values.
+004f1b64 Sets the material's color to the value in all four channels.
+004f1cdc Sets the material's second color to the value in all four channels.
+004f1d04 Marks each of the model's materials for update (flag 0x10).
+004f1d6c Sets the flags (with bit 25) on every primitive of every shape of the model.
+004f1e44 Sets the light's color and its direction from the three angles.
+004f220c Walks the resource node's chain to its renderable kind and sets its flags (with bit 25).
+004f2638 Clears the model's material slot to the default.
+004f2a18 Resets the three scene lists, the animation cursors and the environment, and flips the buffer index.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
+004f2ef0 Sets the model's visibility when it exists; whether it did.
+004f2f48 The animation's current frame (in s0), or 0.
+004f2f60 The animation's current frame (in s0) when it is playing, or 0.
+004f3068 Flushes the shadow pool in photo mode; else resets the environment's shadow list.
+004f3a64 Whether the kind is between 10 and 15.
+004f3b48 The value paired with the key in the table of 6 pairs, or -1.
+004f524c Updates the letter list's entries and scroll.
+004f76a8 Clears the list state and sets its positions to -100 (none).
+004f9f9c Clears the grid list state, sets its positions to -100 (none) and its size to 10 by 3.
+004fb304 Maps the menu kind 3 to 2 and 5 to 4.
+004fe440 Updates the selection from the input, when no error screen is up.
+004fe5b8 Whether the selection accepts any of the eight direction inputs.
+004fe6c8 Sets the two menu callbacks.
+004fe968 Whether the layout's main animation and its 5 parts are all stopped.
+004fed2c Initializes the animation's tracks.
 005008b4 Resets the 5 tracks and copies the forward or the reverse curve set (0xe8 bytes) in, then starts it.
 005013dc Animation command: scales the pane's size (x, y or both) by the percentage that follows, or restores the saved size.
 00501580 Animation command: scales the pane's size by the percentage that follows on the chosen axes, or restores the saved size.
@@ -3354,7 +3386,38 @@
 0066fd94 Changes the player's state to 0x8d with the value.
 0066fdc0 Changes the player's state to 0x17.
 0066ffb4 Plays the digging effect for the ground at the position (sand has its own), else the general one.
+0067334c When a cell target is pending: clears the flag, targets the cell and acts on it.
+0067349c Sets the move (mode 9) to the target and marks the 3x3 cells around it changed.
+006739b8 Changes the player's state to the action for the kind, with its parameters.
+00673a94 Changes the player's state to 0x8e with the value.
+00673ac4 Changes the player's state to 0x33 at the position (in quarter units), the angle and the value.
+00673b5c Changes the player's state to 0x6a with the three values.
+006742c0 For the local player: marks the wake once and starts the pending wake state (0x9d or 0xe0).
+00677b70 Reports the area's visit to the tour result when the flag is set; true.
 00678278 Requests player state 0xc4 with an id, a value, a flag and a position (the player's own when none).
+00678300 Changes the player's state to 0xe2 at its position and angle, or the given ones.
+0067837c Changes the player's state to 0x88 with the value, unless already in it.
+006783c0 Changes the player's state to 0x89 with the value, toward the position (or the origin) and the angle.
+00678434 Changes the player's state to 0x50 with the values and the target position.
+006784dc Starts the effects at both hands unless they run already.
+0067bc50 Restores the player's saved outfit, face and hair, and marks the model for update.
+0067bc98 When a cell target is pending: clears the flag, targets the cell (mode 5) and acts on it.
+0067bd70 Tells the tour result when the flag is set.
+0067bda8 Moves the running effects to both hands.
+0067be68 The constant at 0x886c44 as a float (in s0).
+0067be7c The constant at 0x886c48 as a float (in s0).
+0067be90 Twice the step length (in s0).
+0067beac The constant at 0x886c48 as a float (in s0).
+0067e900 Clears the pending drop and its position.
+0067e9e8 Writes the event NPC's position; whether there is one.
+0067eb40 Updates the player's swimming and its states.
+0067ee38 Changes the player's state to 0x79 at the position and angle, with two values.
+0067ee90 Changes the player's state to 0x69 with two values, toward the position and angle.
+0067f020 Changes the player's state to 0x2a with the parameters; on success, flags some kinds.
+0067f0c8 Changes the player's state to the action at the position (in quarter units).
+0067f1b4 Changes the player's state to 0x9c with the values, toward the position and angle.
+0067f208 Changes the player's state to 0xb1 at the position, with the offset (in quarter units).
+0067f29c Starts picking up the item at the cell (field objects and map items).
 00681214 The shared vector (0, -4, 0) at 0x98570c.
 00681294 The shared vector (0, -2, 6) at 0x985718.
 00681c14 When the pending placement (bit 0 of +0x171) is set, clears it, targets its cell and, when holding, gives the player the held item back.
