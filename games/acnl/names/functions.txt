@@ -5839,7 +5839,7 @@
 002f7ef4 DesignPage__entry_virtual_24
 002f7f40 is_digit
 002f7f50 ChangeStockMyDesign__virtual_8
-002f80c8 setup_thread_entry
+002f80c8 vsscanf
 002f80f0 strtoul_core
 002f81e4 DesignPage__store_design
 002f825c clear_aligned

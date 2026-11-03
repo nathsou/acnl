@@ -44,10 +44,12 @@
 00100e38 Formats into a buffer from an argument list (C vsprintf).
 00100e5c Formats into a buffer of `size` bytes, terminated when there is room; returns the length the output needed.
 00100e94 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
+00100edc Prints formatted text to the standard output (C printf).
 00100ef8 Formats into a buffer (C sprintf); returns the count written.
 00100f68 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
 001011e4 printf's %o: the digits of the 64-bit value (r2, r3), least significant first, then the '0' prefix for the # flag.
 0010125c printf's %x, %X and %p: the digits of the 64-bit value (r2, r3), least significant first, then the 0x prefix for the # flag.
+001012f4 Scans a string by a format (C sscanf).
 00101334 strtol in base 10, errno left as it was.
 001013c4 Calls 0010218c and returns its object.
 0010179a The first occurrence of needle in haystack, or null (C strstr).
@@ -55,8 +57,12 @@
 0010181c Copies count (arg 2) 16-bit characters.
 00101826 Moves count (arg 2) 16-bit characters, overlapping allowed (C wmemmove).
 00101890 The first occurrence of a wide needle in a wide haystack, or null (C wcsstr).
+0010193a Fills count (arg 2) wide characters with c (C wmemset).
+00101978 Compares two wide strings ignoring ASCII case (C wcsicmp).
 00101a00 Forwards to store_word_af75e8.
 00101a1e Whether the wide character has class bit 1.
+00101a2c Formats into a buffer of size bytes from an argument list, truncated and terminated (C vsnprintf).
+00101bd0 Scans a string by a format (C sscanf); returns the count assigned.
 0010211c Skips white space and a sign, converts, and clamps to the long range on overflow (errno ERANGE).
 0010218c Skips the leading spaces of the format.
 001024e0 Returns 0xc.
@@ -2453,7 +2459,7 @@
 002f7e5c The quotient of the 64-bit value (r0, r1) by 10, by shifts and adds.
 002f7ef4 Calls virtual 24 of entry `index` among the four shown from +0x2434 (0x290 bytes each, +0x18b4); out-of-page indices use entry -1.
 002f7f40 Whether c is a decimal digit (C isdigit).
-002f80c8 Fills the thread start record (argument, entry functions) and starts it.
+002f80c8 Scans a string by a format (C vsscanf): sets up the string reader's callbacks and runs the scanner; \n returns the count assigned.
 002f81e4 Stores the design of entry `index` (relative to the shown page) into the selected design storage slot.
 002f83b0 Frees a block on the plain heap (under its lock).
 002f84e8 Converts the wide character to its multibyte bytes; their count.
