@@ -5375,7 +5375,7 @@
 002d5960 AcInsectCommon__virtual_20
 002d596c SoundObjInsectFish__update_at
 002d59a4 SoundObjInsectFish__stop
-002d59d4 SoundObjInsectFish__construct
+002d59d4 SoundObjInsectFish__construct_derived
 002d59e8 SoundObj_1___SoundObj_002d59e8
 002d5a78 change_mode_0020ad0c_veneer
 002d5af0 SoundObj_1___SoundObj_002d5af0
@@ -5383,8 +5383,8 @@
 002d5b78 record_number_is_002d5b78
 002d5bc8 change_mode_002d5bc8
 002d5d48 SoundObjWithMelody__update_at
-002d5f68 SoundObjWithMelody__stop
-002d5f90 SoundObjWithMelody__construct
+002d5f68 SoundObjWithMelody__stop_derived
+002d5f90 SoundObjWithMelody__construct_derived
 002d5fa4 BadgeExplainWindow__virtual_10
 002d609c script__WordFix_30u___WordFix_002d609c
 002d6560 BadgeExplainWindow__virtual_6
