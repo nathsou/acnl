@@ -1064,6 +1064,9 @@
 0029cd5c Copies the 63 template entries (from template 9) and resets their kinds and sent flags.
 0029ce80 Resets the 63 entries' kinds and, when idle in a session, applies them as templates; clears their sent flags.
 0029d150 Zeroes the 64 bytes at +0x10.
+0029d228 Shares the NPCs' permits and schedules with the waited stations.
+0029d354 Requests the permit of NPC `slot`: marks its packet sent and asks the host (message 0x40), or, as the host, grants it directly.
+0029e9a8 Clears bits 2 to 5 of the first byte and sets the 3-bit mode of +3 to 4.
 002a2850 Detaches the layout at +0x24 from the layout system.
 002a2ad0 Releases the layout at +0x24.
 002a324c Stores the id with its priority in the first free of the 10 entries (counting it), else replaces the lowest-priority one.
@@ -1111,6 +1114,16 @@
 002ad1fc For an insect item (category 0x24), the flag of its insect index; 0 otherwise.
 002ae274 Puts the remembered item (0x94fd64) into the current player's pocket slot (+0xc8) and refreshes.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
+002d0998 The record (+0x668) of the object held by the slot; null without one.
+002d0cf8 Constructs the model with its skeletal model, base animation (kind 0x16, enabled) and its second animation.
+002d17c0 Registers the furniture sound in the first free of the 52 slots (id -1, cleared), counting it; 0x35 when full.
+002d1a70 Stops and frees slot `index` (below 52), uncounting it.
+002d1b3c Counts one more furniture of the kind in its slot of the 3 (taking a free one for a new kind).
+002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
+002d2e80 Sets the volume (and fade frames, 15 by default) of the slots playing the sound for the owner.
+002d31ec Plays the sound at the xz position (no height).
+002d3218 Plays the sound at the position.
+002d3404 Calls virtual 4 of the slot's object for the owner (of the 4 slots).
 002d4d00 Forwards to the function at 0x2d4bf4.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
 002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
