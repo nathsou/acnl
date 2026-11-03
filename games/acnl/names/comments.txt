@@ -5865,6 +5865,7 @@
 006ac35c Loads a special NPC model's animations (arg 1) and queues its body, face and extra animations as its flags \n ask; 1 once all are queued.
 006ac760 Releases the split load's part (+0x3d4) and the model (+0x384), setting state 3.
 006ac784 Constructs an NPC model: an NPC model base with a skeletal model and its model loader.
+006ac834 Destroys an NPC model: its parts, face animations, resource loaders, part handles and skeletal animation.
 006ac8e8 Resets the bounds to empty (min at the largest float, max at the smallest).
 006ac950 Resets the query's bounds, takes the target's position for kind 2 and registers the query with the manager (0x9502f8) when it is not yet.
 006aca10 Sets the collider's triangle with its flags and radius.
@@ -5957,6 +5958,7 @@
 006c229c Stores a value (+0x710), moves the held object to state 8 and, when asked, clears its attachment (+0x668).
 006c2be4 Moves the held object toward its target position over the remaining frames (+0x6d0), or onto it; counts the frames down.
 006c3118 Stores a float at +0x5dc.
+006c3858 Destroys the tool bank: its five particle handles, then the exchange bank.
 006c3a58 The position of the spawn tile (from 006fa1fc) with height 9, using kind 1 for group 1 of the object at 0x95c6d0 (else 6).
 006c3c00 Starts the tour of the kind.
 006c3e4c Updates the tour's goal (for its entry, below 64).
@@ -6083,6 +6085,7 @@
 006d78bc Locks the two controls and enables the 11 buttons except the tenth, then refreshes the menu.
 006d860c Shows the peer button when the session part allows it and any of the 32 stations is connected, resetting its animation when it hides.
 006d8d48 Sets or clears the lock bit (3) of the two controls.
+006d8f68 Destroys the menu tab: its renderer, two button controls, layout and archive reader.
 006d926c The catch state of the slot (1 to 3, 6 and up; 3 otherwise).
 006d96c0 The position of the slot's catch (its actor's, or its record's).
 006d9748 Starts the catch for fish and sea creatures (categories 0x27 and 0x28).
@@ -6130,6 +6133,7 @@
 006e449c Packs the id above the low 18 bits of the value.
 006e44bc Moves the entry to the back of the pending list with its new packed key.
 006e46c8 The value (+0x10) of the pending entry with the key; 0 when none.
+006e46f4 A demo actor's pre-create step: after the actor's, itself as its own owner, a talk distance of 2304 and \n height 14.
 006e47a0 Constructs a demo actor: an actor with a list node, at no offset.
 006e4a48 Constructs a wipe fader: a fader base with its own vtable.
 006e4b0c Entry `index` (below 5, 0xec bytes each) of the table at 0x9b3b08; the first otherwise.
@@ -6793,6 +6797,7 @@
 00754eb8 Builds the photo's path from its folder and file names.
 00755000 Writes the photo's full path into `out`: the base, '/', its folder (in capitals), '/', its file name (in capitals) and the extension `extension` names.
 00755110 Halves the photo's size until it fits.
+007551f4 Whether a photo range is valid: empty, or a count up to 1000 with its first and last numbers in order.
 0075523c Whether the cursor is valid (+4, start +0x24 <= end +0x20, index +0x1c below the count +0x18) and its 0x228-byte entry has +0x21c set.
 00755290 Whether the cursor is valid and its 0x228-byte entry has +0x21c clear.
 007552e8 The cursor's current 0x228-byte entry (+0x14), or 0 when it is not valid.
