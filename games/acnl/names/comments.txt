@@ -1019,6 +1019,38 @@
 0027e13c When the NPC of kind 'sza' exists with the default id and its timer set, moves the clock by its span and starts event 0xe.
 0027e634 Resets the request record with mode 0x1800181 and its handler.
 0027e670 Refreshes the shared NPC info, then resets the request record with mode 0x24000942 and its three handlers.
+002900d4 Clears the pending flag (0x950710) or, when the tour is in state 1 or 3, resets it to state 0.
+00290108 While the tour plays (state 2, not done), counts one in the third counter (0x950720, at most 999).
+00290584 Finishes the tour (unless a network peer is busy): selects the BGM, shares the end template entry and marks it done.
+002915b0 While the tour plays (state 2, not done), counts one in the first counter (0x950718, at most 999).
+00291990 Updates the window's counters (its two values, or the result count in state 3).
+0029223c The tour's result kind (0x950713) when the tour object shows it; 5 otherwise.
+00292ccc While the tour plays (state 2, not done), counts one in the second counter (0x95071c, at most 999).
+00292d08 Resets the tour to state 0 and marks it done.
+00292d28 True when the tour ended (state 3) with points and the town's tour flags allow a reward not claimed yet.
+00292dbc Sets the tour's result kind (marking it set).
+00292e30 Shows or hides the window's two panes and marks it changed.
+00292fe4 The tour's extra value (0x950724) in state 4; -1 otherwise.
+00293000 Ends the tour (unless a network peer is busy): shares the end template and, with a score in state 3, reports it and stops its sound; true when it did.
+00293258 Applies the template entry 0x90 after updating it.
+00293298 Schedules the next tour (by the hour) and reports it.
+002933cc Marks the town's tour reward claimed, resets the tour and, when idle in a session, shares the cleared template.
+002941f0 Updates the tour's state machine and its sounds.
+00294340 Clears the started flag (0x950709) in state 1.
+0029598c Loads the cherry blossom shader (on the weather heap).
+00297b60 Moves the scroll bar's drag icon into `list` and remembers the scales of its bar and two arrows.
+00297d54 Shows the scroll bar when the position is past the last page start.
+00297f04 Sets the scroll position (remembering the largest), its first shown entry and visibility, and moves the thumb.
+00298834 True when the bar pane (+0x784) is touched.
+00298950 Drags the thumb, scrolling the list and playing its sound.
+00298a6c Sets up the scroll bar's button control and panes.
+00298bb0 Converts the thumb's position to the screen and hands it to the touch state.
+00298e94 Plays the up arrow's sound (pressed or released, by the bar's kind).
+00298ed8 True when one of the three buttons (top, center, bottom) is touched.
+00298f2c Moves the thumb to the scroll position and plays the scroll sound.
+00299094 Plays the down arrow's sound (pressed or released, by the bar's kind).
+002990d8 Finds the scroll bar's panes: its button, shadows, three buttons, bar and arrows.
+002991f4 Ends the current touch by its kind (bar, arrows or thumb) and resets it.
 002a2850 Detaches the layout at +0x24 from the layout system.
 002a2ad0 Releases the layout at +0x24.
 002a324c Stores the id with its priority in the first free of the 10 entries (counting it), else replaces the lowest-priority one.
