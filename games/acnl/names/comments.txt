@@ -2172,6 +2172,7 @@
 002f7804 Moves the page's start to include the index and refreshes it.
 002f7a2e Formats (vprintf) with a character sink; returns the count written.
 002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
+002f7ca6 Formats wide characters (vprintf) with a character sink; returns the count written.
 002f7ccc The wide formatter's sink for a bounded buffer: stores the character while there is room.
 002f7cdc Formats to a file; -1 when the file is in error.
 002f7d52 The signed argument cut to the length its flags give: a char for hh (0x400), a short for h (0x100), else as it is.
@@ -2184,6 +2185,7 @@
 002f84e8 Converts the wide character to its multibyte bytes; their count.
 002f86c0 Unsigned division.
 002f86f0 Stores the half at +0xa0 + index * 2 (index below 4) of the shared NPC info.
+002f8720 Copies count (arg 2) bytes from src (arg 1) to dst (C memcpy); returns dst.
 002f872c Picks a random entry of the weighted table at 0x94d7b0.
 002f8b78 Adds the two doubles when both are finite.
 002f8ba8 Compares the two doubles when neither is infinite or NaN.
@@ -2269,9 +2271,11 @@
 003026bc Forwards to Item__is_id_in_b_to_1a_set.
 003026cc The town's byte at save +0x6e2b0.
 003026e8 The low byte of a 16-bit id.
+003026f8 Constructs a notice load adapter: a mail receptor with an empty word and a nine-character word.
 00302788 Starts the message in the message store.
 0030279c Sets the word from the table for the value.
 0030289c Starts the bulletin board's message in the message store.
+003028b4 Destroys a notice load adapter.
 003028f0 Whether the message store's window is open.
 00302a5c Removes the null entries of the array of the count.
 00302fe8 Forwards to Item__check_data_nibbles.
@@ -2556,12 +2560,15 @@
 00311744 The 0x58-byte data entry of villager `id` (below 0x18f); null without the table.
 00311f7c Adds the friendship (8-bit, saturating) to the villager's memory of the player.
 003120a8 Sets item `slot` (0-3, from +0x24d6) of the villager, then moves its non-empty items to the front.
+00312178 Sets the villager's item at 0x24ea (a copy of arg 1).
+00312184 Sets the villager's item at 0x24e6 (a copy of arg 1).
 00312190 Chooses the villager's held item of the kind and copies it.
 00312274 Sends network message 0x41 of kind 0x11 carrying the word, when the main object is set.
 003122bc Sets the villager's catchphrase (+0x24f2) to its default from the message data (its data entry's), or to the common default.
 0031237c Clears the villager's design pattern and gives it back its default clothing item (from its data, or by its type) when it wears a special one.
 00312434 Adds points to the villager's friendship (10 bits at +0x571a), capped at 100 (or 50 before the bond), when the memory is in use; true when it changed.
 00312ab8 Forwards to TimeStamp__advance.
+00312acc Sets a time to a time stamp (arg 1); returns the time.
 00312af8 True unless the villager's flags (+0x2510) keep it in town.
 00312b2c Finds the villager's item slot for the item, by the mask.
 00312c4c Formats the arguments into a buffered wide string on the stack and stores the size at +0x40.
@@ -5301,6 +5308,7 @@
 006c8e30 Updates the scroll offset (+0x438) for the current handler (0 at the start, else the content height less the view) and moves the bar.
 006c8ef0 Removes the icon from its drag list, closes the layout and clears 0x95df7f.
 006c9050 Updates the scroll offset (+0x438) for the current handler (0 at the start, else the content width less the view) and moves the bar.
+006c91d0 The catalog's state for its current mode (the mode bits' low two).
 006c91f4 Stores a 2-bit mode at 0x95261c.
 006c9218 Reads the service's 16-bit value into 0x952ad8 again (0 on failure).
 006c93e0 Adds an effect entry (of up to 20, 0x18 + 0x14 bytes) for a model and a value, and links it in the list at 0x994d24.
@@ -5505,6 +5513,7 @@
 006f7e04 Stores the word at +0xc.
 006f7e10 Sets the collider's cylinder from the rectangle with its flags.
 006f7e40 Sets the triangle reference's triangle, kind and mask.
+006f7e64 Constructs a collision world's body: no shape, no owner.
 006f8054 Clears the count and the 100 entries (+8).
 006f8094 Zeroes the list's two words and its 100 entries.
 006f8114 Sets the sphere's center (+8) and radius (+0x14).
