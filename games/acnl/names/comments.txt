@@ -487,6 +487,7 @@
 0012b7c4 Releases the font manager's fonts.
 0012bfec Constructs a critical section: a disposer with an initialized recursive lock.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
+0012c984 Constructs a layout: a list node over a layout with draw info, at scale 1, nothing loaded.
 0012ca6c Stores arg 1 at the object's offset 4 and returns 1.
 0012ca7c Constructs a load split: a list node, a file handle and a 128-character path, nothing loaded.
 0012cb84 Releases the scene's objects.
@@ -725,6 +726,7 @@
 0013e274 When reports are on (0x97e038): hashes the archive's name and sends its entry and kind to the report hook.
 0013e358 Closes the data store's box (without the flag).
 0013e360 Closes the data store's box, under the service lock.
+0013e560 Frees a block of an expanding heap (no lock), counting one block fewer.
 0013e580 Reads the heap block's info from its header.
 0013e6bc Removes the heap from the list of heaps, under its lock.
 0013e75c Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
@@ -1094,6 +1096,7 @@
 001cb118 Sets the model animation's frame (when positive).
 001cb474 Advances the button's animation until its slot is done, then stops it; true when finished.
 001cb7ec Stops the current animation and starts the first (0) or second (1) animation from zero.
+001cb884 Constructs an in-and-out window: a layout with its in and out animations, shown.
 001cb8fc Destroys an in-and-out window: its two animations and its layout.
 001cbb20 Places the model on its joint's matrix with its scale and updates it.
 001ccc58 Pushes a command of the kind for the target (0x28 bytes each, from +8 to the end at +0xc); true when there was room.
@@ -1549,6 +1552,7 @@
 0024b730 Sets the time stamp invalid and clears the badge counters, their flags and records.
 0024b97c Constructs the 24 encrypted counters, the six words and the two encrypted totals, all zero.
 0024c4dc Value `index` (below 25) of the search candidates, unless masked out (+0x4c); 0 otherwise.
+0024c53c Search candidates of kind 5: those whose letters (of a player, arg 1) carry no item.
 0024c858 Resets the schedule: a random count (1 to 10), its 7 entries (kind 0xf), the current day and state 5.
 0024c8d4 Clears the player's record at +0x8a3c and its references.
 0024d778 Clears the schedule and its references, with a random count.
@@ -1679,6 +1683,7 @@
 00274384 Loads the letter window's layout archive.
 00274394 The word at +0x1250 of entry `index` of the shown page.
 00274478 Sets the animation at +0x430 from the NPC's distance value plus 4.
+0027460c Destroys a post drag window: its drag icon group, buttons, animations, layout and archive reader.
 00274754 Loads the item selection window, the item icons (unless shared) and the bag's layout archives.
 0027480c Sets or clears bit 3 of the flags (+0xd4) of the 10 models (0x348 bytes each, +0x8e0).
 00275798 Releases the bag window's layouts, its 10 models' layouts and its message window.
@@ -2008,6 +2013,7 @@
 002d1a70 Stops and frees slot `index` (below 52), uncounting it.
 002d1b3c Counts one more furniture of the kind in its slot of the 3 (taking a free one for a new kind).
 002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
+002d1f40 Starts a furniture sound object for a furniture sound (arg 3): registers it and finds its sound table entry.
 002d2a4c Constructs a furniture sound object: a sound object base with two sound slots, nothing playing.
 002d2b90 Destroys a furniture sound object: stops it, detaches its two sounds and stops the base.
 002d2d60 Plays the sound furniture's song with its volume.
@@ -2648,6 +2654,7 @@
 0031c75c Adds a reference to the representation (not to the empty one).
 0031c770 Replaces a part of the string (position, length) with the given characters, making the representation its own.
 0031c7dc Sets up the window's parts with dummy layouts.
+0031c92c Destroys a custom button action node: releases its four animations' linked objects and textures, then \n destroys them.
 0031d00c Updates the button control at +0x608 and releases its active child once it is ready.
 0031d048 Sets up the button controls and their panes and animation targets.
 0031d258 Sets up the message box's layout and font.
@@ -5263,6 +5270,7 @@
 006bd2c8 The player's record (the size, by kind) of the insect, fish or sea creature item; 0 for other items.
 006bd550 The player's name pair record (+0x8d84) when they have one; null otherwise.
 006bd56c Checks the item's flags value.
+006bd910 Clears a player's save data: records, letters, badges, counters, items and position.
 006bddec Sends the player's pending star and secretary letters, clearing their flags once sent.
 006be888 Whether the field object has an item of the kind.
 006bead8 Stores the position at +0x73c.

@@ -2229,7 +2229,7 @@
 001cb768 ChangeMenuWindow__virtual_6
 001cb78c AmiiboPhotoBG__virtual_6
 001cb7ec ButtonAnim__start
-001cb884 InOutWindow__InOutWindow_001cb884
+001cb884 InOutWindow__construct
 001cb8cc InOutWindow__deleting_destructor
 001cb8fc InOutWindow__destructor
 001cb928 InstCatalog_8___deleting_destructor
