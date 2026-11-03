@@ -6,8 +6,15 @@
 00101334 strtol in base 10, errno left as it was.
 0010211c Skips white space and a sign, converts, and clamps to the long range on overflow (errno ERANGE).
 001032f6 Converts one wide character; -1 and errno EILSEQ when it has no multibyte form.
+00105d0c Picks a random item into `out`, from group 5 (35%), 3 (20%), 4 (20%), 6 (15%) or kind 0x33 (10%), never `exclude`.
+00106940 Frees the block `pointer` names in the pointer list and closes the gap.
 00107634 Removes notice `index` of the 15, moving the used ones after it up and clearing the last.
+00107ed0 Posts the public works notice for the first player who qualifies, once (its flag is set after).
+00107fac Posts the public works notice (variant 0x10) on the bulletin board when the town's flag asks for it.
 001082c8 Clears the bulletin board's 15 notices.
+001082e8 Posts the bulletin board's two default notices, dated today.
+00108ae0 Clears six item slots, then fills four with distinct items of group 0xb and two with distinct items of group 0xa.
+00109930 Creates the game's managers and singletons at start-up, in order.
 00109a90 Loads the NPC packages (normal, normal constants, special constants) and the other startup resources; whether all loaded.
 00111f4c Villager `id`'s bit (below 0x18f) in a bit array; 0 without one.
 00112d9c Clears the villager's letter (+0x2210) and its four kept letters (from +0x1810), then the rest of what it remembers of them.
@@ -157,6 +164,24 @@
 005a2534 Ends every field drop in use (sending what it needs) and clears it.
 005a2624 Sets the bit of cell (x, z) in a bit map of the town's 112 x 96 cells (after a 4-byte header); nothing out of range.
 005a2664 Clears a bit map of the town's 112 x 96 cells (0x540 bytes after its 4-byte header).
+005b0164 Writes the photo's file name (the prefix and the number + 1, four digits) into the path's name field (8 characters).
+005b034c The index (0-3) of the wide file extension `text` (a leading '.' ignored) in the table of known extensions; 0 when unknown.
+005b03fc Writes `value` as three decimal digits into bytes 0xc-0xe.
+005b0478 Writes the photo folder's name (the folder number + 100, three digits, and one of two suffixes) into the path's folder field (8 characters).
+005b0588 Writes known extension `index` (without its '.') into the path's extension field (4 characters).
+005b0664 The next photo number: the file number counts to 99, then the folder number advances (wrapping below 900).
+005b06a0 Starts the next photo folder (wrapping below 900) at file 0.
+005b2e10 Saves the captured screens as a photo: a JPEG, or a 3D MPO when the scene allows one, with the photo settings; the result in byte 4.
+005b2fac Reads both screens' framebuffers (their address, format and size) and copies each into its image, rotated.
+005b30c4 Copies a rectangle of a 16-bit framebuffer (stored a column at a time, as the screens are) into an image stored a row at a time.
+005b3ed4 The current scene becomes the previous one; no current or next scene.
+005b4088 The next scene becomes the current one (the current one the previous); no next scene.
+005b4428 Sets the next scene to `scene` and asks for the change with its entrance parameters (6: the saved ones).
+005b449c The index of `scene` among the scenes (of 0xa5) whose flags (the table at 0x889074) include all of `flags`; -1 when it has not.
+005b48b4 Whether the current scene's flags make it one of the kinds marked 0x20, 0x40000 or 0x80000 (and 4, without 0x10).
+005b493c Word `scene` of the scene table at 0x88997c; -1 for no scene (0xa5 or more).
+005b4a40 Whether the current scene is flagged as a house room (8, without 0x10) and belongs to the local player (one of their six rooms, or a page the main slot's player owns).
+005b6a10 Whether `scene` is one of the six rooms (the table at 0x889c80, six per player) of the house of the player on this console.
 005c021c Puts the clothing item the current player holds into a free pocket slot (unless a request has it reserved), and records the player and slot in `ref`; true when it did.
 005c0648 Records the current player's identity and pocket `slot` (fewer than 16) in `ref`.
 005c0898 The item the main player holds (empty without a player).

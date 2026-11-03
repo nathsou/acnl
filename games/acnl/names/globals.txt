@@ -8,6 +8,7 @@
 00950148 npc_manager
 00952c38 no_device_heap
 00952c3c stage_heap
+00952c48 weather_heap
 00952c54 real_estate_heap
 00952c64 human_anim_bank_heap
 00952c68 sead_particle_heap
@@ -19,8 +20,12 @@
 00952c84 script_heap
 00952c94 sound_heap
 00952c9c net_heap
+00952ca0 net_game_heap
 00952cac work_heap
 0095362c net_session
+00957321 previous_scene
+00957322 current_scene
+00957323 next_scene
 0095bfdc empty_item
 0095debc word_resources
 0095decc message_store
