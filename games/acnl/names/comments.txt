@@ -766,6 +766,8 @@
 001c2040 The 0xa00-byte layout block of id from the first table; null when it is not loaded.
 001c2074 The 0xa00-byte layout block of id from the second table; null when it is not loaded.
 001c23b0 Copies the transform and composes its rotation with the other's.
+001c244c Interpolates the two transforms by the factor (in s0).
+001c25d8 Interpolates the two transforms (the second layout).
 001c4bc8 ORs `bits` into the 16-bit cell (x, y), keeping only its low 4 bits.
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
 001c4c14 Calls 005bf518.
@@ -773,15 +775,18 @@
 001c53dc Starts the state with the handler pair at 0x87a024.
 001c551c Starts the state with the handler pair at 0x87a02c.
 001c8cd4 Relocates the table's entries to addresses.
+001c987c Sets the gift manager's entry for the slot.
 001c98d8 Moves the effect to the NPC's mouth (or the default point) and counts its timer down.
 001c9f88 Plays the pop scale animation (grows to 1.125, shrinks to 0.875, settles at 1 over 20 frames); true when done.
 001ca2c0 Shrinks the scale to 0 over 10 frames (after the delay); true when done.
+001cb118 Sets the model animation's frame (when positive).
 001cb474 Advances the button's animation until its slot is done, then stops it; true when finished.
 001cb7ec Stops the current animation and starts the first (0) or second (1) animation from zero.
 001cbb20 Places the model on its joint's matrix with its scale and updates it.
 001ccc58 Pushes a command of the kind for the target (0x28 bytes each, from +8 to the end at +0xc); true when there was room.
 001cce78 Pushes command 5 with the word.
 001ccee0 Pushes command 2 with the position.
+001ccf5c Sets the NPC's talk flag for the main object.
 001cd538 Pushes command 4 with the two halves.
 001cd668 Pushes command 0 for the target.
 001cd690 Pushes command 1 for the target.
@@ -795,37 +800,60 @@
 001cde1c Clears the top two bits of the word (+8).
 001cde2c Sets or clears bit 15 of the half (+0xc).
 001cde9c Clears bits 26 to 29 of the word (+8).
+001cdeac Refreshes the material's flags.
 001cdf18 Clears the top two bits and bits 23 to 26 of the word (+8).
 001cdf2c Sets the 4-bit field at bits 23 to 26 of the word (+8).
 001cdf44 Count `index`: the 14-bit total for 0 (at most 9999), else the 7-bit count `index` of the word (at most 99).
 001cdf88 Clears bits 23 to 26 of the word (+8).
 001cdf98 Sets the low nibble of +0xe.
+001ce548 Plays the NPC model's animation with its blend.
 001ce934 Sets the colors of the model's cloth and legs materials from the two color tables.
 001ceb78 Sets up the player's model for their gender (+0x55ba) with the parameters.
+001cebc0 Sets the NPC model's clothes for its gender.
 001cf9c4 Plays the player's motion with its blend.
 001d051c Finishes the pending work (+0x1bc) with mode 2 and clears it; 0.
 001d2694 Plays motion 0xae with the speeds.
 001d2e8c Sets the face byte (+0x224) and the hair word (+0x228).
+001d3720 Resets the camera controller's state.
 001d5348 Stops the sound (state 5) or, when idle, ends the special sound (in scene 0x27, playing the end sound) and forgets it.
 001d560c Stops the two sounds, gives back the event's sound data (0x100026b or 0x100026c) and resets its state.
 001d56a0 Plays the event's start sound (0x100009b), with its parameter when asked and set.
+001d5e0c Finishes the sound part unless done.
+001d6868 Pauses the sound part (from playing).
 001d71c8 Stops the sound (state 5), or pauses it (state 2) when it was playing.
+001d7610 Requests the sound part stop (when playing).
+001d7a10 Updates the sound part by its state (below 6).
+001d7b84 Plays the sound in the part's slot 2.
 001d7b90 Forgets the object when it is the remembered one (+0x98).
 001d7ba4 Forwards to the function at 0x1d560c.
 001d7ee0 In scene 0x66, plays sound 0x100078d on the handle.
 001d7f24 Stops slot `index` (+0x2c) and plays the sound on it.
 001d8760 Plays or stops the scene's sounds by its kind (0x65 and 0x67).
 001d9578 Starts the microphone sampling with the rate of the mode; true when it started (state 2).
+001d960c Clears the microphone manager's slot (below 2).
+001d982c Starts the microphone manager's recording.
+001d987c Updates the microphone manager (recording or stopping).
+001d9934 Whether the microphone manager is idle or stopped.
+001d99ec Stops the microphone recorder and marks it stopped.
 001d9a08 Updates the microphone sampling and its flags.
 001d9cdc Sets the mode (+0x80) when it is at most 2.
+001da158 Destroys the river sound object and detaches it.
+001dae5c Updates the sea sound unless the system mutes it.
+001db118 Starts the 3D sound once its data is loaded.
+001db214 Starts the 3D sound at the position with its kind.
+001db3d4 Stops the 3D sound when it plays.
 001dba70 Marks the structures' rectangles in the placement grid.
+001dbc04 Marks the structures' rectangles in the grid (the second rule).
 001dc6e8 Visits the structure's rectangle, placing its cells.
 001dc87c Finds the rectangles where the structures may go.
+001dcb90 Finds the rectangles where the structures may go (the second rule).
 001de400 Copies the 4-byte entries of variant `index` of the layout table at 0xac3750 into the buffer when it fits; their count, or 0.
 001de4a8 Clears the bits of field `index` (2 bits each) given by the value plus 1.
 001de4c0 The total of the 6 two-bit fields (3 counts 2, 1 or 2 count 1).
+001de664 Sets the option record's values.
 001de7d0 The level of field `index`: 2 for both bits, 1 for one, 0 for none.
 001de7f8 True when field `index` has the bit of the value plus 1.
+001de818 Resets the option record.
 001de848 Resets the record (+0x1224) of the first of the 4 house blocks to state 0x1e.
 001de880 Starts the player's event once per slot (outside slot 8) when the player is flagged (bit 1 of +0x5701).
 001de99c When the visit (kind 3) is from this town's mayor, stores it in the next of the 4 log entries with its time.
@@ -845,6 +873,7 @@
 001df368 The data block at 0x982068 when it is loaded and not locked; 0 otherwise.
 001df394 The data block at 0x982018 when it is loaded; 0 otherwise.
 001df3b4 The data block at 0x982040 when it is loaded; 0 otherwise.
+001df42c Resets the save's block at +0x71900 and its players.
 001df4c4 Constructs the 6 items of the outfit, all empty.
 001df564 Adds to the low 3 bits of the byte, clamped to 0 to 7.
 001df598 Adds to the 8-bit field from bit 1 of +3, clamped to 0 to 255.
@@ -855,6 +884,7 @@
 001e00c8 Resets the record's constants and constructs its part.
 001e00e4 Constructs the 8 patterns' names.
 001e0114 Clears the 8 patterns: their names, creators, palettes, flags and pixels.
+001e017c Constructs the 8 design patterns (0x870 bytes each).
 001e0220 Stores the stamp of event 0x863 (+4) and sets bit 0 of the flags (+0x22).
 001e025c Stamps the mail data and sets its flag (on), or clears both (off).
 001e02b4 Sets (on) or clears (off) bit 8 of the mail data's flags.
@@ -877,6 +907,7 @@
 001e4524 Sets the state byte; state 1 also sets bit 5 of the town flag at +0x62152 and updates the town's record.
 001e4578 Places item `index` (below 18) in the room or the field once, when its owner is the current player.
 001e46e8 Places item `index` (below 6) in the room or the field once, when its owner is the current player.
+001e51f0 Sets the scene's time of day.
 001e5600 Updates the town's time from its stamp.
 001e57e8 Resets the request record with mode 0x20001800.
 001e5820 When loaded, releases the loader at 0x982018 and resets its state to 4.
@@ -891,6 +922,7 @@
 001e6df4 In the current scene, turns one light of the kind off (restoring the default light when it was the last); in a house room, updates its record and, in a session, sends message 0x46.
 001e6f58 Turns off the light of the furniture's kind (kind 0xa for lamps 5, 0xb, 0x11, 0x17 and 0x94, else 0xb).
 001e6f98 Turns a light of kind 0xa on.
+001e6fb8 Updates the scene's lights for the time.
 001e74b0 Turns a light of kind 0xb on.
 001e74d4 Sets the scene's brightness byte and its float (value / 255), marking it set.
 001e7504 True when a light of kind 0xa or 0xb is on in the scene (the current one's counts or the house room's record).
@@ -898,6 +930,7 @@
 001e83e4 The 8-bit ambient color for the hour and part from the table.
 001e848c Clears the light flag (0x9520c4) and marks the lights changed.
 001e84c8 Sets the light flag (0x9520c4) and marks the lights changed.
+001e885c Loads the scene environment's resources of the kind.
 001e8ba4 Classifies the save archive's result: 0 on success, 1 for the corrupted-data errors, 4 otherwise (remembering the code).
 001e8c34 Commits the archive (0x952630) and unmounts it; true on success.
 001e90e4 Constructs the actor base from its parameters, with cleared flags and angles.
@@ -906,8 +939,10 @@
 001ed594 Clears the DJ controller's state words.
 001ed5b4 Dresses the current player in the default outfit for their gender (+0x55ba).
 001edaec Selects the talk's message by its mode.
+001f499c Spawns the insect of the kind with the flag.
 001f4fec Constructs the actor with the class's vtables and zeroes its motion, rotation and scale.
 001f581c Scales the shown insect or fish by its size, starts its sound (local when it is the main player's) and takes its item.
+001f5e5c The shown object's item state; writes whether it is shown.
 001f6844 Places the actor at the position with the rotation (clearing the old one) and its scale.
 001f6cc8 When the shown item changed or ended: stops its sound, clears it and, when asked, sets up the new one.
 001f8798 Sets up the icon button's actions, its node values and messages.
@@ -921,10 +956,12 @@
 001f9a08 Notifies the window's active animations and starts the close animation.
 001f9a84 Whether the window is in its open or close animation.
 001f9b08 Notifies the window's active animations, records the flag and starts the hide animation.
+001fa290 Updates the talk window's state.
 001fa354 Shows the window at once: stops its animations, completes the open one and enters the shown state.
 001fa744 Sends the player's profile (0x81) or the request for one (0x82) to the session.
 001fad34 Resets the id the object points to (+0x60) to the default.
 001fbec8 Finds the menu's eight panes, binds their texts and shows the current page.
+001fc044 Shows the menu list's page from the selection.
 001fde44 Shows the notice's message and stores its handle.
 001fde7c Resets the id at 0x993068 to the default.
 001fde9c Closes the notice's message and forgets its handle.
@@ -942,6 +979,10 @@
 00202370 Places random tiles of the kind in the 7 x 6 grid.
 002025bc Allocates a grid rectangle and builds it with its buffer; destroys it and gives null on failure.
 002026e4 Allocates a grid rectangle and builds it (the 0x5810ac builder); destroys it and gives null on failure.
+00202740 Loads the resource with the formatted name (the fourth pattern).
+002029fc Loads the resource with the formatted name (the second pattern).
+00202c78 Loads the resource with the formatted name (the third pattern).
+00202ef4 Loads the resource with the formatted name (the first pattern).
 00203170 Allocates a grid rectangle and builds it with its second buffer kind; destroys it and gives null on failure.
 0020350c Constructs the archive accessor, the layout and its four animations.
 00203554 The owner record of the map mode (outdoors, flag 0x80), or the town's.
@@ -957,6 +998,7 @@
 00204568 Refreshes the object and clears bit 7 of +0x280.
 00204584 Refreshes the object and clears bit 6 of +0x280.
 002045a0 Refreshes the object and clears bit 5 of +0x280.
+00205d80 Sets the model animation's rate (in s0) by its entry.
 002068b8 Sends network message 0x40 with the NPC's slot, the main object and the time (the longest wait of the stations plus 300) and tells the NPC manager.
 00206f7c Sets up the item button: its control, its item pane and position, animation targets and sounds.
 00207168 Calls the function at 0x207190 with a record holding the half.
@@ -966,7 +1008,9 @@
 0020758c Spawns the effect through a temporary particle handle.
 002075d4 Spawns the effect of the id at the position, with its owner.
 00207710 Stops the emitter set (+4) and frees its buffer (+0xc).
+00207740 Spawns the effect of the kind at the position.
 00207750 Resets the handle and spawns effect `id` with the group and draw kind (from the priority), rotating it in scenes that need it; true when spawned.
+0020933c Draws the item label's layout on the bottom screen.
 0020968c Releases the window's layout parts (when loaded) and layout, and its list (when not).
 00209f40 Counts a frame (up to 300) and, while the target (+0x1470) is farther than the threshold, gives its position; clears it when near.
 0020a474 Starts fading the value to the target over `frames` (immediately for 0), then holding for `hold` frames.
