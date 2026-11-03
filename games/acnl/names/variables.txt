@@ -1483,7 +1483,6 @@
 001de99c r0@1dea38 year_2
 001dec8c arg0 visitor_log
 001decb0 arg0 visitor_log
-001ded24 r0@entry visitor_log
 001ded24 r5@entry i
 001dedc0 r0@entry visitor_log
 001dedc0 r5@entry i
