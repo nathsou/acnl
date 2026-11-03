@@ -5171,6 +5171,7 @@
 00605628 The byte of the table at 0x94ebd1 for the index.
 00605ca0 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00605d44 Registers the background download storage on the stage heap when the save allows it.
+00606704 The scene's pre-execute step: once the reports are done, applies a pending announcement (music, scene \n environment, scene change) or steps the net session's entry exchange, then the scene's music.
 00606a24 Sets the pending announcement: its message id, four flags and a value.
 00606a64 Resets the pending announcement to the default message and clears it.
 00606ab4 Shows the pending announcement when nothing blocks it (no announcement shown, no error screen, the session idle); whether it was shown.
