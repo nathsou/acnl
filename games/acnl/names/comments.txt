@@ -3056,6 +3056,7 @@
 00317ec4 `value` limited to [low, high] (signed).
 00317fd8 Scans the items of the cells around the world position, checking their properties.
 00318540 Sets the bits in the record's first half.
+003187a8 Destroys the model home board menu: its button, layouts, archive readers and menu base.
 00318d8c The signed byte `index` (below 3) at +0x56; -1 out of range.
 00318da0 True when the two identity pairs (with the town ids at +0x2c) are equal.
 00318e38 The record of the player (of the two kept for them) whose identity pair matches; null when none does.
@@ -3092,6 +3093,7 @@
 0031c770 Replaces a part of the string (position, length) with the given characters, making the representation its own.
 0031c7dc Sets up the window's parts with dummy layouts.
 0031c92c Destroys a custom button action node: releases its four animations' linked objects and textures, then \n destroys them.
+0031cd1c Constructs a storage stock change window: a rental change window with ten item slots and an item drag icon \n group, its layout names and the storage state.
 0031d00c Updates the button control at +0x608 and releases its active child once it is ready.
 0031d048 Sets up the button controls and their panes and animation targets.
 0031d258 Sets up the message box's layout and font.
@@ -3099,6 +3101,7 @@
 0031d8f8 Stops the model's animation (when asked) and resets the second slot (+0x60) when it is playing.
 0031df9c Stops the slot's animation in the model and releases its resource.
 0031e0d8 Resets both animation slots (+0x2c, +0x60) and their material animations, and forgets the model.
+0031e124 Constructs a face animation control: two material animations, the default eye and mouth frames, nothing \n playing.
 0031e204 Destroys a face animation control: its two material animations.
 0031e228 Fits the message box's width to its current line.
 0031e314 Places the message box's cursor at the end of the text.
@@ -3112,6 +3115,7 @@
 0031f1a4 Starts the state at +0x213c with the handler pair at 0x879538.
 0031f2bc Starts the state at +0x213c with the handler pair at 0x879540.
 0031f2dc Sets up the window's B button pane and its values.
+0031f55c Destroys a letter item drag window: its icon groups and node, drag icon control, layout and archive reader.
 0031f69c Sets the flag of the entry for the key (0x2b4 bytes each) and updates its node.
 0031f7f0 Draws a letter post drag window's layout on the lower screen.
 0031fa14 True when the state at +0x213c runs the handler pair at 0x879558.
@@ -3151,6 +3155,7 @@
 003232a8 Sets byte `index` (below 16) at +0x40; false out of range.
 003232c0 Moves the items into the pockets by category, converting them when needed.
 00324934 Calls handler `index` of the table at 0x845304.
+003255b4 Constructs a hemisphere light's base: a light base with black ground and sky colors (alpha 1), a \n hemisphere light, blend 0.5.
 00326360 Loads the room light switch menu's layout, animations and panes.
 00327ce8 Appends the entry to the queue, first filling it with the object's parameters when asked.
 003280e0 Plays the layout's named animation.
