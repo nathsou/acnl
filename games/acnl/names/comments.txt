@@ -546,6 +546,7 @@
 001aede0 Draws the rectangle of the tile range (in sixteenths).
 001af458 Releases the split load's part at 0xa18690.
 001af914 Sorts the ids by their order (from the loaded table at 0xa18690).
+001afc70 Adds the item's base form (normalized for its category) to the list when no equal item is in it yet, counting it.
 001b1010 Loads the six static data tables; true when all loaded.
 001b1900 Takes the received letter (version 3, newer than the current one) when its checksum over 0x28c bytes matches and its letter is valid; true when taken.
 001b19ac Constructs an empty received letter record.
@@ -624,9 +625,24 @@
 001bbbe8 True when the player's mailbox has a free slot.
 001bbc30 Delivers the stored letter to its recipient (town player or villager) when its day has come; true when delivered.
 001bfa48 Places the shown item's model at its cell (raised for wall items) and attaches it to the NPC.
+001c0810 Plays the NPC sound at the position (converted by the camera) and marks it playing; true.
+001c0c1c Updates the NPC sound at the position (converted by the camera).
+001c0f3c Stops the NPC sound when it plays.
+001c0f64 Marks the sound moved (+0x94); its kind byte.
+001c0fdc Constructs the NPC sound holder with full volume, stopped.
+001c1fcc The 0xa00-byte layout block of id (from the first table for ids up to 0x108, else the second); null when it is not loaded.
+001c2040 The 0xa00-byte layout block of id from the first table; null when it is not loaded.
+001c2074 The 0xa00-byte layout block of id from the second table; null when it is not loaded.
+001c23b0 Copies the transform and composes its rotation with the other's.
 001c4bc8 ORs `bits` into the 16-bit cell (x, y), keeping only its low 4 bits.
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
 001c4c14 Calls 005bf518.
+001c50e0 Centers the window on its pane (screen 320 x 240) and stores its size; marks it placed.
+001c53dc Starts the state with the handler pair at 0x87a024.
+001c551c Starts the state with the handler pair at 0x87a02c.
+001c8cd4 Relocates the table's entries to addresses.
+001c98d8 Moves the effect to the NPC's mouth (or the default point) and counts its timer down.
+001c9f88 Plays the pop scale animation (grows to 1.125, shrinks to 0.875, settles at 1 over 20 frames); true when done.
 001d051c Finishes the pending work (+0x1bc) with mode 2 and clears it; 0.
 001d2694 Plays motion 0xae with the speeds.
 001d2e8c Sets the face byte (+0x224) and the hair word (+0x228).
