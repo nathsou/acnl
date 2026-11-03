@@ -521,6 +521,7 @@
 0012b228 Whether the friends session is open (under the friends lock).
 0012b264 Sends command 8 with the buffer to the service.
 0012b31c Sends command 0x32 (header 0x320042) to the service at 0x97d89c and returns its result.
+0012b394 Constructs an archive resource accessor: no archive, empty font and archive lists.
 0012b3dc Runs the function at 0x131154 on +0x10 under the lock at +4.
 0012b40c Shuts the system services down in order and releases their global objects.
 0012b7c4 Releases the font manager's fonts.
@@ -528,6 +529,7 @@
 0012b940 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0012bfec Constructs a critical section: a disposer with an initialized recursive lock.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
+0012c40c Sets the current thread's context (arg 1); returns the previous one.
 0012c984 Constructs a layout: a list node over a layout with draw info, at scale 1, nothing loaded.
 0012ca6c Stores arg 1 at the object's offset 4 and returns 1.
 0012ca7c Constructs a load split: a list node, a file handle and a 128-character path, nothing loaded.
@@ -3294,6 +3296,7 @@
 0050a710 The number of letters in the list, less one when the current one is hidden.
 0050bcb4 Constructs a layout text area: a layout object with a tag processor, an empty bounding box and no text.
 0050c424 Updates the animation object's tracks.
+0050c800 Constructs a layout animation object for a pane (arg 2) of an animation (arg 1): at scale 1 from frame 0, \n and updates it.
 0050c9a4 Clears the record and invalidates its id.
 0050ca3c Invalidates the record's id and clears it.
 0050cb2c Finds the value in the list of 100.
@@ -3333,6 +3336,7 @@
 0050deec Writes the C string to the log as a NEX string.
 0050df24 Writes the C string followed by the wide string to the log.
 0050df80 Writes the wide string to the log.
+0050e1d0 Creates the NEX heap (0xd6000 bytes, unless it exists) under the object's heap and clears its state.
 0050e778 Sets up the online session and creates or joins its gathering.
 0050ecf4 Releases the online session under its lock, when NEX is up.
 0050ed5c Allocates the pool of 100 entries once and sets up NEX's thread variables and log level.
@@ -3605,6 +3609,7 @@
 00538088 Sets the array up empty on the buffer of `capacity` pointers.
 00538188 Locks the recursive lock at the object's offset 0x10.
 00538274 Unlocks the recursive lock at the object's offset 0x10.
+005382c4 Destroys a critical section: its disposer.
 0053ac4c Allocates `size` bytes (aligned to 4) from the heap, or the current thread's heap.
 0053ac90 Allocates `size` bytes with the alignment from the heap, or the current thread's heap.
 0053acd8 Formats into the string's buffer (always terminated).
@@ -3617,6 +3622,7 @@
 0053b4cc Decodes the Base64 text into the buffer.
 0053b6fc Encodes the bytes as Base64 (the URL-safe alphabet when asked), padding with '='.
 0053b844 Seeds the 4-word random state from the system tick (with the Mersenne Twister initializer).
+0053bc7c Constructs the main thread object for the current thread: its priority, stack and a pool of 32 messages.
 0053c024 Calls the function at 0x537c28 with the two words as a pair.
 0053c300 Allocates `size` bytes with the alignment from the front of a free block, splitting off the rest.
 0053c568 Allocates `size` bytes with the alignment from the back of a free block, splitting off the rest.
@@ -3669,6 +3675,7 @@
 0055224c Particle command: at each interval, adds a random offset scaled per axis to the velocity; the next command.
 005547e0 The emitter's own matrix, or its set's when it follows the set.
 005547f8 Resets the emitter's state and timers.
+00554fbc Constructs a particle texture's data: a texture with no image.
 005551f4 Resets the emitter's fade.
 00555824 Writes the renderer's GPU state commands (blend, depth and the color constants) into the buffer; its end.
 00555f90 Writes the renderer's base state and the 3x4 matrix as GPU commands; their end.
@@ -3710,6 +3717,7 @@
 00560688 Links the node at the front of the list.
 00560868 Calls virtual 4 of the task's root object.
 00560930 Constructs the task entry: its 4 sub entries, cleared words and index -1, enabled.
+00560a20 Destroys a task: finishes its child tasks, detaches it from the tree and its list, then the disposer.
 00560aa8 Unlinks the node from its parent and siblings.
 00560b0c Unlinks the node and appends it as the last child.
 00560b6c Unlinks the child, then appends it as the last child of the node.
@@ -3731,6 +3739,7 @@
 00567224 Unless busy, starts the loader's load (virtual 3) once when everything it needs is ready.
 00567a10 Sets the layout's draw priority and refreshes it.
 00567cc8 Formats the string with the shared pair at 0x975c14.
+00567ce4 Starts loading a text layout's compressed archive (path arg 1) on a heap (arg 2), and shows its text in its \n pane once it has one.
 00567d60 Binds the source's resource (+0x22c) once, with its callback.
 00567d9c Forwards to sead__SafeStringBase_char___SafeStringBase_00567dac.
 00567dac Starts loading a text layout's archive (path arg 1) with the layout allocator, and shows its text in its \n pane once it has one.
@@ -5941,6 +5950,7 @@
 0071b2a8 The id (+0xc8 of +0x104) of the current menu, or -1 when none or idle.
 0071b708 The word of the villager's habit (the habit table entry of its id, from 0xa83afc).
 0071b88c The text (+0xa) of the villager's entry in the habit table at 0xa83afc.
+0071b8d0 The kind (the high nibble of byte 0x1c) of an NPC's text entry, by its id (arg 0's first half).
 0071bf58 How many of the ten 8-byte entries (+0x10) have `id` (0 when +0x60 is clear).
 0071bfa0 Whether one of the ten 8-byte history entries (+0x10) has `id` (false when +0x60 is clear).
 0071bfe4 Whether one of the five 12-byte entries (+0x64) has `id` with a value (+8) of at least the given float (false when +0xa0 is clear).
