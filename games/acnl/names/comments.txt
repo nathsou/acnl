@@ -18,26 +18,164 @@
 00109930 Creates the game's managers and singletons at start-up, in order.
 00109a90 Loads the NPC packages (normal, normal constants, special constants) and the other startup resources; whether all loaded.
 0010c12c Forwards to free_memory.
+00110cdc Clears the byte at 0x95c219.
+00111050 When no blocking event runs and an hour has passed since the last check: clears the requests of villagers no longer in state 0x21, then stores the updated set.
+00111d48 Builds the villager part of the save data: ten villagers, the town's records, the two boards of 16 entries and the rest.
 00111f4c Villager `id`'s bit (below 0x18f) in a bit array; 0 without one.
+0011253c Clears the villager part (0x22bcc bytes) and the four villagers kept at +0x1976c (two sets of two).
+00112584 Builds the villager part and its four extra villagers, then clears it all.
 00112714 Forwards to SaveVillager__remove_item_8d6.
+001127ac Forwards to 001127b4.
+00112d34 Sets the villager's item `slot` (below 16: 0-9 in the main list, 10 and 11 the two special slots, 12-15 compacted); when `notify`, sends request 4 with the villager's index and slot.
 00112d9c Clears the villager's letter (+0x2210) and its four kept letters (from +0x1810), then the rest of what it remembers of them.
+00112f9c Changes the villager's friendship (00311f7c) with a player (the current one by default) by `amount`; when it rose, updates the player's record.
+00112fe2 Byte +6 of the record, or 0 without one.
+00112fea Byte +7 of the record, or 0 without one.
 001130cc Clears two flag bits of each of the villager's 16 player memories (0xf2 bytes each, from +0x8ee).
+001133f8 Sends request 4 with the villager's index in the town and two values.
 00113430 Clears the villager's four kept letters (from +0x1810) and resets what goes with each.
+00113828 Calls 00113830 when the second argument is set, else 0.
+001138a4 Sets bit `bit` of the villager's 16-bit flags in the table at 0xad555c (by its index in the town).
 001138dc Copies a villager record (0x2518 bytes).
 001138ec Clears the villager and sets it up from `source`: its id, its data entry, the town's details, the date, its catchphrase from the message data, and its player memories.
 001139f4 Forwards to SaveVillager__set_state_250f.
 00113ca4 Removes `item` from the villager's four items (+0x8c6) when it has it.
 00113cfc Item `index` (fewer than 4) of the villager's items at +0x8c6; null for a larger index.
 00113d14 Constructs a villager record (its items, memories, letters and the rest), then clears it.
+00113ecc Updates the part at +0xb6 and, when the villager is the one of the current mode, finishes it.
 00114160 Clears villager (row, column) of a 2 x 2 block of villager records.
+00114184 Forwards to 0011418c.
+00114694 Updates the day records (+0x8b78) when the new day differs or comes before the last one.
+001146fc Renews the notices and the parts of the town flags block for the new day.
+001147a8 Stores an option byte through the setting at 0x105ccd and applies it.
+00114810 Starts scene 0x66; for the current player, sells the shoes and pocket items into the bank and records the balance, takes off the set-A items, then continues to 001148c4.
+00114ae0 Calls 002fd648 with the function 0x10617d and an argument.
+00114af0 Reads the 16-bit value through the accessor at 0x105bf5.
 00114b28 Refreshes three scores and sums them, each limited to 0-100.
+00114bd0 Reads the 16-bit value through the accessor at 0x105e15.
+00114c70 Calls 00314c74 with the accessor at 0x105c31.
+00114c80 Calls 00314c74 with the accessor at 0x105d05.
+00114c90 Stores a byte at 0x952b9c.
+00114c9c Stores the argument at 0x952bdc and starts kind 0x1e on the four blocks (1-2, 1-2).
+00114e00 Stores the argument at 0x952bdc.
+00114e10 Picks a random block (of the 5 x 4 whose kind qualifies), starts kind 1 there and kind 0x1e on a random one of the four corner blocks.
+00116cdc Clears the value through the accessor at 0x105971 and applies it.
+00116cf4 Runs the daily update (00114d00), resets each existing player's record at +0x5498 and resets the two global blocks.
 00116ebe Records `count` and `bits` and counts the set bits among the first `count`.
+00116f2c Calls 0030be88 and returns its object.
+00117674 Runs the handlers for the current scene's kind (0x20 / 0x10000000 -> 0030c3a0, 0x200 -> 0030c3a4).
+00117ac0 In scenes with bit 0x80: sets bit 6 of +0x570a of the current player.
+0011872a Sets flag 0x40 of the bits at +0x1aa.
 00118738 Clears a 0x1ac-byte record, marks it used and stamps it with the date.
+00118770 Sets flag 2 << `index` (2, 4, 8 or 0x10 only) of the bits at +0x1aa.
+00118792 Builds a word pointer to +0x24 of the second argument.
+0011879c Forwards to 001187a4.
+00118a5c Calls 0030ce50 and returns its object.
+00118a64 Clears the weather record and generates its first days (00118a94).
+00118a74 Clears the weather record (+8 = -1, +9 and +0xa = 0x34).
+00118a94 Brings the weather record up to today, generating the weather pattern for the days that passed.
 00118b70 The index of the first unused record of 15 (0x1ac bytes each); 15 when all are used.
+00118f18 The value (00318d8c) for `index` (below 3) of the moving record at +0x173ec when it is in state 0x12; -1 otherwise.
 00118f7c The index of the first of 16 16-bit slots (from +0x17656) holding 0xffff; 16 when none.
 00118fb4 The index of the first of the 10 villagers whose flags (+0x2510) mark it (bit 0 without bit 1, or bits 0x600); -1 when none.
+00118ff8 When the main object is idle: the visitor record (+0x173a0 for kinds 0xe/0xf, +0x173c6 for 0x10/0x11) of the villager of the object; else 0.
+0011922c The first of the ten entries of the table at 0xa82b90 with flag 4 (+0x44), or -1.
+00119254 Whether the villager kept at +0x17676 is valid and bit 4 of +0x172f0 is set.
+00119308 The days left of the event at +0x19760: 7 (or 10 when its villager is close to a player) minus the elapsed days; -1 without a valid villager.
+00119360 The first of the ten entries of the table at 0xa82b90 with flag 3 (+0x44), or -1.
+00119388 For each of the ten villagers: rebuilds its phrase from its personality (+0x24f0) and applies it.
+001194e0 Forwards to global_word_7e0 with the second argument.
+001194ec Whether one of the ten villagers passes 00309a44 and is not in state 2 (nor marked leaving by bits 0-1 of +0x2510).
+001195bc The 16-bit id `index` (below 16) of the list at +0x17656, or 0xffff.
+00119898 The first of the 16 board entries (0xf2 bytes from +0x8ee) that matches the key, or 0.
+00119fe4 The constant for an indexed object (tables at 0x88ee28, 0x88ee68, 0x88ee88), chosen by `which` and the town flags (bits 1-2 of save +0x621cf).
+0011b37c The address of word `index` (below 4) of the table at +0x8c6, or 0.
+0011b3d4 The level (0-5) of the talk's 9-bit value (+0xb9) against the descending thresholds at 0x88ec60.
+0011b40c The address of villager `index` of pair `pair` (0x4a30 bytes per pair, 0x2518 per villager).
+0011b48c The index of the `n`-th set bit (n below the count +8) of the mask (+4, size +0), or -1.
+0011b4be The index of a random set bit of the mask (+4, size +0, count +8), or -1 when it is empty.
+0011b51e Builds a word pointer to +0x12 of the second argument.
 0011b528 Forwards to script__WordCPtrSv__WordCPtrSv_0031b25c.
+0011b530 Bit 6 of the 16-bit flags at +0x1aa.
+0011b53c Whether flag 2 << `index` of the bits at +0x1aa is set (true for other indices).
+0011b560 Builds a word pointer to +0x24 of the second argument.
+0011b56a Bit 5 of the 16-bit flags at +0x1aa.
+0011b576 A random index (below 0x21) whose test passes, by reservoir choice; 0x21 when none.
+0011b836 Releases facet `index` of the locale's facet table (its slot set to -1).
+0011b872 The address of facet `index` of the locale's facet table, or the shared default when out of range.
+0011b890 Looks up facet `index` of the locale (001063bc), or 0 when it is not there.
+0011ba94 Calls 00307650 with the locale's name (or the default name when it has none).
+0011badc Builds a named locale (the POSIX name for the classic one) on the heap.
+0011bcfc Appends the name of category `category` (below 0x17, from the table at 0x8c8428) to the locale's combined name (+4).
+0011bd84 Builds a facet (vtable 0x90b5a4) with no reference count.
+0011bdd8 Resets the vtable to 0x90b5e8 and releases the string at +0x14.
+0011bdf0 Initializes a locale entry (id -1) sharing the implementation of another.
+0011bf9a Points at another locale's implementation and adds a reference (+0x1c).
+0011bfa8 Points at the global locale implementation (made on first use, 0x981fc8) and adds a reference.
+0011bfe2 Releases the string at +0x10.
+0011bffc Releases the object at +0x10 (0010c234).
+0011c00c Sets the facet base vtable (0x90b6a4).
+0011c0fa Destroys an array allocated with its count and element size stored before it.
+0011c120 Builds an array of objects (count, size, constructor) through 0011c02c.
+0011c218 The address of word `index` of the array at +0.
+0011c220 Resizes the locale's facet table to `count` entries (8 bytes each), copying the existing ones and filling the rest with the default.
+0011c464 Allocates a new buffer for at least `size` characters (1.625 times the size, or size + 32 at least); returns its text.
+0011c614 Assigns a C string to a shared string: copies it when not empty, else makes the string empty (dropping its buffer when shared).
+0011cb18 Fills the OS information block at 0xaf74c8 (two values from 00142104 and 0011d7ec).
+0011cb6c Starts the OS services (0011df2c), clears 0x974f50 and starts the next stages.
+0011cb8c Reads the application memory size (0x1ff80040), splits it between the program, the main heap and the device memory (0x31b8000), and creates the heaps.
+0011cc54 Unless disabled (0x974ad8): marks 0x974ab3, creates a thread (priority 0x300) and waits for it, then closes its handles.
+0011cfe4 Keeps ten times the tick rate (0x974f18) and marks the time as ready (0x974f00, 0x974f01).
+0011d048 Grows or shrinks the memory mapped from 0x8000000 to `size` (a multiple of 0x1000; svcControlMemory), keeping the size at 0x974f5c.
+0011d144 Maps the device memory block of `size` (0x31b8000 here) and keeps its address.
+0011d258 Whether the extended memory mode is on (read once from the system with 0x400024b, kept at 0x974f48).
+0011d2d4 Calls 0011f8d4 and reports a fatal error with information when it fails.
+0011d350 Creates the root heap and every game heap (work, stage, real estate, animations, weather, particles, effects, fader, UGC, script, sound, network).
+0011d458 Calls is_new_3ds_mode.
+0011d480 Copies two words and initializes the four 0x14-byte entries and the rest of a thread block (id -1, active).
+0011d4dc Stores 0x3000000 and 0 in a record.
+0011d4ec Stores 0 and -1 in a record.
+0011d4fc Calls virtual 5 of the object when it exists.
+0011d538 Installs the home-menu, sleep and power callbacks, then waits for a pending request and resumes the object at 0xac1930.
+0011d61c Reads the system region (0x95721c) and language (0x95721d); a language other than 1, 2, 5 or 9 falls back to 1.
+0011d65c Clears the word at 0x951670; returns 0.
+0011d7bc Opens the service named at 0x8a275c, starts its client once and reads its 16-bit value into 0x952ad8 (0 on failure).
+0011d7ec The default locale (0x944408) for an empty name or the default name; 0 for any other.
+0011da44 When memory blocks are on (0x974f60) and the block is not reserved: reserves `size` (rounded to 0x1000) for it; a failure is fatal.
+0011daac The handle kept at 0x97dff8, fetched once through 0011f00c.
+0011db88 Keeps the thread-local storage pointer at 0x974f68.
+0011db9c Asks the service for a 16-bit value (into +0); 0x11464 when the request failed.
+0011dc5c Starts the service client once (0x974f76).
+0011dedc Opens the service named at 0x8a275c into 0x97e004 unless it is open; the result.
+0011df2c Creates the OS event thread (entry 0x11f2e0, stack 0xaed848) and keeps its handle at 0xaed62c.
+0011dff4 Adds an object (with its value) to the global circular list at 0xaed638, under its lock.
+0011e180 Waits for the service, queries a system value (00120158) and releases it.
+0011e340 Waits for the service, queries a value (00120198) with kind 1 and releases it.
+0011e3b4 Initializes the applet state: queries it (fatal on failure) and, when allowed, registers the applet notifications and keeps their handles.
+0011e5d8 Queries an OS value of kind 1 (001215b8), applies it and passes the two arguments on; the value.
+0011e6f4 Prepares the request (001216ec), then runs 001214f4 for each of the `count` handles with the extra arguments.
+0011e760 Keeps the argument at 0x9752ec and installs the two callbacks 0x12049c and 0x120464.
+0011e81c Requests power mode 0x700 (or 0x702 when `alternate`).
+0011eaac Creates the save allocator heap (named SaveAllocator, `size` bytes) and keeps its allocator at 0x95bf7c.
+0011eafc Whether the applet state (0x94e3a8) is at least 2.
+0011ef40 Marks job `index` of the job list (0xadf95c) as done, or the whole list (+0x3c) for -1.
+0011ef7c Stores a value at +0x38 of the job list (0xadf95c) when there is one.
+0011ef94 Clears a memory block record and, when memory blocks are on, reserves `size` (rounded to 0x1000) for it (fatal on failure).
+0011f054 Builds the friend service client: its lock, event, 100 friend entries, the service (initialized once) and the friend list.
+0011f220 Releases the held object (+8; a pending failure is fatal) and clears it.
+0011f25c Stores 1 at +0.
+0011f274 Stores 0 at +0.
+0011f2e4 Sends request 0xf000000b on the service handle at 0x97dffc; a failure is reported with its location.
+0011f880 Registers an object with the service (00123ca8); keeps it at 0x974f7c and marks 0x97e038 when it has +0x14; the object, or 0 on failure.
+0011f8d4 Opens the service named at 0x8b2340 on first use (under its lock) and counts the users (0x97d818); the result.
+0011fa68 Opens the service in the first mode that works (0, 1 or 2, kept at +0); a failure code when none does.
+0011fad4 Reads a byte through 00123fe4.
+0011faf0 Applies the 16-bit value to the object's part at +0x18 (fatal on failure) and clears +0x54.
 0011fb18 Opens the ndm:u service handle (once, under a lock).
+0011fcf0 Marks the event at 0x974b00 and, when `wait`, waits for it.
+0011fd20 Whether the low three bits of the applet word (0x974af0) are 6.
+0011fd60 Stores the sleep mode for `mode` (0 -> 3, 1 -> 2, 2 -> 1) at 0x974ae3 and, for 0 and 1, applies it.
+0011fda4 Installs the default callback (0x124318) and clears the fourteen callback pairs at 0x974b0c and 0x974b4c.
 0012089c Creates the script heap's children: libms, static, message, mail and flow.
 00122620 Appends an item when the array is not full.
 00124f94 Opens the friends service (frd:u) the first time, counting the users.
@@ -665,13 +803,50 @@
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
 0060c5c4 A zero vector (with a zero word after it), initialized once.
 0061a7a0 NetSession__guest_entry_is_ready on the network session.
+00620e18 Sets the visit role from the session: 1 when this station hosts the guest, 3 without a guest, else 8 (for stations below 4).
+006212f0 In role 1 with a valid session: refreshes the station set and sends this station's kind state (record 0xd), or handles it locally as the host; then moves to role 2.
 006213c8 Refreshes the station's entry and slot, and in a session of more than one sends the update as a network record (kind 1).
 006214a0 Sets the slot's value and marks its state 1.
+006214c4 Updates the visit in role 2: refreshes the station set and sends the state records.
 00621684 Clears station slot `slot` (fewer than 4): its entry, no value (0xa5), state 0, and its bit in the station mask.
+006216d0 Sends the visit state records for the stations in the mask.
+00621b98 Handles a station's state as the host: records it in the station mask and sends the answer records.
+00622158 Returns at once.
+0062217c Stores the current player's short id (or clears it), resets the peer table (006221e4) and marks it ready (+0x42aa).
+006223f0 When the table is ready and the link allows it: sends the pending request (0050d3dc, kind and value kept once); true when done or not ready.
+00622478 When the player of `slot` has a gated record that matches the peer's address: resets the peer table.
+00622864 Updates the peer table: sends the pending requests and refreshes the peers' records.
+00622ab0 In state 3 (+0x42a8): tries to send the pending request and clears the state when it is done or the link is gone; true when idle.
+00622be8 Copies the address and id pair of peer `index` (below 32, under the lock), or a cleared id when there is none.
+00622c5c Returns every peer entry to the free list and clears the 32 peer slots and the ready flags.
+00622d04 Builds the peer table: its lock, entries, own id and free list.
+00622e70 Updates the link state machine (sends and polls through 0050d3f0 and 0050d420).
+00622fa0 When the link is up: requests the station's bit with flag 0x80; true when sent.
+00622fe4 When the link is up and the station is below 5: requests the station's bit; true when sent.
+0062302c Queues a request mask for the link.
+00623168 Resets the link's time record and clears its two state bytes.
+006235cc In state 6: removes the leaving station (+1) from the session's station mask; true.
+006237ec In state 0xa: records the leaving station, resets its slot, removes it from the mask and moves to state 0xb.
+006238d0 Removes a station from the session's mask and reports it (00626bd8).
+00623948 Removes a station from the session's mask and reports it (00626c2c).
+006239fc Resets the visit state (station 4, state 0) and its three flag pairs and four flags.
+00623c28 Calls 00100b80 on the part at +0x1c and returns the object.
 00623c3c Resets what station `station` uses, and its count (under the session's lock).
 00623c8c Adds `delta` (negative to take away) to station `station`'s count, under the session's lock.
 00623cfc Adds `size` to what station `station` uses when it still fits in its 0xd002 bytes; true when it did.
 00623d48 Lays the buffer out once: each of the 4 stations but `own` gets 0xd002 bytes of it, in order.
+00624038 Calls 0075f63c on the network session.
+00624600 Moves state 5 to 7, or state 6 to 9 marking the session ended (+0x54).
+0062463c Reports every connected station (00626bd8) with a cleared flag pair.
+0062468c Whether every connected station passes the flag-pair check.
+006246ec Reports every connected station (00626c2c) with a cleared flag pair.
+0062473c The last connected station (below 4), or 0.
+00624814 Starts a visit: as a guest refreshes the station set (state 3 when `joining`); as the host rebuilds the slot records, waits for the stations that are expected and moves to state 1.
+00624954 Stores the entry id (up to 0xa5) of station `index` (below 4).
+00624968 Sets or clears the active bit of station `index` (below 4) in +4.
+00624d1c Copies 0x80 bytes.
+00624f14 Clears the two flags (+0x14, +0x18) of station `index` (below 4).
+00624f30 Once (+0x1c): gives each of the other three stations a 0x16802-byte part of the buffer (+0), skipping this station's slot.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
 0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
@@ -904,25 +1079,167 @@
 0075f34c Whether the four 8-byte ids match the ids (+0x10) of the four 0x18-byte entries.
 0075f448 Whether the address of peer `index` (below 4) is usable, read under the session lock.
 0075f578 The peer index of this console's address, or 4 when it has none.
+0076054c In a local game with no main-object value: whether the villager's record of the current player (when the player has flag 2 of +0x5705) has bit 7 of +0xbc; a non-negative `mode` also needs the talk byte to be 0 or 1.
 007608f8 How a villager reacts to being shown `item` by the current player: kinds for two particular items, insects (8), fish and sea creatures (7), category 0x35 (4), 0x75/0x76 (10), the saved item of category 0x33 or 0x34 (1-3), anything else 9.
+00760c70 Whether the villager may start a talk (00761ab0) about the current player's pending record: not yet seen by this villager and its record not busy.
+00760e7c Whether the villager may walk up to the current player now: the player has flag 2 of +0x5705, the hour fits, nothing blocks it (lists 2 and 0xd), and its model is free.
+00761ab0 Whether villagers may start talks now: the scene allows it (bit 0x20), no event or busy NPC manager, the hour is from 6 to 17, and no scheduled place is open (except place 5).
 00761f60 The personality (0-7, the high nibble of the villager data's +0x1c) of the villager the talk is with; 0 when there is none.
+007622c8 Calls 006c06dc with the arguments and the object's model (+0x1b4).
 007622f0 The point at `angle` on the circle around the object's position (+0x14), put on the ground when asked.
+007626fc Whether the object can step toward its facing angle plus `turn`: the ground there is walkable, or not too steep (normal y below 0.9).
+00762ab8 Plays the player's effect for hitting the cell (x, z): 0x15f/0x162 on ordinary ground or 0x160/0x161 on ground kind 0x16, by `alternate`.
+00762d38 Whether the player's held item has data kind 4 and the player's flag (bit 6 of +0x907 or +0x91b by the scene) or pair flag allows it.
 00762dc8 The point 26 units ahead of the object (in its facing direction), on the ground.
+00762dec Plays the player's effect for the cell (x, z): 0x15d on ordinary ground, 0x15e on ground kind 0x16.
+00762e98 Finds a free spot near the cell (searching the map rectangle), kept in a static vector; 0 when none.
 00763298 The kind of ground at `position` for the player's effects: by its terrain type, the weather (rain) and whether it is the snow season.
+00763360 Calls 0072413c on the pockets of the player of the object's slot (+0x1ac); 0 when there is none.
+00763398 The position 32 units in front of the spot near the cell (along its direction), kept in a static vector; 0 when none.
+007634d0 The player's reference point for its action (+0x1a9): its position raised by +0x1538, the point at +0x424, or the last one.
+007635a8 Whether the byte at 0x94fd2b is clear.
 007635c4 The point 12 units ahead of the object (in its facing direction), on the ground.
+007635f4 Calls 00597790 with the cell (x, z) under a position.
+007636ec Plays the player's effect for the cell (x, z): 0x199 on ordinary ground, 0x198 on ground kind 0x16.
+00763758 Calls 00596334 when the object is in an action (bit 5 of +0x171).
+00763770 Calls 0059d164 at (x, z) with the kind of the slot player's worn item of class 7 (set B -> 1, 007680a0 -> 2, else 0) and whether it is in an action.
+00763c44 The point 32 units ahead of the slot player's recorded position (at ground height), or its own position; kept in a static vector.
+00763d34 When no slot is set (0x9506b0 = 0xff): marks +0x2f1f of the object of the source at 0x9506b4.
+00763d80 The position of the source object at 0x9506b4 when no slot is set, else the object's own position.
+00764608 Calls 004e40e4 with its second argument as the first too.
+00764610 Makes a request of kind 0x4a with a copy of the item.
+00764634 Makes a request of kind 0x4c with a copy of the item and a position.
+00764660 The point (at ground height) in front of the entrance of scene 0x5c, or of the object when there is none, shifted by (-40, 0, 128).
 007648b8 Starts effect `id` at the given position (a stack argument) for the player, attached to `target` when there is one, facing the player's direction; its angles are written to `angles` when asked.
+00764af8 In an action: calls 00598464 at (x, z) with the kind of the slot player's worn item of class 7 (set B -> 1, 007680a0 -> 2, else 0).
+00764b74 Calls 005964ec when the object is in an action (bit 5 of +0x171).
+00764dc8 In scenes with bit 0x20: whether the furniture item under the object is 0x2070, 0x2071 or 0x2072.
+0076507c Whether the slot player's encyclopedia (+0x6c20) lists every fish (category 0x27); 0 when there is no player.
+007650ac Calls 005983ac with the cell (x, z) under a position.
+007650d4 The value of 00597c30 at the cell under a position, or of 00597678 when the first is negative.
+0076511c Makes a request of kind 0x4b with a copy of the item.
+00765140 Makes a request of kind 0x49 with a copy of the item.
+00765370 Calls touch_furniture_at_position_plus_x with the position on the stack.
+0076538c Whether furniture stands 32 units in front of the object, facing it (within 0x2800 units of angle); gives its cell, the corner position and the angle to it.
+007654a8 When the held item (+0x5e4) is 0x3726: tells the NPC found with the guest tag about it.
+00765518 Whether the slot player's encyclopedia (+0x6c20) lists every insect (category 0x24); 0 when there is no player.
+00765548 Calls touch_furniture_at_position_minus_x with the position on the stack.
+00765564 The player index of the object's slot (+0x1ac): mapped through the slot table when it has a player, else the slot & 3.
+00765590 Whether the object, in an action, may act at a position (its own by default): only in scenes with bits 0x200, 0x10000000 or 0x20, not held or in action 0x82, and 006c6b84 allows it.
+00765634 Whether the slot player's encyclopedia (+0x6c20) lists every sea creature (category 0x28); 0 when there is no player.
+007656b0 Calls 004e40e8 with its second argument as the first too.
+007656b8 The point of the object's hand (its bone matrix applied to the player's offset), or the source object's position when it has no model.
+00765724 A point to the side of the object (2 units at 90 degrees, then 17 ahead), raised by 11.2, with the constant radius and the remaining height.
+00765938 The position of the item in the object's hand (by the player's offset table), or the constant point when it has no model.
+00765aac Checks the spot (004e5288) a kind-dependent distance behind a position at ground height (the position itself when bit 1 of +0x8c7 is set).
+00765cec Checks the spot (004e5570) a kind-dependent distance behind a position at ground height (the position itself when bit 1 of +0x8c7 is set).
+00765d54 The spot of the object's player in front of the entrance of scene 0x5c (shifted by the player's offset from the table), at ground height.
+00765e04 The item the object holds (from its model, +0x1b4), or the empty item while bit 1 of +0x172 is set.
+00765e28 Whether the object belongs to this console: through the main slot in an action, else by its slot (+0x1ac).
+00765e64 The camera's scale (at 0x950874+0x50) for one of the four axis angles (0x8000, 0xc000, 0, 0x4000), 1.0 for others and 0.0 without a camera.
+00765f54 Whether the member handler (+0x20, +0x24) differs from the one at 0x848128.
+0076609c The first listed villager (not leaving) whose record index is at least `start`, else the first such villager; gives its index.
+00766170 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x857b48, bit 1 when it is the one at 0x857b40.
+007667a8 Copies tile (x & 15, z & 15) of a 16x16 grid of 10-byte tiles (from +0x1c) to `out`.
+007667d0 The first triangle of tile (x, z) in world coordinates (the grid origin +8, +0xc plus the cell).
+0076689c The third triangle of tile (x, z) in world coordinates.
+00766968 The second triangle of tile (x, z) in world coordinates.
+00766a34 The fourth triangle of tile (x, z) in world coordinates.
 00766b00 Entry `index` of an array of 8 entries of 12 bytes (entry 1 when out of range).
+00766bf8 The target's position: zero for kind 0, the stored point for kind 1, else the base plus the offset (+0x2c kind).
+00766c68 Whether +0x30 has any of the bits of `mask`.
+00766c78 Whether +0x16b4 is not 0x19.
+00766e64 The value of sound `id` through 0073df8c on the archive at +0xc10, or 0.
+00766f1c The kind of sound a scene allows: 0 (none) for scenes with the quiet flags or ids 5, 0xb, 0x11, 0x17, 0x2a, 0x34, 0x36, 0x37, 0x5b; 2 for indoor kinds (bits 8, 0x400, 0x10000000); else 1.
+007680a0 Whether the item id (bit 15 ignored) is one of 0x334f, 0x3353, 0x3357, 0x335b, 0x335f, 0x3363.
 00768400 Whether the item id (bit 15 ignored) is one of 0xb-0x10 or 0x15-0x1a.
 00768c40 Whether the item id (bit 15 ignored) is 0xa0, 0xa6, 0xac, 0xb3 or 0xbd (or one of the ids above 0xbd it also tests).
+00768dc4 Whether the item id (bit 15 ignored) is one of the low ground ids (9-0xe, 0x13, 0x14, 0x1d, 0x1e and the rest), or of indexed type 0xa when `include_indexed` and the current mode is not 8.
+00768fac Whether the item id (bit 15 ignored) is from 0x30cc to 0x30d1.
+007695b0 Whether the item id (bit 15 ignored) is 0x28a8 or 0x28a9.
+00769880 Whether the item id (bit 15 ignored) is 0x290d or 0x290e.
+00769cc0 The variant (0-3, then 0-1) of an item from 0x30cc to 0x30d1; -1 for other items.
+00769fb8 Whether the item id (bit 15 ignored) is one of the 18 ids of the table at 0x88e622.
+0076a068 Whether an item with a valid value-06 entry is flagged (bit 3 of +0x20), passes one of two entry checks, or is 0x2f38, 0x304a or 0x304b.
+0076a4ac Whether the item's flags have any of the bits 0x388.
+0076a590 For an item of category 0x33 or 0x34: the item at the same offset in category 0x75 or 0x76; 0x7ffe otherwise or out of range.
+0076a730 Whether the current player's pocket item in `slot` is unlocked and usable in the current scene (0076a7f8, after the scene checks).
+0076a880 Whether a special value-06 item passes its entry check (or its flagged second one) for a target whose data kind is 6, 7 or 0x47.
+0076ab7c For an item of the set at 0x76af88: whether its flags have bit 3 or bit (index + 7).
+0076acd8 Whether the item is 0x334d or 0x334e with a level (low 4 bits of its flags) of 8 or more.
+0076ad24 Bits 4-6 of the flags of an item of the set at 0x76af88 when bit 3 is set; -1 otherwise.
+0076ad64 The item's flags without the top two bits.
+0076adf4 The level (low 4 bits of the flags) of item 0x334d or 0x334e, else 0.
+0076ae1c The flag value (without the top two bits) of item 0x2000, else 0.
+0076ae38 Whether the item id (bit 15 ignored) is 0x3057, 0x3058, 0x305a, 0x305b, 0x3064, 0x3065, 0x3067 or 0x3068.
+0076afbc Whether the item has kind-11 data with a family (+0x11, 1-0x55) whose group (+0x19 >> 4) is 0-2 or 6 and above.
 0076b1e0 Checks the two nibbles of the item's data (+2) against a limit chosen by the higher one.
+0076b984 The part of the item's wear entry from +4 (clearing its +0xc), or 0 when it has none or its kind (+4) is 0.
+0076bab4 Bits 8-11 of the item's flags.
+0076bb90 The colour multiplier of an item with a valid value-06 entry and a colour variant (bits 10-13 of its flags) of 0xa-0xd; otherwise the static white (1, 1, 1, 1).
+0076bc84 The museum exhibit kind of a collectible by its category and size class (+0x1b >> 6): fish 0x4a-0x4c, insects 0x4d-0x4f, fossils 0x50-0x52, art 0x53-0x54; 0xa5 for others.
+0076c234 Whether the item has size class 1, variant 1 and its value-06 entry has flag 8.
+0076c288 For an item of size class 8 with a variant below 0x30: whether it is in the main room (variants below 0x28, as row and column of 10) or the side room (variant - 0x28); true when it is one.
+0076c564 Whether the item id (bit 15 ignored) is 0x7c-0x7f.
+0076c674 Bit 0 of the item's flags.
+0076c680 Whether the item id (bit 15 ignored) is 0x334d or 0x334e.
 0076c6e4 Unpacks the 16 notes of a town tune (one nibble each) into 16 bytes.
 0076c74c Whether the art, fish, insects (and the rest) are all recorded.
+0076c808 Whether the museum's mark for collectible `index` of a category (fossils, insects, fish, sea creatures, paintings, statues) is set.
+0076c88c Whether a collectible is recorded.
+0076c8a0 The value from 0076cb70 times 10000.
 0076c8b8 Whether every fish (category 0x27) is recorded.
+0076c958 Copies the identity of the player who donated a collectible (by its record state); true when there is one.
 0076cd0c Whether every fossil (category 0x2c) is recorded.
 0076ce68 Whether every insect (category 0x24, 72) is recorded.
 0076d134 Whether every painting (category 0x54) and statue (0x58) is recorded.
+0076d214 The share (1-100) of the fish (72) and sea creatures (30) recorded, out of 102.
 0076d3a4 The number of recorded paintings (category 0x54, 25) and statues (0x58, 8).
+0076d430 The share (1-100) of the fossils (67) recorded.
+0076d4ac The share (1-100) of the insects (72) recorded.
+0076d5b0 The share (1-100) of the paintings (25) and statues (8) recorded, out of 33.
 0076d668 The record state byte of an insect, fish, sea creature, fossil or other recorded category's item; 0 for other items.
+0076d714 Whether `index` is a valid collectible of a museum category (fossils 67, insects 72, fish 72, sea creatures 30, paintings 25, statues 8).
+0076d7a4 The player's encrypted value at +0x6b94.
+0076d918 Fills the player's score parts: the bank balance (+0x6b8c), the hours of +0x6bb0 times 10000 (capped at 20,000,000) and the badge total; returns their sum.
+0076d9f8 Whether bit `villager` (below 0x18f) of the player's bit set at +0x8f3c is set.
+0076da3c Whether the player carries (in pockets or as the worn item of class 7) an item outside set A that is not special.
+0076dc14 The player's pending record (+0x8d4c) for a villager of this town when it is set and open; else 0.
+0076dcfc The player's record at +0x8d6c when it is for a villager of this town and not in state 1; else 0.
+0076de78 Whether the player's record at +0x8d84 holds (in entry `which`, or either for 2) the same id and two names as the villager's.
+0076df94 Whether the player wears one of the four items of the set 0x282b (head), 0x2598 (body), 0x26fe, 0x2925.
+0076e014 Whether the player wears all four items of the set 0x282b (head), 0x2598 (body), 0x26fe, 0x2925.
+0076e108 Whether the current model's (+0x24 bit 0) two animations (+0x7b0, +0x504) have finished, when it has a model.
+0076e290 The frame of the current model's animation at +0x7b0 (0.0 without a model or animation).
+0076e2d8 Transforms a point by the model's matrix (and moves it for mode flag 2 when asked); true when it has a model.
+0076e37c Transforms a point by the matrix of the bone called `name` of the current model (and moves it for mode flag 2 when asked); true when found.
+0076e438 Signed byte +0x166a of the current model's face (+0x584), or 0.
+0076e458 Whether the current model's face (+0x584) is idle (+0x166a set with no timer at +0x1664); true without a face.
+0076e49c Bit 2 of +0xd of the current model's wear entry (+0x3c).
+0076e4d4 The translation of the model's matrix (moved for mode flag 2 when asked); true when it has a model.
+0076e524 Whether the current model's wear item (+0x3c) has data kind 0xe.
+0076e564 The item (kept in a static item) of the group of the entry's slot (+0x1c, below 0x40) from the table at 0x95c6e4.
+0076e62c The address of word `index` (below 8, else 0) of the table at +0xec.
+0076e6cc The group (below 12) of the entry's slot (+0x1c) for kinds with flag 0x80000 or 0x100000; -1 for other kinds, 0 without a slot.
+0076ec0c Whether the item is in the 6 x 10 table of 16-bit ids (rows of 0x14 bytes from +0x14).
+0076ec7c Builds the item of row `row`, column `column` of a table of 16-bit ids (rows of 0x14 bytes from +0x8c).
+0076ec90 The index of the `n`-th used byte of the 64 at +0x10, or -1.
+0076ed30 How many of the 64 bytes at +0x10 are set.
+0076ee14 Whether +0x1c204 is set.
+0076eec4 The address of word (a * 6 + b) * 10 + c of a table.
+0076ef10 Returns at once.
+0076ef28 The address of 0x870-byte block ((a * 6 + b) * 4 + c) from +4.
+0076ef60 Whether bit `bit` of the nibble for (a * 6 + b) of the bit table at +0x25f84 is clear.
+0076f018 The address of word (a * 9 + b) * 10 + c of a table.
+0076f030 Bit 0 when the member handler (+0xc, +0x10) is the one at 0x845290, bit 1 when it is the one at 0x845288.
+0076f1b4 Whether the member handler (+0xc, +0x10) is the one at 0x845fc8.
+0076f214 The nearest (in x-z) of the object's points (+0x344, count +0x20, up to 10) to `position`; zero when there is none.
+0076f2c8 The child count at +0x67cc.
+0076f38c Calls virtual 40 of child `index` (from +0x67d4, count +0x67cc).
+0076f68c Bit 3 of +0x64.
+0076f69c Bit 2 of +0x64.
+0076f7e8 0 when bit 0 of +0x64 is set, else 1 with bit 1 or 2.
+0076fd38 Whether the item set lists every item of `category` (its last slot, from the category's count, is filled).
 00770300 The low 16 bits of the word at +0 (bounded by +4) plus byte +9 shifted left by 8.
 00779500 Allocates from the current heap, 4-byte aligned.
 007ce068 Marks the cell (x, y) of a grid of 20-byte cells with state 3.

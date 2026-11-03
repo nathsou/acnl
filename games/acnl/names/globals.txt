@@ -63,12 +63,14 @@
 00952cac work_heap
 00952cc0 home_btn_prohibition_instance
 00953228 island_data_instance
+00953374 app_memory_size
 00953624 matching_list_instance
 0095362c net_session
 0095385c npc_lock_player_permit_bit_instance
 00953864 npc_net_packet_mgr_instance
 0095386c npc_net_share_info_instance
 00953874 npc_permit_bit_mgr_instance
+0095721d system_language
 00957321 previous_scene
 00957322 current_scene
 00957323 next_scene

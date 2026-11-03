@@ -46,8 +46,8 @@ void f_006f09d4(u32 r0, u32 r1, u32 r2_unused, u32 r3) {
         r2 += 1u;
         guest::preempt();
     } while (r2 < 0xbau);  // (from the original)
-    u32 random = random_below(r1, r1, r2, r3);
-    u32 r0_2 = ItemBitSet__index_of_nth_set_bit(r5, random);
+    u32 random_2 = random_below(r1, r1, r2, r3);
+    u32 r0_2 = ItemBitSet__index_of_nth_set_bit(r5, random_2);
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
     u32 r8 = 0x172bu;  // (from the original)
@@ -127,13 +127,13 @@ void f_006f14b0(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r5 = 0;
     frame->word_0 = r3;
     u32 r8 = r0;
-    gptr<Local_006f14b0_r0_1> info = gptr<Local_006f14b0_r0_1>(category_info(r1, r1, r2, r3));
+    gptr<Local_006f14b0_r0_1> info_2 = gptr<Local_006f14b0_r0_1>(category_info(r1, r1, r2, r3));
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
-    u32 r6 = info->word_4;
+    u32 r6 = info_2->word_4;
     u32 r9 = 0x372au;  // (from the original)
     u32 r10 = 1u;
-    u32 r4 = uxth(info->word_0);
+    u32 r4 = uxth(info_2->word_0);
     u32 r7 = r4;
     if (r1 == 0x24u) {  // (from the original)
         r5 = 0u;
@@ -354,19 +354,19 @@ u32 f_006f15c4(u32 r0, u32 r1, u32 r2, u32 r3) {
     ea_1->word_30 = r14;
     u32 r5_1 = r2;
     r9 = r0;
-    gptr<Local_006f15c4_r0_2> info = gptr<Local_006f15c4_r0_2>(category_info(frame->word_18, r1, r2, r3));
-    r6 = info->word_4;
-    u32 r1_1 = uxth(info->word_0);
+    gptr<Local_006f15c4_r0_2> info_2 = gptr<Local_006f15c4_r0_2>(category_info(frame->word_18, r1, r2, r3));
+    r6 = info_2->word_4;
+    u32 r1_1 = uxth(info_2->word_0);
     r10 = r1_1;
     construct_item(frame.at(4).addr(), r1_1);
-    u32 item_data = Item__data(frame.at(4).addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-    r4 = item_data;
-    u32 data_base = get_data_base(item_data, guest::cpu()->r[1]);
-    u32 r0_7 = *gptr<u8>(data_base + 0x6214eu);  // (from the original)
+    u32 item_data_2 = Item__data(frame.at(4).addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    r4 = item_data_2;
+    u32 data_base_3 = get_data_base(item_data_2, guest::cpu()->r[1]);
+    u32 r0_7 = *gptr<u8>(data_base_3 + 0x6214eu);  // (from the original)
     u32 r1_4 = frame->word_20 - 1u;
     r7 = (r1_4 & r0_7 >> 4) == 0;
-    u32 data_base_2 = get_data_base(r0_7, r1_4);
-    copy_3_bytes(frame.at(0).addr(), data_base_2 + 0x621ccu);  // (from the original)
+    u32 data_base_4 = get_data_base(r0_7, r1_4);
+    copy_3_bytes(frame.at(0).addr(), data_base_4 + 0x621ccu);  // (from the original)
     u32 r0_11 = call_0070b65c(frame.at(0).addr(), frame->word_18);
     r11 = r0_11;
     u32 r0_13 = call_0070b694(frame.at(0).addr(), frame->word_18);
@@ -780,13 +780,13 @@ u32 f_006f1cfc(u32 r0, u32 r1, u32 r2, u32 r3) {
     frame->word_0 = r3;
     u32 r7 = r0;
     u32 r9 = r1;
-    gptr<Local_006f1cfc_r0_1> info = gptr<Local_006f1cfc_r0_1>(category_info(0x27u, r1, r2, r3));  // (from the original)
+    gptr<Local_006f1cfc_r0_1> info_2 = gptr<Local_006f1cfc_r0_1>(category_info(0x27u, r1, r2, r3));  // (from the original)
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
-    u32 r6 = info->word_4;
+    u32 r6 = info_2->word_4;
     u32 r10 = 0x372au;  // (from the original)
     u32 r11 = 1u;
-    u32 r4 = uxth(info->word_0);
+    u32 r4 = uxth(info_2->word_0);
     u32 r8 = r4;
     if (r9 == 3u) {
         goto L_6f1dec;
@@ -941,13 +941,13 @@ u32 f_006f2178(u32 r0, u32 r1, u32 r2, u32 r3) {
     frame->word_0 = r3;
     u32 r7 = r0;
     u32 r9 = r1;
-    gptr<Local_006f2178_r0_1> info = gptr<Local_006f2178_r0_1>(category_info(0x24u, r1, r2, r3));  // (from the original)
+    gptr<Local_006f2178_r0_1> info_2 = gptr<Local_006f2178_r0_1>(category_info(0x24u, r1, r2, r3));  // (from the original)
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
-    u32 r6 = info->word_4;
+    u32 r6 = info_2->word_4;
     u32 r10 = 0x372au;  // (from the original)
     u32 r11 = 1u;
-    u32 r4 = uxth(info->word_0);
+    u32 r4 = uxth(info_2->word_0);
     u32 r8 = r4;
     if (r9 == 6u) {
         goto L_6f2268;
@@ -1097,8 +1097,8 @@ u32 ItemSet__add_group(u32 item_set, u32 r1, u32 r2, u32 r3) {
             }
             goto L_6f29f4;
         }
-        u32 data_base = get_data_base(item_set, r1, r2, r3);
-        copy_3_bytes(frame.at(4).addr(), data_base + 0x621ccu);  // (from the original)
+        u32 data_base_3 = get_data_base(item_set, r1, r2, r3);
+        copy_3_bytes(frame.at(4).addr(), data_base_3 + 0x621ccu);  // (from the original)
         if (r7 == 5u) {
             r0_7 = call_0070b510(frame.at(4).addr(), r1);
             goto L_6f2aa8;
@@ -1131,18 +1131,18 @@ L_6f29f4:;
 L_6f2aa8:;
     r7 = r0_7;
 L_6f2aac:;
-    gptr<Local_006f2908_r0_13> info = gptr<Local_006f2908_r0_13>(category_info(r1));
-    u32 r6 = info->word_4;
-    u32 r1_8 = uxth(info->word_0);
+    gptr<Local_006f2908_r0_13> info_2 = gptr<Local_006f2908_r0_13>(category_info(r1));
+    u32 r6 = info_2->word_4;
+    u32 r1_8 = uxth(info_2->word_0);
     u32 r9 = r1_8;
     construct_item(frame.at(8).addr(), r1_8);
-    u32 item_data = Item__data(frame.at(8).addr());
-    u32 r4 = item_data;
-    u32 data_base_2 = get_data_base(item_data, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    u32 item_data_2 = Item__data(frame.at(8).addr());
+    u32 r4 = item_data_2;
+    u32 data_base_4 = get_data_base(item_data_2, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     r3 = 0x372au;  // (from the original)
     r2 = 1u;
     r1 = r5_1 - 1u;
-    u32 r8 = (r1 & u32(*gptr<u8>(data_base_2 + 0x6214eu)) >> 4) == 0;  // (from the original)
+    u32 r8 = (r1 & u32(*gptr<u8>(data_base_4 + 0x6214eu)) >> 4) == 0;  // (from the original)
     if (r11_1 != 0) {
         u32 r5 = 0u;
         if (r6 >= 0u && r6 != 0) {
@@ -1840,12 +1840,12 @@ GUEST_EXPORT(0x006f58e0, d_006f58e0::f_006f58e0);
 // f_006f5b24: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_006f5b24 {
 
-inline constexpr guest::Function<0x00132364, u32(u32, u32, u32, u32)> call_00132364;
-inline constexpr guest::Function<0x001323b4, u32(u32)> call_001323b4;
+inline constexpr guest::Function<0x00132364, u32(u32, u32, u32, u32)> release_layout_parts;
+inline constexpr guest::Function<0x001323b4, u32(u32)> layout_at_10_virtual_8;
 
 void f_006f5b24(u32 r0) {
-    call_00132364(r0 + 0x24u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    call_001323b4(r0 + 0x26cu);  // (from the original)
+    release_layout_parts(r0 + 0x24u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    layout_at_10_virtual_8(r0 + 0x26cu);  // (from the original)
 }
 
 }  // namespace d_006f5b24
@@ -2409,9 +2409,9 @@ u32 f_006f8c24(u32 r0, u32 r1) {
     u32 r0_1 = list_position_of_mode(r0, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
     if (r0_1 - 2u < 0x18u) {  // (from the original)
         u32 r4_1 = *gptr<u8>(r0_1 + global_0095276c_address);
-        u32 data_base = get_data_base(r0_1);
+        u32 data_base_2 = get_data_base(r0_1);
         frame.release();
-        return record_4648_address(data_base + 0x5d880u, r4_1);  // (from the original)
+        return record_4648_address(data_base_2 + 0x5d880u, r4_1);  // (from the original)
     }
     u32 r0_4 = table_entry_has_all_bits(0x4000u, r0);  // (from the original)
     if (r0_4 == 0) {
@@ -2806,8 +2806,8 @@ void f_006f94a4(u32 r0, u32 r1, u32 r2) {
         return;
     }
     u32 r6 = r0;
-    u32 save_data = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
-    u32 r7 = save_data + 0x53480u;  // (from the original)
+    u32 save_data_2 = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
+    u32 r7 = save_data_2 + 0x53480u;  // (from the original)
     u32 r5 = 0u;
     do {
         u32 r4 = 0u;
@@ -2837,8 +2837,8 @@ namespace d_006f9550 {
 inline constexpr guest::Function<0x002fb328, u32(u32)> get_save_data;
 
 u32 f_006f9550(u32 r0) {
-    u32 save_data = get_save_data(r0);
-    return *gptr<u8>(save_data + 0x53480u) == 1u ? 0x9fu : 0xa0u;  // (from the original)
+    u32 save_data_2 = get_save_data(r0);
+    return *gptr<u8>(save_data_2 + 0x53480u) == 1u ? 0x9fu : 0xa0u;  // (from the original)
 }
 
 }  // namespace d_006f9550
@@ -2880,8 +2880,8 @@ inline constexpr guest::Function<0x0052f200, u32(u32, u32, u32)> construct_word_
 
 void f_006f9580(u32 r0) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 data_base = get_data_base(r0);
-    if (*gptr<u8>(data_base + 0x53400u) != 0) {  // (from the original)
+    u32 data_base_2 = get_data_base(r0);
+    if (*gptr<u8>(data_base_2 + 0x53400u) != 0) {  // (from the original)
         gptr<Local_006f9580_ea_1> ea_1 = gptr<Local_006f9580_ea_1>(frame.at(0).addr());
         ea_1->word_0 = 6;
         ea_1->word_4 = 9;
@@ -2936,11 +2936,11 @@ void f_006f973c(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
         return;
     }
     u32 r6 = r0;
-    u32 save_data = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
+    u32 save_data_3 = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
     S0 = guest::cpu()->s[0];
     S1 = guest::cpu()->s[1];
     S2 = guest::cpu()->s[2];
-    u32 r7 = save_data + 0x53480u;  // (from the original)
+    u32 r7 = save_data_3 + 0x53480u;  // (from the original)
     u32 r5 = 0u;
 L_6f9760:;
     u32 r4 = 0u;
@@ -2969,12 +2969,12 @@ L_6f9764:;
             return;
         }
     }
-    u32 save_data_2 = get_save_data(r0_3, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    u32 save_data_4 = get_save_data(r0_3, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     S0 = guest::cpu()->s[0];
     S1 = guest::cpu()->s[1];
     S2 = guest::cpu()->s[2];
     u32 r9 = 0x85f2c0u;  // (from the original)
-    r7 = save_data_2 + 0x53480u;  // (from the original)
+    r7 = save_data_4 + 0x53480u;  // (from the original)
     r5 = 0u;
     do {
         r4 = 0u;
@@ -3071,7 +3071,7 @@ GUEST_OFFSET(Local_006f9978_ea_1, word_4, 0x4);
 GUEST_OFFSET(Local_006f9978_ea_1, word_8, 0x8);
 
 inline constexpr guest::Function<0x00317148, u32(u32, u32, u32, u32)> CellGrid__cell_at;
-inline constexpr guest::Function<0x00317eac, u32(u32, u32, u32)> call_00317eac;
+inline constexpr guest::Function<0x00317eac, u32(u32, u32, u32)> get_u8_cell;
 inline constexpr guest::Function<0x0052f144, u32(u32, u32, u32, u32)> WrappingCursor__advance;
 inline constexpr guest::Function<0x0057bb98, u32(u32)> block_cell_rect;
 inline constexpr guest::Function<0x005cdfd0, u32(u32)> call_005cdfd0;
@@ -3154,7 +3154,7 @@ void f_006f9978(gptr<Object_006f9978_0> arg0, u32 r1) {
                             do {
                                 u32 r0_15 = GridCellLarge__terrain_at(r7, frame->word_48, frame->word_4c, r3);
                                 u32 r4_5 = frame->word_4c + frame->word_64;
-                                u32 r0_17 = call_00317eac(frame.at(0x50).addr(), frame->word_60 + frame->word_48, r4_5);  // (from the original)
+                                u32 r0_17 = get_u8_cell(frame.at(0x50).addr(), frame->word_60 + frame->word_48, r4_5);  // (from the original)
                                 u32 r4_6 = r0_17;
                                 u32 r0_18 = call_005cdfd0(r0_15);
                                 if (s32(r4_6) < 0) {
@@ -3198,8 +3198,8 @@ inline constexpr guest::Function<0x002fb328, u32(u32, u32, u32, u32)> get_save_d
 inline constexpr guest::Function<0x0075db98, u32(u32, u32, u32)> tile_address_0075db98;
 
 u32 f_006f9d38(u32 r0, u32 r1, u32 r2) {
-    u32 save_data = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
-    u32 r6 = save_data + 0x53480u;  // (from the original)
+    u32 save_data_2 = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
+    u32 r6 = save_data_2 + 0x53480u;  // (from the original)
     u32 r5 = 0u;
     do {
         u32 r4 = 0u;
@@ -3458,8 +3458,8 @@ void f_006fa0a0(u32 r0, u32 r1, u32 r2, u32 r3) {
     if (r0_1 != 0) {
         u32 r0_2 = GridMap__process_world_position(r0_1, r1, r2, 0u);
         if (r0_2 != 0) {
-            u32 category = Item__category(r0_2);
-            if (category != 0x3bu) {  // (from the original)
+            u32 category_2 = Item__category(r0_2);
+            if (category_2 != 0x3bu) {  // (from the original)
                 u32 r0_4 = Item__is_marker_or_has_kind_11(r0_2);
                 if (r0_4 != 0) {
                     frame->word_0 = 0;
@@ -3468,8 +3468,8 @@ void f_006fa0a0(u32 r0, u32 r1, u32 r2, u32 r3) {
                     copy_item_002fc934(r0, r0_5);
                     return;
                 }
-                u32 is_item = Item__is_item(r0_2);
-                if (is_item == 0) {
+                u32 is_item_2 = Item__is_item(r0_2);
+                if (is_item_2 == 0) {
                     u32 r0_7 = Item__is_kind_2(r0_2);
                     if (r0_7 == 0) {
                         frame.release();
@@ -3648,8 +3648,8 @@ void f_006fa430(u32 r0, u32 r1, u32 r2) {
         return;
     }
     u32 r6 = r0;
-    u32 save_data = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
-    u32 r7 = save_data + 0x53480u;  // (from the original)
+    u32 save_data_2 = get_save_data(r0, r1, r2, guest::cpu()->r[3]);
+    u32 r7 = save_data_2 + 0x53480u;  // (from the original)
     u32 r5 = 0u;
 L_6fa450:;
     u32 r4 = 0u;
@@ -3982,7 +3982,7 @@ GUEST_OFFSET(Local_006fac2c_ea_1, word_8, 0x8);
 
 inline constexpr guest::Function<0x002fe7cc, u32(u32, u32, u32, u32)> read_table_9b4a24;
 inline constexpr guest::Function<0x00315788, u32(u32, u32, u32)> terrain_at_world;
-inline constexpr guest::Function<0x00317eac, u32(u32, u32, u32, u32)> call_00317eac;
+inline constexpr guest::Function<0x00317eac, u32(u32, u32, u32, u32)> get_u8_cell;
 inline constexpr guest::Function<0x0052f144, u32(u32)> WrappingCursor__advance;
 inline constexpr guest::Function<0x005cdfd0, u32(u32)> call_005cdfd0;
 inline constexpr guest::Function<0x006a2c2c, u32(u32, u32, u32, u32)> call_006a2c2c;
@@ -4018,7 +4018,7 @@ void f_006fac2c(u32 r0, u32 r1, u32 r2, u32 r3) {
             r3 = guest::cpu()->r[3];
             if (r0_6 != 0) {
                 do {
-                    u32 r0_8 = call_00317eac(frame.at(0x20).addr(), frame->word_8, frame->word_c, r3);  // (from the original)
+                    u32 r0_8 = get_u8_cell(frame.at(0x20).addr(), frame->word_8, frame->word_c, r3);  // (from the original)
                     u32 r4_2 = r0_8;
                     u32 r0_10 = terrain_at_world(frame->word_8, frame->word_c, r7);
                     u32 r0_11 = call_005cdfd0(r0_10);
@@ -4078,21 +4078,21 @@ u32 f_006fad7c(u32 r0, u32 r1, u32 r2, u32 r3) {
                 r5_1 = *gptr<u8>(frame.at(0).addr() + r0_3);
             }
         }
-        u32 data_base = get_data_base(r0_3);
-        u32 player = player_at(data_base + 0x20u, r5_1);  // (from the original)
-        return player;
+        u32 data_base_4 = get_data_base(r0_3);
+        u32 player_2 = player_at(data_base_4 + 0x20u, r5_1);  // (from the original)
+        return player_2;
     }
     u32 r0_7 = table_entry_has_all_bits(0x2000u, r0_1, r2_2);  // (from the original)
     if (r0_7 != 0) {
         u32 r0_8 = r0_1 - 0x56u;  // (from the original)
-        u32 data_base_2 = get_data_base(r0_8);
+        u32 data_base_5 = get_data_base(r0_8);
         r2_2 = 0xfff951c8u;  // (from the original)
-        u32 r0_11 = page_address(data_base_2 - r2_2, r0_8 & 0xffu);  // (from the original)
+        u32 r0_11 = page_address(data_base_5 - r2_2, r0_8 & 0xffu);  // (from the original)
         u32 r0_12 = *gptr<s8>(r0_11);
         if (s32(r0_12) >= 0) {
-            u32 data_base_3 = get_data_base(r0_12);
+            u32 data_base_6 = get_data_base(r0_12);
             frame.release();
-            return player_at(data_base_3 + 0x20u, r0_12 & 0xffu);  // (from the original)
+            return player_at(data_base_6 + 0x20u, r0_12 & 0xffu);  // (from the original)
         }
     }
     u32 r0_15 = table_entry_has_all_bits(0x4000u, r0_1, r2_2);  // (from the original)
@@ -4448,15 +4448,15 @@ u32 f_006fb50c(u32 r0, u32 r1, u32 r2, u32 r3) {
     if (r0_1 != 0) {
         r0_1 = Item__is_empty(r0_1);
         if (r0_1 == 0) {
-            u32 category = Item__category(r5_1);
-            if (category == 0x7au) {  // (from the original)
+            u32 category_2 = Item__category(r5_1);
+            if (category_2 == 0x7au) {  // (from the original)
                 u32 r0_3 = call_0076ad64(r5_1);
-                u32 data_base = get_data_base(r0_3);
-                u32 records = slot_records_of(data_base);
-                call_005ba02c(records + 0x1744cu, r0_3);  // (from the original)
+                u32 data_base_3 = get_data_base(r0_3);
+                u32 records_2 = slot_records_of(data_base_3);
+                call_005ba02c(records_2 + 0x1744cu, r0_3);  // (from the original)
             } else {
-                u32 data_base_2 = get_data_base(category);
-                call_001b2114(data_base_2 + 0x62162u, r5_1, 1u, 0x62162u);  // (from the original)
+                u32 data_base_4 = get_data_base(category_2);
+                call_001b2114(data_base_4 + 0x62162u, r5_1, 1u, 0x62162u);  // (from the original)
             }
             frame->word_0 = 0;
             u32 r0_9 = GridMap__place_item_at_world(r2, empty_item_address, r0, r1);
@@ -4623,16 +4623,16 @@ void f_006fc854(u32 r0, u32 r1, u32 r2, u32 r3) {
     do {
         r4 = 0u;
         do {
-            u32 r0_3 = grid_cell_address(frame->word_2f4, r8, r4, 0u);
-            u32 item_data = Item__data(r0_3);
-            if (item_data != 0) {
-                u32 r0_5 = ItemData__group(item_data, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+            u32 cell = grid_cell_address(frame->word_2f4, r8, r4, 0u);
+            u32 item_data_5 = Item__data(cell);
+            if (item_data_5 != 0) {
+                u32 r0_5 = ItemData__group(item_data_5, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
                 if (r0_5 == r5) {
                     u32 r7_1 = frame.at(0).addr();
-                    u32 is_item = Item__is_item(r0_3, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-                    if (is_item != 0) {
-                        u32 number = Item__number(r0_3, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-                        *gptr<u8>(r7_1 + (number - 0x2000u >> 3)) = u8(u32(*gptr<u8>(r7_1 + (number - 0x2000u >> 3))) | r9 << (number - 0x2000u & 7u));  // (from the original)
+                    u32 is_item_5 = Item__is_item(cell, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+                    if (is_item_5 != 0) {
+                        u32 number_5 = Item__number(cell, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+                        *gptr<u8>(r7_1 + (number_5 - 0x2000u >> 3)) = u8(u32(*gptr<u8>(r7_1 + (number_5 - 0x2000u >> 3))) | r9 << (number_5 - 0x2000u & 7u));  // (from the original)
                     }
                 }
             }
@@ -4646,24 +4646,24 @@ void f_006fc854(u32 r0, u32 r1, u32 r2, u32 r3) {
     do {
         r4 = 0u;
         do {
-            u32 r0_10 = grid_cell_address(frame->word_2f4, r8, r4, 1u);
-            u32 item_data_2 = Item__data(r0_10);
+            u32 cell_2 = grid_cell_address(frame->word_2f4, r8, r4, 1u);
+            u32 item_data_6 = Item__data(cell_2);
             r1_6 = guest::cpu()->r[1];
             r2_6 = guest::cpu()->r[2];
-            if (item_data_2 != 0) {
-                u32 r0_12 = ItemData__group(item_data_2, r1_6, r2_6, guest::cpu()->r[3]);
+            if (item_data_6 != 0) {
+                u32 r0_12 = ItemData__group(item_data_6, r1_6, r2_6, guest::cpu()->r[3]);
                 r1_6 = guest::cpu()->r[1];
                 r2_6 = guest::cpu()->r[2];
                 if (r0_12 == r5) {
                     u32 r7_2 = frame.at(0).addr();
-                    u32 is_item_2 = Item__is_item(r0_10, r1_6, r2_6, guest::cpu()->r[3]);
+                    u32 is_item_6 = Item__is_item(cell_2, r1_6, r2_6, guest::cpu()->r[3]);
                     r1_6 = guest::cpu()->r[1];
                     r2_6 = guest::cpu()->r[2];
-                    if (is_item_2 != 0) {
-                        u32 number_2 = Item__number(r0_10, r1_6, r2_6, guest::cpu()->r[3]);
-                        r2_6 = number_2 - 0x2000u & 7u;  // (from the original)
-                        r1_6 = u32(*gptr<u8>(r7_2 + (number_2 - 0x2000u >> 3))) | lsl_r(r9, r2_6 & 0xff);  // (from the original)
-                        *gptr<u8>(r7_2 + (number_2 - 0x2000u >> 3)) = u8(r1_6);  // (from the original)
+                    if (is_item_6 != 0) {
+                        u32 number_6 = Item__number(cell_2, r1_6, r2_6, guest::cpu()->r[3]);
+                        r2_6 = number_6 - 0x2000u & 7u;  // (from the original)
+                        r1_6 = u32(*gptr<u8>(r7_2 + (number_6 - 0x2000u >> 3))) | lsl_r(r9, r2_6 & 0xff);  // (from the original)
+                        *gptr<u8>(r7_2 + (number_6 - 0x2000u >> 3)) = u8(r1_6);  // (from the original)
                     }
                 }
             }
@@ -4683,24 +4683,24 @@ void f_006fc854(u32 r0, u32 r1, u32 r2, u32 r3) {
         r8 = 0x30cbu;  // (from the original)
         do {
             construct_item(frame.at(0x2e8).addr(), uxth(r4), r2, r3);  // (from the original)
-            u32 item_data_3 = Item__data(frame.at(0x2e8).addr());  // (from the original)
+            u32 item_data_7 = Item__data(frame.at(0x2e8).addr());  // (from the original)
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
-            if (item_data_3 != 0) {
-                u32 r0_22 = ItemData__group(item_data_3, guest::cpu()->r[1], r2, r3);
+            if (item_data_7 != 0) {
+                u32 r0_22 = ItemData__group(item_data_7, guest::cpu()->r[1], r2, r3);
                 r2 = guest::cpu()->r[2];
                 r3 = guest::cpu()->r[3];
                 if (r0_22 == r5) {
                     u32 r11_1 = frame.at(0x2e8).addr();  // (from the original)
                     u32 r6_1 = frame.at(0).addr();
-                    u32 is_item_3 = Item__is_item(r11_1, guest::cpu()->r[1], r2, r3);
+                    u32 is_item_7 = Item__is_item(r11_1, guest::cpu()->r[1], r2, r3);
                     r2 = guest::cpu()->r[2];
                     r3 = guest::cpu()->r[3];
-                    if (is_item_3 != 0) {
-                        u32 number_3 = Item__number(r11_1, guest::cpu()->r[1], r2, r3);
+                    if (is_item_7 != 0) {
+                        u32 number_7 = Item__number(r11_1, guest::cpu()->r[1], r2, r3);
                         r3 = guest::cpu()->r[3];
-                        r2 = number_3 - 0x2000u & 7u;  // (from the original)
-                        *gptr<u8>(r6_1 + (number_3 - 0x2000u >> 3)) = u8(u32(*gptr<u8>(r6_1 + (number_3 - 0x2000u >> 3))) | lsl_r(r9, r2 & 0xff));  // (from the original)
+                        r2 = number_7 - 0x2000u & 7u;  // (from the original)
+                        *gptr<u8>(r6_1 + (number_7 - 0x2000u >> 3)) = u8(u32(*gptr<u8>(r6_1 + (number_7 - 0x2000u >> 3))) | lsl_r(r9, r2 & 0xff));  // (from the original)
                     }
                 }
             }
@@ -4711,24 +4711,24 @@ void f_006fc854(u32 r0, u32 r1, u32 r2, u32 r3) {
         r11 = r4 | u32(s32(r4) >> 7);
         do {
             construct_item(frame.at(0x2e8).addr(), uxth(r4), r2, r3);  // (from the original)
-            u32 item_data_4 = Item__data(frame.at(0x2e8).addr());  // (from the original)
+            u32 item_data_8 = Item__data(frame.at(0x2e8).addr());  // (from the original)
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
-            if (item_data_4 != 0) {
-                u32 r0_29 = ItemData__group(item_data_4, guest::cpu()->r[1], r2, r3);
+            if (item_data_8 != 0) {
+                u32 r0_29 = ItemData__group(item_data_8, guest::cpu()->r[1], r2, r3);
                 r2 = guest::cpu()->r[2];
                 r3 = guest::cpu()->r[3];
                 if (r0_29 == r5) {
                     u32 r8_1 = frame.at(0x2e8).addr();  // (from the original)
                     u32 r6_2 = frame.at(0).addr();
-                    u32 is_item_4 = Item__is_item(r8_1, guest::cpu()->r[1], r2, r3);
+                    u32 is_item_8 = Item__is_item(r8_1, guest::cpu()->r[1], r2, r3);
                     r2 = guest::cpu()->r[2];
                     r3 = guest::cpu()->r[3];
-                    if (is_item_4 != 0) {
-                        u32 number_4 = Item__number(r8_1, guest::cpu()->r[1], r2, r3);
+                    if (is_item_8 != 0) {
+                        u32 number_8 = Item__number(r8_1, guest::cpu()->r[1], r2, r3);
                         r3 = guest::cpu()->r[3];
-                        r2 = number_4 - 0x2000u & 7u;  // (from the original)
-                        *gptr<u8>(r6_2 + (number_4 - 0x2000u >> 3)) = u8(u32(*gptr<u8>(r6_2 + (number_4 - 0x2000u >> 3))) | lsl_r(r9, r2 & 0xff));  // (from the original)
+                        r2 = number_8 - 0x2000u & 7u;  // (from the original)
+                        *gptr<u8>(r6_2 + (number_8 - 0x2000u >> 3)) = u8(u32(*gptr<u8>(r6_2 + (number_8 - 0x2000u >> 3))) | lsl_r(r9, r2 & 0xff));  // (from the original)
                     }
                 }
             }
@@ -4740,8 +4740,8 @@ void f_006fc854(u32 r0, u32 r1, u32 r2, u32 r3) {
             u32 zf_1 = *gptr<u8>(r10 + 0x31u) == 0x67u;  // (from the original)
             *gptr<u32>(r10 + 0x10u) = *gptr<u32>(r10 + 0x10u) + ((r7 << 7) - r7 * 3u << 3);  // (from the original)
             if (!zf_1) {
-                u32 random = random_below(0x64u);  // (from the original)
-                if (s32(random) >= 0x28) {  // (from the original)
+                u32 random_2 = random_below(0x64u);  // (from the original)
+                if (s32(random_2) >= 0x28) {  // (from the original)
                     goto L_6fcb1c;
                 }
             }
@@ -4794,14 +4794,14 @@ void f_006fd258(u32 r0, u32 r1) {
         do {
             r4 = 0u;
             do {
-                u32 r0_1 = grid_cell_address(r11, r7, r4, 0u);
-                u32 is_item = Item__is_item(r0_1);
-                if (is_item != 0) {
-                    u32 r0_3 = item_has_valid_data(r0_1);
+                u32 cell = grid_cell_address(r11, r7, r4, 0u);
+                u32 is_item_3 = Item__is_item(cell);
+                if (is_item_3 != 0) {
+                    u32 r0_3 = item_has_valid_data(cell);
                     if (r0_3 != 0) {
-                        u32 item_data = Item__data(r0_1);
-                        if (item_data != 0) {
-                            u32 r0_5 = u32(*gptr<u8>(item_data + 0x19u)) & 0xfu;  // (from the original)
+                        u32 item_data_3 = Item__data(cell);
+                        if (item_data_3 != 0) {
+                            u32 r0_5 = u32(*gptr<u8>(item_data_3 + 0x19u)) & 0xfu;  // (from the original)
                             if (r0_5 >= 0xeu) {  // (from the original)
                                 r0_5 = 0u;
                             }
@@ -4821,14 +4821,14 @@ void f_006fd258(u32 r0, u32 r1) {
         do {
             r4 = 0u;
             do {
-                u32 r0_6 = grid_cell_address(r11, r7, r4, 1u);
-                u32 is_item_2 = Item__is_item(r0_6);
-                if (is_item_2 != 0) {
-                    u32 r0_8 = item_has_valid_data(r0_6);
+                u32 cell_2 = grid_cell_address(r11, r7, r4, 1u);
+                u32 is_item_4 = Item__is_item(cell_2);
+                if (is_item_4 != 0) {
+                    u32 r0_8 = item_has_valid_data(cell_2);
                     if (r0_8 != 0) {
-                        u32 item_data_2 = Item__data(r0_6);
-                        if (item_data_2 != 0) {
-                            u32 r0_10 = u32(*gptr<u8>(item_data_2 + 0x19u)) & 0xfu;  // (from the original)
+                        u32 item_data_4 = Item__data(cell_2);
+                        if (item_data_4 != 0) {
+                            u32 r0_10 = u32(*gptr<u8>(item_data_4 + 0x19u)) & 0xfu;  // (from the original)
                             if (r0_10 >= 0xeu) {  // (from the original)
                                 r0_10 = 0u;
                             }
@@ -4905,24 +4905,24 @@ u32 f_006fef38(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r0_4 = 0;
     u32 r1_2 = 0;
     u32 r0_6 = 0;
-    u32 data_base = get_data_base(r0, r1, r2, r3);
+    u32 data_base_2 = get_data_base(r0, r1, r2, r3);
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
     u32 r7 = 0u;
-    u32 r11 = data_base + 0x20u;  // (from the original)
+    u32 r11 = data_base_2 + 0x20u;  // (from the original)
     u32 r9 = r7;
     u32 r10 = frame.at(0x14).addr();  // (from the original)
     do {
         u32 r5_1 = r7 & 0xffu;  // (from the original)
-        u32 player = player_at(r11, r5_1, r2, r3);
-        r0_4 = PersonalId__is_set(player + 0x55a6u);  // (from the original)
+        u32 player_2 = player_at(r11, r5_1, r2, r3);
+        r0_4 = PersonalId__is_set(player_2 + 0x55a6u);  // (from the original)
         r1_2 = guest::cpu()->r[1];
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
         if (r0_4 != 0) {
-            r0_4 = u32(*gptr<u8>(player + 0x5711u)) << 0x1c;  // (from the original)
+            r0_4 = u32(*gptr<u8>(player_2 + 0x5711u)) << 0x1c;  // (from the original)
             if (s32(r0_4) < 0) {
-                u32 r4_1 = player + 0x56c4u;  // (from the original)
+                u32 r4_1 = player_2 + 0x56c4u;  // (from the original)
                 call_001def90(r4_1, r1_2, r2, r3);
                 u32 r0_5 = byte_14_below_8(r4_1);
                 if (r0_5 == 0) {
@@ -4931,8 +4931,8 @@ u32 f_006fef38(u32 r0, u32 r1, u32 r2, u32 r3) {
                     r0_6 = call_006ff188(r4_1, r5_1);
                 }
                 u32 r8 = r4_1;
-                u32 save_data = get_save_data(r0_6);
-                u32 r0_9 = block_or_first(save_data + 0x5d900u, r5_1);  // (from the original)
+                u32 save_data_2 = get_save_data(r0_6);
+                u32 r0_9 = block_or_first(save_data_2 + 0x5d900u, r5_1);  // (from the original)
                 u32 r1_5 = *gptr<u8>(r8 + 0x17u);  // (from the original)
                 u32 r0_10 = record_302_address_0030512c(r0_9, r1_5);
                 frame->word_c = r0_10;
@@ -4948,21 +4948,21 @@ u32 f_006fef38(u32 r0, u32 r1, u32 r2, u32 r3) {
                         u32 r4 = frame->word_28;
                         if (r4 < frame->word_14) {
                             do {
-                                u32 r0_12 = grid_cell_address(frame->word_c, r5, r4, 0u);
-                                frame->word_2c = r0_12;
-                                u32 is_item = Item__is_item(r0_12);
+                                u32 cell = grid_cell_address(frame->word_c, r5, r4, 0u);
+                                frame->word_2c = cell;
+                                u32 is_item_2 = Item__is_item(cell);
                                 r2 = guest::cpu()->r[2];
                                 r3 = guest::cpu()->r[3];
-                                if (is_item != 0) {
+                                if (is_item_2 != 0) {
                                     u32 r0_15 = item_has_valid_data(frame->word_2c, guest::cpu()->r[1], r2, r3);
                                     r2 = guest::cpu()->r[2];
                                     r3 = guest::cpu()->r[3];
                                     if (r0_15 != 0) {
-                                        u32 item_data = Item__data(frame->word_2c, guest::cpu()->r[1], r2, r3);
+                                        u32 item_data_2 = Item__data(frame->word_2c, guest::cpu()->r[1], r2, r3);
                                         r2 = guest::cpu()->r[2];
                                         r3 = guest::cpu()->r[3];
-                                        if (item_data != 0) {
-                                            u32 r0_18 = u32(*gptr<u8>(item_data + 0x17u)) & 0xfu;  // (from the original)
+                                        if (item_data_2 != 0) {
+                                            u32 r0_18 = u32(*gptr<u8>(item_data_2 + 0x17u)) & 0xfu;  // (from the original)
                                             if (r0_18 < 5u && r0_18 != 0) {
                                                 if (r0_18 == 1u) {
                                                     r6 += 2u;
@@ -5104,22 +5104,22 @@ void f_006ff640(u32 r0, u32 r1, u32 r2, u32 r3) {
     do {
         r4 = 0u;
         do {
-            u32 r0_1 = grid_cell_address(r9, r6, r4, 0u);
-            u32 r0_2 = call_00768fac(r0_1);
+            u32 cell = grid_cell_address(r9, r6, r4, 0u);
+            u32 r0_2 = call_00768fac(cell);
             if (r0_2 == 0) {
-                u32 is_item = Item__is_item(r0_1, guest::cpu()->r[1]);
-                if (is_item == 0) {
+                u32 is_item_7 = Item__is_item(cell, guest::cpu()->r[1]);
+                if (is_item_7 == 0) {
                     goto L_6ff998;
                 }
-                u32 r0_4 = item_has_valid_data(r0_1, guest::cpu()->r[1]);
+                u32 r0_4 = item_has_valid_data(cell, guest::cpu()->r[1]);
                 if (r0_4 == 0) {
                     goto L_6ff998;
                 }
-                u32 is_item_2 = Item__is_item(r0_1, guest::cpu()->r[1]);
-                if (is_item_2 == 0) {
+                u32 is_item_8 = Item__is_item(cell, guest::cpu()->r[1]);
+                if (is_item_8 == 0) {
                     goto L_6ff998;
                 }
-                copy_item_002fc934(frame.at(0).addr(), r0_1);
+                copy_item_002fc934(frame.at(0).addr(), cell);
                 convert_to_earlier_form(frame.at(0).addr(), guest::cpu()->r[1]);
                 r0_9 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
                 if (r0_9 != 0) {
@@ -5127,7 +5127,7 @@ void f_006ff640(u32 r0, u32 r1, u32 r2, u32 r3) {
                 }
                 goto L_6ff990;
             }
-            r0_10 = call_00769cc0(r0_1);
+            r0_10 = call_00769cc0(cell);
             r0_11 = player_record_for_slot(r8);
             if (r0_11 == 0) {
                 goto L_6ff998;
@@ -5139,10 +5139,10 @@ void f_006ff640(u32 r0, u32 r1, u32 r2, u32 r3) {
             if (r0_15 != 0) {
                 copy_item_002fc934(frame.at(0).addr(), r0_14);
                 convert_to_earlier_form(frame.at(0).addr(), guest::cpu()->r[1]);
-                u32 item_data = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
+                u32 item_data_9 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
                 r1_11 = guest::cpu()->r[1];
-                if (item_data != 0) {
-                    u32 r0_20 = rule_value(item_data, r1_11);
+                if (item_data_9 != 0) {
+                    u32 r0_20 = rule_value(item_data_9, r1_11);
                     r1_11 = *gptr<u32>(r5);
                     *gptr<u32>(r5) = r0_20 + r1_11;
                 }
@@ -5153,10 +5153,10 @@ void f_006ff640(u32 r0, u32 r1, u32 r2, u32 r3) {
             if (r0_22 != 0) {
                 copy_item_002fc934(frame.at(0).addr(), r0_21);
                 convert_to_earlier_form(frame.at(0).addr(), guest::cpu()->r[1]);
-                u32 item_data_2 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
+                u32 item_data_10 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
                 r1_15 = guest::cpu()->r[1];
-                if (item_data_2 != 0) {
-                    u32 r0_27 = rule_value(item_data_2, r1_15);
+                if (item_data_10 != 0) {
+                    u32 r0_27 = rule_value(item_data_10, r1_15);
                     r1_15 = *gptr<u32>(r5);
                     *gptr<u32>(r5) = r0_27 + r1_15;
                 }
@@ -5167,10 +5167,10 @@ void f_006ff640(u32 r0, u32 r1, u32 r2, u32 r3) {
             if (r0_29 != 0) {
                 copy_item_002fc934(frame.at(0).addr(), r0_28);
                 convert_to_earlier_form(frame.at(0).addr(), guest::cpu()->r[1]);
-                u32 item_data_3 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
+                u32 item_data_11 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
                 r1_19 = guest::cpu()->r[1];
-                if (item_data_3 != 0) {
-                    u32 r0_34 = rule_value(item_data_3, r1_19);
+                if (item_data_11 != 0) {
+                    u32 r0_34 = rule_value(item_data_11, r1_19);
                     r1_19 = *gptr<u32>(r5);
                     *gptr<u32>(r5) = r0_34 + r1_19;
                 }
@@ -5181,10 +5181,10 @@ void f_006ff640(u32 r0, u32 r1, u32 r2, u32 r3) {
             if (r0_36 != 0) {
                 copy_item_002fc934(frame.at(0).addr(), r0_35);
                 convert_to_earlier_form(frame.at(0).addr(), guest::cpu()->r[1]);
-                u32 item_data_4 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
+                u32 item_data_12 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
                 r1_23 = guest::cpu()->r[1];
-                if (item_data_4 != 0) {
-                    u32 r0_41 = rule_value(item_data_4, r1_23);
+                if (item_data_12 != 0) {
+                    u32 r0_41 = rule_value(item_data_12, r1_23);
                     r1_23 = *gptr<u32>(r5);
                     *gptr<u32>(r5) = r0_41 + r1_23;
                 }
@@ -5195,10 +5195,10 @@ void f_006ff640(u32 r0, u32 r1, u32 r2, u32 r3) {
             if (r0_43 != 0) {
                 copy_item_002fc934(frame.at(0).addr(), r0_42);
                 convert_to_earlier_form(frame.at(0).addr(), guest::cpu()->r[1]);
-                u32 item_data_5 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
+                u32 item_data_13 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
                 r1_27 = guest::cpu()->r[1];
-                if (item_data_5 != 0) {
-                    u32 r0_48 = rule_value(item_data_5, r1_27);
+                if (item_data_13 != 0) {
+                    u32 r0_48 = rule_value(item_data_13, r1_27);
                     r1_27 = *gptr<u32>(r5);
                     *gptr<u32>(r5) = r0_48 + r1_27;
                 }
@@ -5232,21 +5232,21 @@ L_6ff998:;
     do {
         r4 = 0u;
         do {
-            u32 r0_55 = grid_cell_address(r9, r6, r4, 1u);
-            u32 is_item_3 = Item__is_item(r0_55, guest::cpu()->r[1]);
+            u32 cell_2 = grid_cell_address(r9, r6, r4, 1u);
+            u32 is_item_9 = Item__is_item(cell_2, guest::cpu()->r[1]);
             r1_34 = guest::cpu()->r[1];
-            if (is_item_3 != 0) {
-                u32 r0_57 = item_has_valid_data(r0_55, r1_34);
+            if (is_item_9 != 0) {
+                u32 r0_57 = item_has_valid_data(cell_2, r1_34);
                 r1_34 = guest::cpu()->r[1];
                 if (r0_57 != 0) {
-                    u32 is_item_4 = Item__is_item(r0_55, r1_34);
-                    if (is_item_4 != 0) {
-                        copy_item_002fc934(frame.at(0).addr(), r0_55);
+                    u32 is_item_10 = Item__is_item(cell_2, r1_34);
+                    if (is_item_10 != 0) {
+                        copy_item_002fc934(frame.at(0).addr(), cell_2);
                         convert_to_earlier_form(frame.at(0).addr(), guest::cpu()->r[1]);
-                        u32 item_data_6 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
+                        u32 item_data_14 = Item__data(frame.at(0).addr(), guest::cpu()->r[1]);
                         r1_34 = guest::cpu()->r[1];
-                        if (item_data_6 != 0) {
-                            u32 r0_63 = rule_value(item_data_6, r1_34);
+                        if (item_data_14 != 0) {
+                            u32 r0_63 = rule_value(item_data_14, r1_34);
                             *gptr<u32>(r5) = r0_63 + *gptr<u32>(r5);
                         }
                     }
@@ -5259,25 +5259,25 @@ L_6ff998:;
         guest::preempt();
     } while (r6 < 8u);
     u32 r0_64 = member_address_0x2f2_(r9);
-    u32 is_item_5 = Item__is_item(r0_64, r1_34);
-    if (is_item_5 != 0) {
+    u32 is_item_11 = Item__is_item(r0_64, r1_34);
+    if (is_item_11 != 0) {
         r1_34 = r0_64;
         copy_item_002fc934(frame.at(0).addr(), r1_34);
         convert_to_earlier_form(frame.at(0).addr(), r1_34);
-        u32 item_data_7 = Item__data(frame.at(0).addr(), r1_34);
-        if (item_data_7 != 0) {
-            u32 r0_70 = rule_value(item_data_7, r1_34);
+        u32 item_data_15 = Item__data(frame.at(0).addr(), r1_34);
+        if (item_data_15 != 0) {
+            u32 r0_70 = rule_value(item_data_15, r1_34);
             *gptr<u32>(r5) = r0_70 + *gptr<u32>(r5);
         }
     }
     u32 r0_71 = member_address_0x2f6_(r9);
-    u32 is_item_6 = Item__is_item(r0_71, r1_34);
-    if (is_item_6 != 0) {
+    u32 is_item_12 = Item__is_item(r0_71, r1_34);
+    if (is_item_12 != 0) {
         copy_item_002fc934(frame.at(0).addr(), r0_71);
         convert_to_earlier_form(frame.at(0).addr(), r0_71);
-        u32 item_data_8 = Item__data(frame.at(0).addr(), r0_71);
-        if (item_data_8 != 0) {
-            u32 r0_77 = rule_value(item_data_8, r0_71);
+        u32 item_data_16 = Item__data(frame.at(0).addr(), r0_71);
+        if (item_data_16 != 0) {
+            u32 r0_77 = rule_value(item_data_16, r0_71);
             *gptr<u32>(r5) = r0_77 + *gptr<u32>(r5);
         }
     }
@@ -5412,22 +5412,22 @@ L_6ffb6c:;
         do {
             r4 = 0u;
             do {
-                u32 r0_6 = grid_cell_address(frame->word_68, r7, r4, 0u);
-                u32 is_item = Item__is_item(r0_6);
+                u32 cell = grid_cell_address(frame->word_68, r7, r4, 0u);
+                u32 is_item_2 = Item__is_item(cell);
                 r2 = guest::cpu()->r[2];
                 r3 = guest::cpu()->r[3];
-                if (is_item != 0) {
+                if (is_item_2 != 0) {
                     u32 r5_1 = frame.at(0).addr();
-                    u32 item_data = Item__data(r0_6, guest::cpu()->r[1], r2, r3);
+                    u32 item_data_2 = Item__data(cell, guest::cpu()->r[1], r2, r3);
                     r2 = guest::cpu()->r[2];
                     r3 = guest::cpu()->r[3];
-                    if (item_data != 0) {
-                        u32 r1_5 = *gptr<u8>(item_data + 0x19u);  // (from the original)
+                    if (item_data_2 != 0) {
+                        u32 r1_5 = *gptr<u8>(item_data_2 + 0x19u);  // (from the original)
                         u32 r6_1 = r1_5 & 0xfu;  // (from the original)
                         if (r6_1 >= 0xeu) {  // (from the original)
                             r6_1 = 0u;
                         }
-                        u32 r0_9 = ItemData__group(item_data, r1_5, r2, r3);
+                        u32 r0_9 = ItemData__group(item_data_2, r1_5, r2, r3);
                         r2 = guest::cpu()->r[2];
                         r3 = guest::cpu()->r[3];
                         if (r6_1 != 0) {
@@ -5571,10 +5571,10 @@ u32 f_006ffd84(u32 r0_unused, u32 r1, u32 r2) {
     *gptr<u16>(r9) = 0;
     *gptr<u16>(r9 + 2u) = 0;
     *gptr<u16>(r9 + 4u) = 0;
-    u32 save_data = get_save_data(0u, r1, r2, guest::cpu()->r[3]);
+    u32 save_data_2 = get_save_data(0u, r1, r2, guest::cpu()->r[3]);
     r2 = guest::cpu()->r[2];
     u32 r10 = global_00a14b30_address;
-    u32 r6 = save_data + 0xa0u;  // (from the original)
+    u32 r6 = save_data_2 + 0xa0u;  // (from the original)
     u32 r4 = 0u;
     do {
         u32 r0_2 = player_in_array(r6, r4 & 0xffu, r2);  // (from the original)

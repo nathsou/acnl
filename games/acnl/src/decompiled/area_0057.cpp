@@ -223,7 +223,7 @@ inline constexpr guest::Function<0x0014ecb0, u32(u32, u32)> call_0014ecb0;
 inline constexpr guest::Function<0x0014f3cc, u32(u32, u32, u32)> apply_matrix;
 inline constexpr guest::Function<0x003171b4, u32(u32, u32, u32, u32)> position_to_cell;
 inline constexpr guest::Function<0x004e0cb0, u32(u32)> return_constant_0x9c7ad4_;
-inline constexpr guest::Function<0x004e9a28, u32(u32, u32, u32, u32)> call_004e9a28;
+inline constexpr guest::Function<0x004e9a28, u32(u32, u32, u32, u32)> RoomGrid__furniture_at;
 inline constexpr guest::Function<0x004ea048, u32(u32)> return_constant_0x9c7a14_;
 inline constexpr guest::Function<0x007455cc, u32(u32, u32)> call_007455cc;
 inline constexpr guest::Function<0x00751a64, u32(u32, u32, u32, u32)> call_00751a64;
@@ -270,7 +270,7 @@ u32 f_00571d28(gptr<AcFtr> ac_ftr, u32 r1, u32 r2_unused, u32 r3, float S0, floa
         u32 r0_4 = return_constant_0x9c7ad4_(r0_3);
         u32 r1_3 = frame->word_1c;
         u32 r2_3 = frame->word_18;
-        gptr<Local_00571d28_r0_5> r0_5 = gptr<Local_00571d28_r0_5>(call_004e9a28(r0_4, r1_3, r2_3, 0u));
+        gptr<Local_00571d28_r0_5> r0_5 = gptr<Local_00571d28_r0_5>(RoomGrid__furniture_at(r0_4, r1_3, r2_3, 0u));
         u32 r0_6 = return_constant_0x9c7a14_(r0_5.addr());
         u32 r0_7 = call_007455cc(r0_6, r0_5.addr());
         r1 = guest::cpu()->r[1];
@@ -2263,6 +2263,7 @@ u32 Actor__pre_execute(gptr<Actor_rec> actor_rec, u32 r1) {
 GUEST_EXPORT_FRAMED(0x0057b990, d_0057b990::Actor__pre_execute, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_0057b9dc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// When `enable`: keeps the two extra arguments at 0x94dfd8 and runs 00529c80 in mode 2; else returns 0.
 namespace d_0057b9dc {
 
 struct __attribute__((packed)) Local_0057b9dc_ea_1 {
@@ -2283,7 +2284,7 @@ inline guest::global<u32, 0x0094dfd8> global_0094dfd8;
 inline guest::global<u32, 0x0094dfdc> global_0094dfdc;
 inline constexpr guest::Function<0x00529c80, u32(u32, u32, u32, u32)> call_00529c80;
 
-u32 f_0057b9dc(u32 r0, u32 r1, u32 r2_unused, u32 r3) {
+u32 start_529c80_mode_2(u32 r0, u32 r1, u32 r2_unused, u32 r3) {
     guest::StackFrame frame(0x8);  // the original's stack frame
     u32 r4 = guest::cpu()->r[4];
     u32 r5 = guest::cpu()->r[5];
@@ -2306,7 +2307,7 @@ u32 f_0057b9dc(u32 r0, u32 r1, u32 r2_unused, u32 r3) {
 }
 
 }  // namespace d_0057b9dc
-GUEST_EXPORT(0x0057b9dc, d_0057b9dc::f_0057b9dc);
+GUEST_EXPORT(0x0057b9dc, d_0057b9dc::start_529c80_mode_2);
 
 // f_0057ba24: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0057ba24 {

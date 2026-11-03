@@ -18,11 +18,11 @@ struct __attribute__((packed)) Object_001c0810_0 {
 GUEST_OFFSET(Object_001c0810_0, byte_e8, 0xe8);
 
 inline constexpr guest::Function<0x001d9c9c, u32(u32, u32, u32)> SoundObjNpc__virtual_2;
-inline constexpr guest::Function<0x001e5894, u32(u32, u32, u32, u32)> call_001e5894;
+inline constexpr guest::Function<0x001e5894, u32(u32, u32, u32, u32)> camera_transform_point;
 
 u32 f_001c0810(gptr<Object_001c0810_0> arg0, u32 r1, u32 r2) {
     guest::StackFrame frame(0xc);  // the original's stack frame
-    call_001e5894(frame.at(0).addr(), r1, r2, guest::cpu()->r[3]);
+    camera_transform_point(frame.at(0).addr(), r1, r2, guest::cpu()->r[3]);
     SoundObjNpc__virtual_2(arg0.addr(), r1, frame.at(0).addr());
     arg0->byte_e8 = 1;
     return 1u;
@@ -35,11 +35,11 @@ GUEST_EXPORT_FRAMED(0x001c0810, d_001c0810::f_001c0810, 0x4030);  // pushes {r4,
 namespace d_001c0c1c {
 
 inline constexpr guest::Function<0x001d9e44, u32(u32, u32, u32)> SoundObjNpc__virtual_4;
-inline constexpr guest::Function<0x001e5894, u32(u32, u32, u32, u32)> call_001e5894;
+inline constexpr guest::Function<0x001e5894, u32(u32, u32, u32, u32)> camera_transform_point;
 
 u32 f_001c0c1c(u32 r0, u32 r1, u32 r2) {
     guest::StackFrame frame(0xc);  // the original's stack frame
-    call_001e5894(frame.at(0).addr(), r1, r2, guest::cpu()->r[3]);
+    camera_transform_point(frame.at(0).addr(), r1, r2, guest::cpu()->r[3]);
     u32 r0_2 = SoundObjNpc__virtual_4(r0, r1, frame.at(0).addr());
     return r0_2;
 }
@@ -1060,7 +1060,7 @@ inline guest::global<u32, 0x00ae565c> global_00ae565c;
 inline guest::global<u32, 0x00ae5660> global_00ae5660;
 inline constexpr guest::Function<0x0014f3cc, u32(u32, u32, u32)> apply_matrix;
 inline constexpr guest::Function<0x001cb118, u32(u32, u32, u32)> call_001cb118;
-inline constexpr guest::Function<0x0052e3ec, u32(u32, u32)> call_0052e3ec;
+inline constexpr guest::Function<0x0052e3ec, u32(u32, u32)> run_75d24c_if_mode_flag_2;
 inline constexpr guest::Function<0x0070ab44, u32(u32, u32, u32, u32)> call_0070ab44;
 inline constexpr guest::Function<0x00718a58, u32(u32, u32, u32, u32)> call_00718a58;
 
@@ -1091,7 +1091,7 @@ void f_001c98d8(gptr<Object_001c98d8_0> arg0, u32 r1) {
             }
             u32 r0_5 = frame.at(0).addr();
             apply_matrix(r0_5, frame.at(0x10).addr(), r0_5);  // (from the original)
-            call_0052e3ec(frame.at(0x40).addr(), frame.at(0).addr());  // (from the original)
+            run_75d24c_if_mode_flag_2(frame.at(0x40).addr(), frame.at(0).addr());  // (from the original)
             gptr<Local_001c98d8_ea_1> ea_1 = gptr<Local_001c98d8_ea_1>(arg0.addr() + 0xcu);  // (from the original)
             u32 r1_5 = ea_1->word_4;
             u32 r2_2 = ea_1->word_8;
@@ -1309,12 +1309,12 @@ GUEST_EXPORT(0x001cb690, d_001cb690::AmiiboPhotoBG__virtual_5);
 // f_001cb78c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001cb78c {
 
-inline constexpr guest::Function<0x001323b4, u32(u32, u32, u32, u32)> call_001323b4;
+inline constexpr guest::Function<0x001323b4, u32(u32, u32, u32, u32)> layout_at_10_virtual_8;
 inline constexpr guest::Function<0x001fa354, u32(u32)> call_001fa354;
 inline constexpr guest::Function<0x006d1e64, u32(u32)> get_state_30;
 
 u32 AmiiboPhotoBG__virtual_6(gptr<InOutWindow> in_out_window) {
-    call_001323b4(in_out_window.addr() + 4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    layout_at_10_virtual_8(in_out_window.addr() + 4u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     in_out_window->byte_1ac = 0;
     u32 r0_2 = get_state_30(0u);
     call_001fa354(*gptr<u32>(r0_2 + 0x1f4u));  // (from the original)
@@ -2188,11 +2188,11 @@ u32 f_001cda40(gptr<Object_001cda40_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
         u32 r0_4 = r0_3 == 0 ? r8_1 : r0_3 + r1;
         frame->word_0 = r0_4;
         if (r0_4 != 0) {
-            u32 length = string_length(0x1cdb28u, r1, r2_2, r3);  // (from the original)
-            u32 entry_2 = ResDic__find(frame.at(0).addr(), 0x1cdb28u, length);  // (from the original)
+            u32 length_2 = string_length(0x1cdb28u, r1, r2_2, r3);  // (from the original)
+            u32 entry_3 = ResDic__find(frame.at(0).addr(), 0x1cdb28u, length_2);  // (from the original)
             r1 = guest::cpu()->r[1];
-            if (entry_2 != 0) {
-                u32 ea_4 = entry_2 + 0xcu;  // (from the original)
+            if (entry_3 != 0) {
+                u32 ea_4 = entry_3 + 0xcu;  // (from the original)
                 r1 = *gptr<u32>(ea_4);
                 if (r1 != 0) {
                     r8_1 = r1 + ea_4;

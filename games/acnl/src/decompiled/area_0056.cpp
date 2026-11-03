@@ -2825,16 +2825,16 @@ inline constexpr guest::Function<0x0020d914, u32(u32)> set_byte_bits_20d914;
 inline constexpr guest::Function<0x002fae84, u32(u32)> get_data_base;
 
 u32 f_0056b5a4(u32 r0) {
-    u32 data_base = get_data_base(r0);
+    u32 data_base_3 = get_data_base(r0);
     u32 r1_1 = *global_0095c4e8;
     u32 r2_1 = *global_0095c4ec;
-    gptr<Local_0056b5a4_ea_1> ea_1 = gptr<Local_0056b5a4_ea_1>(data_base + 0x62120u);  // (from the original)
+    gptr<Local_0056b5a4_ea_1> ea_1 = gptr<Local_0056b5a4_ea_1>(data_base_3 + 0x62120u);  // (from the original)
     ea_1->word_0 = r1_1;
     ea_1->word_4 = r2_1;
     u32 r0_2 = *global_0095c4d2;
     if ((r0_2 & 1u) != 0) {
-        u32 data_base_2 = get_data_base(r0_2);
-        set_byte_bits_20d914(data_base_2 + 0x62120u);  // (from the original)
+        u32 data_base_4 = get_data_base(r0_2);
+        set_byte_bits_20d914(data_base_4 + 0x62120u);  // (from the original)
     }
     u32 r1_2 = u32(*global_0095c4d2) & ~0x10u;  // (from the original)
     *global_0095c4d2 = u8(r1_2);
@@ -3048,16 +3048,16 @@ void f_0056cf7c() {
         if (nf_2 != vf_2) {
             u32 r1_2 = r1_1 | 1u;
             *global_0095c4d2 = u8(r1_2);
-            u32 data_base = get_data_base(global_0095c4d2_address, r1_2);
+            u32 data_base_3 = get_data_base(global_0095c4d2_address, r1_2);
             frame.release();
-            set_byte_bits_20d914(data_base + 0x62120u, guest::cpu()->r[1]);  // (from the original)
+            set_byte_bits_20d914(data_base_3 + 0x62120u, guest::cpu()->r[1]);  // (from the original)
             return;
         }
     }
     u32 r1_4 = r1_1 & ~1u;
     *global_0095c4d2 = u8(r1_4);
-    u32 data_base_2 = get_data_base(global_0095c4d2_address, r1_4);
-    gptr<Local_0056cf7c_r0_6> r0_6 = gptr<Local_0056cf7c_r0_6>(data_base_2 + 0x62120u);  // (from the original)
+    u32 data_base_4 = get_data_base(global_0095c4d2_address, r1_4);
+    gptr<Local_0056cf7c_r0_6> r0_6 = gptr<Local_0056cf7c_r0_6>(data_base_4 + 0x62120u);  // (from the original)
     u32 r1_5 = u32(r0_6->byte_8) & ~1u;
     r0_6->byte_8 = u8(r1_5);
     guest::cpu()->r[1] = r1_5;
@@ -3106,7 +3106,7 @@ GUEST_OFFSET(Local_0056d828_ea_3, word_4, 0x4);
 GUEST_OFFSET(Local_0056d828_ea_3, word_8, 0x8);
 
 inline constexpr guest::Function<0x00301e20, u32(u32, u32, u32, u32)> is_villager_record;
-inline constexpr guest::Function<0x0056d874, u32(u32, u32)> call_0056d874;
+inline constexpr guest::Function<0x0056d874, u32(u32, u32)> set_villager_entry_word;
 
 struct __attribute__((packed)) Frame_0056d828 {
     u16 half_0;
@@ -3125,10 +3125,10 @@ void f_0056d828(u32 r0, gptr<Object_0056d828_1> arg1, u32 r2_unused, u32 r3) {
     ea_1->word_4 = r4;
     ea_1->word_8 = r5;
     ea_1->word_c = r14;
-    u32 is_villager = is_villager_record(arg1.addr(), arg1.addr(), guest::cpu()->r[2], r3);
-    if (is_villager != 0) {
+    u32 is_villager_2 = is_villager_record(arg1.addr(), arg1.addr(), guest::cpu()->r[2], r3);
+    if (is_villager_2 != 0) {
         frame->half_0 = arg1->half_2c;
-        call_0056d874(r0, frame.at(0).addr());
+        set_villager_entry_word(r0, frame.at(0).addr());
         gptr<Local_0056d828_ea_2> ea_2 = gptr<Local_0056d828_ea_2>(frame.at(0).addr());
         u32 r4_1 = ea_2->word_4;
         u32 r5_1 = ea_2->word_8;
@@ -3476,8 +3476,8 @@ u32 AcFtr__virtual_65(u32 ac_ftr, gptr<Object_0056f8b4_1> arg1, u32 r2) {
                 copy_item_002fc934(frame.at(8).addr(), empty_item_address);
                 copy_global_items(frame.at(4).addr(), frame.at(8).addr());
                 copy_item_002fc934(frame.at(0).addr(), frame.at(8).addr());
-                u32 is_empty = Item__is_empty(frame.at(0).addr());
-                if (is_empty != 0) {
+                u32 is_empty_3 = Item__is_empty(frame.at(0).addr());
+                if (is_empty_3 != 0) {
                     copy_item_002fc8e8(frame.at(0).addr(), frame.at(4).addr());
                 }
                 r1_1 = *global_008870a0;
@@ -3492,8 +3492,8 @@ u32 AcFtr__virtual_65(u32 ac_ftr, gptr<Object_0056f8b4_1> arg1, u32 r2) {
                 copy_item_002fc934(frame.at(4).addr(), empty_item_address);
                 copy_item_002fc934(frame.at(0).addr(), empty_item_address);
                 copy_global_items(frame.at(4).addr(), frame.at(0).addr());
-                u32 is_empty_2 = Item__is_empty(frame.at(0).addr());
-                arg1->word_0 = is_empty_2;
+                u32 is_empty_4 = Item__is_empty(frame.at(0).addr());
+                arg1->word_0 = is_empty_4;
                 script__WordFix_33u___WordFix_0023b900(ac_ftr + 0xb0u, frame.at(4).addr(), 0u);  // (from the original)
                 r1_1 = guest::cpu()->r[1];
                 if (arg1->word_0 == 0) {
@@ -3534,7 +3534,7 @@ GUEST_OFFSET(Local_0056fd94_r0_2, byte_8, 0x8);
 
 inline constexpr guest::Function<0x002fc934, u32(u32, u32, u32, u32)> copy_item_002fc934;
 inline constexpr guest::Function<0x004e0cb0, u32(u32, u32)> return_constant_0x9c7ad4_;
-inline constexpr guest::Function<0x004e9a28, u32(u32, u32, u32, u32)> call_004e9a28;
+inline constexpr guest::Function<0x004e9a28, u32(u32, u32, u32, u32)> RoomGrid__furniture_at;
 inline constexpr guest::Function<0x004ea048, u32(u32, u32, u32, u32)> return_constant_0x9c7a14_;
 inline constexpr guest::Function<0x007455cc, u32(u32, u32)> call_007455cc;
 
@@ -3565,7 +3565,7 @@ void f_0056fd94(gptr<AcFtr> ac_ftr, u32 r1, u32 r2, u32 r3) {
         u32 r0_3 = return_constant_0x9c7ad4_(r0_2.addr(), r1_1);
         u32 r2_2 = frame->byte_5;
         u32 r1_2 = frame->byte_4;
-        u32 r0_4 = call_004e9a28(r0_3, r1_2, r2_2, 0u);
+        u32 r0_4 = RoomGrid__furniture_at(r0_3, r1_2, r2_2, 0u);
         r1 = guest::cpu()->r[1];
         u32 r4 = r0_4;
         if (r0_4 != 0) {

@@ -599,13 +599,13 @@ u32 f_004f1510(gptr<Object_004f1510_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
     }
     frame->word_0 = r2_1;
     if (r2_1 != 0 && r1 != 0) {
-        u32 length = string_length(r1, r1, r2_1);
-        u32 entry_2 = ResDic__find(frame.at(0).addr(), r1, length);
+        u32 length_2 = string_length(r1, r1, r2_1);
+        u32 entry_3 = ResDic__find(frame.at(0).addr(), r1, length_2);
         r1 = guest::cpu()->r[1];
-        if (entry_2 != 0) {
+        if (entry_3 != 0) {
             u32 r1_1 = frame->word_0;
             guest::cpu()->r[1] = r1_1;
-            return s32(entry_2 - r1_1 - 0x1cu) >> 4;  // (from the original)
+            return s32(entry_3 - r1_1 - 0x1cu) >> 4;  // (from the original)
         }
     }
     guest::cpu()->r[1] = r1;
@@ -670,13 +670,13 @@ u32 f_004f1648(gptr<Object_004f1648_0> arg0, u32 r1, u32 r2, u32 r3, float S0, f
     u32 r0_1 = r2_1 == 0 ? r11_1 : (arg0.addr() + 0xc0u) + r2_1;  // (from the original)
     frame->word_0 = r0_1;
     if (r0_1 != 0 && r1 != 0) {
-        u32 length = string_length(r1, r1, r2_1, r3);
-        u32 entry_2 = ResDic__find(frame.at(0).addr(), r1, length);
+        u32 length_2 = string_length(r1, r1, r2_1, r3);
+        u32 entry_3 = ResDic__find(frame.at(0).addr(), r1, length_2);
         r1 = guest::cpu()->r[1];
         S0 = guest::cpu()->s[0];
         S1 = guest::cpu()->s[1];
-        if (entry_2 != 0) {
-            u32 ea_3 = entry_2 + 0xcu;  // (from the original)
+        if (entry_3 != 0) {
+            u32 ea_3 = entry_3 + 0xcu;  // (from the original)
             r1 = *gptr<u32>(ea_3);
             if (r1 != 0) {
                 r11_1 = r1 + ea_3;
@@ -2142,10 +2142,10 @@ u32 gui__Key__Key(gptr<gui__Key> key, u32 r1) {
         r1_1 = guest::cpu()->r[1];
     }
     u32 r0_5 = layout_allocator_4(r0_3, r1_1, guest::cpu()->r[2]);
-    u32 block = allocate_from_heap_00131280(*gptr<u32>(r5 + 4u) << 2, *gptr<u32>(r0_5 + 4u), 4u);
+    u32 block_3 = allocate_from_heap_00131280(*gptr<u32>(r5 + 4u) << 2, *gptr<u32>(r0_5 + 4u), 4u);
     r1 = guest::cpu()->r[1];
     u32 r2 = guest::cpu()->r[2];
-    *gptr<u32>(r5 + 0xa4u) = block;  // (from the original)
+    *gptr<u32>(r5 + 0xa4u) = block_3;  // (from the original)
     u32 r4 = 0u;
     if (s32(*gptr<u32>(r5 + 4u)) > 0) {
         do {
@@ -2160,9 +2160,9 @@ u32 gui__Key__Key(gptr<gui__Key> key, u32 r1) {
                 r6_1 = r0_8;
             }
             u32 r0_9 = layout_allocator_4(r0_8, r1, r2);
-            u32 block_2 = allocate_from_heap_00131280((r6_1 << 1) + 2u, *gptr<u32>(r0_9 + 4u), 4u);
-            *gptr<u32>(*gptr<u32>(r5 + 0xa4u) + (r4 << 2)) = block_2;  // (from the original)
-            wmemset(block_2, 0u, r6_1 + 1u);
+            u32 block_4 = allocate_from_heap_00131280((r6_1 << 1) + 2u, *gptr<u32>(r0_9 + 4u), 4u);
+            *gptr<u32>(*gptr<u32>(r5 + 0xa4u) + (r4 << 2)) = block_4;  // (from the original)
+            wmemset(block_4, 0u, r6_1 + 1u);
             r2 = guest::cpu()->r[2];
             r1 = r7_1->word_c;
             if (r1 != 0) {
@@ -2204,9 +2204,9 @@ u32 gui__NrmKey__NrmKey(u32 r0, u32 r1, u32 r2, u32 r3) {
     copy_aligned_bytes(r4 + 0xa8u, r1, 0xccu);  // (from the original)
     *gptr<u32>(r4 + 0x174u) = 0;  // (from the original)
     u32 r0_3 = layout_allocator_4(0u);
-    u32 block = allocate_from_heap_00131280(*gptr<u32>(r4 + 0xa8u) << 1, *gptr<u32>(r0_3 + 4u), 4u);  // (from the original)
+    u32 block_2 = allocate_from_heap_00131280(*gptr<u32>(r4 + 0xa8u) << 1, *gptr<u32>(r0_3 + 4u), 4u);  // (from the original)
     r2 = guest::cpu()->r[2];
-    *gptr<u32>(r4 + 0x174u) = block;  // (from the original)
+    *gptr<u32>(r4 + 0x174u) = block_2;  // (from the original)
     u32 r0_6 = *gptr<u32>(r4 + 0xa8u);  // (from the original)
     if (s32(r0_6) <= 0) {
         r0 = 0u;
@@ -2214,7 +2214,7 @@ u32 gui__NrmKey__NrmKey(u32 r0, u32 r1, u32 r2, u32 r3) {
         r0 = r0_6 & 1u;
         if (r0 == 1u) {
             r2 = *gptr<u16>(r4 + 0x134u);  // (from the original)
-            *gptr<u16>(block) = u16(r2);
+            *gptr<u16>(block_2) = u16(r2);
         }
     }
     u32 r1_3 = *gptr<u32>(r4 + 0xa8u);  // (from the original)

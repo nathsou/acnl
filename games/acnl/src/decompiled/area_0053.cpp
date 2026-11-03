@@ -23,7 +23,7 @@ inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
 inline constexpr u32 global_00952c5c_address = 0x00952c5cu;
 inline guest::global<u32, 0x00952c5c> global_00952c5c;
 inline constexpr guest::Function<0x002d5b40, u32(u32, u32)> call_002d5b40;
-inline constexpr guest::Function<0x0031758c, u32(u32, u32, u32, u32)> call_0031758c;
+inline constexpr guest::Function<0x0031758c, u32(u32, u32, u32, u32)> HeapHolder__recreate;
 inline constexpr guest::Function<0x008156fc, u32(u32, u32, u32)> sead__SafeStringBase_char___SafeStringBase_008156fc;
 
 struct __attribute__((packed)) Frame_00530da8 {
@@ -45,7 +45,7 @@ u32 sead__SafeStringBase_char___SafeStringBase_00530da8(gptr<sead__SafeStringBas
     frame->word_c = 0x530e28;  // (from the original)
     frame->word_0 = 1;
     frame->word_4 = 0;
-    call_0031758c(safe_string_base_char.addr(), 0x1400u, r7_1, frame.at(8).addr());  // (from the original)
+    HeapHolder__recreate(safe_string_base_char.addr(), 0x1400u, r7_1, frame.at(8).addr());  // (from the original)
     sead__SafeStringBase_char___SafeStringBase_008156fc(safe_string_base_char.addr() + 0x2cu, r7_1, 0x4000u);  // (from the original)
     safe_string_base_char->byte_290 = u8(r1);
     safe_string_base_char->byte_291 = u8(r2);
@@ -277,10 +277,10 @@ inline constexpr guest::Function<0x006bf18c, u32(u32)> call_006bf18c;
 
 u32 f_00536130(u32 r0, float S0) {
     u32 r0_3 = 0;
-    u32 item_data = Item__data(r0);
+    u32 item_data_2 = Item__data(r0);
     float S0_1 = guest::cpu()->s[0];
-    if (item_data != 0) {
-        u32 r4_1 = *gptr<u16>(item_data);
+    if (item_data_2 != 0) {
+        u32 r4_1 = *gptr<u16>(item_data_2);
         if (r4_1 >= 0x1fbu) {  // (from the original)
             r4_1 = 0u;
             return gptr<u32>(0x878990u)[r4_1];  // (from the original)
@@ -426,9 +426,9 @@ inline constexpr guest::Function<0x00536650, u32(u32, u32)> call_00536650;
 
 void f_00536cfc(gptr<Object_00536cfc_0> arg0, u32 r1, u32 r2) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 category = Item__category(r1, r1, r2, guest::cpu()->r[3]);
+    u32 category_2 = Item__category(r1, r1, r2, guest::cpu()->r[3]);
     u32 r1_1 = guest::cpu()->r[1];
-    if (category == 0x1cu) {  // (from the original)
+    if (category_2 == 0x1cu) {  // (from the original)
         u32 r4_1 = 0u;
         u32 ea_1 = arg0->word_8 + 0x20u;  // (from the original)
         r1_1 = *gptr<u32>(ea_1);
@@ -477,10 +477,10 @@ inline constexpr guest::Function<0x0054a644, u32(u32, u32)> construct_print_outp
 void f_00536da0(u32 r0_unused, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x24);  // the original's stack frame
     u32 r5_1 = *frame.at<u32>(0x38);  // (from the original)
-    u32 category = Item__category(r2, r1, r2, r3);
-    if (category == 0x40u) {  // (from the original)
-        u32 item_data = Item__data(r2);
-        u32 r0_3 = *gptr<u8>(item_data + 0xfu);  // (from the original)
+    u32 category_2 = Item__category(r2, r1, r2, r3);
+    if (category_2 == 0x40u) {  // (from the original)
+        u32 item_data_2 = Item__data(r2);
+        u32 r0_3 = *gptr<u8>(item_data_2 + 0xfu);  // (from the original)
         if (r0_3 >= 0x32u) {  // (from the original)
             return;
         }
@@ -505,10 +505,10 @@ void f_00536da0(u32 r0_unused, u32 r1, u32 r2, u32 r3) {
         }
         goto L_536e3c;
     }
-    if (category == 0x1cu) {  // (from the original)
+    if (category_2 == 0x1cu) {  // (from the original)
         goto L_536e3c;
     }
-    if (category == 0x29u && r5_1 == 1u) {  // (from the original)
+    if (category_2 == 0x29u && r5_1 == 1u) {  // (from the original)
         u32 r0_6 = frame.at(0).addr();
         construct_print_output(r0_6, r1);
         print_append(r0_6, 0x536f08u);  // (from the original)
@@ -775,8 +775,8 @@ u32 f_005374f0(gptr<Object_005374f0_0> arg0, u32 r1, u32 r2, u32 r3) {
         u32 r0_2 = call_007259b4(arg0.addr(), r1_1);
         r1_1 = arg0->word_4;
         if (r0_2 == r1_1) {
-            u32 save_data = get_save_data(r0_2, r1_1);
-            gptr<Local_005374f0_r3_4> r3_4 = gptr<Local_005374f0_r3_4>((save_data + 0x62080u) + 0x138u);  // (from the original)
+            u32 save_data_3 = get_save_data(r0_2, r1_1);
+            gptr<Local_005374f0_r3_4> r3_4 = gptr<Local_005374f0_r3_4>((save_data_3 + 0x62080u) + 0x138u);  // (from the original)
             u32 r1_2 = arg0->half_67f4;
             u32 r2_3 = r3_4->half_0;
             if (r2_3 == r1_2) {
@@ -800,8 +800,8 @@ u32 f_005374f0(gptr<Object_005374f0_0> arg0, u32 r1, u32 r2, u32 r3) {
             if (r0_8 != 0) {
                 return 0u;
             }
-            u32 save_data_2 = get_save_data(r0_8, r1_1);
-            u32 r0_11 = first_player_with_flag_5700_bit_4(save_data_2 + 0xa0u);  // (from the original)
+            u32 save_data_4 = get_save_data(r0_8, r1_1);
+            u32 r0_11 = first_player_with_flag_5700_bit_4(save_data_4 + 0xa0u);  // (from the original)
             r1_1 = guest::cpu()->r[1];
             if (r0_11 != 0) {
                 call_0030f4fc(r0_11, frame.at(0).addr());
@@ -905,10 +905,10 @@ void f_005377fc(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_005377fc> frame;  // the original's stack frame
     u32 r0_1 = call_003506c0(r0, r1, r2, r3);
     u32 r1_1 = guest::cpu()->r[1];
-    u32 save_data = get_save_data(r0_1, r1_1);
+    u32 save_data_2 = get_save_data(r0_1, r1_1);
     frame->word_0 = r0_1;
     frame->word_4 = r1_1;
-    call_003355ac(r2, r0, r1, save_data + 0x6e29au);  // (from the original)
+    call_003355ac(r2, r0, r1, save_data_2 + 0x6e29au);  // (from the original)
 }
 
 }  // namespace d_005377fc

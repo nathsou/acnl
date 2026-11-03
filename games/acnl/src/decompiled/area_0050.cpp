@@ -833,11 +833,11 @@ void f_00504c54(u32 r0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2) {
     float S1_33 = 0;
     u32 r4 = r0;
     u32 r6 = r1;
-    u32 data_base = get_data_base(r0, r1, r2, r3);
-    u32 r0_3 = first_unused_record_1ac(data_base + 0x6e238u);  // (from the original)
+    u32 data_base_2 = get_data_base(r0, r1, r2, r3);
+    u32 free_record = first_unused_record_1ac(data_base_2 + 0x6e238u);  // (from the original)
     S2 = guest::cpu()->s[2];
-    r2 = r0_3;
-    if (s32(r0_3) >= 0xf) {  // (from the original)
+    r2 = free_record;
+    if (s32(free_record) >= 0xf) {  // (from the original)
         r2 = 0xeu;  // (from the original)
     }
     r0 = 0u;
@@ -1030,9 +1030,9 @@ u32 f_005091fc(gptr<Object_005091fc_0> arg0, u32 r1, u32 r2, u32 r3) {
         u32 r0_8 = Pane__find_pane(arg0->word_4c, r6_1);
         if (r0_8 != 0) {
             u32 r0_10 = call_00568b38(arg0.addr() + 0x28u, r0_2, *gptr<u32>(arg0->word_20 + 4u));  // (from the original)
-            u32 block = allocate_from_heap_002fd108(0x3cu, arg0->word_24, 4u);  // (from the original)
-            r5_1 = lyt__AnmObject__AnmObject_0050c800(block, r0_10, r0_8, 0u);
-            linked_list_insert_before(arg0.addr() + 0x14u, arg0.addr() + 0x18u, block + 0x20u);  // (from the original)
+            u32 block_2 = allocate_from_heap_002fd108(0x3cu, arg0->word_24, 4u);  // (from the original)
+            r5_1 = lyt__AnmObject__AnmObject_0050c800(block_2, r0_10, r0_8, 0u);
+            linked_list_insert_before(arg0.addr() + 0x14u, arg0.addr() + 0x18u, block_2 + 0x20u);  // (from the original)
         }
     }
     return r5_1;
@@ -1083,13 +1083,13 @@ u32 f_005095dc(gptr<Object_005095dc_0> arg0, u32 r1, u32 r2, u32 r3) {
     u32 r0 = arg0.addr();
     u32 r2_1 = 0;
     u32 r4 = r0;
-    gptr<Local_005095dc_r0_1> block = gptr<Local_005095dc_r0_1>(allocate_from_heap_002fd108(0xcu, arg0->word_24, 4u, r3));  // (from the original)
-    block->word_0 = 0;
-    u32 r1_2 = block.addr() + 4u;
-    block->word_4 = r1_2;
-    block->word_8 = r1_2;
+    gptr<Local_005095dc_r0_1> block_2 = gptr<Local_005095dc_r0_1>(allocate_from_heap_002fd108(0xcu, arg0->word_24, 4u, r3));  // (from the original)
+    block_2->word_0 = 0;
+    u32 r1_2 = block_2.addr() + 4u;
+    block_2->word_4 = r1_2;
+    block_2->word_8 = r1_2;
     arg0->word_20 = r1;
-    arg0->word_174 = block.addr();
+    arg0->word_174 = block_2.addr();
     Layout__virtual_4(r4 + 0x28u, r2, r1, r3);  // (from the original)
     r3 = guest::cpu()->r[3];
     r1 = *global_00ad6604;
@@ -1716,14 +1716,14 @@ void f_0050cd64(u32 r0_unused, u32 r1, u32 r2_unused, u32 r3) {
     gptr<Local_0050cd64_r4_1> r4_1 = gptr<Local_0050cd64_r4_1>(0u);
     frame->word_0 = r3;
     if (*global_009535e0 == 0) {
-        u32 block = allocate(0x14u, r1, guest::cpu()->r[2], r3);  // (from the original)
+        u32 block_2 = allocate(0x14u, r1, guest::cpu()->r[2], r3);  // (from the original)
         r1 = guest::cpu()->r[1];
-        if (block == 0) {
+        if (block_2 == 0) {
             r4_1 = gptr<Local_0050cd64_r4_1>(0u);
         } else {
-            r4_1 = gptr<Local_0050cd64_r4_1>(block);
-            *gptr<u32>(block) = 0;
-            RecursiveLock__initialize(block, r1);
+            r4_1 = gptr<Local_0050cd64_r4_1>(block_2);
+            *gptr<u32>(block_2) = 0;
+            RecursiveLock__initialize(block_2, r1);
             r4_1->word_c = 0;
             frame->word_0 = 0;
             u32 r0_3 = call_00127cf8(frame.at(0).addr(), 0u);
@@ -2290,10 +2290,10 @@ void sead__SafeStringBase_char___SafeStringBase_0050d91c(u32 r0_unused, u32 r1) 
         u32 r0_1 = create_heap(0x28000u, frame.at(8).addr(), r4_1, 1u);  // (from the original)
         *global_009535e8 = r0_1;
         call_0034cd5c(global_009535ec_address);
-        u32 block = allocate_from_heap_002fd108(0x8bcu, r4_1, 4u);  // (from the original)
-        clear_aligned(block, 0x8bcu);  // (from the original)
-        *global_009535e4 = nn__cec__CTR__MessageBox__MessageBox(block);
-        call_0034d018(block);
+        u32 block_2 = allocate_from_heap_002fd108(0x8bcu, r4_1, 4u);  // (from the original)
+        clear_aligned(block_2, 0x8bcu);  // (from the original)
+        *global_009535e4 = nn__cec__CTR__MessageBox__MessageBox(block_2);
+        call_0034d018(block_2);
         r1 = guest::cpu()->r[1];
     }
     guest::cpu()->r[1] = r1;
@@ -2920,9 +2920,9 @@ GUEST_SIZE(Frame_0050e778, 0x50);
 u32 f_0050e778(gptr<Object_0050e778_0> arg0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrameOf<Frame_0050e778> frame;  // the original's stack frame
     u32 r0 = arg0.addr();
-    u32 block = allocate_from_heap_00131280(0x40u, arg0->word_0, 4u, r3);  // (from the original)
-    arg0->word_8 = block;
-    if (block != 0) {
+    u32 block_2 = allocate_from_heap_00131280(0x40u, arg0->word_0, 4u, r3);  // (from the original)
+    arg0->word_8 = block_2;
+    if (block_2 != 0) {
         u32 r0_2 = call_0050ee4c(r0);
         if (r0_2 != 0) {
             u32 r0_3 = nn__pia__local__UdsNetworkSetting__UdsNetworkSetting(r0);
@@ -3032,14 +3032,14 @@ u32 f_0050ed5c(gptr<Object_0050ed5c_0> arg0, u32 r1_unused, u32 r2, u32 r3) {
     u32 r5 = r0;
     u32 r6 = 0u;
     if (arg0->word_24 == 0) {
-        u32 block = allocate_from_heap_002fd108(0xce54u, arg0->word_0, 4u, r3);  // (from the original)
+        u32 block_2 = allocate_from_heap_002fd108(0xce54u, arg0->word_0, 4u, r3);  // (from the original)
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
-        *gptr<u32>(block) = r6;
-        *gptr<u32>(block + 4u) = r6;
-        u32 r4 = block;
-        *gptr<u32>(block + 8u) = r6;
-        gptr<Local_0050ed5c_ea_3> ea_3 = gptr<Local_0050ed5c_ea_3>(block + 0xcu);  // (from the original)
+        *gptr<u32>(block_2) = r6;
+        *gptr<u32>(block_2 + 4u) = r6;
+        u32 r4 = block_2;
+        *gptr<u32>(block_2 + 8u) = r6;
+        gptr<Local_0050ed5c_ea_3> ea_3 = gptr<Local_0050ed5c_ea_3>(block_2 + 0xcu);  // (from the original)
         ea_3->word_0 = r6;
         r1 = 0x64u;  // (from the original)
         ea_3->word_4 = r6;

@@ -260,6 +260,9 @@
 001120f0 r0@112146 save_data_2
 00112298 r0@11229a save_data
 00112d34 r0@112d6c save_data
+00112d34 r1@entry slot
+00112d34 r2@entry item
+00112d34 r3@entry notify
 00112d9c r4@entry villager
 00112d9c r5@entry index
 001130cc r0@entry villager
@@ -323,6 +326,7 @@
 00119fe4 r0@11a012 save_data_2
 0011a6d8 r0@11a6fe save_data
 0011b3d4 arg0 talk_rcpt
+0011b3d4 talk_rcpt talk
 0011badc r0@11bafa block
 0011bcfc r0@11bd38 length_3
 0011bcfc r0@11bd40 length_4
@@ -3052,6 +3056,7 @@
 0075d6a4 arg0 grid_tile
 0075d718 arg0 grid_tile
 0075d788 arg0 grid_tile
+0076054c ac_npc_nml npc
 0076054c arg0 ac_npc_nml
 007608f8 r0@760900 player
 007608f8 r0@760948 category_2
@@ -3095,11 +3100,19 @@
 00764dc8 r0@764df8 number
 0076507c r0@765088 player
 0076538c arg0 slot_object
+0076538c arg1 x
+0076538c arg2 z
+0076538c arg3 position
+0076538c slot_object object
 007654a8 r0@7654d0 number
 00765518 r0@765524 player
 00765634 r0@765640 player
 0076609c r0@7660b8 save_data
 0076609c r0@766104 villager_record
+007667a8 r0@entry grid
+007667a8 r1@entry out
+007667a8 r2@entry x
+007667a8 r3@entry z
 00766b00 r0@entry entries
 00766b00 r1@entry index
 007680a0 arg0 item

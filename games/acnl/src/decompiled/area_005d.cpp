@@ -137,9 +137,9 @@ u32 f_005d055c(u32 r0, u32 r1, u32 r2) {
         return r0_1;
     }
     u32 r0_2 = read_u32_0x009535e8_(r0_1);
-    u32 block = allocate_from_heap_002fd108(0x2520u, r0_2, 4u);  // (from the original)
-    *gptr<u32>(block) = 0;
-    u32 ea_1 = block + 4u;
+    u32 block_2 = allocate_from_heap_002fd108(0x2520u, r0_2, 4u);  // (from the original)
+    *gptr<u32>(block_2) = 0;
+    u32 ea_1 = block_2 + 4u;
     *gptr<u32>(ea_1) = 0;
     u32 r0_5 = Villager__Villager(ea_1 + 4u, 0u);
     *global_009514c8 = r0_5 - 8u;
@@ -653,6 +653,7 @@ void f_005d4a68(gptr<Object_005d4a68_0> arg0) {
 GUEST_EXPORT(0x005d4a68, d_005d4a68::f_005d4a68);
 
 // f_005d4a78: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Calls the object's virtual at +8.
 namespace d_005d4a78 {
 
 struct __attribute__((packed)) Object_005d4a78_0 {
@@ -661,13 +662,13 @@ struct __attribute__((packed)) Object_005d4a78_0 {
 GUEST_OFFSET(Object_005d4a78_0, word_0, 0x0);
 
 
-u32 f_005d4a78(gptr<Object_005d4a78_0> arg0) {
+u32 call_virtual_slot_2(gptr<Object_005d4a78_0> arg0) {
     // virtual function 2 of arg0.addr()
     return guest::call_address<u32>(*gptr<u32>(arg0->word_0 + 8u), arg0.addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_005d4a78
-GUEST_EXPORT(0x005d4a78, d_005d4a78::f_005d4a78);
+GUEST_EXPORT(0x005d4a78, d_005d4a78::call_virtual_slot_2);
 
 // f_005d4edc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005d4edc {
@@ -1695,14 +1696,14 @@ GUEST_SIZE(Frame_005daf1c, 0x4);
 u32 f_005daf1c(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_005daf1c> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 player = get_current_player(r0, r1, r2, r3);
+    u32 player_2 = get_current_player(r0, r1, r2, r3);
     u32 r1_1 = *global_0094fd25;
-    if (r1_1 >= 0x10u || player == 0) {  // (from the original)
+    if (r1_1 >= 0x10u || player_2 == 0) {  // (from the original)
         guest::cpu()->r[1] = r1_1;
-        return player;
+        return player_2;
     }
     frame->word_0 = 1;
-    u32 r0_3 = Pockets__set_slot(player + 0x6bd0u, r1_1, empty_item_address, 0u);  // (from the original)
+    u32 r0_3 = Pockets__set_slot(player_2 + 0x6bd0u, r1_1, empty_item_address, 0u);  // (from the original)
     return r0_3;
 }
 
@@ -1746,13 +1747,13 @@ inline constexpr guest::Function<0x005c81f4, u32(u32, u32, u32, u32)> call_005c8
 
 u32 f_005dc9d4(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 player = get_current_player(r0, r1, r2, r3);
-    if (player != 0) {
-        u32 r0_3 = Pockets__add(player + 0x6bd0u, r1, r2, 1u);  // (from the original)
+    u32 player_2 = get_current_player(r0, r1, r2, r3);
+    if (player_2 != 0) {
+        u32 r0_3 = Pockets__add(player_2 + 0x6bd0u, r1, r2, 1u);  // (from the original)
         frame.release();
         return call_005c81f4(r0_3, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     }
-    return player;
+    return player_2;
 }
 
 }  // namespace d_005dc9d4

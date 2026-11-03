@@ -965,7 +965,7 @@ inline constexpr guest::Function<0x00132478, u32(u32, u32, u32, u32)> clear_list
 inline constexpr guest::Function<0x0013f134, u32(u32, u32, u32, u32)> queue_append;
 inline constexpr guest::Function<0x002f73b8, u32(u32)> unload_split_part;
 inline constexpr guest::Function<0x002f747c, u32(u32, u32, u32, u32)> ObjectOwner__release_object;
-inline constexpr guest::Function<0x0031758c, u32(u32, u32, u32, u32)> call_0031758c;
+inline constexpr guest::Function<0x0031758c, u32(u32, u32, u32, u32)> HeapHolder__recreate;
 inline constexpr guest::Function<0x005b19f8, u32(u32, u32, u32, u32)> WordAndFlag__clear;
 
 struct __attribute__((packed)) Frame_008156fc {
@@ -1033,7 +1033,7 @@ u32 sead__SafeStringBase_char___SafeStringBase_008156fc(gptr<sead__SafeStringBas
         frame->word_8 = vtable_sead__SafeStringBase_char_;
         frame->word_0 = 1;
         frame->word_4 = 0;
-        r0_9 = call_0031758c(r5, r7, r6, frame.at(8).addr());
+        r0_9 = HeapHolder__recreate(r5, r7, r6, frame.at(8).addr());
     }
     return r0_9;
 }

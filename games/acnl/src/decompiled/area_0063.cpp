@@ -305,8 +305,8 @@ u32 index_is_available_00632488(gptr<Object_00632488_0> arg0) {
                     }
                     u32 r0_5 = read_global_byte_2(global_00aaef18_address, r1_1);
                     u32 r0_6 = flagged_mode_ordinal(r0_5);
-                    u32 save_data = get_save_data(r0_6);
-                    u32 r0_9 = villager_record_at(save_data + 0x292a4u, r0_6);  // (from the original)
+                    u32 save_data_2 = get_save_data(r0_6);
+                    u32 r0_9 = villager_record_at(save_data_2 + 0x292a4u, r0_6);  // (from the original)
                     if (r0_9 != 0) {
                         u32 r0_10 = check_villager_11a390(r0_9);
                         r1_1 = guest::cpu()->r[1];
@@ -473,11 +473,11 @@ GUEST_SIZE(Frame_00636bf0, 0x34);
 
 u32 f_00636bf0(gptr<Object_00636bf0_0> arg0, gptr<Object_00636bf0_1> arg1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_00636bf0> frame;  // the original's stack frame
-    u32 random = random_below(3u, arg1.addr(), r2, r3);
+    u32 random_2 = random_below(3u, arg1.addr(), r2, r3);
     frame->word_0 = 0;
     frame->word_4 = 8;
     frame->word_8 = 0;
-    MessageRef__set_2(frame.at(0x10).addr(), 0x841c7cu, random + 0x1au, 0u);  // (from the original)
+    MessageRef__set_2(frame.at(0x10).addr(), 0x841c7cu, random_2 + 0x1au, 0u);  // (from the original)
     u32 r0_3 = arg0->word_4;
     u32 r1_1 = arg1->word_0;
     arg1->word_0 = r1_1 + 1u;
@@ -551,11 +551,11 @@ u32 f_0063ca1c(gptr<Object_0063ca1c_0> arg0, u32 r1, u32 r2, u32 r3) {
         if (r0_1 != 0) {
             u32 r0_2 = r0_1 + 0x1000u;  // (from the original)
             u32 r6_1 = *gptr<u32>(r0_2 + 0x28u);  // (from the original)
-            u32 player = get_current_player(r0_2, 4u, r2, r3);
+            u32 player_2 = get_current_player(r0_2, 4u, r2, r3);
             r1 = guest::cpu()->r[1];
             u32 zf_1 = r6_1 == 0;
             if (!zf_1) {
-                zf_1 = player == 0;
+                zf_1 = player_2 == 0;
             }
             if (zf_1) {
                 return 0u;
@@ -585,7 +585,7 @@ u32 f_0063ca1c(gptr<Object_0063ca1c_0> arg0, u32 r1, u32 r2, u32 r3) {
             }
             u32 r2_3 = r6_2->byte_5;
             u32 r1_2 = r6_2->byte_4;
-            u32 r0_9 = BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c(player + 0x8d78u, r1_2, r2_3, r5_2);  // (from the original)
+            u32 r0_9 = BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c(player_2 + 0x8d78u, r1_2, r2_3, r5_2);  // (from the original)
             r1 = guest::cpu()->r[1];
             if (r0_9 == 0) {
                 return 0u;
@@ -684,8 +684,8 @@ u32 f_0063cb74(gptr<Object_0063cb74_0> arg0, u32 r1, u32 r2, u32 r3) {
         if (r0_16 != 0) {
             u32 r1_7 = r0_16 + 0x249au;  // (from the original)
             copy_item_002fc934(frame.at(0).addr(), r1_7);
-            u32 number = Item__number(frame.at(0).addr());
-            *gptr<u16>((arg0.addr() + 0x200u) + 0x70u) = u16(number);  // (from the original)
+            u32 number_2 = Item__number(frame.at(0).addr());
+            *gptr<u16>((arg0.addr() + 0x200u) + 0x70u) = u16(number_2);  // (from the original)
             copy_item_002fc8e8(r1_7, r0_14 + 0x6cu);  // (from the original)
             u32 r0_20 = arg0->word_f0;
             if (r0_20 != 0) {
@@ -742,8 +742,8 @@ u32 f_0063cd2c(gptr<Object_0063cd2c_0> arg0, u32 r1, u32 r2, u32 r3) {
         u32 r0_2 = r0_1 + 0x1000u;  // (from the original)
         u32 r4_1 = *gptr<u32>(r0_2 + 0x28u);  // (from the original)
         if (r4_1 != 0) {
-            u32 save_data = get_save_data(r0_2, r1, r2, r3);
-            u32 r6_1 = save_data + 0x292a4u;  // (from the original)
+            u32 save_data_2 = get_save_data(r0_2, r1, r2, r3);
+            u32 r6_1 = save_data_2 + 0x292a4u;  // (from the original)
             u32 r0_4 = is_designated_villager(r6_1, r4_1);
             if (r0_4 != 0 && *gptr<u8>(r6_1 + 0x1739fu) < 3u) {  // (from the original)
                 r0 = 0u;

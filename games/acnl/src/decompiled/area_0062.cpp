@@ -40,7 +40,7 @@ GUEST_EXPORT(0x00620678, d_00620678::set_slot_byte_9);
 // f_00620dcc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00620dcc {
 
-struct __attribute__((packed)) Object_00620dcc_0 {
+struct __attribute__((packed)) StationEntry {
     u8 byte_0;
     u8 unknown_1[0x3];  // (not used here)
     u32 word_4;
@@ -57,23 +57,23 @@ struct __attribute__((packed)) Object_00620dcc_0 {
     u8 byte_15;
     u8 byte_16;
 };
-GUEST_OFFSET(Object_00620dcc_0, byte_0, 0x0);
-GUEST_OFFSET(Object_00620dcc_0, word_4, 0x4);
-GUEST_OFFSET(Object_00620dcc_0, byte_8, 0x8);
-GUEST_OFFSET(Object_00620dcc_0, word_9, 0x9);
-GUEST_OFFSET(Object_00620dcc_0, byte_d, 0xd);
-GUEST_OFFSET(Object_00620dcc_0, byte_e, 0xe);
-GUEST_OFFSET(Object_00620dcc_0, byte_f, 0xf);
-GUEST_OFFSET(Object_00620dcc_0, byte_10, 0x10);
-GUEST_OFFSET(Object_00620dcc_0, byte_11, 0x11);
-GUEST_OFFSET(Object_00620dcc_0, byte_12, 0x12);
-GUEST_OFFSET(Object_00620dcc_0, byte_13, 0x13);
-GUEST_OFFSET(Object_00620dcc_0, byte_14, 0x14);
-GUEST_OFFSET(Object_00620dcc_0, byte_15, 0x15);
-GUEST_OFFSET(Object_00620dcc_0, byte_16, 0x16);
+GUEST_OFFSET(StationEntry, byte_0, 0x0);
+GUEST_OFFSET(StationEntry, word_4, 0x4);
+GUEST_OFFSET(StationEntry, byte_8, 0x8);
+GUEST_OFFSET(StationEntry, word_9, 0x9);
+GUEST_OFFSET(StationEntry, byte_d, 0xd);
+GUEST_OFFSET(StationEntry, byte_e, 0xe);
+GUEST_OFFSET(StationEntry, byte_f, 0xf);
+GUEST_OFFSET(StationEntry, byte_10, 0x10);
+GUEST_OFFSET(StationEntry, byte_11, 0x11);
+GUEST_OFFSET(StationEntry, byte_12, 0x12);
+GUEST_OFFSET(StationEntry, byte_13, 0x13);
+GUEST_OFFSET(StationEntry, byte_14, 0x14);
+GUEST_OFFSET(StationEntry, byte_15, 0x15);
+GUEST_OFFSET(StationEntry, byte_16, 0x16);
 
 
-void StationEntry__clear(gptr<Object_00620dcc_0> entry) {
+void StationEntry__clear(gptr<StationEntry> entry) {
     entry->byte_0 = 0;
     entry->word_4 = 0;
     entry->word_9 = 0;
@@ -147,7 +147,7 @@ GUEST_EXPORT(0x00620e18, d_00620e18::f_00620e18);
 // f_00620e68: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00620e68 {
 
-struct __attribute__((packed)) Object_00620e68_0 {
+struct __attribute__((packed)) StationEntry {
     u8 byte_0;
     u8 unknown_1[0x3];  // (not used here)
     u32 word_4;
@@ -164,22 +164,22 @@ struct __attribute__((packed)) Object_00620e68_0 {
     u8 byte_15;
     u8 byte_16;
 };
-GUEST_OFFSET(Object_00620e68_0, byte_0, 0x0);
-GUEST_OFFSET(Object_00620e68_0, word_4, 0x4);
-GUEST_OFFSET(Object_00620e68_0, byte_8, 0x8);
-GUEST_OFFSET(Object_00620e68_0, byte_d, 0xd);
-GUEST_OFFSET(Object_00620e68_0, byte_e, 0xe);
-GUEST_OFFSET(Object_00620e68_0, byte_f, 0xf);
-GUEST_OFFSET(Object_00620e68_0, byte_10, 0x10);
-GUEST_OFFSET(Object_00620e68_0, byte_11, 0x11);
-GUEST_OFFSET(Object_00620e68_0, byte_12, 0x12);
-GUEST_OFFSET(Object_00620e68_0, byte_13, 0x13);
-GUEST_OFFSET(Object_00620e68_0, byte_14, 0x14);
-GUEST_OFFSET(Object_00620e68_0, byte_15, 0x15);
-GUEST_OFFSET(Object_00620e68_0, byte_16, 0x16);
+GUEST_OFFSET(StationEntry, byte_0, 0x0);
+GUEST_OFFSET(StationEntry, word_4, 0x4);
+GUEST_OFFSET(StationEntry, byte_8, 0x8);
+GUEST_OFFSET(StationEntry, byte_d, 0xd);
+GUEST_OFFSET(StationEntry, byte_e, 0xe);
+GUEST_OFFSET(StationEntry, byte_f, 0xf);
+GUEST_OFFSET(StationEntry, byte_10, 0x10);
+GUEST_OFFSET(StationEntry, byte_11, 0x11);
+GUEST_OFFSET(StationEntry, byte_12, 0x12);
+GUEST_OFFSET(StationEntry, byte_13, 0x13);
+GUEST_OFFSET(StationEntry, byte_14, 0x14);
+GUEST_OFFSET(StationEntry, byte_15, 0x15);
+GUEST_OFFSET(StationEntry, byte_16, 0x16);
 
 
-void StationEntry__clear_2(gptr<Object_00620e68_0> entry) {
+void StationEntry__clear_2(gptr<StationEntry> entry) {
     entry->byte_0 = 0;
     entry->word_4 = 0;
     entry->byte_8 = 0xa5;  // (from the original)
@@ -1024,13 +1024,13 @@ void f_0062217c(gptr<Object_0062217c_0> arg0, u32 r1, u32 r2) {
     u32 r1_2 = 0;
     u32 r2_3 = 0;
     u32 r0_2 = call_001aa88c(*global_009529cc, r1, r2, guest::cpu()->r[3]);
-    u32 player = get_current_player(r0_2);
-    if (player == 0) {
-        ShortId__clear_006256dc(arg0.addr() + 0x38e0u, player);  // (from the original)
+    u32 player_2 = get_current_player(r0_2);
+    if (player_2 == 0) {
+        ShortId__clear_006256dc(arg0.addr() + 0x38e0u, player_2);  // (from the original)
         r1_2 = guest::cpu()->r[1];
         r2_3 = guest::cpu()->r[2];
     } else {
-        gptr<Local_0062217c_r1_3> r1_3 = gptr<Local_0062217c_r1_3>(player + 0x5500u);  // (from the original)
+        gptr<Local_0062217c_r1_3> r1_3 = gptr<Local_0062217c_r1_3>(player_2 + 0x5500u);  // (from the original)
         r2_3 = r1_3->half_a6;
         r1_2 = r1_3->half_bc;
         arg0->half_38e0 = u16(r2_3);
@@ -2061,16 +2061,16 @@ inline guest::global<u32, 0x0095362c> net_session;
 inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 
-void StationBuffers__reset(u32 buffers, u32 station) {
+void StationBuffers__reset(u32 station_buffers, u32 station) {
     guest::StackFrame frame(0x18);  // the original's stack frame
     if (station >= 4u) {
         return;
     }
-    u32 r2_1 = buffers + (station << 2);
+    u32 r2_1 = station_buffers + (station << 2);
     *gptr<u32>(r2_1 + 0x14u) = 0;  // (from the original)
     u32 r0_1 = *net_session + 0x13280u;  // (from the original)
     lock_member_lock(r0_1, station, r2_1, guest::cpu()->r[3]);
-    *gptr<u8>(buffers + station + 0x24u) = 0;  // (from the original)
+    *gptr<u8>(station_buffers + station + 0x24u) = 0;  // (from the original)
     frame.release();
     unlock_member_lock(r0_1, station);
     return;
@@ -2093,14 +2093,14 @@ inline guest::global<u32, 0x0095362c> net_session;
 inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
 inline constexpr guest::Function<0x00137e84, u32(u32, u32)> unlock_member_lock;
 
-void StationBuffers__add_count(u32 buffers, u32 station, u32 delta) {
+void StationBuffers__add_count(u32 station_buffers, u32 station, u32 delta) {
     guest::StackFrame frame(0x18);  // the original's stack frame
     if (station < 4u) {
         u32 r5_1 = (s32(delta) >= 0 ? delta : 0u - delta) & 0xffu;  // (from the original)
         u32 r0_1 = *net_session + 0x13280u;  // (from the original)
         lock_member_lock(r0_1, station, delta, guest::cpu()->r[3]);
         u32 r1_1 = guest::cpu()->r[1];
-        gptr<Local_00623c8c_r0_2> r0_2 = gptr<Local_00623c8c_r0_2>(buffers + station);
+        gptr<Local_00623c8c_r0_2> r0_2 = gptr<Local_00623c8c_r0_2>(station_buffers + station);
         if (delta != 0) {
             r1_1 = r0_2->byte_24;
         }
@@ -2134,12 +2134,12 @@ struct __attribute__((packed)) Local_00623cfc_r3_1 {
 GUEST_OFFSET(Local_00623cfc_r3_1, word_14, 0x14);
 
 
-u32 StationBuffers__reserve(u32 buffers, u32 station, u32 size) {
+u32 StationBuffers__reserve(u32 station_buffers, u32 station, u32 size) {
     u32 r0_1 = 0u;
     if (station >= 4u) {
         return r0_1;
     }
-    gptr<Local_00623cfc_r3_1> r3_1 = gptr<Local_00623cfc_r3_1>(buffers + (station << 2));
+    gptr<Local_00623cfc_r3_1> r3_1 = gptr<Local_00623cfc_r3_1>(station_buffers + (station << 2));
     u32 r1_1 = r3_1->word_14 + size;
     if (0xd002u >= r1_1) {  // (from the original)
         r0_1 = 1u;
@@ -2155,11 +2155,11 @@ GUEST_EXPORT(0x00623cfc, d_00623cfc::StationBuffers__reserve);
 namespace d_00623d30 {
 
 
-void StationBuffers__reset_used(u32 buffers, u32 station) {
+void StationBuffers__reset_used(u32 station_buffers, u32 station) {
     if (station >= 4u) {
         return;
     }
-    *gptr<u32>(buffers + (station << 2) + 0x14u) = 0;  // (from the original)
+    *gptr<u32>(station_buffers + (station << 2) + 0x14u) = 0;  // (from the original)
 }
 
 }  // namespace d_00623d30
@@ -2169,7 +2169,7 @@ GUEST_EXPORT(0x00623d30, d_00623d30::StationBuffers__reset_used);
 // Lays the buffer out once: each of the 4 stations but `own` gets 0xd002 bytes of it, in order.
 namespace d_00623d48 {
 
-struct __attribute__((packed)) Object_00623d48_0 {
+struct __attribute__((packed)) StationBuffers {
     u32 word_0;
     u32 word_4;
     u32 word_8;
@@ -2178,15 +2178,15 @@ struct __attribute__((packed)) Object_00623d48_0 {
     u8 unknown_14[0x14];  // (not used here)
     u8 byte_28;
 };
-GUEST_OFFSET(Object_00623d48_0, word_0, 0x0);
-GUEST_OFFSET(Object_00623d48_0, word_4, 0x4);
-GUEST_OFFSET(Object_00623d48_0, word_8, 0x8);
-GUEST_OFFSET(Object_00623d48_0, word_c, 0xc);
-GUEST_OFFSET(Object_00623d48_0, word_10, 0x10);
-GUEST_OFFSET(Object_00623d48_0, byte_28, 0x28);
+GUEST_OFFSET(StationBuffers, word_0, 0x0);
+GUEST_OFFSET(StationBuffers, word_4, 0x4);
+GUEST_OFFSET(StationBuffers, word_8, 0x8);
+GUEST_OFFSET(StationBuffers, word_c, 0xc);
+GUEST_OFFSET(StationBuffers, word_10, 0x10);
+GUEST_OFFSET(StationBuffers, byte_28, 0x28);
 
 
-void StationBuffers__layout(gptr<Object_00623d48_0> buffers, u32 own) {
+void StationBuffers__layout(gptr<StationBuffers> buffers, u32 own) {
     if (buffers->byte_28 != 0 || own >= 4u) {
         return;
     }
@@ -2226,7 +2226,7 @@ GUEST_EXPORT(0x00623d48, d_00623d48::StationBuffers__layout);
 // f_00623dcc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00623dcc {
 
-struct __attribute__((packed)) Object_00623dcc_0 {
+struct __attribute__((packed)) StationBuffers {
     u8 unknown_0[0x4];  // (not used here)
     u32 word_4;
     u32 word_8;
@@ -2239,19 +2239,19 @@ struct __attribute__((packed)) Object_00623dcc_0 {
     u32 word_24;
     u8 byte_28;
 };
-GUEST_OFFSET(Object_00623dcc_0, word_4, 0x4);
-GUEST_OFFSET(Object_00623dcc_0, word_8, 0x8);
-GUEST_OFFSET(Object_00623dcc_0, word_c, 0xc);
-GUEST_OFFSET(Object_00623dcc_0, word_10, 0x10);
-GUEST_OFFSET(Object_00623dcc_0, word_14, 0x14);
-GUEST_OFFSET(Object_00623dcc_0, word_18, 0x18);
-GUEST_OFFSET(Object_00623dcc_0, word_1c, 0x1c);
-GUEST_OFFSET(Object_00623dcc_0, word_20, 0x20);
-GUEST_OFFSET(Object_00623dcc_0, word_24, 0x24);
-GUEST_OFFSET(Object_00623dcc_0, byte_28, 0x28);
+GUEST_OFFSET(StationBuffers, word_4, 0x4);
+GUEST_OFFSET(StationBuffers, word_8, 0x8);
+GUEST_OFFSET(StationBuffers, word_c, 0xc);
+GUEST_OFFSET(StationBuffers, word_10, 0x10);
+GUEST_OFFSET(StationBuffers, word_14, 0x14);
+GUEST_OFFSET(StationBuffers, word_18, 0x18);
+GUEST_OFFSET(StationBuffers, word_1c, 0x1c);
+GUEST_OFFSET(StationBuffers, word_20, 0x20);
+GUEST_OFFSET(StationBuffers, word_24, 0x24);
+GUEST_OFFSET(StationBuffers, byte_28, 0x28);
 
 
-void StationBuffers__clear(gptr<Object_00623dcc_0> buffers) {
+void StationBuffers__clear(gptr<StationBuffers> buffers) {
     buffers->word_14 = 0;
     buffers->word_18 = 0;
     buffers->word_1c = 0;
@@ -2271,7 +2271,7 @@ GUEST_EXPORT(0x00623dcc, d_00623dcc::StationBuffers__clear);
 // f_00623e3c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00623e3c {
 
-struct __attribute__((packed)) Object_00623e3c_0 {
+struct __attribute__((packed)) StationBuffers {
     u32 word_0;
     u32 word_4;
     u32 word_8;
@@ -2284,20 +2284,20 @@ struct __attribute__((packed)) Object_00623e3c_0 {
     u32 word_24;
     u8 byte_28;
 };
-GUEST_OFFSET(Object_00623e3c_0, word_0, 0x0);
-GUEST_OFFSET(Object_00623e3c_0, word_4, 0x4);
-GUEST_OFFSET(Object_00623e3c_0, word_8, 0x8);
-GUEST_OFFSET(Object_00623e3c_0, word_c, 0xc);
-GUEST_OFFSET(Object_00623e3c_0, word_10, 0x10);
-GUEST_OFFSET(Object_00623e3c_0, word_14, 0x14);
-GUEST_OFFSET(Object_00623e3c_0, word_18, 0x18);
-GUEST_OFFSET(Object_00623e3c_0, word_1c, 0x1c);
-GUEST_OFFSET(Object_00623e3c_0, word_20, 0x20);
-GUEST_OFFSET(Object_00623e3c_0, word_24, 0x24);
-GUEST_OFFSET(Object_00623e3c_0, byte_28, 0x28);
+GUEST_OFFSET(StationBuffers, word_0, 0x0);
+GUEST_OFFSET(StationBuffers, word_4, 0x4);
+GUEST_OFFSET(StationBuffers, word_8, 0x8);
+GUEST_OFFSET(StationBuffers, word_c, 0xc);
+GUEST_OFFSET(StationBuffers, word_10, 0x10);
+GUEST_OFFSET(StationBuffers, word_14, 0x14);
+GUEST_OFFSET(StationBuffers, word_18, 0x18);
+GUEST_OFFSET(StationBuffers, word_1c, 0x1c);
+GUEST_OFFSET(StationBuffers, word_20, 0x20);
+GUEST_OFFSET(StationBuffers, word_24, 0x24);
+GUEST_OFFSET(StationBuffers, byte_28, 0x28);
 
 
-void StationBuffers__init(gptr<Object_00623e3c_0> buffers) {
+void StationBuffers__init(gptr<StationBuffers> buffers) {
     buffers->word_0 = 0;
     buffers->word_14 = 0;
     buffers->word_18 = 0;
@@ -4397,18 +4397,18 @@ GUEST_EXPORT_FRAMED(0x00626d40, d_00626d40::f_00626d40, 0x4070);  // pushes {r4,
 // f_00626df0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00626df0 {
 
-inline constexpr u32 global_00952ca0_address = 0x00952ca0u;
+inline constexpr u32 net_game_heap_address = 0x00952ca0u;
 inline constexpr u32 net_session_address = 0x0095362cu;
-inline guest::global<u32, 0x00952ca0> global_00952ca0;
+inline guest::global<u32, 0x00952ca0> net_game_heap;
 inline guest::global<u32, 0x0095362c> net_session;
 inline constexpr guest::Function<0x006177bc, u32(u32, u32, u32, u32)> netgame__NetGameMgr__SingletonDisposer___SingletonDisposer_;
 inline constexpr guest::Function<0x00618dd4, u32(u32, u32, u32, u32)> call_00618dd4;
 
 u32 f_00626df0(u32 r0_unused, u32 r1) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r4_1 = *global_00952ca0;
+    u32 r4_1 = *net_game_heap;
     if (r4_1 == 0) {
-        return global_00952ca0_address;
+        return net_game_heap_address;
     }
     netgame__NetGameMgr__SingletonDisposer___SingletonDisposer_(r4_1, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_1 = *net_session;
@@ -5942,11 +5942,11 @@ inline constexpr guest::Function<0x0071d3e4, u32(u32)> any_record_set;
 
 void f_0062c14c(u32 r0) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 player = get_current_player(r0, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-    if (player == 0) {
+    u32 player_2 = get_current_player(r0, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
+    if (player_2 == 0) {
         return;
     }
-    u32 r0_2 = u32(*gptr<u8>(player + 0x571fu)) << 0x19;  // (from the original)
+    u32 r0_2 = u32(*gptr<u8>(player_2 + 0x571fu)) << 0x19;  // (from the original)
     if (s32(r0_2) >= 0) {
         return;
     }

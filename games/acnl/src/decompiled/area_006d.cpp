@@ -172,8 +172,8 @@ void f_006d2528(u32 r0, u32 r1, u32 r2, u32 r3) {
         *global_0094fd0d = 0;
         return;
     }
-    u32 player = get_current_player(r0, r1, r2, r3);
-    u32 r0_3 = Pockets__item_with_lock(player + 0x6bd0u, *global_0094fd50, 0u);  // (from the original)
+    u32 player_2 = get_current_player(r0, r1, r2, r3);
+    u32 r0_3 = Pockets__item_with_lock(player_2 + 0x6bd0u, *global_0094fd50, 0u);  // (from the original)
     copy_item_002fc934(frame.at(0).addr(), r0_3);
     *global_0094fd0d = 1;
 }
@@ -387,18 +387,18 @@ GUEST_SIZE(Frame_006d3020, 0x8);
 
 void f_006d3020(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_006d3020> frame;  // the original's stack frame
-    u32 player = get_current_player(r0, r1, r2, r3);
-    u32 r0_2 = Pockets__item_with_lock(player + 0x6bd0u, *global_0094fd50, 0u);  // (from the original)
+    u32 player_2 = get_current_player(r0, r1, r2, r3);
+    u32 r0_2 = Pockets__item_with_lock(player_2 + 0x6bd0u, *global_0094fd50, 0u);  // (from the original)
     copy_item_002fc934(frame.at(4).addr(), r0_2);
     u32 r0_5 = take_one_of_category_29(frame.at(4).addr());
     if (r0_5 == 0) {
         u32 r1_3 = *global_0094fd50;
         frame->word_0 = 1;
-        Pockets__set_slot(player + 0x6bd0u, r1_3, empty_item_address, 0u);  // (from the original)
+        Pockets__set_slot(player_2 + 0x6bd0u, r1_3, empty_item_address, 0u);  // (from the original)
     } else {
         set_category_29_count(frame.at(4).addr(), r0_5);
         frame->word_0 = 1;
-        Pockets__set_slot(player + 0x6bd0u, *global_0094fd50, frame.at(4).addr(), 0u);  // (from the original)
+        Pockets__set_slot(player_2 + 0x6bd0u, *global_0094fd50, frame.at(4).addr(), 0u);  // (from the original)
     }
 }
 
@@ -489,9 +489,9 @@ void f_006d37e4(u32 r0) {
     u32 r0_1 = Item__has_category_flag_bit_1_5(r0);
     if (r0_1 != 0) {
         u32 r0_2 = get_counter_block(r0_1);
-        u32 category = Item__category(r0);
-        if (category != 0x36u) {  // (from the original)
-            if (category != 0x37u && category != 0x38u && category != 0x92u) {  // (from the original)
+        u32 category_2 = Item__category(r0);
+        if (category_2 != 0x36u) {  // (from the original)
+            if (category_2 != 0x37u && category_2 != 0x38u && category_2 != 0x92u) {  // (from the original)
                 return;
             }
             frame.release();
@@ -741,13 +741,13 @@ u32 f_006d6404(u32 r0, u32 r1, u32 r2) {
             if (r0_10 != 0) {
                 r4_1 = 1u;
             }
-            gptr<Local_006d6404_r0_12> child = gptr<Local_006d6404_r0_12>(LayoutObjectWithChild__forward_to_child(r0 + 0x280u, 0x853a90u));  // (from the original)
-            child->byte_b7 = u8(u32(child->byte_b7) & 0xfeu | r4_1);  // (from the original)
-            gptr<Local_006d6404_r0_14> child_2 = gptr<Local_006d6404_r0_14>(LayoutObjectWithChild__forward_to_child(r0 + 0x280u, 0x853a84u));  // (from the original)
-            u32 r1_5 = r4_1 ^ 1u | u32(child_2->byte_b7) & 0xfeu;  // (from the original)
-            child_2->byte_b7 = u8(r1_5);
+            gptr<Local_006d6404_r0_12> child_3 = gptr<Local_006d6404_r0_12>(LayoutObjectWithChild__forward_to_child(r0 + 0x280u, 0x853a90u));  // (from the original)
+            child_3->byte_b7 = u8(u32(child_3->byte_b7) & 0xfeu | r4_1);  // (from the original)
+            gptr<Local_006d6404_r0_14> child_4 = gptr<Local_006d6404_r0_14>(LayoutObjectWithChild__forward_to_child(r0 + 0x280u, 0x853a84u));  // (from the original)
+            u32 r1_5 = r4_1 ^ 1u | u32(child_4->byte_b7) & 0xfeu;  // (from the original)
+            child_4->byte_b7 = u8(r1_5);
             guest::cpu()->r[1] = r1_5;
-            return child_2.addr();
+            return child_4.addr();
         }
     }
     gptr<Local_006d6404_r5_1> r5_1 = gptr<Local_006d6404_r5_1>(r0 + 0x19b4u);  // (from the original)
@@ -1126,8 +1126,8 @@ inline constexpr guest::Function<0x002fcb34, u32(u32, u32, u32, u32)> Item__cate
 inline constexpr guest::Function<0x006d9e38, u32(u32, u32, u32, u32)> call_006d9e38;
 
 void f_006d9748(u32 r0, u32 r1, u32 r2, u32 r3) {
-    u32 category = Item__category(r3, r1, r2, r3);
-    if (category == 0x27u || category == 0x28u) {  // (from the original)
+    u32 category_2 = Item__category(r3, r1, r2, r3);
+    if (category_2 == 0x27u || category_2 == 0x28u) {  // (from the original)
         call_006d9e38(r0, r1, r2, r3);
     }
 }
@@ -1842,8 +1842,8 @@ u32 f_006dc8cc() {
     ea_2->word_4 = r1_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
-    u32 data_base = get_data_base(r0_1);
-    u32 r0_3 = gptr<u32>(frame.at(0).addr())[u32(*gptr<u8>(data_base + 0x6214eu)) & 0xfu];  // (from the original)
+    u32 data_base_2 = get_data_base(r0_1);
+    u32 r0_3 = gptr<u32>(frame.at(0).addr())[u32(*gptr<u8>(data_base_2 + 0x6214eu)) & 0xfu];  // (from the original)
     guest::cpu()->r[1] = 0x6214eu;  // (from the original)
     return r0_3;
 }
@@ -1962,10 +1962,10 @@ u32 f_006dcd50() {
     guest::cpu()->s[4] = S4_1;
     guest::cpu()->s[5] = S5_1;
     guest::cpu()->s[6] = S6_1;
-    u32 save_data = get_save_data(0x854688u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    gptr<Local_006dcd50_r4_1> r4_1 = gptr<Local_006dcd50_r4_1>(save_data + 0x62250u);  // (from the original)
-    u32 r0_2 = Stamp__is_today(r4_1.addr());
-    if (r0_2 == 0) {
+    u32 save_data_2 = get_save_data(0x854688u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    gptr<Local_006dcd50_r4_1> r4_1 = gptr<Local_006dcd50_r4_1>(save_data_2 + 0x62250u);  // (from the original)
+    u32 is_today = Stamp__is_today(r4_1.addr());
+    if (is_today == 0) {
         return gptr<u32>(frame.at(0).addr())[u32(r4_1->byte_14)];
     }
     u32 r0_4 = r4_1->byte_15;
@@ -2041,8 +2041,8 @@ u32 f_006dd294() {
     frame->word_8 = r2_1;
     frame->word_c = r3_1;
     frame->word_10 = r12_1;
-    u32 save_data = get_save_data(r0_1, r1_1, r2_1, r3_1);
-    u32 r4_2 = save_data + 0x666e4u;  // (from the original)
+    u32 save_data_2 = get_save_data(r0_1, r1_1, r2_1, r3_1);
+    u32 r4_2 = save_data_2 + 0x666e4u;  // (from the original)
     u32 r0_3 = call_0071c358(r4_2);
     u32 r0_4 = *gptr<u8>(r4_2 + 0x10u);  // (from the original)
     if (r0_3 == 0) {
@@ -2080,8 +2080,8 @@ u32 f_006dd2f8() {
     frame->word_0 = r0_1;
     frame->word_4 = r1_1;
     frame->word_8 = r2_1;
-    u32 save_data = get_save_data(r0_1);
-    return gptr<u32>(frame.at(0).addr())[u32(*gptr<u8>(save_data + 0x6682cu))];  // (from the original)
+    u32 save_data_2 = get_save_data(r0_1);
+    return gptr<u32>(frame.at(0).addr())[u32(*gptr<u8>(save_data_2 + 0x6682cu))];  // (from the original)
 }
 
 }  // namespace d_006dd2f8
@@ -2126,8 +2126,8 @@ u32 f_006dd7b4() {
     frame->word_0 = r0_1;
     frame->word_4 = r1_1;
     frame->word_8 = r2_1;
-    u32 save_data = get_save_data(r0_1);
-    return gptr<u32>(frame.at(0).addr())[u32(*gptr<u8>(save_data + 0x6adb4u))];  // (from the original)
+    u32 save_data_2 = get_save_data(r0_1);
+    return gptr<u32>(frame.at(0).addr())[u32(*gptr<u8>(save_data_2 + 0x6adb4u))];  // (from the original)
 }
 
 }  // namespace d_006dd7b4

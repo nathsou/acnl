@@ -664,8 +664,8 @@ u32 f_006e35fc(gptr<Object_006e35fc_0> arg0, u32 r1, u32 r2, u32 r3) {
             u32 r0_6 = call_006d3cd4(frame->word_0 >> 0x18);  // (from the original)
             u32 r0_7 = r0_6 << 0x1c >> 0x14 | 0x8000u | 2u;  // (from the original)
             arg0->half_36 = u16(r0_7);
-            u32 save_data = get_save_data(r0_7);
-            *gptr<u32>(arg0.addr() + 0x3cu) = *gptr<u32>(save_data + 0x8880cu);  // (from the original)
+            u32 save_data_2 = get_save_data(r0_7);
+            *gptr<u32>(arg0.addr() + 0x3cu) = *gptr<u32>(save_data_2 + 0x8880cu);  // (from the original)
             u32 r1_4 = *global_0085e234;
             u32 r2_4 = *global_0085e238;
             gptr<Local_006e35fc_ea_2> ea_2 = gptr<Local_006e35fc_ea_2>(arg0.addr() + 0x2760u);  // (from the original)
@@ -983,15 +983,15 @@ inline constexpr guest::Function<0x005697e0, u32(u32)> Animation__set_value;
 
 void f_006e5920(u32 r0, u32 r1, u32 r2_unused, u32 r3, float S0) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 pane = Layout__find_pane(r0 + 0x460u, 0x6e5998u, 1u, r3);  // (from the original)
-    notify_objects_of_list(r0 + 0x460u, r0 + 0xa58u, pane, 0u);  // (from the original)
+    u32 pane_3 = Layout__find_pane(r0 + 0x460u, 0x6e5998u, 1u, r3);  // (from the original)
+    notify_objects_of_list(r0 + 0x460u, r0 + 0xa58u, pane_3, 0u);  // (from the original)
     float S0_2 = float(r1);
     guest::cpu()->s[0] = S0_2;
     Animation__set_value(r0 + 0xa58u);  // (from the original)
     Layout__virtual_3(r0 + 0x460u);  // (from the original)
-    u32 pane_2 = Layout__find_pane(r0 + 0x460u, 0x6e5998u, 1u, guest::cpu()->r[3]);  // (from the original)
+    u32 pane_4 = Layout__find_pane(r0 + 0x460u, 0x6e5998u, 1u, guest::cpu()->r[3]);  // (from the original)
     frame.release();
-    notify_list_objects(pane_2, r0 + 0xa58u, pane_2, 0u);
+    notify_list_objects(pane_4, r0 + 0xa58u, pane_4, 0u);
     return;  // (from the original)
 }
 
@@ -1014,14 +1014,14 @@ inline constexpr guest::Function<0x00568c10, u32(u32)> Layout__virtual_3;
 inline constexpr guest::Function<0x005697e0, u32(u32)> Animation__set_value;
 
 void f_006e59c0(gptr<Object_006e59c0_0> arg0, u32 r1, u32 r2_unused, u32 r3, float S0) {
-    u32 pane = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5a34u, 1u, r3);  // (from the original)
-    notify_objects_of_list(arg0.addr() + 0x460u, arg0.addr() + 0xa80u, pane, 0u);  // (from the original)
+    u32 pane_3 = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5a34u, 1u, r3);  // (from the original)
+    notify_objects_of_list(arg0.addr() + 0x460u, arg0.addr() + 0xa80u, pane_3, 0u);  // (from the original)
     float S0_2 = float(r1);
     guest::cpu()->s[0] = S0_2;
     Animation__set_value(arg0.addr() + 0xa80u);  // (from the original)
     Layout__virtual_3(arg0.addr() + 0x460u);  // (from the original)
-    u32 pane_2 = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5a34u, 1u, guest::cpu()->r[3]);  // (from the original)
-    notify_list_objects(pane_2, arg0.addr() + 0xa80u, pane_2, 0u);  // (from the original)
+    u32 pane_4 = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5a34u, 1u, guest::cpu()->r[3]);  // (from the original)
+    notify_list_objects(pane_4, arg0.addr() + 0xa80u, pane_4, 0u);  // (from the original)
     arg0->byte_af0 = u8(r1);
 }
 
@@ -1050,22 +1050,22 @@ inline constexpr guest::Function<0x00568984, u32(u32, u32, u32, u32)> notify_lis
 inline constexpr guest::Function<0x005697e0, u32(u32)> Animation__set_value;
 
 u32 f_006e5e94(gptr<Object_006e5e94_0> arg0, u32 r1, u32 r2, u32 r3, float S0) {
-    gptr<Local_006e5e94_r0_2> child = gptr<Local_006e5e94_r0_2>(LayoutObjectWithChild__forward_to_child(arg0.addr() + 0x460u, 0x6e5f38u, r2, r3));  // (from the original)
-    u32 r1_1 = u32(child->byte_b7) & 0xfeu | r1;  // (from the original)
-    child->byte_b7 = u8(r1_1);
+    gptr<Local_006e5e94_r0_2> child_2 = gptr<Local_006e5e94_r0_2>(LayoutObjectWithChild__forward_to_child(arg0.addr() + 0x460u, 0x6e5f38u, r2, r3));  // (from the original)
+    u32 r1_1 = u32(child_2->byte_b7) & 0xfeu | r1;  // (from the original)
+    child_2->byte_b7 = u8(r1_1);
     u32 r0_3 = arg0->byte_aed;
     if (r1 != 0) {
         if (r0_3 == 0) {
-            u32 pane = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5f48u, 1u);  // (from the original)
-            notify_objects_of_list(pane, arg0.addr() + 0xa30u, pane, 0u);  // (from the original)
+            u32 pane_3 = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5f48u, 1u);  // (from the original)
+            notify_objects_of_list(pane_3, arg0.addr() + 0xa30u, pane_3, 0u);  // (from the original)
             float S0_3 = 0.0f;
             guest::cpu()->s[0] = S0_3;
             r0_3 = Animation__set_value(arg0.addr() + 0xa30u);  // (from the original)
             r1_1 = guest::cpu()->r[1];
         }
     } else if (r0_3 == 1u) {
-        u32 pane_2 = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5f48u, 1u);  // (from the original)
-        r0_3 = notify_list_objects(arg0.addr() + 0x460u, arg0.addr() + 0xa30u, pane_2, 0u);  // (from the original)
+        u32 pane_4 = Layout__find_pane(arg0.addr() + 0x460u, 0x6e5f48u, 1u);  // (from the original)
+        r0_3 = notify_list_objects(arg0.addr() + 0x460u, arg0.addr() + 0xa30u, pane_4, 0u);  // (from the original)
         r1_1 = guest::cpu()->r[1];
     }
     arg0->byte_aed = u8(r1);
@@ -1119,7 +1119,7 @@ GUEST_OFFSET(Object_006e64c4_0, word_5cc, 0x5cc);
 GUEST_OFFSET(Object_006e64c4_0, word_ae0, 0xae0);
 GUEST_OFFSET(Object_006e64c4_0, word_ae8, 0xae8);
 
-inline constexpr guest::Function<0x001323b4, u32(u32)> call_001323b4;
+inline constexpr guest::Function<0x001323b4, u32(u32)> layout_at_10_virtual_8;
 inline constexpr guest::Function<0x004b6d74, u32(u32, u32)> DragIconList__add;
 inline constexpr guest::Function<0x004b6dc8, u32(u32, u32, u32, u32)> DragIconList__remove;
 inline constexpr guest::Function<0x00584134, u32(u32)> return_constant_0x98a030_;
@@ -1144,8 +1144,8 @@ void f_006e64c4(gptr<Object_006e64c4_0> arg0) {
         FlagManager__release(r0_5, 0x24u);  // (from the original)
     }
     call_006c8ef0(arg0.addr() + 0x24u);  // (from the original)
-    call_001323b4(arg0.addr() + 0x460u);  // (from the original)
-    call_001323b4(arg0.addr() + 0x5acu);  // (from the original)
+    layout_at_10_virtual_8(arg0.addr() + 0x460u);  // (from the original)
+    layout_at_10_virtual_8(arg0.addr() + 0x5acu);  // (from the original)
 }
 
 }  // namespace d_006e64c4
@@ -2352,10 +2352,10 @@ void f_006ef8e8(gptr<Object_006ef8e8_0> arg0, u32 r1, u32 r2, u32 r3) {
     } while (r0 < r6);
     *gptr<u8>(r10) = 0x9b;  // (from the original)
     u32 r9 = 0u;
-    u32 info = category_info(r8, r1, r2_1, r3_1);
+    u32 info_2 = category_info(r8, r1, r2_1, r3_1);
     u32 r1_2 = guest::cpu()->r[1];
     r3 = guest::cpu()->r[3];
-    u32 r7 = *gptr<u32>(info + 4u);
+    u32 r7 = *gptr<u32>(info_2 + 4u);
     if (r7 > r6) {
         r0 = 1u;
         r1 = r0;
@@ -2478,10 +2478,10 @@ void f_006efab8(gptr<Object_006efab8_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
         u32 r11 = frame.at(0).addr();
         set_bytes(r11, 0x1bb4u, ~0u, r3);  // (from the original)
         u32 r7 = 0u;
-        u32 info = category_info(r4_1);
+        u32 info_2 = category_info(r4_1);
         r3 = guest::cpu()->r[3];
         r0 = r6 + 4u;
-        r1 = (r6 + (*gptr<u32>(info + 4u) << 2)) + 4u;
+        r1 = (r6 + (*gptr<u32>(info_2 + 4u) << 2)) + 4u;
         if (r1 > r0) {
             do {
                 if (*gptr<u32>(r0) + 1u == 0) {

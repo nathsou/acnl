@@ -133,11 +133,11 @@ u32 script__FlowEngine__FlowEngine(gptr<script__FlowEngine> flow_engine, u32 r1,
     u32 r4 = 0u;
     u32 r11 = 4u;
     do {
-        gptr<Local_006002e4_r0_4> block = gptr<Local_006002e4_r0_4>(allocate(0x1e8u, r1, r2));  // (from the original)
+        gptr<Local_006002e4_r0_4> block_2 = gptr<Local_006002e4_r0_4>(allocate(0x1e8u, r1, r2));  // (from the original)
         r2 = guest::cpu()->r[2];
-        if (block.addr() != 0) {
-            block->word_0 = r7;
-            u32 r0_5 = block.addr() + 4u;
+        if (block_2.addr() != 0) {
+            block_2->word_0 = r7;
+            u32 r0_5 = block_2.addr() + 4u;
             construct_empty_argument_handle(r0_5, guest::cpu()->r[1], r2);
             gptr<Local_006002e4_r0_6> r0_6 = gptr<Local_006002e4_r0_6>(r0_5 - 4u);
             *gptr<u32>(r0_6.addr() + 0xcu) = r10;  // (from the original)
@@ -169,15 +169,15 @@ u32 script__FlowEngine__FlowEngine(gptr<script__FlowEngine> flow_engine, u32 r1,
             gptr<Local_006002e4_r0_11> r0_11 = gptr<Local_006002e4_r0_11>(r0_10 - 0x30u);  // (from the original)
             r0_11->word_5c = r9;
             r0_11->word_60 = r10;
-            block = gptr<Local_006002e4_r0_4>(r0_11.addr() - 0x180u);  // (from the original)
-            block->byte_1e4 = u8(r9);
-            block->byte_1e5 = u8(r9);
-            block->byte_1e6 = u8(r9);
-            block->byte_1e7 = u8(r9);
+            block_2 = gptr<Local_006002e4_r0_4>(r0_11.addr() - 0x180u);  // (from the original)
+            block_2->byte_1e4 = u8(r9);
+            block_2->byte_1e5 = u8(r9);
+            block_2->byte_1e6 = u8(r9);
+            block_2->byte_1e7 = u8(r9);
         }
         r1 = r5 + (r4 << 2);
         r4 += 1u;
-        *gptr<u32>(r1 + 4u) = block.addr();
+        *gptr<u32>(r1 + 4u) = block_2.addr();
         guest::preempt();
     } while (r4 < 4u);
     guest::cpu()->r[1] = r1;
@@ -956,11 +956,11 @@ struct __attribute__((packed)) Object_00605584_0 {
 GUEST_OFFSET(Object_00605584_0, word_0, 0x0);
 
 inline constexpr guest::Function<0x001db214, u32(u32, u32, u32, u32)> call_001db214;
-inline constexpr guest::Function<0x001e5894, u32(u32, u32, u32, u32)> call_001e5894;
+inline constexpr guest::Function<0x001e5894, u32(u32, u32, u32, u32)> camera_transform_point;
 
 void f_00605584(gptr<Object_00605584_0> arg0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    call_001e5894(frame.at(0).addr(), r3, r2, r3);
+    camera_transform_point(frame.at(0).addr(), r3, r2, r3);
     call_001db214(arg0->word_0, r1, r2, frame.at(0).addr());
 }
 
@@ -1104,29 +1104,29 @@ inline constexpr guest::Function<0x002fc20c, u32(u32, u32)> construct_empty_item
 u32 BossSys__SingletonDisposer___SingletonDisposer_(u32 r0, u32 r1, u32 r2_unused, u32 r3) {
     u32 r0_1 = *global_0094ed4c;
     if (r0_1 == 0) {
-        gptr<Local_00605ca0_r0_2> block = gptr<Local_00605ca0_r0_2>(allocate_from_heap_00131280(0x34u, r0, 4u, r3));  // (from the original)
+        gptr<Local_00605ca0_r0_2> block_2 = gptr<Local_00605ca0_r0_2>(allocate_from_heap_00131280(0x34u, r0, 4u, r3));  // (from the original)
         r1 = guest::cpu()->r[1];
-        if (block.addr() == 0) {
+        if (block_2.addr() == 0) {
             r0_1 = 0u;
             *global_0094ed50 = r0_1;
         } else {
-            sead__IDisposer__IDisposer_001320cc(block.addr(), r0, 3u);
-            gptr<Local_00605ca0_r3_2> r3_2 = gptr<Local_00605ca0_r3_2>(block.addr() + 0x18u);  // (from the original)
-            block->word_0 = vtable_BossSys__SingletonDisposer_;
-            *global_0094ed50 = block.addr();
+            sead__IDisposer__IDisposer_001320cc(block_2.addr(), r0, 3u);
+            gptr<Local_00605ca0_r3_2> r3_2 = gptr<Local_00605ca0_r3_2>(block_2.addr() + 0x18u);  // (from the original)
+            block_2->word_0 = vtable_BossSys__SingletonDisposer_;
+            *global_0094ed50 = block_2.addr();
             u32 r1_1 = *global_0084607c;
             u32 r2_1 = *global_00846080;
             r3_2->word_0 = r1_1;
             r3_2->word_4 = r2_1;
-            gptr<Local_00605ca0_ea_1> ea_1 = gptr<Local_00605ca0_ea_1>(block.addr() + 0x10u);  // (from the original)
+            gptr<Local_00605ca0_ea_1> ea_1 = gptr<Local_00605ca0_ea_1>(block_2.addr() + 0x10u);  // (from the original)
             ea_1->word_0 = vtable_sead__Delegate2_BossSys__sead__Thread___int_;
-            ea_1->word_4 = block.addr();
-            block->word_20 = 0;
-            block->word_24 = 0;
-            block->byte_28 = 0;
-            construct_empty_item(block.addr() + 0x2cu, 0u);  // (from the original)
+            ea_1->word_4 = block_2.addr();
+            block_2->word_20 = 0;
+            block_2->word_24 = 0;
+            block_2->byte_28 = 0;
+            construct_empty_item(block_2.addr() + 0x2cu, 0u);  // (from the original)
             r1 = guest::cpu()->r[1];
-            r0_1 = block.addr() + 0u;
+            r0_1 = block_2.addr() + 0u;
         }
         *global_0094ed4c = r0_1;
     }
@@ -1750,8 +1750,8 @@ inline constexpr guest::Function<0x002fb94c, u32(u32, u32, u32, u32)> get_curren
 
 u32 f_00606f20(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 data_base = get_data_base(r0, r1, r2, r3);
-    gptr<Local_00606f20_r0_2> r0_2 = gptr<Local_00606f20_r0_2>(data_base + 0x6214fu);  // (from the original)
+    u32 data_base_2 = get_data_base(r0, r1, r2, r3);
+    gptr<Local_00606f20_r0_2> r0_2 = gptr<Local_00606f20_r0_2>(data_base_2 + 0x6214fu);  // (from the original)
     u32 r2_1 = r0_2->byte_7;
     u32 r1_1 = (r2_1 >> 3) + ((u32(r0_2->byte_8) & 0x1fu) << 5);  // (from the original)
     u32 r1_2 = r1_1 + 1u > 0x3e8u ? 0x3e8u : r1_1 + 1u;  // (from the original)
@@ -1760,11 +1760,11 @@ u32 f_00606f20(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r2_2 = r3_1 | (r1_2 & 0x3e0u) >> 5;  // (from the original)
     r0_2->byte_7 = u8(r1_3);
     r0_2->byte_8 = u8(r2_2);
-    u32 player = get_current_player(r0_2.addr(), r1_3, r2_2, r3_1);
-    if (player == 0) {
-        return player;
+    u32 player_2 = get_current_player(r0_2.addr(), r1_3, r2_2, r3_1);
+    if (player_2 == 0) {
+        return player_2;
     }
-    gptr<Local_00606f20_r0_4> r0_4 = gptr<Local_00606f20_r0_4>(player + 0x5700u);  // (from the original)
+    gptr<Local_00606f20_r0_4> r0_4 = gptr<Local_00606f20_r0_4>(player_2 + 0x5700u);  // (from the original)
     r0_4->byte_c = u8(u32(r0_4->byte_c) | 0x80u);  // (from the original)
     frame.release();
     return add_to_current_player_counter(8u, 1u, guest::cpu()->r[2], guest::cpu()->r[3]);
@@ -2093,8 +2093,8 @@ u32 f_0060c400(gptr<Object_0060c400_0> arg0, u32 r1, u32 r2, u32 r3) {
                 r0_4 = r0 + 0x3c8u;  // (from the original)
                 goto L_60c4cc;
             }
-            u32 pane = Layout__find_pane(r0 + 0x27cu, 0x8575d8u, 1u);  // (from the original)
-            notify_list_objects(r0 + 0x27cu, r0 + 0x3c8u, pane, 0u);  // (from the original)
+            u32 pane_3 = Layout__find_pane(r0 + 0x27cu, 0x8575d8u, 1u);  // (from the original)
+            notify_list_objects(r0 + 0x27cu, r0 + 0x3c8u, pane_3, 0u);  // (from the original)
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
@@ -2109,8 +2109,8 @@ u32 f_0060c400(gptr<Object_0060c400_0> arg0, u32 r1, u32 r2, u32 r3) {
                 r0_4 = r0 + 0x3f0u;  // (from the original)
                 goto L_60c4cc;
             }
-            u32 pane_2 = Layout__find_pane(r0 + 0x27cu, 0x8575d8u, 1u);  // (from the original)
-            notify_list_objects(r0 + 0x27cu, r0 + 0x3f0u, pane_2, 0u);  // (from the original)
+            u32 pane_4 = Layout__find_pane(r0 + 0x27cu, 0x8575d8u, 1u);  // (from the original)
+            notify_list_objects(r0 + 0x27cu, r0 + 0x3f0u, pane_4, 0u);  // (from the original)
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
@@ -2199,6 +2199,7 @@ void f_0060c560(gptr<Object_0060c560_0> arg0, gptr<Object_0060c560_1> arg1, gptr
 GUEST_EXPORT(0x0060c560, d_0060c560::f_0060c560);
 
 // f_0060c5c4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// A zero vector (with a zero word after it), initialized once.
 namespace d_0060c5c4 {
 
 inline constexpr u32 global_00951738_address = 0x00951738u;
@@ -2215,7 +2216,7 @@ inline guest::global<u32, 0x009ab630> global_009ab630;
 inline guest::global<u32, 0x009ab634> global_009ab634;
 inline constexpr guest::Function<0x002fe7dd, u32(u32, u32)> claim_flag;
 
-u32 f_0060c5c4(u32 r0_unused, u32 r1, float S0) {
+u32 static_zero_vector(u32 r0_unused, u32 r1, float S0) {
     if ((*global_00951738 & 1u) != 0) {
         return global_009ab614_address;
     }
@@ -2239,7 +2240,7 @@ u32 f_0060c5c4(u32 r0_unused, u32 r1, float S0) {
 }
 
 }  // namespace d_0060c5c4
-GUEST_EXPORT_FRAMED(0x0060c5c4, d_0060c5c4::f_0060c5c4, 0x4010);  // pushes {r4, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0060c5c4, d_0060c5c4::static_zero_vector, 0x4010);  // pushes {r4, lr} first, as the original
 
 // f_0060d0d0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_0060d0d0 {

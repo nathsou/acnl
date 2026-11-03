@@ -140,8 +140,8 @@ inline constexpr guest::Function<0x002fae84, u32(u32, u32, u32, u32)> get_data_b
 inline constexpr guest::Function<0x00313a84, u32(u32, u32)> call_00313a84;
 
 void f_002c2510(gptr<Object_002c2510_0> arg0, u32 r1) {
-    u32 data_base = get_data_base(arg0.addr(), r1, guest::cpu()->r[2], guest::cpu()->r[3]);
-    u32 r0_3 = call_00313a84(data_base + 0x62138u, r1);  // (from the original)
+    u32 data_base_2 = get_data_base(arg0.addr(), r1, guest::cpu()->r[2], guest::cpu()->r[3]);
+    u32 r0_3 = call_00313a84(data_base_2 + 0x62138u, r1);  // (from the original)
     arg0->word_2c = r0_3;
     arg0->byte_34 = 1;
     guest::cpu()->r[1] = 1u;
@@ -572,8 +572,8 @@ void f_002c4544(u32 r0, u32 r1, u32 r2) {
             u32 r1_2 = *gptr<u8>(*global_0094d770 + 0xe1u);  // (from the original)
             u32 r0_3 = *gptr<u32>(gptr<u32>(*gptr<u32>(r0_2 + 4u))[r1_2] + 4u);
             u32 r4_1 = *gptr<u8>(r0_3 + r1);
-            u32 save_data = get_save_data(r0_3, r1_2);
-            u32 r0_6 = call_0076c808(save_data + 0x6aeb8u, 0x24u, r4_1);  // (from the original)
+            u32 save_data_3 = get_save_data(r0_3, r1_2);
+            u32 r0_6 = call_0076c808(save_data_3 + 0x6aeb8u, 0x24u, r4_1);  // (from the original)
             if (r0_6 == 0) {
                 frame.release();
                 copy_item_002fc934(r0, empty_item_address);
@@ -589,8 +589,8 @@ void f_002c4544(u32 r0, u32 r1, u32 r2) {
         frame->word_4 = 0x27;  // (from the original)
         u32 r0_8 = frame.at(0).addr();
         call_00616c68(r0_8, frame.at(4).addr(), r4_2);
-        u32 save_data_2 = get_save_data(r0_8, guest::cpu()->r[1]);
-        u32 r0_11 = call_0076c808(save_data_2 + 0x6aeb8u, frame->word_4 & 0xffu, frame->word_0);  // (from the original)
+        u32 save_data_4 = get_save_data(r0_8, guest::cpu()->r[1]);
+        u32 r0_11 = call_0076c808(save_data_4 + 0x6aeb8u, frame->word_4 & 0xffu, frame->word_0);  // (from the original)
         if (r0_11 != 0) {
             call_006162e0(r0, r4_2, 0u);
             return;
@@ -991,11 +991,11 @@ inline constexpr guest::Function<0x00755ad4, u32(u32, u32, u32, u32)> words_equa
 u32 f_002caabc(gptr<FieldBuilder> field_builder, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r6_1 = frame.at(0).addr();
-    u32 length = string_length(r1, r1, r2, r3);
+    u32 length_2 = string_length(r1, r1, r2, r3);
     u32 r3_1 = ~0u;
-    u32 crc = crc32(r1, length, r3_1, r3_1);
+    u32 crc_2 = crc32(r1, length_2, r3_1, r3_1);
     ClearableSlot__clear(r6_1);
-    call_005b19e8(r6_1, crc);
+    call_005b19e8(r6_1, crc_2);
     u32 r5 = construct_value_with_flag(frame.at(8).addr(), frame.at(0).addr());
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
@@ -1039,11 +1039,11 @@ inline constexpr guest::Function<0x00755ad4, u32(u32, u32, u32, u32)> words_equa
 u32 f_002cab78(gptr<Object_002cab78_0> arg0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r6_1 = frame.at(0).addr();
-    u32 length = string_length(0x2cac2cu, r1, r2, r3);  // (from the original)
+    u32 length_2 = string_length(0x2cac2cu, r1, r2, r3);  // (from the original)
     u32 r3_1 = ~0u;
-    u32 crc = crc32(0x2cac2cu, length, r3_1, r3_1);  // (from the original)
+    u32 crc_2 = crc32(0x2cac2cu, length_2, r3_1, r3_1);  // (from the original)
     ClearableSlot__clear(r6_1);
-    call_005b19e8(r6_1, crc);
+    call_005b19e8(r6_1, crc_2);
     u32 r0_3 = frame.at(8).addr();
     construct_value_with_flag(r0_3, frame.at(0).addr());
     r2 = guest::cpu()->r[2];
@@ -1339,8 +1339,8 @@ inline constexpr guest::Function<0x002fb94c, u32(u32, u32, u32, u32)> get_curren
 inline constexpr guest::Function<0x007200fc, u32(u32, u32)> call_007200fc;
 
 u32 ChangeStockCooler__virtual_9(gptr<ChangeStockCooler> change_stock_cooler, u32 r1) {
-    u32 player = get_current_player(change_stock_cooler.addr(), r1, guest::cpu()->r[2], guest::cpu()->r[3]);
-    u32 r0_3 = call_007200fc(player + 0x6f10u, *gptr<u32>(change_stock_cooler.addr() + (change_stock_cooler->word_185c << 2) + 0x1860u) - 1u);  // (from the original)
+    u32 player_2 = get_current_player(change_stock_cooler.addr(), r1, guest::cpu()->r[2], guest::cpu()->r[3]);
+    u32 r0_3 = call_007200fc(player_2 + 0x6f10u, *gptr<u32>(change_stock_cooler.addr() + (change_stock_cooler->word_185c << 2) + 0x1860u) - 1u);  // (from the original)
     if (s32(r0_3) < 0) {
         return r0_3;
     }
@@ -1367,7 +1367,7 @@ inline constexpr guest::Function<0x002fb94c, u32(u32, u32, u32, u32)> get_curren
 void f_002cbea4(gptr<Object_002cbea4_0> arg0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r1_2 = 0;
-    u32 player = get_current_player(arg0.addr(), r1, r2, r3);
+    u32 player_2 = get_current_player(arg0.addr(), r1, r2, r3);
     u32 r3_1 = guest::cpu()->r[3];
     u32 r1_1 = arg0->word_3ca0;
     if (s32(r1_1) <= s32(r1)) {
@@ -1378,7 +1378,7 @@ void f_002cbea4(gptr<Object_002cbea4_0> arg0, u32 r1, u32 r2, u32 r3) {
     }
     u32 r1_3 = r1_2 + (*gptr<u32>(arg0.addr() + (*gptr<u32>(arg0.addr() + 0x185cu) << 2) + 0x1860u) - 1u) * 0xau;  // (from the original)
     frame.release();
-    store_sanitized_item(player + 0x6f10u, r1_3, r2, r3_1);
+    store_sanitized_item(player_2 + 0x6f10u, r1_3, r2, r3_1);
     return;  // (from the original)
 }
 
@@ -2042,13 +2042,13 @@ void f_002cd574(gptr<Object_002cd574_0> arg0, u32 r1) {
     }
     u32 r1_1 = *global_00952ca4;
     if (r1_1 != 0) {
-        u32 block = allocate_from_heap_002fd108(0x17be10u, r1_1, 4u, guest::cpu()->r[3]);  // (from the original)
-        u32 r0_2 = call_002bee6c(block);
+        u32 block_3 = allocate_from_heap_002fd108(0x17be10u, r1_1, 4u, guest::cpu()->r[3]);  // (from the original)
+        u32 r0_2 = call_002bee6c(block_3);
         arg0->word_0 = r0_2;
         return;
     }
-    u32 block_2 = allocate_from_heap_002fd108(0x17be10u, *stage_heap, 4u, guest::cpu()->r[3]);  // (from the original)
-    u32 r0_4 = call_002bee6c(block_2);
+    u32 block_4 = allocate_from_heap_002fd108(0x17be10u, *stage_heap, 4u, guest::cpu()->r[3]);  // (from the original)
+    u32 r0_4 = call_002bee6c(block_4);
     arg0->word_0 = r0_4;
 }
 
@@ -2199,10 +2199,10 @@ inline constexpr guest::Function<0x007159b0, u32(u32, u32)> call_007159b0;
 u32 f_002cdf30(u32 r0_unused, u32 r1) {
     u32 r0_1 = *global_00953364;
     if (r0_1 + 1u != 0) {
-        u32 player = get_current_player(r0_1, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
+        u32 player_2 = get_current_player(r0_1, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
         r1 = guest::cpu()->r[1];
-        if (player != 0) {
-            u32 r0_4 = call_007159b0(player + 0x8ae0u, *global_00953364);  // (from the original)
+        if (player_2 != 0) {
+            u32 r0_4 = call_007159b0(player_2 + 0x8ae0u, *global_00953364);  // (from the original)
             r1 = guest::cpu()->r[1];
             if (r0_4 != 0 && r0_4 < 0x66u) {  // (from the original)
                 return 1u;

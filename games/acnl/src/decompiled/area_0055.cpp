@@ -596,11 +596,11 @@ u32 sead__ptcl__PtclPreview__PtclPreview(gptr<sead__ptcl__PtclPreview> ptcl_prev
     u32 r6 = 0x29e8u;  // (from the original)
     u32 r5 = r8;
     do {
-        u32 block = allocate_from_heap_002fd108(r6, *gptr<u32>(r4 + 4u), 4u, r3);
+        u32 block_2 = allocate_from_heap_002fd108(r6, *gptr<u32>(r4 + 4u), 4u, r3);
         u32 r1_2 = *gptr<u32>(r4 + 8u);
         frame->word_0 = r4;
         frame->word_4 = r1_2;
-        u32 r0_4 = sead__ptcl__PtclModelMgr__PtclModelMgr(block, *gptr<u32>(r4 + 4u), r7, r5);
+        u32 r0_4 = sead__ptcl__PtclModelMgr__PtclModelMgr(block_2, *gptr<u32>(r4 + 4u), r7, r5);
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
         r1 = r4 + (r5 << 2);
@@ -1295,7 +1295,7 @@ u32 f_00556d80(u32 r0, u32 r1, gptr<Object_00556d80_2> arg2, u32 r3, float S0) {
     u32 r3_2 = 0;
     u32 r12_1 = 0;
     *frame.at<u32>(0x20) = r12;  // (from the original)
-    u32 block = allocate_from_heap_002fd108(0xb4u, r0, 4u, r3);  // (from the original)
+    u32 block_2 = allocate_from_heap_002fd108(0xb4u, r0, 4u, r3);  // (from the original)
     u32 r1_1 = arg2->half_4;
     u32 r6_1 = arg2->byte_6;
     u32 r8_1 = arg2->half_0;
@@ -1303,19 +1303,19 @@ u32 f_00556d80(u32 r0, u32 r1, gptr<Object_00556d80_2> arg2, u32 r3, float S0) {
     u32 r7_1 = arg2->byte_7;
     u32 r10_1 = arg2->byte_8;
     u32 r5_1 = r1_1 & 0xffu;  // (from the original)
-    call_0034ac5c(block, r1_1);
-    *gptr<u8>(block + 0x1cu) = 0;  // (from the original)
+    call_0034ac5c(block_2, r1_1);
+    *gptr<u8>(block_2 + 0x1cu) = 0;  // (from the original)
     u32 r0_2 = translate_address(r1);
     u32 r1_3 = guest::cpu()->r[1];
     float S0_3 = guest::cpu()->s[0];
-    *gptr<u32>(block) = r0_2;
-    *gptr<u16>(block + 4u) = u16(r8_1);
+    *gptr<u32>(block_2) = r0_2;
+    *gptr<u16>(block_2 + 4u) = u16(r8_1);
     u32 res_1 = r7_1 & 0xfu;  // (from the original)
-    *gptr<u16>(block + 6u) = u16(r9_1);
+    *gptr<u16>(block_2 + 6u) = u16(r9_1);
     if (res_1 == 0) {
         r0_2 = 3u;
     }
-    *gptr<u8>(block + 8u) = u8(r5_1);
+    *gptr<u8>(block_2 + 8u) = u8(r5_1);
     if (res_1 != 0) {
         if (res_1 == 1u) {
             r0_2 = 2u;
@@ -1339,21 +1339,21 @@ u32 f_00556d80(u32 r0, u32 r1, gptr<Object_00556d80_2> arg2, u32 r3, float S0) {
         r12_1 = 0u;
     }
     u32 r1_4 = r3_2 | r12_1 << 2 | (r5_1 == 0xcu ? 2u : 0u) << 4 | r1_3 << 8;  // (from the original)
-    *gptr<u32>(block + 0xa8u) = r1_4 | r0_2 << 0xc;  // (from the original)
-    *gptr<u32>(block + 0xacu) = ror32(*gptr<u32>(block + 4u), 0x10);  // (from the original)
+    *gptr<u32>(block_2 + 0xa8u) = r1_4 | r0_2 << 0xc;  // (from the original)
+    *gptr<u32>(block_2 + 0xacu) = ror32(*gptr<u32>(block_2 + 4u), 0x10);  // (from the original)
     if (s32(r6_1) <= 0) {
-        *gptr<u32>(block + 0xb0u) = 0;  // (from the original)
+        *gptr<u32>(block_2 + 0xb0u) = 0;  // (from the original)
     } else {
         u32 r0_3 = r6_1 - 1u & 0xffu;  // (from the original)
-        *gptr<u8>(block + 0x14u) = 0;  // (from the original)
+        *gptr<u8>(block_2 + 0x14u) = 0;  // (from the original)
         S0_3 = 0.0f;
-        *gptr<u8>(block + 0x15u) = u8(r0_3);  // (from the original)
-        *gptr<u32>(block + 0x10u) = std::bit_cast<u32>(S0_3);  // (from the original)
-        *gptr<u32>(block + 0xb0u) = r0_3 << 0x10;  // (from the original)
+        *gptr<u8>(block_2 + 0x15u) = u8(r0_3);  // (from the original)
+        *gptr<u32>(block_2 + 0x10u) = std::bit_cast<u32>(S0_3);  // (from the original)
+        *gptr<u32>(block_2 + 0xb0u) = r0_3 << 0x10;  // (from the original)
     }
     guest::cpu()->r[1] = r1_4;
     guest::cpu()->s[0] = S0_3;
-    return block;
+    return block_2;
 }
 
 }  // namespace d_00556d80
@@ -3391,7 +3391,7 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
     r13 -= 8;
     u32 r1_1 = task_mgr->word_10;
     guest::cpu()->r[13] = r13;
-    u32 block = allocate_from_heap_002fd108(0x180u, r1_1, 4u, r3);  // (from the original)
+    u32 block_2 = allocate_from_heap_002fd108(0x180u, r1_1, 4u, r3);  // (from the original)
     gptr<Local_0055fcf4_ea_2> ea_2 = gptr<Local_0055fcf4_ea_2>(r13);
     r13 += 8;
     u32 r4_1 = ea_2->word_0;
@@ -3407,8 +3407,8 @@ u32 sead__TaskMgr__TaskMgr(gptr<sead__TaskMgr> task_mgr, u32 r1_unused, u32 r2_u
     ea_3->word_1c = r14;
     r13 -= 0x30u;  // (from the original)
     r8 = r0;
-    *gptr<u32>(block) = vtable_sead__TaskMgr;
-    u32 r0_2 = block + 4u;
+    *gptr<u32>(block_2) = vtable_sead__TaskMgr;
+    u32 r0_2 = block_2 + 4u;
     guest::cpu()->r[13] = r13;
     sead__CriticalSection__CriticalSection_0012bfec(r0_2, vtable_sead__TaskMgr);
     u32 r0_3 = r0_2 - 4u;

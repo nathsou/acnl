@@ -1034,16 +1034,16 @@ GUEST_EXPORT_FRAMED(0x002b75bc, d_002b75bc::f_002b75bc, 0x4010);  // pushes {r4,
 // f_002b75d4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002b75d4 {
 
-inline constexpr guest::Function<0x00132364, u32(u32, u32, u32, u32)> call_00132364;
-inline constexpr guest::Function<0x001323b4, u32(u32, u32, u32, u32)> call_001323b4;
+inline constexpr guest::Function<0x00132364, u32(u32, u32, u32, u32)> release_layout_parts;
+inline constexpr guest::Function<0x001323b4, u32(u32, u32, u32, u32)> layout_at_10_virtual_8;
 inline constexpr guest::Function<0x002cd0e0, u32(u32)> call_002cd0e0;
 
 u32 ChangeRentalBase__virtual_3(u32 change_rental_base) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    call_00132364(change_rental_base + 0x28u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    release_layout_parts(change_rental_base + 0x28u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     call_002cd0e0(change_rental_base + 0x40cu);  // (from the original)
     frame.release();
-    return call_001323b4(change_rental_base + 0x270u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    return layout_at_10_virtual_8(change_rental_base + 0x270u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
 }
 
 }  // namespace d_002b75d4
@@ -1285,7 +1285,7 @@ struct __attribute__((packed)) Local_002b8e84_r0_1 {
 GUEST_OFFSET(Local_002b8e84_r0_1, byte_b7, 0xb7);
 
 inline constexpr guest::Function<0x00312bd0, u32(u32, u32, u32, u32)> construct_word_fix_19;
-inline constexpr guest::Function<0x00312c4c, u32(u32, u32, u32, u32)> call_00312c4c;
+inline constexpr guest::Function<0x00312c4c, u32(u32, u32, u32, u32)> init_text_with_buffer;
 inline constexpr guest::Function<0x00312cb0, u32(u32)> set_word_num_digit_vtable;
 inline constexpr guest::Function<0x005e2e50, u32(u32, u32)> start_message;
 inline constexpr guest::Function<0x005e2f94, u32(u32)> call_005e2f94;
@@ -1304,7 +1304,7 @@ void f_002b8e84(gptr<Object_002b8e84_0> arg0, u32 r1, u32 r2, u32 r3) {
     r0_1->byte_b7 = u8(r1_1);
     construct_word_fix_19(frame.at(4).addr(), r1_1, r2, r3);
     frame->word_0 = 4;
-    call_00312c4c(frame.at(4).addr(), r1, 2u, 0xau);  // (from the original)
+    init_text_with_buffer(frame.at(4).addr(), r1, 2u, 0xau);  // (from the original)
     start_message(arg0.addr() + 0x2a4u, frame.at(4).addr());  // (from the original)
     call_005e2f94(arg0.addr() + 0x2a4u);  // (from the original)
     set_word_num_digit_vtable(frame.at(4).addr());
@@ -1355,10 +1355,10 @@ inline constexpr guest::Function<0x0056878c, u32(u32, u32)> LayoutObjectWithChil
 
 u32 f_002b9aa4(gptr<Object_002b9aa4_0> arg0, u32 r1) {
     arg0->byte_4cf = u8(r1);
-    gptr<Local_002b9aa4_r0_2> child = gptr<Local_002b9aa4_r0_2>(LayoutObjectWithChild__forward_to_child(arg0.addr() + 0x270u, 0x8794e4u));  // (from the original)
-    u32 r0_3 = u32(arg0->byte_4cf) | u32(child->byte_b7) & 0xfeu;  // (from the original)
-    child->byte_b7 = u8(r0_3);
-    guest::cpu()->r[1] = child.addr();
+    gptr<Local_002b9aa4_r0_2> child_2 = gptr<Local_002b9aa4_r0_2>(LayoutObjectWithChild__forward_to_child(arg0.addr() + 0x270u, 0x8794e4u));  // (from the original)
+    u32 r0_3 = u32(arg0->byte_4cf) | u32(child_2->byte_b7) & 0xfeu;  // (from the original)
+    child_2->byte_b7 = u8(r0_3);
+    guest::cpu()->r[1] = child_2.addr();
     return r0_3;
 }
 
@@ -2794,8 +2794,8 @@ void f_002bf468(gptr<Object_002bf468_0> arg0) {
     arg0->word_28e8 = 0;
     arg0->word_28ec = 0;
     arg0->word_28f0 = 0;
-    u32 crc = crc32_msb_first(arg0.addr() + 4u, 0x28f0u, 0u);  // (from the original)
-    arg0->word_0 = crc;
+    u32 crc_2 = crc32_msb_first(arg0.addr() + 4u, 0x28f0u, 0u);  // (from the original)
+    arg0->word_0 = crc_2;
 }
 
 }  // namespace d_002bf468
@@ -2971,8 +2971,8 @@ u32 f_002bf574(u32 r0) {
     r0_6->word_e8 = 0;
     r0_6->word_ec = 0;
     r0_6->word_f0 = 0;
-    u32 crc = crc32_msb_first(r4_1.addr() + 4u, 0x28f0u, 0u);  // (from the original)
-    r4_1->word_0 = crc;
+    u32 crc_2 = crc32_msb_first(r4_1.addr() + 4u, 0x28f0u, 0u);  // (from the original)
+    r4_1->word_0 = crc_2;
     return r4_1.addr();
 }
 

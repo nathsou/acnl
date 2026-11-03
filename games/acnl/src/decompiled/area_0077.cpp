@@ -20,14 +20,14 @@ u32 f_00770060(u32 r0, u32 r1, u32 r2, float S0, float S1, float S2) {
     u32 r8 = r1;
     u32 r9 = r2;
     construct_item(frame.at(0).addr(), 0x2000u, r2, guest::cpu()->r[3]);  // (from the original)
-    u32 item_data = Item__data(frame.at(0).addr());
+    u32 item_data_2 = Item__data(frame.at(0).addr());
     r1 = guest::cpu()->r[1];
     r2 = guest::cpu()->r[2];
     S0 = guest::cpu()->s[0];
     S1 = guest::cpu()->s[1];
     S2 = guest::cpu()->s[2];
-    u32 r5 = item_data;
-    if (item_data != 0) {
+    u32 r5 = item_data_2;
+    if (item_data_2 != 0) {
         u32 r10 = 0x172bu;  // (from the original)
         u32 r6 = 0u;
         u32 r4 = r6;
@@ -109,9 +109,9 @@ u32 f_0077025c(gptr<Object_0077025c_0> arg0, u32 r1, u32 r2) {
     guest::StackFrame frame(0x10);  // the original's stack frame
     u32 r0_1 = arg0->byte_0;
     if (r0_1 == r1) {
-        u32 info = category_info(r0_1, r1);
+        u32 info_2 = category_info(r0_1, r1);
         r1 = guest::cpu()->r[1];
-        if (*gptr<u32>(info + 4u) >= r2) {
+        if (*gptr<u32>(info_2 + 4u) >= r2) {
             u32 r1_1 = *gptr<u32>(arg0.addr() + (r2 << 2) + 4u);
             u32 r0_3 = arg0->byte_0;
             frame.release();
@@ -143,8 +143,8 @@ u32 f_007702a4(gptr<Object_007702a4_0> arg0, u32 r1, u32 r2) {
         r0_2 = 0u;
     } else {
         u32 r4 = 0u;
-        u32 info = category_info(r0_1, r1, r2, guest::cpu()->r[3]);
-        u32 r1_1 = r0 + (*gptr<u32>(info + 4u) << 2);
+        u32 info_2 = category_info(r0_1, r1, r2, guest::cpu()->r[3]);
+        u32 r1_1 = r0 + (*gptr<u32>(info_2 + 4u) << 2);
         r0 += 4u;
         r1 = r1_1 + 4u;
         if (r1 > r0) {

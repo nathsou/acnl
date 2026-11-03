@@ -175,9 +175,9 @@ void f_001f581c(gptr<AcObjectShow> ac_object_show, u32 r1_unused, u32 r2) {
     u32 r1_8 = 0x350u;  // (from the original)
     *gptr<u16>(r1_8 + ac_object_show.addr()) = 0;
     if (ac_object_show->byte_248 == 4u) {
-        u32 category = Item__category(ac_object_show.addr() + 0x20cu, r1_8);  // (from the original)
+        u32 category_2 = Item__category(ac_object_show.addr() + 0x20cu, r1_8);  // (from the original)
         r1_8 = guest::cpu()->r[1];
-        if (category == 0x27u || category == 0x28u) {  // (from the original)
+        if (category_2 == 0x27u || category_2 == 0x28u) {  // (from the original)
             frame.release();
             call_002e8cc8(ac_object_show.addr() + 0x260u, 0x1000613u, guest::cpu()->r[2]);
             return;  // (from the original)
@@ -220,9 +220,9 @@ void f_001f6cc8(gptr<AcObjectShow> ac_object_show, u32 r1, u32 r2_unused, u32 r3
     frame->word_0 = r3;
     u32 r4 = r0;
     u32 r5 = r1;
-    u32 is_empty = Item__is_empty(r0 + 0x20cu, r1, guest::cpu()->r[2], r3);  // (from the original)
+    u32 is_empty_2 = Item__is_empty(r0 + 0x20cu, r1, guest::cpu()->r[2], r3);  // (from the original)
     r3 = guest::cpu()->r[3];
-    if (is_empty == 0) {
+    if (is_empty_2 == 0) {
         u32 r0_3 = ac_object_show->byte_24a;
         u32 r7 = 0x7ffeu;  // (from the original)
         u32 r6 = 0u;
@@ -383,9 +383,9 @@ inline guest::global<u32, 0x0084849c> global_0084849c;
 inline guest::global<u32, 0x008484a0> global_008484a0;
 inline guest::global<u32, 0x008484a4> global_008484a4;
 inline constexpr guest::Function<0x002b6a00, u32(u32, u32)> set_node_values;
-inline constexpr guest::Function<0x002f6a30, u32(u32, u32)> call_002f6a30;
+inline constexpr guest::Function<0x002f6a30, u32(u32, u32)> Model__set_flag_10;
 inline constexpr guest::Function<0x002f6e98, u32(u32, u32, u32, u32)> ButtonActionControl__setup;
-inline constexpr guest::Function<0x002f7508, u32(u32, u32, u32)> call_002f7508;
+inline constexpr guest::Function<0x002f7508, u32(u32, u32, u32)> copy_four_animation_targets;
 
 struct __attribute__((packed)) Frame_001f8798 {
     u32 word_0;
@@ -457,13 +457,13 @@ void f_001f8798(gptr<Object_001f8798_0> arg0, u32 r1) {
     guest::cpu()->s[0] = S0_2;
     guest::cpu()->s[1] = S1_2;
     set_node_values(arg0.addr() + 0x204u, frame.at(0).addr());  // (from the original)
-    call_002f7508(arg0.addr() + 0x2e4u, arg0.addr() + 0x204u, 1u);  // (from the original)
+    copy_four_animation_targets(arg0.addr() + 0x2e4u, arg0.addr() + 0x204u, 1u);  // (from the original)
     arg0->word_2d0 = 0x1000413;  // (from the original)
     arg0->byte_2de = 1;
     arg0->word_2d4 = 0x1000399;  // (from the original)
     arg0->byte_2df = 1;
     arg0->byte_2e0 = 1;
-    call_002f6a30(arg0.addr() + 0x2e4u, 0u);  // (from the original)
+    Model__set_flag_10(arg0.addr() + 0x2e4u, 0u);  // (from the original)
     arg0->half_3b4 = 3;
 }
 
@@ -768,7 +768,7 @@ inline guest::global<u32, 0x00846f00> global_00846f00;
 inline guest::global<u32, 0x00846f04> global_00846f04;
 inline guest::global<u32, 0x00846f08> global_00846f08;
 inline guest::global<u32, 0x00846f0c> global_00846f0c;
-inline constexpr guest::Function<0x004b9b64, u32(u32, u32, u32, u32)> call_004b9b64;
+inline constexpr guest::Function<0x004b9b64, u32(u32, u32, u32, u32)> Listener__notify;
 inline constexpr guest::Function<0x00568c10, u32(u32)> Layout__virtual_3;
 inline constexpr guest::Function<0x00569420, u32(u32, u32)> notify_object_00569420;
 inline constexpr guest::Function<0x00569508, u32(u32)> apply_value;
@@ -810,7 +810,7 @@ void f_001f9884(gptr<Object_001f9884_0> arg0, u32 r1, float S0) {
 L_1f98fc:;
     if (r1 == 0) {
         guest::cpu()->s[0] = S0;
-        call_004b9b64(r0 + 0x38u, r0 + 0x494u, r2_1, r3_1);  // (from the original)
+        Listener__notify(r0 + 0x38u, r0 + 0x494u, r2_1, r3_1);  // (from the original)
         float S0_1 = 0.0f;
         guest::cpu()->s[0] = S0_1;
         Animation__set_value(r0 + 0x494u);  // (from the original)
@@ -819,7 +819,7 @@ L_1f98fc:;
         call_00816c20(r0 + 0x14u, *global_00846f00, *global_00846f04);  // (from the original)
     } else {
         guest::cpu()->s[0] = S0;
-        call_004b9b64(r0 + 0x38u, r0 + 0x494u, r2_1, r3_1);  // (from the original)
+        Listener__notify(r0 + 0x38u, r0 + 0x494u, r2_1, r3_1);  // (from the original)
         apply_value(r0 + 0x494u);  // (from the original)
         Layout__virtual_3(r0 + 0x38u);  // (from the original)
         notify_object_00569420(r0 + 0x38u, r0 + 0x494u);  // (from the original)
@@ -1117,7 +1117,7 @@ GUEST_OFFSET(Local_001fa354_ea_2, word_4, 0x4);
 
 inline guest::global<u32, 0x00846f08> global_00846f08;
 inline guest::global<u32, 0x00846f0c> global_00846f0c;
-inline constexpr guest::Function<0x004b9b64, u32(u32, u32)> call_004b9b64;
+inline constexpr guest::Function<0x004b9b64, u32(u32, u32)> Listener__notify;
 inline constexpr guest::Function<0x00568c10, u32(u32)> Layout__virtual_3;
 inline constexpr guest::Function<0x00569420, u32(u32, u32, u32, u32)> notify_object_00569420;
 inline constexpr guest::Function<0x00569508, u32(u32)> apply_value;
@@ -1160,7 +1160,7 @@ u32 f_001fa354(gptr<Object_001fa354_0> arg0) {
     } while (r4 < 6u);
     u32 r0_3 = get_state_30(r0_1, r1_1, r2, r3);
     *gptr<u8>(r0_3 + 0x40u) = u8(r7);  // (from the original)
-    call_004b9b64(r5 + 0x38u, r6);  // (from the original)
+    Listener__notify(r5 + 0x38u, r6);  // (from the original)
     apply_value(r6);
     Layout__virtual_3(r5 + 0x38u);  // (from the original)
     notify_object_00569420(r5 + 0x38u, r6, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
@@ -1233,8 +1233,8 @@ void f_001fa744(u32 r0, u32 r1, u32 r2, u32 r3) {
     u32 r0_1 = main_object_value(r0, r1, r2, r3);
     if (r0_1 != 0) {
         if (r1 != 0) {
-            u32 data_base = get_data_base(r0_1);
-            u32 r0_4 = record_1ac_address(data_base + 0x6e238u, frame->word_8);  // (from the original)
+            u32 data_base_2 = get_data_base(r0_1);
+            u32 r0_4 = record_1ac_address(data_base_2 + 0x6e238u, frame->word_8);  // (from the original)
             u32 r0_6 = NetSession__station(*net_session);
             r3_4 = 0x1acu;  // (from the original)
             r2_4 = r0_4;
