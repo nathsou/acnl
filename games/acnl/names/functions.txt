@@ -10735,6 +10735,7 @@
 0049f3e4 nw__gfx__WorldMatrixUpdater__WorldMatrixUpdater
 0049f41c nw__gfx__WorldMatrixUpdater__virtual_1
 0049f420 nw__gfx__WorldMatrixUpdater__virtual_0
+0049fffc Camera__set_perspective
 004a03c0 nw__gfx__AimTargetViewUpdater__virtual_4
 004a03c8 nw__gfx__AimTargetViewUpdater__AimTargetViewUpdater
 004a0414 nw__gfx__AimTargetViewUpdater__virtual_3
@@ -10801,6 +10802,9 @@
 004a4c64 nw__gfx__Fog__Fog_004a4c64
 004a4fbc nw__gfx__Fog__virtual_1
 004a4fc8 nw__gfx__Fog__virtual_0
+004a5b04 Fog__setup
+004a669c ResModel__find_shape
+004a6bb8 ResModel__find_material
 004a7064 Fog__set_range
 004aa350 nw__gfx__Light__virtual_4
 004aa3a4 nw__gfx__Light__virtual_1
@@ -10837,6 +10841,7 @@
 004b3f44 nw__gfx__SceneNode__SceneNode_004b3f44
 004b4168 nw__gfx__SceneNode__virtual_1
 004b4174 nw__gfx__SceneNode__virtual_0
+004b4a84 Pane__init_from_resource
 004b4b2c store_constants_4b4b2c
 004b4fc0 Layout__find_pane
 004b4fc8 Pane__find_pane
@@ -10908,6 +10913,7 @@
 004ba3cc nw__lyt__Layout__deleting_destructor
 004ba3dc ssys__ma__lyt__DummyLayout__destructor
 004ba3e0 nw__lyt__Layout__destructor
+004ba6c8 Pane__init_size
 004ba710 nw__lyt__Window__virtual_30
 004ba904 nw__lyt__Window__virtual_31
 004baac8 nw__lyt__Window__virtual_28
@@ -10919,6 +10925,7 @@
 004bb008 nw__lyt__Window__Window
 004bb250 nw__lyt__Window__deleting_destructor
 004bb324 nw__lyt__Window__destructor
+004bb4bc Layout__update_pane_tree
 004bb4e8 nw__lyt__Picture__virtual_4
 004bb4f8 nw__lyt__Picture__virtual_8
 004bb510 nw__lyt__Picture__virtual_29
@@ -11020,6 +11027,7 @@
 004c48cc field_nonzero_4c48cc
 004c490c field_nonzero_4c490c
 004c4f7c nw__snd__internal__BasicSound__virtual_4
+004c5104 SoundParams__set_value
 004c515c nw__snd__internal__BasicSound__BasicSound_004c515c
 004c5228 nw__snd__internal__BasicSound__deleting_destructor
 004c5240 nw__snd__internal__BasicSound__destructor
@@ -11050,7 +11058,9 @@
 004c6b94 nw__snd__internal__FsFileStream__destructor
 004c73e0 nw__snd__internal__SequenceSound__virtual_3
 004c74ac nw__snd__internal__SequenceSound__virtual_11
+004c74b0 SoundArchive__set_volume
 004c7500 Resource__load_child
+004c765c SoundArchive__load_group
 004c7798 nw__snd__internal__SequenceSound__virtual_9
 004c7824 nw__snd__internal__SequenceSound__virtual_8
 004c782c nw__snd__internal__SequenceSound__virtual_6
@@ -11099,6 +11109,7 @@
 004c9250 store_constants_12ca54_004c9250
 004c92e8 store_constants_4c92e8
 004c92fc store_constants_4c92fc
+004c9310 SeqFile__open
 004c9408 store_constants_4c9408
 004c94d8 nw__snd__internal__Task__Task
 004c9520 nw__snd__internal__Task__deleting_destructor
@@ -11214,8 +11225,10 @@
 004d4bcc nw__anim__AnimFrameController__destructor
 004d4bdc nw__anim__AnimBlendOpRgbaColor__deleting_destructor
 004d4be0 nw__anim__AnimBlendOpRgbaColor__destructor
+004d57d4 Pane__bind_material
 004d5b3c nw__anim__AnimFrame__deleting_destructor
 004d5b40 nw__anim__AnimFrame__destructor
+004d60b0 Pane__refresh_color
 004d7dfc read_u32_0x00974a7c_
 004d7e6c nw__lyt__Drawer__virtual_6
 004d7e9c nw__font__RectDrawer__virtual_6
@@ -11263,6 +11276,7 @@
 004db2c4 nmlasspacket__SearchNpcCB__SearchNpcCB_004db2c4
 004db460 nmlasspacket__SearchNpcCB__SearchNpcCB_004db460
 004db508 SoundMelodyMgr__virtual_5
+004db540 SoundObj__play_unless_playing
 004db710 SoundMelodyPlayerOneSeqTimeTone__deleting_destructor
 004db74c SoundMelodyPlayerOneSeqTimeTone__destructor
 004db8ac script__WordPtrSv__WordPtrSv_004db8ac
@@ -11292,6 +11306,9 @@
 004dd330 script__WordCPtrSv__WordCPtrSv_004dd330
 004dd824 sead__SafeStringBase_wchar_t___SafeStringBase_004dd824
 004ddc34 Online__local_station
+004ddc94 Villagers__refresh_records
+004de5d4 Item__is_category_75_or_76
+004de6f0 Mic__is_active
 004dec84 Tab_2___deleting_destructor
 004ded18 Tab_2___destructor
 004deda8 Tab_4___deleting_destructor
@@ -11299,8 +11316,10 @@
 004deeb4 Tab_7___deleting_destructor
 004def50 Tab_7___destructor
 004df260 cfl__MiiModelBase__virtual_5
+004df2c8 Color__from_floats
 004df314 cfl__MiiModelBase__ListNodeMiiModelBase__deleting_destructor
 004df318 cfl__MiiModelBase__ListNodeMiiModelBase__destructor
+004df3e4 Node__copy_matrix
 004df3ec cfl__MiiModelBase__deleting_destructor
 004df3fc cfl__MiiModelBase__destructor
 004df528 cfl__MiiModelSimple__virtual_2
@@ -11340,6 +11359,7 @@
 004e0f68 Room__is_player_room
 004e10ac constant_64_and_2
 004e10c8 return_constant_0x9529d8_
+004e1174 RoomGrid__for_each_furniture
 004e1204 RoomGrid__reset
 004e12b4 RoomGrid__furniture_of_entry
 004e13d0 RoomGrid__usable_furniture_of_entries
@@ -11350,6 +11370,7 @@
 004e1a90 room_flag_2
 004e1aa4 has_room_object_1
 004e1ac4 load_furniture_remake_params
+004e21e0 RoomGrid__furniture_near
 004e240c RoomGrid__place_if_free
 004e24d0 room_flag_3
 004e24e4 read_s8_0x009529d5_
@@ -11373,13 +11394,17 @@
 004e3a7c BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c
 004e3f8c touch_furniture_at_position_plus_x
 004e408c clear_room_flag_and_timers_2
+004e40e4 Room__update_timers_veneer
 004e40e8 Room__update_timers
 004e424c furniture_first_tile
 004e440c touch_furniture_at_position_minus_x
 004e4510 item_maps_match_in_area
 004e49fc cell_is_blocked
 004e4ab8 call_004e40e8_with_r1
+004e4ac4 RoomGrid__furniture_of_kind
+004e5288 RoomGrid__find_free_cell
 004e54a4 try_place_at_position
+004e5570 RoomGrid__find_free_cell_b
 004e5818 drop_special_item_at
 004e58e8 is_special_kind_004e58e8
 004e5924 apply_room_item_message
@@ -11402,9 +11427,11 @@
 004e7c54 RoomGrid__has_wall_furniture_around
 004e7d38 RoomTimers__stop
 004e7d54 set_scene_position_and_share_b
+004e7f28 RoomGrid__set_cell
 004e82b4 count_item_badge_progress
 004e8868 Player__refresh_pocket_tools
 004e8b00 share_scene_records
+004e8ed4 RoomFurniture__place
 004e93d8 tile_item_is_free
 004e9464 find_or_add_value_in_list
 004e951c remove_value_from_list
@@ -11448,6 +11475,7 @@
 004eb494 g3d__modelEffect__ModelEffectHandle__deleting_destructor
 004eb5b4 g3d__modelEffect__ModelEffectHandle__destructor
 004eb6c4 EffectSlots__start
+004eb858 Matrix34__decompose
 004eb9d4 EffectSlot__start_fade_out
 004eb9fc EffectSlot__bind_render_slot
 004eba34 call_node_if_active
@@ -11455,6 +11483,7 @@
 004ec374 g3d__modelEffect__ModelEffectContainer__ModelEffectContainer
 004ec3e0 g3d__modelEffect__ModelEffectContainer__deleting_destructor
 004ec4ac g3d__modelEffect__ModelEffectContainer__destructor
+004ec574 SceneEnv__apply_layer
 004ec7ec Model__set_color
 004ec820 g3d__AmbientLight__virtual_4
 004ec8bc construct_ambient_light
@@ -11488,7 +11517,9 @@
 004ed3fc construct_fragment_light
 004ed430 g3d__FragmentLight__deleting_destructor
 004ed454 g3d__FragmentLight__destructor
+004ed570 Model__has_skeleton
 004eda50 Model__find_node_of_kind
+004edaec Model__find_node_b
 004edcfc AcIsMuAnt__virtual_4_004edcfc
 004edd20 escape__MapCloudModel__virtual_2
 004edd3c construct_skeletal_model
@@ -11543,11 +11574,14 @@
 004eec94 sead__SafeStringBase_char___SafeStringBase_004eec94
 004eedbc return_constant_0x9c9f00_
 004eee9c Model__bind_by_name
+004eef60 Model__bind_resource
 004eefe0 sead__SafeStringBase_char___SafeStringBase_004eefe0
+004ef3a4 AnimSlots__clear
 004ef48c construct_group_skeletal_anim
 004ef4d0 g3d__GroupSkeletalAnim__deleting_destructor
 004ef50c g3d__GroupSkeletalAnim__destructor
 004ef548 sead__SafeStringBase_char___SafeStringBase_004ef548
+004ef77c Model__play_animation
 004ef8b8 g3d__MorphSkeletalAnim__virtual_6
 004ef9a4 g3d__MorphSkeletalAnim__virtual_4
 004ef9b4 construct_base_anim_4ef9b4
@@ -11569,8 +11603,10 @@
 004f02cc g3d__PointFragmentLight__deleting_destructor
 004f02f0 g3d__PointFragmentLight__destructor
 004f0310 Camera__enter_photo_mode
+004f03d0 TransformNode__update_world
 004f0568 SceneEnv__light_if_enabled
 004f05cc SceneEnv__set_value_107
+004f0734 PhotoMode__setup_scene
 004f0818 g3d__DirectionalFragmentLight__virtual_5
 004f087c g3d__DirectionalFragmentLight__deleting_destructor
 004f08a0 g3d__DirectionalFragmentLight__destructor
@@ -11594,8 +11630,10 @@
 004f0f80 collect_entries
 004f1028 model_value_148
 004f10ec model_value_150
+004f1104 Model__set_anim_frame
 004f1164 Model__set_anim_frame_value
 004f1270 model_virtual_3
+004f1294 Model__update_anim_frame
 004f1328 object_if_of_wanted_type
 004f1374 SortableList__sort_into_slots
 004f147c construct_model
@@ -11604,7 +11642,9 @@
 004f14b0 read_relative_triple
 004f1510 ResModel__material_index
 004f1648 ResModel__set_material_color
+004f1918 ResModel__set_color_all
 004f1b64 Material__set_color_all
+004f1b8c ResModel__set_color_b_all
 004f1cdc Material__set_color_all_b
 004f1d04 ResModel__mark_materials_dirty
 004f1d6c ResModel__set_shape_flags

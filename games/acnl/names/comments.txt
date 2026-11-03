@@ -2197,24 +2197,43 @@
 0047f3a0 Connects to the network (the ac service).
 00489ec8 Finalizes Pia's modules when it is up.
 00495534 Resets the scene environment's lists and marks it dirty.
+0049fffc Sets the camera's perspective from its field of view.
+004a5b04 Sets up the fog with its table.
+004a669c Finds the model's shape by its name.
+004a6bb8 Finds the model's material by its name.
 004a7064 Sets the fog's range (at least 0.01 wide) and its scale.
+004b4a84 Initializes the pane from its resource.
 004b4fc0 The pane of the layout's tree with this name (searching below the root pane).
 004b6598 Sets the pane's text from the string, with its format.
 004b71c8 Sets the pane's position and marks its matrix for update.
 004b9b64 Marks the event (+0x1c = 1) and passes its value (+0x18) to virtual 0x3c of the listener at +0x20.
+004ba6c8 Initializes the pane's size and position.
+004bb4bc Updates the layout's pane tree.
 004bef3c The scroll bar knob's position from the pointer.
 004bf06c Sets the flag on each resource of the list.
 004bf4bc Sets the animation's rate (at least 0).
 004bfd70 Finds the resource by its key and binds it.
 004bfe1c Binds the resource when its kind matches.
 004c331c Takes a reference to the resource the holder points to.
+004c5104 Sets the parameter's value at the index (in s0).
+004c74b0 Sets the sound archive's volume.
 004c7500 Loads the resource's child with its name.
+004c765c Loads the sound archive's group.
+004c9310 Opens the sequence file (its signature checked).
 004cad5c The default texture, set up once.
 004cce74 Sets the table's slot to the value (for a positive index).
+004d57d4 Binds the pane's material.
+004d60b0 Refreshes the pane's color from its mode.
 004dac10 Sets the pane's size from its scale and its alignment.
 004dae58 The index of the letter paper item (0x3041 to 0x3093) in the table.
+004db540 Plays the sound unless the object plays it.
 004dbc3c Whether the tour desk is waiting (state 3 or 4).
 004ddc34 The local station of the online session.
+004ddc94 Refreshes the villagers' records (with the flag).
+004de5d4 Whether the item's category is 0x75 or 0x76.
+004de6f0 Whether the microphone is active (for kinds 0 and 1).
+004df2c8 Packs the color's three float channels (0 to 1) into bytes.
+004df3e4 Copies the node's matrix.
 004dfb58 Scales the vector by the other (component-wise) and adds the offset, when asked.
 004e0288 True when the check at 0x1531b8 gives exactly 1.
 004e029c Stores the three components call_004dfb58 gives (from the arguments) into entry `index` (0x24 bytes) as half floats, with a flag.
@@ -2224,6 +2243,7 @@
 004e0a48 Calls slot 4 of the transform node at 0x951530.
 004e0f68 Whether the current room is a player's (indoors, flag 0x80), outside the special room.
 004e10ac Leaves 64 and 2 in the float registers.
+004e1174 Calls the function on each furniture of the room (up to the scene's count).
 004e1204 Empties the room's furniture grids (64 rows of 0x50 cells, and the 16 x 16 upper layer at +0x1400: -1 each) and its table of 48 furniture objects.
 004e12b4 The furniture object of the grid entry call_004e1768 gives (its index into the table); null when none.
 004e13d0 The first of the two entries' furniture that is usable now (by its id and flags); null when none.
@@ -2234,6 +2254,7 @@
 004e1a90 The room module's flag byte (a second copy of room_flag).
 004e1aa4 Whether the lookup through 004e1174 finds entry 1 of the table at 0x572258.
 004e1ac4 Loads the furniture customization parameter file once, from the shared archive.
+004e21e0 The room's furniture near the position.
 004e240c Places a piece of furniture at cell (x, z) of `layer` when the room grid has nothing there (with its effects); true when it did.
 004e24d0 The room module's flag byte (a third copy of room_flag).
 004e2504 Whether one of the four cells next to (x, z) holds an item (an item standing for another is looked through first) that passes item_not_kind_11_or_flag_1c_bit_2.
@@ -2248,12 +2269,16 @@
 004e3a1c The state byte of the furniture at (x, z) when it has one (flag bit 2), else 0xff.
 004e3f8c Runs 006311a4 on the furniture (id 0x88709c) under `position`, with the offset (32, 0, 0) and whether table bit 4 is clear.
 004e408c Same as clear_room_flag_and_timers.
+004e40e4 Updates the room's timers.
 004e40e8 Updates the room's timers for the idle main object.
 004e440c Runs 006311a4 on the furniture (id 0x88709c) under `position`, with the offset (-32, 0, 0) and whether table bit 4 is clear.
 004e4510 Whether the item maps of list positions `mode` and `mode - 1` hold the same items (same kind-11 top bits) over the area from 00284ee4.
 004e49fc Whether (x, z) is blocked: an open terrain cell with a terrain flag, or furniture of class 4/5 on terrain that is in the list for the current mode.
 004e4ab8 Calls 004e40e8 with its second argument as the first too.
+004e4ac4 The room's furniture of the kind (below 4).
+004e5288 Finds a free cell in the room grid near the position.
 004e54a4 Places at the cell under `position` through 004e21e0 with the offset 32: 2 when it did, 0 when not, 3 when the furniture there is of kind b/12/c, 4 when there is none.
+004e5570 Finds a free cell in the room grid near the position.
 004e5818 In scene 0x2b, for a special-set item: when the map cell (x, z) is empty, builds an empty item record and passes it to 0057456c; true when it did.
 004e5924 Applies a received room item message: places or removes the item at (x, y) and updates the room's bit table.
 004e5b74 Applies a received field item message: places, removes or changes the item at the position.
@@ -2275,9 +2300,11 @@
 004e7c54 True when one of the 4 cells around (x, y) holds wall furniture (class 4 or 5) that is not mounted (flag bit 2 clear).
 004e7d38 Stops room timer `index` (below 4).
 004e7d54 For house and flagged scenes, sets the scene record's position and sends message 0x53 (to all when idle).
+004e7f28 Sets the room grid's cell (in states 3 and 4).
 004e82b4 For items of kinds 0x93 and 0x94 (or ids 0x33b5 to 0x33bb), adds to the current player's counters 1 and 0x64.
 004e8868 Refreshes the tools in the current player's 16 pocket slots: sets their room grid index, or clears their value.
 004e8b00 Sends the scene records of the flagged scenes to the other stations.
+004e8ed4 Places the furniture in the room at its cell.
 004e93d8 True when the item covering the tile is not fixed (and not wall furniture, unless allowed).
 004e95f0 Clears the three room flag bytes after 0x9529d4.
 004e960c True when the cell is inside the light's area (in the town or the flagged scenes).
@@ -2303,12 +2330,16 @@
 004eb3e0 Stops the effect slot of the reference's key (fading out over 10) and forgets the key; true when it did.
 004eb438 Updates the effect slot of the reference's key when it still exists.
 004eb6c4 Starts the effect of the kind at the position in the slots.
+004eb858 Decomposes the matrix into its scale, rotation and translation.
 004eb9d4 Starts fading the slot out over `frames` unless it already fades; true when it started.
 004eb9fc Binds the slot to render slot `index` and sets it up from it.
+004ec574 Applies the scene environment's layer (outside photo mode).
 004ec7ec Sets the model's color (+0xb8 of its resource, four floats) and its derived word.
 004ed168 Sets the float at +0x124 of the model's resource and refreshes it.
 004ed18c Sets the float at +0x120 of the model's resource and refreshes it.
+004ed570 Whether the model has a skeleton.
 004eda50 Finds the model's node of the kind and records it.
+004edaec Finds the model's node of the kind (the second layout).
 004edd6c Destroys the NPC model's loader and its base.
 004eddd4 Adds the model and its visible materials to the render queue (opaque or translucent lists), updating the queue's node once.
 004ee2dc Sorts the render queue's entries.
@@ -2316,18 +2347,27 @@
 004ee534 True when the split load is ready and not in state 3.
 004ee55c Starts the split load, setting the read and write positions from its word (+0xec) the first time.
 004eee9c Finds the named entry in the model's dictionary and binds it.
+004eef60 Binds the resource to the model.
+004ef3a4 Clears the model's animation slots.
+004ef77c Plays the model's animation with the blend.
 004efb0c Sets the scene environment's layer (its lights and fog), outside photo mode.
 004f000c The scene environment's default fog.
 004f0310 Points the camera at its alternative target, marks the mode on and saves and sets the friend list's flag.
+004f03d0 Updates the node's world matrix from its parent.
 004f0568 The scene environment's light of the index when it is enabled and visible, or null.
 004f05cc Sets the scene environment's value 0x107.
+004f0734 Sets up the scene environment for photo mode.
 004f0b90 Creates the fog with a white color and a linear range (10 to 1000).
 004f0de0 Resets the model's two animation results.
 004f0eb8 Sorts the model's draw entries by address and stores them as relative offsets.
+004f1104 Sets the model's animation frame.
 004f1164 Sets the value of the model's current animation member at its frame.
+004f1294 Updates the model's animation frame and its result.
 004f1510 The index of the named material in the model's dictionary, or -1.
 004f1648 Sets the named material's color (or one of its texture coordinates) from the values.
+004f1918 Sets the color of each of the model's materials.
 004f1b64 Sets the material's color to the value in all four channels.
+004f1b8c Sets the second color of each of the model's materials.
 004f1cdc Sets the material's second color to the value in all four channels.
 004f1d04 Marks each of the model's materials for update (flag 0x10).
 004f1d6c Sets the flags (with bit 25) on every primitive of every shape of the model.
