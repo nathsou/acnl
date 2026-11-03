@@ -3618,10 +3618,14 @@
 004f524c Updates the letter list's entries and scroll.
 004f6674 Constructs a kana key set for a keyboard (arg 1).
 004f76a8 Clears the list state and sets its positions to -100 (none).
+004f778c Constructs a GUI radio button from a description (arg 1): a widget with the description's sounds \n (defaults for the unset ones) and name, unselected.
+004f9650 Constructs a QWERTY key set for a keyboard (arg 1): 53 keys, all enabled, no key held.
 004f9f9c Clears the grid list state, sets its positions to -100 (none) and its size to 10 by 3.
+004fa0fc Constructs a GUI repeat button from a description (arg 1): a widget with the description's sounds \n (defaults for the unset ones) and name, not repeating.
 004fa674 Constructs a mail text area: empty.
 004fae8c Constructs a board text area: empty.
 004fb304 Maps the menu kind 3 to 2 and 5 to 4.
+004fd458 Constructs a phone-style key set for a keyboard (arg 1): its key tables, no key held.
 004fe440 Updates the selection from the input, when no error screen is up.
 004fe5b8 Whether the selection accepts any of the eight direction inputs.
 004fe6c8 Sets the two menu callbacks.

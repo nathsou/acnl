@@ -12407,7 +12407,7 @@
 004f9060 gui__QwertyKeySet__virtual_8
 004f9068 gui__QwertyKeySet__virtual_6
 004f9078 gui__QwertyKeySet__virtual_4
-004f9650 gui__KeySet__KeySet_004f9650
+004f9650 QwertyKeySet__construct
 004f9714 gui__QwertyKeySet__deleting_destructor
 004f97d4 gui__QwertyKeySet__destructor
 004f98c8 gui__RepeatButton__virtual_10
@@ -12448,7 +12448,7 @@
 004fd090 gui__CellPhoneKeySet__virtual_8
 004fd098 gui__CellPhoneKeySet__virtual_6
 004fd0a8 gui__CellPhoneKeySet__virtual_4
-004fd458 gui__KeySet__KeySet_004fd458
+004fd458 CellPhoneKeySet__construct
 004fd544 gui__CellPhoneKeySet__deleting_destructor
 004fd618 gui__CellPhoneKeySet__destructor
 004fd6e4 gui__RepeatButtonEx2__virtual_10
