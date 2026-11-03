@@ -574,13 +574,30 @@
 0014fda4 Jumps to the import.
 0014fe74 Jumps to the import.
 00150bc0 Copies the string, up to the length.
+00152770 Clamps the face index to the table's size.
+00152a10 Loads the face data of the kind into the buffer.
+00152dc8 Sets the face library's state when its flag is set.
+001531b8 Whether the face index (below 100) is valid.
+00153758 Reads the face data into the buffer.
+00153a68 Opens the face data, handling its result.
+001594c8 The entry at the offset from the current one.
+00159550 Finds the value from the current entry; -5 without one.
 001597e0 Whether the current entry is after the value.
 00159824 The value at the offset, or 0.
+0015982c The value at the offset, or 0.
 00159960 The current entry's value, or -1.
+00160c68 Allocates the block (aligned to 32) from the frame heap.
+001662e8 Whether the day's season is neither 0 nor 2.
 00168868 Places the item as a field drop at the cell, with its flag.
 0016dad0 Spawns the field item's actor at the position.
+0016fe08 Makes the actor of the field item (by its number).
+00170514 Sets up the balloon's segments and shader.
 00172398 Writes the shape's draw commands with its vertices.
+001745f8 Calls the function on the object when it is of the wanted kind.
 001746f4 Sets the scene record's values for the mode.
+001796e0 Breeds the flower at the cell with its neighbors.
+0017d2ac Starts the field item's effect with its scale.
+0017fc48 Starts the field item's effect with its scale.
 00186d7c The distance between the two points (in s0).
 00188850 Whether the cell is blocked in the grid's bitmap; false outside the grid.
 001888ac Whether the cell is free in the grid's bitmap; true outside the grid.
@@ -592,6 +609,8 @@
 0018c1c0 Stops the furniture's song when it plays one and, when asked, clears the song placement; with the flag, resets its two slots.
 0018caf0 Starts the furniture's action 0x1f with the offset.
 0018d284 Collects the villagers (of the 10, but the current one) that may move or that the player knows.
+0018df18 Spawns the effect at the position with the scale (in s0).
+0018e3fc Loads the model grid's rows from the table.
 0018e6bc The cell (x, y) of the 7x7 grid (0x108 bytes each), or the first row or column when out of range.
 0018e944 Constructs the heap allocator and the grid's 7 rows.
 0018e970 Destroys the grid's 7 rows and the heap allocator.
@@ -624,19 +643,33 @@
 0019a938 Moves the slot's bells into the wallet, leaving the rest as a bag when it is full; whether it all went in.
 0019b14c Swaps the two selected letters in the player's letter storage.
 0019c440 Opens the wallet's choice of amounts.
+0019d500 Opens the pocket menu's letter choice and hides the item label.
 001a08bc Clears the camera state's flags and restarts its state machine (+0x14) with the default handler pair.
+001a113c Sets the catalog camera's position and its parameters.
 001a1204 The default camera parameters (0x998540), with a height of 29 in scene 1.
+001a1430 Evaluates the camera path at the time into the position and target.
 001a1abc Sets the camera's target and, for a mode (not -1), remembers it with the current view as the start of the move.
 001a2068 In flagged scenes, updates the camera's room view from its target, angle and distances.
+001a20f4 Applies the camera's preset (its entry).
 001a25dc Moves the camera's target toward the player's position by the scene's rules.
+001a2c48 Sets the camera's target position.
+001a2ce0 Clamps the camera's target to its bounds.
 001a32c8 Keeps the camera's x inside the room's bounds (+0x158 to +0x15c, with the margin), centering it when the room is narrow.
 001a360c Requests the camera controller's mode `kind` aimed at the position, with its parameter.
+001a36ac Starts the camera's mode 5.
+001a3a28 Sets the camera's distance (shorter in the special scene).
+001a3abc Computes the camera's position and its target.
 001a3f90 The player's spawn point for the scene.
 001a40e8 The distance from the player's head (32 above) to the point (rotated by the room's angle, the height weighted 1.5); 321 without a player.
+001a4600 Updates the camera following its target.
 001a4904 Half of the position plus the offset (the midpoint).
 001a4e7c Keeps the camera's x and z inside the room's bounds (with their margins), centering them when the room is too small.
 001a5144 Requests the default mode (+0xf0) back and releases the two flags it holds (0x27, 0x2b).
+001a51d0 Starts the camera's default mode for the scene.
 001a5e64 Keeps the camera's x (margin 160) and z inside the room's bounds, centering them when the room is too small.
+001a5f58 Resumes the camera's mode (outdoors).
+001a5f98 Starts the camera's mode 0xd.
+001a5ffc Starts the camera's kind (by the scene).
 001a616c Sets the camera's tilt (+0x1ac) from the turn angle: none past 15 degrees, else a small tilt to the side of the turn.
 001a63e8 Picks a random view around the object for the camera.
 001a7760 Sets the three bytes of cell (x, y) of the map.
@@ -655,15 +688,18 @@
 001aae00 Updates the 3D sound's volume by its distance.
 001aaed4 Finds the resource index of the scene's model.
 001ab060 Applies the material (+0x24) to the model (+0x1c) when it exists.
+001ab07c Updates the NPC model's head toward its target.
 001ab2ec Moves the target by the offset rotated by the angle and, when asked, resets both models' positions.
 001ab70c Loads the model part of the grouped record and binds it; true when it did.
 001abcd4 Resets the 8 part ids (0x276 for none) and releases the model and its loader.
+001abd24 Sets the NPC model's face (by its mode).
 001ac668 Sets the move's angle, target position and its two halves.
 001accd4 Loads the 4 items from the save (+0x6adb8), or restocks them when asked.
 001acf0c Sets up the message board's panes and animations once.
 001ad2e4 Sets the first word and clears the second.
 001ad5c8 Clears the 4 visiting villagers (0x2518 bytes each), their ids and flags.
 001add58 Copies the visiting villagers from friends into the slots, clearing their letters.
+001adef4 Refreshes the session's players from the town.
 001ae1e4 Constructs the villager slot with a cleared trailing word and flag.
 001aebdc Destroys the 10 elements of 0xc bytes.
 001aec00 Sets the low nibble of the byte.
@@ -684,6 +720,7 @@
 001b1bf8 Puts the remembered item back in the field (or clears the tile).
 001b1c70 Adds the items of the set to the slots, closing gaps first.
 001b2114 Stores the item in the first empty of the 16 slots (closing gaps first); true for kind 0x95 items, false when full.
+001b21e0 Checks the town's flag of the index.
 001b21f4 Puts the item in slot `index` with its flags, by its category (bell bags and kind-2 items are special).
 001b23ac Constructs the 16 item slots, all empty.
 001b264c Zeroes the 200-byte record with its two last bytes at 0xff.
@@ -708,6 +745,7 @@
 001b490c Copies the 0x870-byte pattern, marks it foreign when its id is not local in a network session, and refreshes it.
 001b4980 Resets the pattern's flags (type 4, shareable).
 001b49b0 Copies the pattern, refreshes it and, in a network session, sends the replacement of the old id by the new one (message 0x6d).
+001b4a80 Copies the identity (0x2e bytes) and marks it set.
 001b4b20 Sets the pattern's name (+0x16) and stamps it with the current month and day.
 001b545c True when the id is below 399.
 001b5474 Places item `index` (of 2) of the pair in the room or the field once, when its owner is the current player.
@@ -721,6 +759,7 @@
 001b7530 True when adding is allowed (0xad56fb set, 0xad56fa clear) and the count (+0x18) is at most 15.
 001b7568 Adds the sale to the tally of the kind (+0x10): by count, price or a quarter of the item's price, by the shop's mode; true when the tally changed.
 001b76ec Whether the item counts as the tour's prize (by the tour's kind).
+001b7b10 Tells the tour result of the tour's event.
 001b7b90 In area scene 9, marks the area visited once when its maps match and, in a network session, sends message 0x45.
 001b7ce8 Records the item (or the score) for the player in the tour result, when the tour counts it.
 001b88c0 Drops a user of the save archive and unmounts it when it was the last.
@@ -730,7 +769,10 @@
 001b9400 Writes the save counter (when asked) and commits the save archive; 8 on failure, 1 on success.
 001b94b0 Closes every save file and unmounts the archive, reporting fatal errors.
 001b96a0 Opens the main save file.
+001b979c Releases the input lock (by its state).
 001b97dc Closes the 7 shared files and the 3 files of each of the 4 slots, then unmounts the archive (when asked and mounted).
+001b98e0 Releases the flower record's object.
+001b9964 Sets the words describing the flower's colors.
 001b9a88 The genotype index of the flower genes: the number of set alleles in each of the four 2-bit loci, as base-3 digits (81 genotypes).
 001b9ae4 The flower item index of the species (`kind`) with the genes, from the species' genotype table; the species' first flower when out of range.
 001b9c34 The default genes of flower item 0xbe + n (n below 6) from the table; 0 otherwise.
@@ -756,9 +798,11 @@
 001bb354 Delivers the stored letters that are due on the given day, then compacts the storage.
 001bbbe8 True when the player's mailbox has a free slot.
 001bbc30 Delivers the stored letter to its recipient (town player or villager) when its day has come; true when delivered.
+001bcbb8 Loads the bulletin board's notes.
 001bfa48 Places the shown item's model at its cell (raised for wall items) and attaches it to the NPC.
 001c0810 Plays the NPC sound at the position (converted by the camera) and marks it playing; true.
 001c0c1c Updates the NPC sound at the position (converted by the camera).
+001c0c54 Plays the sound with the id unless it is muted.
 001c0f3c Stops the NPC sound when it plays.
 001c0f64 Marks the sound moved (+0x94); its kind byte.
 001c0fdc Constructs the NPC sound holder with full volume, stopped.
