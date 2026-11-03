@@ -850,7 +850,73 @@
 0031fd44 Calls virtual 24 of entry `index` of the shown page.
 0031fd64 Marks the page changed (+0x201b) and enables all 10 entries, or (when off) restores each from its saved flag.
 0031ffbc Sets the page's changed flag (+0x201b).
+0032049c Address of entry `index` among the 10 shown from +0xc (0x2b4 bytes each, +0x3d4); other indices give the first.
+00320500 Calls virtual 19 (refresh) of entry `index` of the shown page.
+00320548 The word at +0x684 of entry `index` of the shown page; 0 when it is not shown.
+00320584 Starts or stops the button node of entry `index` of the shown page.
+003205cc Sets byte +0xd9 of entry `index` of the shown page.
+0032069c Sets the visibility bit of the pane at +0x280.
+003207d8 Sets the visibility bit of the pane at +0x150 and updates the layout at +0x130.
+003219e8 Registers the 7 sound bank entries (ids 0x40 to 0x46) with their parameters from 0x94ccc0.
+00321ae8 Forwards to SoundSystem__sound_value on the sound system.
+00321af8 Runs the function at 0x13c1d4 on the sound system.
+003232a8 Sets byte `index` (below 16) at +0x40; false out of range.
+003232c0 Moves the items into the pockets by category, converting them when needed.
+00324934 Calls handler `index` of the table at 0x845304.
+00326360 Loads the room light switch menu's layout, animations and panes.
+00327ce8 Appends the entry to the queue, first filling it with the object's parameters when asked.
+003289a8 Gives the villager of the record (+2) the item (+0) into slot +3; a category 0x2f item without a slot goes to its +0x249e item.
+0032a3c8 Copies the record with a new item and its three color bytes.
+0032af5c Stops the player's sound (+0x1ec4) and clears its playing flags.
 0032b774 When sound is allowed: runs the member handler of the current state (+0x10) from the table at 0x839048.
+0032b7d0 Constructs the player: its two buffers (0x46 and 0x10e entries) and cleared state.
+0032ba1c Starts playing tune `id` (its sound data requested from the load manager) with the notes given, or the town tune by default; stops the previous one first.
+0032bcf8 Stops the tune's sound and gives back its sound data request.
+0032bd68 Decides once per note (+0x40) whether the tune plays a variation (+0x41), by its mode (+0x1c): alternate, random or by count.
+0032be18 The value (row below 10, column below 19) of the tune table at 0x83b1b0; 0 out of range.
+0032c348 Stops the tune's sound and gives back its sound data request.
+0032c654 Clears the two flag bytes when the first is set.
+0032c850 Resets the record (empty, its 10 bytes at -1) unless its stamp is today, then stamps it with today.
+0032c8c8 Removes player `index` (below 4) from the 10 entries and moves the later entries up.
+0032cb6c Sets the state byte (+0xd); entering state 1 from idle resets the counters.
+0032cbec Resets the 9 option bytes to their defaults (last one 0xb).
+0032cc20 Resets the option bytes (+4) to their defaults and copies them into the saved copy (+0xd).
+0032cc68 Resets the option bytes (+4) to their defaults and copies them into the saved copy (+0xd).
+0032ccb0 Constructs the option bytes and clears the saved copy.
+0032cef4 Draws the random state into 0x9525d0 and, in a network session with the main object idle, sends it as message 4.
+0032f240 Writes the GPU commands of the depth settings, with the depth offset (scaled when enabled) as a 24-bit float.
+00331550 Gives the villager of the record (+2) the item (+0) as its +0x8e6 item.
+00331778 Copies the half at +0x2e of the target (+0x4e4) to +0x4ec and marks it set.
+003319e8 Resets the permit record (state 4, mask 0x3f).
+00331a0c Sets the two halves and the two floats.
+00331a20 Zeroes the two halves and the two floats.
+00332688 Copies the letter (with its item and texts) into the first free of the 80 letter slots.
+003327e8 Adds an exhibition letter with the item to the 5 pending letters (0x280 bytes each); false when full.
+003328ec Constructs the 5 pending letters.
+00332900 Packs the NPC state fields into the shared info's bit fields; state 3 notifies the listener.
+00333310 Sets the flag at +0xb2 of the shared NPC info.
+0033527c Gives the villager of the record (+2) the item (+0) as its +0x249a item, registering special items first.
+003352f0 Finishes the pending work (+0xeb) when it can; true when nothing is pending.
+0033543c Copies the resource's model name into the string, or the default model name when it has none.
+00335634 Copies a 0x7dc8-byte block.
+00335640 Clears the block's parts (+0x1238, +0x7dc0) and its four header words.
+00335678 Constructs the block's parts and clears it.
+003356dc Destroys the four 0x18-byte elements and the base part.
+00335ecc Sets the fade step (+0x1ac) to -1 / frames (-1 for none).
+00335ef4 Sets the two fade steps (+0x1ac, +0x1b4) to 1 / frames and their values to 0.
+00335f48 Updates the object's transform with the matrix of the current view (0x38 bytes each, from +0x100).
+00338d10 Resets the four word pairs at +0x8c2c to the default pair.
+0033b748 Places the entry's model under the screen (-125 minus the offset) and stores the resulting height at +0x3b54.
+0033db9c Shows the player's badge for the counter: its tier, points, count and whether it was just earned (playing the earned animation).
+0033e040 Applies a received villager memory message: creates or updates the villager's record of the player, refreshing it when current.
+0033e104 Applies a received item message to the player's record at +0x8d6c: the item (state 2) or none (state 1).
+0033e230 Stores the half at +0xa8 of the shared NPC info.
+0033e60c Stops the microphone (in states 3 to 5) and goes back to state 2.
+0033e8cc Calls the member function of the current state (+0) from the table at 0x83b46c.
+0033f2c4 Applies a received message that the villager is moving: sets its moving flag (+0x2510 bit 9) and marks the player's record of it.
+0033f368 Applies a received villager state message: sets its state (0x17, 2 or 0) and updates its NPC.
+0033fb8c Clears bit 6 of the shared NPC info unless the word is set.
+0033fbb4 Writes the secretary's letter to the player (its variant by the player's state), with its item.
 00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
 003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
 00403828 Sets word `index` (fewer than 6) of the array at +0x210.
