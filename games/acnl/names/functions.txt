@@ -16180,6 +16180,8 @@
 006811b0 AcPlayer_rec__state_170_exit
 006811c8 AcPlayer_rec__state_173_exit
 006811e0 AcPlayer_rec__state_7_exit
+00681214 player_offset_0_m4_0
+00681294 player_offset_0_m2_6
 00681320 ForeachOnPlayerStartEmoticon__ForeachOnPlayerStartEmoticon
 00681530 AcPlayer_rec__state_36_enter
 00681744 AcPlayer_rec__state_38_enter
@@ -16191,8 +16193,14 @@
 00681b54 AcPlayer_rec__state_106_enter
 00681b68 AcPlayer_rec__state_225_enter
 00681c10 AcPlayer_rec__state_90_exit
+00681c14 AcPlayer_rec__finish_place_item
 00681cb4 AcPlayer_rec__state_88_exit
+00681cb8 AcPlayer_rec__finish_pick_item
+00681db8 call_on_950618
+00681f00 AcPlayer_rec__find_spot
+00682080 AcPlayer_rec__use_held_item
 0068229c AcPlayer_rec__change_state_if_holding
+00682330 AcPlayer_rec__request_state_3a
 00682390 AcPlayer_rec__state_121_exit
 00682394 AcPlayer_rec__state_125_exit
 00682398 AcPlayer_rec__state_5_exit
@@ -16225,6 +16233,9 @@
 0068315c AcPlayer_rec__state_11_enter
 00683160 AcPlayer_rec__state_231_enter
 00683180 ForeachOnMoveOutPitfall__ForeachOnMoveOutPitfall
+006833ac AcPlayer_rec__clear_flag_176_8
+006833c4 AcPlayer_rec__start_item_action
+006839a8 AcPlayer_rec__request_state_b9
 00683be8 AcPlayer_rec__state_185_update
 00683ef4 AcPlayer_rec__state_57_update
 0068413c AcPlayer_rec__state_163_update
@@ -16245,8 +16256,11 @@
 006851b8 AcPlayer_rec__state_170_enter
 00685384 AcPlayer_rec__state_173_enter
 006853f8 AcPlayer_rec__state_7_enter
+006853fc TourResult__record_item
 00685478 ForeachOnFallToPitfall__ForeachOnFallToPitfall
 00685ad4 get_float_range
+00685c18 AcPlayer_rec__start_flagged_scene_once
+00685d7c AcPlayer_rec__request_state_b8
 00685fb0 AcPlayer_rec__state_184_update
 006860a0 AcPlayer_rec__state_222_update
 00686168 AcPlayer_rec__state_185_exit
@@ -16273,12 +16287,18 @@
 00686df0 AcPlayer_rec__state_168_enter
 00686e50 AcPlayer_rec__state_171_enter
 00687034 AcPlayer_rec__state_214_enter
+00687394 TourResult__count_goal
+0068752c npc_source_position
 00687b24 AcPlayer_rec__state_187_update
 00687ba8 AcPlayer_rec__state_190_update
 00687bac AcPlayer_rec__state_189_update
 00687c8c AcPlayer_rec__state_66_update
 00687e34 AcPlayer_rec__state_184_exit
 00687e70 AcPlayer_rec__state_222_exit
+00687f04 catch_completes_category
+00687fb4 AcPlayer_rec__request_state_a7
+00687fe0 AcPlayer_rec__request_state_c5
+00688144 AcPlayer_rec__request_state_89
 006881a4 AcPlayer_rec__state_167_update
 00688318 AcPlayer_rec__state_197_update
 00688530 AcPlayer_rec__state_119_update
@@ -16299,6 +16319,7 @@
 00688df8 AcPlayer_rec__state_63_enter
 00688edc AcPlayer_rec__state_200_enter
 00688fd8 AcPlayer_rec__state_201_enter
+00689120 AcPlayer_rec__request_state_c0
 006891c0 AcPlayer_rec__state_192_update
 00689280 AcPlayer_rec__state_118_update
 00689384 AcPlayer_rec__state_50_update
@@ -16310,6 +16331,7 @@
 00689468 AcPlayer_rec__state_46_exit
 006894b0 AcPlayer_rec__state_184_enter
 0068951c ForeachOnStrugglePitfall__ForeachOnStrugglePitfall
+00689890 AcPlayer_rec__request_state_2d
 006898e4 AcPlayer_rec__state_45_update
 006898e8 AcPlayer_rec__state_192_exit
 0068991c AcPlayer_rec__state_118_exit
@@ -16320,6 +16342,7 @@
 00689b70 AcPlayer_rec__state_187_enter
 00689ba0 AcPlayer_rec__state_189_enter
 00689c44 AcPlayer_rec__state_66_enter
+0068a3fc AcPlayer_rec__mark_scene_exit
 0068a48c AcPlayer_rec__state_186_update
 0068a4c0 AcPlayer_rec__state_12_update
 0068a504 AcPlayer_rec__state_45_exit
@@ -16328,6 +16351,8 @@
 0068a708 AcPlayer_rec__state_119_enter
 0068a7d4 AcPlayer_rec__state_117_enter
 0068a808 AcPlayer_rec__state_46_enter
+0068a80c AcPlayer_rec__load_appearance
+0068aa1c AcPlayer_rec__request_move_state
 0068aab0 AcPlayer_rec__state_122_update
 0068abd8 AcPlayer_rec__state_62_update
 0068b0d8 AcPlayer_rec__state_8_update
@@ -16337,6 +16362,8 @@
 0068b354 AcPlayer_rec__state_118_enter
 0068b3d0 AcPlayer_rec__state_50_enter
 0068b3d4 AcPlayer_rec__state_49_enter
+0068b404 AcPlayer_rec__on_goal
+0068b4d0 AcPlayer_rec__leave_special_mode
 0068b51c AcPlayer_rec__state_27_update
 0068b904 AcPlayer_rec__state_224_update
 0068b964 AcPlayer_rec__state_122_exit
@@ -16360,6 +16387,7 @@
 0068c2dc AcPlayer_rec__state_84_enter
 0068c3d8 global_kind_has_flag_8000_only
 0068c424 AcPlayer_rec__state_9_update
+0068c4e4 Player__swap_tool_33a1
 0068c7e8 AcPlayer_rec__state_9_exit
 0068c81c AcPlayer_rec__state_190_enter
 0068c8c0 AcPlayer_rec__state_3_enter

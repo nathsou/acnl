@@ -2334,7 +2334,35 @@
 00665130 Requests player state 0x19.
 0066ac8c Fills the state parameters (up to 3 entries, with three option bits) and requests the state change.
 00678278 Requests player state 0xc4 with an id, a value, a flag and a position (the player's own when none).
+00681214 The shared vector (0, -4, 0) at 0x98570c.
+00681294 The shared vector (0, -2, 6) at 0x985718.
+00681c14 When the pending placement (bit 0 of +0x171) is set, clears it, targets its cell and, when holding, gives the player the held item back.
+00681cb8 When the pending pickup (bit 0 of +0x171) is set, clears it, targets its cell and stores the picked item in the player's slot.
+00681db8 Runs the function at 0x2c9868 on the object at 0x950618 when it exists.
+00681f00 Finds a free spot for the player near the position.
+00682080 Uses the held item: changes the player's state for its kind.
 0068229c Changes to `state` when the item the player holds is of `kind` (only the test when `test_only`).
+00682330 Requests player state 0x3a with the position, angle and two bytes.
+006833ac Clears bit 3 of the flags at +0x176.
+006833c4 Starts the action of the item by its data (changing the player's state).
+006839a8 Requests player state 0xb9 with the cell, item and byte; a first-kind item also starts its task.
+006853fc Records the item for the tour's result (when it counts) and updates the score.
+00685c18 In flagged scenes, when bit 5 of +0x171 is set, starts the scene event once (bit 3 of +0x176).
+00685d7c Requests player state 0xb8 with the angle and two bytes.
+00687394 In tours of kinds 5 and 9, counts the goal (marking the main object when asked).
+0068752c The position of the NPC source, or the default position (0xae5658).
+00687f04 True when catching the item gives the player the last missing item of the category (in the caught set, +0x6c20).
+00687fb4 Requests player state 0xa7 with the byte.
+00687fe0 Requests player state 0xc5 with the two halves, the angle (of the given item or the player's) and three bytes.
+00688144 Requests player state 0x89 with the position, angle and two bytes.
+00689120 Requests player state 0xc0 with the word and two bytes.
+00689890 Requests player state 0x2d with the position, angle and byte.
+0068a3fc In some flagged scenes, when bit 5 of +0x171 is set, sets bit 2 of the player state flags (0xaaef14).
+0068a80c Copies the player's appearance (face, hair, color, flag) and outfit into the actor and refreshes its model.
+0068aa1c Requests the player's movement state with the target position and mode.
+0068b404 Handles the goal: in tour kind 10 counts it for the tour's result, else runs the flagged callback.
+0068b4d0 Leaves the special mode (bit 6 of +0x91a) or, when bit 5 is set, changes to state 0x21; true when it did.
+0068c4e4 Gives the player tool 0x33a1 (moving the held tool to the pockets), or takes it back from the hand and pockets.
 0069a764 Looks through the pointer list at +0xee354 for an entry matching the two arguments.
 006a51ec Updates the save data range at +0x6e224 and checks the one at +0x6e2a4.
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
