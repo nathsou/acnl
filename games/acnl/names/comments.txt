@@ -815,6 +815,26 @@
 002a75dc Converts the shirt and hat items of the 4 outfits by the rule.
 002a76c0 Restocks the 7 items: 3 from group 0xc, 3 from group 0xd and 1 from group 0x19, all distinct.
 002a77bc Places item `index` (below 7) in the room or the field once, when its owner is the current player.
+002a799c Picks one item from group 0xc (up to 0x73).
+002a7c74 Places item `index` (below 11) in the room or the field once, when its owner is the current player.
+002a9294 When enabled (bit 1 of +0x8a) and idle (+0x59c), stores the value and starts.
+002a9cd8 Formats the value into the message buffer and stores the word.
+002aa08c Starts the furniture sound and marks it on (+0x98).
+002aa0dc Stops the furniture sound when on.
+002aa104 Constructs the holder, off.
+002aa6c0 Spawns an insect of kind 0x42 at the position when fewer than 4 exist and the spot allows it; true when it tried.
+002aa92c Finds the spawn list of the insect kind (its special list for flagged kinds), counting a use.
+002aab48 The special insect slot (0x18 bytes each, +0x1340): the second for kind 0x1d, else the first.
+002aafd4 Picks an insect to spawn now for the time period, from the spawn list, skipping the ones the player cannot get.
+002ab16c Sets the flag at 0x94f520.
+002ab240 The next insect id (+0x1202) used by no insect and no special slot.
+002ab3bc Counts the spawn timer down, then tries the special spawn (outside tours and some weathers) or kind 0x53, resetting the timer.
+002abba8 Keeps the spawn point (0x94f530) on the ground, or picks a new one when asked.
+002abdfc Picks a random insect from the spawn table for the time, skipping the ones already out or not allowed.
+002abf60 The insect with the id: in the list, or one of the two special slots; null when none.
+002ac76c True when the insect is in the spawn table at one of the 6 hours of the day, with the weather it needs (dry for 1, rain or snow for 2).
+002ad1fc For an insect item (category 0x24), the flag of its insect index; 0 otherwise.
+002ae274 Puts the remembered item (0x94fd64) into the current player's pocket slot (+0xc8) and refreshes.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d4d00 Forwards to the function at 0x2d4bf4.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
