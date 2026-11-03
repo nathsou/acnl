@@ -1377,8 +1377,36 @@
 004e6e84 True for flagged kinds in odd area scenes while the tour record is in state 9.
 004e7234 Places the item at the cell of the map of the mode, clearing the tile, and when asked sends message 0x4e.
 004e7344 True for flagged kinds in odd area scenes (without flag 0x100000) while the tour record is in state 9.
+004e7bb0 Uses the furniture at (x, y): refreshes it (placing the villager items in scene 0x2b first); its result, or 0 without furniture.
+004e7c54 True when one of the 4 cells around (x, y) holds wall furniture (class 4 or 5) that is not mounted (flag bit 2 clear).
+004e7d38 Stops room timer `index` (below 4).
+004e7d54 For house and flagged scenes, sets the scene record's position and sends message 0x53 (to all when idle).
+004e82b4 For items of kinds 0x93 and 0x94 (or ids 0x33b5 to 0x33bb), adds to the current player's counters 1 and 0x64.
+004e8868 Refreshes the tools in the current player's 16 pocket slots: sets their room grid index, or clears their value.
+004e8b00 Sends the scene records of the flagged scenes to the other stations.
+004e93d8 True when the item covering the tile is not fixed (and not wall furniture, unless allowed).
+004e95f0 Clears the three room flag bytes after 0x9529d4.
+004e960c True when the cell is inside the light's area (in the town or the flagged scenes).
+004e9738 Counts the room's furniture whose lights reach the cell.
+004e9894 Counts the room's furniture whose lights reach the cell (second rule set).
+004e99f0 The furniture of the layer at the world position.
 004e9a28 The furniture object at cell (x, z) of the room grid (from the table of up to 48); null when none.
 004e9a78 The room furniture at cell (x, z) of a layer, within the capped furniture count.
+004e9dc8 Clears the global item rows and records.
+004e9f74 The height of the surface at the position: on the furniture there (mounted or not), else the tile's.
+004e9fe8 The height of the surface at the cell: on the furniture there (mounted or not), else the tile's.
+004ea054 Writes the item's model path: the mannequin pedestal for kind 0x22, else its model by name (with its material or jewel variant); false when it has none.
+004ea4a0 Draws the scene's pass with its camera (remembering its view at 0x952a4c while drawing).
+004eabd0 Marks the main render pass dirty (+0xec).
+004eabe8 Draws the object with the current view while a pass draws.
+004ead50 In mode 1 with no error screen, finishes the frame and clears the pass's first word.
+004ead98 Stores the three words at +0x10.
+004eae74 The largest count (+0x18) among the resource file's entries.
+004eb148 Rewinds the three animation sets (their 15 cursors each) and the 2 shared cursors.
+004eb254 Entry `index` (0x108 bytes each) of the render slots at 0x9c9198.
+004eb3a0 Starts the effect slot of the reference's key when it still exists.
+004eb3e0 Stops the effect slot of the reference's key (fading out over 10) and forgets the key; true when it did.
+004eb438 Updates the effect slot of the reference's key when it still exists.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
 00510878 Shuts the online client down when nothing uses it: releases the service, the shared state at 0x96b930 and the buffer (+0x24).
 00510b68 Logs out of the online service (waiting for the call to finish), then resets the session's state and timeouts.
