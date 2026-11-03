@@ -20502,7 +20502,7 @@
 0070ed68 table_83b4c0_wrap_value
 0070edac table_83b4c0_word_18
 0070edd4 manager_entry_kind
-0070edf8 manager_next_entry
+0070edf8 manager_entry_index_of_id
 0070ee10 table_83b4c0_entry
 0070ee90 masked_byte_70ee90
 0070eea0 masked_byte_70eea0
@@ -20770,7 +20770,7 @@
 0071b5c0 EventDemoStationSeqRecepter__virtual_12
 0071b708 npc_habit_word
 0071b76c EventDemoStationSeqRecepter__virtual_17
-0071b83c query_0071b83c
+0071b83c npc_text_entry_byte_2
 0071b878 field_equals_3_u8_0x0_71b878
 0071b88c npc_habit_entry_text
 0071b8d0 npc_text_entry_kind
@@ -21916,7 +21916,7 @@
 007467ac g3d__MorphTransformAnimEvaluator__virtual_6
 00746840 g3d__BaseAnim__virtual_3
 00746848 g3d__FuncNode__virtual_2
-00746854 object_test_70
+00746854 value_4_not_positive
 00746874 gui__ButtonBase__virtual_8
 00746888 gui__ButtonBase__virtual_9
 00746890 gui__InputButton__virtual_3
@@ -22933,7 +22933,7 @@
 0075e260 entry_188_at
 0075e274 netgame__MatchingList__ScanBuf__virtual_3
 0075e2fc free_station_slot
-0075e35c part_test
+0075e35c station_bit_matches_mode
 0075e38c station_entry_id
 0075e410 all_stations_in_bits
 0075e448 has_free_station
@@ -22962,7 +22962,7 @@
 0075efdc word_1c_at
 0075f020 NetPart__allows
 0075f0b0 PartMask__allows
-0075f17c part_check_f17c
+0075f17c PartMask__entry_matches
 0075f1c4 flags_09_bit_is_set
 0075f1f8 NetPlayers__slot_identity_is_set
 0075f34c four_ids_match

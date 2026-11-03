@@ -6225,9 +6225,12 @@
 0070ebdc The clothing slot of the kind (below 0x18), or 0.
 0070eca8 Byte +5 of entry `index` of the table at 0x83a980; 2 for index 94, 3 beyond.
 0070ecd4 Byte +4 of entry `index` of the table at 0x83a980; 4 for index 0x5a and out of range.
+0070ed04 The length of a manager table entry (ids below 0x5b; else 0).
 0070ed28 The float at +0xc of entry `index` (below 91, 0x1c bytes each) of the table at 0x83b4c0; 1 otherwise.
 0070ed68 Wraps the value into the range (+0x10 to +0x14) of entry `index` of the table at 0x83b4c0 once it reaches the end.
 0070edac The word at +0x18 of entry `index` of the table at 0x83b4c0; 0x1020 otherwise.
+0070edd4 The kind of a manager table entry (ids below 0x5b; else 0).
+0070edf8 A manager table entry's index from its item id (the id minus 0x1000271; -1 outside the table).
 0070ee10 Entry `index` of the table at 0x83b4c0; the first otherwise.
 0070eed0 The mailbox of player `index` (0x1b88 bytes each, from +0x2058).
 0070eeec The letter block of player `index` (0x5a0 bytes each, from +0x8e78).
@@ -6329,6 +6332,7 @@
 0071af4c The position of the list's first child.
 0071b2a8 The id (+0xc8 of +0x104) of the current menu, or -1 when none or idle.
 0071b708 The word of the villager's habit (the habit table entry of its id, from 0xa83afc).
+0071b83c The signed byte 2 of an NPC's text entry, by its id (arg 0's first half).
 0071b88c The text (+0xa) of the villager's entry in the habit table at 0xa83afc.
 0071b8d0 The kind (the high nibble of byte 0x1c) of an NPC's text entry, by its id (arg 0's first half).
 0071bf58 How many of the ten 8-byte entries (+0x10) have `id` (0 when +0x60 is clear).
@@ -6544,6 +6548,7 @@
 00745f80 The address of the model's matrix (+0x4c of +4).
 007460b8 The mover's progress (in s0).
 007460e8 Whether the mover has reached its end (by its kind).
+00746854 Whether the object's float at 4 is zero or negative.
 00746d20 Removes the icon from its list (+0x174), clears its 16-byte name and its link, and removes it from the drag-icon list.
 00746d78 Calls virtual 11 of the icon's owner (+0x48) with 1.
 00746e2c The object when its 16-bit +0 is set, else 0.
@@ -6562,6 +6567,7 @@
 0074724c Whether the record is active (+0x18) and the network clock (0x974a64) is ready.
 007472b0 Copies the network clock's time (+0x7c of 0x974a64, or the default at 0x953678).
 00747438 Whether the link is connected (+0x28), unless it is closing (+0x155) and `force` is clear.
+00747548 Whether the object's byte 0x28 is above 1.
 007475e0 The link state (+0x28), read under its lock.
 00747608 Whether two addresses match: by their ids when both have one, else by the two words.
 00747660 Whether two addresses differ: by their ids when both have one, else by the two words.
@@ -6685,6 +6691,9 @@
 00755620 Parses the photo's record from its folder and file names.
 007556f0 Word `index` of the table at +0x30.
 007556fc Whether the 16-bit value at +2 is at most 0x270e.
+00755718 Whether a photo number's folder is below 900.
+0075572c Whether two photo numbers are the same (folder and file).
+00755758 Whether two photo numbers differ (folder or file).
 00755788 Halves the photo's size until it fits (the second variant).
 00755864 The count of the table at +8 (0073663c).
 0075586c The count for `index` of the table at +8 (0073666c).
@@ -6732,6 +6741,9 @@
 007581ec Whether the sender kind (+0x30) is 1 or 3.
 007586b4 Sets the talk's words for the villager's items.
 00758bac The villager's first item with a name, demoted to its plain kind.
+00758d74 Constructs a script word pointing at the object's 193-character text at 0xaa (arg 1).
+00758d94 Constructs a script word pointing at the object's 33-character text at 0x22c (arg 1).
+00758db4 Constructs a script word pointing at the object's 33-character text at 0x68 (arg 1).
 00758de0 Jumps to script__WordFix_9u___WordFix_007589dc.
 00759190 Whether every entry of the 56 and 2 slots (save +0x4be00) is valid (no unknown structure kinds).
 00759328 Computes the time (from now, or from the day start when `from_day_start`) and passes it to 007593ec.
@@ -6767,6 +6779,8 @@
 0075c400 Sets the message of the archive with the number (below 1000).
 0075c4f8 The data of the message labelled `label` of the archive called `name` (under its lock), or 0.
 0075cd40 Copies +4 of the source to +0 of the target.
+0075cdbc The address 0x20 into the object's part at 0x35c.
+0075ce78 The word at 4 in the object's part at 0x35c.
 0075cf18 Whether the state (+4) is 0 or 7, or 8 with sub-state (+6) 5.
 0075cf7c Word +8 of the child at +0x35c.
 0075d11c The message count of the archive handle at +0x32c.
@@ -6797,6 +6811,7 @@
 0075e23c Word +0x11ae0.
 0075e260 The address of 0xbc-byte entry `index` from +0x10.
 0075e2fc The first of four station slots the table leaves free (4 when none), offline; online, the object's slot.
+0075e35c Whether the first station with a bit (arg 0 + 1) is the net session's mode.
 0075e38c The entry id of the visitor's station (or of the first station without an entry when there is no session station); 0xa5 when none.
 0075e448 Whether, without a session station, one of the four stations has a free entry.
 0075e4a0 Whether the peer found for `id` has a recorded address (+0x3860 table, under the lock) that matches; true when found.
@@ -6812,6 +6827,7 @@
 0075efdc Word `index` (below 4) of the table at +0x1c, or 0.
 0075f020 Whether the network part allows `kind` (below 6): when its check passes, or its mask (+8) has the kind's bit.
 0075f0b0 Whether a part (arg 1, below 6) is allowed: by the first of eight entries that names it (its high bit \n clear), else by the ninth entry, else by the mask at offset 9.
+0075f17c Whether the mask entry (byte 8) has the part (arg 1, below 6) with its high bit equal to arg 2.
 0075f1f8 Whether the slot's player (below 4) has an identity.
 0075f34c Whether the four 8-byte ids match the ids (+0x10) of the four 0x18-byte entries.
 0075f3cc Whether the station's identity differs from the other.
@@ -7047,6 +7063,7 @@
 007c513c The length of the 16-bit string.
 007c5518 Sets the light's color and its packed 24-bit float commands, and marks the lights dirty.
 007c5cd0 Negates and permutes the vector's axes by the global axis setup.
+007c7610 Constructs an eight-entry selection: a selection base with eight entries and buttons.
 007c769c Finds the list's record with the key.
 007c7740 Copies the first record (0x18 bytes) of the kind in the range, or the end record.
 007c77b4 Releases the nodes of each flagged list (of 3) and clears the lists.
@@ -7123,10 +7140,12 @@
 0080d3cc Places the items of the layout table in the cells of the rectangle.
 0080d59c Loads the shared layout block of each large cell in the rectangle.
 0080d68c Clears the items of the cells in the block's rectangle.
+0080ef60 Constructs a 32-character fixed string, empty.
 00810aa0 Constructs the pool of 20 nodes (8 bytes each) with its free list.
 00810b1c Constructs the pool of 256 nodes (8 bytes each) with its free list.
 00810b98 Constructs the pool of 50 nodes (8 bytes each) with its free list.
 00810c14 Constructs the pool of 10 nodes (0x78 bytes each) with its free list.
+00810ccc Constructs a 17-character fixed string, empty.
 00812698 The curve's value at the frame: clamped to its ends, else the Hermite interpolation of the surrounding keys (frame, value, slope).
 00812ae8 The curve's value at the frame, with the keys' slopes scaled by the span between them.
 00813340 Sets the matrix to the translation by (x, y, z) (in s0 to s2).
