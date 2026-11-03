@@ -41,7 +41,8 @@ def rename_fields(text, names):
     if not structs:
         return text
     # (parameters and locals declared as pointers to a struct: `gptr<S> name`)
-    for st, var in set(re.findall(r'gptr<(\w+)> (\w+)\b', text)):
+    # (and the frame as a struct: `guest::StackFrameOf<Frame_X> frame`)
+    for st, var in set(re.findall(r'(?:gptr|StackFrameOf)<(\w+)> (\w+)\b', text)):
         for old, new in structs.get(st, {}).get('fields', {}).items():
             text = re.sub(r'\b%s->%s\b' % (re.escape(var), re.escape(old)), '%s->%s' % (var, new), text)
     def struct_body(m):
@@ -67,13 +68,15 @@ def rename_draft(text, addr, names):
     mapping.update(mine.get('labels', {}))
     for word in set(WORD.findall(text)):
         if word.startswith('call_') and word[5:] in functions and functions[word[5:]].get('name'):
-            mapping[word] = functions[word[5:]]['name']
+            # (a recursive call goes through a declaration of its own, beside the definition: call_<name>)
+            mapping[word] = ('call_' if word[5:] == addr else '') + functions[word[5:]]['name']
         if word.startswith('global_') and word[7:15] in names.get('globals', {}):
             mapping[word] = names['globals'][word[7:15]] + word[15:]
     for st, info in names.get('structs', {}).items():
         if info.get('name'):
             mapping[st] = info['name']
-    present = set(WORD.findall(text))
+    # (the identifiers of the code: words of comments name nothing)
+    present = set(WORD.findall(re.sub(r'//[^\n]*', '', text)))
     mapping = {k: v for k, v in mapping.items() if k in present and k != v}
     # checks: identifiers, and no two names (old or new) the same
     if not all(valid(v) for v in mapping.values()):
@@ -81,8 +84,12 @@ def rename_draft(text, addr, names):
     final = [mapping.get(w, w) for w in present]
     if len(set(final)) != len(final):
         return text, 'collision'
-    # (the first line, `// f_<address>: decompiled ...`, stays: it marks the draft)
+    # (the first line, `// f_<address>: decompiled ...`, stays: it marks the draft; so does the `// keys:` line under
+    # it, which keys the generated names: tools/decomp/names.py)
     head, rest = text.split('\n', 1)
+    if rest.startswith('// keys: '):
+        keys, rest = rest.split('\n', 1)
+        head += '\n' + keys
     out = head + '\n' + WORD.sub(lambda m: mapping.get(m.group(0), m.group(0)), rename_fields(rest, names))
     if mine.get('comment'):
         import textwrap

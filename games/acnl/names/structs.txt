@@ -1,0 +1,13 @@
+Object_00100400_0 MemoryBlock
+Object_00122620_0 PointerArray
+Object_0012f154_0 RecursiveLock
+Object_0013187c_0 PointerArray
+Object_00131a88_0 ThreadLock
+Object_00131af8_0 ThreadLock
+Object_00134440_0 Interpolation
+Object_00135748_0 RecursiveLock
+Object_001357ec_0 RecursiveLock
+Object_002f7c90_1 BufferCursor
+Object_002f7ccc_1 BoundedWideCursor
+Object_0055cabc_0 RandomState
+Object_00569544_0 FrameControl

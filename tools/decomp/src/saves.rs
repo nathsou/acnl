@@ -35,27 +35,29 @@ fn rewrite_pops(list: &mut [Stmt], saved: &[(String, u64)]) -> bool {
     let mut pending: Option<u64> = None;
     for s in list.iter_mut() {
         match s {
-            Stmt::Decl(Ty::U32, n, Some(e)) if n == "ea" && is_sp(e) => in_pop = true,
-            Stmt::Decl(_, n, _) if n == "ea" => in_pop = false,
+            Stmt::Decl(Ty::U32, n, Some(e), ..) if n == "ea" && is_sp(e) => in_pop = true,
+            Stmt::Decl(_, n, _, ..) if n == "ea" => in_pop = false,
             Stmt::Label(_) => in_pop = false,
             // ldr rX, [sp], #4: u32 v = RD32(ea); ...; rX = v (the register is named by the later assignment)
-            Stmt::Decl(Ty::U32, v, Some(Expr::Load(Ty::U32, a))) if in_pop && v == "v" => {
+            Stmt::Decl(Ty::U32, v, Some(Expr::Load(Ty::U32, a)), ..) if in_pop && v == "v" => {
                 pending = ea_plus(a);
             }
-            Stmt::Assign(r, Expr::Var(v)) if v == "v" && pending.is_some() => {
+            Stmt::Assign(r, Expr::Var(v), o) if v == "v" && pending.is_some() => {
+                let o = *o;
                 let k = pending.take().unwrap();
                 let target = if r == "tpc" { "r14".to_string() } else { r.clone() };
                 if let Some((reg, _)) = saved.iter().find(|(reg, kk)| *reg == target && *kk == k) {
-                    *s = Stmt::Assign(r.clone(), Expr::Var(format!("saved_{}", reg)));
+                    *s = Stmt::Assign(r.clone(), Expr::Var(format!("saved_{}", reg)), o);
                 } else if callee_saved(&target) {
                     ok = false;
                 }
             }
-            Stmt::Assign(r, Expr::Load(Ty::U32, a)) if in_pop => {
+            Stmt::Assign(r, Expr::Load(Ty::U32, a), o) if in_pop => {
+                let o = *o;
                 if let Some(k) = ea_plus(a) {
                     let target = if r == "tpc" { "r14".to_string() } else { r.clone() };
                     if let Some((reg, _)) = saved.iter().find(|(reg, kk)| *reg == target && *kk == k) {
-                        *s = Stmt::Assign(r.clone(), Expr::Var(format!("saved_{}", reg)));
+                        *s = Stmt::Assign(r.clone(), Expr::Var(format!("saved_{}", reg)), o);
                     } else if callee_saved(&target) {
                         ok = false; // restores a register from somewhere else: leave the function alone
                     }
@@ -99,12 +101,12 @@ pub fn remove_saves(f: &mut Function) -> Saves {
     let mut shrink_wrapped = false;
     loop {
         match f.body.get(start) {
-            Some(Stmt::Decl(Ty::U32, n, Some(Expr::Bin(BinOp::Sub, a, _)))) if n == "ea" && **a == Expr::Var("r13".into()) => break,
-            Some(Stmt::Decl(_, n, _)) | Some(Stmt::Assign(n, _)) if n == "r13" => return none(),
+            Some(Stmt::Decl(Ty::U32, n, Some(Expr::Bin(BinOp::Sub, a, _)), ..)) if n == "ea" && **a == Expr::Var("r13".into()) => break,
+            Some(Stmt::Decl(_, n, _, ..)) | Some(Stmt::Assign(n, _, ..)) if n == "r13" => return none(),
             Some(Stmt::Decl(..)) | Some(Stmt::Assign(..)) | Some(Stmt::Store(..)) | Some(Stmt::Nop) | Some(Stmt::Preempt) => start += 1,
             Some(Stmt::If(_, a, b))
                 if b.is_empty()
-                    && matches!(a.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true))) =>
+                    && matches!(a.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..))) =>
             {
                 shrink_wrapped = true;
                 start += 1
@@ -113,7 +115,7 @@ pub fn remove_saves(f: &mut Function) -> Saves {
         }
     }
     let frame = match f.body.get(start) {
-        Some(Stmt::Decl(Ty::U32, n, Some(Expr::Bin(BinOp::Sub, a, b)))) if n == "ea" => match (&**a, &**b) {
+        Some(Stmt::Decl(Ty::U32, n, Some(Expr::Bin(BinOp::Sub, a, b)), ..)) if n == "ea" => match (&**a, &**b) {
             (Expr::Var(v), Expr::Num(k, _)) if v == "r13" => *k,
             _ => return none(),
         },
@@ -133,8 +135,8 @@ pub fn remove_saves(f: &mut Function) -> Saves {
     }
     // the sp update: r13 = ea (str rX, [sp, #-4]!) or r13 = r13 - frame (stmdb sp!, {...})
     let updates_sp = match f.body.get(i) {
-        Some(Stmt::Assign(n, Expr::Var(v))) => n == "r13" && v == "ea",
-        Some(Stmt::Assign(n, Expr::Bin(BinOp::Sub, a, b))) => {
+        Some(Stmt::Assign(n, Expr::Var(v), ..)) => n == "r13" && v == "ea",
+        Some(Stmt::Assign(n, Expr::Bin(BinOp::Sub, a, b), ..)) => {
             n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(k, _) if k == frame)
         }
         _ => false,
@@ -151,7 +153,7 @@ pub fn remove_saves(f: &mut Function) -> Saves {
         if let Stmt::Store(Ty::U32, _, Expr::Var(r)) = &copy[j] {
             if saved.iter().any(|(reg, _)| reg == r) {
                 let r = r.clone();
-                copy[j] = Stmt::Decl(Ty::U32, format!("saved_{}", r), Some(Expr::Var(r)));
+                copy[j] = Stmt::Decl(Ty::U32, format!("saved_{}", r), Some(Expr::Var(r)), crate::ast::Origin(0));
             }
         }
     }
@@ -204,7 +206,7 @@ fn pushed_slots_of(f: &Function, pushed: fn(&str) -> bool) -> (Vec<u32>, Option<
     };
     for s in &f.body[entry + 1..] {
         match s {
-            Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
+            Stmt::Decl(_, n, Some(e), ..) | Stmt::Assign(n, e, ..) => {
                 match offset(e, &at) {
                     Some(o) => {
                         at.insert(n.clone(), o);
@@ -233,18 +235,18 @@ fn pushed_slots_of(f: &Function, pushed: fn(&str) -> bool) -> (Vec<u32>, Option<
             // tail call) changes nothing on the way to the push
             Stmt::If(_, a, b)
                 if b.is_empty()
-                    && matches!(a.last(), Some(Stmt::Goto(_) | Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true))) => {}
+                    && matches!(a.last(), Some(Stmt::Goto(_) | Stmt::Return | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..))) => {}
             // predicated instructions before the push that only set registers the push does not involve (not sp, not a
             // register it saves, not one at a known distance from sp)
             Stmt::If(_, a, b)
                 if a.iter().chain(b.iter()).all(|x| match x {
-                    Stmt::Assign(n, _) | Stmt::Decl(_, n, _) => n != "r13" && !callee_saved(n) && !at.contains_key(n),
+                    Stmt::Assign(n, _, ..) | Stmt::Decl(_, n, _, ..) => n != "r13" && !callee_saved(n) && !at.contains_key(n),
                     Stmt::Nop | Stmt::Preempt => true,
                     _ => false,
                 }) =>
             {
                 for x in a.iter().chain(b.iter()) {
-                    if let Stmt::Assign(n, _) | Stmt::Decl(_, n, _) = x {
+                    if let Stmt::Assign(n, _, ..) | Stmt::Decl(_, n, _, ..) = x {
                         changed.insert(n.clone());
                     }
                 }

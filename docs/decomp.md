@@ -326,6 +326,22 @@ result):
   size of an array's elements. Multiplications, like the join copies, the returned first argument kept and the
   second structuring, can make the solver time out where the plainer function did not, so a function whose proof
   does not go through is decompiled once more without them (decompile::FULL).
+- Sign and bit tests read as comparisons where only truth matters (simplify.rs, again after the flags are written
+  into conditions; the same rewrites as text after values are folded in, emit.rs tidy_masks): `x >> 31`,
+  `(x & 0x80000000) >> 31`, `x & 0x80000000` and those compared with 0 are `s32(x) < 0`; a bit moved to the top and
+  tested there (`(x << k) >> 31`, `s32(x << k) < 0`, the N flag of `lsls`) is `(x & 1 << (31 - k)) != 0`. A loop's
+  exit is the condition's simplified negation (`if (i >= 0x10)`, not `if (!(i < 0x10))`), and `!(a == b)` is
+  `a != b` where an equality may stand without parentheses.
+- Float comparisons: a condition that reads only the flags of a VFP comparison (`fpsr_k = fpsr & 0x0fffffff |
+  vfp_cmpf(a, b)` earlier in its block, nothing storing, calling or changing a and b between) is evaluated for the
+  four results the comparison can give (runtime/cpu.h: equal, less, greater, unordered), and the truth table names
+  the comparison: `Z || N != V` (LE, true for NaN too) is `!(a > b)`, `N == V` (GE) `a >= b`, and so on; the status
+  values nothing reads then go. The model knows a comparison's result is one of the four (sym.rs: a fact, the
+  comparison itself opaque), and cpp.rs reads every float comparison back as that comparison's flags (`<=` is Z | N,
+  `>` none of Z, N, V, `>=` neither N nor V, `!=` not Z).
+- A flag (a u32 holding a comparison, 0 or 1) used once is written into its use when that is an if's or a loop's
+  condition (`u32 zf_1 = r0 == 0; ... if (!zf_1)` is `if (r0 != 0)`); a narrow value widened and stored back at its
+  width is stored as it is (`a->half_1c = b->half_1c;`, not `u16(u32(b->half_1c))`).
 - A void function's last `return;` goes; `u32 r6 = r0;` with r0 never assigned again is r0 (loop-free functions),
   and so is `u32 r0 = arg0.addr();` (its uses read `arg0.addr()`); `(x - K) == 0` reads `x == K`; a comparison of a
   widened unsigned byte or halfword drops the widening; a sign-extended load reads `*gptr<s8>(a)`.
@@ -435,13 +451,36 @@ functions (run with `DECOMP_SIGNATURES=build/tools/sig_38k.txt`, `DECOMP_TYPES` 
 that uses a struct still has its layout checked by the compiler and is proved as usual. Without RTTI, arguments are
 joined across calls by equality (union-find), which joins too much through generic callees.
 
-## Names (`name.py`, `rename.py`)
+## Names (`games/acnl/names`, `names.py`, `rename.py`, `name.py`)
 
-A model chooses names; it never writes code. `name.py DRAFTS NAMES.json ADDRESS...` asks it for a name map per
-function (name, comment, variable and label renames), callees first so that each prompt shows its callees' names, with
-the RTTI class of a virtual function as context, and checks every answer. `rename.py NAMES.json IN OUT` applies a map
-(functions, variables, labels, callees, globals, comments) with the same checks (identifiers, no keywords or runtime
-helpers, no collisions); `prove-cpp` then proves the renamed drafts (declarations pair by their order).
+The names live apart from the code, in `games/acnl/names` (a file per kind, a line per name), keyed by what the
+original program fixes, so that changing the decompiler and re-emitting the drafts keeps them:
+
+- functions, comments and globals by address;
+- a struct's field by its offset (`NpcTalkRecept 21c target`), whatever type the decompiler gives it (`word_21c`,
+  `float_21c`);
+- generated structs by their generated name (`Object_<function>_<argument>`, `Frame_<function>`);
+- a variable by its value's key: the register it splits and an instruction defining the value (`r0@46bcc8`: r0 as the
+  instruction at 0x46bcc8 sets it; `r1@entry`: its value at the entry), or its own name for the identifiers that are
+  their own key (`arg0`, `L_<address>`, `local_<distance>`).
+
+The keys come from the parser: the recompiler ends each instruction's line with its address, every assignment and call
+keeps it (`ast::Origin`, which takes no part in comparing statements) through all the rewrites, and values.rs gives each
+value the set of instructions defining it (`values::Key`). The emitter writes them under each draft's header
+(`// keys: r0_5=r0@519e70 r1=r1@entry ...`); split.py leaves that line out of the committed files. A key matches a
+value when the register is the same and one of the instructions defining the value is the key's: a value the decompiler
+later joins with another or splits keeps its name. A name whose key matches nothing is reported, never moved.
+
+- `names.py add NAMES DRAFTS MAP.json` merges a name map in rename.py's form (generated names, as in the drafts) into
+  the layer, turning variables into keys through the drafts' `// keys:` lines (`-` for maps without variables, like
+  `seed_names.py`'s: 18,701 function names from the rewrites and the program's symbols seed the layer).
+- `names.py apply NAMES IN OUT [STRUCTS_IN STRUCTS_OUT]` names the drafts (rename.py: identifiers checked, no
+  collisions; a draft whose names do not check keeps its generated ones) and the recovered structs' header (from its
+  generated copy), and lists what was lost; `names.py lost NAMES DRAFTS` lists only that.
+- prove-cpp proves the named drafts: declarations pair by their order, a draft's own structs are read from it, and the
+  type database takes a field's name from `fields.txt` (DECOMP_NAMES, default games/acnl/names).
+- `name.py` asks a model for name maps (the API; not used so far): its output goes through `names.py add` like any
+  other map.
 
 ## games/acnl/src/decompiled
 

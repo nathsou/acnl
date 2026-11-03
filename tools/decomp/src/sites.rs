@@ -34,13 +34,13 @@ fn target_register(list: &[Stmt], i: usize, field_of: &HashMap<&str, &CpuField>)
                 Some(CpuField::R(k)) => return Some(*k),
                 _ => var = Some(t),
             },
-            (Stmt::Assign(t, Expr::Var(x)), Some(v)) if t == v => {
+            (Stmt::Assign(t, Expr::Var(x), ..), Some(v)) if t == v => {
                 return match field_of.get(x.as_str()) {
                     Some(CpuField::R(k)) => Some(*k),
                     _ => None,
                 };
             }
-            (Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::Label(_), _) => return None,
+            (Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) | Stmt::Svc(_) | Stmt::Label(_), _) => return None,
             _ => {}
         }
     }
@@ -71,7 +71,7 @@ pub fn annotate(f: &mut Function) {
         for i in 0..list.len() {
             let p: Path = [prefix, &[i]].concat();
             match &mut list[i] {
-                Stmt::Dispatch(_) if !constant.contains_key(&p) => {
+                Stmt::Dispatch(_, ..) if !constant.contains_key(&p) => {
                     let regs = target_register(list, i, field_of).zip(written.get(&p)).and_then(|(k, w)| site(k, w));
                     if let Some(regs) = regs {
                         at.push((i, regs));
@@ -110,7 +110,7 @@ fn at_calls_where(f: &Function, tails_only: bool) -> HashMap<Path, Vec<String>> 
             let p: Path = [prefix, &[i]].concat();
             match s {
                 Stmt::Site(regs) => pending = Some(regs),
-                Stmt::Dispatch(tail) => {
+                Stmt::Dispatch(tail, ..) => {
                     if let Some(regs) = pending.take() {
                         if *tail || !tails_only {
                             out.insert(p, regs.clone());

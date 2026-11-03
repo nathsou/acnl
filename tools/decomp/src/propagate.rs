@@ -50,7 +50,7 @@ fn step(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, types: &HashMap<Stri
             continue;
         }
         let (x, e) = match &list[i] {
-            Stmt::Assign(x, e) => (x.clone(), e.clone()),
+            Stmt::Assign(x, e, ..) => (x.clone(), e.clone()),
             _ => continue,
         };
         let mut r = Reads::default();
@@ -71,7 +71,7 @@ fn step(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, types: &HashMap<Stri
             if nested > 0 {
                 break;
             }
-            let redefines = matches!(&list[j], Stmt::Decl(_, y, _) | Stmt::Assign(y, _) if *y == x);
+            let redefines = matches!(&list[j], Stmt::Decl(_, y, _, ..) | Stmt::Assign(y, _, ..) if *y == x);
             if own > 0 {
                 found = Some((j, own, redefines));
                 break;
@@ -133,7 +133,7 @@ pub fn propagate(f: &mut Function) {
 fn collect_decls(list: &[Stmt], types: &mut HashMap<String, Ty>) {
     for s in list {
         match s {
-            Stmt::Decl(t, n, _) => {
+            Stmt::Decl(t, n, _, ..) => {
                 types.insert(n.clone(), *t);
             }
             Stmt::If(_, a, b) => {

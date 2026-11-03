@@ -18,7 +18,7 @@ fn count_expr(e: &Expr, x: &str) -> usize {
 
 pub(crate) fn count_stmt(s: &Stmt, x: &str) -> usize {
     match s {
-        Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) => count_expr(e, x),
+        Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) => count_expr(e, x),
         Stmt::Store(_, a, v) => count_expr(a, x) + count_expr(v, x),
         Stmt::If(c, a, b) => count_expr(c, x) + a.iter().chain(b).map(|s| count_stmt(s, x)).sum::<usize>(),
         Stmt::Switch(e, _) => count_expr(e, x),
@@ -46,7 +46,7 @@ fn subst_expr(e: &mut Expr, x: &str, by: &Expr) {
 
 pub(crate) fn subst_stmt(s: &mut Stmt, x: &str, by: &Expr) {
     match s {
-        Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) => {
+        Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) => {
             subst_expr(e, x, by)
         }
         Stmt::Store(_, a, v) => {
@@ -66,8 +66,8 @@ pub(crate) fn subst_stmt(s: &mut Stmt, x: &str, by: &Expr) {
 pub(crate) fn interferes(s: &Stmt, r: &Reads, x: &str) -> bool {
     let var_hit = |n: &str| n == x || r.vars.iter().any(|v| v == n);
     match s {
-        Stmt::Decl(_, n, e) => var_hit(n) || e.as_ref().map_or(false, |e| writes_through(e, r, x)),
-        Stmt::Assign(n, e) => var_hit(n) || writes_through(e, r, x),
+        Stmt::Decl(_, n, e, ..) => var_hit(n) || e.as_ref().map_or(false, |e| writes_through(e, r, x)),
+        Stmt::Assign(n, e, ..) => var_hit(n) || writes_through(e, r, x),
         Stmt::SetCpu(_, e) => r.cpu || writes_through(e, r, x),
         Stmt::Store(..) => r.memory,
         Stmt::SyncOut => r.cpu,
@@ -103,7 +103,7 @@ fn addr_taken_expr(e: &Expr, x: &str) -> bool {
 // whether &x appears anywhere in the statements (x is then written by a helper and must stay a variable)
 pub(crate) fn addr_taken(list: &[Stmt], x: &str) -> bool {
     list.iter().any(|s| match s {
-        Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
+        Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
             addr_taken_expr(e, x)
         }
         Stmt::Store(_, a, v) => addr_taken_expr(a, x) || addr_taken_expr(v, x),
@@ -128,8 +128,8 @@ fn sweep(list: &mut Vec<Stmt>, keep: &HashSet<String>, types: &mut HashMap<Strin
     let mut i = 0;
     while i < list.len() {
         let (t, x, e) = match &list[i] {
-            Stmt::Decl(t, x, Some(e)) if !keep.contains(x) => (*t, x.clone(), e.clone()),
-            Stmt::Decl(t, x, _) => {
+            Stmt::Decl(t, x, Some(e), ..) if !keep.contains(x) => (*t, x.clone(), e.clone()),
+            Stmt::Decl(t, x, _, ..) => {
                 types.insert(x.clone(), *t);
                 i += 1;
                 continue;
@@ -152,7 +152,7 @@ fn sweep(list: &mut Vec<Stmt>, keep: &HashSet<String>, types: &mut HashMap<Strin
         let mut blocked = false;
         for j in i + 1..list.len() {
             let n = count_stmt(&list[j], &x);
-            let redefines = matches!(&list[j], Stmt::Decl(_, y, _) | Stmt::Assign(y, _) if *y == x);
+            let redefines = matches!(&list[j], Stmt::Decl(_, y, _, ..) | Stmt::Assign(y, _, ..) if *y == x);
             if interferes(&list[j], &r, &x) && !redefines {
                 // a use inside the interfering statement (other than as its first evaluated operand) is not safe
                 if n > 0 && !matches!(&list[j], Stmt::Assign(..) | Stmt::Decl(..) | Stmt::Store(..) | Stmt::SetCpu(..)) {
@@ -173,7 +173,7 @@ fn sweep(list: &mut Vec<Stmt>, keep: &HashSet<String>, types: &mut HashMap<Strin
         let mut after = 0;
         for s in &list[end..] {
             after += count_stmt(s, &x);
-            if matches!(s, Stmt::Decl(_, y, _) if *y == x) {
+            if matches!(s, Stmt::Decl(_, y, _, ..) if *y == x) {
                 break;
             }
         }

@@ -1,0 +1,58 @@
+00100e5c Formats into a buffer of `size` bytes, terminated when there is room; returns the length the output needed.
+00100e94 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
+00100f68 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
+001011e4 printf's %o: the digits of the 64-bit value (r2, r3), least significant first, then the '0' prefix for the # flag.
+0010125c printf's %x, %X and %p: the digits of the 64-bit value (r2, r3), least significant first, then the 0x prefix for the # flag.
+00101334 strtol in base 10, errno left as it was.
+0010211c Skips white space and a sign, converts, and clamps to the long range on overflow (errno ERANGE).
+001032f6 Converts one wide character; -1 and errno EILSEQ when it has no multibyte form.
+00107634 Removes notice `index` of the 15, moving the used ones after it up and clearing the last.
+001082c8 Clears the bulletin board's 15 notices.
+00109a90 Loads the NPC packages (normal, normal constants, special constants) and the other startup resources; whether all loaded.
+0012089c Creates the script heap's children: libms, static, message, mail and flow.
+00122620 Appends an item when the array is not full.
+00124f94 Opens the friends service (frd:u) the first time, counting the users.
+00129094 The handle of a named service, through the service manager (fails when the handle is already open).
+001292e8 Returns the result when its level is success or info; otherwise reports it as fatal.
+001297c4 Opens the microphone service (mic:u) once.
+00129898 Gives the microphone service its sample buffer (address and size aligned to 4 KiB).
+00129c7c Connects to the service manager's port (srv:) once, retrying every half millisecond while the port does not exist yet; counts the users.
+0012e640 Signed 64-bit division through the unsigned one, the operands and the quotient negated as their signs need.
+0012eeb0 Mounts the RomFS archive as rom:.
+0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
+0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
+0013187c Gives an empty array room for `capacity` pointers from the heap.
+00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
+00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
+00134318 The mounted archive whose name is the path's prefix up to ':' (at most 8 characters); null when none.
+00134440 From `from` to `to` in `count` steps: the value at step `step` (`to` once done).
+00135748 Takes the lock unless this thread already holds it, and counts the nesting.
+001357ec Ends one level of holding the lock; the last one clears the owner and releases it.
+00136718 Unlinks every node, counting each down and leaving it detached.
+00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
+00138c78 The value of a thread-local slot for the current thread.
+001391d8 Allocates from the current heap, 4-byte aligned.
+0013a38c Takes the first free one of the 16 thread-local slots (fatal when none is free).
+0013a768 Stores the value in every word from `begin` up to `end`.
+0013adac Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
+0013ae10 Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
+0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
+0013c850 The bank file's INFO block (block id 0x5800); null when the file has none.
+0013cc9c Takes a block off the pool's free list under its lock (zeroed when the pool clears its blocks); null when none is left.
+0013e75c Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
+0013ec20 Reads a wave archive (CWAR, version 1.0.0.0): its INFO block and, when asked, its file table.
+002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
+002f7ccc The wide formatter's sink for a bounded buffer: stores the character while there is room.
+002f7cdc Formats to a file; -1 when the file is in error.
+004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
+00528924 Converts a UTF-8 string of one- to three-byte characters into at most `capacity - 1` UTF-16 units and a terminator; an invalid lead byte leaves the output empty.
+00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
+0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
+0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
+00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
+0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
+005ca4b4 Whether entry `index` of the object name table (252 entries) is "fobj".
+006c5c60 The height of the ground at a position (0 outside the map).
+006c6640 The height at a position: the ground's, or for water, cliffs and similar terrain the surface's.
+00759a54 A position from x and z packed as 16-bit quarter units, at the ground's height there.
+00779500 Allocates from the current heap, 4-byte aligned.

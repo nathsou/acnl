@@ -11,7 +11,8 @@ import os
 import re
 
 HEADER = '''// Functions decompiled by tools/decomp (docs/decomp.md), each proved equal to the recompiled original (prove-cpp). The
-// names are generated (d_<address>::f_<address>, Object_<address>_<argument>, word_<offset>) and still to be chosen.
+// names come from games/acnl/names (tools/decomp/names.py); the others are generated (d_<address>::f_<address>,
+// Object_<address>_<argument>, word_<offset>) and still to be chosen.
 #include "guest/guest.hpp"
 '''
 
@@ -51,7 +52,9 @@ def main():
         if addr in drop or (keep is not None and addr not in keep):
             continue
         includes = set(re.findall(r'#include "([^"]+)"', m.group(1)))
-        areas.setdefault(addr >> 16, []).append((addr, includes, m.group(2)))
+        # (without the `// keys:` line: the names' business, tools/decomp/names.py)
+        draft = re.sub(r'\n// keys: [^\n]*', '', m.group(2), count=1)
+        areas.setdefault(addr >> 16, []).append((addr, includes, draft))
     os.makedirs(a.outdir, exist_ok=True)
     total = 0
     for area, drafts in sorted(areas.items()):

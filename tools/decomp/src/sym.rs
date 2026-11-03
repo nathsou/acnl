@@ -11,6 +11,9 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use z3::ast::{Array, Ast, Bool, BV};
 use z3::{Context, FuncDecl, Sort};
 
+// the flags a VFP comparison gives (runtime/cpu.h vfp_cmpf: NZCV in bits 31-28): equal, less, greater, unordered
+pub const VFP_RESULTS: [u64; 4] = [0x6000_0000, 0x8000_0000, 0x2000_0000, 0x3000_0000];
+
 pub type Result<T> = std::result::Result<T, String>;
 
 #[derive(Clone)]
@@ -126,8 +129,8 @@ fn blocks(prog: Vec<Ins>) -> (Vec<Block>, HashMap<String, usize>) {
                 }
                 labels.insert(l.clone(), bl.len() - 1);
             }
-            Ins::Jump(_) | Ins::Switch(..) | Ins::Do(Stmt::Return) | Ins::Do(Stmt::GuestCall(_, true))
-            | Ins::Do(Stmt::Dispatch(true)) => {
+            Ins::Jump(_) | Ins::Switch(..) | Ins::Do(Stmt::Return) | Ins::Do(Stmt::GuestCall(_, true, ..))
+            | Ins::Do(Stmt::Dispatch(true, ..)) => {
                 bl.last_mut().unwrap().ins.push(ins);
                 bl.push(Block { ins: vec![] });
                 continue;
@@ -165,7 +168,7 @@ fn successors(bl: &[Block], labels: &HashMap<String, usize>) -> Vec<Vec<usize>> 
                         }
                     }
                 }
-                Ins::Do(Stmt::Return) | Ins::Do(Stmt::GuestCall(_, true)) | Ins::Do(Stmt::Dispatch(true)) => falls = false,
+                Ins::Do(Stmt::Return) | Ins::Do(Stmt::GuestCall(_, true, ..)) | Ins::Do(Stmt::Dispatch(true, ..)) => falls = false,
                 _ => {}
             }
             if !falls {
@@ -614,6 +617,15 @@ impl<'c> Sym<'c> {
             "sxth" => (Ty::U32, u32v(self, 0).extract(15, 0).sign_ext(16)),
             "uxtb" => (Ty::U32, u32v(self, 0).extract(7, 0).zero_ext(24)),
             "uxth" => (Ty::U32, u32v(self, 0).extract(15, 0).zero_ext(16)),
+            // a VFP comparison's flags (runtime/cpu.h): one of equal (Z C), less (N), greater (C) and unordered (C V);
+            // the comparison itself stays opaque
+            "vfp_cmpf" | "vfp_cmpd" => {
+                let refs: Vec<&BV> = vals.iter().map(|v| &v.1).collect();
+                let r = self.uf(name, &refs, 32);
+                let one_of: Vec<Bool> = VFP_RESULTS.iter().map(|k| r._eq(&self.bv(*k, 32))).collect();
+                self.facts.push(Bool::or(self.ctx, &one_of.iter().collect::<Vec<_>>()));
+                (Ty::U32, r)
+            }
             _ => {
                 // anything else is a pure function of its arguments
                 let ret = match name {
@@ -913,16 +925,16 @@ impl<'c> Sym<'c> {
             while k < block.len() {
                 match &block[k] {
                     Ins::Do(s) => match s {
-                        Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => {
+                        Stmt::Return | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..) => {
                             // a tail call: the callee returns to the lr it was given (the caller's caller)
-                            if let Stmt::GuestCall(t, true) = s {
+                            if let Stmt::GuestCall(t, true, ..) = s {
                                 self.sync_out(&mut st, &f.synced);
                                 let target = self.bv(*t as u64, 32);
                                 let lr = st.cpu["r14"].clone();
                                 self.call(&mut st, &target, DIRECT);
                                 st.cpu.insert("pc".into(), lr);
                             }
-                            if let Stmt::Dispatch(true) = s {
+                            if let Stmt::Dispatch(true, ..) = s {
                                 let target = st.cpu["pc"].clone();
                                 let lr = st.cpu["r14"].clone();
                                 self.call(&mut st, &target, INDIRECT);
@@ -1064,7 +1076,7 @@ impl<'c> Sym<'c> {
 
     fn exec(&mut self, st: &mut State<'c>, s: &Stmt, f: &Function) -> Result<()> {
         match s {
-            Stmt::Decl(t, n, e) => {
+            Stmt::Decl(t, n, e, ..) => {
                 let v = match e {
                     Some(e) => {
                         let (et, ev) = self.eval(st, e)?;
@@ -1074,7 +1086,7 @@ impl<'c> Sym<'c> {
                 };
                 st.vars.insert(n.clone(), (*t, v));
             }
-            Stmt::Assign(n, e) => {
+            Stmt::Assign(n, e, ..) => {
                 let (t, v) = self.eval(st, e)?;
                 self.assign(st, n, t, v)?;
             }
@@ -1094,12 +1106,12 @@ impl<'c> Sym<'c> {
             }
             Stmt::SyncOut => self.sync_out(st, &f.synced),
             Stmt::SyncIn => self.sync_in(st, &f.synced),
-            Stmt::GuestCall(t, false) => {
+            Stmt::GuestCall(t, false, ..) => {
                 let target = self.bv(*t as u64, 32);
                 self.call(st, &target, DIRECT);
                 // calls return normally (to the return address the caller set up)
             }
-            Stmt::Dispatch(false) => {
+            Stmt::Dispatch(false, ..) => {
                 let target = st.cpu["pc"].clone();
                 self.call(st, &target, INDIRECT);
             }

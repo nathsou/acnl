@@ -28,9 +28,40 @@ pub struct Values {
     held_reads: HashSet<(Path, String)>, // reads of values held in the CPU (see split)
     held_defs: HashSet<(Path, String)>,  // their definitions (a call's statement reads and defines a register)
     offsets: HashMap<(Path, String), (String, u64)>, // reads of a value y + K left out (see split): y's name and K
+    keys: HashMap<String, Key>, // each value's name -> what the original program says it is (see Key)
+}
+
+// What a value is in the original program, whatever the decompiler makes of it: the register (or variable) it splits
+// and the instructions that define it, and whether it is the variable's value at the entry. Names are keyed by it
+// (tools/decomp/names.py), so that a name stays with its value when the decompiler changes.
+#[derive(Clone, Debug, Default)]
+pub struct Key {
+    pub var: String,
+    pub origins: Vec<u32>, // sorted
+    pub entry: bool,
+}
+
+impl Key {
+    // `r0@46bcc8,46bcd0`, `r1@entry` (the entry first), or the variable alone when nothing defines it in the original
+    pub fn text(&self) -> String {
+        let mut at: Vec<String> = self.origins.iter().map(|a| format!("{:x}", a)).collect();
+        if self.entry {
+            at.insert(0, "entry".into());
+        }
+        if at.is_empty() {
+            self.var.clone()
+        } else {
+            format!("{}@{}", self.var, at.join(","))
+        }
+    }
 }
 
 impl Values {
+    // every value's name with its key
+    pub fn names_with_keys(&self) -> impl Iterator<Item = (&String, &Key)> {
+        self.keys.iter()
+    }
+
     // the name of `var`'s value at statement `path` (read or written there)
     pub fn name(&self, path: &[usize], var: &str) -> String {
         self.names.get(&(path.to_vec(), var.to_string())).cloned().unwrap_or_else(|| var.to_string())
@@ -47,6 +78,7 @@ struct Node {
     offset: Option<(String, u64)>, // a definition x = y + K (K wrapping, as u32): y and K
     call: bool, // a call (its uses: the arguments it is handed; its definitions: the registers read back after it)
     ret: bool,  // a return (its uses: the results written back)
+    origin: u32, // the original instruction of an assignment or a call (0: none)
 }
 
 enum Jump {
@@ -68,7 +100,11 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
            fresh: &mut usize) {
     for (i, s) in list.iter().enumerate() {
         let p: Path = [prefix, &[i]].concat();
-        let node = |uses: Vec<String>, defs: Vec<String>, jump: Jump| Node { path: Some(p.clone()), uses, defs, jump, copy: None, constant: None, offset: None, call: false, ret: false };
+        let origin = match s {
+            Stmt::Decl(_, _, _, o) | Stmt::Assign(_, _, o) | Stmt::GuestCall(_, _, o) | Stmt::Dispatch(_, o) => o.0,
+            _ => 0,
+        };
+        let node = |uses: Vec<String>, defs: Vec<String>, jump: Jump| Node { path: Some(p.clone()), uses, defs, jump, copy: None, constant: None, offset: None, call: false, ret: false, origin };
         let copy_of = |e: &Expr| if let Expr::Var(y) = e { Some(y.clone()) } else { None };
         let constant_of = |e: &Expr| if let Expr::Num(v, t) = e { Some((*v, *t)) } else { None };
         let offset_of = |e: &Expr| match e {
@@ -83,22 +119,22 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
         // what the C++ does not write: the saved copies of registers and their restoring (calling-convention
         // bookkeeping: the C++ leaves those registers alone), the arguments' copies
         let bookkeeping = match s {
-            Stmt::Decl(_, n, _) => n.starts_with("saved_") || n.starts_with("arg"),
-            Stmt::Assign(_, Expr::Var(v)) => v.starts_with("saved_"),
+            Stmt::Decl(_, n, _, ..) => n.starts_with("saved_") || n.starts_with("arg"),
+            Stmt::Assign(_, Expr::Var(v), ..) => v.starts_with("saved_"),
             _ => false,
         };
         if bookkeeping {
             continue;
         }
         match s {
-            Stmt::Decl(_, x, e) => {
+            Stmt::Decl(_, x, e, ..) => {
                 let mut n = node(e.as_ref().map(vars_of).unwrap_or_default(), vec![x.clone()], Jump::Next);
                 n.copy = e.as_ref().and_then(copy_of);
                 n.constant = e.as_ref().and_then(constant_of);
                 n.offset = e.as_ref().and_then(offset_of);
                 out.push(n);
             }
-            Stmt::Assign(x, e) => {
+            Stmt::Assign(x, e, ..) => {
                 let mut n = node(vars_of(e), vec![x.clone()], Jump::Next);
                 n.copy = copy_of(e);
                 n.constant = constant_of(e);
@@ -112,31 +148,31 @@ fn flatten(list: &[Stmt], prefix: &[usize], effects: &dyn Fn(&Stmt, &[usize]) ->
                 let (el, end) = (format!("__e{}", fresh), format!("__n{}", fresh));
                 out.push(node(vars_of(c), vec![], Jump::Either(el.clone())));
                 flatten(a, &[p.clone(), vec![0]].concat(), effects, out, fresh);
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::To(end.clone()) });
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(el) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::To(end.clone()) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::Label(el) });
                 flatten(b, &[p.clone(), vec![1]].concat(), effects, out, fresh);
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(end) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::Label(end) });
             }
             Stmt::While { top, test, body, check, cond } => {
                 if let Some(t) = test {
-                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::To(t.clone()) });
+                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::To(t.clone()) });
                 }
-                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(top.clone()) });
+                out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::Label(top.clone()) });
                 flatten(body, &[p.clone(), vec![0]].concat(), effects, out, fresh);
                 if let Some(t) = test {
-                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Label(t.clone()) });
+                    out.push(Node { path: None, uses: vec![], defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::Label(t.clone()) });
                 }
                 flatten(check, &[p.clone(), vec![1]].concat(), effects, out, fresh);
-                out.push(Node { path: Some(loop_condition(&p)), uses: vars_of(cond), defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Either(top.clone()) });
+                out.push(Node { path: Some(loop_condition(&p)), uses: vars_of(cond), defs: vec![], copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::Either(top.clone()) });
             }
             Stmt::Goto(l) => out.push(node(vec![], vec![], Jump::To(l.clone()))),
             Stmt::Label(l) => out.push(node(vec![], vec![], Jump::Label(l.clone()))),
             Stmt::Switch(e, cases) => out.push(node(vars_of(e), vec![], Jump::Cases(cases.iter().map(|(_, l)| l.clone()).collect()))),
-            Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::Return => {
+            Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) | Stmt::Svc(_) | Stmt::Return => {
                 let (uses, defs) = effects(s, &p);
-                let exits = matches!(s, Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true));
+                let exits = matches!(s, Stmt::Return | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..));
                 let mut n = node(uses, defs, if exits { Jump::Exit } else { Jump::Next });
-                n.call = matches!(s, Stmt::GuestCall(..) | Stmt::Dispatch(_));
+                n.call = matches!(s, Stmt::GuestCall(..) | Stmt::Dispatch(_, ..));
                 n.ret = matches!(s, Stmt::Return);
                 out.push(n);
             }
@@ -171,7 +207,7 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         v.sort();
         v
     };
-    nodes.push(Node { path: None, uses: vec![], defs: entry.clone(), copy: None, constant: None, offset: None, call: false, ret: false, jump: Jump::Next });
+    nodes.push(Node { path: None, uses: vec![], defs: entry.clone(), copy: None, constant: None, offset: None, call: false, ret: false, origin: 0, jump: Jump::Next });
     flatten(&f.body, &[], effects, &mut nodes, &mut fresh);
     let n = nodes.len();
     let labels: HashMap<String, usize> =
@@ -562,6 +598,29 @@ pub fn split(f: &Function, vars: &HashSet<String>, effects: &dyn Fn(&Stmt, &[usi
         }
     }
     values.copies = copies;
+    // the keys: every definition's instruction, under the name of its value
+    let mut node_of = vec![0; def_var.len()];
+    for (&(i, _), &id) in &def_id {
+        node_of[id] = i;
+    }
+    for id in 0..def_var.len() {
+        // (copies left out are the source's value, but their instructions define another register: not its key)
+        let root = find(&mut parent, id);
+        if alias.contains_key(&root) {
+            continue;
+        }
+        let Some(name) = value_name.get(&root) else { continue };
+        let k = values.keys.entry(name.clone()).or_insert_with(|| Key { var: def_var[root].clone(), ..Key::default() });
+        let i = node_of[id];
+        if i == 0 {
+            k.entry = true;
+        } else if nodes[i].origin != 0 && !k.origins.contains(&nodes[i].origin) {
+            k.origins.push(nodes[i].origin);
+        }
+    }
+    for k in values.keys.values_mut() {
+        k.origins.sort();
+    }
     for (i, x) in nodes.iter().enumerate() {
         let Some(p) = &x.path else { continue };
         for d in x.defs.iter().filter(|d| vars.contains(*d)) {
@@ -709,7 +768,7 @@ fn address_bases(list: &[Stmt]) -> HashSet<String> {
                     walk(body, out);
                     walk(check, out);
                 }
-                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
+                Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
                     loads(e, out)
                 }
                 _ => {}
@@ -721,6 +780,25 @@ fn address_bases(list: &[Stmt]) -> HashSet<String> {
 }
 
 // every variable an expression reads
+// e with every variable renamed by f
+pub fn rename_vars(e: &mut Expr, f: &mut dyn FnMut(&str) -> String) {
+    match e {
+        Expr::Var(v) => *v = f(v),
+        Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => rename_vars(a, f),
+        Expr::Bin(_, a, b) => {
+            rename_vars(a, f);
+            rename_vars(b, f);
+        }
+        Expr::Cond(c, a, b) => {
+            rename_vars(c, f);
+            rename_vars(a, f);
+            rename_vars(b, f);
+        }
+        Expr::Call(_, args) => args.iter_mut().for_each(|a| rename_vars(a, f)),
+        _ => {}
+    }
+}
+
 pub fn each_var(e: &Expr, f: &mut dyn FnMut(&str)) {
     match e {
         Expr::Var(v) => f(v),
@@ -742,7 +820,7 @@ pub fn each_var(e: &Expr, f: &mut dyn FnMut(&str)) {
 pub fn each_expr(list: &[Stmt], f: &mut dyn FnMut(&Expr)) {
     for s in list {
         match s {
-            Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => f(e),
+            Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => f(e),
             Stmt::Store(_, a, v) => {
                 f(a);
                 f(v);
@@ -793,7 +871,7 @@ pub fn arguments_in_addresses(f: &Function) -> Function {
     let regs: Vec<String> = ["r0", "r1", "r2", "r3"].iter().map(|r| r.to_string()).collect();
     let vars: HashSet<String> = f.synced.iter().map(|(v, _)| v.clone()).filter(|v| v != "r13" && v != "r14").collect();
     let values = split(f, &vars, &|s, _| match s {
-        Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) => (regs.clone(), regs.clone()),
+        Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) | Stmt::Svc(_) => (regs.clone(), regs.clone()),
         Stmt::Return => (vec!["r0".to_string()], vec![]),
         _ => (vec![], vec![]),
     });
@@ -841,7 +919,7 @@ pub fn arguments_in_addresses(f: &Function) -> Function {
         for (i, s) in list.iter_mut().enumerate() {
             let p: Path = [prefix, &[i]].concat();
             match s {
-                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => loads(e, &p, values, copies, loop_free),
+                Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => loads(e, &p, values, copies, loop_free),
                 Stmt::Store(_, a, v) => {
                     loads(a, &p, values, copies, loop_free);
                     loads(v, &p, values, copies, loop_free);
@@ -869,7 +947,7 @@ pub fn arguments_in_addresses(f: &Function) -> Function {
 fn each_decl(list: &[Stmt], f: &mut dyn FnMut(&str)) {
     for s in list {
         match s {
-            Stmt::Decl(_, n, _) => f(n),
+            Stmt::Decl(_, n, _, ..) => f(n),
             Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                 each_decl(a, f);
                 each_decl(b, f);

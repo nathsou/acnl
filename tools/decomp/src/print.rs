@@ -106,9 +106,9 @@ pub fn stmts(list: &[Stmt], indent: usize, out: &mut String) {
     let pad = "    ".repeat(indent);
     for s in list {
         match s {
-            Stmt::Decl(t, n, Some(e)) => out.push_str(&format!("{}{} {} = {};\n", pad, t.c_name(), n, expr(e))),
-            Stmt::Decl(t, n, None) => out.push_str(&format!("{}{} {};\n", pad, t.c_name(), n)),
-            Stmt::Assign(n, e) => out.push_str(&format!("{}{} = {};\n", pad, n, expr(e))),
+            Stmt::Decl(t, n, Some(e), ..) => out.push_str(&format!("{}{} {} = {};\n", pad, t.c_name(), n, expr(e))),
+            Stmt::Decl(t, n, None, ..) => out.push_str(&format!("{}{} {};\n", pad, t.c_name(), n)),
+            Stmt::Assign(n, e, ..) => out.push_str(&format!("{}{} = {};\n", pad, n, expr(e))),
             Stmt::SetCpu(f, e) => out.push_str(&format!("{}{} = {};\n", pad, cpu(f), expr(e))),
             Stmt::Store(t, a, v) => out.push_str(&format!("{}WR{}({}, {});\n", pad, t.bits(), expr(a), expr(v))),
             Stmt::If(c, a, b) => {
@@ -149,9 +149,9 @@ pub fn stmts(list: &[Stmt], indent: usize, out: &mut String) {
             Stmt::Label(l) => out.push_str(&format!("{}:\n", l)),
             Stmt::SyncOut => out.push_str(&format!("{}SO();\n", pad)),
             Stmt::SyncIn => out.push_str(&format!("{}SI();\n", pad)),
-            Stmt::GuestCall(t, tail) => out.push_str(&format!("{}{}call_{:08x}();\n", pad, if *tail { "return " } else { "" }, t)),
+            Stmt::GuestCall(t, tail, ..) => out.push_str(&format!("{}{}call_{:08x}();\n", pad, if *tail { "return " } else { "" }, t)),
             Stmt::Site(regs) => out.push_str(&format!("{}// the callee reads {}\n", pad, regs.join(" "))),
-            Stmt::Dispatch(tail) => out.push_str(&format!("{}{}call_indirect(c->pc);\n", pad, if *tail { "return " } else { "" })),
+            Stmt::Dispatch(tail, ..) => out.push_str(&format!("{}{}call_indirect(c->pc);\n", pad, if *tail { "return " } else { "" })),
             Stmt::Switch(e, cases) => {
                 out.push_str(&format!("{}switch ({}) {{\n", pad, expr(e)));
                 for (k, l) in cases {

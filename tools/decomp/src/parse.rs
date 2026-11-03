@@ -17,11 +17,23 @@ const PUNCTS: [&str; 41] = [
 const PUNCTS1: [&str; 4] = ["^", "~", "!", "."];
 
 fn lex(src: &str) -> Result<Vec<Tok>, String> {
+    lex_at(src).map(|(t, _)| t)
+}
+
+// The tokens, and for each the address of the instruction its line comes from: the recompiler ends each
+// instruction's line with `/* 100044: ldst h */` (0 for the lines without one).
+fn lex_at(src: &str) -> Result<(Vec<Tok>, Vec<u32>), String> {
     let b = src.as_bytes();
     let mut i = 0;
     let mut out = Vec::new();
+    let mut at = Vec::new();
+    let mut line_first = 0; // the first token of the current line
     'outer: while i < b.len() {
+        at.resize(out.len(), 0);
         let ch = b[i] as char;
+        if ch == '\n' {
+            line_first = out.len();
+        }
         if ch.is_whitespace() {
             i += 1;
             continue;
@@ -29,6 +41,12 @@ fn lex(src: &str) -> Result<Vec<Tok>, String> {
         if src[i..].starts_with("/*") {
             match src[i + 2..].find("*/") {
                 Some(e) => {
+                    let text = src[i + 2..i + 2 + e].trim_start();
+                    if let Some((hex, _)) = text.split_once(':') {
+                        if let Ok(a) = u32::from_str_radix(hex, 16) {
+                            at[line_first..].iter_mut().for_each(|x| *x = a);
+                        }
+                    }
                     i += e + 4;
                     continue;
                 }
@@ -99,12 +117,14 @@ fn lex(src: &str) -> Result<Vec<Tok>, String> {
         }
         return Err(format!("unexpected character {:?}", ch));
     }
-    Ok(out)
+    at.resize(out.len(), 0);
+    Ok((out, at))
 }
 
 struct P {
     t: Vec<Tok>,
     i: usize,
+    at: Vec<u32>, // the instruction address of each token's line (lex_at)
 }
 
 type R<T> = Result<T, String>;
@@ -195,7 +215,21 @@ impl P {
         u32::from_str_radix(hex, 16).ok().map(|a| a | thumb as u32)
     }
 
+    // a statement, with the address of the instruction its first token's line comes from
     fn stmt(&mut self, out: &mut Vec<Stmt>) -> R<()> {
+        let o = Origin(self.at.get(self.i).copied().unwrap_or(0));
+        let first = out.len();
+        self.stmt_unplaced(out)?;
+        for s in &mut out[first..] {
+            match s {
+                Stmt::Decl(_, _, _, x) | Stmt::Assign(_, _, x) | Stmt::GuestCall(_, _, x) | Stmt::Dispatch(_, x) if x.0 == 0 => *x = o,
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    fn stmt_unplaced(&mut self, out: &mut Vec<Stmt>) -> R<()> {
         if self.is("{") {
             let b = self.block()?;
             out.extend(b);
@@ -230,13 +264,13 @@ impl P {
             if name == "rt_dispatch" {
                 self.call_args_c()?;
                 self.expect(";")?;
-                out.push(Stmt::Dispatch(true));
+                out.push(Stmt::Dispatch(true, Origin(0)));
                 return Ok(());
             }
             let target = Self::guest_target(&name).ok_or_else(|| format!("return of {}", name))?;
             self.call_args_c()?;
             self.expect(";")?;
-            out.push(Stmt::GuestCall(target, true));
+            out.push(Stmt::GuestCall(target, true, Origin(0)));
             return Ok(());
         }
         if self.is_ident("__attribute__") {
@@ -334,7 +368,7 @@ impl P {
                     loop {
                         let name = self.ident()?;
                         let init = if self.eat("=") { Some(self.expr()?) } else { None };
-                        out.push(Stmt::Decl(ty, name, init));
+                        out.push(Stmt::Decl(ty, name, init, Origin(0)));
                         if !self.eat(",") {
                             break;
                         }
@@ -391,7 +425,7 @@ impl P {
                     self.i += 2;
                     self.call_args_rest()?;
                     self.expect(";")?;
-                    out.push(Stmt::Dispatch(false));
+                    out.push(Stmt::Dispatch(false, Origin(0)));
                     return Ok(());
                 }
                 "DSET" => {
@@ -408,10 +442,10 @@ impl P {
                     static FRESH: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
                     let t = format!("dset_{}", FRESH.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
                     let bits = || Expr::Call("D2B".into(), vec![Expr::Var(t.clone())]);
-                    out.push(Stmt::Decl(Ty::F64, t.clone(), Some(v)));
-                    out.push(Stmt::Assign(lo, Expr::Call("U2F".into(), vec![Expr::Cast(Ty::U32, Box::new(bits()))])));
+                    out.push(Stmt::Decl(Ty::F64, t.clone(), Some(v), Origin(0)));
+                    out.push(Stmt::Assign(lo, Expr::Call("U2F".into(), vec![Expr::Cast(Ty::U32, Box::new(bits()))]), Origin(0)));
                     let high = Expr::Bin(BinOp::Shr, Box::new(bits()), Box::new(Expr::Num(32, Ty::U32)));
-                    out.push(Stmt::Assign(hi, Expr::Call("U2F".into(), vec![Expr::Cast(Ty::U32, Box::new(high))])));
+                    out.push(Stmt::Assign(hi, Expr::Call("U2F".into(), vec![Expr::Cast(Ty::U32, Box::new(high))]), Origin(0)));
                     return Ok(());
                 }
                 "rt_svc" => {
@@ -429,7 +463,7 @@ impl P {
                         self.i += 1;
                         self.call_args_c()?;
                         self.expect(";")?;
-                        out.push(Stmt::GuestCall(target, false));
+                        out.push(Stmt::GuestCall(target, false, Origin(0)));
                         return Ok(());
                     }
                 }
@@ -506,7 +540,7 @@ impl P {
 
     fn assign(lhs: Expr, e: Expr) -> R<Stmt> {
         match lhs {
-            Expr::Var(v) => Ok(Stmt::Assign(v, e)),
+            Expr::Var(v) => Ok(Stmt::Assign(v, e, Origin(0))),
             Expr::Cpu(f) => Ok(Stmt::SetCpu(f, e)),
             other => Err(format!("assignment to {:?}", other)),
         }
@@ -695,7 +729,7 @@ impl P {
 // The pairs "c->r[0] = r0;" of a SO() macro body.
 fn synced_pairs(text: &str) -> R<Vec<(String, CpuField)>> {
     let toks = lex(text)?;
-    let mut p = P { t: toks, i: 0 };
+    let mut p = P { t: toks, i: 0, at: vec![] };
     let mut out = Vec::new();
     while p.peek().is_some() {
         if p.is_ident("c") && matches!(p.peek_at(1), Some(Tok::Punct("->"))) {
@@ -736,7 +770,8 @@ pub fn function(text: &str) -> R<Function> {
     let end = code.rfind('}').ok_or("no closing brace")?;
     code.truncate(end);
     let code = code.replace("u8 *const M = MEMBASE;", "").replace("(void)M;", "");
-    let mut p = P { t: lex(&code)?, i: 0 };
+    let (t, at) = lex_at(&code)?;
+    let mut p = P { t, i: 0, at };
     let mut body = Vec::new();
     let mut entries = Vec::new();
     while p.peek().is_some() {
@@ -755,7 +790,7 @@ pub fn function(text: &str) -> R<Function> {
     let mut prologue = true;
     for s in body {
         match s {
-            Stmt::Decl(t, n, init) if prologue => locals.push((t, n, init)),
+            Stmt::Decl(t, n, init, ..) if prologue => locals.push((t, n, init)),
             Stmt::Nop if prologue => {}
             other => {
                 prologue = false;

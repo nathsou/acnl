@@ -44,7 +44,7 @@ pub(crate) fn fields(list: &[Stmt], out: &mut BTreeMap<usize, BTreeMap<u64, Ty>>
     }
     for s in list {
         match s {
-            Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => expr(e, out),
+            Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) => expr(e, out),
             Stmt::Store(t, a, v) => {
                 if let Some((k, o)) = arg_off_of(a) {
                     out.entry(k).or_default().entry(o).or_insert(*t);
@@ -164,6 +164,10 @@ struct Emitter {
     typed: HashMap<String, String>,    // locals written as pointers to a struct of their own (C++ name -> struct)
     local_fields: HashMap<String, BTreeMap<u64, Ty>>, // their fields: offset -> type of the access
     foldable: HashMap<String, bool>,   // values defined by a pure expression of their type -> whether it reads memory
+    conditions_only: HashSet<String>,  // foldable values that are 0 or 1 (a comparison): folded into conditions only
+    // the VFP comparisons an if's or a loop's condition may read as float comparisons, by the condition's path: the
+    // value holding the flags (`fpscr & 0x0fffffff | vfp_cmpf(a, b)`) and a, b (unchanged since: compare_flags)
+    fp_compares: HashMap<Vec<usize>, Vec<(String, Expr, Expr, Vec<usize>)>>,
     out: String,
 }
 
@@ -191,16 +195,16 @@ fn exit_blocks(list: &[Stmt], prefix: &[usize], out: &mut HashMap<String, Exit>)
         match s {
             Stmt::Label(l) => {
                 let rest = &list[i + 1..];
-                let end = rest.iter().position(|x| matches!(x, Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true) | Stmt::Goto(_)));
+                let end = rest.iter().position(|x| matches!(x, Stmt::Return | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..) | Stmt::Goto(_)));
                 let jump = end.and_then(|k| if let Stmt::Goto(m) = &rest[k] { Some(m.clone()) } else { None });
-                let only_gotos = i > 0 && matches!(list[i - 1], Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true));
+                let only_gotos = i > 0 && matches!(list[i - 1], Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..));
                 if let (Some(k), true) = (end, jump.as_ref() != Some(l)) {
                     // (labels inside are fine while only gotos to exit blocks reach them: see exits_and_targets)
                     let straight = rest[..k].iter().all(|x| {
                         !matches!(
                             x,
                             Stmt::If(..) | Stmt::While { .. } | Stmt::Switch(..) | Stmt::Goto(_)
-                                | Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::Unsupported(_)
+                                | Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) | Stmt::Svc(_) | Stmt::Unsupported(_)
                         )
                     });
                     // (counting what is written: not the calling-convention bookkeeping)
@@ -488,8 +492,8 @@ impl Emitter {
         let mut uses: Vec<String> = Vec::new();
         let mut defs: Vec<String> = Vec::new();
         match s {
-            Stmt::GuestCall(_, tail) | Stmt::Dispatch(tail) => {
-                let target = if let Stmt::GuestCall(t, _) = s { Some(*t) } else { None };
+            Stmt::GuestCall(_, tail, ..) | Stmt::Dispatch(tail, ..) => {
+                let target = if let Stmt::GuestCall(t, _, ..) = s { Some(*t) } else { None };
                 uses.extend(self.args_for(target, path).into_iter().filter(is_var));
                 uses.extend(self.floats_for(target, path).into_iter().map(|(v, _)| v));
                 uses.extend(self.site_floats(path).into_iter().filter(is_var));
@@ -567,6 +571,41 @@ impl Emitter {
         let (k, off) = arg_off_of(a)?;
         let rec = *self.fields.get(&k)?.get(&off)?;
         retyped(t, rec, format!("arg{}->{}", k, field_name(rec, off)))
+    }
+
+    // a condition, with the flags of VFP comparisons it reads written as the float comparisons they stand for
+    fn cond(&self, c: &Expr) -> R<String> {
+        let Some(found) = self.fp_compares.get(&self.cur) else { return self.expr(c, 0) };
+        let mut c = c.clone();
+        for (value, a, b, at) in found {
+            // (a and b as the comparison reads them: their values' names there; not for a variable holding a constant
+            // or another plus a constant there, which the comparison's own line writes in)
+            let mut plain = true;
+            let named = |e: &Expr, plain: &mut bool| {
+                let mut e = e.clone();
+                crate::values::rename_vars(&mut e, &mut |v| {
+                    if self.values.constant(at, v).is_some() || self.values.offset(at, v).is_some() || self.values.held(at, v) {
+                        *plain = false;
+                    }
+                    self.values.name(at, v)
+                });
+                e
+            };
+            let (a, b) = (named(a, &mut plain), named(b, &mut plain));
+            if !plain {
+                continue;
+            }
+            // (the variable read here holding that value)
+            let read: Vec<String> = {
+                let mut vs = Vec::new();
+                crate::values::each_var(&c, &mut |v| vs.push(v.to_string()));
+                vs.into_iter().filter(|v| self.values.name(&self.cur, v) == *value).collect()
+            };
+            for var in read {
+                c = float_conditions(&c, &var, &a, &b);
+            }
+        }
+        self.expr(&c, 0)
     }
 
     // the Z / N flag of a VFP comparison as the comparison (exact: Z is a == b, N is a < b, both false for NaN)
@@ -775,7 +814,13 @@ impl Emitter {
             Some(k) if t == Ty::U32 && vtable_names().contains_key(&k) => self.expr(&Expr::Num(k, Ty::U32), 0).unwrap_or(text),
             Some(k) if !t.float() && t.bits() < 64 && k < 1u64 << t.bits() => num(k, Ty::S32),
             _ if crate::types::type_of(v, &self.var_types) == Some(t) => text,
-            _ => format!("{}({})", t.c_name(), text),
+            // (a narrow value widened to u32 and stored back at its width: the value itself, not u16(u32(x)))
+            _ => match v {
+                Expr::Cast(Ty::U32, x) if !t.float() && crate::types::type_of(x, &self.var_types) == Some(t) => {
+                    self.expr(x, 0).unwrap_or_else(|_| format!("{}({})", t.c_name(), text))
+                }
+                _ => format!("{}({})", t.c_name(), text),
+            },
         }
     }
 
@@ -1068,7 +1113,7 @@ impl Emitter {
                 i += 1;
                 continue;
             }
-            if matches!(s, Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)) {
+            if matches!(s, Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..)) {
                 reachable = false;
             }
             // no guessing here: only what the proved AST marks as bookkeeping (saved_*) is left out
@@ -1078,8 +1123,8 @@ impl Emitter {
             }
             match s {
                 // calling-convention bookkeeping
-                Stmt::Decl(_, n, _) if n.starts_with("saved_") || n.starts_with("arg") => {}
-                Stmt::Assign(_, Expr::Var(v)) if v.starts_with("saved_") => {}
+                Stmt::Decl(_, n, _, ..) if n.starts_with("saved_") || n.starts_with("arg") => {}
+                Stmt::Assign(_, Expr::Var(v), ..) if v.starts_with("saved_") => {}
                 Stmt::SetCpu(CpuField::Pc, e) => {
                     // (a return's c->pc = lr is bookkeeping; an indirect call's target is used below)
                     self.pc = self.expr(e, 0).ok();
@@ -1091,18 +1136,18 @@ impl Emitter {
                 Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::Site(_) | Stmt::ReturnUnlessPc(_) => {}
                 // sp moved by a constant (the frame) in a function that does not otherwise use it: the CPU's sp moves,
                 // so the functions it calls see the stack where the original's callees did
-                Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b))
+                Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b), ..)
                     if self.framed && n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => {}
-                Stmt::Assign(n, Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b))
+                Stmt::Assign(n, Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b), ..)
                     if !self.stack && n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) =>
                 {
                     let Expr::Num(k, _) = **b else { unreachable!() };
                     let text = format!("guest::cpu()->r[13] {}= {};", if *op == BinOp::Add { "+" } else { "-" }, num(k, Ty::U32));
                     self.line(indent, &text);
                 }
-                Stmt::Decl(_, _, None) => {}
-                Stmt::Decl(_, _, Some(_)) | Stmt::Assign(_, _) if self.values.left_out(&path) => {}
-                Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
+                Stmt::Decl(_, _, None, ..) => {}
+                Stmt::Decl(_, _, Some(_), ..) | Stmt::Assign(_, _, ..) if self.values.left_out(&path) => {}
+                Stmt::Decl(_, n, Some(e), ..) | Stmt::Assign(n, e, ..) => {
                     if let Some(what) = self.vtable_slot(e) {
                         self.slots.insert(self.values.name(&path, n), what);
                     } else if let Some(what) = self.split_slot(e) {
@@ -1129,6 +1174,10 @@ impl Emitter {
                     let converted = matches!(e, Expr::Cast(t, _) if self.var_types.get(n) == Some(t));
                     if !r.cpu && !r.out_params && !converted && crate::types::type_of(e, &self.var_types) == self.var_types.get(n).copied() {
                         self.foldable.insert(target.clone(), r.memory);
+                    } else if !r.cpu && !r.out_params && crate::simplify::is_truth_valued(e) && self.var_types.get(n) == Some(&Ty::U32) {
+                        // (a flag: its truth is the comparison's, where only truth matters)
+                        self.foldable.insert(target.clone(), r.memory);
+                        self.conditions_only.insert(target.clone());
                     }
                     // x = x + e as x += e (the same statement once read)
                     let compound = match e {
@@ -1221,7 +1270,7 @@ impl Emitter {
                         (false, true) => (c, a, empty),
                         (false, false) => (c, a, b),
                     };
-                    let text = format!("if ({}) {{", self.expr(c, 0)?);
+                    let text = format!("if ({}) {{", self.cond(c)?);
                     self.line(indent, &text);
                     let (mut a, mut b) = (a, b);
                     loop {
@@ -1230,7 +1279,7 @@ impl Emitter {
                         if let [Stmt::If(c2, a2, b2)] = b.as_slice() {
                             let inner = [pb.clone(), vec![0]].concat();
                             self.cur = inner.clone();
-                            let text = format!("}} else if ({}) {{", self.expr(c2, 0)?);
+                            let text = format!("}} else if ({}) {{", self.cond(c2)?);
                             self.line(indent, &text);
                             pa = [inner.clone(), vec![0]].concat();
                             pb = [inner, vec![1]].concat();
@@ -1262,7 +1311,7 @@ impl Emitter {
                             self.stmts(check, indent + 1, returns, &pb)?;
                             self.line(indent + 1, "guest::preempt();");
                             self.cur = crate::values::loop_condition(&path);
-                            let text = format!("}} while ({});", self.expr(cond, 0)?);
+                            let text = format!("}} while ({});", self.cond(cond)?);
                             self.line(indent, &text);
                         }
                         Some(t) => {
@@ -1274,7 +1323,7 @@ impl Emitter {
                             self.labels.insert(top.clone());
                             self.stmts(check, indent + 1, returns, &pb)?;
                             self.cur = crate::values::loop_condition(&path);
-                            let text = format!("if (!({})) {{", self.expr(cond, 0)?);
+                            let text = format!("if ({}) {{", self.cond(&crate::simplify::negated(cond, &self.var_types))?);
                             self.line(indent + 1, &text);
                             self.line(indent + 2, "break;");
                             self.line(indent + 1, "}");
@@ -1310,7 +1359,7 @@ impl Emitter {
                         self.out.push_str(&format!("{}:;\n", l));
                     }
                 }
-                Stmt::GuestCall(t, tail) => {
+                Stmt::GuestCall(t, tail, ..) => {
                     self.before_call(indent, Some(*t), &path);
                     let name = self.callees.entry(*t).or_insert_with(|| format!("call_{:08x}", t & !1)).clone();
                     let all: Vec<String> = self.args_for(Some(*t), &path).iter().map(|a| self.arg_text(&path, a)).collect();
@@ -1375,7 +1424,7 @@ impl Emitter {
                     self.line(indent + 1, "default: break;");
                     self.line(indent, "}");
                 }
-                Stmt::Dispatch(tail) => {
+                Stmt::Dispatch(tail, ..) => {
                     let Some(target) = self.pc.take() else { return Err("indirect call without a target".into()) };
                     if let Some(what) = self.virtual_slot.take() {
                         self.line(indent, &format!("// {}", what));
@@ -1513,7 +1562,7 @@ fn call_needs(f: &Function, lv: &crate::flow::Liveness) -> HashMap<u32, Need> {
             let mut p = prefix.to_vec();
             p.push(i);
             match s {
-                Stmt::GuestCall(t, tail) => out.push((*t, *tail, p)),
+                Stmt::GuestCall(t, tail, ..) => out.push((*t, *tail, p)),
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                     walk(a, &[p.clone(), vec![0]].concat(), out);
                     walk(b, &[p.clone(), vec![1]].concat(), out);
@@ -1622,6 +1671,194 @@ fn sink_declarations(body: &str, candidates: &[(String, String)]) -> (String, Ha
 
 // Two masks a fold brings together: `(x & 0xAu) & 0xB` is `x & 0xCu` (C = A & B), and a register shift by `x & m`
 // with m below 32 (lsl_r(a, x & 0x1fu)) is the plain shift. Text in, text out: the C++ is proved as written.
+// The conditions reading the flags of VFP comparisons (`x = fpscr & 0x0fffffff | vfp_cmpf(a, b)` earlier in the same
+// block, nothing between storing, calling, or writing what a and b read), by the path of the if or loop condition:
+// x's value there, a and b.
+fn compare_flags(list: &[Stmt], prefix: &[usize], values: &crate::values::Values, out: &mut HashMap<Vec<usize>, Vec<(String, Expr, Expr, Vec<usize>)>>) {
+    fn operands(e: &Expr) -> Option<(Expr, Expr)> {
+        let Expr::Bin(BinOp::Or, l, r) = e else { return None };
+        for (keep, cmp) in [(l, r), (r, l)] {
+            let kept = matches!(&**keep, Expr::Bin(BinOp::And, _, m) if matches!(**m, Expr::Num(0x0fff_ffff, _)));
+            if let (true, Expr::Call(n, args)) = (kept, &**cmp) {
+                if (n == "vfp_cmpf" || n == "vfp_cmpd") && args.len() == 2 {
+                    return Some((args[0].clone(), args[1].clone()));
+                }
+            }
+        }
+        None
+    }
+    // (a loop's check list ends where its condition is read: the condition's path)
+    fn scan(list: &[Stmt], prefix: &[usize], values: &crate::values::Values, cond_path: Option<&Vec<usize>>, out: &mut HashMap<Vec<usize>, Vec<(String, Expr, Expr, Vec<usize>)>>) {
+        for (i, s) in list.iter().enumerate() {
+            let p: Vec<usize> = [prefix, &[i]].concat();
+            let Stmt::Assign(x, e, ..) = s else { continue };
+            let Some((a, b)) = operands(e) else { continue };
+            let value = values.name(&p, x);
+            // (not the variable itself, kept whole: a loop header relates it, the C++ must keep it)
+            if value == *x {
+                continue;
+            }
+            let mut read = crate::types::Reads::default();
+            crate::types::reads(&a, &mut read);
+            crate::types::reads(&b, &mut read);
+            let mut uses = vec![];
+            let mut ended = true;
+            // (up to the first if: its branches may change what a and b read)
+            for (j, t) in list.iter().enumerate().skip(i + 1) {
+                match t {
+                    Stmt::Assign(v, _, ..) | Stmt::Decl(_, v, _, ..) if !read.vars.contains(v) => continue,
+                    Stmt::If(..) => uses.push([prefix, &[j]].concat()),
+                    _ => {}
+                }
+                ended = false;
+                break;
+            }
+            if ended {
+                if let Some(c) = cond_path {
+                    uses.push(c.clone());
+                }
+            }
+            for u in uses {
+                out.entry(u).or_default().push((value.clone(), a.clone(), b.clone(), p.clone()));
+            }
+        }
+    }
+    scan(list, prefix, values, None, out);
+    for (i, s) in list.iter().enumerate() {
+        let p: Vec<usize> = [prefix, &[i]].concat();
+        match s {
+            Stmt::If(_, a, b) => {
+                compare_flags(a, &[p.clone(), vec![0]].concat(), values, out);
+                compare_flags(b, &[p.clone(), vec![1]].concat(), values, out);
+            }
+            Stmt::While { body, check, .. } => {
+                compare_flags(body, &[p.clone(), vec![0]].concat(), values, out);
+                let check_path = [p.clone(), vec![1]].concat();
+                scan(check, &check_path, values, Some(&crate::values::loop_condition(&p)), out);
+                for (j, t) in check.iter().enumerate() {
+                    if let Stmt::If(_, x, y) = t {
+                        let q: Vec<usize> = [check_path.clone(), vec![j]].concat();
+                        compare_flags(x, &[q.clone(), vec![0]].concat(), values, out);
+                        compare_flags(y, &[q, vec![1]].concat(), values, out);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+// The value of e (u32 arithmetic) with x the given flags, when e reads no other variable.
+fn eval_flags(e: &Expr, x: &str, flags: u64) -> Option<u64> {
+    let b = |v: bool| v as u64;
+    Some(match e {
+        Expr::Num(k, _) => *k & 0xffff_ffff,
+        Expr::Var(v) if v == x => flags,
+        Expr::Cast(t, a) if !t.float() && t.bits() >= 32 => eval_flags(a, x, flags)?,
+        Expr::Un(UnOp::LNot, a) => b(eval_flags(a, x, flags)? == 0),
+        Expr::Un(UnOp::Not, a) => !eval_flags(a, x, flags)? & 0xffff_ffff,
+        Expr::Bin(op, l, r) => {
+            let (p, q) = (eval_flags(l, x, flags)?, eval_flags(r, x, flags)?);
+            match op {
+                BinOp::Shr if q < 32 => p >> q,
+                BinOp::Shl if q < 32 => (p << q) & 0xffff_ffff,
+                BinOp::And => p & q,
+                BinOp::Or => p | q,
+                BinOp::Xor => p ^ q,
+                BinOp::Eq => b(p == q),
+                BinOp::Ne => b(p != q),
+                BinOp::LAnd => b(p != 0 && q != 0),
+                BinOp::LOr => b(p != 0 || q != 0),
+                _ => return None,
+            }
+        }
+        _ => return None,
+    })
+}
+
+// e with each largest part that reads only x (the flags of vfp_cmpf(a, b)) and is used as a truth value written as
+// the float comparison its truth for equal, less, greater and unordered operands stands for, where one does
+fn float_conditions(e: &Expr, x: &str, a: &Expr, b: &Expr) -> Expr {
+    use crate::sym::VFP_RESULTS;
+    let truth: Option<Vec<bool>> = VFP_RESULTS.iter().map(|f| eval_flags(e, x, *f).map(|v| v != 0)).collect();
+    let cmp = |op: BinOp| Expr::Bin(op, Box::new(a.clone()), Box::new(b.clone()));
+    let not = |c: Expr| Expr::Un(UnOp::LNot, Box::new(c));
+    if let Some(t) = truth {
+        // (equal, less, greater, unordered)
+        let found = match t.as_slice() {
+            [true, false, false, false] => Some(cmp(BinOp::Eq)),
+            [false, true, false, false] => Some(cmp(BinOp::Lt)),
+            [false, false, true, false] => Some(cmp(BinOp::Gt)),
+            [true, true, false, false] => Some(cmp(BinOp::Le)),
+            [true, false, true, false] => Some(cmp(BinOp::Ge)),
+            [false, true, true, true] => Some(cmp(BinOp::Ne)),
+            [false, true, false, true] => Some(not(cmp(BinOp::Ge))),
+            [false, false, true, true] => Some(not(cmp(BinOp::Le))),
+            [true, true, false, true] => Some(not(cmp(BinOp::Gt))),
+            [true, false, true, true] => Some(not(cmp(BinOp::Lt))),
+            _ => None,
+        };
+        if let Some(c) = found {
+            return c;
+        }
+    }
+    match e {
+        Expr::Bin(op @ (BinOp::LAnd | BinOp::LOr), l, r) => {
+            Expr::Bin(*op, Box::new(float_conditions(l, x, a, b)), Box::new(float_conditions(r, x, a, b)))
+        }
+        Expr::Un(UnOp::LNot, l) => Expr::Un(UnOp::LNot, Box::new(float_conditions(l, x, a, b))),
+        other => other.clone(),
+    }
+}
+
+// The VFP status values nothing reads any more once their comparisons are written as such (`fpsr_k = fpsr_j &
+// 0xfffffffu | vfp_cmpf(a, b);`: pure), dropped, repeatedly (each reads the one before).
+fn drop_unread_flags(body: &str) -> String {
+    let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
+    let words = |l: &str| -> Vec<String> {
+        l.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')).filter(|w| !w.is_empty()).map(|w| w.to_string()).collect()
+    };
+    loop {
+        let mut gone = None;
+        for (i, l) in lines.iter().enumerate() {
+            let code = l.split("  //").next().unwrap_or(l).trim();
+            let code = code.strip_prefix("u32 ").unwrap_or(code);
+            let Some((name, rhs)) = code.split_once(" = ") else { continue };
+            // (every parenthesis a grouping, the comparison, a bit cast or a load: no call)
+            let pure_open = |k: usize| {
+                let before = &rhs[..k];
+                let token: String = before.chars().rev().take_while(|c| c.is_ascii_alphanumeric() || "_:<>".contains(*c)).collect::<String>().chars().rev().collect();
+                token.is_empty() || token == "vfp_cmpf" || token == "vfp_cmpd" || token.starts_with("std::bit_cast<") || token.starts_with("gptr<")
+            };
+            let pure = rhs.ends_with(';') && rhs.contains("vfp_cmp") && !rhs.contains("guest::")
+                && rhs.match_indices('(').all(|(k, _)| pure_open(k));
+            // (a value split off the status variable, fpsr_k: the variable itself stays)
+            let split = name.strip_prefix("fpsr_").map_or(false, |k| !k.is_empty() && k.chars().all(|c| c.is_ascii_digit()));
+            if !split || !pure {
+                continue;
+            }
+            // (comments name nothing: the `// keys:` line, a line's trailing comment)
+            let read = lines.iter().enumerate().any(|(j, m)| {
+                let code = if m.trim_start().starts_with("//") { "" } else { m.split("  //").next().unwrap_or(m) };
+                j != i && words(code).iter().any(|w| w == name)
+            });
+            if !read {
+                gone = Some(i);
+                break;
+            }
+        }
+        match gone {
+            Some(i) => {
+                lines.remove(i);
+            }
+            None => break,
+        }
+    }
+    let mut out = lines.join("\n");
+    out.push('\n');
+    out
+}
+
 fn tidy_masks(line: &str) -> String {
     let mut out = line.to_string();
     // (x & 0xA[u]) & 0xB[u]  ->  x & 0xC[u]   (x a name, x's mask and the other's in hex)
@@ -1684,6 +1921,130 @@ fn tidy_masks(line: &str) -> String {
                 break;
             }
             out = format!("{}({} {} ({})){}", &out[..i], a, op, n, &args[close + 1..]);
+        }
+    }
+    // s32(x & 0x80000000u) < 0 / >= 0  ->  s32(x) < 0 / >= 0   (x a name: the sign is the masked bit's)
+    for op in [") < 0", ") >= 0"] {
+        let mask = " & 0x80000000u";
+        let mut from = 0;
+        while let Some(at) = out[from..].find(&format!("{}{}", mask, op)).map(|k| k + from) {
+            let Some(open) = out[..at].rfind("s32(") else { break };
+            let x = &out[open + 4..at];
+            let plain = !x.is_empty() && x.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+            if !plain || (open > 0 && out[..open].ends_with(|c: char| c.is_ascii_alphanumeric() || c == '_')) {
+                from = at + mask.len();
+                continue;
+            }
+            out = format!("{}{}", &out[..at], &out[at + mask.len()..]);
+        }
+    }
+    // (a - b >> 0x1f) != (((a ^ b) & (a ^ a - b)) >> 0x1f)  ->  s32(a) < s32(b)   (N != V of the subtraction; == is
+    // >=; a a name, b a name or a constant)
+    for (op, cmp) in [("!=", "<"), ("==", ">=")] {
+        let mut from = 0;
+        let marker = format!(" >> 0x1f) {} (((", op);
+        while let Some(at) = out[from..].find(&marker).map(|k| k + from) {
+            let Some(open) = out[..at].rfind('(') else { break };
+            let left = &out[open + 1..at];
+            let Some((a, b)) = left.split_once(" - ") else {
+                from = at + marker.len();
+                continue;
+            };
+            let name = |t: &str| !t.is_empty() && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && !t.starts_with(|c: char| c.is_ascii_digit());
+            let konst = |t: &str| t.starts_with("0x") && t.trim_end_matches('u')[2..].chars().all(|c| c.is_ascii_hexdigit());
+            let whole = format!("({} - {} >> 0x1f) {} ((({} ^ {}) & ({} ^ {} - {})) >> 0x1f)", a, b, op, a, b, a, a, b);
+            if name(a) && (name(b) || konst(b)) && out[open..].starts_with(&whole) {
+                let rhs = if name(b) { format!("s32({})", b) } else { b.trim_end_matches('u').to_string() };
+                let small = !name(b) && u64::from_str_radix(&rhs[2..], 16).map_or(false, |k| k < 1 << 31);
+                if name(b) || small {
+                    out = format!("{}s32({}) {} {}{}", &out[..open], a, cmp, rhs, &out[open + whole.len()..]);
+                    continue;
+                }
+            }
+            from = at + marker.len();
+        }
+    }
+    // !!x  ->  x in an if's or a loop's condition, as an operand of && or || or the whole (only its truth is read)
+    if out.trim_start().starts_with("if (") || out.trim_start().starts_with("} while (") {
+        let mut from = 0;
+        while let Some(at) = out[from..].find("!!").map(|k| k + from) {
+            let left = out[..at].trim_end();
+            if left.ends_with("if (") || left.ends_with("while (") || left.ends_with("&&") || left.ends_with("||") {
+                out = format!("{}{}", &out[..at], &out[at + 2..]);
+            } else {
+                from = at + 2;
+            }
+        }
+    }
+    // !(a == b) / !(a != b)  ->  a != b / a == b   (one equality at the parentheses' top level: exact for floats too)
+    let mut from = 0;
+    while let Some(at) = out[from..].find("!(").map(|k| k + from) {
+        // (only where an equality may stand without parentheses: first in a condition or an operand of && or ||, a
+        // value assigned or returned, an argument)
+        let left = out[..at].trim_end();
+        let assigned = left.ends_with('=') && !["==", "!=", "<=", ">="].iter().any(|o| left.ends_with(o));
+        let preceded = !(left.is_empty() || left.ends_with('(') || left.ends_with("&&") || left.ends_with("||")
+            || left.ends_with(',') || left.ends_with("return") || assigned);
+        let inner_start = at + 2;
+        let mut depth = 0i32;
+        let mut close = None;
+        for (i, c) in out[inner_start..].char_indices() {
+            match c {
+                '(' | '[' => depth += 1,
+                ')' | ']' if depth == 0 => {
+                    close = Some(inner_start + i);
+                    break;
+                }
+                ')' | ']' => depth -= 1,
+                _ => {}
+            }
+        }
+        let Some(close) = close else { break };
+        let inner = &out[inner_start..close];
+        // the operators at the inner text's top level
+        let mut top = Vec::new();
+        let mut d = 0i32;
+        for (i, c) in inner.char_indices() {
+            match c {
+                '(' | '[' => d += 1,
+                ')' | ']' => d -= 1,
+                ' ' if d == 0 => {
+                    let op: String = inner[i + 1..].chars().take_while(|c| *c != ' ').collect();
+                    if !op.is_empty() && op.chars().all(|c| "=!<>&|?:+-*/%^".contains(c)) {
+                        top.push((i, op));
+                    }
+                }
+                _ => {}
+            }
+        }
+        match top.as_slice() {
+            [(i, op)] if !preceded && (op == "==" || op == "!=") => {
+                let flipped = if op == "==" { "!=" } else { "==" };
+                let text = format!("{} {} {}", &inner[..*i], flipped, &inner[i + 2 + op.len()..]);
+                out = format!("{}{}{}", &out[..at], text, &out[close + 1..]);
+            }
+            _ => from = at + 2,
+        }
+    }
+    // s32(x << 0xK) < 0 / >= 0  ->  (x & 0xMu) != 0 / == 0   (x a name, 0 < K < 32: bit 31 - K moved to the sign)
+    for (op, test) in [(") < 0", "!="), (") >= 0", "==")] {
+        let mut from = 0;
+        while let Some(at) = out[from..].find(op).map(|k| k + from) {
+            let Some(open) = out[..at].rfind("s32(") else { break };
+            let inner = &out[open + 4..at];
+            let parsed = inner.split_once(" << ").and_then(|(x, k)| {
+                let k = k.strip_prefix("0x").map_or_else(|| k.parse::<u32>().ok(), |h| u32::from_str_radix(h, 16).ok())?;
+                let plain = !x.is_empty() && x.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+                (plain && 0 < k && k < 32).then(|| (x.to_string(), 1u64 << (31 - k)))
+            });
+            let after = &out[at + op.len()..];
+            let whole = !after.starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_' || c == '.');
+            match parsed {
+                Some((x, bit)) if whole && !(open > 0 && out[..open].ends_with(|c: char| c.is_ascii_alphanumeric() || c == '_')) => {
+                    out = format!("{}({} & 0x{:x}u) {} 0{}", &out[..open], x, bit, test, after);
+                }
+                _ => from = at + op.len(),
+            }
         }
     }
     out
@@ -1764,7 +2125,7 @@ fn typed_locals(f: &Function, e: &Emitter, lv: &crate::flow::Liveness, plain: &H
     walk(&f.body, &[], &mut |p, s| {
         let mut ls = Vec::new();
         match s {
-            Stmt::Decl(_, n, Some(x)) | Stmt::Assign(n, x) => {
+            Stmt::Decl(_, n, Some(x), ..) | Stmt::Assign(n, x, ..) => {
                 loads(x, &mut ls);
                 assigned.insert(e.values.name(p, n));
                 let mut r = crate::types::Reads::default();
@@ -2203,7 +2564,7 @@ fn compound_text(e: &str) -> bool {
 // A value its single use takes in: `T x = e;` with x read on one later line only, once, in the same block, with no
 // loop start, label or shallower line between, none of e's variables assigned between, and (when e reads memory) only
 // assignments to plain variables between. The statements compute the same (the C++ is proved anyway).
-fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>) -> String {
+fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>, conditions_only: &HashSet<String>) -> String {
     let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
     let indent = |l: &str| (l.len() - l.trim_start().len()) / 4;
     let words = |t: &str| -> Vec<String> {
@@ -2255,6 +2616,11 @@ fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>) -> String {
                     || (memory && !(words(t).first().map_or(false, |w| assigns(l, w)) && !t.contains("call_") && !t.contains("guest::") && !t.starts_with('*') && !t.contains("->")))
             });
             if blocked || lines[u].trim_start().starts_with(&format!("{} =", name)) {
+                continue;
+            }
+            // (a flag only into an if's or a loop's condition, where its truth is all that is read)
+            let condition = use_code.trim_start().starts_with("if (") || use_code.trim_start().starts_with("} while (");
+            if conditions_only.contains(name) && !condition {
                 continue;
             }
             // the use, with x replaced (whole words only); parentheses unless x is a whole operand there (a return's
@@ -2472,8 +2838,8 @@ fn return_values(body: &str) -> String {
 // what the emitter leaves out: the registers the decompiler unsaved (saved_* copies and their restores)
 fn stack_bookkeeping(s: &Stmt) -> bool {
     match s {
-        Stmt::Decl(_, n, _) if n.starts_with("saved_") => true,
-        Stmt::Assign(_, Expr::Var(v)) if v.starts_with("saved_") => true,
+        Stmt::Decl(_, n, _, ..) if n.starts_with("saved_") => true,
+        Stmt::Assign(_, Expr::Var(v), ..) if v.starts_with("saved_") => true,
         _ => false,
     }
 }
@@ -2481,7 +2847,7 @@ fn stack_bookkeeping(s: &Stmt) -> bool {
 fn decls(list: &[Stmt], out: &mut BTreeMap<String, Ty>) -> R<()> {
     for s in list {
         match s {
-            Stmt::Decl(t, n, _) => {
+            Stmt::Decl(t, n, _, ..) => {
                 if let Some(old) = out.insert(n.clone(), *t) {
                     if old != *t {
                         return Err(format!("{} declared as {} and {}", n, old.c_name(), t.c_name()));
@@ -2505,8 +2871,8 @@ fn reads_stack(list: &[Stmt]) -> bool {
         r.vars.iter().any(|v| v == "r13" || v == "ea")
     }
     list.iter().any(|s| match s {
-        Stmt::Assign(n, Expr::Bin(_, a, b)) if n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => false,
-        Stmt::Decl(_, _, Some(x)) | Stmt::Assign(_, x) | Stmt::Switch(x, _) => e(x),
+        Stmt::Assign(n, Expr::Bin(_, a, b), ..) if n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => false,
+        Stmt::Decl(_, _, Some(x), ..) | Stmt::Assign(_, x, ..) | Stmt::Switch(x, _) => e(x),
         Stmt::Store(_, a, v) => e(a) || e(v),
         Stmt::If(c, a, b) | Stmt::While { cond: c, body: a, check: b, .. } => e(c) || reads_stack(a) || reads_stack(b),
         _ => false,
@@ -2529,7 +2895,7 @@ fn uses_call_clobbers(f: &Function) -> Option<String> {
                     after_calls(a, &pa, out);
                     after_calls(b, &pb, out);
                 }
-                Stmt::GuestCall(_, false) => out.push(p),
+                Stmt::GuestCall(_, false, ..) => out.push(p),
                 _ => {}
             }
         }
@@ -2578,7 +2944,7 @@ fn sp_offset(a: &Expr) -> Option<u64> {
 fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
     let sp_move = |s: &Stmt| -> Option<i64> {
         match s {
-            Stmt::Assign(n, Expr::Bin(op, a, b)) if n == "r13" && **a == Expr::Var("r13".into()) => match (op, &**b) {
+            Stmt::Assign(n, Expr::Bin(op, a, b), ..) if n == "r13" && **a == Expr::Var("r13".into()) => match (op, &**b) {
                 (BinOp::Sub, Expr::Num(k, _)) => Some(*k as i64),
                 (BinOp::Add, Expr::Num(k, _)) => Some(-(*k as i64)),
                 _ => None,
@@ -2630,11 +2996,11 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
                 continue;
             }
             match s {
-                Stmt::Assign(n, _) | Stmt::Decl(_, n, _) if n == "r13" => { st.ok = false; st.why = "r13 assigned otherwise"; }
+                Stmt::Assign(n, _, ..) | Stmt::Decl(_, n, _, ..) if n == "r13" => { st.ok = false; st.why = "r13 assigned otherwise"; }
                 Stmt::SetCpu(CpuField::R(13), _) => { st.ok = false; st.why = "r13 written in the CPU"; }
-                Stmt::GuestCall(_, false) | Stmt::Dispatch(false) | Stmt::Svc(_) => st.calls.push(cur),
+                Stmt::GuestCall(_, false, ..) | Stmt::Dispatch(false, ..) | Stmt::Svc(_) => st.calls.push(cur),
                 // a tail call once the frame is given back (the C++ releases its StackFrame before it)
-                Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => {
+                Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..) => {
                     if cur != 0 {
                         st.ok = false;
                         st.why = "tail call inside the frame";
@@ -2694,7 +3060,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
         let mut at: HashMap<String, i64> = HashMap::new(); // variables holding r13 + k
         for s in list.iter_mut() {
             match s {
-                Stmt::Decl(_, x, Some(e)) | Stmt::Assign(x, e) if x != "r13" => {
+                Stmt::Decl(_, x, Some(e), ..) | Stmt::Assign(x, e, ..) if x != "r13" => {
                     let off = match e {
                         Expr::Var(v) if v == "r13" => Some(0),
                         Expr::Bin(op @ (BinOp::Add | BinOp::Sub), a, b) => match (&**a, &**b) {
@@ -2712,15 +3078,16 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
                         }
                     }
                 }
-                Stmt::Assign(x, Expr::Var(v)) if x == "r13" && at.contains_key(v) => {
-                    let o = at[v];
+                Stmt::Assign(x, Expr::Var(v), origin) if x == "r13" && at.contains_key(v) => {
+                    let (o, origin) = (at[v], *origin);
                     *s = Stmt::Assign(
                         "r13".into(),
                         Expr::Bin(if o < 0 { BinOp::Sub } else { BinOp::Add }, Box::new(Expr::Var("r13".into())), Box::new(Expr::Num(o.unsigned_abs(), Ty::U32))),
+                        origin,
                     );
                     at.clear();
                 }
-                Stmt::Assign(x, _) if x == "r13" => at.clear(),
+                Stmt::Assign(x, _, ..) if x == "r13" => at.clear(),
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                     moves(a);
                     moves(b);
@@ -2797,7 +3164,7 @@ fn frame_mode(f: &Function) -> Option<(Function, u64, bool)> {
                 *e = fold(std::mem::replace(e, Expr::Num(0, Ty::U32)));
             };
             match s {
-                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => one(e),
+                Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => one(e),
                 Stmt::Store(_, a, v) => {
                     one(a);
                     one(v);
@@ -2867,10 +3234,10 @@ fn push_mask(f: &Function, saved: &[(String, u32)], stack: bool) -> Option<u32> 
     let bytes = 4 * saved.len() as u64;
     fn ok(list: &[Stmt], bytes: u64) -> bool {
         list.iter().all(|s| match s {
-            Stmt::Decl(_, n, _) if n == "r13" => false,
-            Stmt::Assign(n, e) if n == "r13" => matches!(e, Expr::Bin(BinOp::Add | BinOp::Sub, a, b)
+            Stmt::Decl(_, n, _, ..) if n == "r13" => false,
+            Stmt::Assign(n, e, ..) if n == "r13" => matches!(e, Expr::Bin(BinOp::Add | BinOp::Sub, a, b)
                 if **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(k, _) if k == bytes)),
-            Stmt::GuestCall(_, true) | Stmt::Dispatch(true) | Stmt::SetCpu(CpuField::R(13), _) => false,
+            Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..) | Stmt::SetCpu(CpuField::R(13), _) => false,
             Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => ok(a, bytes) && ok(b, bytes),
             _ => true,
         })
@@ -3002,7 +3369,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         .collect();
     // (sp written to the CPU before calls only when the function moves it: otherwise the CPU's is the same)
     let has_sp = has_sp && assigned.contains("r13");
-    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), vtables: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), sites: crate::sites::at_calls(f), site_extras: site_extras(f, &lv), synced: f.synced.clone(), fallthrough: HashMap::new(), breaks: HashSet::new(), folding: std::cell::Cell::new(false), arities: HashMap::new(), fixed: false, out: String::new() };
+    let mut e = Emitter { known: known.clone(), stack, framed: mask.is_some() || frame_bytes > 0, frame_object: locals_bytes > 0, reload, has_sp, float_args, call_list, needs, has_r0, pc: None, virtual_slot: None, slots: HashMap::new(), tables: HashMap::new(), fields: fl, struct_name: HashMap::new(), callees: BTreeMap::new(), write_back, svc_regs, live: lv.clone(), labels: HashSet::new(), values: Default::default(), globals: Default::default(), vtables: Default::default(), cur: vec![], exits: HashMap::new(), targets: HashSet::new(), returns: assigned.contains("r0") && crate::results::observed(f.address, "r0"), var_types: vars.iter().map(|(n, t)| (n.clone(), *t)).chain(f.locals.iter().map(|(t, n, _)| (n.clone(), *t))).chain(std::iter::once((SP.to_string(), Ty::U32))).collect(), foldable: HashMap::new(), conditions_only: HashSet::new(), fp_compares: HashMap::new(), typed: HashMap::new(), local_fields: HashMap::new(), after_calls: crate::flow::after_calls(f), sites: crate::sites::at_calls(f), site_extras: site_extras(f, &lv), synced: f.synced.clone(), fallthrough: HashMap::new(), breaks: HashSet::new(), folding: std::cell::Cell::new(false), arities: HashMap::new(), fixed: false, out: String::new() };
     // the variables split into their values: registers and temporaries (not the arguments' copies, the saved copies,
     // sp, lr, nor what a helper writes through a pointer)
     let mut splittable: HashSet<String> = vars.keys().cloned().chain(f.locals.iter().map(|(_, n, _)| n.clone())).collect();
@@ -3010,6 +3377,9 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     crate::values::each_expr(&f.body, &mut |x| pointed.extend(crate::flow::out_params(x)));
     splittable.retain(|n| !n.starts_with("arg") && !n.starts_with("saved_") && n != "r13" && n != "r14" && !pointed.contains(n));
     e.values = crate::values::split(f, &splittable, &|s, p| e.effects(s, p));
+    let mut fp = HashMap::new();
+    compare_flags(&f.body, &[], &e.values, &mut fp);
+    e.fp_compares = fp;
     // (the parameters the signature gives as the register itself: no argK copy)
     let plain: HashSet<String> =
         params.iter().filter(|p| !vars.contains_key(&format!("arg{}", &p[1..]))).map(|p| p.to_string()).collect();
@@ -3272,7 +3642,10 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         sinkable.into_iter().map(|(n, t)| match e.typed.get(&n) { Some(st) => (n, format!("gptr<{}>", st)), None => (n, t) }).collect();
     let body = kept_results(&body);
     let (body, sunk) = sink_declarations(&body, &sinkable);
-    let body = fold_single_uses(&body, &e.foldable);
+    let body = fold_single_uses(&body, &e.foldable, &e.conditions_only);
+    // (and every line's masks and bit tests, folded or not)
+    let body: String = body.lines().map(|l| tidy_masks(l) + "\n").collect();
+    let body = drop_unread_flags(&body);
     // (the parameters that hold a register's entry value: S0 holds s[0], r1 r[1])
     let entry_params: HashMap<String, String> = sig
         .iter()
@@ -3386,5 +3759,26 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         )),
         None => out.push_str(&format!("GUEST_EXPORT(0x{:08x}, d_{:08x}::{});\n", addr, f.address, base)),
     }
-    Ok(float_fields(&out))
+    Ok(with_keys(&float_fields(&out), &e.values))
+}
+
+// The draft with a `// keys:` line under its header: what each variable split into values is in the original
+// program (values::Key), for the names (tools/decomp/names.py keys names by it; tools/decomp/split.py leaves the line
+// out of the committed files).
+fn with_keys(text: &str, values: &crate::values::Values) -> String {
+    let words: HashSet<&str> = text.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')).collect();
+    let mut keys: Vec<String> = values
+        .names_with_keys()
+        .filter(|(n, _)| words.contains(n.as_str()))
+        .map(|(n, k)| format!("{}={}", n, k.text()))
+        .collect();
+    keys.sort();
+    let header = "(names to choose).\n";
+    match text.find(header) {
+        Some(i) if !keys.is_empty() => {
+            let at = i + header.len();
+            format!("{}// keys: {}\n{}", &text[..at], keys.join(" "), &text[at..])
+        }
+        _ => text.to_string(),
+    }
 }

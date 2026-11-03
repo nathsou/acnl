@@ -106,14 +106,14 @@ pub fn assigned_vars(list: &[Stmt], out: &mut HashSet<String>) {
 fn assigned(list: &[Stmt], out: &mut HashSet<String>) {
     for s in list {
         match s {
-            Stmt::Assign(n, _) | Stmt::Decl(_, n, Some(_)) => {
+            Stmt::Assign(n, _, ..) | Stmt::Decl(_, n, Some(_), ..) => {
                 out.insert(n.clone());
             }
             Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                 assigned(a, out);
                 assigned(b, out);
             }
-            Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::SyncIn => {
+            Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) | Stmt::SyncIn => {
                 out.insert("r0".into());
             }
             _ => {}
@@ -129,7 +129,7 @@ fn used_vars(list: &[Stmt], out: &mut HashSet<String>) {
     }
     for s in list {
         match s {
-            Stmt::Decl(_, _, Some(x)) | Stmt::Assign(_, x) | Stmt::SetCpu(_, x) | Stmt::Switch(x, _) => e(x, out),
+            Stmt::Decl(_, _, Some(x), ..) | Stmt::Assign(_, x, ..) | Stmt::SetCpu(_, x) | Stmt::Switch(x, _) => e(x, out),
             Stmt::Store(_, a, v) => {
                 e(a, out);
                 e(v, out);
@@ -172,16 +172,16 @@ pub(crate) fn bookkeeping(s: &Stmt, sp_read: bool) -> bool {
             crate::types::reads(a, &mut r);
             r.vars.iter().any(|v| v == "ea")
         } => true,
-        Stmt::Assign(n, Expr::Var(v)) if n == "r13" && v == "ea" => true,
-        Stmt::Assign(r, Expr::Load(Ty::U32, a)) if (callee_saved(r) || r == "tpc") && sp_based(a) => true,
-        Stmt::Decl(Ty::U32, n, Some(Expr::Load(Ty::U32, a))) if n == "v" && sp_based(a) => true,
-        Stmt::Assign(r, Expr::Var(v)) if v == "v" && callee_saved(r) => true,
-        Stmt::Decl(Ty::U32, n, Some(_)) if n == "ea" => true,
+        Stmt::Assign(n, Expr::Var(v), ..) if n == "r13" && v == "ea" => true,
+        Stmt::Assign(r, Expr::Load(Ty::U32, a), ..) if (callee_saved(r) || r == "tpc") && sp_based(a) => true,
+        Stmt::Decl(Ty::U32, n, Some(Expr::Load(Ty::U32, a)), ..) if n == "v" && sp_based(a) => true,
+        Stmt::Assign(r, Expr::Var(v), ..) if v == "v" && callee_saved(r) => true,
+        Stmt::Decl(Ty::U32, n, Some(_), ..) if n == "ea" => true,
         Stmt::SetCpu(CpuField::Pc, Expr::Var(v)) if v == "tpc" => true,
-        Stmt::Decl(_, n, _) if n.starts_with("saved_") => true,
-        Stmt::Assign(_, Expr::Var(v)) if v.starts_with("saved_") => true,
+        Stmt::Decl(_, n, _, ..) if n.starts_with("saved_") => true,
+        Stmt::Assign(_, Expr::Var(v), ..) if v.starts_with("saved_") => true,
         Stmt::SetCpu(CpuField::Pc, Expr::Var(v)) if v.starts_with("saved_") => true,
-        Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b))
+        Stmt::Assign(n, Expr::Bin(BinOp::Add | BinOp::Sub, a, b), ..)
             if n == "r13" && !sp_read && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => true,
         _ => false,
     }
@@ -221,19 +221,19 @@ fn body(list: &[Stmt], indent: usize, returns: bool, out: &mut String) {
         }
         match s {
             // r14 = <return address>; SO(); f_X(c, 0); SI(); [pc check]
-            Stmt::Assign(n, _) if n == "r14" && matches!(list.get(i + 1), Some(Stmt::SyncOut)) => {
+            Stmt::Assign(n, _, ..) if n == "r14" && matches!(list.get(i + 1), Some(Stmt::SyncOut)) => {
                 i += 1;
                 continue;
             }
             Stmt::SyncOut | Stmt::SyncIn | Stmt::Preempt | Stmt::Nop | Stmt::Site(_) | Stmt::ReturnUnlessPc(_) => {}
             Stmt::SetCpu(CpuField::Pc, _) if matches!(list.get(i + 1), Some(Stmt::SyncOut)) => {}
-            Stmt::Decl(_, _, None) => {}
+            Stmt::Decl(_, _, None, ..) => {}
             // the copies of the arguments are the parameters
-            Stmt::Decl(_, n, Some(Expr::Var(_))) if n.starts_with("arg") => {}
-            Stmt::Decl(t, n, Some(e)) => line(out, indent, &format!("{} {} = {};", t.c_name(), n, expr(e))),
+            Stmt::Decl(_, n, Some(Expr::Var(_)), ..) if n.starts_with("arg") => {}
+            Stmt::Decl(t, n, Some(e), ..) => line(out, indent, &format!("{} {} = {};", t.c_name(), n, expr(e))),
             // r1 when it is not part of the result and nothing here reads it (left over by the original)
-            Stmt::Assign(n, _) if n == "r1" && JUNK_R1.with(|c| c.get()) => {}
-            Stmt::Assign(n, e) => line(out, indent, &format!("{} = {};", n, expr(e))),
+            Stmt::Assign(n, _, ..) if n == "r1" && JUNK_R1.with(|c| c.get()) => {}
+            Stmt::Assign(n, e, ..) => line(out, indent, &format!("{} = {};", n, expr(e))),
             Stmt::SetCpu(f, e) => line(out, indent, &format!("{} = {};", crate::print::cpu(f), expr(e))),
             Stmt::Store(t, a, v) => match field_of(*t, a) {
                 Some(f) => line(out, indent, &format!("{} = {};", f, expr(v))),
@@ -276,7 +276,7 @@ fn body(list: &[Stmt], indent: usize, returns: bool, out: &mut String) {
             Stmt::Goto(l) => line(out, indent, &format!("goto {};", l)),
             Stmt::Label(l) if !REFERENCED.with(|r| r.borrow().contains(l)) => {}
             Stmt::Label(l) => out.push_str(&format!("{}:\n", l)),
-            Stmt::GuestCall(t, tail) => {
+            Stmt::GuestCall(t, tail, ..) => {
                 // a rewritten callee: its name and as many arguments as its signature takes
                 let name = types().and_then(|db| db.name(*t).cloned()).unwrap_or(format!("f_{:08x}", t & !1));
                 let n = types().and_then(|db| db.arity(*t)).unwrap_or(4);
@@ -287,7 +287,7 @@ fn body(list: &[Stmt], indent: usize, returns: bool, out: &mut String) {
                     line(out, indent, &format!("r0 = {};", call));
                 }
             }
-            Stmt::Dispatch(tail) => {
+            Stmt::Dispatch(tail, ..) => {
                 let call = "call_through(c->pc, r0, r1, r2, r3)".to_string();
                 line(out, indent, &if *tail { format!("return {};", call) } else { format!("r0 = {};", call) });
             }
@@ -323,7 +323,7 @@ pub fn view(f: &Function) -> String {
     let copies: HashSet<String> = f
         .body
         .iter()
-        .filter_map(|s| if let Stmt::Decl(_, n, Some(Expr::Var(r))) = s { if n.starts_with("arg") { Some(r.clone()) } else { None } } else { None })
+        .filter_map(|s| if let Stmt::Decl(_, n, Some(Expr::Var(r)), ..) = s { if n.starts_with("arg") { Some(r.clone()) } else { None } } else { None })
         .collect();
     let mut sig: Vec<String> = params
         .iter()
@@ -373,15 +373,15 @@ pub fn view(f: &Function) -> String {
     fn sp_read(list: &[Stmt]) -> bool {
         list.iter().any(|s| match s {
             // the push and pop themselves
-            Stmt::Decl(_, n, _) if n == "ea" || n == "v" => false,
+            Stmt::Decl(_, n, _, ..) if n == "ea" || n == "v" => false,
             Stmt::Store(..) | Stmt::Assign(..) if bookkeeping(s, false) => false,
-            Stmt::Assign(n, Expr::Bin(_, a, b)) if n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => false,
+            Stmt::Assign(n, Expr::Bin(_, a, b), ..) if n == "r13" && **a == Expr::Var("r13".into()) && matches!(**b, Expr::Num(..)) => false,
             Stmt::If(c, a, b) | Stmt::While { cond: c, body: a, check: b, .. } => {
                 let mut r = crate::types::Reads::default();
                 crate::types::reads(c, &mut r);
                 r.vars.iter().any(|v| v == "r13") || sp_read(a) || sp_read(b)
             }
-            Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) => {
+            Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) => {
                 let mut r = crate::types::Reads::default();
                 crate::types::reads(e, &mut r);
                 r.vars.iter().any(|v| v == "r13")

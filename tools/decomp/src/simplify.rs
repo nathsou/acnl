@@ -43,6 +43,13 @@ pub fn fold(e: &mut Expr, types: &HashMap<String, Ty>) {
     simplify_expr(e, types);
 }
 
+// The negation of a condition, simplified (`!(a < b)` is `a >= b` for integers).
+pub fn negated(c: &Expr, types: &HashMap<String, Ty>) -> Expr {
+    let mut e = Expr::Un(UnOp::LNot, Box::new(c.clone()));
+    simplify_cond(&mut e, types);
+    e
+}
+
 fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
     match e {
         Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => simplify_expr(a, types),
@@ -247,7 +254,86 @@ fn simplify_expr(e: &mut Expr, types: &HashMap<String, Ty>) {
     }
 }
 
-fn is_truth_valued(e: &Expr) -> bool {
+// the bit at the top of a u32
+const SIGN_BIT: u64 = 0x8000_0000;
+const SIGN_SHIFT: u64 = 31;
+
+// x when e is nonzero exactly when x's sign bit is set (e: x >> 31, (x & 0x80000000) >> 31 or x & 0x80000000, x a u32)
+fn sign_bit_of(e: &Expr, types: &HashMap<String, Ty>) -> Option<Expr> {
+    let u32_of = |x: &Expr| if type_of(x, types) == Some(Ty::U32) { Some(x.clone()) } else { None };
+    let masked = |x: &Expr| match x {
+        Expr::Bin(BinOp::And, y, m) if num_any(m) == Some(SIGN_BIT) => u32_of(y),
+        _ => None,
+    };
+    match e {
+        Expr::Bin(BinOp::Shr, x, k) if num_any(k) == Some(SIGN_SHIFT) => masked(x).or_else(|| u32_of(x)),
+        _ => masked(e),
+    }
+}
+
+// (x, 31 - k) when e tests bit 31 - k of the u32 x moved to the top: (x << k) >> 31 or s32(x << k) < 0 (0 < k < 32)
+fn bit_test_of(e: &Expr, types: &HashMap<String, Ty>) -> Option<(Expr, u64)> {
+    let shifted = |s: &Expr| match s {
+        Expr::Bin(BinOp::Shl, x, k) if type_of(x, types) == Some(Ty::U32) => match num_any(k) {
+            Some(k) if 0 < k && k <= SIGN_SHIFT => Some(((**x).clone(), SIGN_SHIFT - k)),
+            _ => None,
+        },
+        _ => None,
+    };
+    match e {
+        Expr::Bin(BinOp::Shr, s, k) if num_any(k) == Some(SIGN_SHIFT) => shifted(s),
+        Expr::Bin(BinOp::Lt, c, z) if num_any(z) == Some(0) => match &**c {
+            Expr::Cast(Ty::S32, s) => shifted(s),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+// (a - b) >> 31 != ((a ^ b) & (a ^ (a - b))) >> 31 (N != V of the subtraction, either side first, either operand of the
+// &): s32(a) < s32(b); with == : s32(a) >= s32(b)
+fn subtraction_compare(e: &Expr) -> Option<Expr> {
+    let (op, l, r) = match e {
+        Expr::Bin(op @ (BinOp::Ne | BinOp::Eq), l, r) => (*op, &**l, &**r),
+        _ => return None,
+    };
+    let top = |x: &Expr| match x {
+        Expr::Bin(BinOp::Shr, y, k) if num_any(k) == Some(SIGN_SHIFT) => Some((**y).clone()),
+        _ => None,
+    };
+    let operands = |res: &Expr| match res {
+        Expr::Bin(BinOp::Sub, a, b) => Some(((**a).clone(), (**b).clone())),
+        _ => None,
+    };
+    let overflow = |v: &Expr, a: &Expr, b: &Expr, res: &Expr| match v {
+        Expr::Bin(BinOp::And, p, q) => {
+            let ab = |t: &Expr| matches!(t, Expr::Bin(BinOp::Xor, x, y) if **x == *a && **y == *b) || (*b == Expr::Num(0, Ty::U32) && t == a);
+            let ar = |t: &Expr| matches!(t, Expr::Bin(BinOp::Xor, x, y) if **x == *a && **y == *res);
+            (ab(p) && ar(q)) || (ar(p) && ab(q))
+        }
+        _ => false,
+    };
+    for (n, v) in [(l, r), (r, l)] {
+        let (Some(res), Some(v)) = (top(n), top(v)) else { continue };
+        let Some((a, b)) = operands(&res) else { continue };
+        if overflow(&v, &a, &b, &res) {
+            let sa = Box::new(Expr::Cast(Ty::S32, Box::new(a)));
+            let sb = Box::new(match b {
+                Expr::Num(k, _) if k < 1 << SIGN_SHIFT => Expr::Num(k, Ty::S32),
+                other => Expr::Cast(Ty::S32, Box::new(other)),
+            });
+            return Some(Expr::Bin(if op == BinOp::Ne { BinOp::Lt } else { BinOp::Ge }, sa, sb));
+        }
+    }
+    None
+}
+
+// s32(x) < 0
+fn negative(x: Expr) -> Expr {
+    Expr::Bin(BinOp::Lt, Box::new(Expr::Cast(Ty::S32, Box::new(x))), Box::new(Expr::Num(0, Ty::S32)))
+}
+
+pub fn is_truth_valued(e: &Expr) -> bool {
     matches!(e, Expr::Bin(BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge | BinOp::LAnd | BinOp::LOr, _, _)
         | Expr::Un(UnOp::LNot, _))
 }
@@ -258,6 +344,21 @@ fn simplify_cond(e: &mut Expr, types: &HashMap<String, Ty>) {
     loop {
         let next = match e {
             Expr::Cast(_, inner) if is_truth_valued(inner) => Some((**inner).clone()),
+            // a bit shifted to the top and tested there ((x << k) >> 31, s32(x << k) < 0): (x & 1 << (31 - k)) != 0
+            _ if bit_test_of(e, types).is_some() => {
+                let (x, bit) = bit_test_of(e, types).unwrap();
+                let masked = Expr::Bin(BinOp::And, Box::new(x), Box::new(Expr::Num(1 << bit, Ty::U32)));
+                Some(Expr::Bin(BinOp::Ne, Box::new(masked), Box::new(Expr::Num(0, Ty::U32))))
+            }
+            // N != V / N == V of a - b written out (the flags folded in): s32(a) < s32(b) / s32(a) >= s32(b)
+            _ if subtraction_compare(e).is_some() => subtraction_compare(e),
+            // the sign bit of a u32 as a truth value (x >> 31, (x & 0x80000000) >> 31, x & 0x80000000, and those
+            // compared with 0): s32(x) < 0
+            _ if sign_bit_of(e, types).is_some() => Some(negative(sign_bit_of(e, types).unwrap())),
+            Expr::Bin(op @ (BinOp::Ne | BinOp::Eq), a, z) if num_any(z) == Some(0) && sign_bit_of(a, types).is_some() => {
+                let test = negative(sign_bit_of(a, types).unwrap());
+                Some(if *op == BinOp::Ne { test } else { Expr::Un(UnOp::LNot, Box::new(test)) })
+            }
             Expr::Bin(op @ (BinOp::LAnd | BinOp::LOr), a, b) => {
                 simplify_cond(a, types);
                 simplify_cond(b, types);
@@ -415,7 +516,7 @@ fn signed_compares(list: &mut [Stmt]) {
             continue;
         }
         // u32 res = x << k; if (res >> 31) / if (res != 0) / if (res == 0): a test of bit 31 - k / of the low bits
-        if let Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Shl, x, k))) = &list[i] {
+        if let Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Shl, x, k)), ..) = &list[i] {
             if let (Expr::Num(k, _), Stmt::If(c, _, _)) = (&**k, &list[i + 1]) {
                 if *k < 32 {
                     let (r, x, k) = (r.clone(), (**x).clone(), *k);
@@ -438,11 +539,11 @@ fn signed_compares(list: &mut [Stmt]) {
             }
         }
         let (res, a, b) = match &list[i] {
-            Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Sub, a, b))) | Stmt::Assign(r, Expr::Bin(BinOp::Sub, a, b)) => {
+            Stmt::Decl(Ty::U32, r, Some(Expr::Bin(BinOp::Sub, a, b)), ..) | Stmt::Assign(r, Expr::Bin(BinOp::Sub, a, b), ..) => {
                 (r.clone(), (**a).clone(), (**b).clone())
             }
             // a comparison with 0: res = a - 0, simplified to a copy
-            Stmt::Decl(Ty::U32, r, Some(a @ Expr::Var(_))) => (r.clone(), a.clone(), Expr::Num(0, Ty::U32)),
+            Stmt::Decl(Ty::U32, r, Some(a @ Expr::Var(_)), ..) => (r.clone(), a.clone(), Expr::Num(0, Ty::U32)),
             _ => continue,
         };
         // (not when the subtraction reads res itself: the condition's res is the new value)
@@ -490,9 +591,9 @@ fn flags_into_conditions(list: &mut [Stmt]) {
         };
         for v in r.vars.iter().filter(|v| ["nf", "zf", "cf", "vf"].iter().any(|f| v.starts_with(f)) && !sets(v)) {
             // its definition in this list before the if
-            let Some(j) = (0..i).rev().find(|&j| matches!(&list[j], Stmt::Decl(_, n, Some(_)) | Stmt::Assign(n, _) if n == v)) else { continue };
+            let Some(j) = (0..i).rev().find(|&j| matches!(&list[j], Stmt::Decl(_, n, Some(_), ..) | Stmt::Assign(n, _, ..) if n == v)) else { continue };
             let e = match &list[j] {
-                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) => e.clone(),
+                Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) => e.clone(),
                 _ => continue,
             };
             let mut er = Reads::default();
@@ -522,13 +623,13 @@ fn flags_into_conditions(list: &mut [Stmt]) {
 fn simplify_list(list: &mut [Stmt], types: &mut HashMap<String, Ty>) {
     for s in list.iter_mut() {
         match s {
-            Stmt::Decl(t, n, e) => {
+            Stmt::Decl(t, n, e, ..) => {
                 if let Some(e) = e {
                     simplify_expr(e, types);
                 }
                 types.insert(n.clone(), *t);
             }
-            Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
+            Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) | Stmt::Switch(e, _) => {
                 simplify_expr(e, types)
             }
             Stmt::Store(_, a, v) => {
@@ -566,7 +667,7 @@ fn copies_in_conditions(list: &mut [Stmt], temporary: &dyn Fn(&str) -> bool) {
                 copies_in_conditions(body, temporary);
                 copies_in_conditions(check, temporary);
                 let last = if check.is_empty() { body.last() } else { check.last() };
-                if let Some(Stmt::Assign(x, Expr::Var(t))) = last {
+                if let Some(Stmt::Assign(x, Expr::Var(t), ..)) = last {
                     if temporary(t) && x != t {
                         let (x, t) = (x.clone(), t.clone());
                         let mut w = Stmt::If(cond.clone(), vec![], vec![]);
@@ -583,7 +684,7 @@ fn copies_in_conditions(list: &mut [Stmt], temporary: &dyn Fn(&str) -> bool) {
             continue;
         }
         let (x, t) = match &list[i - 1] {
-            Stmt::Assign(x, Expr::Var(t)) if temporary(t) && x != t => (x.clone(), t.clone()),
+            Stmt::Assign(x, Expr::Var(t), ..) if temporary(t) && x != t => (x.clone(), t.clone()),
             _ => continue,
         };
         if let Stmt::If(c, _, _) = &mut list[i] {
@@ -609,7 +710,7 @@ fn condition_chains(list: &mut Vec<Stmt>) -> bool {
     let mut i = 0;
     while i + 1 < list.len() {
         let (x, first) = match &list[i] {
-            Stmt::Assign(x, e) | Stmt::Decl(_, x, Some(e)) if is_truth_valued(e) => (x.clone(), e.clone()),
+            Stmt::Assign(x, e, ..) | Stmt::Decl(_, x, Some(e), ..) if is_truth_valued(e) => (x.clone(), e.clone()),
             _ => {
                 i += 1;
                 continue;
@@ -623,7 +724,7 @@ fn condition_chains(list: &mut Vec<Stmt>) -> bool {
                     _ => None,
                 };
                 match (op, &a[0]) {
-                    (Some(op), Stmt::Assign(y, second)) if *y == x && is_truth_valued(second) => {
+                    (Some(op), Stmt::Assign(y, second, ..)) if *y == x && is_truth_valued(second) => {
                         let mut r = Reads::default();
                         reads(second, &mut r);
                         if r.vars.contains(&x) || r.out_params {
@@ -639,7 +740,7 @@ fn condition_chains(list: &mut Vec<Stmt>) -> bool {
         };
         if let Some(e) = joined {
             match &mut list[i] {
-                Stmt::Assign(_, v) | Stmt::Decl(_, _, Some(v)) => *v = e,
+                Stmt::Assign(_, v, ..) | Stmt::Decl(_, _, Some(v), ..) => *v = e,
                 _ => unreachable!(),
             }
             list.remove(i + 1);
@@ -673,7 +774,7 @@ fn choices(list: &mut Vec<Stmt>) -> bool {
         }
         let joined = match s {
             Stmt::If(c, a, b) => match (a.as_slice(), b.as_slice()) {
-                ([Stmt::Assign(x, e1)], [Stmt::Assign(y, e2)]) if x == y => {
+                ([Stmt::Assign(x, e1, o)], [Stmt::Assign(y, e2, ..)]) if x == y => {
                     let one = |e: &Expr| matches!(e, Expr::Num(1, _));
                     let zero = |e: &Expr| matches!(e, Expr::Num(0, _));
                     let value = if is_truth_valued(c) && one(e1) && zero(e2) {
@@ -683,7 +784,7 @@ fn choices(list: &mut Vec<Stmt>) -> bool {
                     } else {
                         Expr::Cond(Box::new(c.clone()), Box::new(e1.clone()), Box::new(e2.clone()))
                     };
-                    Some(Stmt::Assign(x.clone(), value))
+                    Some(Stmt::Assign(x.clone(), value, *o))
                 }
                 _ => None,
             },
@@ -706,7 +807,7 @@ fn merge_same_exits(list: &mut Vec<Stmt>) -> bool {
             changed |= merge_same_exits(b);
         }
     }
-    let leaves = |x: &[Stmt]| matches!(x.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
+    let leaves = |x: &[Stmt]| matches!(x.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..)));
     // if (c) { X } X, X leaving: X (conditions have no effects)
     let mut i = 0;
     while i < list.len() {
@@ -741,7 +842,7 @@ fn merge_same_exits(list: &mut Vec<Stmt>) -> bool {
 // whether running the statements may change what the condition reads
 fn modifies(list: &[Stmt], r: &Reads) -> bool {
     list.iter().any(|s| match s {
-        Stmt::Decl(_, n, _) | Stmt::Assign(n, _) => r.vars.contains(n),
+        Stmt::Decl(_, n, _, ..) | Stmt::Assign(n, _, ..) => r.vars.contains(n),
         Stmt::Store(..) => r.memory,
         Stmt::SetCpu(..) => r.cpu,
         Stmt::If(_, a, b) => modifies(a, r) || modifies(b, r),
@@ -845,4 +946,28 @@ pub fn simplify(f: &mut Function) {
     while condition_chains(&mut f.body) {}
     while merge_same_exits(&mut f.body) {}
     while choices(&mut f.body) {}
+    // (the conditions again: the flags written into them above)
+    conditions(&mut f.body, &mut types);
+}
+
+// simplify_cond on every condition
+fn conditions(list: &mut [Stmt], types: &mut HashMap<String, Ty>) {
+    for s in list.iter_mut() {
+        match s {
+            Stmt::Decl(t, n, ..) => {
+                types.insert(n.clone(), *t);
+            }
+            Stmt::If(c, a, b) => {
+                simplify_cond(c, types);
+                conditions(a, types);
+                conditions(b, types);
+            }
+            Stmt::While { cond, body, check, .. } => {
+                conditions(body, types);
+                conditions(check, types);
+                simplify_cond(cond, types);
+            }
+            _ => {}
+        }
+    }
 }

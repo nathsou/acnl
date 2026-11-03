@@ -25,15 +25,19 @@ pub fn facts(f: &Function) -> Facts {
     if crate::emit::fields(&f.body, &mut out.fields).is_err() {
         out.fields.clear();
     }
-    // the 32-bit fields only ever read as a float or written from one (their bits): floats
-    let mut uses: HashMap<(usize, u64), (usize, usize)> = HashMap::new(); // (float accesses, others)
+    // the 32-bit fields only ever read as a float or written from one (their bits): floats; only cleared or copied
+    // from one field to another: no vote (NO_VOTE), the other functions' accesses decide
+    let mut uses: HashMap<(usize, u64), Uses> = HashMap::new();
     float_uses(&f.body, &mut uses);
-    for ((k, off), (floats, others)) in uses {
-        if floats > 0 && others == 0 {
-            if let Some(t) = out.fields.get_mut(&k).and_then(|fs| fs.get_mut(&off)) {
-                if *t == Ty::U32 {
-                    *t = Ty::F32;
-                }
+    for ((k, off), u) in uses {
+        let vote = match (u.floats, u.others, u.neutral) {
+            (1.., 0, _) => Some(Ty::F32),
+            (0, 0, 1..) => Some(NO_VOTE),
+            _ => None,
+        };
+        if let (Some(vote), Some(t)) = (vote, out.fields.get_mut(&k).and_then(|fs| fs.get_mut(&off))) {
+            if *t == Ty::U32 {
+                *t = vote;
             }
         }
     }
@@ -42,7 +46,7 @@ pub fn facts(f: &Function) -> Facts {
     let regs: Vec<&str> = ARGS.iter().copied().filter(|r| vars.contains(*r)).collect();
     let values = crate::values::split(f, &vars, &|s, _| match s {
         // a call reads r0-r3 (what it is handed is all that matters here)
-        Stmt::GuestCall(..) | Stmt::Dispatch(_) => (regs.iter().map(|r| r.to_string()).collect(), vec![]),
+        Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) => (regs.iter().map(|r| r.to_string()).collect(), vec![]),
         Stmt::Return => (vec!["r0".to_string()], vec![]),
         _ => (vec![], vec![]),
     });
@@ -50,7 +54,7 @@ pub fn facts(f: &Function) -> Facts {
         for (i, s) in list.iter().enumerate() {
             let p: Vec<usize> = [prefix, &[i]].concat();
             match s {
-                Stmt::GuestCall(t, _) => {
+                Stmt::GuestCall(t, _, ..) => {
                     for (j, r) in regs.iter().enumerate() {
                         if let Some(e) = values.entry_value(&p, r) {
                             if let Some(k) = ARGS.iter().position(|a| a == e) {
@@ -104,20 +108,32 @@ pub fn facts(f: &Function) -> Facts {
     out
 }
 
-// The accesses through an argument (argN + offset), counted as float ones (`U2F(load)`, a store of `F2U(x)`) or not.
-fn float_uses(list: &[Stmt], out: &mut HashMap<(usize, u64), (usize, usize)>) {
-    fn expr(e: &Expr, out: &mut HashMap<(usize, u64), (usize, usize)>) {
+// A 32-bit field a function only clears or copies to or from another field (its accesses say nothing of its type),
+// until the fields are merged (merged, then plain_types: a u32 if no function says more). No 32-bit access has a
+// signed type, so S32 is free to mark it.
+pub const NO_VOTE: Ty = Ty::S32;
+
+#[derive(Default)]
+struct Uses {
+    floats: usize,  // read as a float (`U2F(load)`) or written from one (`F2U(x)`)
+    others: usize,  // read or written otherwise
+    neutral: usize, // a 0 stored, or a copy from or to another field (a load stored as it is)
+}
+
+// The accesses through an argument (argN + offset), counted as float ones, neutral ones or others.
+fn float_uses(list: &[Stmt], out: &mut HashMap<(usize, u64), Uses>) {
+    fn expr(e: &Expr, out: &mut HashMap<(usize, u64), Uses>) {
         match e {
             Expr::Call(n, args) if n == "U2F" && matches!(args.as_slice(), [Expr::Load(Ty::U32, _)]) => {
                 let Expr::Load(_, a) = &args[0] else { unreachable!() };
                 if let Some(key) = crate::emit::arg_off_of(a) {
-                    out.entry(key).or_default().0 += 1;
+                    out.entry(key).or_default().floats += 1;
                 }
                 expr(a, out);
             }
             Expr::Load(_, a) => {
                 if let Some(key) = crate::emit::arg_off_of(a) {
-                    out.entry(key).or_default().1 += 1;
+                    out.entry(key).or_default().others += 1;
                 }
                 expr(a, out);
             }
@@ -137,19 +153,33 @@ fn float_uses(list: &[Stmt], out: &mut HashMap<(usize, u64), (usize, usize)>) {
     }
     for s in list {
         match s {
-            Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => expr(e, out),
+            Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => expr(e, out),
             Stmt::Store(t, a, v) => {
+                // (a word copied from a field: neutral for both)
+                let copied = match v {
+                    Expr::Load(Ty::U32, src) if *t == Ty::U32 => crate::emit::arg_off_of(src).map(|k| (k, src)),
+                    _ => None,
+                };
                 if let Some(key) = crate::emit::arg_off_of(a) {
                     let float = *t == Ty::U32 && matches!(v, Expr::Call(n, _) if n == "F2U");
+                    let cleared = *t == Ty::U32 && matches!(v, Expr::Num(0, _));
                     let e = out.entry(key).or_default();
                     if float {
-                        e.0 += 1;
+                        e.floats += 1;
+                    } else if cleared || copied.is_some() {
+                        e.neutral += 1;
                     } else {
-                        e.1 += 1;
+                        e.others += 1;
                     }
                 }
                 expr(a, out);
-                expr(v, out);
+                match copied {
+                    Some((k, src)) if crate::emit::arg_off_of(a).is_some() => {
+                        out.entry(k).or_default().neutral += 1;
+                        expr(src, out);
+                    }
+                    _ => expr(v, out),
+                }
             }
             Stmt::If(c, a, b) => {
                 expr(c, out);
@@ -171,7 +201,18 @@ fn float_uses(list: &[Stmt], out: &mut HashMap<(usize, u64), (usize, usize)>) {
 fn merged(old: Ty, new: Ty) -> Ty {
     match (old, new) {
         (Ty::F32, Ty::U32) | (Ty::U32, Ty::F32) => Ty::U32,
+        // (a function without a vote leaves it to the others)
+        (NO_VOTE, t) => t,
         _ => old,
+    }
+}
+
+// the fields' types once merged: one no function voted on is a u32
+fn plain_types(fields: &mut BTreeMap<u64, Ty>) {
+    for t in fields.values_mut() {
+        if *t == NO_VOTE {
+            *t = Ty::U32;
+        }
     }
 }
 
@@ -379,6 +420,7 @@ pub fn by_class(all: &HashMap<u32, Facts>, classes: &[Class], skip: &dyn Fn(u32,
                 }
                 keep
             });
+            plain_types(&mut fields);
             out.structs.insert(classes[c].name.clone(), fields);
         }
         out.params.entry(key.0).or_default().insert(key.1, classes[c].name.clone());
@@ -489,7 +531,11 @@ pub fn unify(all: &HashMap<u32, Facts>, skip: &dyn Fn(u32, usize) -> bool) -> Re
                 format!("S_{:08x}_{}", a, k)
             })
             .clone();
-        out.structs.entry(name.clone()).or_insert_with(|| class.clone());
+        out.structs.entry(name.clone()).or_insert_with(|| {
+            let mut fields = class.clone();
+            plain_types(&mut fields);
+            fields
+        });
         out.params.entry(key.0).or_default().insert(key.1, name);
     }
     out

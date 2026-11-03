@@ -9,8 +9,9 @@
 // - a call through guest::Function / guest::call_address (detail::call): the arguments are evaluated, then written to
 //   r0-r3 (s0-s15), lr = RETURN_TO_HOST, the callee runs and must come back there, and the result is read from r0;
 // - guest::svc(n) is rt_svc on the guest CPU (the registers it reads and writes are the CPU's);
-// - float == and < are the Z and N bits of vfp_cmpf (3dsrecomp/runtime/cpu.h: Z iff a == b, N iff a < b), which is
-//   how the recompiled code compares floats;
+// - float comparisons are the flags of vfp_cmpf (3dsrecomp/runtime/cpu.h: Z iff a == b, N iff a < b, V iff
+//   unordered, C otherwise or unordered), which is how the recompiled code compares floats: == is Z, < is N, <= is
+//   Z | N, > is none of Z, N, V, >= neither N nor V, != not Z (the model knows the result is one of the four);
 // - fields: offsets from the file's packed structs, or the type database for the repository's structs (each such
 //   assumption is listed by layout_assumptions, for the compiler to check). A field is reached on the host at
 //   g_mem + address + offset, without the guest's 32-bit wrap: offsets of MAX_FIELD_OFFSET or more are refused (a
@@ -23,6 +24,11 @@
 // - `inline constexpr u32 name = K;` is the constant K.
 use crate::ast::*;
 use crate::typedb::PathStep;
+
+// the flags' bits in a VFP comparison's result (runtime/cpu.h vfp_cmpf: NZCV in bits 31-28)
+pub const VFP_N: u64 = 31;
+pub const VFP_Z: u64 = 30;
+pub const VFP_V: u64 = 28;
 use std::collections::{HashMap, HashSet};
 
 type R<T> = Result<T, String>;
@@ -758,13 +764,25 @@ impl<'a> Parser<'a> {
             if is_float(&lt) || is_float(&rt) {
                 let both32 = lt == CType::Val(Ty::F32) && rt == CType::Val(Ty::F32);
                 match op {
-                    BinOp::Eq | BinOp::Lt if both32 => {
-                        // the Z / N bit of the runtime's VFP comparison
-                        let bit = if op == BinOp::Eq { 30 } else { 31 };
+                    BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge if both32 => {
+                        // the flags of the runtime's VFP comparison of a and b (one of equal: Z, less: N, greater: none,
+                        // unordered: V; the model knows it is one of those): == is Z, < is N, <= is Z | N, > is none
+                        // of them, >= is neither N nor V, != is not Z (all false for NaN but !=, as in C++)
                         let cmp = Expr::Call("vfp_cmpf".into(), vec![lhs, rhs]);
-                        lhs = Expr::Bin(BinOp::And,
-                                        Box::new(Expr::Bin(BinOp::Shr, Box::new(cmp), Box::new(Expr::Num(bit, Ty::U32)))),
-                                        Box::new(Expr::Num(1, Ty::U32)));
+                        let flag = |bit: u64| Expr::Bin(BinOp::And,
+                                                        Box::new(Expr::Bin(BinOp::Shr, Box::new(cmp.clone()), Box::new(Expr::Num(bit, Ty::U32)))),
+                                                        Box::new(Expr::Num(1, Ty::U32)));
+                        let or = |a: Expr, b: Expr| Expr::Bin(BinOp::Or, Box::new(a), Box::new(b));
+                        let not = |a: Expr| Expr::Bin(BinOp::Xor, Box::new(a), Box::new(Expr::Num(1, Ty::U32)));
+                        let (n, z, v) = (VFP_N, VFP_Z, VFP_V);
+                        lhs = match op {
+                            BinOp::Eq => flag(z),
+                            BinOp::Lt => flag(n),
+                            BinOp::Ne => not(flag(z)),
+                            BinOp::Le => or(flag(z), flag(n)),
+                            BinOp::Gt => not(or(or(flag(z), flag(n)), flag(v))),
+                            _ => not(or(flag(n), flag(v))),
+                        };
                         lt = CType::Val(Ty::U32);
                         continue;
                     }
@@ -929,7 +947,7 @@ impl<'a> Parser<'a> {
                 CType::Ptr(_) => Ty::U32,
                 other => return Err(format!("argument of type {:?}", other)),
             };
-            out.push(Stmt::Decl(ty, name.clone(), Some(e.clone())));
+            out.push(Stmt::Decl(ty, name.clone(), Some(e.clone()), Origin(0)));
             temps.push((name, t.clone()));
         }
         let args: &[(String, CType)] = if by_address { &temps[1..] } else { &temps[..] };
@@ -970,7 +988,7 @@ impl<'a> Parser<'a> {
         match target {
             Some(a) => {
                 out.push(Stmt::SetCpu(CpuField::Pc, Expr::Num(a as u64, Ty::U32)));
-                out.push(Stmt::GuestCall(a, false));
+                out.push(Stmt::GuestCall(a, false, Origin(0)));
             }
             None => {
                 out.push(Stmt::SetCpu(CpuField::Pc, Expr::Var(temps[0].0.clone())));
@@ -980,7 +998,7 @@ impl<'a> Parser<'a> {
                     regs.extend((0..single).map(|k| format!("s{}", k)));
                     out.push(Stmt::Site(regs));
                 }
-                out.push(Stmt::Dispatch(false));
+                out.push(Stmt::Dispatch(false, Origin(0)));
             }
         }
         // the callee must come back to RETURN_TO_HOST (detail::call stops the game otherwise)
@@ -1069,7 +1087,7 @@ impl<'a> Parser<'a> {
             self.expect(";")?;
             self.expect(")")?;
             let mut all = self.block()?;
-            // the emitter's shape: test: check; if (!(cond)) { break; } top: body
+            // the emitter's shape: test: check; if (<not cond>) { break; } top: body
             let test = match all.first().cloned() {
                 Some(Stmt::Label(test)) => {
                     all.remove(0);
@@ -1081,7 +1099,12 @@ impl<'a> Parser<'a> {
                 .iter()
                 .position(|s| matches!(s, Stmt::If(_, a, b) if b.is_empty() && a.len() == 1 && a[0] == Stmt::Unsupported("break".into())))
                 .ok_or("for loop without its exit test")?;
-            let Stmt::If(Expr::Un(UnOp::LNot, cond), _, _) = all[k].clone() else { return Err("for loop exit test".into()) };
+            // (the exit test is the loop's condition negated: written `!(cond)` or already simplified, `i >= 0x10`)
+            let Stmt::If(exit, _, _) = all[k].clone() else { return Err("for loop exit test".into()) };
+            let cond = match exit {
+                Expr::Un(UnOp::LNot, c) => c,
+                other => Box::new(Expr::Un(UnOp::LNot, Box::new(other))),
+            };
             let check: Vec<Stmt> = all[..k].to_vec();
             let (top, body) = match all.get(k + 1).cloned() {
                 Some(Stmt::Label(top)) => (top, all[k + 2..].to_vec()),
@@ -1183,7 +1206,7 @@ impl<'a> Parser<'a> {
                 };
                 self.expect(";")?;
                 self.vars.insert(n.clone(), t);
-                out.push(Stmt::Decl(ty, n, init));
+                out.push(Stmt::Decl(ty, n, init, Origin(0)));
                 return Ok(());
             }
             self.i = save;
@@ -1292,7 +1315,7 @@ impl<'a> Parser<'a> {
             }
             let value = Expr::Bin(op, Box::new(cur), Box::new(e));
             match place {
-                Place::Var(n) => out.push(Stmt::Assign(n, value)),
+                Place::Var(n) => out.push(Stmt::Assign(n, value, Origin(0))),
                 Place::Cpu(f) => out.push(Stmt::SetCpu(f, value)),
                 p => {
                     let (addr, t) = self.place_address(&p)?;
@@ -1314,7 +1337,7 @@ impl<'a> Parser<'a> {
                 if is_float(&t) != is_float(&vt) {
                     return Err(format!("{} = a {:?}", n, vt));
                 }
-                out.push(Stmt::Assign(n, value));
+                out.push(Stmt::Assign(n, value, Origin(0)));
             }
             Place::Cpu(f) => out.push(Stmt::SetCpu(f, value)),
             p => {
@@ -1690,7 +1713,7 @@ fn function(p: &mut Parser, address: u32) -> R<Function> {
     p.ret = ret;
     p.expect("(")?;
     // detail::invoke: parameters from the registers, in order (AAPCS-VFP)
-    let mut body = vec![Stmt::Decl(Ty::U32, LR.into(), Some(Expr::Cpu(CpuField::R(14))))];
+    let mut body = vec![Stmt::Decl(Ty::U32, LR.into(), Some(Expr::Cpu(CpuField::R(14))), Origin(0))];
     let (mut core, mut single) = (0u32, 0u32);
     if !p.is(")") {
         loop {
@@ -1715,7 +1738,7 @@ fn function(p: &mut Parser, address: u32) -> R<Function> {
                 return Err("parameter on the stack".into());
             }
             p.vars.insert(n.clone(), t);
-            body.push(Stmt::Decl(ty, n, Some(Expr::Cpu(src))));
+            body.push(Stmt::Decl(ty, n, Some(Expr::Cpu(src)), Origin(0)));
             if !p.eat(",") {
                 break;
             }
@@ -1724,7 +1747,7 @@ fn function(p: &mut Parser, address: u32) -> R<Function> {
     p.expect(")")?;
     // detail::invoke's PushedFrame: the masked registers stored below sp as a push stores them, sp lowered past them
     if p.frame != 0 {
-        body.push(Stmt::Decl(Ty::U32, FRAME.into(), Some(Expr::Num(p.frame as u64, Ty::U32))));
+        body.push(Stmt::Decl(Ty::U32, FRAME.into(), Some(Expr::Num(p.frame as u64, Ty::U32)), Origin(0)));
         let mut below = 0u64;
         for r in (0..15).rev().filter(|r| p.frame >> r & 1 != 0) {
             below += 4;
@@ -1788,7 +1811,7 @@ pub fn declared_names(f: &Function) -> (Vec<String>, Vec<String>) {
     fn walk(list: &[Stmt], vars: &mut Vec<String>, labels: &mut Vec<String>) {
         for s in list {
             match s {
-                Stmt::Decl(_, n, _) if !n.starts_with("__") => vars.push(n.clone()),
+                Stmt::Decl(_, n, _, ..) if !n.starts_with("__") => vars.push(n.clone()),
                 Stmt::Label(l) => labels.push(l.clone()),
                 Stmt::If(_, a, b) => {
                     walk(a, vars, labels);
@@ -1838,13 +1861,13 @@ pub fn rename(f: &mut Function, map: &HashMap<String, String>) {
     fn s(map: &HashMap<String, String>, list: &mut [Stmt]) {
         for st in list {
             match st {
-                Stmt::Decl(_, v, init) => {
+                Stmt::Decl(_, v, init, ..) => {
                     n(map, v);
                     if let Some(x) = init {
                         e(map, x);
                     }
                 }
-                Stmt::Assign(v, x) => {
+                Stmt::Assign(v, x, ..) => {
                     n(map, v);
                     e(map, x);
                 }

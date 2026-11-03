@@ -113,7 +113,7 @@ pub fn keep_first_argument(f: &mut Function) {
                     walk(a, r0, fresh, decls);
                     walk(b, r0, fresh, decls);
                 }
-                Stmt::GuestCall(t, false) if returns_first_argument(*t) => {
+                Stmt::GuestCall(t, false, ..) if returns_first_argument(*t) => {
                     // SO() ... call; SI(): keep r0 before the SO() and give it back after the SI()
                     let so = list[..i].iter().rposition(|s| matches!(s, Stmt::SyncOut));
                     let si = list[i + 1..].iter().position(|s| matches!(s, Stmt::SyncIn)).map(|k| i + 1 + k);
@@ -125,8 +125,8 @@ pub fn keep_first_argument(f: &mut Function) {
                             *fresh += 1;
                             let v = format!("r0_kept{}", fresh);
                             decls.push(v.clone());
-                            list.insert(si + 1, Stmt::Assign(r0.to_string(), Expr::Var(v.clone())));
-                            list.insert(so, Stmt::Assign(v, Expr::Var(r0.to_string())));
+                            list.insert(si + 1, Stmt::Assign(r0.to_string(), Expr::Var(v.clone()), crate::ast::Origin(0)));
+                            list.insert(so, Stmt::Assign(v, Expr::Var(r0.to_string()), crate::ast::Origin(0)));
                             i = si + 3;
                             continue;
                         }

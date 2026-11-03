@@ -123,10 +123,22 @@ pub enum Expr {
     AddrOf(String),
 }
 
+// The address of the original instruction a statement comes from (0: none, e.g. a statement a rewrite made up). Names
+// are keyed by it (a variable by the instructions defining it), so that they survive changes to the decompiler. It
+// takes no part in comparisons: two statements that differ only in where they come from are the same statement.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Origin(pub u32);
+
+impl PartialEq for Origin {
+    fn eq(&self, _: &Origin) -> bool {
+        true
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Stmt {
-    Decl(Ty, String, Option<Expr>),
-    Assign(String, Expr),
+    Decl(Ty, String, Option<Expr>, Origin),
+    Assign(String, Expr, Origin),
     SetCpu(CpuField, Expr),
     Store(Ty, Expr, Expr), // WR8/16/32/64 (address, value)
     If(Expr, Vec<Stmt>, Vec<Stmt>),
@@ -136,9 +148,9 @@ pub enum Stmt {
     SyncOut,
     SyncIn,
     // a call of guest code: f_XXXXXXXX(c, entry) (target, tail call)
-    GuestCall(u32, bool),
+    GuestCall(u32, bool, Origin),
     // rt_dispatch(c, 0): a call through c->pc (tail: return rt_dispatch(c, 0))
-    Dispatch(bool),
+    Dispatch(bool, Origin),
     // the argument registers the next indirect call's callee reads (an assumption: sites.rs)
     Site(Vec<String>),
     // switch (e) { case K: goto L; ... default: break; } (computed jumps inside the function)

@@ -134,7 +134,7 @@ fn step(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
 
 // whether control can run past the end of the statements (their last one does not return, jump or tail-call)
 fn falls_through(list: &[Stmt]) -> bool {
-    !matches!(list.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)))
+    !matches!(list.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..)))
 }
 
 // Gotos out of an if whose other way does not fall through:
@@ -407,7 +407,7 @@ fn loops(list: &mut Vec<Stmt>, refs: &HashMap<String, usize>) -> bool {
 
 // also the preemption points (no-ops in the model: they only let other threads run), which sit on back edges
 fn drop_self_moves(list: &mut Vec<Stmt>) {
-    list.retain(|s| !matches!(s, Stmt::Assign(x, Expr::Var(y)) if x == y) && !matches!(s, Stmt::Preempt));
+    list.retain(|s| !matches!(s, Stmt::Assign(x, Expr::Var(y), ..) if x == y) && !matches!(s, Stmt::Preempt));
     for s in list.iter_mut() {
         if let Stmt::If(_, a, b) = s {
             drop_self_moves(a);
@@ -422,7 +422,7 @@ fn return_tail(list: &[Stmt], label: &str) -> Option<Vec<Stmt>> {
     let mut out = Vec::new();
     for s in &list[start + 1..] {
         match s {
-            Stmt::Return | Stmt::GuestCall(_, true) | Stmt::Dispatch(true) => {
+            Stmt::Return | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..) => {
                 out.push(s.clone());
                 return if out.len() <= 6 { Some(out) } else { None };
             }
@@ -441,9 +441,9 @@ fn return_tail(list: &[Stmt], label: &str) -> Option<Vec<Stmt>> {
 fn written(tail: &[Stmt]) -> usize {
     tail.iter()
         .filter(|s| match s {
-            Stmt::Assign(_, Expr::Var(v)) if v.starts_with("saved_") => false,
-            Stmt::Decl(_, n, _) | Stmt::Assign(n, _) => !n.starts_with("saved_") && n != "r13",
-            Stmt::Store(..) | Stmt::GuestCall(..) | Stmt::Dispatch(_) => true,
+            Stmt::Assign(_, Expr::Var(v), ..) if v.starts_with("saved_") => false,
+            Stmt::Decl(_, n, _, ..) | Stmt::Assign(n, _, ..) => !n.starts_with("saved_") && n != "r13",
+            Stmt::Store(..) | Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) => true,
             _ => false,
         })
         .count()
@@ -534,7 +534,7 @@ fn join_copies(list: &mut Vec<Stmt>) -> bool {
                 true
             }
             Some(Stmt::If(_, a, b)) => push(a, join, tail, copies) && push(b, join, tail, copies),
-            Some(s) if matches!(s, Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)) => true,
+            Some(s) if matches!(s, Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..)) => true,
             Some(s) => {
                 let mut refs = HashMap::new();
                 count_refs(std::slice::from_ref(s), &mut refs);

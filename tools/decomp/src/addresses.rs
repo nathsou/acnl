@@ -89,7 +89,7 @@ thread_local! {
 fn written(list: &[Stmt], out: &mut std::collections::HashSet<String>) {
     for s in list {
         match s {
-            Stmt::Decl(_, n, _) | Stmt::Assign(n, _) => {
+            Stmt::Decl(_, n, _, ..) | Stmt::Assign(n, _, ..) => {
                 out.insert(n.clone());
             }
             Stmt::SyncIn => {
@@ -109,7 +109,7 @@ fn written(list: &[Stmt], out: &mut std::collections::HashSet<String>) {
 fn walk(list: &mut [Stmt], env: &mut Env) {
     for s in list.iter_mut() {
         match s {
-            Stmt::Decl(_, x, e) => {
+            Stmt::Decl(_, x, e, ..) => {
                 if let Some(e) = e {
                     rewrite_expr(e, env);
                 }
@@ -123,7 +123,7 @@ fn walk(list: &mut [Stmt], env: &mut Env) {
                     }
                 }
             }
-            Stmt::Assign(x, e) => {
+            Stmt::Assign(x, e, ..) => {
                 rewrite_expr(e, env);
                 match eval(e, env) {
                     Some(v) => {
@@ -150,7 +150,7 @@ fn walk(list: &mut [Stmt], env: &mut Env) {
                 walk(b, &mut eb);
                 // (a branch that leaves, by a return, a tail call or a jump, does not reach what follows; a jump's
                 // label forgets what it does not know)
-                let leaves = |x: &[Stmt]| matches!(x.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true) | Stmt::Dispatch(true)));
+                let leaves = |x: &[Stmt]| matches!(x.last(), Some(Stmt::Return | Stmt::Goto(_) | Stmt::GuestCall(_, true, ..) | Stmt::Dispatch(true, ..)));
                 match (leaves(a), leaves(b)) {
                     (true, false) => *env = eb,
                     (false, true) => *env = ea,
@@ -199,7 +199,7 @@ pub fn normalize_addresses(f: &mut Function) {
     CONSTANT.with(|x| *x.borrow_mut() = constant);
     walk(&mut f.body, &mut env);
     // the copies of the arguments, first thing in the function
-    let mut prologue: Vec<Stmt> = args.iter().map(|k| Stmt::Decl(Ty::U32, format!("arg{}", k), Some(Expr::Var(ARGS[*k].into())))).collect();
+    let mut prologue: Vec<Stmt> = args.iter().map(|k| Stmt::Decl(Ty::U32, format!("arg{}", k), Some(Expr::Var(ARGS[*k].into())), crate::ast::Origin(0))).collect();
     prologue.extend(std::mem::take(&mut f.body));
     f.body = prologue;
 }

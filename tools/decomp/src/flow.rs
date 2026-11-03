@@ -48,11 +48,11 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
         let mut p = prefix.clone();
         p.push(i);
         match s {
-            Stmt::Decl(_, x, e) => {
+            Stmt::Decl(_, x, e, ..) => {
                 let uses = e.as_ref().map(expr_vars).unwrap_or_default();
                 out.push(Node::Simple(p, uses, Some(x.clone()), true));
             }
-            Stmt::Assign(x, e) => {
+            Stmt::Assign(x, e, ..) => {
                 // a helper writing through &v also defines v (without killing, conservatively)
                 let mut uses = expr_vars(e);
                 if out_params(e).is_empty() {
@@ -108,11 +108,11 @@ fn flatten(list: &[Stmt], prefix: &Path, out: &mut Vec<Node>, fresh: &mut usize)
             Stmt::Switch(e, cases) => out.push(Node::Switch(expr_vars(e), cases.iter().map(|(_, l)| l.clone()).collect())),
             Stmt::SyncOut => out.push(Node::SyncOut(p)),
             Stmt::SyncIn => out.push(Node::SyncIn(p)),
-            Stmt::GuestCall(t, false) => out.push(Node::Call(Some(*t), p.clone())),
-            Stmt::Dispatch(false) | Stmt::Svc(_) => out.push(Node::Call(None, p.clone())),
+            Stmt::GuestCall(t, false, ..) => out.push(Node::Call(Some(*t), p.clone())),
+            Stmt::Dispatch(false, ..) | Stmt::Svc(_) => out.push(Node::Call(None, p.clone())),
             Stmt::Return => out.push(Node::Exit(false, None)),
-            Stmt::GuestCall(t, true) => out.push(Node::Exit(true, Some(*t))),
-            Stmt::Dispatch(true) => {
+            Stmt::GuestCall(t, true, ..) => out.push(Node::Exit(true, Some(*t))),
+            Stmt::Dispatch(true, ..) => {
                 // (a marker with the call's path: sites.rs)
                 out.push(Node::Simple(p.clone(), Set::new(), None, false));
                 out.push(Node::Exit(true, None));
@@ -299,7 +299,7 @@ fn written_before_calls(f: &Function, indirect_only: bool) -> HashMap<Path, Set>
         .iter()
         .enumerate()
         .filter_map(|(i, node)| match node {
-            Node::Call(None, p) | Node::Simple(p, ..) if matches!(stmt_at(&f.body, p), Some(Stmt::Dispatch(_))) => {
+            Node::Call(None, p) | Node::Simple(p, ..) if matches!(stmt_at(&f.body, p), Some(Stmt::Dispatch(_, ..))) => {
                 Some((p.clone(), before[i].clone().unwrap_or_default()))
             }
             Node::Call(Some(_), p) if !indirect_only => Some((p.clone(), before[i].clone().unwrap_or_default())),
@@ -672,7 +672,7 @@ pub fn liveness_with(f: &Function, preserve: bool) -> Liveness {
 
 fn has_out_params(s: &Stmt) -> bool {
     match s {
-        Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) => !out_params(e).is_empty(),
+        Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) => !out_params(e).is_empty(),
         _ => false,
     }
 }
@@ -695,7 +695,7 @@ fn remove_dead(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, keep_decls: &
         }
         // a shift whose carry out nobody reads: the shift alone (lsl_rc and lsl_r give the same value; so for lsr, asr
         // and ror)
-        if let Stmt::Assign(_, e) | Stmt::Decl(_, _, Some(e)) = &mut list[i] {
+        if let Stmt::Assign(_, e, ..) | Stmt::Decl(_, _, Some(e), ..) = &mut list[i] {
             if let Expr::Call(n, args) = e {
                 if let (Some(plain), [_, _, Expr::AddrOf(c)]) = (n.strip_suffix('c'), args.as_slice()) {
                     let unread = lv.live_out.get(&p).map_or(false, |s| !s.contains(c));
@@ -708,15 +708,15 @@ fn remove_dead(list: &mut Vec<Stmt>, prefix: &Path, lv: &Liveness, keep_decls: &
             }
         }
         let dead = match &list[i] {
-            Stmt::Assign(x, _) => lv.live_out.get(&p).map_or(false, |s| !s.contains(x)),
-            Stmt::Decl(_, x, _) if !keep_decls.contains(x) => lv.live_out.get(&p).map_or(false, |s| !s.contains(x)),
+            Stmt::Assign(x, _, ..) => lv.live_out.get(&p).map_or(false, |s| !s.contains(x)),
+            Stmt::Decl(_, x, _, ..) if !keep_decls.contains(x) => lv.live_out.get(&p).map_or(false, |s| !s.contains(x)),
             _ => false,
         };
         if dead && !has_out_params(&list[i]) {
             // a Decl still provides the variable's declaration for later assignments: keep it without a value
-            if let Stmt::Decl(t, x, Some(_)) = &list[i] {
-                let (t, x) = (*t, x.clone());
-                list[i] = Stmt::Decl(t, x, None);
+            if let Stmt::Decl(t, x, Some(_), o) = &list[i] {
+                let (t, x, o) = (*t, x.clone(), *o);
+                list[i] = Stmt::Decl(t, x, None, o);
             } else {
                 list.remove(i);
             }

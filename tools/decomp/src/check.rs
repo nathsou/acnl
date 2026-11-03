@@ -171,7 +171,7 @@ fn var_types(f: &Function) -> HashMap<String, Ty> {
     fn walk(list: &[Stmt], out: &mut HashMap<String, Ty>) {
         for s in list {
             match s {
-                Stmt::Decl(t, n, _) => {
+                Stmt::Decl(t, n, _, ..) => {
                     out.insert(n.clone(), *t);
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
@@ -253,7 +253,7 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
     fn written(list: &[Stmt], out: &mut HashSet<String>) {
         for s in list {
             match s {
-                Stmt::Decl(_, n, _) | Stmt::Assign(n, _) => {
+                Stmt::Decl(_, n, _, ..) | Stmt::Assign(n, _, ..) => {
                     out.insert(n.clone());
                 }
                 Stmt::SyncIn => {
@@ -666,7 +666,7 @@ pub fn verify(ctx: &Context, original: &Function, d: &crate::decompile::Decompil
         .function
         .body
         .iter()
-        .take_while(|s| matches!(s, Stmt::Decl(_, n, Some(Expr::Var(_))) if n.starts_with("arg")))
+        .take_while(|s| matches!(s, Stmt::Decl(_, n, Some(Expr::Var(_)), ..) if n.starts_with("arg")))
         .cloned()
         .collect();
     let mut body = ghosts;
@@ -691,9 +691,11 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     // a renamed draft: its variables and labels get the draft's names back, paired by their order (the proof relates
     // variables at loop headers by name)
     let mut cpp = cpp.clone();
+    // (read with the runtime's helpers, as prove-cpp reads the drafts: else a draft calling one does not read back)
+    let helpers: HashSet<String> = crate::HELPERS.iter().map(|s| s.to_string()).collect();
     if let Some(draft) = crate::emit::emit(d)
         .ok()
-        .and_then(|t| crate::cpp::read(&t, &HashSet::new()).ok())
+        .and_then(|t| crate::cpp::read(&t, &helpers).ok())
         .and_then(|mut f| f.exports.pop())
         .and_then(|e| e.function.ok())
     {
@@ -734,14 +736,14 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     let cpp = &cpp;
     // the decompiled function gets the C++'s copy of the return address (unused there), to relate them at loops
     let mut df = d.function.clone();
-    df.body.insert(0, Stmt::Decl(Ty::U32, crate::cpp::LR.into(), Some(Expr::Cpu(crate::ast::CpuField::R(14)))));
+    df.body.insert(0, Stmt::Decl(Ty::U32, crate::cpp::LR.into(), Some(Expr::Cpu(crate::ast::CpuField::R(14))), crate::ast::Origin(0)));
     // the CPU copies of the registers the decompiled function keeps in variables are not related at loop headers,
     // nor pc (the return address a call leaves there differs)
     let mut free: HashSet<String> = df.synced.iter().map(|(_, f)| crate::sym::cpu_key(f)).collect();
     free.insert("pc".into());
     // with the pushes kept, both return through the saved lr; the save area is the pushed slots
     // (a C++ export that pushes as the original did, GUEST_EXPORT_FRAMED, writes the removed save area: its region)
-    let framed = cpp.body.iter().any(|s| matches!(s, Stmt::Decl(_, n, _) if n == crate::cpp::FRAME));
+    let framed = cpp.body.iter().any(|s| matches!(s, Stmt::Decl(_, n, _, ..) if n == crate::cpp::FRAME));
     let (slots, lr_slot) = if d.save_slots.is_empty() {
         crate::saves::pushed_slots(original)
     } else if framed {
@@ -755,7 +757,7 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     fn decls(list: &[Stmt], out: &mut HashSet<String>) {
         for s in list {
             match s {
-                Stmt::Decl(_, n, _) => {
+                Stmt::Decl(_, n, _, ..) => {
                     out.insert(n.clone());
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
@@ -774,7 +776,7 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
                 Stmt::SetCpu(f, _) => {
                     out.insert(crate::sym::cpu_key(f));
                 }
-                Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) | Stmt::SyncOut => {
+                Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) | Stmt::Svc(_) | Stmt::SyncOut => {
                     out.extend(["r0", "r1", "r2", "r3", "r12", "r14"].iter().map(|k| k.to_string()));
                     out.extend((0..16).map(|k| format!("s{}", k)));
                 }
@@ -799,16 +801,16 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     let params: HashMap<String, String> = cpp
         .body
         .iter()
-        .filter_map(|s| if let Stmt::Decl(_, n, Some(Expr::Cpu(f))) = s { Some((n.clone(), crate::sym::cpu_key(f))) } else { None })
+        .filter_map(|s| if let Stmt::Decl(_, n, Some(Expr::Cpu(f)), ..) = s { Some((n.clone(), crate::sym::cpu_key(f))) } else { None })
         .collect();
     let mut entry_values: HashSet<String> = HashSet::new();
     fn entry_decls(list: &[Stmt], params: &HashMap<String, String>, register_of: &dyn Fn(&str) -> String, out: &mut HashSet<String>) {
         for s in list {
             match s {
-                Stmt::Decl(_, n, Some(Expr::Cpu(f))) if crate::sym::cpu_key(f) == register_of(n) => {
+                Stmt::Decl(_, n, Some(Expr::Cpu(f)), ..) if crate::sym::cpu_key(f) == register_of(n) => {
                     out.insert(n.clone());
                 }
-                Stmt::Decl(_, n, Some(Expr::Var(p))) if params.get(p).map_or(false, |k| *k == register_of(n)) => {
+                Stmt::Decl(_, n, Some(Expr::Var(p)), ..) if params.get(p).map_or(false, |k| *k == register_of(n)) => {
                     out.insert(n.clone());
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
@@ -823,10 +825,10 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     fn assigns(list: &[Stmt], entry: &HashSet<String>, out: &mut HashSet<String>) {
         for s in list {
             match s {
-                Stmt::Assign(n, _) => {
+                Stmt::Assign(n, _, ..) => {
                     out.insert(n.clone());
                 }
-                Stmt::Decl(_, n, Some(_)) if !entry.contains(n) && !n.starts_with("__") => {
+                Stmt::Decl(_, n, Some(_), ..) if !entry.contains(n) && !n.starts_with("__") => {
                     out.insert(n.clone());
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {

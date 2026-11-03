@@ -163,7 +163,7 @@ fn mutate(list: &mut [ast::Stmt]) -> bool {
     for s in list.iter_mut() {
         let hit = match s {
             ast::Stmt::Store(_, _, v) => bump(v),
-            ast::Stmt::Assign(n, e) if n == "r0" => bump(e),
+            ast::Stmt::Assign(n, e, ..) if n == "r0" => bump(e),
             ast::Stmt::If(_, a, b) => mutate(a) || mutate(b),
             _ => false,
         };
@@ -521,7 +521,7 @@ fn emit_batch(list: &str, out: &str, threads: usize) {
 }
 
 // The runtime's helper functions (3dsrecomp/runtime/cpu.h, libm) a C++ draft may call.
-const HELPERS: [&str; 63] = [
+pub const HELPERS: [&str; 63] = [
     "vfp_cmpf", "ror32", "lsl_r", "lsr_r", "asr_r", "ror_r", "lsl_rc", "lsr_rc", "asr_rc", "ror_rc", "sat32", "qadd", "qsub", "qdadd",
     "qdsub", "smlaxy", "smlaxy_add", "ssat", "usat", "ssat16", "usat16", "sxtb", "sxth", "uxtb", "uxth", "sxtb16", "uxtb16",
     "add16x", "rev16", "sel", "usad8", "pas_lane", "pas16", "pas8", "vfp_cmpd", "cvt_s32", "cvt_u32", "vfp_round",

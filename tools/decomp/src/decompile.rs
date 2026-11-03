@@ -348,6 +348,71 @@ L_6014:
   r13 = r13 + 0x8u;
   { u32 ea = r13 + 0; u32 nb = r13 + 8; r13 = nb; r4 = RD32(ea + 0); tpc = RD32(ea + 4); } c->pc = tpc; SO(); return;";
 
+    // r1 = 1 when r0 is negative (the sign bit tested through a mask), r1 = 2 when r2's bit 3 is set (lsls #28: the N
+    // flag)
+    const SIGN_TESTS: &str = "L_e000:
+  { u32 a = 0; (void)a; u32 b = 0x0u; u32 res = b; r1 = res; } /* e000: movs */
+  { u32 a = r0; u32 b = 0x80000000u; u32 res = a & b; nf = res >> 31; zf = res == 0; r3 = res; } /* e002: ands */
+  if (!zf) { { u32 a = 0; (void)a; u32 b = 0x1u; u32 res = b; r1 = res; } } /* e006: movne */
+  { u32 b0 = r2; u32 b = (b0 << 28); u32 res = b; nf = res >> 31; zf = res == 0; r3 = res; } /* e008: lsls */
+  if (nf) { { u32 a = 0; (void)a; u32 b = 0x2u; u32 res = b; r1 = res; } } /* e00a: movmi */
+  tpc = r14; c->pc = tpc; SO(); return; /* e00c: bx lr */";
+
+    // r0 = 1 when s0 <= s1 or either is NaN (vcmp; vmrs; movle: Z or N != V)
+    const FLOAT_LE: &str = "void f_0000f000(CPU *c, u32 entry) {
+  u32 r0 = c->r[0], r14 = c->r[14];
+  u32 nf = c->nf, zf = c->zf, cf = c->cf, vf = c->vf;
+  u32 fpsr = c->fpscr;
+  float S0 = c->s[0], S1 = c->s[1];
+  u32 tpc = 0; u8 *const M = MEMBASE; (void)M; (void)tpc;
+#define SO() do { c->r[0] = r0; c->r[14] = r14; c->nf = nf; c->zf = zf; c->cf = cf; c->vf = vf; c->fpscr = fpsr; c->s[0] = S0; c->s[1] = S1; } while (0)
+#define SI() do { r0 = c->r[0]; r14 = c->r[14]; nf = c->nf; zf = c->zf; cf = c->cf; vf = c->vf; fpsr = c->fpscr; S0 = c->s[0]; S1 = c->s[1]; } while (0)
+L_f000:
+  { u32 a = 0; (void)a; u32 b = 0x0u; u32 res = b; r0 = res; } /* f000: mov */
+  fpsr = (fpsr & 0x0fffffffu) | vfp_cmpf(S0, S1); /* f004: vcmp.f32 */
+  nf = fpsr >> 31; zf = (fpsr >> 30) & 1; vf = (fpsr >> 28) & 1; /* f008: vmrs apsr_nzcv, fpscr */
+  if (zf || nf != vf) { { u32 a = 0; (void)a; u32 b = 0x1u; u32 res = b; r0 = res; } } /* f00c: movle */
+  tpc = r14; c->pc = tpc; SO(); return; /* f010: bx lr */
+#undef SO
+#undef SI
+}";
+
+    #[test]
+    fn round_trip_float_comparison() {
+        // the flags' test as the float comparison (LE also holds for NaN: !(a > b)); >= instead is caught
+        let f = parse::function(FLOAT_LE).unwrap();
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let (d, v) = decompile_and_prove(&ctx, &f);
+        assert!(matches!(v, Verdict::Proved));
+        let text = crate::emit::emit(&d).expect("emits");
+        let helpers = std::collections::HashSet::new();
+        let read = |t: &str| crate::cpp::read(t, &helpers).unwrap().exports.remove(0).function.unwrap();
+        match crate::check::verify_cpp(&ctx, &f, &d, &read(&text)) {
+            Verdict::Proved => {}
+            Verdict::Differs(w) | Verdict::Unknown(w) => panic!("{}\n{}", w, text),
+        }
+        assert!(text.contains("if (!(S0 > S1))"), "{}", text);
+        let changed = text.replacen("if (!(S0 > S1))", "if (!(S0 >= S1))", 1);
+        assert!(matches!(crate::check::verify_cpp(&ctx, &f, &d, &read(&changed)), Verdict::Differs(_)), "{}", changed);
+    }
+
+    #[test]
+    fn keeps_each_statements_instruction_address() {
+        let f = parse::function(&function("f_0000e000", &["r0", "r1", "r2", "r3", "r14"], SIGN_TESTS)).unwrap();
+        let origins: Vec<u32> = f.body.iter().filter_map(|s| match s {
+            crate::ast::Stmt::Assign(v, _, o) if v == "r1" || v == "r3" => Some(o.0),
+            _ => None,
+        }).collect();
+        assert_eq!(origins, vec![0xe000, 0xe002, 0xe008]);
+    }
+
+    #[test]
+    fn round_trip_sign_and_bit_tests() {
+        // the sign bit and bit 3 tested as comparisons (a changed bit is caught)
+        round_trip("f_0000e000", &["r0", "r1", "r2", "r3", "r14"], SIGN_TESTS, ("& 8u", "& 4u"));
+    }
+
     fn private_local(callee: u32, argument: &str, reach: crate::private::Stack) -> (super::Decompiled, Verdict) {
         crate::private::insert_reach(callee, reach);
         crate::private::ENABLED.with(|e| e.set(Some(true)));
@@ -402,7 +467,7 @@ L_6014:
             let mut changed = false;
             for s in list.iter_mut() {
                 match s {
-                    Stmt::Assign(r, Expr::Var(v)) if r == "r4" && v == "saved_r4" => {
+                    Stmt::Assign(r, Expr::Var(v), ..) if r == "r4" && v == "saved_r4" => {
                         *s = Stmt::Nop;
                         changed = true;
                     }

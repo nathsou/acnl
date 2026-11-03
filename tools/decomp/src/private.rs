@@ -553,11 +553,11 @@ impl Run<'_> {
         let mut n = 0;
         let callee_keeps = |k: &str| matches!(k, "r4" | "r5" | "r6" | "r7" | "r8" | "r9" | "r10" | "r11" | "r13");
         match s {
-            Stmt::Decl(_, v, e) => {
+            Stmt::Decl(_, v, e, ..) => {
                 let a = e.as_ref().map_or(A::Plain, |e| self.eval(e, st, path, &mut n));
                 st.set_var(v, a);
             }
-            Stmt::Assign(v, e) => {
+            Stmt::Assign(v, e, ..) => {
                 let a = self.eval(e, st, path, &mut n);
                 st.set_var(v, a);
             }
@@ -602,8 +602,8 @@ impl Run<'_> {
                     st.set_var(v, a);
                 }
             }
-            Stmt::GuestCall(_, tail) | Stmt::Dispatch(tail) => {
-                let target = if let Stmt::GuestCall(t, _) = s { Some(*t) } else { None };
+            Stmt::GuestCall(_, tail, ..) | Stmt::Dispatch(tail, ..) => {
+                let target = if let Stmt::GuestCall(t, _, ..) = s { Some(*t) } else { None };
                 // (a fragment of another function may pop what it finds at sp)
                 if target.map_or(false, fragment) {
                     self.found.callee_unknown = true;
@@ -882,7 +882,7 @@ pub fn keep_in_variables(f: &mut Function, private: &BTreeSet<u32>, save_slots: 
             let p: Path = [prefix, &[i]].concat();
             let mut n = 0;
             match s {
-                Stmt::Decl(_, _, Some(e)) | Stmt::Assign(_, e) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) => {
+                Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::ReturnUnlessPc(e) => {
                     rewrite_expr(e, &p, &mut n, at, chosen)
                 }
                 Stmt::Switch(e, _) => rewrite_expr(e, &p, &mut n, at, chosen),
@@ -893,7 +893,7 @@ pub fn keep_in_variables(f: &mut Function, private: &BTreeSet<u32>, save_slots: 
                     rewrite_expr(v, &p, &mut n, at, chosen);
                     if let Some(A::At(k)) = at.get(&key) {
                         if *k < 0 && chosen.contains_key(&((-*k) as u32)) {
-                            *s = Stmt::Assign(variable((-*k) as u32), v.clone());
+                            *s = Stmt::Assign(variable((-*k) as u32), v.clone(), crate::ast::Origin(0));
                         }
                     }
                 }
@@ -915,11 +915,11 @@ pub fn keep_in_variables(f: &mut Function, private: &BTreeSet<u32>, save_slots: 
     // each variable starts as what the word holds at the entry (an assignment that goes unless read before written)
     let sp = f.synced.iter().find(|(_, fl)| *fl == CpuField::R(13)).map(|(v, _)| v.clone()).unwrap_or("r13".into());
     // (after the copies of the arguments, which come first)
-    let first = f.body.iter().take_while(|s| matches!(s, Stmt::Decl(_, n, Some(Expr::Var(_))) if n.starts_with("arg"))).count();
+    let first = f.body.iter().take_while(|s| matches!(s, Stmt::Decl(_, n, Some(Expr::Var(_)), ..) if n.starts_with("arg"))).count();
     let mut out = Vec::new();
     for (k, (d, t)) in chosen.iter().enumerate() {
         let a = Expr::Bin(BinOp::Sub, Box::new(Expr::Var(sp.clone())), Box::new(Expr::Num(*d as u64, Ty::U32)));
-        f.body.insert(first + k, Stmt::Assign(variable(*d), Expr::Load(*t, Box::new(a))));
+        f.body.insert(first + k, Stmt::Assign(variable(*d), Expr::Load(*t, Box::new(a)), crate::ast::Origin(0)));
         f.locals.push((*t, variable(*d), None));
         out.push((variable(*d), *d));
     }

@@ -75,7 +75,7 @@ pub fn callee_key(f: &Function) -> u64 {
 pub fn direct_callees(list: &[Stmt], out: &mut Vec<u32>) {
     for s in list {
         match s {
-            Stmt::GuestCall(t, _) => out.push(*t),
+            Stmt::GuestCall(t, _, ..) => out.push(*t),
             Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                 direct_callees(a, out);
                 direct_callees(b, out);
@@ -155,12 +155,12 @@ fn call_reads_at(list: &[Stmt], prefix: &[usize], after: Option<&std::collection
         }
         match s {
             Stmt::Site(regs) => site = Some(regs),
-            Stmt::Dispatch(false) if site.is_some() => out.extend(site.take().unwrap().iter().cloned()),
-            Stmt::GuestCall(t, _) => match of(*t) {
+            Stmt::Dispatch(false, ..) if site.is_some() => out.extend(site.take().unwrap().iter().cloned()),
+            Stmt::GuestCall(t, _, ..) => match of(*t) {
                 Some(regs) => out.extend(regs),
                 None => out.extend(ARGS.iter().map(|k| k.to_string())),
             },
-            Stmt::Dispatch(_) | Stmt::Svc(_) => out.extend(ARGS.iter().map(|k| k.to_string())),
+            Stmt::Dispatch(_, ..) | Stmt::Svc(_) => out.extend(ARGS.iter().map(|k| k.to_string())),
             Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
                 call_reads_at(a, &[p.clone(), vec![0]].concat(), after, out);
                 call_reads_at(b, &[p.clone(), vec![1]].concat(), after, out);

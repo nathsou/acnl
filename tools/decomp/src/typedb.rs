@@ -17,6 +17,7 @@ pub struct TypeDb {
     arity: HashMap<u32, usize>,                   // rewritten function -> number of core-register arguments
     globals: HashMap<u32, String>,                // address -> name of the repository's guest::global<T, A> name
     headers: HashMap<String, String>,             // struct -> the header that defines it (path under games/acnl/src)
+    named: HashMap<(String, String), u64>,        // (struct, name the names layer gives a field) -> its offset
 }
 
 // "struct Name {" in the repository's headers
@@ -64,6 +65,22 @@ fn scan_globals(dir: &std::path::Path, out: &mut HashMap<u32, String>) {
             }
         }
     }
+}
+
+// The names layer's field names (DECOMP_NAMES, default games/acnl/names; tools/decomp/names.py): `struct offset name`.
+fn named_fields() -> HashMap<(String, String), u64> {
+    let dir = std::env::var("DECOMP_NAMES").unwrap_or("games/acnl/names".into());
+    let text = std::fs::read_to_string(format!("{}/fields.txt", dir)).unwrap_or_default();
+    text.lines()
+        .filter(|l| !l.starts_with('#'))
+        .filter_map(|l| {
+            let p: Vec<&str> = l.split_whitespace().collect();
+            match p.as_slice() {
+                [s, off, name] => Some(((s.to_string(), name.to_string()), u64::from_str_radix(off, 16).ok()?)),
+                _ => None,
+            }
+        })
+        .collect()
 }
 
 fn base_size(t: &str) -> Option<u64> {
@@ -118,7 +135,7 @@ impl TypeDb {
         let mut headers = HashMap::new();
         let root = std::path::Path::new("games/acnl/src");
         scan_headers(root, root, &mut headers);
-        Some(TypeDb { structs, by_gname, params: p, names, arity, globals, headers })
+        Some(TypeDb { structs, by_gname, params: p, names, arity, globals, headers, named: named_fields() })
     }
 
     pub fn header(&self, name: &str) -> Option<&String> {
@@ -172,7 +189,12 @@ impl TypeDb {
                 PathStep::Field(f) => {
                     let sname = t.get("struct")?.as_str()?.to_string();
                     let s = self.structs.get(&sname)?;
-                    let field = s.get("fields")?.as_array()?.iter().find(|x| x.get("name").and_then(|n| n.as_str()) == Some(f))?;
+                    let fields = s.get("fields")?.as_array()?;
+                    // (by its generated name, or by the name the names layer gives the field at its offset)
+                    let field = fields.iter().find(|x| x.get("name").and_then(|n| n.as_str()) == Some(f)).or_else(|| {
+                        let off = self.named.get(&(sname.clone(), f.clone()))?;
+                        fields.iter().find(|x| x.get("offset").and_then(|o| o.as_u64()) == Some(*off))
+                    })?;
                     offset += field.get("offset")?.as_u64()?;
                     t = field.get("type")?.clone();
                 }

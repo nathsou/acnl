@@ -86,9 +86,9 @@ pub fn contributions(f: &Function, mine: &HashSet<String>, out: &mut HashMap<u32
         for (i, s) in list.iter().enumerate() {
             let p: Vec<usize> = [prefix, &[i]].concat();
             match s {
-                Stmt::GuestCall(_, tail) | Stmt::Dispatch(tail) => {
+                Stmt::GuestCall(_, tail, ..) | Stmt::Dispatch(tail, ..) => {
                     let callee = match s {
-                        Stmt::GuestCall(t, _) => *t & !1,
+                        Stmt::GuestCall(t, _, ..) => *t & !1,
                         _ => constant.get(&p).map_or(INDIRECT, |a| *a & !1),
                     };
                     let set = out.entry(callee).or_default();

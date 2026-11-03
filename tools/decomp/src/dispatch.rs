@@ -58,10 +58,10 @@ fn after_call(env: &mut Env, keeps: &[&str]) {
 fn assigned(list: &[Stmt], f: &Function, out: &mut HashSet<String>) {
     for s in list {
         match s {
-            Stmt::Decl(_, n, _) | Stmt::Assign(n, _) => {
+            Stmt::Decl(_, n, _, ..) | Stmt::Assign(n, _, ..) => {
                 out.insert(n.clone());
             }
-            Stmt::SetCpu(..) | Stmt::GuestCall(..) | Stmt::Dispatch(_) | Stmt::Svc(_) => {
+            Stmt::SetCpu(..) | Stmt::GuestCall(..) | Stmt::Dispatch(_, ..) | Stmt::Svc(_) => {
                 out.insert("cpu:*".into());
             }
             Stmt::SyncIn => out.extend(f.synced.iter().map(|(v, _)| v.clone())),
@@ -114,11 +114,11 @@ fn walk(list: &[Stmt], prefix: &[usize], f: &Function, jumped: &HashSet<String>,
     for (i, s) in list.iter().enumerate() {
         let p: Vec<usize> = [prefix, &[i]].concat();
         match s {
-            Stmt::Decl(_, n, Some(e)) | Stmt::Assign(n, e) => {
+            Stmt::Decl(_, n, Some(e), ..) | Stmt::Assign(n, e, ..) => {
                 let v = value_with(e, env, n == "tpc" || n.starts_with("__call"));
                 set(env, n.clone(), v);
             }
-            Stmt::Decl(_, n, None) => {
+            Stmt::Decl(_, n, None, ..) => {
                 env.remove(n);
             }
             Stmt::SetCpu(fl, e) => {
@@ -137,7 +137,7 @@ fn walk(list: &[Stmt], prefix: &[usize], f: &Function, jumped: &HashSet<String>,
                     set(env, v.clone(), x);
                 }
             }
-            Stmt::Dispatch(_) => {
+            Stmt::Dispatch(_, ..) => {
                 if let Some(a) = env.get(&cpu(&CpuField::Pc)) {
                     out.insert(p.clone(), *a);
                 }
@@ -207,9 +207,9 @@ pub fn as_direct_calls(f: &Function) -> Function {
         for (i, s) in list.iter_mut().enumerate() {
             let p: Vec<usize> = [prefix, &[i]].concat();
             match s {
-                Stmt::Dispatch(tail) => {
+                Stmt::Dispatch(tail, o) => {
                     if let Some(t) = targets.get(&p).filter(|t| functions().contains(t)) {
-                        *s = Stmt::GuestCall(*t, *tail);
+                        *s = Stmt::GuestCall(*t, *tail, *o);
                     }
                 }
                 Stmt::If(_, a, b) | Stmt::While { body: a, check: b, .. } => {
