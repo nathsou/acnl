@@ -288,7 +288,7 @@
 00111d48 VillagerPart__construct
 00111f4c villager_id_bit
 00111f70 item_data_byte_19_is
-00111f94 check_111f94
+00111f94 building_event_26_day_check
 00111ff0 check_111ff0
 001120a4 check_1120a4
 001120f0 check_1120f0
@@ -3307,7 +3307,7 @@
 0022c5d8 DragIconGroup__destructor
 0022c62c ExplainWindow__virtual_10
 0022c720 ButtonAnim4__start
-0022c7c8 InOutWindow__InOutWindow_0022c7c8
+0022c7c8 ExplainWindow__construct
 0022c830 ExplainWindow__deleting_destructor
 0022c87c ExplainWindow__destructor
 0022c980 HalloweenWalk__AStarForeachCB__AStarForeachCB
@@ -3412,7 +3412,7 @@
 00238eac TalkRecept__set_villager_word
 00238f7c TalkRecept__set_structure_name
 00239018 script__WordFix_38u___WordFix_00239018
-002390f8 script__WordFix_33u___WordFix_002390f8
+002390f8 ShopNpcTalkRecept__set_word
 00239174 TalkRecept__set_villager_word_at
 00239260 script__WordFix_9u___WordFix_00239260
 0023930c NpcTalkRecept__set_word
@@ -20660,7 +20660,7 @@
 00716b74 object_check_c
 00716c60 is_shop_closed_now
 00716d80 SlotSet6__count_used
-00716de4 object_check_b
+00716de4 is_evening_of_day_6
 00716e68 SlotSet6__has_room_for_player
 00717084 object_check_a
 00717254 SlotSet6__contains
