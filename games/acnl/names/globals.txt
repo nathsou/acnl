@@ -617,7 +617,10 @@
 00975c34 load_split_compressed_state
 00975c38 load_split_default_heap
 00975c3c loader_started_b
-0097d40c thread_local_heap_key
+0097d40c pead_heap_mgr_instance
+0097d410 pead_root_memory_arena
+0097d414 pead_heap_mgr
+0097d418 pead_heap_mgr_current
 0097d41c pead_thread_mgr_instance
 0097d428 network_time
 0097d46c block_list
@@ -995,7 +998,9 @@
 00ae5724 blocked_grid_width
 00ae5728 blocked_grid_height
 00ae572c blocked_grid_bits
-00ae70a4 heap_name_counter
+00ae70a4 pead_root_heaps_count
+00ae70a8 pead_root_heaps_capacity
+00ae70ac pead_root_heaps_data
 00ae70c0 exp_heap_list
 00ae70dc heap_list
 00ae70e4 heap_list_end

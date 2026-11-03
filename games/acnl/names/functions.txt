@@ -12478,7 +12478,7 @@
 004fe234 gui__NrmKey__virtual_5
 004fe280 gui__NrmKey__virtual_4
 004fe288 gui__NrmKey__virtual_2
-004fe28c gui__NrmKey__NrmKey
+004fe28c NrmKey__construct
 004fe35c gui__NrmKey__deleting_destructor
 004fe3a0 gui__NrmKey__destructor
 004fe3d8 gui__TglKey__virtual_5

@@ -3626,6 +3626,7 @@
 004fae8c Constructs a board text area: empty.
 004fb304 Maps the menu kind 3 to 2 and 5 to 4.
 004fd458 Constructs a phone-style key set for a keyboard (arg 1): its key tables, no key held.
+004fe28c Constructs a normal keyboard key from a description (arg 1): a key with its characters copied to a \n buffer on the layout heap.
 004fe440 Updates the selection from the input, when no error screen is up.
 004fe5b8 Whether the selection accepts any of the eight direction inputs.
 004fe6c8 Sets the two menu callbacks.
@@ -3639,6 +3640,7 @@
 005000d0 Constructs a text area: empty.
 0050060c Constructs a GUI button with a second description (arg 1): a button with the description copied, enabled.
 005008b4 Resets the 5 tracks and copies the forward or the reverse curve set (0xe8 bytes) in, then starts it.
+005012e0 Constructs an extended layout text area: a text area with no selection, spacing 16, and line limits 18, 6 \n and 4.
 005013dc Animation command: scales the pane's size (x, y or both) by the percentage that follows, or restores the saved size.
 00501580 Animation command: scales the pane's size by the percentage that follows on the chosen axes, or restores the saved size.
 00501cc8 Shows the letter's page text in the text area.
@@ -3940,6 +3942,7 @@
 0052ef44 The world position of the cell's corner.
 0052ef8c The world position of the cell's center.
 0052f260 Destroys the placement query.
+00530da8 Recreates a door's heaps on the structure heap, sets its two bytes (args 1 and 2), and plays its melody \n (arg 3).
 0053138c Calls slot 4 of the cloud model's transform node.
 00531398 Updates the cloud model's transform and model.
 005313b4 Releases the item model: its sub parts, model, animation, the two lists of loaded parts and its objects.
@@ -4005,6 +4008,7 @@
 0053c568 Allocates `size` bytes with the alignment from the back of a free block, splitting off the rest.
 0053c7b8 Frees the heap's blocks.
 0053cd54 Creates an expanded heap in the memory (more than 0xa4 bytes, under the global lock) and registers it with its parent.
+0053cfe8 Creates the root heap over the memory arena (arg 0) and adds it to the root heaps; the heap manager is up.
 0053d230 Unlinks every node of the list and empties it.
 0053d2b4 Stores the current system tick.
 0053d2cc The CRC-16 (polynomial 0xa001, table built once) of the bytes.
