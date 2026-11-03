@@ -584,6 +584,62 @@
 001c4c14 Calls 005bf518.
 001d7ba4 Forwards to the function at 0x1d560c.
 001e5894 Transforms a point by the camera manager's view matrix (+0x29c), when there is a camera manager.
+00200ab4 Copies the item layout entries (6 bytes each) of variant `index` of the table (+0xd0) into the buffer when it fits; their count, or 0.
+00200b9c Places the items of the cell's layout variant (up to 0x600 bytes of entries) in the cell, keeping their top bits.
+00200ca0 Loads the large cell's 0xa00-byte block from the shared layout of the cell's id.
+00201ea0 Empties both layers of every tile of the cell.
+00201fa0 Allocates a grid rectangle and builds it (the 0x5814d0 builder); destroys it and gives null on failure.
+002021d4 Marks the tiles next to the kinds 0x21 and 0x20 in the 7 x 6 grid with 0x3d and 0x47.
+00202370 Places random tiles of the kind in the 7 x 6 grid.
+002025bc Allocates a grid rectangle and builds it with its buffer; destroys it and gives null on failure.
+002026e4 Allocates a grid rectangle and builds it (the 0x5810ac builder); destroys it and gives null on failure.
+00203170 Allocates a grid rectangle and builds it with its second buffer kind; destroys it and gives null on failure.
+0020350c Constructs the archive accessor, the layout and its four animations.
+00203558 The 0x20-byte record of the scene of `mode` in the table at 0xa822e8 (houses by owner and room, then the other flagged scene kinds); null for other scenes.
+00203660 The 0x10-byte record of the scene of `mode` in the table at 0xa82008 (houses by owner and room, then the other flagged scene kinds); null for other scenes.
+0020378c Copies the scene record's fields.
+00203948 The load state of the first idle scene handler (0 when another runs, 1 when done, else 2 or 3); marks the scene busy for new flags.
+00203bd0 From the third idle handler, requests scene change 3; true when it did.
+00203c34 Starts the scene from the second idle handler and clears the scene flags (0x953684).
+00203c50 True when no scene change is requested (0xa82898).
+0020407c Binds the texture of the model's resource file (by name) to the material of the model (by name); false when either is missing.
+00204568 Refreshes the object and clears bit 7 of +0x280.
+00204584 Refreshes the object and clears bit 6 of +0x280.
+002045a0 Refreshes the object and clears bit 5 of +0x280.
+002068b8 Sends network message 0x40 with the NPC's slot, the main object and the time (the longest wait of the stations plus 300) and tells the NPC manager.
+00206f7c Sets up the item button: its control, its item pane and position, animation targets and sounds.
+00207168 Calls the function at 0x207190 with a record holding the half.
+00207330 Creates the particle system (0x24 bytes) into 0x957308; true when it did.
+0020758c Spawns the effect through a temporary particle handle.
+00207710 Stops the emitter set (+4) and frees its buffer (+0xc).
+00207750 Resets the handle and spawns effect `id` with the group and draw kind (from the priority), rotating it in scenes that need it; true when spawned.
+0020968c Releases the window's layout parts (when loaded) and layout, and its list (when not).
+00209f40 Counts a frame (up to 300) and, while the target (+0x1470) is farther than the threshold, gives its position; clears it when near.
+0020a474 Starts fading the value to the target over `frames` (immediately for 0), then holding for `hold` frames.
+0020a64c Sets the sound kind (below 14, +0x3c) and counts the change (+0x40).
+0020acb0 Sets the kind at +0x3c to 0xb.
+0020acc0 Sets the flag at +0x37 and calls virtual 6 when it changes.
+0020ace8 Sets the flag at +0x36 and calls virtual 6 when it changes.
+0020ada8 For the sounds 0x100067a to 0x100067d, sets the flag (+0x39) when the sound system's level is above 40 or missing.
+0020ae0c Sets the flag at +0x39 and calls virtual 6 when it changes.
+0020b494 Starts the object and sets its speed to 6.
+0020b9b0 Clears the 0x14b0-byte block: its base, identity, records and its two time bytes (from the earliest time).
+0020bb24 Clears the number pair.
+0020bb3c Clears bit `index` (below 6) of the bits at +0x28.
+0020bb60 The variant (2 * index or the next) chosen by the bit pair at 6 + 2 * index, taking it; random when both are free.
+0020bbac The variant (2 * index or the next) chosen by the bit pair at 2 * index, taking it; random when both are free.
+0020bc68 The variant chosen by the bit pair at 0x20 + 2 * index (without taking it); -1 when neither is free.
+0020bcb8 The variant (2 * index or the next) chosen by the bit pair at 0x10 + 2 * index, taking it; random when both are free.
+0020bd70 The state of the two bits at `index` of the 0x6c-bit set (+0x1a): 1 or 2 for the free one, 3 when both are free (marking both taken when asked), 0 when neither.
+0020be1c Zeroes the 0x29-byte record.
+0020bec8 Zeroes the 0x29-byte record.
+0020bf68 Clears the flag (+0x86c) of each of the 10 patterns.
+0020bfb4 Constructs the 10 patterns and their order bytes (+0x5460).
+0020c03c Finds the pattern matching the id.
+0020c118 Copies the 0x6b88-byte main part of a player.
+0020c124 With a 10% chance, adds a friendship point.
+0020c158 With a 10% chance, adds a friendship point; true when it changed.
+0020c500 Clears the player's 0x6b88-byte main part: identity, items, counters, its 300 records and blocks.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
 002738b8 Forwards to the function at 0x817cd8.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
