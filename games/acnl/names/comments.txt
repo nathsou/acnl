@@ -693,6 +693,7 @@
 00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
 00137dc4 Clears a thread's parameter block (id -1).
 00137e84 Unlocks the recursive lock at the object's offset 0x10.
+00137e8c Destroys a critical section: its disposer.
 00137e9c Constructs the audio effects memory manager controller.
 00137ec0 Inserts at position `index` of the list at +0x40, under the object's lock when it has one.
 001382cc Marks 0x97e854, stores a value at +4 and the memory size (0x974f54) at +0.
@@ -4647,6 +4648,7 @@
 005d7a8c Reads a text command at a position (arg 1): its kind, parameter size and data, and where the text \n continues.
 005daf1c Empties the selected pocket slot (below 16) of the current player.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
+005dd51c Copies a C string (arg 1) into the object's string at 8.
 005dd570 Assigns the message to the string and records its flag.
 005dd5b8 Formats the number with three digits into the string.
 005e1974 Copies a C string (arg 1) into the object's string at 0x20.
@@ -4777,6 +4779,7 @@
 00614730 Adds the collider to the collision list.
 0061476c Releases a resource from the list at 0x9870a8 (when there is one).
 0061479c Initializes the sound source at the position with its angle.
+00614854 Constructs a moving background: a world body with a box shape, not moving.
 006148e4 Clears a notice record and its four 16-byte entries.
 00614a64 Sweeps the shape between the two points against the collision world.
 0061532c Clears a 0x30-byte record.
@@ -4869,7 +4872,10 @@
 0061fc98 Sends the 100-entry friend list (+0x11950) through the link object; clears the pending flags when it went through.
 0061fd68 Sends the station's bit (packet 0x30), or requests it as the host.
 0061fe0c Updates the chat for the session.
+00620660 Clears a station slot's byte (slots below 4).
+00620dcc Clears a station entry: no station (0xa5), no flags.
 00620e18 Sets the visit role from the session: 1 when this station hosts the guest, 3 without a guest, else 8 (for stations below 4).
+00620e68 Clears a station entry: no station (0xa5), no flags (keeping its id bytes).
 006212f0 In role 1 with a valid session: refreshes the station set and sends this station's kind state (record 0xd), or handles it locally as the host; then moves to role 2.
 006213c8 Refreshes the station's entry and slot, and in a session of more than one sends the update as a network record (kind 1).
 006214a0 Sets the slot's value and marks its state 1.
@@ -4878,6 +4884,7 @@
 006216d0 Sends the visit state records for the stations in the mask.
 00621b98 Handles a station's state as the host: records it in the station mask and sends the answer records.
 00621cf4 Initializes the station's parts.
+006220f8 Constructs a net confirmation state machine: no station, its three flag pairs cleared.
 00622158 Returns at once.
 0062217c Stores the current player's short id (or clears it), resets the peer table (006221e4) and marks it ready (+0x42aa).
 006221e4 Updates the chat under its lock for the current player.
@@ -4900,11 +4907,14 @@
 006238d0 Removes a station from the session's mask and reports it (00626bd8).
 00623948 Removes a station from the session's mask and reports it (00626c2c).
 006239fc Resets the visit state (station 4, state 0) and its three flag pairs and four flags.
+00623bb4 Constructs a visit confirmation state machine: its three flag pairs and a visiting villager, cleared.
 00623c28 Calls 00100b80 on the part at +0x1c and returns the object.
 00623c3c Resets what station `station` uses, and its count (under the session's lock).
 00623c8c Adds `delta` (negative to take away) to station `station`'s count, under the session's lock.
 00623cfc Adds `size` to what station `station` uses when it still fits in its 0xd002 bytes; true when it did.
 00623d48 Lays the buffer out once: each of the 4 stations but `own` gets 0xd002 bytes of it, in order.
+00623dcc Clears a station's send and receive buffers (keeping its owner).
+00623e3c Initializes a station's send and receive buffers: no owner, empty.
 00623fb8 Sends the buffer (16 bytes) as a message.
 00624038 Calls 0075f63c on the network session.
 00624050 Updates the network link by its state (below 14).
@@ -5008,6 +5018,7 @@
 0062a698 The player entry (below 4), or null.
 0062a724 Resets a net peer list: releases and resets its four peers, and clears their slots and ids.
 0062abd8 Connects peer `index` (below 4) of the list, under the session lock.
+0062ac50 Constructs the avatar manager: a system callback with four avatars, four peers and four slots, none in use.
 0062ad70 Clears station `index`'s friend flags and sets bit 3 when the friend list knows the peer's key.
 0062add8 Updates the session's friend entries from the friend list.
 0062af78 Once per station (bit 0): when the friend list accepts this slot's 0x200-byte record, sends it (message 0x7f) and notes it.
@@ -5724,6 +5735,7 @@
 006f5c7c Loads the number key's layout archive.
 006f6810 The height at the position on the plane of the triangle (its normal into the frame).
 006f7d34 Sets the box (+8 to +0x1c) centered on the point with the width, depth and height.
+006f7dc0 Constructs a collision axis-aligned box (shape kind 1).
 006f7e04 Stores the word at +0xc.
 006f7e10 Sets the collider's cylinder from the rectangle with its flags.
 006f7e40 Sets the triangle reference's triangle, kind and mask.
@@ -5733,6 +5745,7 @@
 006f8114 Sets the sphere's center (+8) and radius (+0x14).
 006f81f0 Sets the capsule's two ends (+8, +0x14) and radius (+0x20).
 006f83a8 Sets the cylinder's base from the rectangle's corner and its radius and height.
+006f83f8 Constructs a collision cylinder (shape kind 2) with no radius or height.
 006f8540 The word shifted left by 14, as a half.
 006f8a58 Casts the ray against the collision world, up to the hits.
 006f8c24 The room record of `mode`: a house room (positions 2 to 25), or the record of the flagged structure; null otherwise.
