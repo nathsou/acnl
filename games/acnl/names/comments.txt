@@ -3510,6 +3510,7 @@
 004f1d04 Marks each of the model's materials for update (flag 0x10).
 004f1d6c Sets the flags (with bit 25) on every primitive of every shape of the model.
 004f1e44 Sets the light's color and its direction from the three angles.
+004f2198 Constructs a camera: a transform node with a projection.
 004f220c Walks the resource node's chain to its renderable kind and sets its flags (with bit 25).
 004f2638 Clears the model's material slot to the default.
 004f2a18 Resets the three scene lists, the animation cursors and the environment, and flips the buffer index.
@@ -3527,6 +3528,8 @@
 004f524c Updates the letter list's entries and scroll.
 004f76a8 Clears the list state and sets its positions to -100 (none).
 004f9f9c Clears the grid list state, sets its positions to -100 (none) and its size to 10 by 3.
+004fa674 Constructs a mail text area: empty.
+004fae8c Constructs a board text area: empty.
 004fb304 Maps the menu kind 3 to 2 and 5 to 4.
 004fe440 Updates the selection from the input, when no error screen is up.
 004fe5b8 Whether the selection accepts any of the eight direction inputs.
@@ -3538,6 +3541,8 @@
 004fef54 The layout's animation part (below 8).
 004ff300 Stops the layout's animation part.
 004ff388 Constructs a GUI button from a description (arg 1): a widget with the description's sounds (defaults for \n the unset ones) and name.
+005000d0 Constructs a text area: empty.
+0050060c Constructs a GUI button with a second description (arg 1): a button with the description copied, enabled.
 005008b4 Resets the 5 tracks and copies the forward or the reverse curve set (0xe8 bytes) in, then starts it.
 005013dc Animation command: scales the pane's size (x, y or both) by the percentage that follows, or restores the saved size.
 00501580 Animation command: scales the pane's size by the percentage that follows on the chosen axes, or restores the saved size.
@@ -3549,6 +3554,7 @@
 005024fc Sets up the mail text area's layout and font.
 00504a34 Finds the board's ten panes, binds their texts, shows the first page and stops the flight.
 00504c54 Shows the board's page text in its panes.
+005075a0 Constructs a one-line layout text area.
 005075cc Jumps to lyt__TextArea__destructor.
 00508fc8 Shows or hides every pane of the group and marks the layout for update (state 2).
 005091fc Creates an animation object for the resource on the pane (or the resource's own target) and adds it to the layout's list; the object, or null.
@@ -3561,6 +3567,7 @@
 0050c800 Constructs a layout animation object for a pane (arg 2) of an animation (arg 1): at scale 1 from frame 0, \n and updates it.
 0050c9a4 Clears the record and invalidates its id.
 0050ca3c Invalidates the record's id and clears it.
+0050cae0 Constructs a data search result: empty, no id.
 0050cb2c Finds the value in the list of 100.
 0050cb9c Appends the value when fewer than 100 are stored.
 0050cc2c Clears the 100 values and the counts.
@@ -3683,6 +3690,7 @@
 0051bbbc Requests the scene change of `kind` (kind 3 not in New 3DS mode) when the scene is idle.
 0051bc4c From the second idle handler, starts the scene handler and marks it running.
 0051c098 Selects the entry (0xc bytes each) whose handler pair matches, remembering it and its index.
+0051c170 Constructs an NFC (amiibo) framework step for an owner (arg 1): not started, no delegate.
 0051ca20 Whether 00308e80 gives 0x26 or 0xa.
 0051cbdc The count at +0x9ac, or 399 when the cap flag (+0x9a8) is set.
 0051ccc0 Entry `index` (below 8, 0x30 bytes each) of the table at 0xa83108; out-of-range gives the first.
@@ -3696,6 +3704,8 @@
 0051dacc Clears the four 0x32-byte entries of the table at 0xa82b90.
 0051dbbc Picks a random villager for the villager, weighting by their relation score.
 0051dd50 Forwards to make_adjusted_words.
+0051dfe4 Finishes a normal NPC's part: state 7, no data.
+0051dffc Constructs a normal NPC's base part: empty.
 0051e018 Destroys the particle handle at +0x1c.
 0051e6fc Resets the 11 villager ids (+0x7b8) and their checks, optionally the 10 ids at +0x7ce, and the shared NPC info's ids.
 0051e7d4 Updates the catalog store (of 0x18f entries) for the mode.
@@ -3734,6 +3744,7 @@
 005224bc Entry `index` of the 16-bit table at +word_c (filled up to it first when it lies past +word_10).
 005224e8 Lays out the text from the index.
 0052296c Commits the pending input characters to the text.
+00522ae0 Clears a text edit's selection: finishes and commits the input, and (when asked, arg 1) collapses the \n selection to the cursor.
 00523020 Moves the cursor to `position` (kept within the text); with `keep` the selection starts there too.
 005230d4 Deletes the range of characters (clamped) from the text.
 005234d8 Finishes the text edit, keeping or discarding the text.
@@ -3774,6 +3785,9 @@
 00529c80 The pool entry of message `id` (below the count at 0x887402) through 0051fc48, unless it is hidden (+0xf); 0 otherwise.
 00529cf4 A base's pre-execute step: nothing to do, always ready.
 00529d08 The pool entry of message `id` (below the count at 0x887402) through 0051fc14, unless it is hidden (+0xf); 0 otherwise.
+00529d78 A base's virtual 11: always ready.
+00529d8c A base's virtual 2: always ready.
+00529da0 A base's virtual 5: always ready.
 00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
 0052a508 Resets the fade layout: rewinds its fade animation to 0 and hides the fade pane.
 0052a5ac Loads the map view's layout.
@@ -3873,6 +3887,7 @@
 00538088 Sets the array up empty on the buffer of `capacity` pointers.
 00538188 Locks the recursive lock at the object's offset 0x10.
 00538274 Unlocks the recursive lock at the object's offset 0x10.
+0053827c Constructs a critical section: a disposer with an initialized recursive lock.
 005382c4 Destroys a critical section: its disposer.
 0053ac4c Allocates `size` bytes (aligned to 4) from the heap, or the current thread's heap.
 0053ac90 Allocates `size` bytes with the alignment from the heap, or the current thread's heap.
@@ -3882,7 +3897,9 @@
 0053adf4 Finds the resource in the cache, under its lock.
 0053aef0 Sets the heap's flags and refreshes its state.
 0053af90 Frees all of the heap's blocks and removes it from its parent's children (under both locks).
+0053b1b0 Destroys a heap: its critical section and its disposer.
 0053b1d0 Clears the manager's words and the current heap (0x97e9fc).
+0053b2e0 Constructs an event: a disposer with a kernel event (reset type arg 1).
 0053b4cc Decodes the Base64 text into the buffer.
 0053b6fc Encodes the bytes as Base64 (the URL-safe alphabet when asked), padding with '='.
 0053b844 Seeds the 4-word random state from the system tick (with the Mersenne Twister initializer).
