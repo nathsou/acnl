@@ -1,8 +1,15 @@
 00100048 Creates the heap at 0x952ca8 (0x1b8000 bytes) in the parent.
+00100088 Creates the net heap (0x215800 bytes) under a parent heap (arg 0).
+001000c4 Creates the UGC (user content) heap (a fixed size bytes) under a parent heap (arg 0).
 00100104 Creates the heap at 0x952c88 (of the mode's size) in the parent.
 00100148 Creates the heap at 0x952c90 (32 KiB) in the parent.
+0010018c Creates the work heap (0x19000 bytes) under a parent heap (arg 0).
+001001d0 Creates the fader heap (0x400 bytes) under a parent heap (arg 0).
 00100214 Creates the heap at 0x952c4c (of its size) in the parent.
 00100260 Creates the heap at 0x952c8c (of its size) in the parent.
+001002a4 Creates the sound heap (0x580000 bytes) under a parent heap (arg 0).
+001002e8 Creates the stage heap (0xeb8000 bytes) under a parent heap (arg 0).
+0010032c Creates the script heap under a parent heap (arg 0), then its sub heaps.
 00100608 Initializes the system services chosen by the flags (bits 1 and 0: the main service set and the extra one); returns true.
 00100918 Destroys the heap at 0x952c88 and clears it.
 00100930 Destroys the heap at 0x952c90 and clears it.
@@ -352,6 +359,7 @@
 0011e6f4 Prepares the request (001216ec), then runs 001214f4 for each of the `count` handles with the extra arguments.
 0011e760 Keeps the argument at 0x9752ec and installs the two callbacks 0x12049c and 0x120464.
 0011e81c Requests power mode 0x700 (or 0x702 when `alternate`).
+0011e838 Constructs the upper-screen double-buffered framework controller: the double-buffered one with its own vtable.
 0011e8cc Converts the UTF-16 string to UTF-8 into the buffer.
 0011eaac Creates the save allocator heap (named SaveAllocator, `size` bytes) and keeps its allocator at 0x95bf7c.
 0011eafc Whether the applet state (0x94e3a8) is at least 2.
