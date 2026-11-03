@@ -675,6 +675,48 @@
 002472b0 Stops and destroys the sound object and detaches the holder.
 00248cd4 Builds the rectangle of map kind `kind` from its table entry (position and size bytes).
 00248d34 The point in front of the structure's door (one or two cells below its reported point, by its kind); true.
+00248dd0 Checks the cells under the structure's rectangle against the map (first rule set).
+00248fb0 True when a cell of the rectangle (in the top blocks) is blocked in the structure's cell layout.
+0024910c True when the structure (a field or special object) is the active construction site's, at the same place.
+0024919c Checks the terrain and tiles under the structure's rectangle.
+00249eec Checks the cells under the structure's rectangle against the map (second rule set).
+0024a0cc Checks the cells under the structure's rectangle against the map (third rule set).
+0024a528 Resets the record's constants and clears its bytes and word.
+0024a548 Resets the record's constants and clears its bytes and word.
+0024a56c Zeroes the 0x320-byte block.
+0024a684 Copies 0xba words.
+0024a6b8 Sets the seen bit (bit 1) of badge `index`.
+0024a6d0 Marks the badges whose counters reached their goal and sums their points by tier (capped at 99999).
+0024a7d4 Clears the badge counters (+0x1c), their flags (+0x1b4) and records.
+0024a848 Clears the badge counters (+0x1c), their flags (+0x1b4) and records.
+0024b500 Adds to the badge counter of the kind (clamped to its maximum).
+0024b600 Sets the counted bit (bit 2) of badge `index` once, counting it in the current split.
+0024b630 Counts the id for counter 0x12 when it is not among the up to 5 ids already counted (+0x228).
+0024b730 Sets the time stamp invalid and clears the badge counters, their flags and records.
+0024b97c Constructs the 24 encrypted counters, the six words and the two encrypted totals, all zero.
+0024c4dc Value `index` (below 25) of the search candidates, unless masked out (+0x4c); 0 otherwise.
+0024c858 Resets the schedule: a random count (1 to 10), its 7 entries (kind 0xf), the current day and state 5.
+0024c8d4 Clears the player's record at +0x8a3c and its references.
+0024d778 Clears the schedule and its references, with a random count.
+0024d8fc Clears the record and its references.
+0024dbb0 Copies a 0x1228-byte entry.
+0024dbc0 Resets the 0x1228-byte entry for its index: its options and its 6 outfits (default items of the index from 0x95c2d8).
+0024dcc0 Constructs the entry's options, its 6 outfits and its trailing record.
+0024dcf8 Zeroes the 0x28 bytes and sets the last byte to 0xff.
+0024dd14 Zeroes the 0x28 bytes and sets the last byte to 0xff.
+0024dda0 Swaps two bytes of the array.
+0024ddb4 Stores the id in the first free (0xffff) of the 6 id slots (+4).
+0024ddec Frees the 6 id slots.
+0024dea8 Sets the state byte; state 1 also updates the town's record and sets bit 4 of the flag at +0x62152.
+0024defc Clears sale slot `index` (below 4): its item, seller and price, marking it free.
+0024df54 Puts the current player's item up for sale in the slot with its price.
+0024e500 Clears every sale slot of player `index` (its item, price and pattern) and the player's total.
+0024e8cc Clears every sale slot of villager `index` (owners 4 and up): its item, price and pattern.
+0024ee14 Records which area kind (0xfa or 0xfb, by the town's mode at save +0x53480) the current player's cell is in, with its cell (0x985df0).
+0024f010 Removes the category 0x48 items of the letter id from the player's 4 letter slots, refreshing their views when asked.
+0024f400 Constructs the actor sound object from its parameters, with its listener and cleared fade.
+0024f70c Calls handler `index` of the table at 0x8452f8.
+0024fbd4 Plays the sound at the position (converted by the camera) and marks it playing.
 0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
 002738b8 Forwards to the function at 0x817cd8.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
