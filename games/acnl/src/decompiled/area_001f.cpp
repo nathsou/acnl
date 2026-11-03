@@ -660,6 +660,8 @@ GUEST_EXPORT_FRAMED(0x001f891c, d_001f891c::f_001f891c, 0x4000);  // pushes {lr}
 // f_001f8bac: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001f8bac {
 
+inline constexpr u32 global_0094edc4_address = 0x0094edc4u;
+inline constexpr u32 global_0094edc8_address = 0x0094edc8u;
 inline guest::global<u32, 0x0014f898> global_0014f898;
 inline guest::global<u32, 0x0094edc4> global_0094edc4;
 inline guest::global<u32, 0x0094edc8> global_0094edc8;
@@ -1196,6 +1198,7 @@ GUEST_OFFSET(Local_001fa744_ea_2, word_0, 0x0);
 GUEST_OFFSET(Local_001fa744_ea_2, word_4, 0x4);
 GUEST_OFFSET(Local_001fa744_ea_2, word_8, 0x8);
 
+inline constexpr u32 global_0095362c_address = 0x0095362cu;
 inline guest::global<u32, 0x0095362c> global_0095362c;
 inline constexpr guest::Function<0x00108421, u32(u32, u32)> record_1ac_address;
 inline constexpr guest::Function<0x002fae84, u32(u32)> get_data_base;
@@ -1239,9 +1242,14 @@ void f_001fa744(u32 r0, u32 r1, u32 r2, u32 r3) {
             r0_7 = 0x81u;  // (from the original)
         } else {
             u32 r0_9 = NetSession__station(*global_0095362c);
-            r3_4 = r0_9 == 0 ? 4u : 0x1acu;  // (from the original)
             r2_4 = frame.at(8).addr();
-            r1_4 = r0_9 == 0 ? 4u : 0u;
+            if (r0_9 == 0) {
+                r3_4 = 4u;
+                r1_4 = 4u;
+            } else {
+                r3_4 = 0x1acu;  // (from the original)
+                r1_4 = 0u;
+            }
             r0_7 = 0x82u;  // (from the original)
         }
         send_message(r0_7, r1_4, r2_4, r3_4);
@@ -1277,6 +1285,8 @@ GUEST_EXPORT(0x001fad34, d_001fad34::f_001fad34);
 // f_001fbec8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001fbec8 {
 
+inline constexpr u32 global_0094fba0_address = 0x0094fba0u;
+inline constexpr u32 global_0094fd3c_address = 0x0094fd3cu;
 inline guest::global<u32, 0x0094fd3c> global_0094fd3c;
 inline guest::global<u32, 0x0094fd58> global_0094fd58;
 inline constexpr guest::Function<0x001fc044, u32(u32, u32)> call_001fc044;
@@ -1289,7 +1299,7 @@ void f_001fbec8(u32 r0, u32 r1_unused, u32 r2) {
     *frame.at<u32>(0x20) = r12;  // (from the original)
     u32 r5 = r0;
     u32 r4 = 0u;
-    u32 r6 = 0x94fba0u;  // (from the original)
+    u32 r6 = global_0094fba0_address;
     do {
         u32 r0_2 = find_of_type_b(r5 + 0x4cu, gptr<u32>(r6)[r4], r2, guest::cpu()->r[3]);  // (from the original)
         r2 = guest::cpu()->r[2];
@@ -1354,14 +1364,14 @@ u32 BsMenuLetter__virtual_0_001fc5a8(gptr<BsMenuLetter> arg0, u32 r1_unused, u32
     arg0->word_0 = vtable_BsMenuLetter;
     arg0->word_28 = vtable_BsMenuLetter_at_28;
     u32 r0_1 = arg0.addr() + 0x1bbcu;  // (from the original)
-    item__ResLoader__virtual_0(r0_1, 0x8ed158u, 0x8ed1c4u, r3);  // (from the original)
+    item__ResLoader__virtual_0(r0_1, vtable_BsMenuLetter, vtable_BsMenuLetter_at_28, r3);
     arg0->word_11f4 = vtable_ComButton1Lyt;
     arg0->word_1670 = vtable_Control1Button_at_e4;
     arg0->word_158c = vtable_Control1Button;
     destroy_array_elements(r0_1 - 0x518u, 0x2e0b3cu, 0x518u, 1u);  // (from the original)
     ControlButtonBase__virtual_0_002f770c(r0_1 - 0x630u);  // (from the original)
     arg0->word_11f4 = vtable_ComButtonLytBase;
-    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_1 - 0x878u, 0x8f18f4u);  // (from the original)
+    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_1 - 0x878u, vtable_ComButtonLytBase);  // (from the original)
     u32 r0_6 = Layout__virtual_0(r0_4 - 0x14cu);  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_6 - 0xc8u);  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_6 - 0x18cu);  // (from the original)
@@ -1418,7 +1428,7 @@ u32 BsMenuMelody__virtual_0_001fdc84(gptr<BsMenuMelody> arg0) {
     destroy_array_elements(arg0.addr() + 0x49c0u, 0x2e0b3cu, 0x518u, 2u);  // (from the original)
     ControlButtonBase__virtual_0_002f770c(arg0.addr() + 0x48a8u);  // (from the original)
     arg0->word_4510 = vtable_ComButtonLytBase;
-    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__virtual_0(arg0.addr() + 0x4660u, 0x8f18f4u);  // (from the original)
+    u32 r0_4 = ssys__ma__lyt__ArcResAccReader__virtual_0(arg0.addr() + 0x4660u, vtable_ComButtonLytBase);  // (from the original)
     u32 r0_6 = Layout__virtual_0(r0_4 - 0x14cu);  // (from the original)
     ButtonActionCstmNode__virtual_0(r0_6 - 0xe4u);  // (from the original)
     destroy_animation(r0_6 - 0x10cu);  // (from the original)
@@ -1443,6 +1453,7 @@ GUEST_EXPORT(0x001fdc84, d_001fdc84::BsMenuMelody__virtual_0_001fdc84);
 // f_001fde44: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001fde44 {
 
+inline constexpr u32 global_00950124_address = 0x00950124u;
 inline guest::global<u16, 0x00887330> global_00887330;
 inline guest::global<u32, 0x00950128> global_00950128;
 inline constexpr guest::Function<0x00529d08, u32(u32, u32, u32, u32)> call_00529d08;
@@ -1451,7 +1462,7 @@ void f_001fde44(u32 r0) {
     u32 r0_1 = *global_00887330;
     u32 r0_2 = call_00529d08(r0_1, r0, 0u, guest::cpu()->r[3]);
     *global_00950128 = r0_2;
-    guest::cpu()->r[1] = 0x950124u;  // (from the original)
+    guest::cpu()->r[1] = global_00950124_address;
 }
 
 }  // namespace d_001fde44
@@ -1460,6 +1471,7 @@ GUEST_EXPORT_FRAMED(0x001fde44, d_001fde44::f_001fde44, 0x4010);  // pushes {r4,
 // f_001fde7c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001fde7c {
 
+inline constexpr u32 global_00993068_address = 0x00993068u;
 inline guest::global<u16, 0x008c9f1e> global_008c9f1e;
 inline guest::global<u32, 0x00993068> global_00993068;
 
@@ -1477,6 +1489,8 @@ GUEST_EXPORT(0x001fde7c, d_001fde7c::f_001fde7c);
 // f_001fde9c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001fde9c {
 
+inline constexpr u32 global_00950124_address = 0x00950124u;
+inline constexpr u32 global_00950128_address = 0x00950128u;
 inline guest::global<u32, 0x00950128> global_00950128;
 inline constexpr guest::Function<0x005204b0, u32(u32, u32, u32, u32)> call_005204b0;
 
@@ -1492,6 +1506,9 @@ GUEST_EXPORT_FRAMED(0x001fde9c, d_001fde9c::f_001fde9c, 0x4010);  // pushes {r4,
 // f_001fdf44: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001fdf44 {
 
+inline constexpr u32 global_00950124_address = 0x00950124u;
+inline constexpr u32 global_00950128_address = 0x00950128u;
+inline constexpr u32 global_0095012c_address = 0x0095012cu;
 inline guest::global<u32, 0x00950128> global_00950128;
 inline guest::global<u32, 0x0095012c> global_0095012c;
 inline constexpr guest::Function<0x005204b0, u32(u32, u32, u32, u32)> call_005204b0;
@@ -1556,14 +1573,14 @@ u32 state__Mode_CensusWindow___Mode(gptr<CensusWindow> arg0, float S0) {
     arg0->word_1c = 0;
     arg0->word_20 = 0;
     u32 r0_1 = (arg0.addr() + 0x20u) + 4u;  // (from the original)
-    SoPaCaWindowBase__SoPaCaWindowBase(r0_1, 0x9081c4u, r2_1, arg0.addr() + 0xcu);  // (from the original)
+    SoPaCaWindowBase__SoPaCaWindowBase(r0_1, vtable_state__Mode_CensusWindow_, r2_1, arg0.addr() + 0xcu);  // (from the original)
     arg0->word_0 = vtable_CensusWindow;
     arg0->word_24 = vtable_CensusWindow_at_24;
-    u32 r0_3 = ssys__ma__lyt__ArcResAcc__ArcResAcc_001207d8(r0_1 + 8u, 0x8ed2e8u, 0x8ed31cu);  // (from the original)
+    u32 r0_3 = ssys__ma__lyt__ArcResAcc__ArcResAcc_001207d8(r0_1 + 8u, vtable_CensusWindow, vtable_CensusWindow_at_24);
     u32 r0_5 = InOutWindow__InOutWindow_001cb884(r0_3 + 0x248u);  // (from the original)
     *gptr<u32>(r0_5) = vtable_CensusBG;
     u32 r0_6 = r0_5 + 0x1b0u;  // (from the original)
-    construct_animation_pair(r0_6, 0x8f8b10u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    construct_animation_pair(r0_6, vtable_CensusBG, guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_8 = InOutWindow__InOutWindow_001cb884(r0_6 + 0x5cu);  // (from the original)
     *gptr<u32>(r0_8) = vtable_CensusContentList;
     u32 r0_10 = for_each_element(r0_8 + 0x1b0u, 0x2caec8u, 0x198u, 7u);  // (from the original)
@@ -1605,10 +1622,10 @@ inline constexpr guest::Function<0x00567ef0, u32(u32)> ssys__ma__lyt__ArcResAccR
 u32 CensusWindow__virtual_0_001ff124(gptr<CensusWindow> arg0) {
     arg0->word_0 = vtable_CensusWindow;
     arg0->word_24 = vtable_CensusWindow_at_24;
-    u32 r0_2 = CensusContentList__virtual_0(arg0.addr() + 0x480u, 0x8ed2e8u, 0x8ed31cu, guest::cpu()->r[3]);  // (from the original)
+    u32 r0_2 = CensusContentList__virtual_0(arg0.addr() + 0x480u, vtable_CensusWindow, vtable_CensusWindow_at_24, guest::cpu()->r[3]);  // (from the original)
     *gptr<u32>(r0_2 - 0x20cu) = vtable_CensusBG;  // (from the original)
     u32 r0_3 = r0_2 - 0x5cu;  // (from the original)
-    destroy_animation_pair(r0_3, 0x8f8b10u);  // (from the original)
+    destroy_animation_pair(r0_3, vtable_CensusBG);
     u32 r0_5 = InOutWindow__virtual_0(r0_3 - 0x1b0u);  // (from the original)
     u32 r0_7 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_5 - 0x248u);  // (from the original)
     return r0_7 - 0x2cu;  // (from the original)

@@ -52,6 +52,7 @@ GUEST_EXPORT_FRAMED(0x001a08bc, d_001a08bc::f_001a08bc, 0x4010);  // pushes {r4,
 // f_001a1204: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001a1204 {
 
+inline constexpr u32 global_00998540_address = 0x00998540u;
 inline guest::global<u32, 0x00857318> global_00857318;
 inline guest::global<u32, 0x0085731c> global_0085731c;
 inline guest::global<u32, 0x00857320> global_00857320;
@@ -72,7 +73,7 @@ u32 f_001a1204() {
     *global_00998544 = r2_1;
     *global_00998548 = r3_1;
     *global_0099854c = r12_1;
-    u32 r0_1 = read_global_byte_2(0x998540u, r1_1);  // (from the original)
+    u32 r0_1 = read_global_byte_2(global_00998540_address, r1_1);
     if (r0_1 == 1u) {
         S0_1 = 29.0f;
         *global_00998548 = std::bit_cast<u32>(S0_1);
@@ -80,7 +81,7 @@ u32 f_001a1204() {
         S0_1 = std::bit_cast<float>(*global_00998548);
     }
     guest::cpu()->s[0] = S0_1;
-    return 0x998540u;  // (from the original)
+    return global_00998540_address;
 }
 
 }  // namespace d_001a1204
@@ -952,6 +953,7 @@ GUEST_OFFSET(Local_001a63e8_r1_3, float_0, 0x0);
 GUEST_OFFSET(Local_001a63e8_r1_3, float_4, 0x4);
 GUEST_OFFSET(Local_001a63e8_r1_3, float_8, 0x8);
 
+inline constexpr u32 global_00950aa4_address = 0x00950aa4u;
 inline constexpr guest::Function<0x0023ffb8, u32(u32, u32)> call_0023ffb8;
 inline constexpr guest::Function<0x002ff6f8, u32(u32, u32, u32, u32)> random_below;
 
@@ -973,7 +975,7 @@ u32 f_001a63e8(gptr<Object_001a63e8_0> arg0, u32 r1, float S0, float S1, float S
     u32 r8 = r1;
     u32 r7 = 0u;
     u32 r0_1 = random_below(0x18u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    u32 r9 = 0x950aa4u;  // (from the original)
+    u32 r9 = global_00950aa4_address;
     u32 r0_2 = sxth(r0_1);
     arg0->half_3e = u16(r0_2);
     u32 r1_1 = *gptr<u8>(r9 + (r0_2 << 4));
@@ -1326,7 +1328,7 @@ u32 ComDialogA__ComDialogA(gptr<ComDialogA> arg0) {
     arg0->word_0 = vtable_ComDialogA;
     arg0->word_20 = 0;
     arg0->word_24 = 0;
-    u32 r0_2 = script__WordFix_1536u___WordFix((arg0.addr() + 0x24u) + 4u, 0x8eb138u, r2_1, arg0.addr() + 0xcu);  // (from the original)
+    u32 r0_2 = script__WordFix_1536u___WordFix((arg0.addr() + 0x24u) + 4u, vtable_ComDialogA, r2_1, arg0.addr() + 0xcu);  // (from the original)
     u32 r0_4 = Layout__Layout(r0_2 + 0x1008u);  // (from the original)
     u32 r0_6 = Layout__Layout(r0_4 + 0x14cu);  // (from the original)
     u32 r0_8 = ssys__ma__lyt__ArcResAcc__ArcResAcc_001207d8(r0_6 + 0x14cu);  // (from the original)
@@ -1383,7 +1385,7 @@ inline constexpr guest::Function<0x005d5414, u32(u32)> script__WordFix_400u___Wo
 u32 ComDialogA__virtual_0(gptr<ComDialogA> arg0) {
     arg0->word_0 = vtable_ComDialogA;
     u32 r0_1 = arg0.addr() + 0x1824u;  // (from the original)
-    destroy_animation(r0_1, 0x8eb138u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    destroy_animation(r0_1, vtable_ComDialogA, guest::cpu()->r[2], guest::cpu()->r[3]);
     destroy_animation(r0_1 - 0x28u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     destroy_animation(r0_1 - 0x50u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     destroy_animation(r0_1 - 0x7cu, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
@@ -1921,6 +1923,18 @@ GUEST_OFFSET(Object_001aaed4_0, word_c0, 0xc0);
 GUEST_OFFSET(Object_001aaed4_0, word_c4, 0xc4);
 GUEST_OFFSET(Object_001aaed4_0, byte_141, 0x141);
 
+inline constexpr u32 global_00952d18_address = 0x00952d18u;
+inline constexpr u32 global_00952d1c_address = 0x00952d1cu;
+inline constexpr u32 global_00952d20_address = 0x00952d20u;
+inline constexpr u32 global_00952d24_address = 0x00952d24u;
+inline constexpr u32 global_00952d28_address = 0x00952d28u;
+inline constexpr u32 global_00952d2c_address = 0x00952d2cu;
+inline constexpr u32 global_00952d30_address = 0x00952d30u;
+inline constexpr u32 global_00952d34_address = 0x00952d34u;
+inline constexpr u32 global_00952d40_address = 0x00952d40u;
+inline constexpr u32 global_00952d44_address = 0x00952d44u;
+inline constexpr u32 global_00952d48_address = 0x00952d48u;
+inline constexpr u32 global_00952d4c_address = 0x00952d4cu;
 inline guest::global<u8, 0x00952d18> global_00952d18;
 inline guest::global<u32, 0x00952d1c> global_00952d1c;
 inline guest::global<u32, 0x00952d20> global_00952d20;
@@ -2152,6 +2166,7 @@ GUEST_EXPORT_FRAMED(0x001ab2ec, d_001ab2ec::f_001ab2ec, 0x40f0);  // pushes {r4,
 // f_001ab70c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001ab70c {
 
+inline constexpr u32 global_00a14b5c_address = 0x00a14b5cu;
 inline constexpr guest::Function<0x004edaec, u32(u32, u32)> call_004edaec;
 inline constexpr guest::Function<0x004ee904, u32(u32, u32)> ToggleObject__set_mode;
 inline constexpr guest::Function<0x004eefe0, u32(u32, u32, u32, u32)> sead__SafeStringBase_char___SafeStringBase_004eefe0;
@@ -2166,7 +2181,7 @@ GUEST_SIZE(Frame_001ab70c, 0x4);
 u32 f_001ab70c(u32 r0, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_001ab70c> frame;  // the original's stack frame
     frame->word_0 = r3;
-    u32 r0_1 = GroupedRecords__record_for(0xa14b5cu, r1, r2, r3);  // (from the original)
+    u32 r0_1 = GroupedRecords__record_for(global_00a14b5c_address, r1, r2, r3);
     frame->word_0 = r3;
     u32 r0_3 = sead__SafeStringBase_char___SafeStringBase_004eefe0(r0 + 0xccu, r0 + 0x78u, *gptr<u32>(r0_1), r2);  // (from the original)
     if (r0_3 != 0) {
@@ -2333,7 +2348,7 @@ u32 InstSelect_8___virtual_0(gptr<CatalogBase> arg0) {
     destroy_button_action_control(arg0.addr() + 0xa00u, guest::cpu()->r[1]);  // (from the original)
     arg0->word_0 = vtable_CatalogBase;
     arg0->word_224 = vtable_CommonScrollBar;
-    destroy_button_action_control(arg0.addr() + 0x82cu, 0x8f0888u);  // (from the original)
+    destroy_button_action_control(arg0.addr() + 0x82cu, vtable_CommonScrollBar);  // (from the original)
     destroy_array_elements(arg0.addr() + 0x66cu, 0x2b6ef8u, 0xe0u, 2u);  // (from the original)
     destroy_animation(arg0.addr() + 0x634u);  // (from the original)
     destroy_animation(arg0.addr() + 0x60cu);  // (from the original)
@@ -2409,6 +2424,9 @@ struct __attribute__((packed)) Local_001acf0c_r0_4 {
 GUEST_OFFSET(Local_001acf0c_r0_4, float_2c, 0x2c);
 GUEST_OFFSET(Local_001acf0c_r0_4, byte_b7, 0xb7);
 
+inline constexpr u32 global_0094fcfc_address = 0x0094fcfcu;
+inline constexpr u32 global_0094fd00_address = 0x0094fd00u;
+inline constexpr u32 global_0098c334_address = 0x0098c334u;
 inline guest::global<u32, 0x0094fcfc> global_0094fcfc;
 inline guest::global<u32, 0x0094fd00> global_0094fd00;
 inline guest::global<u32, 0x0098c334> global_0098c334;
@@ -2429,7 +2447,7 @@ void f_001acf0c(u32 r0, u32 r1, u32 r2, u32 r3, float S0, float S1, float S2) {
     u32 r7_1 = r2;
     u32 r6_1 = r3;
     if ((*global_0094fd00 & 1u) == 0) {
-        u32 r0_1 = claim_flag(0x94fd00u, r1, r2, r3);  // (from the original)
+        u32 r0_1 = claim_flag(global_0094fd00_address, r1, r2, r3);
         r2 = guest::cpu()->r[2];
         r3 = guest::cpu()->r[3];
         S0 = guest::cpu()->s[0];
@@ -2523,6 +2541,10 @@ GUEST_EXPORT(0x001ad2e4, d_001ad2e4::f_001ad2e4);
 // f_001ad5c8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001ad5c8 {
 
+inline constexpr u32 global_009535d5_address = 0x009535d5u;
+inline constexpr u32 global_00a187d8_address = 0x00a187d8u;
+inline constexpr u32 global_00a21c38_address = 0x00a21c38u;
+inline constexpr u32 global_00a21c48_address = 0x00a21c48u;
 inline guest::global<u8, 0x009535d5> global_009535d5;
 inline constexpr guest::Function<0x00308d4d, u32(u32, u32, u32, u32)> call_00308d4c;
 
@@ -2530,24 +2552,24 @@ u32 f_001ad5c8() {
     u32 r5 = ~0u;
     u32 r8 = 0u;
     u32 r4 = r8;
-    u32 r9 = 0xa21c48u;  // (from the original)
-    u32 r6 = 0xa187d8u;  // (from the original)
+    u32 r9 = global_00a21c48_address;
+    u32 r6 = global_00a187d8_address;
     u32 r7 = r9 - 0x10u;  // (from the original)
     do {
         u32 r0 = r9 + (r4 << 2);
 L_1ad5f4:;
         *gptr<u32>(r0) = r5;
-        u32 r0_1 = r4 >= 4u ? 0xa187d8u : r6 + r4 * 0x2518u;  // (from the original)
+        u32 r0_1 = r4 >= 4u ? global_00a187d8_address : r6 + r4 * 0x2518u;  // (from the original)
         call_00308d4c(r0_1, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-        u32 r0_2 = r4 >= 4u ? 0xa21c38u : r7 + (r4 << 2);  // (from the original)
+        u32 r0_2 = r4 >= 4u ? global_00a21c38_address : r7 + (r4 << 2);
         r4 += 1u;
         *gptr<u32>(r0_2) = r8;
         if (s32(r4) >= 4) {
             *global_009535d5 = u8(r8);
-            return 0x9535d5u;  // (from the original)
+            return global_009535d5_address;
         }
         if (r4 >= 4u) {
-            r0 = 0xa21c48u;  // (from the original)
+            r0 = global_00a21c48_address;
             guest::preempt();
             goto L_1ad5f4;
         }
@@ -2577,6 +2599,7 @@ struct __attribute__((packed)) Local_001add58_r0_6 {
 GUEST_OFFSET(Local_001add58_r0_6, half_0, 0x0);
 GUEST_OFFSET(Local_001add58_r0_6, byte_14, 0x14);
 
+inline constexpr u32 global_009529cc_address = 0x009529ccu;
 inline guest::global<u32, 0x009529cc> global_009529cc;
 inline constexpr guest::Function<0x00100b8d, u32(u32)> call_00100b8c;
 inline constexpr guest::Function<0x00100d2d, u32(u32, u32, u32, u32)> memory_compare_100d2c;
@@ -2804,11 +2827,11 @@ GUEST_EXPORT_FRAMED(0x001aede0, d_001aede0::f_001aede0, 0x4000);  // pushes {lr}
 // f_001af458: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001af458 {
 
+inline constexpr u32 global_00a18690_address = 0x00a18690u;
 inline constexpr guest::Function<0x00138744, u32(u32, u32, u32, u32)> destroy_load_split_base_part;
 
 void f_001af458() {
-    destroy_load_split_base_part(0xa18690u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-    return;  // (from the original)
+    destroy_load_split_base_part(global_00a18690_address, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
 }
 
 }  // namespace d_001af458
@@ -2817,10 +2840,11 @@ GUEST_EXPORT(0x001af458, d_001af458::f_001af458);
 // f_001af914: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_001af914 {
 
+inline constexpr u32 global_00a18690_address = 0x00a18690u;
 
 u32 f_001af914(u32 r0_unused, u32 r1, u32 r2) {
     u32 res_1 = 0;
-    u32 r0 = 0xa18690u;  // (from the original)
+    u32 r0 = global_00a18690_address;
     u32 r4 = *gptr<u32>(r0 + 0xd0u);  // (from the original)
     u32 r9 = r2 - 1u;
     u32 r3 = 0u;
@@ -2985,6 +3009,10 @@ GUEST_EXPORT(0x001afd70, d_001afd70::AreaList__virtual_3);
 namespace d_001aff90 {
 
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
+inline constexpr u32 stage_heap_address = 0x00952c3cu;
+inline constexpr u32 global_00953394_address = 0x00953394u;
+inline constexpr u32 global_0095339c_address = 0x0095339cu;
+inline constexpr u32 global_00a18690_address = 0x00a18690u;
 inline guest::global<u32, 0x00952c3c> stage_heap;
 inline guest::global<u32, 0x00953394> global_00953394;
 inline guest::global<u32, 0x00953398> global_00953398;
@@ -3003,15 +3031,15 @@ GUEST_SIZE(Frame_001aff90, 0x8);
 u32 sead__SafeStringBase_char___SafeStringBase_001aff90(u32 r0_unused, u32 r1, u32 r2, u32 r3) {
     guest::StackFrameOf<Frame_001aff90> frame;  // the original's stack frame
     if ((*global_00953394 & 1u) == 0) {
-        u32 r0_1 = claim_flag(0x953394u, r1, r2, r3);  // (from the original)
+        u32 r0_1 = claim_flag(global_00953394_address, r1, r2, r3);
         if (r0_1 != 0) {
             u32 r0_2 = value_for_mode(r0_1);
-            *global_00953398 = gptr<u32>(0x95339cu)[r0_2];  // (from the original)
+            *global_00953398 = gptr<u32>(global_0095339c_address)[r0_2];
         }
     }
     frame->word_4 = *global_00953398;
     frame->word_0 = vtable_sead__SafeStringBase_char_;
-    u32 r0_3 = load_split_start(0xa18690u, frame.at(0).addr(), *stage_heap, 0x80u);  // (from the original)
+    u32 r0_3 = load_split_start(global_00a18690_address, frame.at(0).addr(), *stage_heap, 0x80u);  // (from the original)
     return r0_3;
 }
 

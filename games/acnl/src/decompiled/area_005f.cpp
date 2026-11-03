@@ -167,7 +167,7 @@ u32 script__Loader__LoadSplit__LoadSplit(gptr<Object_005f1138_0> arg0, u32 r1) {
     construct_load_split(r0_1 + 0x10u);  // (from the original)
     arg0->word_14 = vtable_script__Loader__LoadSplit;
     arg0->byte_ff = 0;
-    guest::cpu()->r[1] = 0x9097a0u;  // (from the original)
+    guest::cpu()->r[1] = vtable_script__Loader__LoadSplit;
     return r0_1 - 4u;
 }
 
@@ -317,13 +317,14 @@ GUEST_EXPORT_FRAMED(0x005f6b44, d_005f6b44::f_005f6b44, 0x40f0);  // pushes {r4,
 // f_005f6dcc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_005f6dcc {
 
+inline constexpr u32 global_00ad59ac_address = 0x00ad59acu;
 
 void f_005f6dcc(u32 r0, u32 r1) {
     u32 res_1 = 0;
     u32 res_2 = 0;
     u32 r6 = 0x12u;  // (from the original)
     u32 r3 = 0x8906ecu;  // (from the original)
-    u32 r4 = 0xad59acu;  // (from the original)
+    u32 r4 = global_00ad59ac_address;
     u32 r2 = 0u;
 L_5f6de0:;
     if (gptr<u16>(r4)[r2] == *gptr<u16>(r3)) {
@@ -399,6 +400,7 @@ namespace d_005f723c {
 
 inline constexpr u32 vtable_sead__BufferedSafeStringBase_wchar_t_ = 0x009055a0u;
 inline constexpr u32 vtable_script__WordPtr = 0x0090a538u;
+inline constexpr u32 global_00ad59ac_address = 0x00ad59acu;
 inline guest::global<u16, 0x008c9f1e> global_008c9f1e;
 
 void sead__BufferedSafeStringBase_wchar_t___BufferedSafeStringBase_005f723c(gptr<sead__BufferedSafeStringBase_wchar_t_> arg0) {
@@ -449,6 +451,7 @@ struct __attribute__((packed)) Local_005fbc20_r2_2 {
 GUEST_OFFSET(Local_005fbc20_r2_2, word_0, 0x0);
 GUEST_OFFSET(Local_005fbc20_r2_2, word_4, 0x4);
 
+inline constexpr u32 global_0095df14_address = 0x0095df14u;
 inline constexpr guest::Function<0x005d60d4, u32(u32, u32)> call_005d60d4;
 inline constexpr guest::Function<0x00601b44, u32(u32, u32, u32, u32)> MsgEngine__reset;
 
@@ -462,7 +465,7 @@ u32 f_005fbc20(gptr<Object_005fbc20_0> arg0, u32 r1, u32 r2, u32 r3, float S0) {
     arg0->word_a0 = 3;
     arg0->word_a4 = r1;
     arg0->word_a8 = r1;
-    u32 r14 = 0x95df14u;  // (from the original)
+    u32 r14 = global_0095df14_address;
     arg0->float_ac = S0;
     u32 r12 = 1u;
     arg0->byte_cb = u8(r12);
@@ -856,6 +859,7 @@ struct __attribute__((packed)) Local_005ffd94_r0_2 {
 };
 GUEST_OFFSET(Local_005ffd94_r0_2, half_c, 0xc);
 
+inline constexpr u32 global_0094ee44_address = 0x0094ee44u;
 inline guest::global<u16, 0x00887254> global_00887254;
 inline guest::global<u16, 0x008872d0> global_008872d0;
 inline guest::global<u32, 0x0094ee44> global_0094ee44;

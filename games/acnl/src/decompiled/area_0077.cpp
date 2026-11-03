@@ -407,6 +407,8 @@ struct __attribute__((packed)) Local_00779704_r12_1 {
 GUEST_OFFSET(Local_00779704_r12_1, word_0, 0x0);
 GUEST_OFFSET(Local_00779704_r12_1, word_4, 0x4);
 
+inline constexpr u32 global_00974a7c_address = 0x00974a7cu;
+inline constexpr u32 global_00974a80_address = 0x00974a80u;
 inline guest::global<u32, 0x00974a7c> global_00974a7c;
 inline guest::global<u32, 0x00974a80> global_00974a80;
 
@@ -433,11 +435,12 @@ GUEST_EXPORT_FRAMED(0x00779704, d_00779704::f_00779704, 0x70);  // pushes {r4, r
 // f_00779764: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_00779764 {
 
+inline constexpr u32 global_00974a7c_address = 0x00974a7cu;
 
 void f_00779764(u32 r0, u32 r1, u32 r2) {
     u32 res_2 = 0;
     u32 res_3 = 0;
-    u32 r6 = 0x974a7cu;  // (from the original)
+    u32 r6 = global_00974a7c_address;
     u32 r3 = *gptr<u32>(r6);
     u32 r12_1 = *gptr<u32>(r6 + 4);
     if (r12_1 <= r3 + ((r1 & ~1u) + (r1 >> 7 << 1) << 2) + 8u) {
@@ -919,6 +922,9 @@ struct __attribute__((packed)) Local_0077f2ac_r1_2 {
 GUEST_OFFSET(Local_0077f2ac_r1_2, word_0, 0x0);
 GUEST_OFFSET(Local_0077f2ac_r1_2, word_4, 0x4);
 
+inline constexpr u32 global_00974a7c_address = 0x00974a7cu;
+inline constexpr u32 global_0097d470_address = 0x0097d470u;
+inline constexpr u32 global_0097d478_address = 0x0097d478u;
 inline guest::global<u32, 0x00974a7c> global_00974a7c;
 inline guest::global<u32, 0x00974a80> global_00974a80;
 inline guest::global<u32, 0x0097d478> global_0097d478;

@@ -161,6 +161,7 @@ GUEST_EXPORT_FRAMED(0x001c1e54, d_001c1e54::sead__SafeStringBase_char___SafeStri
 namespace d_001c1eb8 {
 
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
+inline constexpr u32 global_00952c4c_address = 0x00952c4cu;
 inline guest::global<u32, 0x00952c4c> global_00952c4c;
 inline constexpr guest::Function<0x0056a974, u32(u32, u32, u32, u32)> load_split_start;
 
@@ -769,7 +770,7 @@ u32 CatalogList__virtual_0(gptr<CatalogList> arg0) {
     destroy_array_elements(arg0.addr() + 0x172cu, 0x1c81ccu, 0x1cu, 8u);  // (from the original)
     u32 r0_10 = arg0.addr() + 0x1620u;  // (from the original)
     arg0->word_ac0 = vtable_Tab_4_;
-    destroy_button_action_control(r0_10, 0x8f727cu);  // (from the original)
+    destroy_button_action_control(r0_10, vtable_Tab_4_);
     u32 r4_1 = r0_10 - 0xb60u;  // (from the original)
     destroy_array_elements(r0_10 - 0x380u, 0x31c92cu, 0xe0u, 4u);  // (from the original)
     destroy_array_elements(r4_1 + 0x740u, 0x56988cu, 0x28u, 4u);  // (from the original)
@@ -782,7 +783,7 @@ u32 CatalogList__virtual_0(gptr<CatalogList> arg0) {
     u32 r0_18 = r4_2.addr() + 0x82cu;  // (from the original)
     r4_2->word_0 = vtable_CatalogBase;
     r4_2->word_224 = vtable_CommonScrollBar;
-    destroy_button_action_control(r0_18, 0x8f0888u);  // (from the original)
+    destroy_button_action_control(r0_18, vtable_CommonScrollBar);
     destroy_array_elements(r0_18 - 0x1c0u, 0x2b6ef8u, 0xe0u, 2u);  // (from the original)
     u32 r0_20 = (r0_18 - 0x608u) + 0x410u;  // (from the original)
     destroy_animation(r0_20);
@@ -1392,7 +1393,7 @@ inline constexpr guest::Function<0x00125e3c, u32(u32, u32, u32, u32)> Layout__La
 
 u32 InOutWindow__InOutWindow_001cb884(gptr<InOutWindow> arg0, u32 r1_unused, u32 r2) {
     arg0->word_0 = vtable_InOutWindow;
-    u32 r0_2 = Layout__Layout(arg0.addr() + 4u, 0x8ebb64u, r2, guest::cpu()->r[3]);  // (from the original)
+    u32 r0_2 = Layout__Layout(arg0.addr() + 4u, vtable_InOutWindow, r2, guest::cpu()->r[3]);
     u32 r0_3 = r0_2 + 0x14cu;  // (from the original)
     construct_layout_animation(r0_3);
     u32 r0_4 = r0_3 + 0x28u;  // (from the original)
@@ -1420,7 +1421,7 @@ inline constexpr guest::Function<0x005bf744, u32(u32)> Layout__virtual_0;
 u32 InOutWindow__virtual_0(gptr<InOutWindow> arg0) {
     arg0->word_0 = vtable_InOutWindow;
     u32 r0_1 = arg0.addr() + 0x178u;  // (from the original)
-    destroy_animation(r0_1, 0x8ebb64u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    destroy_animation(r0_1, vtable_InOutWindow, guest::cpu()->r[2], guest::cpu()->r[3]);
     destroy_animation(r0_1 - 0x28u, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     u32 r0_4 = Layout__virtual_0(r0_1 - 0x174u);  // (from the original)
     return r0_4 - 4u;
@@ -2284,14 +2285,7 @@ GUEST_OFFSET(Object_001cde2c_0, half_c, 0xc);
 
 
 void f_001cde2c(gptr<Object_001cde2c_0> arg0, u32 r1) {
-    u32 zf_1 = r1 == 0;
-    if (r1 != 0) {
-        r1 = 0x8000u;  // (from the original)
-    }
-    if (zf_1) {
-        r1 = 0u;
-    }
-    u32 r1_1 = r1 | u32(arg0->half_c) & ~0x8000u;  // (from the original)
+    u32 r1_1 = (r1 == 0 ? 0u : 0x8000u) | u32(arg0->half_c) & ~0x8000u;  // (from the original)
     arg0->half_c = u16(r1_1);
     guest::cpu()->r[1] = r1_1;
 }

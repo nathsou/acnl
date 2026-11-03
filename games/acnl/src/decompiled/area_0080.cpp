@@ -1031,6 +1031,7 @@ struct __attribute__((packed)) Local_0080d68c_r0_5 {
 GUEST_OFFSET(Local_0080d68c_r0_5, word_0, 0x0);
 GUEST_OFFSET(Local_0080d68c_r0_5, word_4, 0x4);
 
+inline constexpr u32 empty_item_address = 0x0095bfdcu;
 inline constexpr guest::Function<0x00317148, u32(u32, u32, u32, u32)> CellGrid__cell_at;
 inline constexpr guest::Function<0x0052f144, u32(u32, u32, u32, u32)> WrappingCursor__advance;
 inline constexpr guest::Function<0x0057bb98, u32(u32, u32, u32, u32)> block_cell_rect;
@@ -1086,11 +1087,11 @@ u32 f_0080d68c(u32 r0, u32 r1, u32 r2, u32 r3) {
                             u32 r4_1 = frame->word_14;
                             u32 r2_7 = frame->word_10;
                             frame->word_0 = r8;
-                            GridCellSmall__place_item(r6, 0x95bfdcu, r2_7, r4_1);  // (from the original)
+                            GridCellSmall__place_item(r6, empty_item_address, r2_7, r4_1);
                             u32 r4_2 = frame->word_14;
                             u32 r2_8 = frame->word_10;
                             frame->word_0 = r7;
-                            GridCellSmall__place_item(r6, 0x95bfdcu, r2_8, r4_2);  // (from the original)
+                            GridCellSmall__place_item(r6, empty_item_address, r2_8, r4_2);
                             WrappingCursor__advance(frame.at(8).addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
                             r0_14 = key_records_differ(frame.at(8).addr(), frame.at(0x38).addr());  // (from the original)
                             r1 = guest::cpu()->r[1];

@@ -485,6 +485,7 @@ GUEST_OFFSET(Local_0055224c_r0_3, float_0, 0x0);
 GUEST_OFFSET(Local_0055224c_r0_3, float_4, 0x4);
 GUEST_OFFSET(Local_0055224c_r0_3, float_8, 0x8);
 
+inline constexpr u32 global_0097e83c_address = 0x0097e83cu;
 inline guest::global<u32, 0x0097e83c> global_0097e83c;
 inline constexpr guest::Function<0x002f9e1c, u32(u32, u32, u32, u32)> divide_with_remainder;
 
@@ -898,7 +899,7 @@ u32 sead__ptcl__PtclModelMgr__virtual_1(gptr<sead__ptcl__PtclModelMgr> arg0, u32
     u32 r0_1 = arg0->word_c;
     arg0->word_0 = vtable_sead__ptcl__PtclModelMgr;
     if (r0_1 != 0) {
-        call_0055c5ec(r0_1, 0x9059d4u, r2, r3);  // (from the original)
+        call_0055c5ec(r0_1, vtable_sead__ptcl__PtclModelMgr, r2, r3);
         free_memory(r0_1);
     }
     destroy_array_elements(arg0.addr() + 0x2034u, 0x5450f0u, 0x10cu, 2u);  // (from the original)
@@ -3097,6 +3098,7 @@ struct __attribute__((packed)) Local_0055ed48_ea_3 {
 GUEST_OFFSET(Local_0055ed48_ea_3, word_0, 0x0);
 GUEST_OFFSET(Local_0055ed48_ea_3, word_4, 0x4);
 
+inline constexpr u32 global_00975338_address = 0x00975338u;
 inline guest::global<u32, 0x00975338> global_00975338;
 inline constexpr guest::Function<0x0012c40c, u32(u32, u32)> service_call;
 inline constexpr guest::Function<0x00135740, u32(u32, u32, u32, u32)> lock_member_lock;
@@ -3137,26 +3139,22 @@ u32 f_0055ed48(u32 r0, gptr<Object_0055ed48_1> arg1, gptr<Object_0055ed48_2> arg
     ea_1->word_8 = 0;
     frame->word_10 = arg1->word_60;
     u32 r0_4 = call_00749bb4(frame.at(0).addr(), frame.at(8).addr());
-    u32 r4_1 = r0_4;
     if (r8_1 != 1u) {
-        r0_4 = *global_00975338;
-    }
-    if (r8_1 != 1u) {
-        service_call(r0_4, r8_1);
+        service_call(*global_00975338, r8_1);
     }
     gptr<Local_0055ed48_ea_2> ea_2 = gptr<Local_0055ed48_ea_2>(frame.at(0).addr());
-    u32 r0_5 = ea_2->word_0;
+    u32 r0_6 = ea_2->word_0;
     u32 r1_4 = ea_2->word_4;
-    gptr<Local_0055ed48_ea_3> ea_3 = gptr<Local_0055ed48_ea_3>(r4_1 + 0x64u);  // (from the original)
-    ea_3->word_0 = r0_5;
+    gptr<Local_0055ed48_ea_3> ea_3 = gptr<Local_0055ed48_ea_3>(r0_4 + 0x64u);  // (from the original)
+    ea_3->word_0 = r0_6;
     ea_3->word_4 = r1_4;
-    *gptr<u8>(r4_1 + 0x61u) = u8(r9_1);  // (from the original)
-    u32 r0_6 = arg1->word_5c;
-    if (r0_6 != 0) {
-        call_00560b0c(r0_6 + 0x10u, r4_1 == 0 ? 0u : r4_1 + 0x10u);  // (from the original)
+    *gptr<u8>(r0_4 + 0x61u) = u8(r9_1);  // (from the original)
+    u32 r0_7 = arg1->word_5c;
+    if (r0_7 != 0) {
+        call_00560b0c(r0_7 + 0x10u, r0_4 == 0 ? 0u : r0_4 + 0x10u);  // (from the original)
     }
     unlock_member_lock(r6_1);
-    return r4_1;
+    return r0_4;
 }
 
 }  // namespace d_0055ed48
@@ -3360,6 +3358,7 @@ inline constexpr u32 vtable_sead__MethodTreeNode = 0x009047b0u;
 inline constexpr u32 vtable_sead__SafeStringBase_char_ = 0x009047f8u;
 inline constexpr u32 vtable_sead__TaskMgr = 0x00905b70u;
 inline constexpr u32 vtable_sead__Delegate_sead__MethodTreeNode_ = 0x00905bf0u;
+inline constexpr u32 global_00ae53b8_address = 0x00ae53b8u;
 inline guest::global<u32, 0x008bb364> global_008bb364;
 inline guest::global<u32, 0x008bb368> global_008bb368;
 inline constexpr guest::Function<0x0012bfec, u32(u32, u32)> sead__CriticalSection__CriticalSection_0012bfec;
@@ -3411,7 +3410,7 @@ u32 sead__TaskMgr__TaskMgr(gptr<Object_0055fcf4_0> arg0, u32 r1_unused, u32 r2_u
     *gptr<u32>(r0_1) = vtable_sead__TaskMgr;
     u32 r0_2 = r0_1 + 4u;
     guest::cpu()->r[13] = r13;
-    sead__CriticalSection__CriticalSection_0012bfec(r0_2, 0x905b70u);  // (from the original)
+    sead__CriticalSection__CriticalSection_0012bfec(r0_2, vtable_sead__TaskMgr);
     u32 r0_3 = r0_2 - 4u;
     r9 = 0u;
     gptr<Local_0055fcf4_ea_4> ea_4 = gptr<Local_0055fcf4_ea_4>(r0_3 + 0x20u);  // (from the original)
@@ -3497,7 +3496,7 @@ u32 sead__TaskMgr__TaskMgr(gptr<Object_0055fcf4_0> arg0, u32 r1_unused, u32 r2_u
         r2_5 = vtable_sead__Delegate_sead__MethodTreeNode_;
         *gptr<u32>(r1_10) = r2_5;
     }
-    r10 = 0xae53b8u;  // (from the original)
+    r10 = global_00ae53b8_address;
     *gptr<u32>(r0_8.addr() - 0x9cu) = r9;  // (from the original)
     r5 = r0_8.addr() - 0x130u;  // (from the original)
     r4 = 0u;

@@ -48,6 +48,7 @@ GUEST_EXPORT_FRAMED(0x004f027c, d_004f027c::g3d__PointFragmentLight__virtual_5, 
 // f_004f0310: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_004f0310 {
 
+inline constexpr u32 global_0094edd8_address = 0x0094edd8u;
 inline guest::global<u32, 0x0094edd8> global_0094edd8;
 inline guest::global<u8, 0x00952a20> global_00952a20;
 inline guest::global<u8, 0x00952a21> global_00952a21;
@@ -105,6 +106,7 @@ GUEST_EXPORT(0x004f0568, d_004f0568::f_004f0568);
 // f_004f05cc: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_004f05cc {
 
+inline constexpr u32 global_00952a38_address = 0x00952a38u;
 inline guest::global<u32, 0x00952a38> global_00952a38;
 inline constexpr guest::Function<0x00495474, u32(u32, u32, u32, u32)> call_00495474;
 
@@ -1036,6 +1038,9 @@ GUEST_EXPORT(0x004f2638, d_004f2638::f_004f2638);
 // f_004f2a18: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_004f2a18 {
 
+inline constexpr u32 global_00952a20_address = 0x00952a20u;
+inline constexpr u32 global_00952a38_address = 0x00952a38u;
+inline constexpr u32 global_009c90c4_address = 0x009c90c4u;
 inline guest::global<u32, 0x00952a38> global_00952a38;
 inline guest::global<u32, 0x00952a48> global_00952a48;
 inline constexpr guest::Function<0x00495534, u32(u32)> call_00495534;
@@ -1046,7 +1051,7 @@ inline constexpr guest::Function<0x007b1038, u32(u32)> call_007b1038;
 void f_004f2a18(u32 r0_unused, u32 r1) {
     u32 r0_1 = 0;
     u32 r4 = 0u;
-    u32 r5 = 0x9c90c4u;  // (from the original)
+    u32 r5 = global_009c90c4_address;
     do {
         r0_1 = gptr<u32>(r5)[r4];
         store_word_constant_pack_0x8(r0_1, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
@@ -1242,6 +1247,7 @@ GUEST_EXPORT(0x004f2f60, d_004f2f60::f_004f2f60);
 // f_004f3068: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_004f3068 {
 
+inline constexpr u32 global_00952a38_address = 0x00952a38u;
 inline guest::global<u8, 0x00952a20> global_00952a20;
 inline guest::global<u32, 0x00952a38> global_00952a38;
 inline constexpr guest::Function<0x004efb0c, u32(u32, u32, u32, u32)> call_004efb0c;
@@ -1269,6 +1275,8 @@ namespace d_004f33dc {
 
 inline constexpr u32 vtable_gui__ButtonBase = 0x00902bc8u;
 inline constexpr u32 vtable_gui__Widget = 0x00903054u;
+inline constexpr u32 global_00ad662c_address = 0x00ad662cu;
+inline constexpr u32 global_00ad6630_address = 0x00ad6630u;
 inline guest::global<u32, 0x00ad6630> global_00ad6630;
 inline constexpr guest::Function<0x0013e7d8, u32(u32, u32, u32)> linked_list_insert_before;
 inline constexpr guest::Function<0x002f825c, u32(u32, u32)> clear_aligned;
@@ -1278,7 +1286,7 @@ u32 gui__Widget__Widget(gptr<gui__ButtonBase> arg0) {
     arg0->word_4 = 0;
     arg0->word_8 = 0;
     arg0->byte_c = 0;
-    linked_list_insert_before(0xad662cu, *global_00ad6630, arg0.addr() + 4u);  // (from the original)
+    linked_list_insert_before(global_00ad662c_address, *global_00ad6630, arg0.addr() + 4u);
     arg0->word_0 = vtable_gui__ButtonBase;
     arg0->word_10 = 0;
     arg0->byte_14 = 1;
@@ -1429,6 +1437,7 @@ struct __attribute__((packed)) Local_004f524c_r1_6 {
 GUEST_OFFSET(Local_004f524c_r1_6, half_6, 0x6);
 GUEST_OFFSET(Local_004f524c_r1_6, half_e, 0xe);
 
+inline constexpr u32 global_0095e0fc_address = 0x0095e0fcu;
 inline guest::global<u32, 0x0095e0fc> global_0095e0fc;
 inline constexpr guest::Function<0x004dae58, u32(u32, u32, u32, u32)> call_004dae58;
 inline constexpr guest::Function<0x004f5144, u32(u32, u32, u32, u32)> call_004f5144;
@@ -1450,11 +1459,9 @@ void f_004f524c(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
         u32 r2 = guest::cpu()->r[2];
         u32 r3_1 = guest::cpu()->r[3];
         u32 zf_1 = r0_2 == 0;
-        if (r0_2 != 0) {
-            r0_2 = *gptr<u16>(r0_2 + 2u);
-        }
         u32 r8 = 0x896f58u;  // (from the original)
         if (!zf_1) {
+            r0_2 = *gptr<u16>(r0_2 + 2u);
             zf_1 = r0_2 == 0;
         }
         if (zf_1) {
@@ -1787,13 +1794,9 @@ u32 gui__RadioButton__RadioButton(gptr<gui__RadioButton> arg0, u32 r1, u32 r2) {
     arg0->word_0 = vtable_gui__RadioButton;
     copy_aligned_bytes(arg0.addr() + 0x30u, r1, 0x44u);  // (from the original)
     u32 r2_1 = arg0->word_4c;
-    u32 r0_2 = 0u;
-    arg0->byte_74 = u8(r0_2);
+    arg0->byte_74 = 0;
     if (r2_1 + 0x64u == 0) {  // (from the original)
-        r0_2 = *global_00ad6638;
-    }
-    if (r2_1 + 0x64u == 0) {  // (from the original)
-        arg0->word_4c = r0_2;
+        arg0->word_4c = *global_00ad6638;
     }
     if (arg0->word_50 + 0x64u == 0) {  // (from the original)
         arg0->word_50 = *global_00ad663c;
@@ -1965,13 +1968,9 @@ u32 gui__RepeatButton__RepeatButton(gptr<gui__RepeatButton> arg0, u32 r1, u32 r2
     copy_aligned_bytes(arg0.addr() + 0x30u, r1, 0x54u);  // (from the original)
     u32 r0_2 = arg0->word_4c;
     arg0->word_84 = 0;
-    u32 zf_1 = r0_2 + 0x64u == 0;  // (from the original)
     arg0->byte_88 = 0;
     if (r0_2 + 0x64u == 0) {  // (from the original)
-        r0_2 = *global_00ad664c;
-    }
-    if (zf_1) {
-        arg0->word_4c = r0_2;
+        arg0->word_4c = *global_00ad664c;
     }
     if (arg0->word_50 + 0x64u == 0) {  // (from the original)
         arg0->word_50 = *global_00ad6650;
@@ -2313,6 +2312,7 @@ struct __attribute__((packed)) Local_004fe440_r4_8 {
 GUEST_OFFSET(Local_004fe440_r4_8, word_154, 0x154);
 GUEST_OFFSET(Local_004fe440_r4_8, byte_208, 0x208);
 
+inline constexpr u32 global_0094fd3c_address = 0x0094fd3cu;
 inline guest::global<u32, 0x0094fd3c> global_0094fd3c;
 inline constexpr guest::Function<0x005ce6dc, u32(u32)> err_eula_is_idle_with_byte_fac;
 
@@ -2408,6 +2408,7 @@ GUEST_EXPORT_FRAMED(0x004fe440, d_004fe440::f_004fe440, 0x4070);  // pushes {r4,
 // f_004fe5b8: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_004fe5b8 {
 
+inline constexpr u32 global_0094fd3c_address = 0x0094fd3cu;
 inline guest::global<u32, 0x0094fd3c> global_0094fd3c;
 inline constexpr guest::Function<0x006d40d4, u32(u32, u32)> selection_accepts;
 
@@ -2701,13 +2702,9 @@ u32 gui__ButtonEx__ButtonEx(gptr<gui__ButtonEx> arg0, u32 r1, u32 r2) {
     arg0->word_0 = vtable_gui__ButtonEx;
     copy_aligned_bytes(arg0.addr() + 0x30u, r1, 0xe8u);  // (from the original)
     u32 r2_1 = arg0->word_4c;
-    u32 r0_2 = 1u;
-    arg0->byte_118 = u8(r0_2);
+    arg0->byte_118 = 1;
     if (r2_1 + 0x64u == 0) {  // (from the original)
-        r0_2 = *global_00ad6618;
-    }
-    if (r2_1 + 0x64u == 0) {  // (from the original)
-        arg0->word_4c = r0_2;
+        arg0->word_4c = *global_00ad6618;
     }
     if (arg0->word_50 + 0x64u == 0) {  // (from the original)
         arg0->word_50 = *global_00ad661c;

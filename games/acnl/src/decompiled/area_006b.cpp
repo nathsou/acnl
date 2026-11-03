@@ -97,10 +97,10 @@ u32 state__Mode_Passport___Mode(gptr<Passport> arg0) {
     arg0->word_1c = r5;
     arg0->word_20 = r5;
     u32 r0_1 = (r0 + 0x20u) + 4u;  // (from the original)
-    SoPaCaWindowBase__SoPaCaWindowBase(r0_1, 0x9081ecu, r2_1, r0 + 0xcu);  // (from the original)
+    SoPaCaWindowBase__SoPaCaWindowBase(r0_1, vtable_state__Mode_Passport_, r2_1, r0 + 0xcu);  // (from the original)
     arg0->word_0 = vtable_Passport;
     arg0->word_24 = vtable_Passport_at_24;
-    u32 r0_3 = ssys__ma__lyt__ArcResAcc__ArcResAcc_001207d8(r0_1 + 8u, 0x8f8c84u, 0x8f8cb8u);  // (from the original)
+    u32 r0_3 = ssys__ma__lyt__ArcResAcc__ArcResAcc_001207d8(r0_1 + 8u, vtable_Passport, vtable_Passport_at_24);
     u32 r0_5 = ssys__ma__lyt__ArcResAcc__ArcResAcc_001207d8(r0_3 + 0x248u, guest::cpu()->r[1], guest::cpu()->r[2]);  // (from the original)
     u32 r0_7 = Layout__Layout(r0_5 + 0x248u);  // (from the original)
     u32 r0_8 = r0_7 + 0x14cu;  // (from the original)
@@ -152,7 +152,7 @@ u32 state__Mode_Passport___Mode(gptr<Passport> arg0) {
     u32 r0_35 = InOutWindow__InOutWindow_0022c7c8(r0_33 + 0x5cu);  // (from the original)
     *gptr<u32>(r0_35) = vtable_SimpleCommentWindow;
     u32 r0_36 = r0_35 + 0x204u;  // (from the original)
-    construct_button_node(r0_36, 0x8f428cu);  // (from the original)
+    construct_button_node(r0_36, vtable_SimpleCommentWindow);
     u32 r0_37 = r0_36 + 0xe0u;  // (from the original)
     construct_button_action_control(r0_37);
     u32 r0_39 = script__RenderTrace__RenderTrace(r0_37 + 0xe4u, 0x21u);  // (from the original)
@@ -162,7 +162,7 @@ u32 state__Mode_Passport___Mode(gptr<Passport> arg0) {
     script__construct_word_ptr(r0_41, r0_41 + 0x18u, 0x21u);  // (from the original)
     *gptr<u32>(r0_41) = vtable_script__WordFix_33u_;
     u32 r0_42 = r0_41 + 0xcu;  // (from the original)
-    construct_script_word(r0_42, 0x909f18u);  // (from the original)
+    construct_script_word(r0_42, vtable_script__WordFix_33u_);
     u32 r4 = r0_42 - 0xcu;  // (from the original)
     clear_aligned(r0_42 + 0xcu, 0x42u);  // (from the original)
     u32 r2 = 0x8906ecu;  // (from the original)
@@ -247,7 +247,7 @@ u32 Passport__virtual_0_006b0b74(gptr<Passport> arg0, u32 r1_unused, u32 r2_unus
     arg0->word_0 = vtable_Passport;
     arg0->word_24 = vtable_Passport_at_24;
     u32 r0_1 = arg0.addr() + 0x6a38u;  // (from the original)
-    script__RenderMain__RenderMain_005e3194(r0_1, 0x8f8c84u, 0x8f8cb8u, r3);  // (from the original)
+    script__RenderMain__RenderMain_005e3194(r0_1, vtable_Passport, vtable_Passport_at_24, r3);
     u32 r0_2 = r0_1 - 0xc4u;  // (from the original)
     script__RenderMain__RenderMain_005e3194(r0_2, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_3 = r0_2 - 0xc4u;  // (from the original)
@@ -278,7 +278,7 @@ u32 Passport__virtual_0_006b0b74(gptr<Passport> arg0, u32 r1_unused, u32 r2_unus
     arg0->word_e30 = vtable_SimpleCommentWindow;
     arg0->word_12cc = vtable_script__WordFix_33u_;
     u32 r0_17 = r0_15 - 0x214u;  // (from the original)
-    script__RenderMain__RenderMain_005e3194(r0_17, 0x909f18u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    script__RenderMain__RenderMain_005e3194(r0_17, vtable_script__WordFix_33u_, guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_18 = r0_17 - 0xe4u;  // (from the original)
     destroy_button_action_control(r0_18);
     u32 r0_19 = r0_18 - 0xe0u;  // (from the original)
@@ -286,7 +286,7 @@ u32 Passport__virtual_0_006b0b74(gptr<Passport> arg0, u32 r1_unused, u32 r2_unus
     u32 r0_21 = ExplainWindow__virtual_0(r0_19 - 0x204u);  // (from the original)
     *gptr<u32>(r0_21 - 0x434u) = vtable_BadgeExplainWindow;  // (from the original)
     u32 r0_22 = r0_21 - 0x5cu;  // (from the original)
-    destroy_animation_pair(r0_22, 0x8f2db4u);  // (from the original)
+    destroy_animation_pair(r0_22, vtable_BadgeExplainWindow);
     u32 r0_23 = r0_22 - 0x100u;  // (from the original)
     script__MsgEngine__MsgEngine_005d703c(r0_23);
     u32 r0_24 = r0_23 - 0xc4u;  // (from the original)
@@ -1048,6 +1048,7 @@ struct __attribute__((packed)) Object_006b3d50_0 {
 GUEST_OFFSET(Object_006b3d50_0, word_b18, 0xb18);
 GUEST_OFFSET(Object_006b3d50_0, byte_cff, 0xcff);
 
+inline constexpr u32 global_0094cffc_address = 0x0094cffcu;
 inline guest::global<u32, 0x0094cffc> global_0094cffc;
 inline constexpr guest::Function<0x0071bfa0, u32(u32, u32)> call_0071bfa0;
 inline constexpr guest::Function<0x00825c64, u32(u32, u32, u32, u32)> call_00825c64;
@@ -2940,6 +2941,7 @@ GUEST_EXPORT(0x006bbbd8, d_006bbbd8::f_006bbbd8);
 // f_006bc04c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_006bc04c {
 
+inline constexpr u32 global_00ad5394_address = 0x00ad5394u;
 inline guest::global<u8, 0x0095bf80> global_0095bf80;
 inline constexpr guest::Function<0x00134544, u32(u32, u32, u32)> copy_bytes_small_sizes_first;
 inline constexpr guest::Function<0x002fb328, u32(u32)> get_save_data;
@@ -2957,9 +2959,9 @@ u32 f_006bc04c(u32 r0, u32 r1, u32 r2, u32 r3) {
         return copy_8_bytes(r4, r0_2 + 0x80u + 0x6e21au);  // (from the original)
     }
     u32 r0_3 = call_00583778(r0_1, r1, r2, r3);
-    copy_bytes_small_sizes_first(0xad5394u, r0_3, 0x10u);  // (from the original)
+    copy_bytes_small_sizes_first(global_00ad5394_address, r0_3, 0x10u);  // (from the original)
     r1 = 0u;
-    r0 = 0xad5394u;  // (from the original)
+    r0 = global_00ad5394_address;
     r2 = r1;
     u32 r12 = 8u;
     u32 r7 = 0x10u;  // (from the original)
@@ -3298,10 +3300,8 @@ void f_006bc4fc(u32 r0, u32 r1, u32 r2, u32 r3) {
         u32 nf_1 = r0_1 - 0x2cu >> 0x1f;  // (from the original)
         u32 zf_1 = r0_1 - 0x2cu == 0;  // (from the original)
         u32 vf_1 = ((r0_1 ^ 0x2cu) & (r0_1 ^ r0_1 - 0x2cu)) >> 0x1f;  // (from the original)
-        if (r0_1 - 0x2cu == 0) {  // (from the original)
-            r1_2 = gptr<Local_006bc4fc_r1_2>(r0 + r3_2);
-        }
         if (zf_1) {
+            r1_2 = gptr<Local_006bc4fc_r1_2>(r0 + r3_2);
             r1_2->byte_448 = 5;
         } else if (!zf_1 && nf_1 == vf_1) {
             if (r0_1 != 0x54u) {  // (from the original)
@@ -3626,6 +3626,8 @@ GUEST_OFFSET(Local_006bd910_r0_34, word_3d8, 0x3d8);
 GUEST_OFFSET(Local_006bd910_r0_34, word_3dc, 0x3dc);
 GUEST_OFFSET(Local_006bd910_r0_34, word_3e0, 0x3e0);
 
+inline constexpr u32 empty_item_address = 0x0095bfdcu;
+inline constexpr u32 global_00aaf14c_address = 0x00aaf14cu;
 inline guest::global<u32, 0x00aaf14c> global_00aaf14c;
 inline constexpr guest::Function<0x001b264c, u32(u32, u32, u32, u32)> call_001b264c;
 inline constexpr guest::Function<0x001b4bc8, u32(u32)> clear_first_ten_items;
@@ -3701,7 +3703,7 @@ u32 player_operation_c(gptr<Object_006bd910_0> arg0, u32 r1, u32 r2, u32 r3) {
     r11 = 0u;
     if (r8 < r7) {
         do {
-            copy_item_002fc8e8(r5, 0x95bfdcu, r2, r3);  // (from the original)
+            copy_item_002fc8e8(r5, empty_item_address, r2, r3);
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
             r5 += 4u;
@@ -3732,7 +3734,7 @@ u32 player_operation_c(gptr<Object_006bd910_0> arg0, u32 r1, u32 r2, u32 r3) {
     if (!(r5 >= r4 + 0x6fb0u)) {  // (from the original)
         r6 = r8 + 0xa0u;  // (from the original)
         do {
-            copy_item_002fc8e8(r5, 0x95bfdcu, r2, r3);  // (from the original)
+            copy_item_002fc8e8(r5, empty_item_address, r2, r3);
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
             r5 += 4u;
@@ -3744,7 +3746,7 @@ u32 player_operation_c(gptr<Object_006bd910_0> arg0, u32 r1, u32 r2, u32 r3) {
     if (!(r5 >= r6)) {
         r7 = r5 + 0x40u;  // (from the original)
         do {
-            copy_item_002fc8e8(r5, 0x95bfdcu, r2, r3);  // (from the original)
+            copy_item_002fc8e8(r5, empty_item_address, r2, r3);
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
             r5 += 4u;
@@ -3753,8 +3755,8 @@ u32 player_operation_c(gptr<Object_006bd910_0> arg0, u32 r1, u32 r2, u32 r3) {
             guest::preempt();
         } while (r5 < r7);
     }
-    copy_item_002fc8e8(r8 + 0xf0u, 0x95bfdcu, r2, r3);  // (from the original)
-    copy_item_002fc8e8(r8 + 0xf4u, 0x95bfdcu, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    copy_item_002fc8e8(r8 + 0xf0u, empty_item_address, r2, r3);  // (from the original)
+    copy_item_002fc8e8(r8 + 0xf4u, empty_item_address, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     r1 = guest::cpu()->r[1];
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
@@ -3783,8 +3785,8 @@ u32 player_operation_c(gptr<Object_006bd910_0> arg0, u32 r1, u32 r2, u32 r3) {
         guest::preempt();
     } while (s32(r0) < 0x20);  // (from the original)
     call_0024c8d4(r4 + 0x8a3cu, r1, r2, r3);  // (from the original)
-    copy_item_002fc8e8(r4 + 0x8f0au, 0x95bfdcu, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    copy_item_002fc8e8(r4 + 0x8f0eu, 0x95bfdcu, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    copy_item_002fc8e8(r4 + 0x8f0au, empty_item_address, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    copy_item_002fc8e8(r4 + 0x8f0eu, empty_item_address, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     PlayerRef__clear(r4 + 0x8f12u);  // (from the original)
     *gptr<u16>(r9 + 0x28u) = u16(r11);  // (from the original)
     construct_record_with_half_a(r4 + 0x8d4cu);  // (from the original)
@@ -3873,7 +3875,7 @@ u32 player_operation_c(gptr<Object_006bd910_0> arg0, u32 r1, u32 r2, u32 r3) {
     guest::cpu()->r[10] = r10_1;
     guest::cpu()->r[11] = r11_1;
     frame.release();
-    return copy_item_002fc8e8((r4 + 0xa400u) + 0x7au, 0x95bfdcu, r2, r3);  // (from the original)
+    return copy_item_002fc8e8((r4 + 0xa400u) + 0x7au, empty_item_address, r2, r3);  // (from the original)
 }
 
 }  // namespace d_006bd910

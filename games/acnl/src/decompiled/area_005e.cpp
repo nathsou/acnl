@@ -27,7 +27,7 @@ u32 sead__SafeStringBase_char___SafeStringBase_005e1974(u32 r0, u32 r1) {
     guest::StackFrameOf<Frame_005e1974> frame;  // the original's stack frame
     frame->word_4 = r1;
     frame->word_0 = vtable_sead__SafeStringBase_char_;
-    u32 r0_2 = call_0013cd00(r0 + 0x20u, frame.at(0).addr(), ~0u, 0x9047f8u);  // (from the original)
+    u32 r0_2 = call_0013cd00(r0 + 0x20u, frame.at(0).addr(), ~0u, vtable_sead__SafeStringBase_char_);  // (from the original)
     return r0_2;
 }
 
@@ -748,6 +748,7 @@ struct __attribute__((packed)) Local_005e626c_ea_1 {
 GUEST_OFFSET(Local_005e626c_ea_1, word_0, 0x0);
 GUEST_OFFSET(Local_005e626c_ea_1, word_4, 0x4);
 
+inline constexpr u32 global_0095df14_address = 0x0095df14u;
 inline constexpr guest::Function<0x0060184c, u32(u32, u32)> MsgEngine__run;
 inline constexpr guest::Function<0x006019b0, u32(u32, u32, u32, u32)> MsgEngine__restart;
 
@@ -764,8 +765,8 @@ u32 f_005e626c(gptr<Object_005e626c_0> arg0, gptr<Object_005e626c_1> arg1, u32 r
     arg0->word_6c = r12_1;
     arg0->byte_74 = u8(r3);
     if (r5_1 != 0 && r2 <= 0xau && arg1->word_0 != 0) {  // (from the original)
-        MsgEngine__restart(arg0.addr(), r1, 0x95df14u, r3);  // (from the original)
-        MsgEngine__run(arg0.addr(), 0x95df14u);  // (from the original)
+        MsgEngine__restart(arg0.addr(), r1, global_0095df14_address, r3);
+        MsgEngine__run(arg0.addr(), global_0095df14_address);
         r1 = guest::cpu()->r[1];
     }
     u32 r0_2 = arg0->word_70;
@@ -920,7 +921,7 @@ u32 script__ChoiceStandardWin__ChoiceStandardWin(u32 r0, u32 r1_unused, u32 r2, 
     r0_1->word_0 = vtable_script__ChoiceStandardWin;
     r0_1->byte_d8 = u8(r10);
     r0_1->byte_d9 = u8(r10);
-    u32 r0_3 = SelectWindow__SelectWindow(r0_1.addr() + 0xdcu, 0x909228u);  // (from the original)
+    u32 r0_3 = SelectWindow__SelectWindow(r0_1.addr() + 0xdcu, vtable_script__ChoiceStandardWin);  // (from the original)
     u32 r1 = guest::cpu()->r[1];
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
@@ -1145,7 +1146,7 @@ u32 script__ChoiceStandardItem__ChoiceStandardItem(u32 r0, u32 r1_unused, u32 r2
     u32 r9 = 0u;
     r0_1->word_0 = vtable_script__ChoiceStandardItem;
     r0_1->byte_d8 = u8(r9);
-    u32 r0_3 = ItemSelectWindow__ItemSelectWindow(r0_1.addr() + 0xdcu, 0x9092bcu);  // (from the original)
+    u32 r0_3 = ItemSelectWindow__ItemSelectWindow(r0_1.addr() + 0xdcu, vtable_script__ChoiceStandardItem);  // (from the original)
     u32 r0_4 = r0_3 - 0xdcu;  // (from the original)
     *gptr<u32>(r0_4 + 0xbecu) = r9;  // (from the original)
     *gptr<u32>(r0_4 + 0xbf0u) = r9;  // (from the original)
@@ -1252,6 +1253,7 @@ GUEST_OFFSET(Local_005e9848_r4_1, word_14, 0x14);
 GUEST_OFFSET(Local_005e9848_r4_1, word_18, 0x18);
 
 inline constexpr u32 vtable_script__Mgr__SingletonDisposer_ = 0x009093f0u;
+inline constexpr u32 global_0095deac_address = 0x0095deacu;
 inline guest::global<u32, 0x0095deac> global_0095deac;
 inline guest::global<u32, 0x0095deb0> global_0095deb0;
 inline constexpr guest::Function<0x00131280, u32(u32, u32, u32, u32)> allocate_from_heap_00131280;
@@ -1548,6 +1550,9 @@ GUEST_EXPORT_FRAMED(0x005ea294, d_005ea294::filter_character, 0x30);  // pushes 
 namespace d_005ea540 {
 
 inline constexpr u32 vtable_script__WordFix_1u_ = 0x00909cb0u;
+inline constexpr u32 global_0095defc_address = 0x0095defcu;
+inline constexpr u32 global_00ad5748_address = 0x00ad5748u;
+inline constexpr u32 global_00ad5760_address = 0x00ad5760u;
 inline guest::global<u32, 0x0095defc> global_0095defc;
 inline guest::global<u32, 0x00ad5748> global_00ad5748;
 inline guest::global<u32, 0x00ad574c> global_00ad574c;
@@ -1560,11 +1565,11 @@ inline constexpr guest::Function<0x002fe7dd, u32(u32, u32)> claim_flag;
 
 u32 script__WordFix_1u___WordFix(u32 r0_unused, u32 r1) {
     if ((*global_0095defc & 1u) != 0) {
-        return 0xad5748u;  // (from the original)
+        return global_00ad5748_address;
     }
-    u32 r0_1 = claim_flag(0x95defcu, r1);  // (from the original)
+    u32 r0_1 = claim_flag(global_0095defc_address, r1);
     if (r0_1 == 0) {
-        return 0xad5748u;  // (from the original)
+        return global_00ad5748_address;
     }
     *global_00ad574c = 0xad5760;  // (from the original)
     *global_00ad5750 = 1;
@@ -1575,7 +1580,7 @@ u32 script__WordFix_1u___WordFix(u32 r0_unused, u32 r1) {
     *global_00ad575c = r2_1;
     *global_00ad5760 = 0;
     guest::cpu()->r[1] = 0x81d0c0u;  // (from the original)
-    return 0xad5748u;  // (from the original)
+    return global_00ad5748_address;
 }
 
 }  // namespace d_005ea540

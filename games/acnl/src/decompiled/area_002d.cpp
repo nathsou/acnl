@@ -17,7 +17,7 @@ inline constexpr guest::Function<0x001ff92c, u32(u32)> DragIconNode__DragIconNod
 u32 PartsDragIconNode__PartsDragIconNode(gptr<PartsDragIconNode> arg0) {
     DragIconNode__DragIconNode(arg0.addr());
     arg0->word_0 = vtable_PartsDragIconNode;
-    guest::cpu()->r[1] = 0x8f2a90u;  // (from the original)
+    guest::cpu()->r[1] = vtable_PartsDragIconNode;
     return arg0.addr();
 }
 
@@ -144,6 +144,7 @@ struct __attribute__((packed)) Local_002d13e0_r1_9 {
 };
 GUEST_OFFSET(Local_002d13e0_r1_9, word_4, 0x4);
 
+inline constexpr u32 global_0094d080_address = 0x0094d080u;
 inline guest::global<u32, 0x0094d080> global_0094d080;
 inline constexpr guest::Function<0x0013c1d4, u32(u32, u32, u32, u32)> call_0013c1d4;
 inline constexpr guest::Function<0x002d1b3c, u32(u32, u32)> call_002d1b3c;
@@ -305,11 +306,9 @@ L_2d1500:;
             }
             if (*gptr<u32>(r1_5) == r12) {
                 gptr<Local_002d13e0_r1_6> r1_6 = gptr<Local_002d13e0_r1_6>(r4 + 0x350u);  // (from the original)
-                if (r0 < 3u) {
-                    r1_6 = gptr<Local_002d13e0_r1_6>(r1_6.addr() + (r0 << 3));
-                }
                 u32 r12_4 = r4 + 0x350u;  // (from the original)
                 if (r0 < 3u) {
+                    r1_6 = gptr<Local_002d13e0_r1_6>(r1_6.addr() + (r0 << 3));
                     r12_4 += (r0 << 3);
                 }
                 r1_6->word_4 = r1_6->word_4 - 1u;
@@ -359,11 +358,9 @@ L_2d1514:;
         }
         if (*gptr<u32>(r1_8) == r12) {
             gptr<Local_002d13e0_r1_9> r1_9 = gptr<Local_002d13e0_r1_9>(r4 + 0x350u);  // (from the original)
-            if (r0 < 3u) {
-                r1_9 = gptr<Local_002d13e0_r1_9>(r1_9.addr() + (r0 << 3));
-            }
             u32 r12_8 = r4 + 0x350u;  // (from the original)
             if (r0 < 3u) {
+                r1_9 = gptr<Local_002d13e0_r1_9>(r1_9.addr() + (r0 << 3));
                 r12_8 += (r0 << 3);
             }
             r1_9->word_4 = r1_9->word_4 - 1u;
@@ -613,14 +610,9 @@ inline constexpr guest::Function<0x001b0544, u32(u32, u32, u32, u32)> SoundFader
 
 u32 f_002d1c1c(gptr<Object_002d1c1c_0> arg0, u32 r1, u32 r2, float S0) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 r5_1 = r1;
-    u32 cf_1 = r1 >= 2u;
-    if (r1 < 2u) {
-        r1 = r5_1 * 5u;
-    }
     u32 r0_1 = arg0.addr() + 0x74u;  // (from the original)
-    if (!cf_1) {
-        r0_1 += (r1 << 2);
+    if (r1 < 2u) {
+        r0_1 += r1 * 0x14u;  // (from the original)
     }
     SoundFader__start_fade(r0_1, r2, r2, guest::cpu()->r[3]);
     if (r2 == 0) {
@@ -629,7 +621,7 @@ u32 f_002d1c1c(gptr<Object_002d1c1c_0> arg0, u32 r1, u32 r2, float S0) {
         // virtual function 13 of arg0.addr()
         guest::cpu()->s[0] = S0_2;
         frame.release();
-        return guest::call_address<u32>(r2_1, arg0.addr(), r5_1, r2_1, guest::cpu()->r[3]);
+        return guest::call_address<u32>(r2_1, arg0.addr(), r1, r2_1, guest::cpu()->r[3]);
     }
     return r0_1;
 }
@@ -661,6 +653,7 @@ GUEST_EXPORT_FRAMED(0x002d1db0, d_002d1db0::SoundObj_2___SoundObj_002d1db0, 0x40
 // f_002d1f40: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002d1f40 {
 
+inline constexpr u32 global_0094cfec_address = 0x0094cfecu;
 inline guest::global<u32, 0x0094cfec> global_0094cfec;
 inline constexpr guest::Function<0x0020a4cc, u32(u32, u32, u32, u32)> SoundObjBase__virtual_2;
 inline constexpr guest::Function<0x002d17c0, u32(u32, u32)> call_002d17c0;
@@ -717,6 +710,9 @@ GUEST_EXPORT_FRAMED(0x002d1f40, d_002d1f40::SoundObjFurniture__virtual_14, 0x407
 // f_002d23d4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002d23d4 {
 
+inline constexpr u32 global_0094cd20_address = 0x0094cd20u;
+inline constexpr u32 global_0094cfec_address = 0x0094cfecu;
+inline constexpr u32 global_0094d080_address = 0x0094d080u;
 inline guest::global<u32, 0x0094cd20> global_0094cd20;
 inline guest::global<u32, 0x0094cfec> global_0094cfec;
 inline guest::global<u32, 0x0094d080> global_0094d080;
@@ -792,6 +788,7 @@ GUEST_EXPORT_FRAMED(0x002d23d4, d_002d23d4::SoundObjFurniture__virtual_9, 0x41f0
 // f_002d27e0: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002d27e0 {
 
+inline constexpr u32 global_0094cfec_address = 0x0094cfecu;
 inline guest::global<u32, 0x0094cfec> global_0094cfec;
 inline constexpr guest::Function<0x00136cc8, u32(u32, u32, u32, u32)> detach_from_parent;
 inline constexpr guest::Function<0x00136e58, u32(u32, u32, u32, u32)> call_00136e58;
@@ -1103,30 +1100,23 @@ u32 f_002d2e80(u32 r0, u32 r1, u32 r2, u32 r3) {
         r8 = 0xfu;  // (from the original)
     }
     do {
-        if (r4 < 4u) {
-            r1 = r4 * 3u;
-        }
         u32 r0_1 = r5 + 0x10u;  // (from the original)
         if (r4 < 4u) {
+            r1 = r4 * 3u;
             r0_1 += (r1 << 2);
         }
         r0_2 = *gptr<u32>(r0_1 + 4u);
         if (r0_2 == r6) {
-            if (r4 < 4u) {
-                r1 = r4 * 3u;
-            }
             u32 r0_3 = r5 + 0x10u;  // (from the original)
             if (r4 < 4u) {
+                r1 = r4 * 3u;
                 r0_3 += (r1 << 2);
             }
             r0_2 = *gptr<u32>(r0_3 + 8u);
             if (r0_2 == r7) {
-                if (r4 < 4u) {
-                    r1 = r4 * 3u;
-                }
                 u32 r0_4 = r5 + 0x10u;  // (from the original)
                 if (r4 < 4u) {
-                    r0_4 += (r1 << 2);
+                    r0_4 += r4 * 0xcu;  // (from the original)
                 }
                 r0_2 = *gptr<u32>(r0_4);
                 r1 = r0_2 + 0x44u;  // (from the original)
@@ -1245,23 +1235,16 @@ namespace d_002d3404 {
 
 u32 f_002d3404(u32 r0, u32 r1_unused, u32 r2_unused, u32 r3) {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r5 = guest::cpu()->r[5];
     u32 r12 = 0u;
     do {
-        if (r12 < 4u) {
-            r5 = r12 * 3u;
-        }
         u32 r4_1 = r0 + 0x10u;  // (from the original)
         if (r12 < 4u) {
-            r4_1 += (r5 << 2);
+            r4_1 += r12 * 0xcu;  // (from the original)
         }
         if (*gptr<u32>(r4_1 + 4u) == r3) {
-            if (r12 < 4u) {
-                r3 = r12 * 3u;
-            }
             u32 r0_1 = r0 + 0x10u;  // (from the original)
             if (r12 < 4u) {
-                r0_1 += (r3 << 2);
+                r0_1 += r12 * 0xcu;  // (from the original)
             }
             u32 r0_2 = *gptr<u32>(r0_1);
             u32 r3_1 = *gptr<u32>(*gptr<u32>(r0_2) + 0x10u);  // (from the original)
@@ -1592,14 +1575,9 @@ GUEST_OFFSET(Object_002d4198_0, byte_7dd7, 0x7dd7);
 
 
 u32 f_002d4198(gptr<Object_002d4198_0> arg0, u32 r1) {
-    u32 r3_1 = arg0->byte_7dd7;
     u32 r0_1 = arg0.addr() + r1 + 0x7dd2u;  // (from the original)
-    u32 zf_1 = r3_1 == r1;
-    if (r3_1 == r1) {
-        r3_1 = 4u;
-    }
-    if (zf_1) {
-        arg0->byte_7dd7 = u8(r3_1);
+    if (arg0->byte_7dd7 == r1) {
+        arg0->byte_7dd7 = 4;
     }
     *gptr<u8>(r0_1) = 0;
     guest::cpu()->r[1] = 0u;
@@ -1740,6 +1718,7 @@ GUEST_EXPORT_FRAMED(0x002d4594, d_002d4594::f_002d4594, 0x4010);  // pushes {r4,
 // f_002d4a38: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002d4a38 {
 
+inline constexpr u32 empty_item_address = 0x0095bfdcu;
 inline constexpr guest::Function<0x002fc8e8, u32(u32, u32, u32)> copy_item_002fc8e8;
 inline constexpr guest::Function<0x002fc934, u32(u32, u32, u32)> copy_item_002fc934;
 inline constexpr guest::Function<0x002fcaf4, u32(u32, u32, u32)> Item__is_empty;
@@ -1757,11 +1736,11 @@ u32 f_002d4a38(u32 r0, u32 r1, u32 r2) {
     call_003232c0(r0 + 0xa0u, r1, r2, guest::cpu()->r[3]);  // (from the original)
     r1 = guest::cpu()->r[1];
     r2 = guest::cpu()->r[2];
-    u32 r8 = 0x95bfdcu;  // (from the original)
+    u32 r8 = empty_item_address;
     u32 r4 = 0u;
     do {
         if (r4 >= 0x28u) {  // (from the original)
-            r6_1 = 0x95bfdcu;  // (from the original)
+            r6_1 = empty_item_address;
         } else {
             r6_1 = r5 + (r4 << 2);
             u32 r0_2 = Item__is_empty(r6_1, r1, r2);
@@ -2080,6 +2059,7 @@ struct __attribute__((packed)) Object_002d4f3c_0 {
 GUEST_OFFSET(Object_002d4f3c_0, byte_1e, 0x1e);
 GUEST_OFFSET(Object_002d4f3c_0, byte_1f, 0x1f);
 
+inline constexpr u32 empty_item_address = 0x0095bfdcu;
 inline constexpr guest::Function<0x002d4bd0, u32(u32, u32, u32, u32)> call_002d4bd0;
 inline constexpr guest::Function<0x002fc8e8, u32(u32, u32, u32, u32)> copy_item_002fc8e8;
 inline constexpr guest::Function<0x002fcbb0, u32(u32, u32, u32, u32)> construct_item;
@@ -2109,7 +2089,7 @@ void f_002d4f3c(gptr<Object_002d4f3c_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
         r4 = 0u;
         r5 = r7 + r6 * 0x28u;  // (from the original)
         do {
-            copy_item_002fc8e8(r5 + (r4 << 2) + 0x62u, 0x95bfdcu, guest::cpu()->r[2], r3);  // (from the original)
+            copy_item_002fc8e8(r5 + (r4 << 2) + 0x62u, empty_item_address, guest::cpu()->r[2], r3);  // (from the original)
             r3 = guest::cpu()->r[3];
             r4 += 1u;
             guest::preempt();
@@ -2122,7 +2102,7 @@ void f_002d4f3c(gptr<Object_002d4f3c_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
         r4 = 0u;
         r5 = r7 + (r6 << 5);
         do {
-            copy_item_002fc8e8(r5 + (r4 << 2) + 0x1f2u, 0x95bfdcu, guest::cpu()->r[2], r3);  // (from the original)
+            copy_item_002fc8e8(r5 + (r4 << 2) + 0x1f2u, empty_item_address, guest::cpu()->r[2], r3);  // (from the original)
             r3 = guest::cpu()->r[3];
             r4 += 1u;
             guest::preempt();
@@ -2138,8 +2118,8 @@ void f_002d4f3c(gptr<Object_002d4f3c_0> arg0, u32 r1, u32 r2_unused, u32 r3) {
     copy_item_002fc8e8(r7 + 0x2f6u, r0_6, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
     *gptr<u8>(r7 + 0x20u) = u8(r8);  // (from the original)
     *gptr<u8>(r7 + 0x21u) = u8(r8);  // (from the original)
-    copy_item_002fc8e8(r7 + 0x2fau, 0x95bfdcu, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    copy_item_002fc8e8(r7 + 0x2feu, 0x95bfdcu, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    copy_item_002fc8e8(r7 + 0x2fau, empty_item_address, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+    copy_item_002fc8e8(r7 + 0x2feu, empty_item_address, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
 }
 
 }  // namespace d_002d4f3c
@@ -2274,6 +2254,7 @@ GUEST_OFFSET(Local_002d546c_r0_3, word_20, 0x20);
 GUEST_OFFSET(Local_002d546c_r0_3, word_24, 0x24);
 
 inline constexpr u32 vtable_script__WordFix_8u_ = 0x0090a378u;
+inline constexpr u32 global_0095decc_address = 0x0095deccu;
 inline guest::global<u32, 0x0095decc> global_0095decc;
 inline constexpr guest::Function<0x003083bc, u32(u32, u32, u32, u32)> script__construct_word_ptr;
 inline constexpr guest::Function<0x005e2e50, u32(u32, u32)> call_005e2e50;
@@ -2340,10 +2321,11 @@ GUEST_EXPORT_FRAMED(0x002d546c, d_002d546c::script__WordFix_8u___WordFix, 0x41f0
 // f_002d5770: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002d5770 {
 
+inline constexpr u32 global_00985a10_address = 0x00985a10u;
 
 u32 f_002d5770(u32 r0) {
-    guest::cpu()->r[1] = 0x985a10u;  // (from the original)
-    return (r0 << 2) + 0x985a10u;  // (from the original)
+    guest::cpu()->r[1] = global_00985a10_address;
+    return (r0 << 2) + global_00985a10_address;
 }
 
 }  // namespace d_002d5770
@@ -2352,6 +2334,7 @@ GUEST_EXPORT(0x002d5770, d_002d5770::f_002d5770);
 // f_002d5848: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 namespace d_002d5848 {
 
+inline constexpr u32 global_00985a10_address = 0x00985a10u;
 inline guest::global<u32, 0x0084515c> global_0084515c;
 inline guest::global<u32, 0x00845160> global_00845160;
 inline guest::global<u32, 0x00845164> global_00845164;
@@ -2374,7 +2357,7 @@ GUEST_SIZE(Frame_002d5848, 0x18);
 
 void f_002d5848() {
     guest::StackFrameOf<Frame_002d5848> frame;  // the original's stack frame
-    u32 r5 = 0x985a10u;  // (from the original)
+    u32 r5 = global_00985a10_address;
     u32 r1_1 = *global_00845160;
     u32 r2 = *global_00845164;
     u32 r3 = *global_00845168;
@@ -3192,7 +3175,7 @@ u32 BsMenuExplainPlate__virtual_0_002d9aa0(gptr<BsMenuExplainPlate> arg0) {
     destroy_array_elements(arg0.addr() + 0x2aa8u, 0x2e0b3cu, 0x518u, 1u);  // (from the original)
     ControlButtonBase__virtual_0_002f770c(r4_1);
     arg0->word_25f8 = vtable_ComButtonLytBase;
-    u32 r0_3 = ssys__ma__lyt__ArcResAccReader__virtual_0(r4_1 - 0x248u, 0x8f18f4u);  // (from the original)
+    u32 r0_3 = ssys__ma__lyt__ArcResAccReader__virtual_0(r4_1 - 0x248u, vtable_ComButtonLytBase);  // (from the original)
     u32 r0_5 = Layout__virtual_0(r0_3 - 0x14cu);  // (from the original)
     destroy_button_action_control(r0_5 - 0xe8u);  // (from the original)
     destroy_array_elements(r0_5 - 0x2a8u, 0x2b6ef8u, 0xe0u, 2u);  // (from the original)
@@ -3564,10 +3547,11 @@ u32 BsMenuMyDesignKeep__virtual_0_002dc90c(gptr<BsMenuMyDesignKeep> arg0) {
     arg0->word_28 = vtable_BsMenuMyDesignKeep_at_28;
     arg0->word_0 = vtable_BsMenuMyDesignKeep;
     arg0->word_a4 = vtable_BsMenuMyDesignKeep_at_a4;
-    u32 r0_2 = script__ChoiceStandardItem__virtual_0(arg0.addr() + 0x5000u, 0x8f3310u, 0x8f32a4u, 0x8f3414u);  // (from the original)
+    u32 r0_1 = arg0.addr() + 0x5000u;  // (from the original)
+    u32 r0_2 = script__ChoiceStandardItem__virtual_0(r0_1, vtable_BsMenuMyDesignKeep_at_28, vtable_BsMenuMyDesignKeep, vtable_BsMenuMyDesignKeep_at_a4);
     *gptr<u32>(r0_2 - 0x4f0u) = vtable_ItemSelectNameWindow;  // (from the original)
     u32 r0_3 = r0_2 - 0xd4u;  // (from the original)
-    script__RenderMain__RenderMain_005e3194(r0_3, 0x8f47a0u);  // (from the original)
+    script__RenderMain__RenderMain_005e3194(r0_3, vtable_ItemSelectNameWindow);
     u32 r0_4 = r0_3 - 0x28u;  // (from the original)
     destroy_animation(r0_4, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_5 = r0_4 - 0x28u;  // (from the original)
@@ -3586,7 +3570,7 @@ u32 BsMenuMyDesignKeep__virtual_0_002dc90c(gptr<BsMenuMyDesignKeep> arg0) {
     u32 r0_14 = r0_13 + 0xcu;  // (from the original)
     *gptr<u32>(r0_14) = vtable_DragIconGroup_at_c;
     u32 r0_15 = r0_14 + 0x108u;  // (from the original)
-    destroy_animation(r0_15, 0x1888u, 0x8f3f20u, 0x8f3ef4u);  // (from the original)
+    destroy_animation(r0_15, 0x1888u, vtable_ChangeStockMyDesign_at_a40, vtable_ChangeStockMyDesign);  // (from the original)
     u32 r0_16 = r0_15 - 0x28u;  // (from the original)
     destroy_animation(r0_16, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_17 = r0_16 - 0x28u;  // (from the original)
@@ -3623,7 +3607,7 @@ u32 BsMenuMyDesignKeep__virtual_0_002dc90c(gptr<BsMenuMyDesignKeep> arg0) {
     destroy_animation(r0_33, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 ea_1 = r0_33 - 0x138u;  // (from the original)
     *gptr<u32>(ea_1) = vtable_DragIconControl_rec;
-    destroy_button_action_control(ea_1, 0x8f08acu);  // (from the original)
+    destroy_button_action_control(ea_1, vtable_DragIconControl_rec);
     u32 r0_34 = ea_1 - 0x28u;  // (from the original)
     destroy_animation(r0_34, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_35 = r0_34 - 0x28u;  // (from the original)
@@ -3668,7 +3652,7 @@ u32 BsMenuRentalHaniwa__virtual_0_002ddbac(gptr<BsMenuRentalHaniwa> arg0, u32 r1
     arg0->word_28 = vtable_BsMenuRentalHaniwa_at_28;
     arg0->word_ad54 = vtable_ItemSelectNameWindow;
     u32 r0_1 = arg0.addr() + 0xb170u;  // (from the original)
-    script__RenderMain__RenderMain_005e3194(r0_1, 0x8f47a0u, 0x8f3494u, r3);  // (from the original)
+    script__RenderMain__RenderMain_005e3194(r0_1, vtable_ItemSelectNameWindow, vtable_BsMenuRentalHaniwa_at_28, r3);
     u32 r0_2 = r0_1 - 0x28u;  // (from the original)
     destroy_animation(r0_2, guest::cpu()->r[1], guest::cpu()->r[2]);
     u32 r0_3 = r0_2 - 0x28u;  // (from the original)
@@ -3677,7 +3661,7 @@ u32 BsMenuRentalHaniwa__virtual_0_002ddbac(gptr<BsMenuRentalHaniwa> arg0, u32 r1
     u32 r0_7 = ssys__ma__lyt__ArcResAccReader__virtual_0(r0_5 - 0x24cu);  // (from the original)
     u32 ea_1 = r0_7 - 0x13cu;  // (from the original)
     *gptr<u32>(ea_1) = vtable_DragIconControl_rec;
-    destroy_button_action_control(ea_1, 0x8f08acu);  // (from the original)
+    destroy_button_action_control(ea_1, vtable_DragIconControl_rec);
     u32 r0_9 = ItemDragWindow__virtual_0(ea_1 - 0x8468u);  // (from the original)
     u32 r0_10 = r0_9 - 0x2788u;  // (from the original)
     *gptr<u32>(r0_10) = vtable_ChangeStockRental;
@@ -3686,7 +3670,7 @@ u32 BsMenuRentalHaniwa__virtual_0_002ddbac(gptr<BsMenuRentalHaniwa> arg0, u32 r1
     u32 r0_12 = r0_11 + 0xcu;  // (from the original)
     *gptr<u32>(r0_12) = vtable_ItemDragIconGroup_at_c;
     u32 r0_13 = r0_12 + 0x1acu;  // (from the original)
-    destroy_animation(r0_13, 0x8f2a1cu, 0x8f2a0cu);  // (from the original)
+    destroy_animation(r0_13, vtable_ItemDragIconGroup_at_c, vtable_ItemDragIconGroup);
     u32 r0_14 = r0_13 - 0x28u;  // (from the original)
     destroy_animation(r0_14, guest::cpu()->r[1], guest::cpu()->r[2]);
     u32 r0_15 = r0_14 - 0x28u;  // (from the original)
@@ -3730,10 +3714,10 @@ u32 BsMenuSendMailLand__virtual_0_002dfa20(gptr<BsMenuSendMailLand> arg0, u32 r1
     guest::StackFrame frame(0x8);  // the original's stack frame
     arg0->word_0 = vtable_BsMenuSendMailLand;
     arg0->word_28 = vtable_BsMenuSendMailLand_at_28;
-    u32 r0_2 = script__ChoiceStandardItem__virtual_0(arg0.addr() + 0x5420u, 0x8f3514u, 0x8f3580u, r3);  // (from the original)
+    u32 r0_2 = script__ChoiceStandardItem__virtual_0(arg0.addr() + 0x5420u, vtable_BsMenuSendMailLand, vtable_BsMenuSendMailLand_at_28, r3);  // (from the original)
     *gptr<u32>(r0_2 - 0x4f0u) = vtable_ItemSelectNameWindow;  // (from the original)
     u32 r0_3 = r0_2 - 0xd4u;  // (from the original)
-    script__RenderMain__RenderMain_005e3194(r0_3, 0x8f47a0u);  // (from the original)
+    script__RenderMain__RenderMain_005e3194(r0_3, vtable_ItemSelectNameWindow);
     u32 r0_4 = r0_3 - 0x28u;  // (from the original)
     destroy_animation(r0_4, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_5 = r0_4 - 0x28u;  // (from the original)
@@ -3747,7 +3731,7 @@ u32 BsMenuSendMailLand__virtual_0_002dfa20(gptr<BsMenuSendMailLand> arg0, u32 r1
     *gptr<u32>(r0_10) = vtable_LetterDragPostWindow;
     *gptr<u32>(r0_10 + 0x213cu) = vtable_LetterDragPostWindow_at_213c;  // (from the original)
     u32 r0_11 = r0_10 + 0x21b0u;  // (from the original)
-    destroy_animation(r0_11, 0x8f47ecu, 0x8f4814u, 0x213cu);  // (from the original)
+    destroy_animation(r0_11, vtable_LetterDragPostWindow, vtable_LetterDragPostWindow_at_213c, 0x213cu);  // (from the original)
     u32 r0_12 = r0_11 - 0x28u;  // (from the original)
     destroy_animation(r0_12, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_13 = r0_12 - 0x28u;  // (from the original)
@@ -3756,11 +3740,11 @@ u32 BsMenuSendMailLand__virtual_0_002dfa20(gptr<BsMenuSendMailLand> arg0, u32 r1
     *gptr<u32>(r0_14) = vtable_LetterDragWindowBase;
     u32 r0_15 = r0_14 + 0x201cu;  // (from the original)
     *gptr<u32>(r0_15) = vtable_DragIconControl_rec;
-    destroy_button_action_control(r0_15, 0x8f4828u);  // (from the original)
+    destroy_button_action_control(r0_15, vtable_LetterDragWindowBase);
     *gptr<u32>(r0_15 - 0x134u) = vtable_DragIconGroup_at_c;  // (from the original)
     *gptr<u32>(r0_15 - 0x140u) = vtable_DragIconGroup;  // (from the original)
     u32 r0_16 = r0_15 - 0x2cu;  // (from the original)
-    destroy_animation(r0_16, 0x8ee258u, 0x8ee248u, guest::cpu()->r[3]);  // (from the original)
+    destroy_animation(r0_16, vtable_DragIconGroup_at_c, vtable_DragIconGroup, guest::cpu()->r[3]);
     u32 r0_17 = r0_16 - 0x28u;  // (from the original)
     destroy_animation(r0_17, guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
     u32 r0_18 = r0_17 - 0x28u;  // (from the original)
