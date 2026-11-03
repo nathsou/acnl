@@ -131,10 +131,20 @@
 00309168 For each of the 10 villagers in use: clears two bits of its flags word (+0x2510) when set, and a bit of each of its 16 player memories (0xf2 bytes each, from +0x8ee).
 0030bc44 Whether villager `id` (below 0x18f) has a type (the low nibble of its data's +0x1c) of 0, 1 or 2.
 0030c3e4 Sets villager `id`'s bit in the two bit arrays of the save data (+0x196fc and +0x1972e).
+00310530 Flag `index` (fewer than 10) of the villager (bits of +0x1f and +0x20); false for no villager.
+00311744 The 0x58-byte data entry of villager `id` (below 0x18f); null without the table.
+003120a8 Sets item `slot` (0-3, from +0x24d6) of the villager, then moves its non-empty items to the front.
+003122bc Sets the villager's catchphrase (+0x24f2) to its default from the message data (its data entry's), or to the common default.
+0031237c Clears the villager's design pattern and gives it back its default clothing item (from its data, or by its type) when it wears a special one.
+00313a40 Whether villager `id` (below 0x18f) has type 0 (the low nibble of its data's +0x1c).
 00314278 Whether (word r0, signed bytes 0 and 1 of r1) equals (word r3, the same bytes of the stack argument).
 00314a1c A cursor past the last element of the list: its index is the list's count (virtual function 4).
 00314a9c A cursor on the first element of the list (virtual function 5 copies the element), at index 0.
 00314b58 Moves the cursor to the next element and copies it in, while there is one.
+00316ebc Bit `index` (fewer than 96) of the flag bytes; 0 for a larger index.
+00316edc Bit `index` (fewer than 7) of the flag bytes; 0 for a larger index.
+00317eac The byte cell (x, y) of the array.
+00317ec4 `value` limited to [low, high] (signed).
 0031e810 Hides the layout's root pane group (clears its visible bit) and lays the layout out again, when it was shown.
 00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
 003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
@@ -142,7 +152,14 @@
 0047ea68 The CRC-32 of `size` bytes (polynomial 0x04c11db7, most significant bit first, its table built on the stack), starting from `seed`; complemented.
 004b4fc0 The pane of the layout's tree with this name (searching below the root pane).
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
+00520d5c Puts `node` (links: next +0, previous +4) at the front of the list (head +0, tail +4).
+00520df4 Puts `node` (links: next +0, previous +4) at the back of the list (head +0, tail +4).
+00521ae4 Appends `node` to `parent`'s children (first child +8, next sibling +0x10, previous +0xc), or to the roots (`roots`) without a parent.
 005221d8 Entry `index` of the 16-bit table at +word_c (filled up to it first when it lies past +word_10); -1 for an index out of range or an empty entry past the first.
+005224bc Entry `index` of the 16-bit table at +word_c (filled up to it first when it lies past +word_10).
+00523020 Moves the cursor to `position` (kept within the text); with `keep` the selection starts there too.
+005235e8 Deletes the selected text (between the cursor and the anchor) and collapses the selection.
+00523658 Replaces the edit's text with `text` (`length` characters, all of it when negative, at most the capacity), the cursor and selection at 0.
 00528924 Converts a UTF-8 string of one- to three-byte characters into at most `capacity - 1` UTF-16 units and a terminator; an invalid lead byte leaves the output empty.
 00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
@@ -228,6 +245,13 @@
 00716060 The value of the 24 badges by level (50,000, 150,000, 350,000), and the counts of each level stored with the catalog state.
 00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
 00736a1c The entry of a resource dictionary (a radix tree on the name's bits) whose name is `name` (of `length` bytes); null when none.
+007405c4 The section of kind 0x4000 in the header's table (12-byte entries from +0x14, count +0x10); null when none.
+00740630 The section of kind 0x4004 in the header's table (12-byte entries from +0x14, count +0x10); null when none.
+007407a0 The ramp's value: from +4 to +8 in proportion to step +0x10 of +0xc steps (the end value once reached).
+00740820 The sum of the sizes of the list's nodes (each 0x50 bytes before its link), under the owner's lock.
+00741fcc The entry for `id` in a table that is one entry (0x6000), a list of ranges (0x6001, by their first id) or a dense range (0x6002, from its first to its last id); null when none.
+00742294 The entry for `id` in a table that is one entry (0x6000), a list of ranges (0x6001) or a dense range (0x6002); null when none.
+00742414 The section of kind 0x7001 in the header's table (12-byte entries from +0x14, count +0x10); null when none.
 00745d44 The index of the entry with this name in the resource's dictionary (16-byte entries); -1 when there is none.
 007553d8 The index (0-3) of the file extension `text` (up to 4 characters, compared in capitals, a leading '.' ignored) in the table of known extensions; 0 when unknown.
 00759a54 A position from x and z packed as 16-bit quarter units, at the ground's height there.
