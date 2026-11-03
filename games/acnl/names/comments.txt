@@ -3815,21 +3815,26 @@
 00626df0 Creates the net game manager on the net game heap and hands it to the session.
 00628518 Clears a network record (station 4).
 00628afc Stores a 16-bit value at 0x953600 and builds a word pointer to it.
+00628d08 Updates the network part's state.
 00629690 Scans the table for the value.
 006297a8 Stamps the current player into a record and sends it (0x10 bytes) through the link object at 0xa22020.
 006298a8 Clears a peer list header (stations 4 and 4, state 3).
 006298cc Finishes the list's part and stores this console's address (by link mode) as its own peer.
+00629a58 Updates the session's player entries.
 0062a04c Drops peer `index` (below 4, under the session lock): forgets its address in the table and releases its link.
 0062a18c Updates the peer list: adds and removes stations, sets and releases peer addresses, and keeps the masks.
 0062a550 The entry (of the 4) with the identity, or null.
 0062a5cc Removes a peer address from the list (under the session lock), moving the following entries down and clearing the last.
+0062a698 The player entry (below 4), or null.
 0062abd8 Connects peer `index` (below 4) of the list, under the session lock.
 0062ad70 Clears station `index`'s friend flags and sets bit 3 when the friend list knows the peer's key.
+0062add8 Updates the session's friend entries from the friend list.
 0062af78 Once per station (bit 0): when the friend list accepts this slot's 0x200-byte record, sends it (message 0x7f) and notes it.
 0062b014 Builds the four 0x2c-byte friend entries (+0x800) and the four station flags (+0x8b1), station 4.
 0062b064 Destroys the four friend entries.
 0062b08c Clears a visitor log entry (its header, counters and time).
 0062b200 Allocates the two logs of 100 entries (0x7c bytes) when missing, then resets their counters and the log state under its lock.
+0062b330 Updates the session's players (the 3 others).
 0062bb00 Clears the two counts of the visitor log (+0x28ec), under its lock.
 0062bc68 Resets the log's current state (and its flag when asked), keeping it when the network part still allows it.
 0062c0cc When there is no main-object value and part 3 is up (or the log was waiting): opens the log state (+0x3ec) and, when asked, handles part 3.
@@ -3845,6 +3850,7 @@
 0062d1e4 Whether the structure's rectangle at the position passes every placement check.
 0062d4e0 The default structure rectangle (built once).
 0062d5dc Scans the position's blocks for the structure's listed kinds.
+0062d970 Generates the inner acre's layout.
 0062e47c Finds a spot in the block where the structure fits.
 0063001c Whether the scene is lit as night (by its flag, or the period).
 00630148 The float of the table at 0x89515c for the index (below 7, else the first).
@@ -3869,6 +3875,7 @@
 0064c130 Flags the villager for the player and ends the talk's wait when it was set.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
 0064d78c Chooses the NPC's comment on the item (by kind and the weather).
+0064dc88 Updates the player's state 0xc and its speed.
 0064dd60 The tour's value at +0x1d, or 0 without a tour.
 0064dd78 For the local player: sets the music for the tour and marks it started.
 0064de10 Plays the digging sound for what is at the position (an item, a fossil, a rock).
@@ -3880,10 +3887,12 @@
 0064f298 The position of the field item at the cell, or the cell's corner on the ground.
 0064f314 Adds the item to the player's pockets, marked as a present when it qualifies; the slot.
 0064f3b4 For the local player: requests the flag once (remembering the first 50).
+0064f508 Starts the player's idle with the speed.
 00650174 Runs the NPC source's operation at the cell of object `id`; 0 when there is none.
 00650234 In flagged scenes, sets the BGM's kind 6 (when asked) and pushes the special BGM once, setting mode 4.
 006502a8 Unless locked, turns the x angle (+0x2c) toward the target (+0x958) while asked (bit 3 of +0x17a), and marks it turned.
 00650310 Unless locked, turns the y angle (+0x2e) toward the target (+0x95c) while asked (bit 4 of +0x17a), and marks it turned.
+006503b0 Changes the player's state to the action toward the target.
 006512e8 Spawns the player's tool effect (by the kind and whether a tool is held) at the position with the angle.
 0065137c Leaves the reach 5.4 (and 0.97 of it) in the float registers; the shared parameters.
 0065139c Leaves the reach 5.4 (and 0.97 of it) in the float registers; the shared parameters.
@@ -3891,10 +3900,12 @@
 0065141c Plays the player's motion: the locked motion 0xcb, or the normal or special one by the flags.
 006515b0 Plays the locked motion 0xcb.
 006515ec The record (+4) of the player of the slot; null without one.
+00651600 Sets the local player's flag.
 0065176c In flagged scenes, stops the special BGM.
 0065179c For states whose motion allows it, moves the object by its target's motion, flagging it moved when it did.
 006518d8 Requests player state 0x92 with the word and the camera's angle.
 00651928 Requests player state 0x20 with the byte and the fixed-point value.
+0065196c Starts the player's walk (immediately in state 6).
 006519c8 Turns the x angle toward the target over the frames left (+0x5b4), one step per call.
 006531d0 Sets the object's collision center and radius and registers its collision shape.
 00653724 Remembers the two bytes and spawns the actor with the parameters when the stage exists.
@@ -3904,6 +3915,7 @@
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
 006540d8 Sets the target x angle (+0x958) and step and starts turning; true when already there.
 00654170 Starts the tool's animation (index below 0x41, with its frame count) and its state.
+00654230 Changes the player's state to the talk with the NPC.
 006542dc Unless muted, plays the step sound of the ground (the given one or the one under the object) and marks it busy.
 006543a4 Unless muted, plays the sound and marks the object busy.
 006543f0 Unless muted, plays the second step sound of the ground and marks it busy.
@@ -3916,6 +3928,7 @@
 006548c4 Requests player state 0x87 with the position, angle and three bytes.
 00654924 Requests player state 0x44 with the kind, position, angle and two bytes.
 00656c20 Fills the state parameter buffer at +0x64 with the 0x26 bytes from +0x8bc of the object (the rest cleared) and returns it.
+00656e5c Starts the player's run when the limit allows it.
 00657748 For flagged kinds, runs the check at 0x1b76ec.
 0065776c Runs the tour record's check with the value when it exists.
 00657790 In flagged scenes, stores the position at 0x9856f4.
@@ -3930,6 +3943,7 @@
 00659d14 Requests player state 0x72 with the word, two bytes and the position (fixed point, x4).
 00659d9c Requests player state 0x14 with a target position, an angle and options.
 00659e34 Requests player state 0x15 with an angle and three option bytes.
+00659e8c Changes the player's state with its parameters and the speed.
 00659f14 Requests player state 0xb0 with the vector (fixed point, x4) and the position.
 0065d5a8 Leaves 0.8 x 2 x 0.97 in the float register; the shared parameters.
 0065d5d4 Resets the swing (scale 1, 300 frames) and, in flagged scenes, the target cell.
@@ -3942,6 +3956,7 @@
 0065e190 Requests player state 0xe3 with the byte.
 0065e1bc Requests player state 0x45 with the word, flags, position and angle.
 0065e2e0 Requests player state 0x53 (with the flag) or 0x52 with the four bytes; true when it changed.
+0065e3a0 Digs at the cell: the item, the hole or the fossil there.
 0065fc64 When an item blocks the cell at the position, hits it and targets the cell.
 0065fcc0 When an item blocks the cell, hits it and targets the cell; true when it did.
 00660670 Sets the player's target angle from the distance, mapped between two fixed lengths.
@@ -3991,13 +4006,16 @@
 0066fdc0 Changes the player's state to 0x17.
 0066ffb4 Plays the digging effect for the ground at the position (sand has its own), else the general one.
 0067334c When a cell target is pending: clears the flag, targets the cell and acts on it.
+006733b0 Updates the player's outdoor state (outside the flagged scenes).
 0067349c Sets the move (mode 9) to the target and marks the 3x3 cells around it changed.
+006736dc Updates the player's flags for the frame.
 006739b8 Changes the player's state to the action for the kind, with its parameters.
 00673a94 Changes the player's state to 0x8e with the value.
 00673ac4 Changes the player's state to 0x33 at the position (in quarter units), the angle and the value.
 00673b5c Changes the player's state to 0x6a with the three values.
 006742c0 For the local player: marks the wake once and starts the pending wake state (0x9d or 0xe0).
 00677b70 Reports the area's visit to the tour result when the flag is set; true.
+00677d1c Whether the player may swim now (not in the wetsuit-less state).
 00678278 Requests player state 0xc4 with an id, a value, a flag and a position (the player's own when none).
 00678300 Changes the player's state to 0xe2 at its position and angle, or the given ones.
 0067837c Changes the player's state to 0x88 with the value, unless already in it.
@@ -4006,12 +4024,14 @@
 006784dc Starts the effects at both hands unless they run already.
 0067bc50 Restores the player's saved outfit, face and hair, and marks the model for update.
 0067bc98 When a cell target is pending: clears the flag, targets the cell (mode 5) and acts on it.
+0067bcf4 Changes the player's state to the move with its speed.
 0067bd70 Tells the tour result when the flag is set.
 0067bda8 Moves the running effects to both hands.
 0067be68 The constant at 0x886c44 as a float (in s0).
 0067be7c The constant at 0x886c48 as a float (in s0).
 0067be90 Twice the step length (in s0).
 0067beac The constant at 0x886c48 as a float (in s0).
+0067c2e4 Finds what the player would dig at the position.
 0067c674 Starts the player's wait (with the frames).
 0067e900 Clears the pending drop and its position.
 0067e9e8 Writes the event NPC's position; whether there is one.
@@ -4032,8 +4052,10 @@
 00682080 Uses the held item: changes the player's state for its kind.
 0068229c Changes to `state` when the item the player holds is of `kind` (only the test when `test_only`).
 00682330 Requests player state 0x3a with the position, angle and two bytes.
+0068319c The cast's target for the local player.
 006833ac Clears bit 3 of the flags at +0x176.
 006833c4 Starts the action of the item by its data (changing the player's state).
+00683784 The player's held item (the empty one while it is hidden).
 006839a8 Requests player state 0xb9 with the cell, item and byte; a first-kind item also starts its task.
 006853fc Records the item for the tour's result (when it counts) and updates the score.
 00685c18 In flagged scenes, when bit 5 of +0x171 is set, starts the scene event once (bit 3 of +0x176).
@@ -4063,6 +4085,7 @@
 0068eba8 Restores the default mode when the camera controller is in mode 5.
 0068ebc4 Updates the camera controller when it exists.
 0068ec10 True when the camera controller has a target (+0x135 not -1).
+0068ec3c Passes the setting to the camera controller when it exists.
 0068ec64 Passes the request to the camera controller when it exists.
 0068ec98 Requests mode 3 of the camera controller.
 0068ecbc Queries the camera controller when it exists.
@@ -4098,8 +4121,10 @@
 00691ae8 Releases the held object and clears its item; true.
 00691b7c Whether the two cells are adjacent, or a straight path joins them along either corner without hitting anything.
 00691cb4 Checks the furniture in front of the player and queues the NPC's talk about it.
+00692504 Checks the use of the item in front of the player.
 0069335c Whether the scene (by its flags, the player's slot, or the tour's state) blocks using tools.
 006934a0 Whether the current scene has one of the special-area flags.
+006935a8 Posts the notice with its message and arguments.
 00693a64 Posts the notice (0x33a8, or 0x33a9 with the flag) for the value.
 00693cc8 The angle of the direction (0 to 3, a quarter turn each).
 00694178 Takes the first free block of the pool, marking its bit; null when all are used.
@@ -4123,6 +4148,7 @@
 0069b3f0 Spawns the event NPC at the chosen cell.
 0069c838 Whether the current player still needs the event's introduction.
 0069f26c Clears the event's town flags when no player qualifies, and whether the save's flag is set.
+0069fd54 Turns the player toward the object.
 006a04c4 Updates the villagers' states for the day (moving, events) and marks them in the bit set.
 006a0848 Outside flagged scenes, spawns the actor in front of the current player's house and records it in the actor list (+0xeb54).
 006a0ecc Updates the villagers' visit records for the current player.
@@ -4144,10 +4170,12 @@
 006a5dd4 The world position of cell (x, y) (32 units each) at the default height.
 006a6024 Applies the scene's environment (lights, fog) for the current scene.
 006a6408 Builds the maps of the map table (blocks, cells and their items) for the scene.
+006a694c Releases the map's buffers.
 006a69a8 True when the main map exists.
 006a69c0 Builds the map with the basic builder and registers it.
 006a6b48 Destroys the extra map (+0x7c) and maps 0x20 to 0x29 of the map table.
 006a6cc8 Plays sound 0x102a at the position.
+006a6f50 Refreshes the map from the save.
 006a7174 Puts the saved map (0x9526f4) back as map 0x9b4a9c, destroying the current one and the work table.
 006a71ec Saves the map 0x9b4a9c and replaces it by a new 4 x 4 grid map, creating the work table once.
 006a733c The world position of cell (x, y) on the ground.
@@ -4172,11 +4200,17 @@
 006a996c Switches the toggle on or off instantly when it is not already there.
 006a99dc Resets the toggle on (speed 0.2), instantly or with a 15-frame move.
 006a9a40 Resets the toggle off (speed 0.2), with its value at 1 when asked; true when it was.
+006a9a80 The range's value at the factor (or its fixed value).
+006aa6b0 Sets the text box's message line with its options.
+006aaf98 Unpacks the 4-bit channels of the packed color.
 006ab00c Collects the changed flags of the current player's 10 patterns into a bit set, clears them and shares the set; true when any pattern is in use.
+006ab0b0 Updates each object of the global list.
+006ab5b8 The window's current page after updating it.
 006ac088 Finishes the pending work (+0x4c8) with mode 2 and clears it.
 006ac760 Releases the split load's part (+0x3d4) and the model (+0x384), setting state 3.
 006ac8e8 Resets the bounds to empty (min at the largest float, max at the smallest).
 006ac950 Resets the query's bounds, takes the target's position for kind 2 and registers the query with the manager (0x9502f8) when it is not yet.
+006aca10 Sets the collider's triangle with its flags and radius.
 006acac0 Computes the selection from the page (+0xe30) into +0x6359 and hides the pane (+0x6340).
 006acf28 Shows the two mode panes by the mode (+0x6358) and, in mode 0, hides the 24 entries' panes.
 006ad3a0 Scales the value by the camera's zoom when it has one.
@@ -4185,9 +4219,11 @@
 006af218 Sets up the second window's close button: its control, pane, animation targets and sounds.
 006afbcc Detaches the layout at +0x4bc from the layout system.
 006b04f0 Loads the passport window's and the keyboard's layout archives; true when both loaded.
+006b0d98 Updates the insect's flight path.
 006b127c Sets the area's id, squared radius and range (the larger end kept).
 006b1468 Constructs the listener: no ids, zero positions, a huge distance and cleared flags.
 006b14b8 Destroys the listener's part at +0x3c.
+006b14cc Starts the room's timer for the main object.
 006b17c4 Sets the text of label 0 (+0x198) or 1 (+0x25c).
 006b19c0 Detaches the layout at +0x24 from the layout system.
 006b1a64 Starts the message on both labels.
@@ -4197,6 +4233,7 @@
 006b1da4 Plays the sound on the handle through the sound player when it exists.
 006b1df0 Plays the sound in the slot already playing it, or a new one of the 8 slots.
 006b1ec0 Stops every one of the 8 slots playing the sound.
+006b2104 Plays the sound in 3D with the volume, when the system is ready.
 006b2c68 Notifies the sound listeners (+0xc14, +0xc28) of the event by its kind.
 006b2f08 Fills the sound's info (id, bank, size, play mode and its three flags) from the sound archive.
 006b3104 Updates the 3D sound parameters from the listener.
@@ -4208,6 +4245,9 @@
 006b4adc Interpolates between the two integers by where the float sits in the range.
 006b4c38 Plays the sound at the position with the volume, when the system is ready.
 006b4e18 Stops the object's sound through the sound player when it exists.
+006b6d6c Adds to the current player's counter (the first kind), unless visiting.
+006b7058 Adds to the current player's counter (the second kind), unless visiting.
+006b73f4 Adds to the current player's counter (the third kind), unless visiting.
 006b9038 Constructs the daily counters' base part.
 006b9798 The item's group (0x9b when none).
 006b9904 Clears the item's flags except their top two bits.

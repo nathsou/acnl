@@ -17022,6 +17022,7 @@
 00628b0c script__WordCPtrSv__WordCPtrSv_00628b0c
 00628cb0 record_value_after_mask_check
 00628ce4 construct_constants_holder
+00628d08 NetPart__update
 00629438 part_check_9438
 006295d8 part_handle_95d8
 00629690 table_scan_629690
@@ -17032,6 +17033,7 @@
 006298a8 NetPeerList__clear_header
 006298cc NetPeerList__set_own_address
 00629910 netgame__AvatarMgr__virtual_4
+00629a58 NetPlayers__update
 0062a04c NetPeerList__drop_peer
 0062a104 netgame__AvatarMgr__virtual_2
 0062a164 netgame__AvatarMgr__virtual_6
@@ -17039,6 +17041,7 @@
 0062a51c netgame__AvatarMgr__virtual_7
 0062a550 NetPlayers__entry_of_identity
 0062a5cc NetPeerList__remove_address
+0062a698 NetPlayers__entry
 0062a724 part_finish_a724
 0062a7e4 netgame__AvatarMgr__virtual_3
 0062aa1c netgame__AvatarMgr__virtual_5
@@ -17047,11 +17050,13 @@
 0062acd0 netgame__AvatarMgr__deleting_destructor
 0062ad20 netgame__AvatarMgr__destructor
 0062ad70 FriendCheck__check_station
+0062add8 NetSession__update_friends
 0062af78 FriendCheck__send_friend_record
 0062b014 FriendCheck__construct
 0062b064 FriendCheck__destruct
 0062b08c VisitorLogEntry__clear
 0062b200 VisitorLog__init
+0062b330 NetSession__update_players
 0062b610 sead__SafeStringBase_wchar_t___SafeStringBase_0062b610
 0062bb00 NetSession__clear_visitor_log_counts
 0062bc68 VisitorLog__reset_state
@@ -17075,6 +17080,7 @@
 0062d1e4 StructurePlacement__rect_is_free
 0062d4e0 default_structure_rect
 0062d5dc StructurePlacement__scan_blocks
+0062d970 Town__generate_acre
 0062e47c StructurePlacement__find_spot
 0062ee1c strcbld__Checker__virtual_0
 0062f03c current_weather_type
@@ -17252,6 +17258,7 @@
 0064d0b8 AcPlayer_rec__change_state
 0064d258 AcPlayer__virtual_30
 0064d78c Npc__choose_item_comment
+0064dc88 AcPlayer__update_state_12
 0064dd60 Tour__byte_1d
 0064dd78 AcPlayer__start_tour_music
 0064de10 AcPlayer__play_dig_sound
@@ -17265,6 +17272,7 @@
 0064f368 ScrollState__reset
 0064f390 entry_10
 0064f3b4 AcPlayer__request_flag_once
+0064f508 AcPlayer__start_idle_with
 0064f5b8 Smoother__step_towards
 0064fdcc four_times_tunable
 006500f8 item_at_position
@@ -17276,6 +17284,7 @@
 006502a8 SlotObject__turn_toward_target_x
 00650310 SlotObject__turn_toward_target_y
 0065037c register_item_for_owner_0065037c
+006503b0 AcPlayer__start_action_with_target
 00650844 AcPlayer_rec__state_148_update
 00650848 AcPlayer_rec__state_147_update
 006512e8 AcPlayer_rec__spawn_tool_effect
@@ -17286,10 +17295,12 @@
 0065141c AcPlayer_rec__play_motion
 006515b0 AcPlayer_rec__play_locked_motion
 006515ec player_record_of_slot
+00651600 AcPlayer__set_local_flag
 0065176c AcPlayer_rec__stop_flagged_bgm
 0065179c SlotObject__apply_target_motion
 006518d8 AcPlayer_rec__request_state_92
 00651928 AcPlayer_rec__request_state_20
+0065196c AcPlayer__start_walk
 006519c8 SlotObject__turn_x_over_frames
 00651a68 turn_towards_angle
 00651d38 AcPlayer_rec__state_0_update
@@ -17320,6 +17331,7 @@
 006540d8 SlotObject__set_target_x
 00654124 set_turn_target
 00654170 AcPlayer_rec__start_tool_animation
+00654230 AcPlayer__start_talk_state
 006542dc SlotObject__play_step_sound
 006543a4 SlotObject__play_sound
 006543f0 SlotObject__play_step_sound_b
@@ -17344,6 +17356,7 @@
 00656c04 AcPlayer_rec__state_4_exit
 00656c20 state_params_with_8bc
 00656cac AcPlayer_rec__state_147_enter
+00656e5c AcPlayer__start_run
 00656edc CounterSource__count_event
 006576f8 take_off_shoes_with_index_0x10_
 00657738 read_float_657738
@@ -17382,6 +17395,7 @@
 00659d14 AcPlayer_rec__request_state_72
 00659d9c AcPlayer_rec__request_state_20
 00659e34 AcPlayer_rec__request_state_21
+00659e8c AcPlayer__start_state_with_speed
 00659f14 AcPlayer_rec__request_state_b0
 00659fa8 AcPlayer_rec__state_91_update
 0065a23c AcPlayer_rec__state_85_update
@@ -17427,6 +17441,7 @@
 0065e190 AcPlayer_rec__request_state_e3
 0065e1bc AcPlayer_rec__request_state_45
 0065e2e0 AcPlayer_rec__request_state_52_or_53
+0065e3a0 AcPlayer__dig_at
 0065e7d4 AcPlayer_rec__state_165_update
 0065eb8c AcPlayer_rec__state_69_update
 0065ed34 AcPlayer_rec__state_1_update
@@ -17688,7 +17703,9 @@
 00673080 AcPlayer_rec__state_73_enter
 00673184 AcPlayer_rec__state_206_enter
 0067334c AcPlayer__apply_pending_cell
+006733b0 AcPlayer__update_outdoor
 0067349c AcPlayer__set_move_and_mark_cells
+006736dc AcPlayer__update_flags
 006739b8 AcPlayer__start_state_by_kind
 00673a94 AcPlayer__start_state_8e
 00673ac4 AcPlayer__start_state_33
@@ -17737,6 +17754,7 @@
 006777a4 AcPlayer_rec__state_48_enter
 006777a8 AcPlayer_rec__state_47_enter
 00677b70 TourResult__report_visit_if_new
+00677d1c AcPlayer__can_swim
 00678278 AcPlayer_rec__request_state_196
 00678300 AcPlayer__start_state_e2
 0067837c AcPlayer__start_state_88
@@ -17795,12 +17813,14 @@
 0067bbe8 AcPlayer_rec__state_198_enter
 0067bc50 AcPlayer__restore_outfit
 0067bc98 AcPlayer__apply_pending_cell_b
+0067bcf4 AcPlayer__start_move_state
 0067bd70 TourResult__notify_if_flag
 0067bda8 AcPlayer__move_hand_effects
 0067be68 constant_886c44_float
 0067be7c constant_886c48_float
 0067be90 step_length_double
 0067beac constant_886c48_float_b
+0067c2e4 AcPlayer__find_dig_target
 0067c674 AcPlayer__start_wait
 0067c8c0 AcPlayer_rec__state_131_update
 0067c9a8 AcPlayer_rec__state_124_update
@@ -17922,8 +17942,10 @@
 0068315c AcPlayer_rec__state_11_enter
 00683160 AcPlayer_rec__state_231_enter
 00683180 ForeachOnMoveOutPitfall__ForeachOnMoveOutPitfall
+0068319c AcPlayer__cast_target
 006833ac AcPlayer_rec__clear_flag_176_8
 006833c4 AcPlayer_rec__start_item_action
+00683784 AcPlayer__held_item
 006839a8 AcPlayer_rec__request_state_b9
 00683be8 AcPlayer_rec__state_185_update
 00683ef4 AcPlayer_rec__state_57_update
@@ -18098,6 +18120,7 @@
 0068eba8 CameraCtl__leave_mode_5
 0068ebc4 CameraCtl__update
 0068ec10 CameraCtl__has_target
+0068ec3c CameraController__set_veneer
 0068ec64 CameraCtl__request
 0068ec98 CameraCtl__request_mode_3
 0068ecbc CameraCtl__query
@@ -18162,11 +18185,13 @@
 00691cb4 AcPlayer__check_front_furniture
 00692154 return_constant_0x98af78_
 006924f8 return_constant_0x94f328_
+00692504 AcPlayer__check_item_use
 00692ad4 copy_global_items
 0069335c scene_blocks_tools
 00693410 current_mode_is_room_like
 006934a0 scene_is_special_area
 00693570 clear_global_item_row
+006935a8 Notice__post
 00693778 clear_global_items
 00693a64 post_notice_33a8
 00693bfc BsFtrMgr__do_draw
@@ -18219,6 +18244,7 @@
 0069ee80 BsNpcMgr__SearchFunction__SearchFunction_0069ee80
 0069f26c Event__update_flags
 0069f348 EventSecretarySearchFunc__EventSecretarySearchFunc
+0069fd54 Player__face_object
 006a04c4 update_villager_states_for_day
 006a0848 spawn_actor_at_player_house
 006a0ecc update_villager_visits
@@ -18270,6 +18296,7 @@
 006a5f0c cell_corner
 006a6024 SceneEnv__apply_for_scene
 006a6408 MapTable__build_maps
+006a694c Map__release
 006a69a8 MapTable__has_main_map
 006a69c0 build_map_with_builder
 006a69ec cell_and_tile_of_position
@@ -18283,6 +18310,7 @@
 006a6e90 position_of_block
 006a6eb0 read_u32_0x009526f8_
 006a6ec0 split_world_position
+006a6f50 Map__refresh_from_save
 006a7174 MapTable__restore_saved_map
 006a71ec MapTable__swap_in_temp_map
 006a733c cell_ground_position
@@ -18328,6 +18356,7 @@
 006a996c Toggle__set_instant
 006a99dc Toggle__reset_on
 006a9a40 Toggle__reset_off
+006a9a80 Range__value_at
 006a9b3c reset_record_1c
 006a9b6c sead__FixedSafeString_64___FixedSafeString_006a9b6c
 006a9d04 MailWork__BodyLineEngine__BodyLineEngine_006a9d04
@@ -18345,6 +18374,7 @@
 006aa594 MailWork__HeadUpdateEngine__virtual_2
 006aa65c MailWork__HeadUpdateEngine__deleting_destructor
 006aa688 MailWork__HeadUpdateEngine__destructor
+006aa6b0 TextBox__set_message_line
 006aa8a0 destroy_array_owner_c
 006aa8c4 MenuBase__post_create
 006aa8c8 MenuBase__post_delete
@@ -18375,12 +18405,15 @@
 006aaae8 locate_by_packed_id
 006aac18 unregister_from_menu_list
 006aac60 find_packed_id
+006aaf98 PackedColor__unpack
 006ab00c Player__share_changed_patterns
+006ab0b0 ObjectList__update_all
 006ab2a0 NameList__NameList
 006ab2e4 NameList__deleting_destructor
 006ab304 NameList__destructor
 006ab320 sead__FixedSafeString_32___FixedSafeString_006ab320
 006ab4f8 AcNpcSpJonny__MyModel__virtual_14
+006ab5b8 Window__current_page
 006ab978 AcNpcSpJonny__MyModel__virtual_19
 006ac088 finish_pending_4c8
 006ac0b4 AcNpcSpJonny__MyModel__virtual_16
@@ -18402,6 +18435,7 @@
 006ac8e0 store_u32_argument_at_34_6ac8e0
 006ac8e8 Bounds__reset
 006ac950 BoundsQuery__start
+006aca10 Collider__set_triangle
 006aca78 ObjcBody__ObjcBody
 006acaac ObjcBody__deleting_destructor
 006acabc ObjcBody__destructor
@@ -18433,9 +18467,11 @@
 006b0b5c Passport__virtual_1_006b0b5c
 006b0b6c Passport__virtual_0_006b0b6c
 006b0b74 Passport__virtual_0_006b0b74
+006b0d98 InsectFlight__update
 006b127c Area__set
 006b1468 SoundListener__construct
 006b14b8 SoundListener__destroy
+006b14cc RoomTimers__start
 006b1618 RoModule__virtual_2
 006b16c0 RoModule__virtual_3
 006b170c RoModule__deleting_destructor
@@ -18457,6 +18493,7 @@
 006b1da4 SoundSystem__play_handle_b
 006b1df0 SoundSlots8__play
 006b1ec0 SoundSlots8__stop
+006b2104 SoundSystem__play_3d
 006b2c68 SoundSystem__notify_listeners
 006b2f08 SoundSystem__sound_info
 006b306c SoundMgr__SingletonDisposer___deleting_destructor
@@ -18478,9 +18515,12 @@
 006b6624 ClampedCounters__add_to_part
 006b6870 ClampedCounters__add_to_current_split_20_
 006b69d4 ClampedCounters__set_value_118
+006b6d6c ClampedCounters__add_a
+006b7058 ClampedCounters__add_b
 006b72a4 ClampedCounters__add_to_split_54_
 006b730c ClampedCounters__add_to_current_split_47_
 006b7380 ClampedCounters__add_to_current_split_0_
+006b73f4 ClampedCounters__add_c
 006b7628 ClampedCounters__add_to_current_split_13_
 006b77f8 ClampedCounters__add_to_current_split_62_
 006b786c ClampedCounters__add_to_current_split_38_
