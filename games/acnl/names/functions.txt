@@ -7528,7 +7528,7 @@
 00335214 set_item_amount
 0033527c Villager__receive_item_249a
 003352f0 finish_pending_eb
-00335328 build_camping_car_path
+00335328 load_camping_car_info
 0033543c model_name_or_default
 00335494 NpcCampingCarInfoLoader__NpcCampingCarInfoLoader
 003354b4 NpcCampingCarInfoLoader__deleting_destructor

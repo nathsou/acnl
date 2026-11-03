@@ -1284,6 +1284,7 @@
 001fdf44 Whether the notice's message is closed; asks it to close once otherwise.
 001fe718 Seeds the day's random generator and rolls the weather of the coming days.
 001ff5c0 Adds the bone's movement since the last frame to the actor's motion and records its new position.
+001ff9d8 Destroys a drag icon node: unbinds and destroys its icon animation, then the button action node.
 00200ab4 Copies the item layout entries (6 bytes each) of variant `index` of the table (+0xd0) into the buffer when it fits; their count, or 0.
 00200b9c Places the items of the cell's layout variant (up to 0x600 bytes of entries) in the cell, keeping their top bits.
 00200ca0 Loads the large cell's 0xa00-byte block from the shared layout of the cell's id.
@@ -1837,6 +1838,7 @@
 0029cc7c Resets the 10 network entries (kind 0x24, index 0xa5) and their sent flags.
 0029cd5c Copies the 63 template entries (from template 9) and resets their kinds and sent flags.
 0029ce80 Resets the 63 entries' kinds and, when idle in a session, applies them as templates; clears their sent flags.
+0029cf30 Finishes releasing an entry: applies the template of kind arg 1 + 9.
 0029d150 Zeroes the 64 bytes at +0x10.
 0029d228 Shares the NPCs' permits and schedules with the waited stations.
 0029d354 Requests the permit of NPC `slot`: marks its packet sent and asks the host (message 0x40), or, as the host, grants it directly.
@@ -2004,6 +2006,7 @@
 002cf1a8 Whether the state (+0x2e4) has reached finished (13).
 002cf3b4 Starts the transfer of kind 0xf.
 002cf87c Destroys the transfer and clears the instance.
+002d00bc Constructs a parts drag icon node: a drag icon node with its own vtable.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d0998 The record (+0x668) of the object held by the slot; null without one.
 002d0cf8 Constructs the model with its skeletal model, base animation (kind 0x16, enabled) and its second animation.
@@ -2437,6 +2440,7 @@
 003081b0 Copies 8 bytes.
 003082b8 Resets the scene table's 0xa5 entries.
 00308380 Copies two 22-byte names, a 16-bit id and a byte into a record.
+003084f8 Initializes a sub object: no identity, empty items, the template's words, cleared flags and player \n reference.
 003085bc Calls the function on each villager record.
 00308728 Initializes the villager's memory of the player with their identity and names.
 0030878c Finds the villager's memory slot for the player.
@@ -2686,6 +2690,7 @@
 00320548 The word at +0x684 of entry `index` of the shown page; 0 when it is not shown.
 00320584 Starts or stops the button node of entry `index` of the shown page.
 003205cc Sets byte +0xd9 of entry `index` of the shown page.
+00320614 Constructs a letter drag window's base: an archive accessor, a layout with its animation, ten buttons, a \n letter drag icon group and a drag icon control.
 0032069c Sets the visibility bit of the pane at +0x280.
 003206bc Plays the icon layout's animation for the state.
 003207d8 Sets the visibility bit of the pane at +0x150 and updates the layout at +0x130.
@@ -2739,6 +2744,7 @@
 00333310 Sets the flag at +0xb2 of the shared NPC info.
 0033527c Gives the villager of the record (+2) the item (+0) as its +0x249a item, registering special items first.
 003352f0 Finishes the pending work (+0xeb) when it can; true when nothing is pending.
+00335328 Starts loading a camping car visitor's info file (for the name arg 1), falling back to the default \n visitor's when the file is absent, on a heap (arg 2, else the stage heap); 1 once started.
 0033543c Copies the resource's model name into the string, or the default model name when it has none.
 003355ac Plays the town tune's note with its pitch and length.
 00335634 Copies a 0x7dc8-byte block.
@@ -4468,6 +4474,7 @@
 005d6bfc Unlocks the text box (the second layout) and refreshes its pane.
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
 005d6d28 Lays out the text box's lines (the second layout) and sets the text's size.
+005d6fac Constructs a ruby (reading aid) renderer: a main renderer with a second render base and a tracing message \n engine.
 005d72a4 Text tag: places the ruby text above its base characters, centered, and skips the tag.
 005d79bc Sets the style to the preset of the index (below 7), else the default.
 005d79e0 Builds the text scale command (in 1/32 units), once; the command.
