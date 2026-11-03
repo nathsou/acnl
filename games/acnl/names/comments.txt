@@ -2759,6 +2759,26 @@
 006b1df0 Plays the sound in the slot already playing it, or a new one of the 8 slots.
 006b1ec0 Stops every one of the 8 slots playing the sound.
 006b2c68 Notifies the sound listeners (+0xc14, +0xc28) of the event by its kind.
+006b2f08 Fills the sound's info (id, bank, size, play mode and its three flags) from the sound archive.
+006b3104 Updates the 3D sound parameters from the listener.
+006b3384 Notifies the sound listeners of the event by its kind (second handler).
+006b3d50 Checks the sound history and slots for the id before playing.
+006b4170 Starts the object's sound through the sound player and remembers the result; true when it started.
+006b41a4 Starts the object's sound with its parameters through the sound player and remembers the result; true when it started.
+006b4aa8 Interpolates between the two floats by where the value sits in the range.
+006b4adc Interpolates between the two integers by where the float sits in the range.
+006b4e18 Stops the object's sound through the sound player when it exists.
+006b9038 Constructs the daily counters' base part.
+006b9904 Clears the item's flags except their top two bits.
+006b9934 For items of id set d, resets their variant (id 0x70 becomes 0x26, else the flags reset to variant 3).
+006b9b5c Clears bit 15 of the item's flags.
+006b9c98 Picks the item of group 0xe at the same offset as the item has in its category.
+006b9d30 Sets the item's flags (keeping their top two bits) with bit 10 set.
+006b9d78 True for kinds 3, 5, 7, 0x16 and 0x1a.
+006b9de8 True for kind 0x17.
+006bacd8 Sets the item's flags, keeping their top two bits.
+006bb1a0 Moves the items 0x3057, 0x305a, 0x3064 and 0x3067 to their next ids.
+006bb3bc Sets the item's room index (in its flags, keeping its variant) when it has a valid value; true when it did.
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
 006bc4fc Sets the record state byte of an item of a recorded category to 5.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.
