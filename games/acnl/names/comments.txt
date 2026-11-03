@@ -1492,6 +1492,7 @@
 00207750 Resets the handle and spawns effect `id` with the group and draw kind (from the priority), rotating it in scenes that need it; true when spawned.
 0020933c Draws the item label's layout on the bottom screen.
 0020968c Releases the window's layout parts (when loaded) and layout, and its list (when not).
+00209770 Starts loading the select window's layout archive with the layout allocator.
 00209f40 Counts a frame (up to 300) and, while the target (+0x1470) is farther than the threshold, gives its position; clears it when near.
 0020a35c Constructs a road search: 256 candidate cells and a 16 by 16 search grid for an owner (arg 1).
 0020a418 Advances a fader one frame: waits out its delay, then steps toward the target until its count runs out; \n returns the volume.
@@ -1511,6 +1512,7 @@
 0020b3ac Starts a pond's sound object (kind 6, unless started).
 0020b494 Starts the object and sets its speed to 6.
 0020b9b0 Clears the 0x14b0-byte block: its base, identity, records and its two time bytes (from the earliest time).
+0020bb20 Jumps to clear_number_pair.
 0020bb24 Clears the number pair.
 0020bb3c Clears bit `index` (below 6) of the bits at +0x28.
 0020bb60 The variant (2 * index or the next) chosen by the bit pair at 6 + 2 * index, taking it; random when both are free.
@@ -1551,6 +1553,7 @@
 00213b54 Inserts the node into the depth-sorted tree (by +0x3d0); the subtree's root.
 00214e88 Whether the scene, the online state or a pending request blocks balloons.
 002161a4 In a multiplayer session: refreshes the template and each of the 4 players' slots and presence flags.
+002170bc Starts loading the chat balloon layout archive with the layout allocator.
 00218220 Places the firework in the sky from the camera.
 002194d8 Launches the firework with its light and its sound.
 002198b4 Plays the firework's sound at its position, unless the scene mutes it.
@@ -1587,6 +1590,7 @@
 00228f74 Loads the rain shader (on the weather heap).
 00229c50 The weather particle kind: the override (+0x48a0) in mode 1, else 0x20 for rain and 0x80 for snow.
 0022a250 Loads the snow shader (on the weather heap).
+0022ba54 Constructs a catalog camera: at the origin, scale 1, set to its default view.
 0022bac4 Plays the shutter animation on its pane.
 0022bb00 Detaches the shutter layout from the layout system.
 0022bb1c Loads the shutter layout and its animation.
@@ -1639,6 +1643,7 @@
 00238e10 Sets the talk's word slot to the name of the object kind.
 00238f7c Sets the talk's word slot to the name of the map structure's group.
 002390f8 Sets a 33-character word (arg 1) into a shop NPC's talk window; 1 when it has one.
+0023930c Sets a nine-character word (arg 1) into an NPC's talk window; 1 when it has one.
 00239738 Sets the talk's word slot to the impression word for the person's gender; whether there was a talk to set.
 002397ec Sets the talk's word slot to the player's impression word for their gender.
 00239cd0 When idle (4): starts turning (mode 3) toward the player, with the flag.
@@ -1646,6 +1651,7 @@
 0023a254 When idle (4): starts turning (mode 0) toward the object at the speed.
 0023a440 Begins the end action of the talking NPC and of each listener still in their talk idle (action 0xc); whether any began.
 0023a680 Updates the talk turn's state (below 4).
+0023ad1c Destroys an NPC talk receptor: gives back its pending flags, its particle handle, then the talk receptor.
 0023adbc Handles a talk event at the camp sign: the move handler first, then for id 0x13 takes the pending flag or \n begins a request.
 0023ae64 Starts the talk: with no script, attaches it to the talk window and asks it to close; else runs the script. Then calls its virtual function 71.
 0023b0d4 Sets the talk's word slot to the message of the archive; whether there was a talk to set.
@@ -1702,6 +1708,8 @@
 002458e4 Resets the player's counters and sets its beat length (900 / tempo, rounded up).
 00246934 Starts a river's sound object (kind 7): registers it with the river sound manager.
 00246b90 Stops a river's sound object: the river sound manager forgets it, then the base stops.
+00246bd4 Constructs a river's sound object: a sound object base with no handle, distances 2000.
+00246c68 Destroys a river's sound object: the river sound manager forgets it, and the base stops.
 00246cb8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00246df4 Stores the object in the first free of the 60 slots (+0x14) and counts it; 0x3d when full or null.
 00246f34 Frees slot `index` (below 60) and uncounts it.
@@ -1755,7 +1763,9 @@
 0024e8cc Clears every sale slot of villager `index` (owners 4 and up): its item, price and pattern.
 0024e9fc Clears the town record.
 0024ee14 Records which area kind (0xfa or 0xfb, by the town's mode at save +0x53480) the current player's cell is in, with its cell (0x985df0).
+0024ef38 Constructs the village special book: clears the player area values.
 0024f010 Removes the category 0x48 items of the letter id from the player's 4 letter slots, refreshing their views when asked.
+0024f238 An insect's pre-execute step: the actor's, then its flight when flying.
 0024f400 Constructs the actor sound object from its parameters, with its listener and cleared fade.
 0024f70c Calls handler `index` of the table at 0x8452f8.
 0024fbd4 Plays the sound at the position (converted by the camera) and marks it playing.
@@ -1796,6 +1806,7 @@
 00255e38 Starts a cast at the position.
 00255ebc The sound kind of the water at the position (0x4a, 0x50 or 0x56), or 0 when there is none.
 00255f1c Starts the cast at the position when idle, finding the water there and its kind.
+0025654c Deletes a fixed light: its fragment light, then the light base.
 00256664 Sets the fade step (-1/frames).
 0025668c Sets the two fade steps (1/frames) and resets their progress.
 002566e0 Applies the transform and the two values of the current season's variant (0x3c bytes each).
@@ -1878,6 +1889,7 @@
 00274754 Loads the item selection window, the item icons (unless shared) and the bag's layout archives.
 0027480c Sets or clears bit 3 of the flags (+0xd4) of the 10 models (0x348 bytes each, +0x8e0).
 00275798 Releases the bag window's layouts, its 10 models' layouts and its message window.
+002762c4 Constructs a sound conductor: no sequence, tempo 120, volume 1.
 002763bc Sets the source's mode: 0 follows the room music player, 1 follows the given object (state 3).
 0027643c Frees slot `index` (below 64) and uncounts it.
 0027646c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
