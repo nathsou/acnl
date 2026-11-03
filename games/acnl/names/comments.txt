@@ -492,6 +492,7 @@
 00129094 The handle of a named service, through the service manager (fails when the handle is already open).
 001290f0 The shared lock at 0xae8344, initialized once (other threads wait for it).
 00129270 Raises the fatal error (kind 5) with the result and the location.
+001292b0 Reports a fatal result (arg 0) with its info byte (arg 1) and location (arg 2), and raises the fatal error.
 001292e8 Returns the result when its level is success or info; otherwise reports it as fatal.
 001297c4 Opens the microphone service (mic:u) once.
 00129870 Reads the value at 0x974f34 when it is set; an error code otherwise.
@@ -559,6 +560,7 @@
 0012ee90 The object at 0x974f20; a fatal error when it is missing.
 0012eeb0 Mounts the RomFS archive as rom:.
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
+0012efe8 Tries to wait on a light event: 1 when it is signalled (clearing a one-shot signal).
 0012f038 Stores 1 into a lock word.
 0012f050 Clears the light event (atomically negates a positive count).
 0012f154 Initializes a recursive lock: unlocked, no owner, depth 0.
@@ -595,6 +597,7 @@
 0013078c Sends command 0x3d (with the flag) to the service and returns its result.
 001307c8 Sends command 0x3b to the service and writes its output.
 00130804 The file's first entry, or null.
+00130c70 Constructs a layout: no root pane, an empty animation list, size zero.
 00131154 Records the frame heap's state; -1 when it cannot.
 0013121c Constructs a time-tone melody player: a one-sequence player with two faders.
 00131280 Allocates size bytes (arg 0) on a heap (arg 1) with an alignment (arg 2): an entry before Heap__allocate, \n which it runs into.
@@ -602,6 +605,7 @@
 00131580 Destroys five font sets (a font resource, its load split and its other part each), last to first.
 001316b8 Calls virtual 10 of the file device when it is mounted (+0x4c), else 0.
 0013187c Gives an empty array room for `capacity` pointers from the heap.
+001318c0 Constructs an audio resetter: nothing to reset.
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
 00131b3c Builds the sound effect manager's parts: an offset list, the effect memory manager and the 2 x 3 slots.
 00131be0 Constructs the sound data manager controller: a dispose callback, nothing loaded.
@@ -647,6 +651,8 @@
 00135720 Releases the memory block (from the block pool at 0xae0f64) when it has one (+8).
 00135748 Takes the lock unless this thread already holds it, and counts the nesting.
 001357ec Ends one level of holding the lock; the last one clears the owner and releases it.
+0013580c Unlocks a light lock and wakes a waiting thread (address arbitration).
+00135858 Tries to take a light lock: 1 when it was free.
 001358c0 Unmounts the storage (through the service at 0x97dffc), reporting a failure with its location.
 00135b30 Sends command 0x11 with the buffer to the service.
 00135efc Calls 0013a7c8 and reports a fatal error when it fails.
@@ -669,17 +675,21 @@
 00136cb0 Calls virtual 8 of the object with 0.
 00136d04 Removes a sound from the player's list (its link at +0x108).
 00136d2c Inserts a sound in the player's list by priority, releasing one when full.
+00136e0c Constructs a sound data manager: a dispose callback with a sound archive loader, nothing loaded.
 00136e58 Stops a playing sound, fading out over `fade_frames` (now when 0 or less).
 001376d8 Replaces the owner's frame heap (destroying the old one) by a new one on the region (start, size), 4-byte aligned; false when the region is too small or it fails.
 00137830 Releases the handle at +4 (0013b72c) when it is set.
+00137848 Destroys a font resource: releases its textures, then the font base.
 00137878 Clears a set of network addresses (each the empty pair -3, -1) and its counters.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
 00137c78 Creates the resource with the factory's heap and its name.
 00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).
 00137dc4 Clears a thread's parameter block (id -1).
 00137e84 Unlocks the recursive lock at the object's offset 0x10.
+00137e9c Constructs the audio effects memory manager controller.
 00137ec0 Inserts at position `index` of the list at +0x40, under the object's lock when it has one.
 001382cc Marks 0x97e854, stores a value at +4 and the memory size (0x974f54) at +0.
+001385fc Constructs the thread manager: an empty thread list, its lock, and a thread-local slot for the current \n thread.
 0013864c Releases what the handle holds (through the service when it owns a service handle, else through the owner's virtual function 7) and clears it.
 001386f4 Releases the split's handle and takes one from the count of handles in use.
 0013873c Updates the sound player's state.
@@ -688,6 +698,7 @@
 00138bbc Removes the pointer from the list.
 00138c2c The last index of list `index` (fewer than 6), read under its lock; -1 without one.
 00138c78 The value of a thread-local slot for the current thread.
+00138f08 The type of a sound archive entry, by its id (arg 1); 0 when no entry has it.
 00138f30 A list's last index (its count minus one).
 00138f3c Finds the factory's resource by its name.
 001391c4 Allocates size bytes (arg 0) on a heap (arg 1).
@@ -716,11 +727,13 @@
 0013adac Reads a bank file (CBNK, version up to 1.0.1.0): its header and INFO block.
 0013ae10 Reads a group file (CGRP, version up to 1.1.0.0): its INFO, FILE and (optional) INFX blocks.
 0013b034 Loads an entry of the archive: through its own loader when it is packed, else its file (when flag 8 asks); true when loaded.
+0013b560 Constructs a sound archive loader: no archive.
 0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
 0013b6e0 Stops the sounds of the player's list from `index` (under its lock).
 0013b72c Releases the font's texture sheets.
 0013b7dc Resets the network event handler.
 0013b80c Notifies the network event handler.
+0013b910 Constructs the audio effects memory manager: no memory.
 0013bb80 Returns at once.
 0013c0e8 Whether the object's state (byte 0xc) is 1 or 2.
 0013c1d4 Reads the player's info from the system's sound archive.
@@ -754,6 +767,7 @@
 0013cd00 Copies `source` into the string's buffer, at most `length` characters (all of it when negative) and fewer than its capacity, then terminates it; the number copied.
 0013d00c Gets the thread's priority (svc 0xb).
 0013d040 Joins the thread when it runs.
+0013d060 Calls the free hook.
 0013d24c Runs the thread's main loop.
 0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
 0013d4f0 Whether the bank's slot (below 6) is loaded.
@@ -794,6 +808,7 @@
 0013f7f4 Copies the first word of a bank entry; true when found.
 0013f81c Copies a player entry's words and its flags; true when found.
 0013f890 Copies a wave archive entry's word, data and flag; true when found.
+0013f8cc A group file's file block (the section with kind 0x7801); 0 when it has none.
 0013fd78 Stops the microphone input in its active states.
 0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
 0013ff94 Calls the service handler for the command (+0xa0: table in its low nibble, entry above), or returns the not-found result.
