@@ -877,14 +877,17 @@
 0013f6bc The low byte of the value of key 1 of the sparse array at +0xc, or 0x40.
 0013f6e4 Whether bits 8-15 of the value of key 1 of the sparse array at +0xc are set (true when absent).
 0013f718 The sound entry's type from its kind (+0xc): 0x2201 -> 2 (wave), 0x2202 -> 3 (stream), 0x2203 -> 1 (sequence), else 0.
+0013f7b8 Whether a wave archive's file (when open) has its table block ('CWAT').
 0013f7f4 Copies the first word of a bank entry; true when found.
 0013f81c Copies a player entry's words and its flags; true when found.
 0013f890 Copies a wave archive entry's word, data and flag; true when found.
 0013f8cc A group file's file block (the section with kind 0x7801); 0 when it has none.
 0013f934 A group file's info block (the section with kind 0x7800); 0 when it has none.
 0013f9a0 A group file's extended info block (the section with kind 0x7802); 0 when it has none.
+0013fad4 The handler for an integer division by zero: nothing.
 0013fd78 Stops the microphone input in its active states.
 0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
+0013fefc Asks a handler (arg 1) about an object (arg 0) through its virtual 3; an error result when either is null.
 0013ff94 Calls the service handler for the command (+0xa0: table in its low nibble, entry above), or returns the not-found result.
 0013fff8 Reads the local player's friend identity.
 001400b4 Starts the data store service once.
@@ -1010,6 +1013,7 @@
 0018df18 Spawns the effect at the position with the scale (in s0).
 0018e3fc Loads the model grid's rows from the table.
 0018e6bc The cell (x, y) of the 7x7 grid (0x108 bytes each), or the first row or column when out of range.
+0018e6e4 Recreates the background model manager's heap of a size (arg 1) on a parent heap (arg 2).
 0018e944 Constructs the heap allocator and the grid's 7 rows.
 0018e970 Destroys the grid's 7 rows and the heap allocator.
 0018e9ac Marks the screen shown and starts its open animation.
@@ -1029,6 +1033,7 @@
 00191368 Moves the scroll bar's knob to the list's position.
 001916f0 Sets up the list's buttons, their actions and animations.
 00194504 The pixel under the touch point at the zoom, clamped to the canvas.
+00194bc0 Packs two 4-bit values (arg 0 low, arg 1 high) into the display value.
 00194ff4 The touch point at the center of the pixel at the zoom.
 00195488 Stores the two 4-bit values with the valid flag at 0x94f860.
 00195d74 Converts the editor's image into the pattern's format.
@@ -1074,6 +1079,7 @@
 001a77a0 Counts the real item: marks its number in the bit set (+0x40) and counts it by its class and kind.
 001a8ddc From an idle handler, sets the menu mode by the window's kind and restarts its state machine (first or second handler pair); otherwise marks it to resume (+0x185e).
 001a9368 Resets the record: its ids to -1, its words to 0, enabled.
+001aa100 Destroys a common dialog: its animations, archive readers, layouts and its text.
 001aa440 Constructs a color fader: a fader base with a color (arg 2, four bytes) and a mode (arg 3).
 001aa4a0 Refreshes the friend list and reads the friend key of the entry (under the lock); zero when not found.
 001aa500 The index of the friend matching the entry; -1 when none does.
@@ -1150,6 +1156,7 @@
 001b4980 Resets the pattern's flags (type 4, shareable).
 001b49b0 Copies the pattern, refreshes it and, in a network session, sends the replacement of the old id by the new one (message 0x6d).
 001b4a80 Copies the identity (0x2e bytes) and marks it set.
+001b4a8c Copies 46 bytes.
 001b4b20 Sets the pattern's name (+0x16) and stamps it with the current month and day.
 001b545c True when the id is below 399.
 001b5474 Places item `index` (of 2) of the pair in the room or the field once, when its owner is the current player.
@@ -1214,6 +1221,8 @@
 001c0fdc Constructs the NPC sound holder with full volume, stopped.
 001c1e54 Starts loading the indoor jump data (unless loaded) on a heap (arg 1); 1 once started or loaded.
 001c1eb8 Starts loading the ground jump data on the field heap (none: done); 1 once started.
+001c1f1c Starts loading the indoor jump data on a heap (arg 1; none: done).
+001c1f74 Starts loading the indoor jump data on a heap (arg 1; none: done), with the default load options.
 001c1fcc The 0xa00-byte layout block of id (from the first table for ids up to 0x108, else the second); null when it is not loaded.
 001c2040 The 0xa00-byte layout block of id from the first table; null when it is not loaded.
 001c2074 The 0xa00-byte layout block of id from the second table; null when it is not loaded.
@@ -1399,11 +1408,13 @@
 001e8c34 Commits the archive (0x952630) and unmounts it; true on success.
 001e90e4 Constructs the actor base from its parameters, with cleared flags and angles.
 001eb754 Unless an effect is already there, spawns the dust effect 0x1fa on the ground under the position, scaled by the actor's kind.
+001ed4a4 Destroys a field shadow actor through its construction table (arg 1, the default one when none): its \n particle handles, its parts and (for the default) its resource.
 001ed520 Sets the town flag (bit 7 of save +0x62155) when one of the 4 players has the state 0xa (bits 3 to 6 of +0x5710).
 001ed594 Clears the DJ controller's state words.
 001ed5b4 Dresses the current player in the default outfit for their gender (+0x55ba).
 001edaec Selects the talk's message by its mode.
 001f499c Spawns the insect of the kind with the flag.
+001f4e30 An object actor's pre-draw step (as the actor's): 1 when it should draw.
 001f4fec Constructs the actor with the class's vtables and zeroes its motion, rotation and scale.
 001f581c Scales the shown insect or fish by its size, starts its sound (local when it is the main player's) and takes its item.
 001f5e5c The shown object's item state; writes whether it is shown.
@@ -1431,9 +1442,12 @@
 001fde9c Closes the notice's message and forgets its handle.
 001fdf44 Whether the notice's message is closed; asks it to close once otherwise.
 001fe718 Seeds the day's random generator and rolls the weather of the coming days.
+001ff124 Destroys a census window: its content list, background animations, window and archive reader.
 001ff5c0 Adds the bone's movement since the last frame to the actor's motion and records its new position.
 001ff92c Constructs a drag icon node: a button node with an icon animation, enabled, at no offset.
 001ff9d8 Destroys a drag icon node: unbinds and destroys its icon animation, then the button action node.
+00200a6c Starts loading a split (path arg 1) on a heap (arg 2); done when either is missing.
+00200ab0 Jumps to destroy_load_split_base_part.
 00200ab4 Copies the item layout entries (6 bytes each) of variant `index` of the table (+0xd0) into the buffer when it fits; their count, or 0.
 00200b9c Places the items of the cell's layout variant (up to 0x600 bytes of entries) in the cell, keeping their top bits.
 00200ca0 Loads the large cell's 0xa00-byte block from the shared layout of the cell's id.

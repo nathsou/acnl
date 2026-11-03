@@ -1625,7 +1625,7 @@
 00193838 BsMenuChat__virtual_0_00193838
 00194504 DesignCanvas__point_to_pixel
 00194608 sead__SafeStringBase_char___SafeStringBase_00194608
-00194bc0 notify_object_00194bc0
+00194bc0 set_packed_display_value_pair
 00194ff4 DesignCanvas__pixel_to_point
 00195488 set_packed_display_value
 00195d74 DesignEditor__convert_image
@@ -2560,7 +2560,7 @@
 001ec74c AcFsFdShadow__virtual_24
 001ed488 AcFsFdShadow__virtual_1_001ed488
 001ed49c AcFsFdShadow__virtual_0_001ed49c
-001ed4a4 AcFsFdShadow__AcFsFdShadow
+001ed4a4 AcFsFdShadow__destruct_with_vtt
 001ed520 mark_town_flag_if_player_kind_a
 001ed594 NpcDjCtrl__reset
 001ed5b4 dress_current_player_default
@@ -2792,7 +2792,7 @@
 001feefc CensusWindow__virtual_10
 001fefa4 state__Mode_CensusWindow___Mode
 001ff0d0 CensusWindow__virtual_1_001ff0d0
-001ff124 CensusWindow__virtual_0_001ff124
+001ff124 CensusWindow__destructor
 001ff174 DowntownBook__virtual_2
 001ff448 DowntownBook__virtual_3
 001ff460 DowntownBook__DowntownBook
@@ -2836,7 +2836,7 @@
 00200994 ExplainPlateBase__ExplainPlateBase_00200994
 002009e8 ExplainPlate__deleting_destructor
 00200a2c ExplainPlate__destructor
-00200a6c sead__SafeStringBase_char___SafeStringBase_00200a6c
+00200a6c start_load_split_if_set
 00200ab0 destroy_load_split_base_part_veneer
 00200ab4 ItemLayoutTable__read_entries
 00200b64 destroy_node_member
