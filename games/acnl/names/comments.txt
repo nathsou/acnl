@@ -4973,6 +4973,7 @@
 005d7a4c Builds the text color command from the tag's value.
 005d7a8c Reads a text command at a position (arg 1): its kind, parameter size and data, and where the text \n continues.
 005daf1c Empties the selected pocket slot (below 16) of the current player.
+005dc374 Copies two C strings (args 1 and 2) into the object's strings at 0xc and 0x38.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
 005dd51c Copies a C string (arg 1) into the object's string at 8.
 005dd570 Assigns the message to the string and records its flag.
@@ -4993,6 +4994,7 @@
 005e350c Initializes the message reference with its archive, label, arguments and speed.
 005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
 005e35dc Clears the message reference (kind 2, no message).
+005e3ae4 Constructs a text replacement engine: nothing to replace.
 005e49c0 Sets up a choice list: `count` choices with `default` selected (none when out of range).
 005e4a28 Resets the choice (no selection, 5 entries at most) and its entries.
 005e4bd4 Constructs a standard choice for arg 1 choices: their 65-character words, none selected, five shown at a \n time.
@@ -5001,6 +5003,7 @@
 005e8348 Starts the message engine on the text (or marks it done without one).
 005e8498 Calls the dialog box's virtual function 5.
 005e90cc Refreshes the dialog box's state and its text.
+005e915c Constructs a constant script word pointer from another (arg 1).
 005e9848 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 005e9974 Refreshes the talk window's text and its label when attached.
 005e9d64 The item offset pair (category 0x27) for the talk's value.
@@ -5057,11 +5060,13 @@
 00606bd0 Whether the announcement may be shown now.
 00606d20 Clears the scene flag when it is set, and the cached state.
 00606d70 Sets the scene flag when it is clear, and the cached state.
+00606e60 Constructs the scene: a framework process, registered as the current scene.
 00606ec8 Starts the talk script from the text and attaches it to the talk window, then requests the window close.
 00606f20 Adds one to the town's count (capped at 1000), flags the current player and counts it.
 00607218 Opens a two-way choice, in the order of the mode, with the default.
 0060b230 Whether the scene (or the online requests) block the gate, for the region of the time.
 0060b2ec The period (0 to 9) of the value, by its range.
+0060bdd0 Starts loading the caption (telop) layout archive with the layout allocator.
 0060c284 Marks the caution window hidden and, in the matching state, tells its owner.
 0060c360 Draws the caution layout while it is shown.
 0060c38c Loads the caution layout archive and sets its draw order.
@@ -5093,6 +5098,7 @@
 00613764 Builds the town map: its sizes (2, 3, 3), the 42 terrain ids, the 20 acre blocks and their small blocks.
 006137d8 Initializes the town's layout record.
 006138a4 Clears 0x4000 bytes.
+00613de4 Copies 48 bytes.
 00613dfc Copies 0x1404 bytes.
 00613e08 Clears a 0x1404-byte block (its word and data).
 00613e18 Clears the 0x1400 bytes of data of a block.
@@ -5108,6 +5114,7 @@
 0061479c Initializes the sound source at the position with its angle.
 00614854 Constructs a moving background: a world body with a box shape, not moving.
 006148e4 Clears a notice record and its four 16-byte entries.
+006149e8 Constructs a background guard box: a moving background, unowned.
 00614a64 Sweeps the shape between the two points against the collision world.
 00615328 Jumps to store_constants_779548.
 0061532c Clears a 0x30-byte record.
@@ -5201,6 +5208,7 @@
 0061fd68 Sends the station's bit (packet 0x30), or requests it as the host.
 0061fe0c Updates the chat for the session.
 00620660 Clears a station slot's byte (slots below 4).
+00620678 Sets a station slot's byte (slots below 4).
 00620dcc Clears a station entry: no station (0xa5), no flags.
 00620e18 Sets the visit role from the session: 1 when this station hosts the guest, 3 without a guest, else 8 (for stations below 4).
 00620e68 Clears a station entry: no station (0xa5), no flags (keeping its id bytes).
@@ -5240,6 +5248,7 @@
 00623c3c Resets what station `station` uses, and its count (under the session's lock).
 00623c8c Adds `delta` (negative to take away) to station `station`'s count, under the session's lock.
 00623cfc Adds `size` to what station `station` uses when it still fits in its 0xd002 bytes; true when it did.
+00623d30 Clears a station's used buffer count (stations below 4).
 00623d48 Lays the buffer out once: each of the 4 stations but `own` gets 0xd002 bytes of it, in order.
 00623dcc Clears a station's send and receive buffers (keeping its owner).
 00623e3c Initializes a station's send and receive buffers: no owner, empty.
@@ -5275,10 +5284,12 @@
 00625974 Byte +0x1329c of the network session.
 0062598c Sends the ready record to the stations in the mask.
 00625b28 Whether byte +0x223 of the network session is clear.
+00625b50 Initializes a station pair: no station (0xa5), slot 4.
 00625b64 Stores a station (below 4) and its entry id (below 0xa5).
 00625b84 Copies a station entry (16 bits).
 00625b90 Clears a station entry (station 4, entry 0xa5).
 00625c20 Clears station `index` (below 4): entry 0xa5, station 4.
+00625c40 Initializes four station pairs: no station (0xa5), slot 4.
 00625c7c Clears the four station slots (entries 0xa5, stations 4).
 00625cbc Sends the local entry to the stations.
 00625da4 Clears a small packet (station 4, size 0).
@@ -5684,6 +5695,7 @@
 006a3cb4 Loads the common title window's layout archive.
 006a3d54 Sets up the title window's text, pin, address and money panes for the mode.
 006a42ac Sets every child's state (+0x120) to 3 and marks the object done (+0xe25).
+006a4f98 Registers the incremental save and train labels.
 006a51ec Updates the save data range at +0x6e224 and checks the one at +0x6e2a4.
 006a5928 Creates the color and wipe faders on the fader heap.
 006a5b88 Starts the scene change: notifies the listeners (unless the current one holds it) and starts the change.
@@ -5724,6 +5736,7 @@
 006a99dc Resets the toggle on (speed 0.2), instantly or with a 15-frame move.
 006a9a40 Resets the toggle off (speed 0.2), with its value at 1 when asked; true when it was.
 006a9a80 The range's value at the factor (or its fixed value).
+006aa46c Destroys a mail body line engine: its message engine.
 006aa6b0 Sets the text box's message line with its options.
 006aaf98 Unpacks the 4-bit channels of the packed color.
 006ab00c Collects the changed flags of the current player's 10 patterns into a bit set, clears them and shares the set; true when any pattern is in use.
@@ -5734,6 +5747,7 @@
 006ac8e8 Resets the bounds to empty (min at the largest float, max at the smallest).
 006ac950 Resets the query's bounds, takes the target's position for kind 2 and registers the query with the manager (0x9502f8) when it is not yet.
 006aca10 Sets the collider's triangle with its flags and radius.
+006aca78 Constructs an object collision body: a world body, no shape or owner.
 006acabc Jumps to do_nothing_006f7e8c.
 006acac0 Computes the selection from the page (+0xe30) into +0x6359 and hides the pane (+0x6340).
 006acf28 Shows the two mode panes by the mode (+0x6358) and, in mode 0, hides the 24 entries' panes.
@@ -6073,14 +6087,18 @@
 006f7e04 Stores the word at +0xc.
 006f7e10 Sets the collider's cylinder from the rectangle with its flags.
 006f7e40 Sets the triangle reference's triangle, kind and mask.
+006f7e4c Constructs a collision world body for a shape (arg 1), an owner (arg 2) and a mask (arg 3).
 006f7e64 Constructs a collision world's body: no shape, no owner.
 006f8054 Clears the count and the 100 entries (+8).
 006f8094 Zeroes the list's two words and its 100 entries.
 006f80dc Moves a collision sphere's center by an offset (arg 1); returns the center.
 006f8114 Sets the sphere's center (+8) and radius (+0x14).
+006f8134 Constructs a collision sphere at a center (arg 1) with a radius (S0).
 006f81f0 Sets the capsule's two ends (+8, +0x14) and radius (+0x20).
+006f8228 Constructs a collision capsule (shape kind 3) with no radius.
 006f8368 Moves a collision cylinder's center by an offset (arg 1); returns the center.
 006f83a8 Sets the cylinder's base from the rectangle's corner and its radius and height.
+006f83cc Constructs a collision cylinder at a center (arg 1) with a radius (S0) and height (S1).
 006f83f8 Constructs a collision cylinder (shape kind 2) with no radius or height.
 006f8540 The word shifted left by 14, as a half.
 006f8a58 Casts the ray against the collision world, up to the hits.
@@ -6185,6 +6203,7 @@
 0070bd74 Writes the pattern's pixels as colors into the texture (its high bits only).
 0070bf30 Decodes the entries of the table at 0x9752c1.
 0070c188 0 when the first byte is negative, else 1.
+0070c23c Constructs a script word pointing at a constant 17-character word (arg 1).
 0070c258 The kind paired with the value in the 18 pairs at 0x88f984; 0xfc when none.
 0070c2a8 Entry `index` (6 bytes each) when it is below the count (+0xd2); null otherwise.
 0070d7e4 True when the world position lies in the block (x, y).
