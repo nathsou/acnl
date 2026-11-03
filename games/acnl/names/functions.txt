@@ -15282,7 +15282,7 @@
 0058bc7c BgmParamList__push
 0058be00 BgmParamList__BgmParamList
 0058be48 TourDesk__choose_talk
-0058c08c audio__bgm__EvOpusCleaning__EvOpusCleaning
+0058c08c EvOpusSet__construct
 0058c19c return_constant_0x989bc0_
 0058c1a8 audio__bgm__EvOpusCountdown__virtual_0
 0058c1b4 audio__bgm__EvOpusCarnival__virtual_3

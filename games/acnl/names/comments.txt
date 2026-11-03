@@ -4325,6 +4325,7 @@
 00583dc4 Float +0x94 of the DJ player (in s0); returns the object.
 00584080 Initializes the music queue and the flag manager.
 005840f8 Clears the BGM parameter flag (when set), resets the list at 0x98a018 and clears two BGM flags.
+00584150 Creates the stage music manager: notes the clock's bytes and whether the evening music applies, then \n recreates its heap on the current thread's heap.
 00584250 Clears the two 16-bit counters at 0x98a088.
 0058440c Updates the music player's sound when it plays.
 00584d78 For an entry of kind 0x2c whose owner has +0x20 set: queues BGM entry 3 (fade 12) and marks the owner.
@@ -4370,6 +4371,7 @@
 0058bc7c Pushes an entry (priority, sound id, fade and options) onto the BGM queue, kept sorted by priority.
 0058be00 Builds the 29 entries and clears the list and the current-BGM state (+0x41c).
 0058be48 Chooses the tour desk's talk (the reward, the registered tours).
+0058c08c Constructs the event music set: the cleaning, hiding, fireworks, countdown, New Year, Halloween, \n harvest, Christmas Eve, carnival and Easter music, none playing.
 0058c4cc Sets bit `index` of the 64-bit mask at +0x20.
 0058c704 Keeps only the bits of the 64-bit mask at +0x18 that are in the constant mask at 0x845f30.
 0058c730 Updates the music parameter list (up to 50).
@@ -4434,6 +4436,7 @@
 0058f388 Fills a record of three words, five halves and a byte from the arguments.
 0058f3c0 Zeroes a record of three words, five halves and a byte.
 0058f3ec 1 << the current mode (from the save data when 0x95bf80 is set, else from value_for_mode); 0 when the global object byte is 3.
+0058f464 Constructs an event from its kind (arg 1), id (arg 2), dates (arg 3 and two records) and position.
 0058f718 Finds the first free of the 20 effect slots (0x18 bytes, at 0x94ee4c+0x10), keeps its index at +0x11f and starts effect 0xf8 (0xf9 with flag 0x80) there.
 0058f81c Sets the field item's flags from its indexed kind (fence, plant, low ground item...).
 0058f948 Plays the sound of placing (or removing) the item by its kind.
