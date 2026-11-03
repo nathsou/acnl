@@ -1263,10 +1263,99 @@
 006a51ec Updates the save data range at +0x6e224 and checks the one at +0x6e2a4.
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
 006bc4fc Sets the record state byte of an item of a recorded category to 5.
+006c00b8 Moves a held object to state `state` with its owner and a matrix.
+006c1678 Moves the held object to state 5 (in the hand) with its owner and the hand matrix.
+006c1688 Stores a timer (+0x6d0) and moves the held object to state 0.
+006c1938 The point (9, 0, 36.8) of the object's model matrix, moved for mode flag 2; true when the model has one.
+006c19d0 For a wear item of kind 0xe: starts the face countdown (+0x584) unless it is busy; true for that kind.
+006c1a8c Throws the held object along a direction (keeping its start position when it has none), with a flag, and moves it to state 1.
+006c1ea8 Tosses the held object along a direction (keeping its start position when it has none), without the flag, and moves it to state 1.
+006c2234 Puts the held object at a position and moves it to state 7.
+006c2268 Puts the held object at a position and moves it to state 4.
+006c229c Stores a value (+0x710), moves the held object to state 8 and, when asked, clears its attachment (+0x668).
+006c2be4 Moves the held object toward its target position over the remaining frames (+0x6d0), or onto it; counts the frames down.
+006c3118 Stores a float at +0x5dc.
+006c3a58 The position of the spawn tile (from 006fa1fc) with height 9, using kind 1 for group 1 of the object at 0x95c6d0 (else 6).
 006c4200 Clears the record (+0x10 = 0, +0x1c = 0xff) and its item (empty).
+006c48ac Checks the group of the entry's slot (+0xc) against 12 (no effect kept).
+006c4ed0 Picks random items by group into an item bit set (with its own random generator).
 006c588c The item at a world position on the map of `mode` (cell and tile from the position).
 006c5c60 The height of the ground at a position (0 outside the map).
+006c5d30 The ground's normal at a position (from its large cell's triangle), or up (0, 1, 0) when there is no map.
+006c5e2c The value (table 0x95da1d) of the terrain at a block tile, unless one of the two cells above is of terrain 3.
+006c6188 Calls 006c61d8 with the block and tile of a world position.
 006c6640 The height at a position: the ground's, or for water, cliffs and similar terrain the surface's.
+006c6714 Spawns the mode's items on the map (by its record and blocks).
+006c69e4 Whether the terrain at a position (cell and tile) is in the list at 0x89068f.
+006c6a34 Whether the terrain at a world position (block and tile) is in the list at 0x89068f.
+006c6a84 Whether any of the four parts of the terrain at a block tile is in the 90-entry list at 0x89068f.
+006c7868 The ground height at a position (cell and tile; 006c7908).
+006c78b8 The ground height at a world position (block and tile; 006c7908).
+006c7908 The ground height at a block tile: the tile's height for water and listed terrains (0xad-0xb1), else the triangle height (006c75e0); 0 without a map.
+006c7a14 The value (0075d7fc) of the tile at a world position in its large cell, or 0.
+006c7a9c The value (0075d7fc) of a block tile in its large cell, or 0.
+006c7bd0 Whether the four corners of the tile under a position have the same height.
+006c83f0 Bit 7 of the tile at a world position (Grid__tile_flag_7), or 0.
+006c8590 Whether the kind (table 0x95d91e) of the item at a position is 2.
+006c8760 Whether the kind (table 0x95d91e) of the item at a position is set.
+006c8778 The cell kind (006c87ac) at the cell under a position.
+006c87ac The kind of cell (x, z): from the map's byte grid (+0x28) outdoors, the room handler in scenes with bit 0x10000000, or 0xff for terrain 0xfc in scenes with bit 0x200.
+006c8938 Moves the icon (+0x44) from its drag list to a new one (when given), keeping whether it is in one (+0x431).
+006c8e30 Updates the scroll offset (+0x438) for the current handler (0 at the start, else the content height less the view) and moves the bar.
+006c8ef0 Removes the icon from its drag list, closes the layout and clears 0x95df7f.
+006c9050 Updates the scroll offset (+0x438) for the current handler (0 at the start, else the content width less the view) and moves the bar.
+006c91f4 Stores a 2-bit mode at 0x95261c.
+006c9218 Reads the service's 16-bit value into 0x952ad8 again (0 on failure).
+006c93e0 Adds an effect entry (of up to 20, 0x18 + 0x14 bytes) for a model and a value, and links it in the list at 0x994d24.
+006c9464 Clears the effect list at 0x994d24 and its count.
+006c967c Whether the save state (0x95719c) is 1.
+006c9898 Whether the save state (0x95719c) is 3.
+006c98b4 Sets the save state (0x95719c) to 2 and clears its sub-state.
+006c9b0c Unless busy (0x9571cd): flushes the pending data (0x974b90) when flagged (0x9571cc) and clears the flag.
+006c9e74 Copies the object's command block (+0xc8, size +0xcc) to `out`; returns the end.
+006ca128 Clears a command list object and its buffer part (+0x10).
+006ca1c0 Creates the two 640x480 render targets (0xab7d0c) with the two display rectangles and marks them ready (0x9571f4).
+006ca230 Flips the current render target index (0xab7dc4).
+006ca23c The render target not currently shown.
+006cac84 Whether `kind` is one of the eight structure kinds of the table at 0x88e4e4.
+006cad04 Whether entry `index` of the table at 0x88e4d4 is `kind`.
+006caed0 Packs two bytes into 16 bits (the first in the high byte).
+006caf18 Whether one of the 0xfc structure kinds has the value (bits 18 and up).
+006cb790 The variant (0-3) of a structure kind of type 0xf (from 0x90 by fours); 4 for others.
+006cb7d0 Marks every cell of a structure's rectangle (from its table entry, at cell x, z) on the map.
+006cba30 The first of the four structure kinds of the table at 0x88e4dc that is in the placed list; 0xfc when none.
+006cbb08 The record slot of structure kind 0x12-0x41 (in four blocks of 16), or 0.
+006cbbe4 The first of the four structure kinds of the table at 0x88e4d8 that is in the placed list; 0xfc when none.
+006cbcf8 Scans the placed structures list for kinds of type 0xf and their records.
+006cbea8 The block (0-2) of structure kind 0x12-0x41 by sixteen, or 3.
+006cbee8 The index (0-15) of structure kind 0x12-0x41 in its block of sixteen, or 3.
+006cbfec When no slot is set: calls the handler at 0x14fdd0 on the source object's part at +0x6b94 (with 1.0).
+006cc038 Checks the cells of a structure's rectangle for blocking objects (first kind).
+006cc304 Whether the structure kind (an f-object with a placement byte) blocks cell (x, z), unless it is the active structure placed exactly there.
+006cc388 Checks the cells of a structure's rectangle for blocking objects (second kind).
+006cc654 Checks the cells of a structure's rectangle for blocking objects (third kind).
+006cc920 Whether the scene is 0x5c or 0x68.
+006ccc1c Marks the letter storage changed (+0x1c204 = 0xff).
+006ccc2c Clears the letter storage's changed flag (+0x1c204).
+006ccc3c Clears the 180 stored letters (0x280 bytes each) and the changed flag.
+006ccc78 The address of stored letter ((a * 6 + b) * 10 + c).
+006ccd14 Takes the item at ((row * 6 + column) * 10 + slot) of the storage and puts another in its place.
+006ccd80 Refreshes each of the 180 stored items that is not empty (0076aff4).
+006ccde0 The address of design entry ((a * 6 + b) * 4 + c) when its bit is set, else 0.
+006cce34 Marks the design storage changed (+0x25f8d = 0xff).
+006cce48 Clears the design storage's changed flag (+0x25f8d).
+006cce5c Stores a design in entry ((a * 6 + b) * 4 + c) and sets its bit.
+006ccf10 Clears the 72 stored designs (0x870 bytes each), the used bits and the changed flag.
+006ccf68 Copies 0x5a0 bytes.
+006ccf70 Takes the item at ((row * 9 + column) * 10 + slot) of the storage and puts another in its place.
+006ccfdc Refreshes each of the 360 stored items that is not empty (0076aff4).
+006cd79c Opens the ATM window's layout part (+0x26c) with its resource.
+006cd970 Releases the ATM window's layout parts and closes its layout (+0x26c).
+006cda18 Loads the ATM window's layout archive.
+006ce44c Shows a badge of tier 1 (bronze), 2 (silver) or 3 (gold): flags the matching pane and starts its animation with its two sounds.
+006ce67c Keeps the current and previous scene kinds (0x94e4b4, 0x94e4b5) and sets the fade kind (+0xa12) for the scene change.
+006ce770 Signed byte +0xa10 of the black-wait object (0x94e4b8), or 0.
+006ceedc Whether the black-wait object is ready (+0xa13), marking it when its two flags allow it.
 006e08b4 Stores the mode (below 6) at 0x9507f0 and applies it to the object at 0x95c6d0.
 006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
 006f9494 Byte `index` of a constant table.

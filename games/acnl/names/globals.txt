@@ -73,6 +73,7 @@
 00953864 npc_net_packet_mgr_instance
 0095386c npc_net_share_info_instance
 00953874 npc_permit_bit_mgr_instance
+0095719c save_state
 0095721d system_language
 00957321 previous_scene
 00957322 current_scene
@@ -117,6 +118,7 @@
 00aaef18 player_state_block
 00aaf140 current_player_position
 00aaf14c current_player_data
+00ab7d0c render_targets
 00ae0ab8 fatal_error_info
 00ae0b5c frd_lock
 00aed620 srv_lock
