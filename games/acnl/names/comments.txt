@@ -2794,6 +2794,9 @@
 006bd2c8 The player's record (the size, by kind) of the insect, fish or sea creature item; 0 for other items.
 006bd550 The player's name pair record (+0x8d84) when they have one; null otherwise.
 006bddec Sends the player's pending star and secretary letters, clearing their flags once sent.
+006bead8 Stores the position at +0x73c.
+006beaf4 The side kind of the structure at the position: 1 for kinds 0 and 2, 2 for kinds 1 and 3 to 5, 0 otherwise.
+006bf18c The model scale of a category 0xe item by its growth level (from the table; 2 at the top); 0 for other items.
 006c00b8 Moves a held object to state `state` with its owner and a matrix.
 006c1678 Moves the held object to state 5 (in the hand) with its owner and the hand matrix.
 006c1688 Stores a timer (+0x6d0) and moves the held object to state 0.
@@ -2887,6 +2890,25 @@
 006ce67c Keeps the current and previous scene kinds (0x94e4b4, 0x94e4b5) and sets the fade kind (+0xa12) for the scene change.
 006ce770 Signed byte +0xa10 of the black-wait object (0x94e4b8), or 0.
 006ceedc Whether the black-wait object is ready (+0xa13), marking it when its two flags allow it.
+006d1bc8 True unless the menu is in state 2, then asks the menu object (0x94fc2c).
+006d1ce4 True when the menu's selection (0x94fd3c) accepts kind 8.
+006d1cf8 Adds the window to the menu's window list (once) and wakes the menu from state 3.
+006d2528 Selects pocket slot `index` (below 20, marking it selected) and reads its item.
+006d2584 True when the menu is not blocked and the talk is in one of the states that allow it.
+006d2750 Resets the three menu ids (0x98c508) to 0x248 (none).
+006d276c The high half of the word at 0x94fd38.
+006d2800 Removes the window from the list and, when none is left, releases the menu's flags and clears the selection's flag.
+006d2e34 Copies the menu's position (0x98c554).
+006d2e98 True when the first menu id is set (not 0x248).
+006d2f24 When request 0x7b is granted, marks the menu closing and closes it.
+006d3020 Takes one from the selected pocket item (category 0x29 counts), emptying the slot when it was the last.
+006d30c4 Stores the menu's position (0x98c554).
+006d3340 The number of selected slots (set bits of the 16 at 0x94fd34).
+006d337c The selected quantity (low half of 0x94fd38), at least 1.
+006d37e4 Counts the sale of the flagged item in the badge counters by its category (0x36, or 0x37, 0x38 and 0x92).
+006d39a8 True when a window in the menu's list is of the special id (0x88735a).
+006d4724 Splits the number into its thousands, hundreds, tens and units digits (0x94fd60).
+006d5364 Releases the active children of the two controls (+0x494, +0x618) when they have them.
 006e08b4 Stores the mode (below 6) at 0x9507f0 and applies it to the object at 0x95c6d0.
 006f09d4 Picks a random item from the set bits of the item bit set, of the wanted type.
 006f14b0 Sets the bits of the category's items that pass its check (the insect flag for insects).
