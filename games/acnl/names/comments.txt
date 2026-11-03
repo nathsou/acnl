@@ -3900,6 +3900,7 @@
 0053b1b0 Destroys a heap: its critical section and its disposer.
 0053b1d0 Clears the manager's words and the current heap (0x97e9fc).
 0053b2e0 Constructs an event: a disposer with a kernel event (reset type arg 1).
+0053b400 Constructs a mutex: a disposer with a kernel mutex.
 0053b4cc Decodes the Base64 text into the buffer.
 0053b6fc Encodes the bytes as Base64 (the URL-safe alphabet when asked), padding with '='.
 0053b844 Seeds the 4-word random state from the system tick (with the Mersenne Twister initializer).
@@ -3916,15 +3917,20 @@
 0053d490 Constructs a disposer and registers it as a child of the heap that contains it (when the thread has one).
 0053d530 Destroys a disposer: its heap forgets it, and it is left with the disposer list as its heap.
 0053d580 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+0053d7c8 Constructs the thread manager: an empty thread list and a thread-local slot for the current thread.
+0053df24 Constructs a controller for a manager (arg 1): a controller base for its pad's buttons, with empty device \n and addon lists.
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
 0053dffc Whether the device has a file (path arg 2), into a flag (arg 1); false when the device is not open or \n there is no flag.
+0053e23c Constructs an audio resource's parameters: the default name, nothing loaded, both flags set.
 0053e71c Tests the touch against the pane and records the hit.
+0053e958 Destroys a file device: the file device manager closes it, then the disposer.
 0053e990 Releases the file handle through its device when it has one.
 0053e9b0 Reads from the file handle through its device when it has one.
 0053ecf8 Converts the UTF-8 text into UTF-16.
 0053edf4 Converts the UTF-16 text into UTF-8.
 0053f59c Writes the GPU commands of the shared part at 0xaf52e8.
 0053f6c4 The number of set bits of the word.
+0053f730 Destroys a frame buffer: no longer the current one.
 0053fda8 Sets the camera's center from the viewport's bounds and its look-at below it, then updates its view.
 00540b14 Fills the array with the range of values from the start.
 00540bd0 Shuffles the array with the random generator (Fisher-Yates).
@@ -3957,7 +3963,9 @@
 005547e0 The emitter's own matrix, or its set's when it follows the set.
 005547f8 Resets the emitter's state and timers.
 00554fbc Constructs a particle texture's data: a texture with no image.
+00555024 Destroys a particle texture's data: frees its image, then the texture.
 005551f4 Resets the emitter's fade.
+005556d4 Destroys the particle model manager: its models and their tables.
 00555824 Writes the renderer's GPU state commands (blend, depth and the color constants) into the buffer; its end.
 00555f90 Writes the renderer's base state and the 3x4 matrix as GPU commands; their end.
 00556050 Begins the renderer's frame.
@@ -3967,6 +3975,7 @@
 00556a90 Draws the set's emitters with their shaders.
 00556d80 Allocates and relocates the effect resource's data and its textures.
 00556ea0 Replaces the emitter's data and, when asked, notifies the system for the two screens.
+005573e0 Constructs a particle load check: 64 entries, a timeout of 30000 and a wait of 180.
 0055746c Sets the particle's texture offset from its animation frame (by age or by life).
 005574f0 Initializes the camera's field of view, distances and position.
 0055b6e0 Counts the set's live emitters and draws the set with them.
@@ -3979,6 +3988,7 @@
 0055c27c Copies the shader's light commands into the buffer; their end.
 0055c2b0 Writes the shader's uniforms as GPU commands.
 0055c5ec Destroys the particle model manager's resource factory.
+0055c670 Constructs a mutex: a disposer with a kernel mutex.
 0055c73c Decodes the base64 text into bytes.
 0055c96c Encodes the bytes as base64 (the standard or the URL alphabet), with padding.
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
