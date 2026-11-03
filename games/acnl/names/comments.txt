@@ -1949,6 +1949,10 @@
 0050deec Writes the C string to the log as a NEX string.
 0050df24 Writes the C string followed by the wide string to the log.
 0050df80 Writes the wide string to the log.
+0050e778 Sets up the online session and creates or joins its gathering.
+0050ed5c Allocates the pool of 100 entries once and sets up NEX's thread variables and log level.
+0050f004 Leaves the gathering, stops the transport and the services, and releases the session.
+0050f118 Initializes NEX and logs in to the server; on failure, undoes the setup. Whether it is logged in.
 00510878 Shuts the online client down when nothing uses it: releases the service, the shared state at 0x96b930 and the buffer (+0x24).
 00510b68 Logs out of the online service (waiting for the call to finish), then resets the session's state and timeouts.
 0051139c Logs into the online service and waits for the result; reports the error (level 3) on failure. True when logged in (+0x6b).
@@ -2868,7 +2872,52 @@
 005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
 005e49c0 Sets up a choice list: `count` choices with `default` selected (none when out of range).
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
+0060143c Binds the resource of the current mode's entry (from the normal or the alternative table) as the talk's argument.
+00601f20 Clears the wait and, unless asked to keep it, the flag and the window's vertical scroll.
+00602144 Links the talk window and its owner and, during a talk with no special partner, marks the talk as shown.
+00602350 Sets a positive wait in frames with its flag.
+00602604 Sets the choice's message, resets the selection and sets its flag.
+00602938 Requests closing the window with the flag, and closes the choice when one is open (state 8).
+00602a90 Resets the window's state, page icon and (when asked) its text; restamps the owner's time.
+00603a58 Opens the choice with its message and, when the default is in range, preselects it; the choice's mode.
+00603ab0 Opens the choice.
+006045f8 Scans the message's tags for the one in the range.
+00605068 Begins the NPC's turn toward the player.
+006050c4 Turns the player to face the NPC during the talk.
+0060511c Claims the talk event slot (when free and armed) with the kind and the value.
+00605514 Starts the sound; when it started, marks it playing.
+00605534 Calls the handler of the kind with the argument.
+00605584 Starts the sound at the world position, seen from the camera.
+006055c0 Stops the sound and clears its flags.
+006055e0 The word of the table at 0x94e4c4 for the index.
+006055f0 Whether the NPC id is a villager's (up to 0x108).
+00605600 Whether the NPC id is a special NPC's (0x109 to 0x168).
+00605618 The byte of the table at 0x94ea68 for the index.
+00605628 The byte of the table at 0x94ebd1 for the index.
+00605d44 Registers the background download storage on the stage heap when the save allows it.
+00606a24 Sets the pending announcement: its message id, four flags and a value.
+00606a64 Resets the pending announcement to the default message and clears it.
+00606ab4 Shows the pending announcement when nothing blocks it (no announcement shown, no error screen, the session idle); whether it was shown.
+00606d20 Clears the scene flag when it is set, and the cached state.
+00606d70 Sets the scene flag when it is clear, and the cached state.
+00606ec8 Starts the talk script from the text and attaches it to the talk window, then requests the window close.
+00606f20 Adds one to the town's count (capped at 1000), flags the current player and counts it.
+00607218 Opens a two-way choice, in the order of the mode, with the default.
+0060b230 Whether the scene (or the online requests) block the gate, for the region of the time.
+0060b2ec The period (0 to 9) of the value, by its range.
+0060c284 Marks the caution window hidden and, in the matching state, tells its owner.
+0060c360 Draws the caution layout while it is shown.
+0060c38c Loads the caution layout archive and sets its draw order.
+0060c400 Advances the caution window's in or out animation and, when it ends, notifies its panes (hiding it after the out one); then updates the layout.
+0060c560 Sets the spiral's turn rate and step from its radius, speed and start angle, and its center.
 0060c5c4 A zero vector (with a zero word after it), initialized once.
+0060d0d0 Adds the four 15-bit colors of `other` to the four colors.
+0060d12c Adds the amount to each channel of the four 15-bit colors (as 8-bit values, back to 5 bits).
+0060d264 Stores the colors entry at the cell (x, y) of the 16x16 grid.
+0060de20 Updates the window's pane at +0x310.
+0060e094 Notifies the part's panes and restarts its animation from the start.
+0060e914 Turns the angle toward the target by up to the step, in the forced direction (1 or 2) when the target is beyond it; the change.
+0060ea4c Initializes the shaker with the default ranges and no motion.
 006124bc For a valid weather kind and `slot` (below 2): stores its layout name (or the default) in the slot's name field (+0x52c, 0xf4 bytes each); true otherwise.
 00612738 Updates the weather's items for the day.
 00612cec Stores 0x109 in a 16-bit field.
@@ -3152,8 +3201,52 @@
 0065e2e0 Requests player state 0x53 (with the flag) or 0x52 with the four bytes; true when it changed.
 0065fc64 When an item blocks the cell at the position, hits it and targets the cell.
 0065fcc0 When an item blocks the cell, hits it and targets the cell; true when it did.
+00660670 Sets the player's target angle from the distance, mapped between two fixed lengths.
+00660768 For the local player: counts the action when the day's check allows it.
+00660808 Refreshes the tree at the position's cell and, when asked, marks the cell changed in both maps of 112x112.
+006608d8 Refreshes the tree at the cell and, when asked, marks it changed in both maps of 112x112.
+00660990 For the local player: plays the sound.
+006609bc For the local player: restores the camera mode and marks the camera changed.
+006609ec For the local player: requests camera mode 0xc and marks the camera changed.
+00660a1c For the local player: requests camera mode 6 and marks the camera changed.
+00660c10 Changes the player's state to the action at the position.
+00660d14 Changes the player's state to 0x38 with the value and the flag.
+00660d78 Changes the player's state to the item's action at the position.
+00664a44 Takes the item as pending (when it is a plain item that is not a pocket kind) and records the drop position.
+00664be4 Sets the move (mode 4) from the player's position to the target.
+00664e50 For the local player: fades the music.
+00664e80 For the local player: resets the camera and marks it changed.
 00665130 Requests player state 0x19.
+006651b4 When the scene allows it: changes the player's state to 0x9d toward the target; else waits.
+00665344 Changes the player's state to 0x5f with the three values.
+00665380 Changes the player's state to 0x3b with the three values, unless already in it.
+006654ac Changes the player's state to 0x3a with the value, toward the position (or the origin) and the angle.
+00665560 When the player is not hidden and over water: replaces the effect with the splash at the water's surface, and plays its sound.
+00668fc4 A quarter of the step length (in s0); the table's address.
+0066a074 Drops the pending item, if any, and resets the drop position.
+0066a0f4 For the local player: counts the catch in their counter when it qualifies.
+0066a1d0 Sets the move (mode 8) to the cell's corner and, for the local player with a qualifying item, counts it.
+0066a2c8 Places the keyed effect at the player's position on the water's surface.
+0066a34c The angle of the event's NPC, or the default (0x2000).
+0066a554 Finds the furniture in front of the player in the room and starts using it (lights, seats, beds).
+0066aa7c Changes the player's state to the idle that fits (0x10, 0xf or 0x12).
+0066aac0 Changes the player's state to casting (0x7b) at the position and angle; at the tourney, may roll a bite.
+0066ac20 Changes the player's state to reeling (0x7e) at the position and angle, carrying the bite flag.
 0066ac8c Fills the state parameters (up to 3 entries, with three option bits) and requests the state change.
+0066b13c When the player exists: changes their state to 0x36 with the value and three flags.
+0066b1b4 Changes the player's state to 0x1d at the position and angle.
+0066b1fc Changes the player's state to 0x25 at the position and angle.
+0066b244 Changes the player's state to 0x5e with the two values.
+0066b280 Changes the player's state to the action toward the target, with its parameters.
+0066fa84 The point beside the position (left or right of the angle) on the ground, and the turned angle.
+0066fb3c Whether the kind is 0x67 and the height is at most 300.
+0066fb64 For the local player: leaves camera mode 0xc and marks the camera changed.
+0066fc98 Changes the player's state to 0xe9 at the position and angle.
+0066fd10 Changes the player's state to 0x5c with the two values.
+0066fd44 Changes the player's state to 0xc1 at the position and angle, with the value.
+0066fd94 Changes the player's state to 0x8d with the value.
+0066fdc0 Changes the player's state to 0x17.
+0066ffb4 Plays the digging effect for the ground at the position (sand has its own), else the general one.
 00678278 Requests player state 0xc4 with an id, a value, a flag and a position (the player's own when none).
 00681214 The shared vector (0, -4, 0) at 0x98570c.
 00681294 The shared vector (0, -2, 6) at 0x985718.
