@@ -1698,6 +1698,7 @@
 0020ada8 arg0 sound_obj
 0020ae0c arg0 sound_obj
 0020ae2c arg0 sound_obj_base
+0020ae2c r1@20ae70 position
 0020aedc arg0 sound_obj_base
 0020af18 arg0 sound_obj_base
 0020afb8 arg0 sound_obj_fall
@@ -2018,6 +2019,7 @@
 002458e4 arg0 sound_dj_player
 00246774 arg0 sound_dj_player
 00246934 arg0 sound_obj_river
+00246934 r0@246964 sound_handle
 002469c4 arg0 sound_obj_river
 002469c4 r0@entry sound_obj_base
 00246b90 arg0 sound_obj_river
@@ -3282,6 +3284,7 @@
 00305c64 r6@entry records
 00305e88 r0@entry ac_npc
 00306cf0 arg0 ac_npc_rec
+00306cf0 r1@entry npc_lock_player_permit_bit
 00306e2c arg0 search_cand_grid
 00307220 r0@307248 found
 00307220 r0@307310 save_data
@@ -3781,6 +3784,7 @@
 004e240c r0@entry grid
 004e240c r1@entry x
 004e240c r2@entry z
+004e240c r3@entry scene
 004e240c r5@4e2420 layer
 004e2504 r0@4e2514 map_table
 004e2504 r0@4e2554 item_2
@@ -4243,6 +4247,7 @@
 005224bc arg0 table
 005224bc r1@entry index
 00522ae0 arg0 edit
+00522ae0 r1@522afc position
 00522ae0 r1@entry collapse
 00523020 arg0 edit
 00523020 r3@entry keep
@@ -5146,7 +5151,10 @@
 005a802c r0@entry picture_db
 005a802c r2@entry upper
 005a8b24 arg0 word_pair
+005a8b24 r1@5a8b8c second
+005a8b24 r2@entry first
 005a8da4 arg0 word_pair
+005a8da4 r1@5a8df8 second
 005a8e08 r0@entry stamp
 005a8e60 r0@entry stamp
 005a8ea0 r0@5a8eb4 length
@@ -5158,10 +5166,13 @@
 005a9c14 arg0 picture_db
 005aa410 arg0 sd_archive_mounter
 005aa460 arg0 word_pair
+005aa460 r1@5aa470 second
 005aa460 r1@entry extension
 005aa47c arg0 word_pair
+005aa47c r2@5aa494 second
 005aa4bc arg0 word_pair
 005aa4d4 arg0 word_pair
+005aa4d4 r1@5aa4e0 first
 005aa4ec arg0 word_pair
 005aa638 arg0 picture_info
 005aa6f0 arg0 picture_info
@@ -6193,10 +6204,12 @@
 006502a8 arg0 slot_object
 00650310 arg0 slot_object
 00650310 r0@65031c flags_17a
+00650310 r1@650328 flags
 006512e8 r0@651344 is_item
 006515ec r0@6515f0 player
 0065179c arg0 slot_object
 0065179c r0@6517a4 state_1a9
+0065179c r2@65180c flags
 006518d8 r0@6518e4 params
 006518d8 r0@entry player
 00651928 r0@651938 params
@@ -7709,6 +7722,7 @@
 00754890 r1@entry out
 00754908 arg0 stamp
 00754b78 arg1 word_pair
+00754b78 r1@754bbc second
 00754bd0 arg0 file
 00754bd0 arg1 header
 00754c40 arg0 file
