@@ -1629,10 +1629,40 @@
 00567f34 Stops the flight (frames left -1).
 00567f40 Moves the point one frame along its flight, slowing down over its last frames; true when the flight is over.
 00567fe4 Starts the flight from the start to the target at the speed (frames clamped), with its slowing frames, and computes its step.
+00568b38 Takes the entry out of the layout list (when found) and returns it.
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
+00569b44 Sets the fade's start, target (at least 0), speed and mode.
+00569e90 Sets up the screen for 400 x 240 and resets its list.
+00569ebc Sets up the screen's viewport and projection for the size.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
+0056a534 Binds the object to the source's second word.
+0056a53c Queries the file request's state (under the file lock); 0 without a request.
+0056a58c Opens the file request through the file device manager once (under the file lock); true when it did.
+0056a5fc Reads from the file request (under the file lock); the amount read.
+0056a664 Scales the color down so its largest channel is at most 1.
+0056a758 Starts the split load with the default heap (0x975c38), not compressed.
+0056a94c Starts the compressed split load with the default heaps.
+0056a99c Starts the compressed split load with the given heap.
+0056a9bc Cancels the split load: queues it for release (state 6) or, while it reads, marks it to cancel; true when it is already idle.
+0056aa98 Starts the split load without a heap.
+0056aab8 True when the split load is in state 3, 4 or 5.
+0056ae38 Moves the angle toward the target by a fraction (1 / divisor), at least the minimum and at most the maximum step.
+0056aedc Moves the 16-bit angle toward the target by a fraction (1 / divisor), at most the maximum step.
+0056af2c Moves the 16-bit angle toward the target by a fraction, at least the minimum and at most the maximum step; the difference left.
+0056b288 Blends the color toward the target, clamped.
+0056b5a4 Stores the clock offset (0x95c4e8) in the save (+0x62120), marking it when flagged, and clears the change flag.
+0056bd04 Restores the clock offset from its saved copy (0x95c4f0) and applies it.
+0056bdec Reads the system time into 0x95c518.
+0056be90 The index (below 12) of the first sign period (month and day pairs at 0x8902b6) that starts after the date.
+0056c3d4 Bit 4 of the clock flags (0x95c4d2).
+0056c6d8 Sets bit 1 of the clock flags.
 0056c6f0 Bit 2 of the byte at 0x95c4d2.
+0056c76c (year - 2008) mod 12.
+0056c7b0 Sets bit 2 of the clock flags.
+0056cf7c Flags the clock (bit 0, and the save's bit) while the date is before January 6, 2012; clears both otherwise.
+0056d828 Sets the message word to the villager of the record (by its table id), or runs the default.
 0056d874 For a villager id below 0x18f: clears byte +0xf of its 0x22-byte entry in the table at 0xa83aec+4 and fills its word from the word resources.
+0056d9cc Sets the message word to the name of the field object of the kind, or runs the default.
 00578bc8 When bit 4 of +0xb0a is set and there is an NPC manager: notifies it.
 00579024 Copies the data of the object found for an id (else uses +0x2e).
 0057b9dc When `enable`: keeps the two extra arguments at 0x94dfd8 and runs 00529c80 in mode 2; else returns 0.
