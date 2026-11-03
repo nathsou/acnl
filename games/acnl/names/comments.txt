@@ -1,4 +1,19 @@
+00100260 Creates the heap at 0x952c8c (of its size) in the parent.
 00100608 Initializes the system services chosen by the flags (bits 1 and 0: the main service set and the extra one); returns true.
+00100918 Destroys the heap at 0x952c88 and clears it.
+00100930 Destroys the heap at 0x952c90 and clears it.
+00100948 Destroys the work heap and clears it.
+00100960 Destroys the fader heap and clears it.
+00100978 Destroys the heap at 0x952c4c and clears it.
+001009b0 Destroys the sound heap and clears it.
+001009c8 Destroys the script heap (after its users) and clears it.
+001009e4 Destroys the weather heap and clears it.
+001009fc Destroys the real estate heap and clears it.
+00100a14 Destroys the model effect unit heap and clears it.
+00100a2c Destroys the particle heap and clears it.
+00100a44 Destroys the human animation bank heap and clears it.
+00100a5c Destroys the model effect resource heap and clears it.
+00100a74 Destroys the particle handle heap and clears it.
 00100a8c Destroys the villager part: its four extra villagers, the two boards, its records and the ten villagers.
 00100b80 Forwards to Player__destruct.
 00100b8c Destroys a player record's parts (items, letters, patterns and the rest).
@@ -12,7 +27,9 @@
 00101a00 Forwards to store_word_af75e8.
 00101a1e Whether the wide character has class bit 1.
 0010211c Skips white space and a sign, converts, and clamps to the long range on overflow (errno ERANGE).
+0010218c Skips the leading spaces of the format.
 001024e0 Returns 0xc.
+0010284c Parses the input with the format into the arguments.
 001032f6 Converts one wide character; -1 and errno EILSEQ when it has no multibyte form.
 0010369c Forwards to 00103374.
 001036a0 Forwards to 001036ac.
@@ -41,6 +58,7 @@
 00108a9c Clears a record of 18 items with their flags and its two 0x18-byte parts.
 00108ae0 Clears six item slots, then fills four with distinct items of group 0xb and two with distinct items of group 0xa.
 00108b58 Clears a reward entry, sets kind 0 and its encrypted value to 0.
+00108b88 Counts the timer down by the frames (by its state).
 00109614 Clears a 0x9c-byte town record (count 10, limit 0xf, encrypted value 0).
 00109930 Creates the game's managers and singletons at start-up, in order.
 00109a90 Loads the NPC packages (normal, normal constants, special constants) and the other startup resources; whether all loaded.
@@ -49,9 +67,11 @@
 00109cc4 Chooses the scene after boot: the debug scene (0x62) with the right buttons held or in mode 4, else the title (0x5e) or the special start (0x9c).
 00109d68 Initializes the boot object and its two request records (kinds 0x540002 and 0x800000).
 00109da8 Picks the day's items for the season: three distinct items of categories 6 and 7 and two of category 9 (with the season's field), clearing the five slots first.
+00109e64 Initializes the pattern set and its records.
 00109ff8 Clears a 0x43cc-byte town record, its part at +0x4c and its encrypted value.
 0010a0cc Stores four bytes (the fourth from the stack).
 0010a0dc Stores four bytes, the stack one second.
+0010a1a4 Advances the 6 exhibition entries (0x1228 bytes each).
 0010a2cc Initializes the new-town parts of the town flags block (+0x9c, +0x4650, +0x8b32).
 0010a400 Clears a 0x20-byte reward record (kind 0) and its four items.
 0010a44c Advances the reward by `days`: from state 1 counts its days down (to state 2 when the daily check fails), from state 0 starts it when flagged.
@@ -64,6 +84,7 @@
 0010ac50 Copies an outfit: eight items and the flag byte.
 0010acb8 Picks the museum shop's items by which collections are complete (insects, fish, fossils, art).
 0010af10 Sets the record's state: 0 clears its days, 1 starts a 7-day period and updates the town flags.
+0010af60 Clears the 0x12-byte record.
 0010af72 In state 1: counts the record's days (+0x11) down by `days`, stopping at 0.
 0010b1e4 Clears a record and its three items.
 0010b210 Picks the items for the renewal (by the notice-renewal mode table).
@@ -84,12 +105,17 @@
 0010c234 Releases the shared strings at +0xc, +8 and +4.
 0010c33c Creates the structure heap (StrcHeap) and keeps it at 0x952c5c.
 0010c37c Forwards to 0010c384.
+0010c384 Creates the heap at 0x952c44 (0x8c00 bytes) in the parent.
 0010c3c8 Forwards to 0010c3d0.
+0010c3d0 Destroys the structure heap and clears it.
 0010c3e8 Forwards to 0010c3f0.
+0010c3f0 Destroys the heap at 0x952c44 and clears it.
 0010c408 Forwards to 0010c410.
+0010c410 Creates the heap at 0x952c50 (1 MiB) in the parent.
 0010c458 Creates the design work heap and keeps it at 0x952c60.
 0010c4b8 Creates the extra sound stage heap (0x140000 bytes by default) and keeps it at 0x952c98.
 0010c50c Forwards to 0010c514.
+0010c514 Creates the heap at 0x952c40 (0x1d800 bytes) in the parent.
 0010c560 Forwards to 0010c568.
 0010c580 Forwards to 0010c588.
 0010c5d4 Forwards to 0010c5dc.
