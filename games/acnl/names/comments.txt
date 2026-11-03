@@ -1407,6 +1407,16 @@
 004eb3a0 Starts the effect slot of the reference's key when it still exists.
 004eb3e0 Stops the effect slot of the reference's key (fading out over 10) and forgets the key; true when it did.
 004eb438 Updates the effect slot of the reference's key when it still exists.
+004eb9d4 Starts fading the slot out over `frames` unless it already fades; true when it started.
+004eb9fc Binds the slot to render slot `index` and sets it up from it.
+004ec7ec Sets the model's color (+0xb8 of its resource, four floats) and its derived word.
+004ed168 Sets the float at +0x124 of the model's resource and refreshes it.
+004ed18c Sets the float at +0x120 of the model's resource and refreshes it.
+004eddd4 Adds the model and its visible materials to the render queue (opaque or translucent lists), updating the queue's node once.
+004ee2dc Sorts the render queue's entries.
+004ee534 True when the split load is ready and not in state 3.
+004ee55c Starts the split load, setting the read and write positions from its word (+0xec) the first time.
+004eee9c Finds the named entry in the model's dictionary and binds it.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
 00510878 Shuts the online client down when nothing uses it: releases the service, the shared state at 0x96b930 and the buffer (+0x24).
 00510b68 Logs out of the online service (waiting for the call to finish), then resets the session's state and timeouts.
@@ -1593,7 +1603,32 @@
 005376d4 Forwards to word_95262c_unless_95262c_set.
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
+005601b8 Sets the 8-bit color channels from the four floats, each clamped to 0 to 1 (stored in reverse order).
+0056029c Builds the shared name table from the source entries for the kind.
+005603f0 The shared critical section at 0xae544c, constructed once.
+00560650 Unlinks every node of the list and empties it.
+00560688 Links the node at the front of the list.
+00560868 Calls virtual 4 of the task's root object.
+00560930 Constructs the task entry: its 4 sub entries, cleared words and index -1, enabled.
+00560aa8 Unlinks the node from its parent and siblings.
+00560b6c Unlinks the child, then appends it as the last child of the node.
+00560bec Unlinks the node and detaches all its children.
+005615e4 Calls the function at 0x561900 with the stacked word.
+00561ba4 Zeroes the record with its last word at 0x1000.
+00564804 The index of acre (x, y) among the acres of the same kind in the 16 x 16 grid; -1 when it is not of the kind.
+00565668 Turns the direction toward the target in the xz plane, at most the step.
+005657ac Moves the point toward the target in the xz plane by at most the step (all the way for 0); true when it arrived.
+00565958 Moves the point a fraction of the way toward the target in the xz plane, the move clamped between the minimum and maximum; the distance left.
+00565a68 Moves the point a fraction of the way toward the target in the xz plane, by at most the cap.
+0056677c Under the lock, flushes the pending GPU commands (the queued ones or the buffer's range) and counts the flush.
+00567224 Unless busy, starts the loader's load (virtual 3) once when everything it needs is ready.
+00567cc8 Formats the string with the shared pair at 0x975c14.
+00567d60 Binds the source's resource (+0x22c) once, with its callback.
 00567d9c Forwards to sead__SafeStringBase_char___SafeStringBase_00567dac.
+00567f20 Calls virtual 2 of the object at +4.
+00567f34 Stops the flight (frames left -1).
+00567f40 Moves the point one frame along its flight, slowing down over its last frames; true when the flight is over.
+00567fe4 Starts the flight from the start to the target at the speed (frames clamped), with its slowing frames, and computes its step.
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
 0056c6f0 Bit 2 of the byte at 0x95c4d2.
