@@ -581,6 +581,7 @@
 00132ea8 Writes the enable commands when asked.
 001330fc Whether the child at +4 has its field set.
 001332d4 Reads the archive's file into the buffer.
+00133580 The file device for a path (arg 1): the one its drive prefix names, else the default; the rest of the \n path goes to arg 2 when given.
 00134024 Resets the GPU state's texture units.
 00134250 Calls the fatal-error hook once (when one is set) and breaks into the debugger (svc 0x3c) with the failing result.
 001342a4 Calls 00135f34 with 1 as the stack argument.
@@ -3161,6 +3162,7 @@
 005095dc Sets up the layout's animation list and inserts it among the drawn layouts by priority.
 0050a5ac Whether the current letter is hidden from the list.
 0050a710 The number of letters in the list, less one when the current one is hidden.
+0050bcb4 Constructs a layout text area: a layout object with a tag processor, an empty bounding box and no text.
 0050c424 Updates the animation object's tracks.
 0050c9a4 Clears the record and invalidates its id.
 0050ca3c Invalidates the record's id and clears it.
@@ -3373,6 +3375,7 @@
 0052953c The flooring of the current room (the default 0x234c, or the house room's, the villager's, the exhibit's) and its flag.
 0052984c Binds the named animation to the model.
 00529c80 The pool entry of message `id` (below the count at 0x887402) through 0051fc48, unless it is hidden (+0xf); 0 otherwise.
+00529cf4 A base's pre-execute step: nothing to do, always ready.
 00529d08 The pool entry of message `id` (below the count at 0x887402) through 0051fc14, unless it is hidden (+0xf); 0 otherwise.
 00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
 0052a508 Resets the fade layout: rewinds its fade animation to 0 and hides the fade pane.
@@ -3493,6 +3496,7 @@
 0053d2cc The CRC-16 (polynomial 0xa001, table built once) of the bytes.
 0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
 0053d490 Constructs a disposer and registers it as a child of the heap that contains it (when the thread has one).
+0053d530 Destroys a disposer: its heap forgets it, and it is left with the disposer list as its heap.
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
 0053dffc Whether the device has a file (path arg 2), into a flag (arg 1); false when the device is not open or \n there is no flag.
 0053e71c Tests the touch against the pane and records the hit.
@@ -3595,6 +3599,7 @@
 00567cc8 Formats the string with the shared pair at 0x975c14.
 00567d60 Binds the source's resource (+0x22c) once, with its callback.
 00567d9c Forwards to sead__SafeStringBase_char___SafeStringBase_00567dac.
+00567dac Starts loading a text layout's archive (path arg 1) with the layout allocator, and shows its text in its \n pane once it has one.
 00567e24 Builds a layout from an archive with the layout allocator.
 00567e34 Builds the layout with its allocator and archive.
 00567ef0 Destroys an archive resource accessor's reader part: its load split, then the accessor.
@@ -4597,6 +4602,7 @@
 0061402c In scene 0x2b: places the items of the first listed villager that is not leaving.
 006140b4 The field object entry for the item at the cell.
 006140b8 The field object entry for the item at the cell (the second layout).
+00614568 Constructs a dynamic collision cylinder: a world body with a cylinder shape.
 006145cc The normalized direction between two reported points.
 00614730 Adds the collider to the collision list.
 0061476c Releases a resource from the list at 0x9870a8 (when there is one).
@@ -5411,6 +5417,7 @@
 006d37e4 Counts the sale of the flagged item in the badge counters by its category (0x36, or 0x37, 0x38 and 0x92).
 006d39a8 True when a window in the menu's list is of the special id (0x88735a).
 006d3cd4 The value of the entry with the id in the table at 0x850f0c.
+006d40d4 Whether a selection accepts a mask (arg 1): never while the EULA manager is busy; the 8 bit also in the \n scenes so flagged (with the net session in slot state 4) or when the object's flag 0x208 is set; else by \n the object's accepted mask.
 006d4724 Splits the number into its thousands, hundreds, tens and units digits (0x94fd60).
 006d5364 Releases the active children of the two controls (+0x494, +0x618) when they have them.
 006d5df4 When button `index` is animating (+0x19b2), advances it until its slot is done, then hides it and clears its bit; true when finished.
