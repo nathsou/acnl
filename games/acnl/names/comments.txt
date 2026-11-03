@@ -1051,6 +1051,19 @@
 00299094 Plays the down arrow's sound (pressed or released, by the bar's kind).
 002990d8 Finds the scroll bar's panes: its button, shadows, three buttons, bar and arrows.
 002991f4 Ends the current touch by its kind (bar, arrows or thumb) and resets it.
+002993ac When the thumb's pressed state changes, plays its press animation (and, while dragging, its sound).
+002999ac Sets the bar's style (+0x444) and plays it on the bar and its two arrows.
+0029a5f8 Starts the menu state (kind 0x20c, 0xb, 7) and tells the menu selection.
+0029b840 Sets bit `index` (below 399) of the bit set.
+0029b868 Clears the 50-byte bit set.
+0029bde8 The half-tile coordinates of the cell (two per tile, by the tile's shape).
+0029bfa4 Stores the 6 items of the outfit into outfit slot `index` (+0x18) of the player (the first slot's player in a session) and refreshes its view.
+0029c964 Sets the state and clears its stage.
+0029c974 Sets state 2 with the word.
+0029cc7c Resets the 10 network entries (kind 0x24, index 0xa5) and their sent flags.
+0029cd5c Copies the 63 template entries (from template 9) and resets their kinds and sent flags.
+0029ce80 Resets the 63 entries' kinds and, when idle in a session, applies them as templates; clears their sent flags.
+0029d150 Zeroes the 64 bytes at +0x10.
 002a2850 Detaches the layout at +0x24 from the layout system.
 002a2ad0 Releases the layout at +0x24.
 002a324c Stores the id with its priority in the first free of the 10 entries (counting it), else replaces the lowest-priority one.
