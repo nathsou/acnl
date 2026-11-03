@@ -5225,6 +5225,7 @@
 005daf1c Empties the selected pocket slot (below 16) of the current player.
 005dc374 Copies two C strings (args 1 and 2) into the object's strings at 0xc and 0x38.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
+005dd400 Copies the object's names from C strings.
 005dd51c Copies a C string (arg 1) into the object's string at 8.
 005dd570 Assigns the message to the string and records its flag.
 005dd5b8 Formats the number with three digits into the string.
@@ -5270,12 +5271,14 @@
 005ea8f8 Attaches the window to the message store and restamps its time.
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
 005ec990 Starts reading a UTF-16 text (arg 1): the first character's width (2, or 4 for a surrogate pair).
+005f0bc4 Destroys a script insert: its words.
 005f10b0 Starts loading the resource (split or plain); whether it started.
 005f1138 Constructs a script loader's load split: a font source and a load split, nothing loaded.
 005f11b4 Sets the talk target's word slot (its virtual function 33).
 005f1344 Sets the talk target's text (its virtual function 39).
 005f32f8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 005f3d70 Runs the talk script's command (its kind).
+005f4860 Copies a C string into the object's string.
 005f6b44 Formats the amount with its separators for the region.
 005f6dcc Scans the text table for the entry.
 005f6eb0 Formats the number with its digits and the region's separators.
@@ -5486,6 +5489,7 @@
 00621b98 Handles a station's state as the host: records it in the station mask and sends the answer records.
 00621cf4 Initializes the station's parts.
 00621da4 Activates a station slot and, when the session station takes over another one, tells the other stations \n both slots' new states.
+00621f0c Sets a station slot's value and its entry id, offline or from the net session.
 006220f8 Constructs a net confirmation state machine: no station, its three flag pairs cleared.
 00622158 Returns at once.
 0062217c Stores the current player's short id (or clears it), resets the peer table (006221e4) and marks it ready (+0x42aa).
@@ -7069,6 +7073,7 @@
 0075a90c Copies the first byte of the source text (+0x10) to `out`.
 0075a91c Copies the first byte of the source text (+0x10) to `out`.
 0075ac90 Whether the filter has an id (flag 1, +4), a second id (flag 2, +8) or a non-empty string (flag 4, +0x10).
+0075ad18 Whether a list entry matches (by its flags and iterator).
 0075ad90 Measures the text from +0x14 to the start of the last line (table +0x20) with the chip measure processor (+0xb8).
 0075b208 Whether the condition kind (byte +8 of its data) holds at a time: a month (1-12), a season (13-16), snow, or one of four event periods; true for 0 and unknown kinds.
 0075b438 Byte +7 of the condition data when it is below 3, else 0.
