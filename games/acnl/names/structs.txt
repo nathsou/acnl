@@ -60,6 +60,7 @@ Object_002d70b8_0 BsLightDiffuseBase__DiffuseLightHioNode
 Object_002e5680_0 sead__SafeStringBase_char_
 Object_002ee898_0 sead__SafeStringBase_char_
 Object_002ee938_0 sead__SafeStringBase_char_
+Object_002f6a30_0 Model
 Object_002f7c90_1 BufferCursor
 Object_002f7ccc_1 BoundedWideCursor
 Object_002fe7f4_0 script__WordFix_33u_
@@ -75,6 +76,8 @@ Object_003059f8_0 Pattern
 Object_003088bc_0 script__WordFix_9u_
 Object_0030eff4_0 script__WordFix_60u_
 Object_0031032c_0 script__WordFix_60u_
+Object_0031237c_0 Villager
+Object_00312ae0_0 Villager
 Object_00314a1c_0 ListCursor
 Object_00314a9c_0 ListCursor
 Object_00314b58_0 ListCursor
@@ -100,6 +103,7 @@ Object_0055fcf4_0 sead__TaskMgr
 Object_00567ce4_0 sead__SafeStringBase_char_
 Object_00567dac_0 sead__SafeStringBase_char_
 Object_00569544_0 FrameControl
+Object_005817f0_0 GridRect
 Object_0058e1ac_0 event__EventBase
 Object_0058ed38_0 event__EventBase
 Object_0058f4cc_0 event__EventBase
@@ -120,6 +124,7 @@ Object_005dd400_0 sead__SafeStringBase_char_
 Object_005e34c4_0 MessageRef
 Object_005e3550_0 MessageRef
 Object_005e3888_0 script__WordPtr
+Object_005e49c0_0 MessageChoice
 Object_005e6bf8_0 script__WordCPtr
 Object_005f1138_0 script__Loader__LoadSplit
 Object_005f4860_0 sead__SafeStringBase_char_
@@ -144,6 +149,11 @@ Object_00713bf0_0 RingBuffer
 Object_007407a0_0 Ramp
 Object_00741fcc_0 IdTable
 Object_00742294_0 IdTable
+Object_00750ed0_0 AcFtr
+Object_007551f4_0 PhotoRange
+Object_00755718_0 PhotoNumber
+Object_0075572c_0 PhotoNumber
+Object_00755758_0 PhotoNumber
 Object_008156fc_0 sead__SafeStringBase_char_
 Object_0081c694_0 script__WordFix_11u_
 Object_0081c8b8_0 script__WordFix_12u_
