@@ -36,6 +36,7 @@
 0010211c Skips white space and a sign, converts, and clamps to the long range on overflow (errno ERANGE).
 0010218c Skips the leading spaces of the format.
 001024e0 Returns 0xc.
+001024fe A wide character's class flags (C ctype for characters up to 0xff, with the derived classes added).
 0010284c Parses the input with the format into the arguments.
 001032f6 Converts one wide character; -1 and errno EILSEQ when it has no multibyte form.
 00103374 Formats the float in fixed form.
@@ -997,6 +998,7 @@
 001b1010 Loads the six static data tables; true when all loaded.
 001b1184 The save's entry (at +0x5d900) for the index, or the first one.
 001b1208 Finds a spot in the town for the kind.
+001b1308 Recreates the resource manager's heaps and releases what they held.
 001b1900 Takes the received letter (version 3, newer than the current one) when its checksum over 0x28c bytes matches and its letter is valid; true when taken.
 001b19ac Constructs an empty received letter record.
 001b19dc Adds to the progress; in states 1 and 2 it moves to state 2 once the goal (+4) is reached.
@@ -1096,6 +1098,7 @@
 001c0f64 Marks the sound moved (+0x94); its kind byte.
 001c0fdc Constructs the NPC sound holder with full volume, stopped.
 001c1e54 Starts loading the indoor jump data (unless loaded) on a heap (arg 1); 1 once started or loaded.
+001c1eb8 Starts loading the ground jump data on the field heap (none: done); 1 once started.
 001c1fcc The 0xa00-byte layout block of id (from the first table for ids up to 0x108, else the second); null when it is not loaded.
 001c2040 The 0xa00-byte layout block of id from the first table; null when it is not loaded.
 001c2074 The 0xa00-byte layout block of id from the second table; null when it is not loaded.
@@ -1185,6 +1188,7 @@
 001dc6e8 Visits the structure's rectangle, placing its cells.
 001dc87c Finds the rectangles where the structures may go.
 001dcb90 Finds the rectangles where the structures may go (the second rule).
+001de39c Starts loading the structure data on the real estate heap (none: done).
 001de400 Copies the 4-byte entries of variant `index` of the layout table at 0xac3750 into the buffer when it fits; their count, or 0.
 001de4a8 Clears the bits of field `index` (2 bits each) given by the value plus 1.
 001de4c0 The total of the 6 two-bit fields (3 counts 2, 1 or 2 count 1).
@@ -1246,6 +1250,7 @@
 001e4578 Places item `index` (below 18) in the room or the field once, when its owner is the current player.
 001e46e8 Places item `index` (below 6) in the room or the field once, when its owner is the current player.
 001e51f0 Sets the scene's time of day.
+001e546c Renews the town's notices for a new day: plants field items, updates the town time, and stamps the day.
 001e5600 Updates the town's time from its stamp.
 001e57e8 Resets the request record with mode 0x20001800.
 001e5820 When loaded, releases the loader at 0x982018 and resets its state to 4.
@@ -2238,6 +2243,7 @@
 002f86f0 Stores the half at +0xa0 + index * 2 (index below 4) of the shared NPC info.
 002f8720 Copies count (arg 2) bytes from src (arg 1) to dst (C memcpy); returns dst.
 002f872c Picks a random entry of the weighted table at 0x94d7b0.
+002f8848 Lowercases a wide character (ASCII only; others unchanged).
 002f8b78 Adds the two doubles when both are finite.
 002f8ba8 Compares the two doubles when neither is infinite or NaN.
 002f8bd8 The class of a double (r0, r1): 0 zero, 4 subnormal, 5 normal, 3 infinity, 7 NaN.
@@ -2386,6 +2392,7 @@
 00305280 Initializes an entry of kind `kind` (0, 1 or 2); kind 2 also sets a save flag.
 00305330 Sets the frame rectangle (+0x60c) from the N_frame_pos_00 pane, in screen coordinates (centre 160, 120).
 0030556c Forwards to daily_event_check_58e228.
+0030560c value mod 10 (signed).
 00305784 Refreshes the mail view's page (and its letter, when asked).
 003059ec Forwards to all_insects_recorded.
 003059f0 Forwards to all_fish_recorded.
@@ -2496,6 +2503,7 @@
 0030984c Forwards to town_event_ready_for_player.
 00309850 Forwards to town_event_check_same_day.
 00309854 Forwards to the function at 0x69f26c.
+00309970 Whether a villager's memory entry 7 matches the player in the state block's record (when that record is \n flagged).
 003099d0 The value (0xa83370 or 0xa83374) of the first of bits 9 and 10 set in the bit set; -1 when neither is.
 00309a44 True when the villager's birthday (month and day of its table entry) is the given day (today when null).
 00309bbc Forwards to the function at 0x5e90cc.
@@ -2651,6 +2659,7 @@
 00317a50 Starts the split load, setting the read and write positions from its word (+0xec) the first time.
 00317a88 Draws the string with the renderer's font and color.
 00317cc8 Entry `index` of the resource file's dictionary (offset +0x20, 0x10-byte entries from +0x28), resolved from its self-relative offset; null when absent.
+00317d8c Destroys a background guard box: resets it and destroys its moving background.
 00317e2c Destroys a resource loader: its load split, then (when a resource is set) releases the resource file under \n its graphics context.
 00317eac The byte cell (x, y) of the array.
 00317ec4 `value` limited to [low, high] (signed).
