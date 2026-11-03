@@ -847,6 +847,74 @@
 00624d1c Copies 0x80 bytes.
 00624f14 Clears the two flags (+0x14, +0x18) of station `index` (below 4).
 00624f30 Once (+0x1c): gives each of the other three stations a 0x16802-byte part of the buffer (+0), skipping this station's slot.
+00624fb4 Stores the flag of station `index` (below 4) at +0x18.
+00624fc4 Stores the flag of station `index` (below 4) at +0x14.
+00624fd4 Clears the four station parts, their two flags and the assigned flag (+0x1c).
+00625060 Clears the buffer, the four station parts, their flags and the assigned flag (+0x1c).
+006250a0 Calls 00617c84 on the network session.
+006250b0 Stores the visit kind at +0x1329d of the network session.
+006254f8 Calls the send hook (0x87bd34) with the part of station `index` (1-3) of the buffer.
+00625554 Calls the receive hook (0x87bd38) with the part of station `index` (1-3) of the buffer.
+00625678 Whether peer `index` of the session's peer list (+0xb0) is in use.
+00625740 Whether bit 3 of the flags of the session's network part (+0x7874) is set.
+00625798 Whether the stations are ready: the given station's bit in the ready mask, or every station flagged and the ready flag set (host and guest variants).
+00625870 Packs a station state into 16 bits (kind, flag, entry id, two flags and the station).
+0062593c Copies the word at +0 of the source.
+00625974 Byte +0x1329c of the network session.
+0062598c Sends the ready record to the stations in the mask.
+00625b28 Whether byte +0x223 of the network session is clear.
+00625b64 Stores a station (below 4) and its entry id (below 0xa5).
+00625b84 Copies a station entry (16 bits).
+00625b90 Clears a station entry (station 4, entry 0xa5).
+00625c20 Clears station `index` (below 4): entry 0xa5, station 4.
+00625c7c Clears the four station slots (entries 0xa5, stations 4).
+00625da4 Clears a small packet (station 4, size 0).
+00625db8 Copies up to 5 payload bytes into the packet's buffer (+4) and keeps the size (+8).
+00625e2c Clears a small packet (station 4, no buffer, size 0).
+00625ee4 Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
+00625f84 Copies the word at +0 of the source.
+0062607c Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
+00626118 Copies the word at +0 of the source.
+0062613c The rank of station `station` among the connected stations (how many connected ones come before it); 4 when it is not connected.
+006261b8 Whether the visit has started (+0x28e1 for visit kind 2, else +0x2779).
+0062624c Calls 006184d8 on the network session.
+0062625c Moves the session's close state (+0x1f0) from 0 or 1 to 2; true when it did.
+0062626c Sets +0x223 of the network session.
+00626284 As the host: sends the announcement record (0x16); as a guest: adds station 0 to the waited mask.
+006262f0 Sets +0x20b of the network session.
+00626308 Whether the session state (+0x214) is 0xb.
+00626318 Moves the session's close state (+0x1f0) from 0 or 1 to 2 with reason 1; true when it did.
+00626328 As the host: whether every connected guest (and the given station) passes 00618ecc; false as a guest.
+006263ac Sets the session's guest station (+0x1e5) to none (4).
+00626454 Clears a packet (size 0, station 4, flag 0).
+0062646c Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
+006264e0 Clears a packet (no buffer, size 0, station 4, flag 0).
+006265d0 Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
+006267a4 Calls 00618728 on the network session with the arguments.
+006267c0 Whether +0x23b of the network session is set.
+0062680c Moves the session's close state (+0x1f0) from 0 or 1 to 2 with reason 2; true when it did.
+0062681c Whether the guest station is gone: no valid session, no guest, or 0075f63c no longer finds it.
+00626880 Whether the guest has arrived (state past 4, or past 8 for the second visit kind).
+00626890 Calls 00618930 on the network session.
+006268a0 Calls 006189d0 on the network session.
+006268b0 Calls 00618a1c on the network session with a value.
+006268c4 Resets the session's record at +0x28ec and checks network part 3.
+00626930 Resets the session's record at +0x28ec and handles network part 3.
+0062697c For station `index` (below 4): releases its two template kinds (tables 0x881b8c and 0x881b90).
+00626bc8 Calls 00626a9c on the network session.
+00626bd8 After station `index` left: releases its templates, resets the global block, the NPC packets and its room data; when no station remains, resets the NPC share info.
+00626ca4 Sets +0x221 of the network session.
+00626cbc Resets the peer and stores its address pair (+8), clearing its host link.
+00626ce0 Copies a peer's id, two halves and address, clearing its host link.
+00626d14 Resets the peer and releases its host link (+0x10) when it has one.
+00626d40 Connects the peer when its address is set: drops a dead host link, then opens a new one; true when linked.
+00626df0 Creates the net game manager on the net game heap and hands it to the session.
+00628518 Clears a network record (station 4).
+00628afc Stores a 16-bit value at 0x953600 and builds a word pointer to it.
+006297a8 Stamps the current player into a record and sends it (0x10 bytes) through the link object at 0xa22020.
+006298a8 Clears a peer list header (stations 4 and 4, state 3).
+006298cc Finishes the list's part and stores this console's address (by link mode) as its own peer.
+0062a04c Drops peer `index` (below 4, under the session lock): forgets its address in the table and releases its link.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
 0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
 00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
