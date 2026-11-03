@@ -1862,7 +1862,7 @@
 001b32c8 Pattern__init_from_header
 001b3300 Pattern__import_image
 001b3340 Pattern__convert_image
-001b35b0 notify_target_001b35b0
+001b35b0 set_texture_cell_bits
 001b3684 script__WordFix_21u___WordFix_001b3684
 001b388c sead__FixedSafeString_30___FixedSafeString_001b388c
 001b39d4 script__WordPtrSv__WordPtrSv_001b39d4
@@ -2237,7 +2237,7 @@
 001cbb00 script__WordFix_33u___WordFix_001cbb00
 001cbb20 AttachedModel__update
 001cc1a8 sead__SafeStringBase_char___SafeStringBase_001cc1a8
-001ccb14 BankTable_HumanResTextureAnimBank__10u___10u_
+001ccb14 HumanBankTables__construct
 001ccc58 CommandQueue__push
 001cce78 CommandQueue__push_word
 001ccee0 CommandQueue__push_position

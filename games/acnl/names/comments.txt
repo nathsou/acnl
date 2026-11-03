@@ -1049,6 +1049,7 @@
 0018eab0 Forwards to the function at 0x8161b8.
 0018ebd4 Draws the screen's layout and its part while it is shown.
 0018ef38 Whether the screen is in its open animation.
+0018ef88 Constructs the black-to-button screen: a layout with an archive accessor and two animations.
 0018f64c For the player's slot (below 4) held by the NPC: cancels the gift and clears its links.
 0018f6a0 For the player's slot held by the NPC: sets the gift's value.
 0018f6dc For the player's slot held by the NPC: sets the gift's flag; whether it did.
@@ -1145,6 +1146,8 @@
 001af458 Releases the split load's part at 0xa18690.
 001af914 Sorts the ids by their order (from the loaded table at 0xa18690).
 001afc70 Adds the item's base form (normalized for its category) to the list when no equal item is in it yet, counting it.
+001aff90 Starts loading the stage's split (its path by mode, chosen once) on the stage heap.
+001b02c0 Constructs a selection base: a catalog base with a content node and a button action control.
 001b1010 Loads the six static data tables; true when all loaded.
 001b1184 The save's entry (at +0x5d900) for the index, or the first one.
 001b1208 Finds a spot in the town for the kind.
@@ -1173,6 +1176,7 @@
 001b32c8 Fills the pattern's pixels (0x800 bytes at +0x6c) with 0xcc and copies the header (0x26c bytes) from the source.
 001b3300 Imports the image (when given) into the pattern with the palette mode.
 001b3340 Converts the image's pixels to the pattern's palette and writes them, then notifies the listeners.
+001b35b0 Sets the high bits (arg 2) of a texture cell (arg 3, row arg on the stack): in all four quarter rows for \n wide textures of the object's later kinds.
 001b3a20 The picker color of (row, column), or 0 when the picker marks it unusable.
 001b3a44 Color `slot` (below 15) of preset palette `index` (below 12); 0 out of range.
 001b3a6c Copies the 15 colors of preset palette `index` into the pattern's palette (+0x58).
@@ -1279,6 +1283,7 @@
 001cb884 Constructs an in-and-out window: a layout with its in and out animations, shown.
 001cb8fc Destroys an in-and-out window: its two animations and its layout.
 001cbb20 Places the model on its joint's matrix with its scale and updates it.
+001ccb14 Constructs the human banks' tables: texture animations (twice), NPC tops, tools and a generic bank, ten \n entries each, with six names.
 001ccc58 Pushes a command of the kind for the target (0x28 bytes each, from +8 to the end at +0xc); true when there was room.
 001cce78 Pushes command 5 with the word.
 001ccee0 Pushes command 2 with the position.
