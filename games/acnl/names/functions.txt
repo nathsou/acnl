@@ -16649,6 +16649,7 @@
 0075009c kind_is_41
 007500b4 furniture_has_class_4_or_5
 00750894 record_flag_bit_2
+007508b0 AcFtr__item_with_direction
 00750970 AcFtr__virtual_22
 0075097c kind_is_15
 00750a2c kind_is_10_or_11
@@ -16656,6 +16657,8 @@
 00750d84 kind_is_11_or_12
 00750da0 AcFtr__virtual_37
 00750dd8 AcFtr__virtual_15
+00750e1c AcFtr__rotated_extents
+00750ed0 AcFtr__covers_an_item
 00751050 AcFtr__virtual_39
 00751058 member_address_0x5e4_
 00751224 values_7a2_and_7a3_differ
@@ -16687,6 +16690,7 @@
 00751d9c AcNpc__virtual_22
 00751dbc AcNpc__virtual_28
 00751f38 AcNpc__virtual_42
+00751f40 offset_to_object_xz
 0075219c AcNpc__virtual_45
 007521a4 angle_to_object
 007521d0 AcNpc__virtual_43
@@ -16697,8 +16701,11 @@
 00752270 AcNpc__virtual_62
 00752278 AcNpc__virtual_68
 00752370 mapped_id
+0075256c object_outside_camera_box
+007525fc position_outside_camera_box
 00752688 AcNpc__virtual_44
 00752690 AcNpc__virtual_18
+007526bc AcNpc_rec__is_on_screen
 007527d4 Actor__virtual_15
 0075281c GridCellSmall__cell_at_0075281c
 00752820 GridCellSmall__cell_at_00752820
@@ -16767,6 +16774,9 @@
 00753bb8 event__EventDate__virtual_0
 00753c4c event__EventDate__virtual_1
 00753c90 event__EventDate__virtual_2
+00753c94 TownBits__test
+007546b4 seconds_to_days
+00754890 format_exif_date_time
 00754978 field_nonzero_754978
 00754a4c entry_of_table_owner_00754a4c
 00754a70 entry_of_reference
@@ -16774,11 +16784,21 @@
 00754ac0 imgdb__PictureDbRecord__virtual_2
 00754ad8 imgdb__SdArchiveMounter__virtual_5_00754ad8
 00754b38 imgdb__SdArchiveMounter__virtual_4_00754b38
+00754bd0 read_3ds1_header
 00754d54 imgdb__CtrNandArchiveMounter__virtual_5_00754d54
 00754e54 imgdb__CtrNandArchiveMounter__virtual_4_00754e54
 00754e5c imgdb__TwlNandArchiveMounter__virtual_5_00754e5c
 00754eb0 imgdb__TwlNandArchiveMounter__virtual_4_00754eb0
+00755000 build_photo_path
+007551f4 PhotoRange__is_valid
+00755330 PhotoPath__file_name_wide
+00755384 is_name_of_4_word_chars
 007553d8 extension_index
+00755504 PhotoPath__folder_name_wide
+007555cc PhotoPath__extension_wide
+00755718 PhotoNumber__folder_valid
+0075572c PhotoNumber__equals
+00755758 PhotoNumber__differs
 007558f4 handle_value_0a
 00755900 handle_value_0a_is_unset
 0075591c handle_value_08_is_set_a
@@ -16806,6 +16826,9 @@
 00755ac4 word_is_set
 00755ad4 words_equal_00755ad4
 00755aec object_value_150
+00755cd0 AcNpcSpShop__has_id
+00756380 player_has_entry_kind_21_or_more
+00756758 index_of_entry_40
 00756cb4 current_player_pocket_with_category_4e
 00756d30 PlayerLists__first_list_has_match
 00756e9c PlayerLists__second_list_has_match
@@ -16813,6 +16836,7 @@
 00757028 linked_player_is_stored_or_none_stored
 007570b0 count_blocks_in_use
 007570ec linked_player_is_stored
+00757160 villager_personality_of_record
 00757620 scheduled_time_has_passed
 007576e4 current_player_matches
 00757a58 element_address_757a58
@@ -16820,6 +16844,7 @@
 00757a88 AcStrcCampingCar__virtual_36
 00757a90 AcStrcCampingCar__virtual_34
 00757a98 AcStrcCampingCar__virtual_30
+00757b34 position_on_surface
 00757bbc ScBoot__virtual_16
 00757bf0 return_constant_0x89a60_
 00757cfc seal_tiny_block
