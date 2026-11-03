@@ -1124,7 +1124,24 @@
 002d31ec Plays the sound at the xz position (no height).
 002d3218 Plays the sound at the position.
 002d3404 Calls virtual 4 of the slot's object for the owner (of the 4 slots).
+002d39a8 Zeroes the 6 words.
+002d3a14 Takes one from the count of slot `index` (+0xbc4) when it has a sound; the sound, or null.
+002d3f18 Clears the player's state, with a count of 1.
+002d3f6c Constructs the player's 4 sources (0x2e8 bytes each) and clears its state.
+002d3fc0 Fills the park entry from the town data with its owner and id, marked local (and flagged when asked), with full visit bits.
+002d406c Fills the park entry from the received town data with its owner and id, with the remote visit bits.
+002d4100 Clears the park entry (its town block and header) with no visitor (4).
+002d4174 Clears bits 2 and 3 of visitor `index` (below 4).
+002d4198 Clears visitor `index` and forgets it as the current visitor.
+002d41c8 Clears the park entry (its town block and header) with no visitor (4).
+002d453c Clears the block's header words, its four halves and its 0x780 bytes.
+002d4594 Clears the block's header words, its four halves and its 0x780 bytes.
+002d4a38 Converts the 40 items (keeping only real ones) and the two extra items by the rule, after moving items to the pockets.
+002d4bb4 Sets count `index` when it changes (not for negative values).
+002d4bd0 Zeroes the counts and refreshes their total.
 002d4d00 Forwards to the function at 0x2d4bf4.
+002d4d04 Increments count `index` and refreshes the total.
+002d4d18 Decrements count `index` (not below 0) and refreshes the total.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
 002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
 002e0288 Sets the flag at +0x508 and mirrors it in bit 0 of the owner's +0xb7 byte.
