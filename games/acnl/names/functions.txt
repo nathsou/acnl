@@ -7391,7 +7391,7 @@
 0032f118 BsSeadParticleDraw2D__virtual_16
 0032f240 write_depth_offset_commands
 0032f2f0 BsSeadParticleDrawDefault__do_draw
-0032f2f4 BsSeadParticleDrawBase__do_draw
+0032f2f4 BsSeadParticleDrawBase__draw
 0032f368 BsSeadParticleDrawDefault__do_create
 0032f36c BsSeadParticleDrawBase__do_create
 0032f55c BsSeadParticleDraw2D__do_execute
@@ -12143,7 +12143,7 @@
 004ec4ac g3d__modelEffect__ModelEffectContainer__destructor
 004ec574 SceneEnv__apply_layer
 004ec7ec Model__set_color
-004ec820 g3d__AmbientLight__virtual_4
+004ec820 AmbientLight__setup
 004ec8bc construct_ambient_light
 004ec8f0 g3d__AmbientLight__deleting_destructor
 004ec900 g3d__MaterialAnim__virtual_7
@@ -12257,7 +12257,7 @@
 004f023c mask_has_bit_or_index_0
 004f025c g3d__GroupTransformAnim__virtual_1
 004f026c g3d__GroupTransformAnim__virtual_0
-004f027c g3d__PointFragmentLight__virtual_5
+004f027c PointFragmentLight__setup
 004f02cc g3d__PointFragmentLight__deleting_destructor
 004f02f0 g3d__PointFragmentLight__destructor
 004f0310 Camera__enter_photo_mode

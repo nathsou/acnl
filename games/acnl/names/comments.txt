@@ -2075,6 +2075,7 @@
 00284b38 Constructs the item whose id is at 0x950806.
 00284b58 The world rectangle the camera sees, across the map's cells.
 00284ee4 The first and last cells (inclusive) the camera sees.
+00285184 Creates a fixed light's parameters: picks the parameter file by scene, season and music kind.
 00286558 Scans the table for the value.
 00286668 Starts the object's fixed animation.
 00287c4c Destroys the bingo card menu: its windows, buttons, layouts and menu base.
@@ -2423,7 +2424,9 @@
 002da33c Plays the window's in animation from 0 and marks it opening; true.
 002da424 While animating, advances the in (or out) animation until its slot is done, then stops it (releasing the button after the out animation) and marks it settled.
 002db05c Refreshes entry `index` (below 10): renders the current player's pattern of the slot into its texture and shows it by its type.
+002dc90c Destroys the design storage menu: its windows, buttons, renderers, layouts and menu base.
 002ddbac Destroys the clay figure rental menu: its name window, drag icon control, item drag window, stock window \n and menu base.
+002dfa20 Destroys the mail to another town menu: its windows, buttons, renderers, layouts and menu base.
 002dfbf0 Calls the button action node's virtual 7 (with zeros).
 002dfe08 Sets up the icon set's three icons with their values.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
@@ -2545,6 +2548,7 @@
 002ef1b8 Marks the selected notice read when the player owns the slot, takes back the selection and plays the closing animation of the current tab.
 002ef27c Shows the new mark on each tab that has unread notices.
 002efe0c Sets up the house with its free record.
+002f10b4 Destroys the bulletin board menu: its windows, buttons, renderers, layouts and menu base.
 002f29ac Destroys the friend chat log menu: its button, scroll bar, layouts, archive readers and menu base.
 002f3398 Sets the ready flag (0x9500e0) when the first resource is ready, or both flags when only the second one is.
 002f33e8 Releases the two resources and clears their flags.
@@ -2706,6 +2710,7 @@
 00303a50 Jumps to call_target_with_two_0x50_.
 00303a58 Jumps to call_target_with_two_0x8c_.
 00303b10 Copies the empty item into `item`.
+00303b1c Sends a player's first letter: builds it from its template with its item and posts it.
 00303f50 Stores a 16-bit value at +0x1d9c and marks +0x1d9e.
 00304008 Jumps to check_words12.
 003040cc Starts an NPC's wait for talk (in state 2): its emoticons and a kind-1 command.
@@ -2726,6 +2731,7 @@
 00304824 Jumps to copy_table18_item.
 0030482c Jumps to slots_slot_5_if_class_6.
 00304830 Jumps to slots_slot_4_if_class_5.
+00304868 Creates a fixed hemisphere light's parameters: picks the parameter file by scene, season and music kind.
 00304bd4 Jumps to ItemBitSet__contains.
 00304be8 Forwards to Stamp__is_after_today.
 00304bf4 Sets bit `index` (below 5) of a bit set.
@@ -2758,6 +2764,7 @@
 00305154 Jumps to 0x521dd4.
 0030516c Jumps to 0x607b88.
 00305170 Jumps to 0x6078a4.
+00305174 A fixed hemisphere light's execute step: the base's, then done (2).
 003051b8 Jumps to 0x813b08.
 003051dc Jumps to current_season.
 0030527c Jumps to byte_69_below_9.
@@ -2864,6 +2871,7 @@
 00307c44 Forwards to update_save_range_6e224.
 00307c48 Forwards to clear_table_a82b90.
 00307c4c Forwards to set_table_a82b90_entry.
+00307c54 A demo actor's post-create step: after the actor's, queues it.
 00307fcc Jumps to 0x5b743c.
 00307fd0 Jumps to 0x5b71bc.
 00307fd4 Jumps to 0x5bb2bc.
@@ -3133,6 +3141,7 @@
 00319568 Sets the bit-table bits of the villagers of the town.
 00319aa4 Sets or clears bit (column, row, page) of the bit table of `kind` (halves of 16 bits, 16 per page).
 0031a334 Fills the item description for its category (recursing for kinds 5 and 6).
+0031af8c Destroys the design select menu: its windows, buttons, renderers, layouts and menu base.
 0031b25c Constructs a script word pointing at a constant nine-character word (arg 1).
 0031b394 The locale's multibyte maximum: its stored value for multibyte locales, else 1.
 0031b3b2 Remembers the current locale of the category (copying its name) and switches to the given one.
@@ -3150,6 +3159,7 @@
 0031bdb8 Constructs a locale implementation: its name, facet vector and tables.
 0031bea0 Destroys a locale implementation: its facets (+0x18), holder (+8) and name.
 0031bebc The classic locale, built once.
+0031c020 Destroys the gift bag select menu: its windows, buttons, renderers, layouts and menu base.
 0031c1c8 Copies the holder's word and locale.
 0031c1da Maps the character through the tree of ranges (low +0xc, high +0xd): by its table, or by adding the range's offset (+0xe); unchanged when no range has it.
 0031c214 Writes the GPU commands that upload the parameter words (+0x30, count +0x28) for the program, unless it is already current.
@@ -3227,6 +3237,7 @@
 003232a8 Sets byte `index` (below 16) at +0x40; false out of range.
 003232c0 Moves the items into the pockets by category, converting them when needed.
 00324934 Calls handler `index` of the table at 0x845304.
+00325578 Deletes a hemisphere light's base: its camera node, then the light base.
 003255b4 Constructs a hemisphere light's base: a light base with black ground and sky colors (alpha 1), a \n hemisphere light, blend 0.5.
 00326360 Loads the room light switch menu's layout, animations and panes.
 00327ce8 Appends the entry to the queue, first filling it with the object's parameters when asked.
@@ -3249,6 +3260,7 @@
 0032c654 Clears the two flag bytes when the first is set.
 0032c72c Stops an instrument furniture's sound object: releases its slot, then the furniture stop.
 0032c78c Constructs an instrument furniture sound object: a furniture sound object with a sound slot.
+0032c804 Destroys an instrument furniture sound object: releases its slot, stops it and destroys the furniture sound \n object.
 0032c850 Resets the record (empty, its 10 bytes at -1) unless its stamp is today, then stamps it with today.
 0032c8c8 Removes player `index` (below 4) from the 10 entries and moves the later entries up.
 0032cb6c Sets the state byte (+0xd); entering state 1 from idle resets the counters.
@@ -3260,8 +3272,11 @@
 0032d638 Starts a furniture audio object at a point (arg 1, seen through the camera).
 0032d774 Stops a furniture audio object (when started).
 0032d7c8 Constructs a furniture audio object.
+0032d818 Destroys a furniture audio object.
 0032f240 Writes the GPU commands of the depth settings, with the depth offset (scaled when enabled) as a 24-bit float.
+0032f2f4 Draws a particle drawing base when the particle system has its resource.
 0032f808 Constructs a particle drawing base: a framework process with a heap and a draw function.
+0032f884 Destroys a particle drawing base: its heap allocator.
 0032fd1c Constructs a multi-item drag icon group: a drag icon group with its own vtables.
 003302c8 Starts the sound player unless it plays.
 00331550 Gives the villager of the record (+2) the item (+0) as its +0x8e6 item.
@@ -3279,6 +3294,7 @@
 00331d0c Destroys a furniture audio sound object: stops it (as SoundObjFurnitureAudio__stop), then the furniture \n sound object.
 003324bc Stops a music box furniture's sound (when playing) and forgets its tune.
 0033254c Constructs a music box furniture sound object: a furniture sound object with a fader.
+00332628 Destroys a music box furniture sound object: stops its sound, then the furniture sound object.
 00332688 Copies the letter (with its item and texts) into the first free of the 80 letter slots.
 003327e8 Adds an exhibition letter with the item to the 5 pending letters (0x280 bytes each); false when full.
 003328ec Constructs the 5 pending letters.
@@ -3533,6 +3549,7 @@
 004e0998 Sets the motion parameters (target, word, three halves) with no float.
 004e09c8 Appends `node` to the queue unless it is in it already.
 004e0a48 Calls slot 4 of the transform node at 0x951530.
+004e0cbc Whether a room cell is occupied.
 004e0f68 Whether the current room is a player's (indoors, flag 0x80), outside the special room.
 004e10ac Leaves 64 and 2 in the float registers.
 004e1174 Calls the function on each furniture of the room (up to the scene's count).
@@ -3630,11 +3647,13 @@
 004ec374 Constructs the model effect container: a heap allocator.
 004ec574 Applies the scene environment's layer (outside photo mode).
 004ec7ec Sets the model's color (+0xb8 of its resource, four floats) and its derived word.
+004ec820 Sets up an ambient light from the scene environment's default fog color.
 004ecbe0 Destroys a material animation: its heap allocator.
 004ed168 Sets the float at +0x124 of the model's resource and refreshes it.
 004ed18c Sets the float at +0x120 of the model's resource and refreshes it.
 004ed3dc A directional fragment light's per-frame update: unloads its split part, then updates it as a camera node.
 004ed3f8 Jumps to MapFogModel__update_world.
+004ed454 Destroys a fragment light: its resource loader.
 004ed570 Whether the model has a skeleton.
 004eda50 Finds the model's node of the kind and records it.
 004edaec Finds the model's node of the kind (the second layout).
@@ -3653,9 +3672,11 @@
 004ef3a4 Clears the model's animation slots.
 004ef50c Destroys a group skeletal animation: its elements, then its heap allocator.
 004ef77c Plays the model's animation with the blend.
+004ef9a4 Plays a morph skeletal animation on its model.
 004efa0c Destroys a morph skeletal animation: its heap allocator.
 004efb0c Sets the scene environment's layer (its lights and fog), outside photo mode.
 004f000c The scene environment's default fog.
+004f027c Sets up a point fragment light (after the fragment light): its position.
 004f0310 Points the camera at its alternative target, marks the mode on and saves and sets the friend list's flag.
 004f03d0 Updates the node's world matrix from its parent.
 004f0568 The scene environment's light of the index when it is enabled and visible, or null.
@@ -3939,6 +3960,7 @@
 00523b6c Builds the keyboard's second key table (0xad6540) for the current mode.
 00523d60 Stores the keyboard mode (0x95e0c9) and, for a mode with a value, the value (0xad6278).
 005242b8 Clears +0x99 of the keyboard object (0x95e0fc) when there is one.
+00524320 Starts loading the software keyboard's message files for the current language.
 00524478 Frees the keyboard's buffer (0x95e0e0) and its two layout parts, and clears 0x95e0e4.
 005244c0 The glyph of a character in the keyboard's font (0x95e0e0).
 005244d4 Whether the scroll moved since the last frame.
@@ -4091,6 +4113,7 @@
 0053b4cc Decodes the Base64 text into the buffer.
 0053b6fc Encodes the bytes as Base64 (the URL-safe alphabet when asked), padding with '='.
 0053b844 Seeds the 4-word random state from the system tick (with the Mersenne Twister initializer).
+0053bb14 A thread's run step: opens its archive file on the thread (checking the result).
 0053bc7c Constructs the main thread object for the current thread: its priority, stack and a pool of 32 messages.
 0053c024 Calls the function at 0x537c28 with the two words as a pair.
 0053c300 Allocates `size` bytes with the alignment from the front of a free block, splitting off the rest.
@@ -4186,6 +4209,7 @@
 0055c73c Decodes the base64 text into bytes.
 0055c96c Encodes the bytes as base64 (the standard or the URL alphabet), with padding.
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
+0055cd54 A process thread's run step: opens its archive file on the thread (checking the result).
 0055d510 Clamps the four channels to [0, 1].
 0055d5c0 Interpolates between the two vectors by the clamped factor.
 0055d634 Interpolates between the two colors by the clamped factor.
@@ -4617,6 +4641,7 @@
 0059baa8 Calls the field objects' function at 0x14fc70 with the two values; -1 without the field objects.
 0059c090 The angle from the object to the item's cell (with the item's offset by its kind).
 0059c7a8 Calls the field objects' function at 0x14fc78 with the values (not for id -1).
+0059c7e0 Recreates the field object process heaps (the design manager's and setup's).
 0059c934 The field object at the cell (inside the map), marking it to refresh (state 0xa) when flagged; null when none.
 0059cae8 Binds the texture chosen by the town's setting (save +0x621ce) to the field object's material.
 0059cd24 Constructs a coin stone field object for a field item: its model, collider and placement.
@@ -5196,6 +5221,7 @@
 005d7a4c Builds the text color command from the tag's value.
 005d7a8c Reads a text command at a position (arg 1): its kind, parameter size and data, and where the text \n continues.
 005d8274 Constructs a talk insert: its words.
+005d8ec8 Constructs a 1536-character script word, empty.
 005daf1c Empties the selected pocket slot (below 16) of the current player.
 005dc374 Copies two C strings (args 1 and 2) into the object's strings at 0xc and 0x38.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
@@ -5239,6 +5265,7 @@
 005e9fdc Measures the text box's text bounds.
 005ea158 Formats the number with three digits into the string.
 005ea21c Appends a text code's value (arg 2: 16-bit for size 1, 32-bit for size 2) to a writer's cursor (arg 0) when \n it fits before the end (arg 1); 1 when written.
+005ea294 Filters a character for the keyboard: maps it through the filter table, or drops it.
 005ea540 The shared one-character script word, constructed the first time.
 005ea8f8 Attaches the window to the message store and restamps its time.
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
@@ -5269,6 +5296,7 @@
 00602604 Sets the choice's message, resets the selection and sets its flag.
 00602938 Requests closing the window with the flag, and closes the choice when one is open (state 8).
 00602a90 Resets the window's state, page icon and (when asked) its text; restamps the owner's time.
+00603598 Shows the system error message (in the error modes, while under the count limit).
 00603a58 Opens the choice with its message and, when the default is in range, preselects it; the choice's mode.
 00603ab0 Opens the choice.
 006045f8 Scans the message's tags for the one in the range.
