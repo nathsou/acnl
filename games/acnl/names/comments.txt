@@ -1817,6 +1817,9 @@
 0030306c The item's placement kind (2 bits), or 2 without data.
 00303274 Sends the prizes of the finished second contest to the ranked players by letter.
 003035dc Initializes an entry of kind `kind` (0, 1 or 2) with its two constants; kind 2 also updates two save flags.
+003036c0 Jumps to 0x75db08.
+003036c4 Jumps to 0x70c098.
+003036cc Jumps to 0x827280.
 003037e8 Refreshes the villager house's items for the current time.
 00303b10 Copies the empty item into `item`.
 00303f50 Stores a 16-bit value at +0x1d9c and marks +0x1d9e.
@@ -1836,9 +1839,29 @@
 00304ce4 Makes the held node the head of the list at 0xad5638 unless 004dbc3c accepts it.
 00304ed0 Forwards to special_slot_value.
 00304ef0 Calls 00304f30 with the slot value 4.
+00304f1c Jumps to 0x56b538.
+00304f20 Jumps to 0x615554.
+00304f24 Jumps to 0x5cad7c.
+00304f28 Jumps to 0x6306f0.
+00304f2c Jumps to 0x6a6840.
 00304f30 The special item's variant for the slot (below 7).
 0030504c Forwards to reset_ad5074_entries.
+00305050 Jumps to 0x6c9240.
+00305054 Jumps to 0x6e4dc4.
+00305058 Jumps to 0x81fbcc.
+0030505c Jumps to 0x81fcb0.
+00305060 Jumps to 0x81fc44.
+00305074 Jumps to 0x6d36d4.
+00305078 Jumps to 0x6a50f4.
+003050dc Jumps to 0x7ca97c.
+003050e0 Jumps to 0x7ca700.
+003050e4 Jumps to 0x58c998.
 0030514c Forwards to copy_table_9516c0_entry.
+00305150 Jumps to 0x535798.
+00305154 Jumps to 0x521dd4.
+0030516c Jumps to 0x607b88.
+00305170 Jumps to 0x6078a4.
+003051b8 Jumps to 0x813b08.
 00305280 Initializes an entry of kind `kind` (0, 1 or 2); kind 2 also sets a save flag.
 00305330 Sets the frame rectangle (+0x60c) from the N_frame_pos_00 pane, in screen coordinates (centre 160, 120).
 0030556c Forwards to daily_event_check_58e228.
@@ -1850,11 +1873,19 @@
 00305a3c Forwards to all_art_recorded.
 00305a54 Forwards to count_recorded_art.
 00305ad0 Forwards to museum_complete.
+00305b74 Jumps to 0x6bc4c4.
 00305b7c How many of the 72 insects (category 0x24) have a record state.
 00305bcc How many of the 72 fish (category 0x27) and 30 sea creatures (0x28) have a record state.
 00305c60 Forwards to set_mode_9507f0.
 00305c64 How many of the 67 fossils (category 0x2c) have a record state.
+00305cb4 Jumps to 0x71c534.
+00305cb8 Jumps to 0x71c60c.
+00305cbc Jumps to 0x71c548.
+00305d94 Jumps to 0x71c330.
+00305d98 Jumps to 0x71c344.
+00305d9c Jumps to 0x71c3ac.
 00305da0 Forwards to Stamp__is_today.
+00305e84 Jumps to 0x710c3c.
 00305e88 Clears the pointer at 0x950170 when it is `object`.
 00305ff4 Forwards to object_data_of_id.
 00305ff8 Forwards to copy_object_data_of_id.
@@ -1864,12 +1895,32 @@
 003061b4 Forwards to GridRect__height.
 003061b8 Forwards to GridRect__width_2.
 00306354 Builds a mail-loading adapter on the stack, hands it to the optional visitor, then loads the mail.
+00306404 Jumps to 0x7116fc.
 00306928 Forwards to AcNpc_rec__check_b07.
 0030692c Forwards to AcNpc_rec__notify_npc_manager.
+00306930 Jumps to 0x69579c.
+00306934 Jumps to 0x6a8bf8.
+00306938 Jumps to 0x6a1b9c.
+0030693c Jumps to 0x5bfb70.
+00306940 Jumps to 0x6e0a00.
 00306944 Forwards to reset_held_item_record.
 0030694c Forwards to reset_entry_lists_9ab170.
+00306950 Jumps to 0x6d4174.
+00306954 Jumps to 0x58d3a0.
+00306958 Jumps to 0x5b3e2c.
+0030695c Jumps to 0x524b08.
+00306960 Jumps to 0x601c38.
+00306964 Jumps to 0x52ec00.
+00306968 Jumps to 0x521dd8.
+00306970 Jumps to 0x5b4130.
+00306c6c Jumps to 0x7569d0.
+00306c74 Jumps to 0x5bc010.
 00306c78 Forwards to mode_308e80_is_26_or_a.
 00306cf0 Stores the slot at +0x95e and points +0xaa0 to its 16-byte entry of the table at 0x953864 (0 for slots from 0x3f).
+00307108 Jumps to 0x5bc1fc.
+00307160 Jumps to 0x5bd974.
+00307164 Jumps to 0x5bd388.
+00307168 Jumps to 0x5bcd4c.
 00307220 The world position of the cell holding the building of `id`, at its ground height; false when there is none.
 00307560 Forwards to index_of_value_in_3.
 003075cc Allocates `size` bytes from the current heap, 4-byte aligned.
@@ -1888,6 +1939,9 @@
 00307c44 Forwards to update_save_range_6e224.
 00307c48 Forwards to clear_table_a82b90.
 00307c4c Forwards to set_table_a82b90_entry.
+00307fcc Jumps to 0x5b743c.
+00307fd0 Jumps to 0x5b71bc.
+00307fd4 Jumps to 0x5bb2bc.
 00307fdc Stores a word at +0xf8 of the owner (+0xc) when its +0xc matches +0x10.
 0030800c Bit `index` (fewer than 40) of the flag bytes; 0 for a larger index.
 0030802c Releases an entry (unless of state 2), and when its object is gone sends message 0x40 with the slot and applies it to the table at 0x953874.
@@ -1896,10 +1950,15 @@
 00308728 Initializes the villager's memory of the player with their identity and names.
 003089cc Forwards to run_action_of_kind.
 003089d4 Picks a villager from the table (of the allowed types) for an empty slot, moves it in and schedules its arrival.
+00308d44 Jumps to 0x51dcbc.
 00308d4c Clears a villager's record (0x2518 bytes): its identity, player memories, letter, design pattern and items.
 00308e80 The kind (+0x1b) of the first event in the list at 0x9524dc for slot 0; 0x26 (none) when the global object byte is 3, the list is empty, or the kind is 1, 3, 6 or 0xe.
 003090fc Clears bits 8-10 of the ten entries of the table at 0xa82b90 and resets the two ranges.
 00309168 For each of the 10 villagers in use: clears two bits of its flags word (+0x2510) when set, and a bit of each of its 16 player memories (0xf2 bytes each, from +0x8ee).
+00309444 Jumps to 0x5bcb1c.
+00309448 Jumps to 0x5bbd8c.
+0030944c Jumps to 0x5bb2fc.
+00309450 Jumps to 0x5bc500.
 003094f0 Finds the cell of building `id`, unless today's construction replaces it (only the kinds 0x50 to 0x57 and 0x84 stay findable).
 003095a4 Forwards to record_is_ready.
 003095a8 Forwards to record_check_same_day.
@@ -1912,12 +1971,21 @@
 00309a44 True when the villager's birthday (month and day of its table entry) is the given day (today when null).
 00309bbc Forwards to the function at 0x5e90cc.
 00309bd4 Whether the day's check of the kind allows it (not on a visit, and the counter for today).
+00309eb0 Jumps to 0x6f2858.
+00309eb4 Jumps to 0x5b81f0.
 0030a344 Forwards to the function at 0x76880c.
 0030a390 Refreshes the villager's record book and counts for the day.
+0030a480 Jumps to 0x6bc168.
 0030a484 Forwards to set_half_7db.
 0030a70c Picks a random valid town villager (by the index rules) and stores it at 0xa83388.
 0030a8f8 Releases the menu's active buttons and children, then updates its layout.
 0030aac8 Updates the schedule's entries (below 0x21) for the day.
+0030ac60 Jumps to 0x56c798.
+0030ac64 Jumps to 0x698e64.
+0030af68 Jumps to 0x62cff8.
+0030af6c Jumps to 0x62cfe4.
+0030af70 Jumps to 0x56cf4c.
+0030af74 Jumps to 0x56cf64.
 0030af7c When the toggle (+0xae5) matches `on`, plays its animation (+0x458) to the other side and flips it.
 0030b018 Resets the network menu: its buttons, toggle (from the session's state), the peer indicator (any of the 32 stations) and animations.
 0030b154 Forwards to the function at 0x6b9904.
@@ -1930,7 +1998,9 @@
 0030bb48 Forwards to the function at 0x6b9d30.
 0030bc44 Whether villager `id` (below 0x18f) has a type (the low nibble of its data's +0x1c) of 0, 1 or 2.
 0030bc90 Schedules the villager's move (in days) and sets its moving flags and state.
+0030bd90 Jumps to 0x582cc0.
 0030bd9c Moves a new villager into the slot: clears it and copies its identity, names, catchphrase and house from the table entry.
+0030be88 Jumps to 0x7ca5e0.
 0030be90 Forwards to the function at 0x6ab5b8.
 0030be94 Forwards to the function at 0x6515ec.
 0030bec8 Forwards to the function at 0x68a3fc.
@@ -1942,7 +2012,10 @@
 0030c0c4 Forwards to the function at 0x602938.
 0030c0cc Marks in the bit set the villager slots that can be picked (valid, not in the excluded pair).
 0030c198 Forwards to TimeRecord__set_now.
+0030c398 Jumps to 0x5876c8.
 0030c39c Forwards to the function at 0x5b59c4.
+0030c3a0 Jumps to 0x694660.
+0030c3a4 Jumps to 0x69471c.
 0030c3b4 Forwards to the function at 0x605628.
 0030c3e4 Sets villager `id`'s bit in the two bit arrays of the save data (+0x196fc and +0x1972e).
 0030c4bc Forwards to the function at 0x7ce640.
@@ -1953,6 +2026,8 @@
 0030c4f4 Clears the 4 x 2 records of 0x40 bytes (kind 0x21, empty identity) and the trailing index byte.
 0030c578 Sets the record's kind 0x21, count 1 and index 0xff.
 0030c824 The villager's entry (0x50 bytes) in the runtime table at 0xa82c58, found by its id; null when it is not in the town.
+0030c860 Jumps to 0x7ca59c.
+0030c864 Jumps to 0x7ca62c.
 0030c9f8 Forwards to the function at 0x6055e0.
 0030ca08 Forwards to the function at 0x6a2c58.
 0030ca0c Forwards to grid_block_address.
@@ -1968,6 +2043,7 @@
 0030cc18 Forwards to the function at 0x6fae98.
 0030cc34 Forwards to send_star_letter.
 0030ce40 Forwards to badge_level_total.
+0030ce50 Jumps to 0x7ca550.
 0030ce54 Forwards to check_stamp_time.
 0030d1b8 Forwards to the function at 0x51f58c.
 0030d9f0 Forwards to find_matching_name_pair.
@@ -1978,16 +2054,21 @@
 0030dbe8 Picks a villager to move out (valid, not protected) and schedules its move.
 0030dcdc Cancels the villager's move: clears its moving state and sends the cancel letter.
 0030ddb4 Jumps to 0x51f2b0 with the fixed argument.
+0030ddc0 Builds the bell bag item of the amount (below 8, else 100 and more).
+0030dfa0 Calls the function on each of the town's records.
 0030e184 For a record of kinds 0xe to 0x11 that names a town player: moves it to mode 2 when its flags say so, else resets it when its stage no longer fits.
+0030e424 Jumps to 0x565ec8.
 0030e454 Picks a random slot from the bit set of candidates of the given kind.
 0030eaf0 The index of the town villager matching the record, or -1.
 0030ebec Builds the records of the villager's move (items, halves) for the players who know it.
 0030ef70 Schedules the move of the villager whose table entry allows it.
+0030f4fc Copies the player's identity and town into the record.
 0030feb4 Sets the state byte (+0x24) of the 10 runtime villager entries to 0x21, sparing (unless forced) those in state 0x12 or of class 0xb.
 00310530 Flag `index` (fewer than 10) of the villager (bits of +0x1f and +0x20); false for no villager.
 00310a30 Clears the villager part of the town data: villagers, their records, the paired player records and the timed records.
 00310cf8 The daily update of the villager part: moves, catchphrases, clothing, letters and flags of each villager.
 0031108c Moves the villager out: copies its block to the moved-out list, removes it from the id list and clears its slot.
+00311228 Whether the network part is ready for the object.
 003113b8 Constructs an empty scheduled record (kind 0x21, invalid time).
 00311744 The 0x58-byte data entry of villager `id` (below 0x18f); null without the table.
 00311f7c Adds the friendship (8-bit, saturating) to the villager's memory of the player.
@@ -2002,9 +2083,11 @@
 00312c4c Formats the arguments into a buffered wide string on the stack and stores the size at +0x40.
 00313414 Sets the time stamp to the invalid value.
 00313a40 Whether villager `id` (below 0x18f) has type 0 (the low nibble of its data's +0x1c).
+00313a84 Finds the resource of kind 0x16.
 00313a8c The address of the shared object at 0xab7f30.
 00314258 Steps the time stamp back by its day count.
 00314278 Whether (word r0, signed bytes 0 and 1 of r1) equals (word r3, the same bytes of the stack argument).
+003142b8 Clears the villager's mood record and rolls its kind (below 4).
 003142e0 Rolls the villager's daily random values (from 90 to 110 and more).
 00314a1c A cursor past the last element of the list: its index is the list's count (virtual function 4).
 00314a9c A cursor on the first element of the list (virtual function 5 copies the element), at index 0.
@@ -2062,10 +2145,13 @@
 0031c7dc Sets up the window's parts with dummy layouts.
 0031d00c Updates the button control at +0x608 and releases its active child once it is ready.
 0031d048 Sets up the button controls and their panes and animation targets.
+0031d258 Sets up the message box's layout and font.
 0031d6e8 Stores the chosen appearance value (bits 3 to 5) in the part (bits 0 to 2) of the player's look, then updates the player model for that part.
 0031d8f8 Stops the model's animation (when asked) and resets the second slot (+0x60) when it is playing.
 0031df9c Stops the slot's animation in the model and releases its resource.
 0031e0d8 Resets both animation slots (+0x2c, +0x60) and their material animations, and forgets the model.
+0031e228 Fits the message box's width to its current line.
+0031e314 Places the message box's cursor at the end of the text.
 0031e510 When the window is closed (+0x4ec), sets its text (message, its arguments) and opens it.
 0031e594 Sets the window's text (message and arguments): refreshes it when open, else opens it.
 0031e810 Hides the layout's root pane group (clears its visible bit) and lays the layout out again, when it was shown.
@@ -2088,12 +2174,17 @@
 00320584 Starts or stops the button node of entry `index` of the shown page.
 003205cc Sets byte +0xd9 of entry `index` of the shown page.
 0032069c Sets the visibility bit of the pane at +0x280.
+003206bc Plays the icon layout's animation for the state.
 003207d8 Sets the visibility bit of the pane at +0x150 and updates the layout at +0x130.
 00320cec Sets the icon button's state and plays its animation.
 00320d54 Refreshes the icon button for the current scene and player.
 003219e8 Registers the 7 sound bank entries (ids 0x40 to 0x46) with their parameters from 0x94ccc0.
+00321a80 Starts the sound slot with its value, unless it plays.
 00321ae8 Forwards to SoundSystem__sound_value on the sound system.
 00321af8 Runs the function at 0x13c1d4 on the sound system.
+00321cd4 Loads the room music player's data on the stage heap.
+003220e0 Plays the room music player's song (from its ready state).
+0032245c Stops the room music player (in its playing states).
 003232a8 Sets byte `index` (below 16) at +0x40; false out of range.
 003232c0 Moves the items into the pockets by category, converting them when needed.
 00324934 Calls handler `index` of the table at 0x845304.
