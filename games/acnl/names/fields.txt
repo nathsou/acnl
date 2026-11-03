@@ -4731,6 +4731,7 @@ Frame_008266bc 0 archive_file
 Frame_0082d508 10 object_10_vtable
 Frame_0082d508 20 object_20_vtable
 Frame_0082d508 28 object_28_vtable
+GroupFile 10 section_count
 HumanFaceAnimControl 0 vtable
 HumanModel 0 vtable
 IconBase 0 vtable
@@ -5200,11 +5201,14 @@ Passport 0 vtable
 Passport 12cc word_fix_33u_vtable
 Passport 24 passport_vtable
 Passport e30 simple_comment_window_vtable
+PhotoNumber 0 folder
+PhotoNumber 2 file
 PostDragWindow 0 vtable
 PostDragWindow 2aa8 drag_icon_group_vtable
 PostDragWindow 2ab4 drag_icon_group_vtable_2ab4
 PostDragWindow 458 control2_button_vtable
 PostDragWindow 53c control2_button_vtable_53c
+PosterTalkRecept 4 talk_owner
 ProButtonNode_rec 0 vtable
 ProButtonNode_rec e0 pro_button_node_rec_vtable
 ResourceLoadAsyncSkeletal 138 object_resource_vtable
@@ -5234,6 +5238,7 @@ SoundObjFurnitureOrgel 0 vtable
 SoundObjHaniwa 0 vtable
 SoundObjRiver 0 vtable
 SoundObjRiver 34 slot_table60
+SoundObjRiver 44 sound_handle
 SoundObjWithMelody 0 vtable
 SoundObjWithMelody b8 sound_melody_player_one_seq_base_vtable
 SoundObj_1_ 0 vtable
@@ -5328,6 +5333,7 @@ oml__framework__Process 0 vtable
 pead__CriticalSection 0 vtable
 pead__Event 0 vtable
 pead__ExpHeap 0 vtable
+pead__ExpHeap 6c flags
 pead__FixedSafeString_32_ 0 vtable
 pead__Heap 0 vtable
 pead__IDisposer 0 vtable
@@ -5350,10 +5356,12 @@ script__TalkWin 0 vtable
 script__WordCPtr 0 vtable
 script__WordCPtrSv 0 vtable
 script__WordFix_20u_ 0 vtable
+script__WordFix_33u_ 4 talk_owner
 script__WordFix_38u_ 0 vtable
 script__WordFix_50u_ 0 vtable
 script__WordFix_60u_ 0 vtable
 script__WordFix_64u_ 0 vtable
+script__WordFix_9u_ 4 talk_owner
 sead__AudioFx 0 vtable
 sead__AudioFxMemoryMgr 0 vtable
 sead__AudioFxMemoryMgrCtr 0 vtable
@@ -5399,6 +5407,7 @@ sead__Graphics 0 vtable
 sead__GraphicsContext 0 vtable
 sead__GraphicsCtr 0 vtable
 sead__IDisposer 0 vtable
+sead__IDisposer 4 disposer_heap
 sead__MethodTreeNode 0 vtable
 sead__MethodTreeNode 24 safe_string_base_char_vtable
 sead__MethodTreeNode 2c method_tree_node_vtable
@@ -5406,6 +5415,7 @@ sead__Mutex 0 vtable
 sead__SafeStringBase_char_ 0 vtable
 sead__TaskBase 0 vtable
 sead__TaskBase 24 safe_string_base_char_vtable
+sead__TaskBase 5c task_mgr
 sead__TextWriter 0 vtable
 sead__Thread 0 vtable
 sead__Thread 10 safe_string_base_char_vtable
