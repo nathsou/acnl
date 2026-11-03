@@ -2030,6 +2030,7 @@
 00286558 Scans the table for the value.
 00286668 Starts the object's fixed animation.
 002882b4 Resets the id the object points to (+0x3a0) to the default.
+00289b5c Destroys the resident select menu: its buttons, name window, layouts, archive readers and menu base.
 00289ce8 Wraps the day within the month's length (one more in February of a leap year) and shows it with two digits.
 0028a008 Wraps the year within 2012 to 2050, shows it and clamps the day to the month.
 0028a600 Wraps the month within 1 to 12, shows it and clamps the day to the month.
@@ -2066,7 +2067,9 @@
 002941f0 Updates the tour's state machine and its sounds.
 00294340 Clears the started flag (0x950709) in state 1.
 002947ac Starts loading the time and bells window's layout archive with the layout allocator.
+002958ac Destroys the time and bells window: its money display, layouts and archive reader.
 0029598c Loads the cherry blossom shader (on the weather heap).
+00297724 Constructs an item stock change window: a rental change window with ten item slots and an item drag icon \n group, its layout names and the stock state.
 00297b60 Moves the scroll bar's drag icon into `list` and remembers the scales of its bar and two arrows.
 00297d54 Shows the scroll bar when the position is past the last page start.
 00297f04 Sets the scroll position (remembering the largest), its first shown entry and visibility, and moves the thumb.
@@ -2164,6 +2167,7 @@
 002b2924 Builds the map's markers from the visible icons and fills the label page.
 002b315c Shows (or hides) the message of the touched icon by its group: buildings, villagers or the player.
 002b39d0 Unselects the icon and its label and hides the message.
+002b3a50 Destroys the town map menu: its buttons, map base, name window, layouts and archive readers.
 002b64f8 The record (+0x14) of the list at 0x9981f4 matching the key at 0x950814; null when none.
 002b6ef8 Destroys a button action node: detaches and destroys its four animations.
 002b7598 Updates the layout at +0x270 and attaches it to the layout system.

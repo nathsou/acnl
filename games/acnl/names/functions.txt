@@ -4457,7 +4457,7 @@
 002974c8 ChangeStockItem__virtual_9
 00297670 ChangeStockItem__virtual_14
 002976e8 ChangeStockItem__virtual_8
-00297724 Cabinet__Cabinet_00297724
+00297724 ChangeStockItem__construct
 002977e4 ChangeStockItem__virtual_1_002977e4
 00297834 ChangeStockItem__virtual_0_00297834
 00297b60 CommonScrollBar__move_drag_icon
