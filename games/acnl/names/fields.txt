@@ -5258,8 +5258,11 @@ SoundMelodyPlayerOneSeqTimeTone 18 sound_fader_vtable
 SoundMelodyPlayerOneSeqTimeTone 2c sound_fader_vtable_2c
 SoundMelodyPlayerPos 0 vtable
 SoundObjBase 0 vtable
+SoundObjBase 10 position
 SoundObjBase 34 started
 SoundObjBase 3c kind
+SoundObjBase 8 near_distance
+SoundObjBase c far_distance
 SoundObjFall 34 started
 SoundObjFall 3c kind
 SoundObjFieldObj 34 started
