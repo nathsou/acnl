@@ -643,6 +643,33 @@
 001c8cd4 Relocates the table's entries to addresses.
 001c98d8 Moves the effect to the NPC's mouth (or the default point) and counts its timer down.
 001c9f88 Plays the pop scale animation (grows to 1.125, shrinks to 0.875, settles at 1 over 20 frames); true when done.
+001ca2c0 Shrinks the scale to 0 over 10 frames (after the delay); true when done.
+001cb474 Advances the button's animation until its slot is done, then stops it; true when finished.
+001cb7ec Stops the current animation and starts the first (0) or second (1) animation from zero.
+001cbb20 Places the model on its joint's matrix with its scale and updates it.
+001ccc58 Pushes a command of the kind for the target (0x28 bytes each, from +8 to the end at +0xc); true when there was room.
+001cce78 Pushes command 5 with the word.
+001ccee0 Pushes command 2 with the position.
+001cd538 Pushes command 4 with the two halves.
+001cd668 Pushes command 0 for the target.
+001cd690 Pushes command 1 for the target.
+001cd6b8 Pushes command 3 with the byte.
+001cd744 Appends a copy of the last command unless the queue is full.
+001cd810 Sets the queue's target (+4).
+001cd81c Syncs the target's model, then calls the handler of the last command's kind (member table at 0x881128).
+001cda40 Binds the cloth texture of the resource to the current model slot's cloth material.
+001cddc4 Sets the 2-bit field at bits 4 and 5 of +0xe.
+001cde00 Clears the low 24 bits of the word (+8) and the low byte of the half (+0xc).
+001cde1c Clears the top two bits of the word (+8).
+001cde2c Sets or clears bit 15 of the half (+0xc).
+001cde9c Clears bits 26 to 29 of the word (+8).
+001cdf18 Clears the top two bits and bits 23 to 26 of the word (+8).
+001cdf2c Sets the 4-bit field at bits 23 to 26 of the word (+8).
+001cdf44 Count `index`: the 14-bit total for 0 (at most 9999), else the 7-bit count `index` of the word (at most 99).
+001cdf88 Clears bits 23 to 26 of the word (+8).
+001cdf98 Sets the low nibble of +0xe.
+001ce934 Sets the colors of the model's cloth and legs materials from the two color tables.
+001ceb78 Sets up the player's model for their gender (+0x55ba) with the parameters.
 001d051c Finishes the pending work (+0x1bc) with mode 2 and clears it; 0.
 001d2694 Plays motion 0xae with the speeds.
 001d2e8c Sets the face byte (+0x224) and the hair word (+0x228).
