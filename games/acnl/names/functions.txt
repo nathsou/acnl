@@ -617,7 +617,7 @@
 0011fca0 srv_port_command_2
 0011fcdc set_byte_97d8a1_to_1
 0011fcf0 raise_signal_flag
-0011fd10 read_u32_0x00974af0_
+0011fd10 read_applet_state
 0011fd20 applet_state_is_6
 0011fd40 store_global_word_11fd40
 0011fd50 read_s8_0x00974ab2_
@@ -1085,7 +1085,7 @@
 00136188 ErrorReport__send_failure
 00136344 ErrorReport__send_exception
 00136454 read_s8_0x0097d8a2_
-00136464 read_u32_0x0097d8bc_
+00136464 read_applet_instance
 00136474 return_constant_0x97d8b4_
 00136490 applet_state_is_2
 00136530 call_13a968_or_fatal
@@ -1262,7 +1262,7 @@
 0013d040 Thread__join_if_running
 0013d060 call_free_hook
 0013d118 free_in_default_heap
-0013d138 read_u32_0x00975284_
+0013d138 read_cfl_instance
 0013d148 allocate_in_default_heap
 0013d24c Thread__run_main
 0013d404 SoundFader__destructor
@@ -1999,9 +1999,9 @@
 001bb0c4 LetterStorage__deliver_due
 001bb1c4 store_global_word_1bb1c4
 001bb304 set_day_start_6am
-001bb348 return_constant_0xaaf6a4_
+001bb348 day_start_hour_address
 001bb354 LetterStorage__deliver_due_on
-001bb40c return_constant_0x953fa4_
+001bb40c letter_delivery_a_address
 001bbbe8 player_has_mailbox_room
 001bbc30 Letter__try_deliver
 001bc1fc sead__SafeStringBase_char___SafeStringBase_001bc1fc
@@ -2149,7 +2149,7 @@
 001c4b24 BsPlayerMgr__destructor
 001c4bc8 set_cell_high_bits
 001c4bf4 set_u16_cell
-001c4c14 call_005bf518
+001c4c14 TextureView__from_resource_wrapper
 001c4fe0 CatalogBase__virtual_16
 001c50e0 Window__center_on_pane
 001c538c CatalogBase__virtual_17
@@ -4252,7 +4252,7 @@
 00281804 AcNpcSpResetsan__do_execute
 00281ab0 AcNpcSpResetsan__deleting_destructor
 00281bc0 AcNpcSpResetsan__destructor
-00281cc8 read_u32_0x0095386c_
+00281cc8 read_npc_net_share_info_instance
 00281cd8 SpecialMail__load_with_song_a
 00281d6c SpecialMail__load_with_song_b
 00281e00 NpcNetShareInfo__visit_window
@@ -6073,7 +6073,7 @@
 002ff800 set_item_flags_bit_15
 002ff81c records_equal
 002ff864 ContestRanking2__refresh
-002ff8b0 slot_value
+002ff8b0 player_slot_byte
 002ff8f0 any_player_matches
 002ff950 ContestRanking2__prune
 002ffad8 item_offset_in_category
@@ -6103,7 +6103,7 @@
 00300880 read_field_u16_0xc_
 00300888 find_nth_cell_with_value
 00300900 NetSession__signed_value_veneer
-00300904 main_object_value
+00300904 current_net_signed_value
 00300914 forward_to_held_object_slot_21
 00300924 forward_to_held_object_slot_22
 003009a8 villager_record_at
@@ -6286,7 +6286,7 @@
 00304530 shared_load_splits
 00304594 clock_state_flag_bit_2_veneer
 0030459c return_constant_0x95bed0_
-003045a8 call_3045a8
+003045a8 current_thread_context
 003045c8 set_flag_aa_and_send_4
 003045f8 clear_flag_aa_and_send_4
 00304628 set_npc_net_share_byte_9b
@@ -6404,7 +6404,7 @@
 00305e84 thunk_00710c3c
 00305e88 forget_current_950170
 00305f2c read_global_object_byte
-00305f44 query_current_main_object
+00305f44 current_net_station
 00305ff4 object_data_of_id_veneer
 00305ff8 copy_object_data_of_id_veneer
 00305ffc NoticeRenewalState__mode_table_value
@@ -6549,7 +6549,7 @@
 00308efc TimeStamp__move_to_day_start
 003090fc clear_villager_runtime_bits
 00309168 reset_villager_flags
-003091e0 return_constant_0xaaef18_
+003091e0 player_state_block_address
 003091ec read_field_u32_0x234_
 00309380 construct_buffered_string_20_veneer
 00309384 shops_are_open_for_player
@@ -7880,7 +7880,7 @@
 003483f0 nn__fs__CTR__MPCore__detail__ContentRomFsArchive__virtual_12
 00348444 nn__fs__CTR__MPCore__detail__ContentRomFsArchive__deleting_destructor
 003484cc nn__fs__CTR__MPCore__detail__ContentRomFsArchive__destructor
-00348550 read_u32_0x00974f10_
+00348550 read_file_server_archive_count
 00348560 nn__fs__CTR__MPCore__detail__FileServerArchive__FileServerArchive_00348560
 00348620 nn__fs__CTR__MPCore__detail__RomFsArchive__File__virtual_10
 00348628 nn__fs__CTR__MPCore__detail__RomFsArchive__File__virtual_11
@@ -11887,7 +11887,7 @@
 004d5b3c nw__anim__AnimFrame__deleting_destructor
 004d5b40 nw__anim__AnimFrame__destructor
 004d60b0 Pane__refresh_color
-004d7dfc read_u32_0x00974a7c_
+004d7dfc read_command_list_cursor
 004d7e6c nw__lyt__Drawer__virtual_6
 004d7e9c nw__font__RectDrawer__virtual_6
 004d7ed0 nw__lyt__Drawer__virtual_5
@@ -12009,7 +12009,7 @@
 004e0c98 escape__BsEscapeStageFishEvent__virtual_27
 004e0ca4 escape__BsEscapeStageFishEvent__virtual_28
 004e0cac escape__BsEscapeModelPickupEvent__virtual_25
-004e0cb0 return_constant_0x9c7ad4_
+004e0cb0 room_grid_address
 004e0cbc room_cell_occupied
 004e0cec item_covering_tile
 004e0e90 is_free_to_use_4e0e90
@@ -12106,7 +12106,7 @@
 004e9f00 set_item_offset_pair
 004e9f74 surface_height_at
 004e9fe8 surface_height_at_cell
-004ea048 return_constant_0x9c7a14_
+004ea048 room_furniture_address
 004ea054 Item__model_path
 004ea1ec AcFtr__virtual_57
 004ea3a8 AcFtr__virtual_56
@@ -12733,7 +12733,7 @@
 00511a04 OnlineSession__leave
 00511a9c nn__nex__ResultRange__ResultRange_00511a9c
 00511d70 nn__pia__local__UdsJoinSessionSetting__UdsJoinSessionSetting
-0051207c check_413478_level
+0051207c check_network_error_level
 00512154 script__WordPtrSv__WordPtrSv_00512154
 005122a8 OnlineSession__connect
 005124b8 OnlineSession__create_gathering
@@ -13153,7 +13153,7 @@
 0052e1ec scene_curve_point
 0052e294 Matrix34__from_position_and_angles
 0052e32c scene_curve_matrix
-0052e3ec run_75d24c_if_mode_flag_2
+0052e3ec run_if_scene_mode_flag_2
 0052e5ac NpcAction__call_state_handler
 0052e600 font__Mgr__SingletonDisposer___deleting_destructor
 0052e650 font__Mgr__SingletonDisposer___destructor
@@ -14392,7 +14392,7 @@
 005692b0 Layout__virtual_5
 005692b4 ssys__ma__lyt__Layout__virtual_5
 0056939c LayoutButton__start_animation
-00569420 notify_object_00569420
+00569420 Layout__refresh_pane
 00569434 ssys__ma__lyt__Layout__deleting_destructor
 00569480 ssys__ma__lyt__Layout__destructor
 005694c8 release_linked_objects
@@ -14687,7 +14687,7 @@
 0057b988 Actor__post_create
 0057b98c Actor__post_delete
 0057b990 Actor__pre_execute
-0057b9dc start_529c80_mode_2
+0057b9dc StringPool__find_message_mode_2
 0057ba08 angle_between_points
 0057ba24 Actor__post_execute
 0057ba28 Actor__virtual_16
@@ -15972,7 +15972,7 @@
 005b3e0c photo__Allocator__virtual_0
 005b3e24 photo__Allocator__deleting_destructor
 005b3e28 photo__Allocator__destructor
-005b3ec4 read_u32_0x00957328_
+005b3ec4 read_scene_change_step
 005b3ed4 leave_scene
 005b3ef4 SceneList__find
 005b3f88 scene_index_of_kind_15
@@ -16359,10 +16359,10 @@
 005ca9cc call_00119288_on_save_292a4
 005ca9e4 on_save_data_loaded
 005cabc0 on_save_data_created
-005cacb8 read_u32_0x0095262c_
+005cacb8 read_exhibition_park_data
 005cacc8 return_constant_0x52c30_
 005cacfc call_002c24dc_on_95df64
-005cad0c read_u32_0x0095bf74_
+005cad0c read_save_data_pointer
 005cad1c clear_save_buffer
 005cad28 SaveData__init_new
 005caef4 SaveFile__checksum_range
@@ -19206,7 +19206,7 @@
 006a6dbc cell_corner_with_height
 006a6e1c tile_corner_with_height
 006a6e90 position_of_block
-006a6eb0 read_u32_0x009526f8_
+006a6eb0 read_town_block_grid
 006a6ec0 split_world_position
 006a6f50 Map__refresh_from_save
 006a7174 MapTable__restore_saved_map
@@ -20680,7 +20680,7 @@
 007183d8 UlcdFramework__virtual_0
 007185cc VillageSpBook__virtual_5
 0071863c VillageSpBook__virtual_4
-00718658 return_constant_0x985df0_
+00718658 player_area_value_a_address
 00718664 AcInsectCommon__virtual_36
 0071866c AcInsectCommon__virtual_17
 00718678 AcInsectCommon__virtual_37
