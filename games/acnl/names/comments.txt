@@ -835,25 +835,117 @@
 005afd20 Stores the writer's three words, its scale and its flag (+0x1c to +0x2c).
 005afe90 Clears an 18-byte picture entry.
 005aff24 Moves the directory cursor to the next entry, reading the next batch of 64 entries when needed; false at the end or on an error (reported unless quiet).
+005b0120 Clears slot `index` (+0x30 table) and its bit in bits 9-12 of +0x28.
 005b0164 Writes the photo's file name (the prefix and the number + 1, four digits) into the path's name field (8 characters).
+005b01c0 Copies up to `size` characters of a name into a field, padding the rest.
+005b027c Copies an 8-character wide folder name into the record (+4).
 005b034c The index (0-3) of the wide file extension `text` (a leading '.' ignored) in the table of known extensions; 0 when unknown.
 005b03fc Writes `value` as three decimal digits into bytes 0xc-0xe.
+005b0438 Stores a 5-bit value in bits 0-4 of +0x2c.
+005b0468 Copies an 8-character wide file name into the record (+0xc).
 005b0478 Writes the photo folder's name (the folder number + 100, three digits, and one of two suffixes) into the path's folder field (8 characters).
+005b04d0 Stores a value in bits 1-8 of +0x28.
+005b04e8 Stores a 4-bit value in bits 21-24 of +0x2c.
+005b0504 Stores a value in bits 5-20 of +0x2c.
 005b0588 Writes known extension `index` (without its '.') into the path's extension field (4 characters).
+005b05a8 Copies a 4-character extension name into the record.
+005b05b4 Copies a 4-character wide extension into the record.
+005b05c0 Stores slot `index` (+0x30 table) and sets its bit in bits 9-12 of +0x28.
+005b0628 Whether the value is at most 0x270e.
 005b0664 The next photo number: the file number counts to 99, then the folder number advances (wrapping below 900).
 005b06a0 Starts the next photo folder (wrapping below 900) at file 0.
+005b0a14 Stores the reader's three words and its flag (+0x1c to +0x28).
+005b0c94 Reads the thumbnail (or another segment) of the picture's EXIF data into a buffer when it fits; gives its size; true when it worked.
+005b0d7c Reads the thumbnail when the picture's EXIF data is valid.
+005b0dec The larger of the two thumbnail segment ends of the picture's EXIF data, or 0.
+005b1928 Sets the window's three flags (+0x5c) for mode 0, 1 or 2.
+005b1968 Stores three bytes at +0x82.
+005b19e8 Stores a word at +0 and clears +4.
+005b2194 Writes the GPU commands of the model's parts (the 12 slots, enabled or not) into a command buffer.
+005b22c8 Builds the GPU command list for the model's parts (the part commands and the rest).
+005b25d8 Decodes the picture's thumbnail into a 0x6000-byte buffer (64 x 0x68... layout); clears it on failure; true when it worked.
+005b2d10 Clears the 0x6000-byte buffer and decodes the thumbnail when the record has one (bit 0).
 005b2e10 Saves the captured screens as a photo: a JPEG, or a 3D MPO when the scene allows one, with the photo settings; the result in byte 4.
 005b2fac Reads both screens' framebuffers (their address, format and size) and copies each into its image, rotated.
 005b30c4 Copies a rectangle of a 16-bit framebuffer (stored a column at a time, as the screens are) into an image stored a row at a time.
+005b3198 Converts float samples to integers (with their absolute values).
 005b3ed4 The current scene becomes the previous one; no current or next scene.
 005b4088 The next scene becomes the current one (the current one the previous); no next scene.
+005b4148 Starts a scene change (0x95732c) and loads the current scene's resources with the first set (0x95787c).
+005b4198 Starts a scene change (0x95732c) and loads the current scene's resources with the second set (0x95788c).
+005b41e8 The light kind (+0xc of the scene's environment) of a scene (the current one for 0xa5); without one, 2 for scenes with flag 0x20, else 0.
+005b43d4 How the scene starts: 1 when 005b4724 refuses, 3 in a main slot's page with mode above 1, 2 when no NPC position, else 0.
 005b4428 Sets the next scene to `scene` and asks for the change with its entrance parameters (6: the saved ones).
 005b449c The index of `scene` among the scenes (of 0xa5) whose flags (the table at 0x889074) include all of `flags`; -1 when it has not.
+005b4520 Whether the current scene has flag 0x40000, or flag 0x80000 with the object at 0x95c6d0 in state 2.
+005b4594 Whether the current scene is a main slot's page, or one of the local player's six house rooms (0x889c80) whose owner's house exists (state not 0 or 8).
+005b46a4 Whether the mode is one of the five special modes and its record (006f8c24) has byte +4 clear.
+005b4724 Whether items may be used in the current scene (by its kind, the slot and the house owner).
+005b4854 Whether the scene allows items, is not a main slot's page with mode above 1, and an NPC position exists.
 005b48b4 Whether the current scene's flags make it one of the kinds marked 0x20, 0x40000 or 0x80000 (and 4, without 0x10).
 005b493c Word `scene` of the scene table at 0x88997c; -1 for no scene (0xa5 or more).
+005b49b4 Whether the scene (not 0xa5) lacks flag 0x100000 and its id is odd.
+005b49e0 Whether the scene (not 0xa5) lacks flag 0x100000 and its id from 0x81 is odd.
+005b4a28 Clears the two bytes at 0x957324.
 005b4a40 Whether the current scene is flagged as a house room (8, without 0x10) and belongs to the local player (one of their six rooms, or a page the main slot's player owns).
+005b4c78 Finishes the scene change (006a694c) and clears 0x957328.
+005b4ce8 Pushes a word on the stack (+0x64, count +0x60).
+005b4d04 When no scene change is pending: requests the change kept in the object (scene +0x24, position, angle) and clears it; true when requested.
+005b4eb0 Pops the top word into the first of the four slots (+0x64 to +0x70) that holds `value`.
+005b522c Calls 005b6378 with the current scene and the arguments.
+005b5b78 When no scene change is pending: stores the target position, angles and fade time, and requests the change (005b4d7c); true when it was.
+005b5d38 Requests a scene change with a 3x4 matrix and two values (005b5d60).
 005b6a10 Whether `scene` is one of the six rooms (the table at 0x889c80, six per player) of the house of the player on this console.
+005b7418 Stores a byte at +0x19764 of the villager part.
+005b769c Adds `amount` (at least 1) to the 3-bit level in bits 11-13 of +0x2510, saturating at 7.
+005b8188 Clears bits 9-10 of +0x2510.
+005b81b8 Sets or clears bit 15 of +0x2510.
+005b81fc Clears bits 3-6 of +0x2510.
+005b96a8 Sends the villager's letter for the request (template by its id) to the player; marks the request state 9.
+005b9ee0 Completes a villager's request: raises the friendship with the player and records it.
+005ba234 Starts a request from a villager: today's date, state 3, the villager's 0x2f-byte identity and a random length (14, 21 or 30 days).
+005ba980 Moves a request in state 4 to state 5.
 005baa00 Runs one of 15 actions (`kind`) with a work item on the stack.
+005bb220 Clears the two requests of player `index` (0x40 bytes each).
+005bb244 The first of the player's two requests (by identity) with a kind of 0x21 or more, or 0.
+005bb39c For the current player's letter `index` tied to a request: stores the two reply bytes in that request and updates the letter.
+005bb42c Updates the requests for the day: expires them and adjusts friendships.
+005bb66c Builds the request item 0x341c with the letter's request index.
+005bb690 For a request item 0x341c and a free letter slot of the current player: ties the request to the player and moves it on (6 -> 10, else clears its replies).
+005bb748 Picks a random villager of the town for a new request.
+005bb9f0 Clears a request record (time unset, kind 0x21, state 0xff, length 9, replies -1).
+005bbd70 Sets bit `index` (below 3) of +0x5b.
+005bbdf8 Clears a timed record and starts it today in state 2.
+005bcaa8 Adds a value to the signed level at +0xa8, clamped between -4 and 60 (40 for kinds other than 3, 6, 9 and 0xb).
+005bcaf0 Counts +0xa9 up; at 3 sets +0xa7.
+005bcbfc Clears a timed record, starts it today, finishes its event and sets state 4.
+005bcc50 Whether the player (with flag bits 6/7 of +0x570c and the town's level 2) may receive the gift of the record at +0x8e08: a free pocket and more than 3 days since it.
+005bcf24 Finishes the record's event and starts it for the villager (kind from its data, today, length 3, its name and id).
+005bcfa0 Stores the villager's name and id in the first free of the six entries (+0x24, 0x18 bytes each).
+005bd01c Clears a timed record (time unset, kind 0x21, state 0xff, length 9).
+005bd0a0 Updates a timed record for the day.
+005bd234 Clears a 16-byte timed record (kind 0x21, state 0xff, length 9, id 0, value 6, flag 0xff).
+005bd2e8 Starts a 16-byte item record for player `slot` (below 4): kind 2, today, length 3, the item's id and an option byte.
+005bd3fc Clears a 16-byte item record (kind 0x21, state 0xff, length 9, item 0x7ffe, slot 4, option 0xff).
+005bd750 Sends the record's item id with the answer (event 4) and sets its state (1 for yes, 2 for no).
+005bdaa0 Clears a timed record with two empty items (+0xc, +0x10) and its three bytes (-1, 7, -1).
+005bdb6c Picks a random request kind (6 and up) for a villager of the town, leaving out kinds it cannot ask today.
+005bdc34 Picks a random request kind for a villager, by its NPC state.
+005be0fc Clears a timed record with two 0x30-byte identities, an item and two flags.
+005be19c Builds and clears a timed record with two identities and two items.
+005be844 Clears (0xffff) every entry of the 11-entry 16-bit id list equal to `id`.
+005be87c Clears the 11-entry 16-bit id list (0xffff).
+005be8c0 Clears the 11-entry 16-bit id list (0xffff).
+005bf518 The model's data, word +0x1c and word +0x18 from a resource (for model kinds with flags 0x20000011).
+005bf748 Appends an entry to a queue.
+005bf758 The first node of the list (+4, next +8) whose +0xc is `key`, or 0.
+005bf7cc Stores a position and an angle (and clears +0x10) in a spawn point.
+005bf82c Stores the spawn set: a kind byte, two words and four spawn points (position, angle, word).
+005bf8f0 Clears the four spawn points (the default position) and the set's kind (0xa5) and words (6).
+005bfbd4 Clears the player slots (all 8), the player records and the four slot identities, and resets the player state block.
+005bfc8c Whether the player is in state 0x29 or 0x2a with slot 0 of its four (+0x1b4) in use.
+005bff24 Unless the player is locked: whether 006503b0 accepts the arguments.
+005bff78 Unless the player is locked: requests state 0xc4 with the reaction id of the slot (table 0x881b98) and sound 0x100056d.
 005c00f0 Stores a 2-bit value in byte `index` (below 4).
 005c021c Puts the clothing item the current player holds into a free pocket slot (unless a request has it reserved), and records the player and slot in `ref`; true when it did.
 005c032c PersonalId__adopt_current_player in mode 0.
