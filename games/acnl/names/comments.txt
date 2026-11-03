@@ -1113,6 +1113,22 @@
 002ac76c True when the insect is in the spawn table at one of the 6 hours of the day, with the weather it needs (dry for 1, rain or snow for 2).
 002ad1fc For an insect item (category 0x24), the flag of its insect index; 0 otherwise.
 002ae274 Puts the remembered item (0x94fd64) into the current player's pocket slot (+0xc8) and refreshes.
+002b1ea0 Fills the 7 labels of the current page from the markers (their names by kind), blanking the rest.
+002b2924 Builds the map's markers from the visible icons and fills the label page.
+002b315c Shows (or hides) the message of the touched icon by its group: buildings, villagers or the player.
+002b39d0 Unselects the icon and its label and hides the message.
+002b64f8 The record (+0x14) of the list at 0x9981f4 matching the key at 0x950814; null when none.
+002b7598 Updates the layout at +0x270 and attaches it to the layout system.
+002b75bc Starts the state with the handler pair at 0x87a114.
+002b7910 Starts the state with the handler pair at 0x87a11c.
+002b7928 Loads the change window's layout archive.
+002b7cb0 Updates the layout at +4 and attaches it to the layout system.
+002b7fa0 The index of the first clear bit of the 32 bits at 0x952aec; 0 when all are set.
+002b8044 Sets the record's four words and takes a free slot index.
+002b8898 Clears the word at 0x953230.
+002b8e84 Shows the pane and writes the number (up to 10 digits) into the label's text.
+002b9aa4 Shows or hides the item name pane.
+002ba344 Advances the list's counter by the step (mod 3) and moves every child pane by the offset.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d0998 The record (+0x668) of the object held by the slot; null without one.
 002d0cf8 Constructs the model with its skeletal model, base animation (kind 0x16, enabled) and its second animation.
@@ -1161,6 +1177,8 @@
 002d5f90 Constructs the melody sound, stopped.
 002d7d7c Sets up the window's button controls and panes.
 002da33c Plays the window's in animation from 0 and marks it opening; true.
+002da424 While animating, advances the in (or out) animation until its slot is done, then stops it (releasing the button after the out animation) and marks it settled.
+002db05c Refreshes entry `index` (below 10): renders the current player's pattern of the slot into its texture and shows it by its type.
 002e01ac Restarts the button's animation at +0x3ac from zero and resets its two timing words (+0x50c) from defaults.
 002e0248 Sets the enabled word (+0xc8) and picks the button's sound id to match; disabled also sets the +0xc4 mode to 8.
 002e0288 Sets the flag at +0x508 and mirrors it in bit 0 of the owner's +0xb7 byte.
