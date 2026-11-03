@@ -429,6 +429,84 @@
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
 00148710 out = M * (v, 1) for a 3x4 matrix M.
 0018eab0 Forwards to the function at 0x8161b8.
+001b1010 Loads the six static data tables; true when all loaded.
+001b1900 Takes the received letter (version 3, newer than the current one) when its checksum over 0x28c bytes matches and its letter is valid; true when taken.
+001b19ac Constructs an empty received letter record.
+001b19dc Adds to the progress; in states 1 and 2 it moves to state 2 once the goal (+4) is reached.
+001b1a18 Moves a reached progress (state 2) to finished (state 4).
+001b1a2c Sets the first two bytes.
+001b1a44 Zeroes the progress record and its number pair.
+001b1bf8 Puts the remembered item back in the field (or clears the tile).
+001b1c70 Adds the items of the set to the slots, closing gaps first.
+001b2114 Stores the item in the first empty of the 16 slots (closing gaps first); true for kind 0x95 items, false when full.
+001b21f4 Puts the item in slot `index` with its flags, by its category (bell bags and kind-2 items are special).
+001b23ac Constructs the 16 item slots, all empty.
+001b264c Zeroes the 200-byte record with its two last bytes at 0xff.
+001b266c Zeroes the 200-byte record with its two last bytes at 0xff.
+001b2690 Clears the work data's player part (+8) and its 0x1228-byte entry (+0xa488).
+001b26c8 Constructs the 0xc8b8-byte work data: its records, letters, item sets, id lists and counters.
+001b2a5c Destroys the work data's arrays of items, letters and records.
+001b3174 Sets color slot `index` (below 15) of the palette to `color`, or 0 when the picker marks that color unusable.
+001b31a4 Loads the design color picker (256 colors into 0x95c010) and the 12 preset palettes (into 0xad53a4).
+001b32c8 Fills the pattern's pixels (0x800 bytes at +0x6c) with 0xcc and copies the header (0x26c bytes) from the source.
+001b3300 Imports the image (when given) into the pattern with the palette mode.
+001b3340 Converts the image's pixels to the pattern's palette and writes them, then notifies the listeners.
+001b3a20 The picker color of (row, column), or 0 when the picker marks it unusable.
+001b3a44 Color `slot` (below 15) of preset palette `index` (below 12); 0 out of range.
+001b3a6c Copies the 15 colors of preset palette `index` into the pattern's palette (+0x58).
+001b3ab0 Remaps the pattern's pixels through the color table.
+001b3d08 The picker's color entry, with its low 4 bits set when asked.
+001b3d2c Copies the current player's identity into the pattern's creator (+0x2a).
+001b488c Sets the 4-bit pixel (x, y) of the pattern's page to the color index.
+001b48dc Sets the pattern's town (+0x40) when its creator is the given player.
+001b490c Copies the 0x870-byte pattern, marks it foreign when its id is not local in a network session, and refreshes it.
+001b4980 Resets the pattern's flags (type 4, shareable).
+001b49b0 Copies the pattern, refreshes it and, in a network session, sends the replacement of the old id by the new one (message 0x6d).
+001b4b20 Sets the pattern's name (+0x16) and stamps it with the current month and day.
+001b545c True when the id is below 399.
+001b5474 Places item `index` (of 2) of the pair in the room or the field once, when its owner is the current player.
+001b55b8 The model name of the id from the shared table (under its lock).
+001b5d74 The model name of the id; id 0x2010 has the shared default.
+001b5d94 True for ids below 399, 0x1000 to 0x100f and 0x2000 to 0x2010.
+001b5f7c Clears the record: its items, pattern and name, with the default shirt and hat items.
+001b625c Sets bit `index` (below 10) of the bit set.
+001b732c Clears the record: its ids at -1 and its two levels at 200.
+001b7530 True when adding is allowed (0xad56fb set, 0xad56fa clear) and the count (+0x18) is at most 15.
+001b7568 Adds the sale to the tally of the kind (+0x10): by count, price or a quarter of the item's price, by the shop's mode; true when the tally changed.
+001b7b90 In area scene 9, marks the area visited once when its maps match and, in a network session, sends message 0x45.
+001b88c0 Drops a user of the save archive and unmounts it when it was the last.
+001b8978 Closes the three files of the current slot, then unmounts the archive when mounted; the first error.
+001b8a08 Maps the file system result to the game's code, reporting fatal ones.
+001b9400 Writes the save counter (when asked) and commits the save archive; 8 on failure, 1 on success.
+001b94b0 Closes every save file and unmounts the archive, reporting fatal errors.
+001b96a0 Opens the main save file.
+001b97dc Closes the 7 shared files and the 3 files of each of the 4 slots, then unmounts the archive (when asked and mounted).
+001b9a88 The genotype index of the flower genes: the number of set alleles in each of the four 2-bit loci, as base-3 digits (81 genotypes).
+001b9ae4 The flower item index of the species (`kind`) with the genes, from the species' genotype table; the species' first flower when out of range.
+001b9c34 The default genes of flower item 0xbe + n (n below 6) from the table; 0 otherwise.
+001b9c54 The default genes of flower item 0xb2 + n (n below 8) from the table; 0 otherwise.
+001b9c74 The default genes of flower item 0xa6 + n (n below 6) from the table; 0 otherwise.
+001b9c94 The default genes of flower item 0x9f + n (n below 7) from the table; 0 otherwise.
+001b9cb4 The default genes of flower item 0xac + n (n below 6) from the table; 0 otherwise.
+001b9cd4 The default genes of flower item 0xc4 + n (n below 4) from the table; 0 otherwise.
+001b9cf4 The default genes of flower item 0xbb + n (n below 3) from the table; 0 otherwise.
+001b9d14 The genes of a child of the two parents: for each of the four loci, a random outcome of the parents' allele counts from the cross tables.
+001baa4c Loads the parameter file into the 0x78-byte record (from the work heap).
+001baac8 Loads the parameter file into the six floats.
+001bab40 Loads the parameter file into the 0x3c-byte record.
+001babbc Loads the parameter file into the 0x38-byte record.
+001bac38 Copies the default six-value parameters from 0xa18590.
+001bac4c Copies the default 0x3c-byte parameters from 0xa185a8.
+001bac74 Copies the default 0x38-byte parameters from 0xa185e4.
+001bac9c Zeroes the 0x20 bytes at 0xa21f6c and sets the 0x20 bytes at 0x953602 to 0xff.
+001bace0 Delivers the letter from a town player (not another town or a villager) into the recipient's mailbox; true when delivered.
+001baf6c Stores the letter in the first free of the 80 letter slots (+0xa4f8); false when full.
+001bb0c4 Outside network sessions and special scenes, delivers the stored letters that are due today, then compacts the storage.
+001bb304 Stores the time stamp at 0xaaf6a4 moved to 6:00:00.000.
+001bb354 Delivers the stored letters that are due on the given day, then compacts the storage.
+001bbbe8 True when the player's mailbox has a free slot.
+001bbc30 Delivers the stored letter to its recipient (town player or villager) when its day has come; true when delivered.
+001bfa48 Places the shown item's model at its cell (raised for wall items) and attaches it to the NPC.
 001c4bc8 ORs `bits` into the 16-bit cell (x, y), keeping only its low 4 bits.
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
 001c4c14 Calls 005bf518.
