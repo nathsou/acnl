@@ -2099,8 +2099,11 @@
 00324934 Calls handler `index` of the table at 0x845304.
 00326360 Loads the room light switch menu's layout, animations and panes.
 00327ce8 Appends the entry to the queue, first filling it with the object's parameters when asked.
+003280e0 Plays the layout's named animation.
+0032821c Sets the layout's animation frame when it is bound.
 003289a8 Gives the villager of the record (+2) the item (+0) into slot +3; a category 0x2f item without a slot goes to its +0x249e item.
 0032a3c8 Copies the record with a new item and its three color bytes.
+0032ae8c Updates the barcarolle player's music.
 0032af5c Stops the player's sound (+0x1ec4) and clears its playing flags.
 0032b774 When sound is allowed: runs the member handler of the current state (+0x10) from the table at 0x839048.
 0032b7d0 Constructs the player: its two buffers (0x46 and 0x10e entries) and cleared state.
@@ -2119,6 +2122,7 @@
 0032ccb0 Constructs the option bytes and clears the saved copy.
 0032cef4 Draws the random state into 0x9525d0 and, in a network session with the main object idle, sends it as message 4.
 0032f240 Writes the GPU commands of the depth settings, with the depth offset (scaled when enabled) as a 24-bit float.
+003302c8 Starts the sound player unless it plays.
 00331550 Gives the villager of the record (+2) the item (+0) as its +0x8e6 item.
 00331778 Copies the half at +0x2e of the target (+0x4e4) to +0x4ec and marks it set.
 003319e8 Resets the permit record (state 4, mask 0x3f).
@@ -2132,6 +2136,7 @@
 0033527c Gives the villager of the record (+2) the item (+0) as its +0x249a item, registering special items first.
 003352f0 Finishes the pending work (+0xeb) when it can; true when nothing is pending.
 0033543c Copies the resource's model name into the string, or the default model name when it has none.
+003355ac Plays the town tune's note with its pitch and length.
 00335634 Copies a 0x7dc8-byte block.
 00335640 Clears the block's parts (+0x1238, +0x7dc0) and its four header words.
 00335678 Constructs the block's parts and clears it.
@@ -2145,28 +2150,67 @@
 0033e040 Applies a received villager memory message: creates or updates the villager's record of the player, refreshing it when current.
 0033e104 Applies a received item message to the player's record at +0x8d6c: the item (state 2) or none (state 1).
 0033e230 Stores the half at +0xa8 of the shared NPC info.
+0033e248 Loads the holder's resource with its allocator.
 0033e60c Stops the microphone (in states 3 to 5) and goes back to state 2.
 0033e8cc Calls the member function of the current state (+0) from the table at 0x83b46c.
 0033f2c4 Applies a received message that the villager is moving: sets its moving flag (+0x2510 bit 9) and marks the player's record of it.
 0033f368 Applies a received villager state message: sets its state (0x17, 2 or 0) and updates its NPC.
+0033f5d0 Sets the fader's curve kind (below 7) and its function.
 0033fb8c Clears bit 6 of the shared NPC info unless the word is set.
 0033fbb4 Writes the secretary's letter to the player (its variant by the player's state), with its item.
+00342cb8 Stops the sound when the object is ready.
+00342ce4 Plays the sound when the object is ready.
 00342ed0 Stops the melody when it is the melody sound.
+00344eb8 Starts the camera under its lock.
+00345030 Sets the camera's image size when it is set.
+0034512c Starts the camera's capture when it is set.
+00345180 Reads the camera's image when there is one.
+00345278 Releases the camera's buffer when it holds one.
 003452f0 Stops the camera capture.
+003457e8 Initializes the camera service (and the background service).
 00345820 Shuts the camera service down under its locks.
+00345bc4 Reads the file's size.
+00345c20 Opens the extra data archive with its ids.
+00345f60 Deletes the save file.
+00346090 Builds the file system path (binary) from the buffer.
+003463a4 Creates the save file (4 KiB blocks) with its size.
+003463bc Formats the save archive with its sizes.
 00346720 Reads the data store's bytes at the offset.
+0034748c Opens the file in the archive found by its name.
+00347518 Reads the data into the buffer of the size.
+0034943c Writes the enable commands when asked (the second register).
+003494fc Initializes the 8 texture combiner stages.
 00349878 Loads the shader binary and its programs.
+0034a5e4 Initializes the GPU state's defaults.
 0034a784 Binds the attribute (by its kind, below 16) to the buffer's address with the format.
 0034a8b4 Binds the attribute's constant values (when it has no buffer).
+0034abd0 Writes the enable commands when asked.
 0034ac5c Initializes the command buffer (state 5) and its parts.
+0034adac Initializes the alpha test state with its function.
+0034af5c Initializes the GPU state's 6 texture units.
 0034ba38 Takes the lock when the current thread does not hold it; whether it did.
+0034cd5c Finalizes the data store service.
+0034cdcc Initializes the data store service.
 0034cf7c Builds the data id from the value and the kind.
 0034d018 Finalizes the data store service when it is up.
+0034d134 Reads the slot's entry.
+0034d184 Writes the slot's entry.
+0034d774 Deletes the slot's entry, under the service lock.
+0034df48 Opens the data store with its parameters.
+0034e3f4 Closes the data store when it is open.
+0034e5e4 Commits the data store, under the service lock.
+0034fef8 Sets the parameter's values.
 0034ff6c Reads the store's table of the kind with its range.
+003501c8 Sets the parameter's data (aligned) with its size.
+00350408 Clears the entry's meta.
 00350454 Copies the entry's owner identity (the second layout).
 003504e8 Initializes the table info with its defaults.
 003505bc Whether the background service is set up (under its lock).
+003505c0 Initializes the background service.
+003506c0 Reads the background service's value 0.
 003506c8 Reads the background service's value of the kind; a fatal error on failure.
+00350754 Reads the network flag from the ac service.
+00350778 Reads the network status (the second query) from the ac service.
 003507b0 Reads the network status from the ac service.
 0035084c Reads the wireless state from the ac service.
 00350b88 Reads the string from the NEX buffer.
