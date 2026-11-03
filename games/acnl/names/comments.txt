@@ -561,10 +561,13 @@
 0012c018 Constructs the audio resetter controller: volume 1, nothing to reset.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
 0012c144 Constructs an audio setting parameter: an empty list, four entries by default.
+0012c17c Constructs the audio resource loader controller: no resources, volume 1, the default name.
 0012c40c Sets the current thread's context (arg 1); returns the previous one.
 0012c984 Constructs a layout: a list node over a layout with draw info, at scale 1, nothing loaded.
 0012ca6c Stores arg 1 at the object's offset 4 and returns 1.
 0012ca7c Constructs a load split: a list node, a file handle and a 128-character path, nothing loaded.
+0012cb24 Bit 1 of the clock state flags.
+0012cb3c Clears bit 1 of the clock state flags.
 0012cb84 Releases the scene's objects.
 0012cc78 Finalizes the save data and its blocks.
 0012d19c Releases the talk window holder's windows.
@@ -580,6 +583,7 @@
 0012da6c Initializes the framebuffer's state.
 0012db48 Sets the GPU state's depth buffer flags.
 0012db70 Reserves the command list's entries (0x28 bytes).
+0012de20 Gives a segment (arg 1) back to its heap: frees its memory, sizes the heap's last block over it and marks \n it released.
 0012e640 Signed 64-bit division through the unsigned one, the operands and the quotient negated as their signs need.
 0012e8e8 Sets a ducking fader's volume and target to a value (S0), with no fade running.
 0012e904 When the BGM flag (0x94cd06) is set, clears it and the sound system's two words, and stops the sound (+0x1c).
@@ -597,6 +601,7 @@
 0012ee60 Sends command 0x80e (header 0x80e0080) to the service of the given handle and returns its result.
 0012ee90 The object at 0x974f20; a fatal error when it is missing.
 0012eeb0 Mounts the RomFS archive as rom:.
+0012eeec Initializes a light event: unsignalled, one-shot unless manual reset (arg 1).
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
 0012efe8 Tries to wait on a light event: 1 when it is signalled (clearing a one-shot signal).
 0012f038 Stores 1 into a lock word.
@@ -627,6 +632,8 @@
 0012ffcc Locks the segment hooks.
 0012ffdc Unlocks the segment hooks.
 00130054 Calls 00128c0c on the object at 0x97d7e0.
+00130060 Waits on the main event.
+0013010c Tries to wait on the main event: 1 when it is signalled.
 0013028c Sends command 0x4b with its buffers to the service.
 00130360 Sends command 0xf (header 0xf0100) to the service at 0x97d7f8 and returns its result.
 00130448 Sends command 0x3e (header 0x3e0080) to the service at 0x97d7f8 and returns its result.
@@ -647,6 +654,7 @@
 0013187c Gives an empty array room for `capacity` pointers from the heap.
 001318c0 Constructs an audio resetter: nothing to reset.
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
+00131af8 Unlocks a thread lock once: releases it when its depth reaches 0.
 00131b3c Builds the sound effect manager's parts: an offset list, the effect memory manager and the 2 x 3 slots.
 00131be0 Constructs the sound data manager controller: a dispose callback, nothing loaded.
 00131c14 Inserts at position `index` of the list at +0x28, under the global lock and the object's own when it has one.
@@ -659,10 +667,12 @@
 00132364 Clears the layout's links (+8, +0x158), destroys its split part at +0x15c and finalizes the list at +0x30.
 001323b4 Calls virtual 8 of the object at offset 0x10 (with 0).
 00132410 Releases the scroll bar's press and its pane.
+00132530 Joins the thread a pair holds (when running), then clears the pair.
 00132558 Flushes the save data's pending block.
 001325a0 Destroys the 56 and 2 slot entries and the table at +0xf0.
 001325e4 Returns 0 (with r1 = 0).
 0013293c Destroys the town map: the 20 small blocks, the 20 acre blocks and the 42 terrain ids.
+001329a8 Removes an object (unless null) from the flagged objects' list.
 00132ea8 Writes the enable commands when asked.
 001330fc Whether the child at +4 has its field set.
 001332d4 Reads the archive's file into the buffer.
@@ -674,12 +684,15 @@
 001342d8 Forwards to 00136014 with the four stack arguments.
 001342f8 Forwards to 00136188 with the four stack arguments.
 00134318 The mounted archive whose name is the path's prefix up to ':' (at most 8 characters); null when none.
+001343e4 Constructs a 256-character fixed string, empty.
 00134440 From `from` to `to` in `count` steps: the value at step `step` (`to` once done).
 001348cc Copies the bytes, handling overlap.
 00134c80 Breaks (svc 0x3c) with the reason (user) and the message.
 00134c90 svcBreak.
 00134c98 Creates a memory block (svc 0x1e) for the range.
 00134f04 Releases the object at 0x975270 (its virtual 1) and clears it.
+00134f24 Unmounts the CFL resource archive, when mounted.
+00134f70 Constructs a fader: volume and target 0, no fade running.
 00134fa4 Destroys the heap's child heaps.
 00134fec Destroys eight 0x878-byte pattern records.
 00135010 For slot `index` (below 6) not playing: trims its queue past `count` (under its lock); true when the slot is set.
@@ -694,7 +707,10 @@
 0013580c Unlocks a light lock and wakes a waiting thread (address arbitration).
 00135858 Tries to take a light lock: 1 when it was free.
 001358c0 Unmounts the storage (through the service at 0x97dffc), reporting a failure with its location.
+00135a8c Destroys a CEC message box: closes it.
 00135b30 Sends command 0x11 with the buffer to the service.
+00135bb8 Releases the owner's region at 0x18 from its heap list (and clears its size).
+00135be4 Releases an expanding heap's region from its heap list.
 00135efc Calls 0013a7c8 and reports a fatal error when it fails.
 00135f18 Reads a byte through 0013a7f8 (fatal on failure).
 00135f34 Sends an error report of kind 0 (a result and its location) to the error service, unless filtered.
@@ -718,9 +734,11 @@
 00136e0c Constructs a sound data manager: a dispose callback with a sound archive loader, nothing loaded.
 00136e58 Stops a playing sound, fading out over `fade_frames` (now when 0 or less).
 001376d8 Replaces the owner's frame heap (destroying the old one) by a new one on the region (start, size), 4-byte aligned; false when the region is too small or it fails.
+0013775c Initializes a linked list: empty, its sentinel pointing at itself.
 00137830 Releases the handle at +4 (0013b72c) when it is set.
 00137848 Destroys a font resource: releases its textures, then the font base.
 00137878 Clears a set of network addresses (each the empty pair -3, -1) and its counters.
+0013796c Releases the net event handler (when set up): resets it and its clock handler, and clears the global \n handler.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
 00137c78 Creates the resource with the factory's heap and its name.
 00137d88 Gives an empty array room for `capacity` pointers from the heap (a positive capacity only).

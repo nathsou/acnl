@@ -872,8 +872,8 @@
 0012ca6c set_word_4_and_succeed
 0012ca78 construct_node_member
 0012ca7c construct_load_split
-0012cb24 call_12cb24
-0012cb3c call_12cb3c
+0012cb24 clock_state_flag_1
+0012cb3c clear_clock_state_flag_1
 0012cb84 SceneObjects__release
 0012cc78 SaveData__finalize
 0012d198 do_nothing_0012d198
@@ -891,7 +891,7 @@
 0012da6c GpuFramebuffer__init
 0012db48 GpuState__set_depth_buffer_flags
 0012db70 GpuCommandList__reserve
-0012de20 notify_segment
+0012de20 Heap__give_back_segment
 0012de78 start_flagged_list
 0012e350 uint64_divide
 0012e640 int64_divide
@@ -1011,7 +1011,7 @@
 00132410 ScrollBar__release
 00132478 clear_list
 001324a8 construct_list_node
-00132530 release_and_clear_pair
+00132530 Thread__join_and_clear
 00132558 SaveData__flush
 001325a0 SlotList56__destruct
 001325e4 return_zero_pair
@@ -1036,7 +1036,7 @@
 001342d8 ErrorReport__send_result_forward
 001342f8 ErrorReport__send_failure_forward
 00134318 find_archive
-001343e4 sead__BufferedSafeStringBase_char___BufferedSafeStringBase_001343e4
+001343e4 FixedSafeString256__construct
 00134440 Interpolation__value
 0013451c Matrix34__copy_from
 00134544 copy_bytes_small_sizes_first
@@ -1111,7 +1111,7 @@
 00137830 release_handle_if_set
 00137848 nw__font__ResFont__destructor
 00137878 NetAddressSet__clear
-0013796c object_1c_prepare_release
+0013796c NetEventHandler__release
 001379b4 object_1c_finish
 001379e4 part_144_update
 00137a0c RankedValue__clear_00137a0c
