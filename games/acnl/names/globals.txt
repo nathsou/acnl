@@ -16,6 +16,7 @@
 00868474 command_queue_vtable
 00879424 message_window_text_a
 00879428 message_window_text_b
+00889074 scene_flag_table
 0088ec5c sub_object_template
 0088f298 default_npc_entry_id
 008a3bbc float_one
@@ -539,6 +540,7 @@
 00ad55ea colors_8
 00ad5602 colors_16
 00ad5638 request_record_head
+00ad56b0 game_time
 00ad56e0 menu_entry_state
 00ad5718 text_command_scale
 00ad5748 word_fix_table

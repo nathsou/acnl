@@ -2136,6 +2136,8 @@
 002f6db4 Sets byte +0xd6 of each child with id `id` (all when -1) and remembers the last one at +0xb4.
 002f737c Bit `index` (fewer than 5) of the flag bytes; 0 for a larger index.
 002f73b8 Releases what the part loaded (its graphics context current while it does) and destroys the load split base part at +0x1c.
+002f74c8 The current scene's id (the scene state's byte 2).
+002f74e0 Whether the scene (arg 2) has every flag of the mask (arg 1) in the scenes' flag table; never for the \n no-scene id 0xa5.
 002f7508 When `copy`, copies the four animation targets (and +0xc) of one model to another and resets their values to 0.
 002f7804 Moves the page's start to include the index and refreshes it.
 002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
@@ -2170,19 +2172,24 @@
 002fae74 Points the object at the shared record at 0xaf7f3c.
 002faedc Calls the function on each of the 2x2 blocks of the map.
 002faf8c Counts the items in the town's blocks.
+002fb378 The game's current time (a GameTime the clock keeps up to date).
 002fb4d8 Places the item in the world or swaps it with a pocket or storage slot, by the item's category.
 002fb7b0 Releases flag-manager flag 0x24 when the record holds it (bit 2 of +0x79), clearing bits 1 and 2.
 002fbf60 Starts the task at 0x2fbf7c with argument 1.
 002fc194 Zeroes the record's bytes and identity (+0x16), with its index bytes at 0xff and its two ids at -1.
 002fc2a4 Adds to the set (one bit per item id, up to 0x172b) every item of `kind` (its data's byte 0xd); kinds 1-8 add fixed groups through ItemSet__add_group.
+002fc8e8 Copies an item (its number and its flags halves).
+002fc934 Copies an item (its number and its flags halves): a second copy of Item__copy.
 002fc948 The map of the current map index (0x952b9d), else the shared default map at 0xa14860 (constructed once).
 002fcc54 Switches the model's animation to kind `kind` (below 0x16, names at 0x953a94) when it changes, and restores its toggle mode.
 002fd0c4 Constructs the skeletal model with the class's vtables.
+002fd108 Allocates size bytes (arg 0) on a heap (arg 1) with an alignment (arg 2).
 002fd11c Clears the cells whose block kind is in the list (or of categories 0x24 and 0x28).
 002fd41c Whether (word r0, signed bytes 0 and 1 of r1) is not less than (word r3, the same bytes of the stack argument), compared in that order.
 002fd648 Calls the function on each of the 2x2 blocks (with the value).
 002fdd50 Finds set bit number `n` in 0x140 16-bit words, keeping the position in `cursor` (word index, bit, and an x/y position 16 bits to a row, 0x60 wide); true when found.
 002fe2e0 Updates the sound data loader when it is up.
+002fe7dc A local static's guard: 1 the first time (and marks the guard), 0 afterwards.
 002fea94 Calls the function on each cell of the 2x2 blocks.
 002ff1cc Daily update of the second contest ranking: resets it for a new contest, updates the schedule and sends the prizes.
 002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.

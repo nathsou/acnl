@@ -5807,9 +5807,9 @@
 002f747c ObjectOwner__release_object
 002f74a8 read_field_s8_0x10_
 002f74b0 FlaggedObject__reset
-002f74c8 read_global_byte_2
+002f74c8 current_scene_id
 002f74d8 audio__bgm__StageOpusExhibition__virtual_16
-002f74e0 table_entry_has_all_bits
+002f74e0 scene_has_flags
 002f7508 copy_four_animation_targets
 002f75a0 allocate_plain
 002f7604 construct_button_action_control
@@ -5921,7 +5921,7 @@
 002fb310 slot_records_of
 002fb328 get_save_data
 002fb338 is_not_sentinel
-002fb378 return_constant_0xad56b0_
+002fb378 game_time_now
 002fb384 AcPlayer__virtual_23_002fb384
 002fb430 make_adjusted_words
 002fb4a0 words_not_less
@@ -5966,10 +5966,10 @@
 002fc288 call_24a5ec_returning_first
 002fc2a4 ItemSet__add_kind
 002fc814 CategorySlots__store
-002fc8e8 copy_item_002fc8e8
+002fc8e8 Item__copy
 002fc8fc do_nothing_002fc8fc
 002fc900 mode_above_1
-002fc934 copy_item_002fc934
+002fc934 Item__copy_b
 002fc948 map_or_default_a14860
 002fc994 GridMap__place_item_at_world
 002fca6c is_special_terrain_at
@@ -5997,7 +5997,7 @@
 002fd050 set_item_number
 002fd068 get_counter_block
 002fd0c4 SkeletalModel__construct
-002fd108 allocate_from_heap_002fd108
+002fd108 allocate_on_heap
 002fd11c clear_blocks_of_listed_kinds
 002fd41c word_and_byte_pairs_not_less
 002fd478 ResourceGetSkeletal__virtual_1_002fd478
@@ -6042,7 +6042,7 @@
 002fe77c item_flag_9_for_type_10
 002fe7a0 item_has_type_4_6_8_or_25
 002fe7cc read_map_table
-002fe7dc claim_flag
+002fe7dc static_guard_acquire
 002fe7f0 do_nothing_002fe7f0
 002fe7f4 script__WordFix_33u___WordFix_002fe7f4
 002fe874 call_target_with_two_0x94_
