@@ -7272,6 +7272,10 @@
 00810b98 Constructs the pool of 50 nodes (8 bytes each) with its free list.
 00810c14 Constructs the pool of 10 nodes (0x78 bytes each) with its free list.
 00810ccc Constructs a 17-character fixed string, empty.
+00811a38 Constructs a 128-character string formatted from a format (arg 1) and its arguments.
+00811ab8 Constructs a 32-character string formatted from a format (arg 1) and its arguments.
+00811b38 Constructs a 64-character string formatted from a format (arg 1) and its arguments.
+00811bb8 Constructs a 6-character string formatted from a format (arg 1) and its arguments.
 00812698 The curve's value at the frame: clamped to its ends, else the Hermite interpolation of the surrounding keys (frame, value, slope).
 00812ae8 The curve's value at the frame, with the keys' slopes scaled by the span between them.
 00813340 Sets the matrix to the translation by (x, y, z) (in s0 to s2).
@@ -7294,6 +7298,7 @@
 0081b648 Plays the animation with the key on the animator (the fifth kind).
 0081b750 Plays the animation with the key on the animator (the fourth kind).
 0081c0a0 Moves the save step to the one after the current in its table.
+0081c694 Constructs an 11-character script word, empty.
 0081c9bc Constructs a 13-character script word, empty.
 0081d12c Constructs a 20-character script word (filled with the empty character).
 0081d248 Constructs a 21-character script word (filled with the empty character).
