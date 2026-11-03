@@ -1025,6 +1025,7 @@
 001abcd4 Resets the 8 part ids (0x276 for none) and releases the model and its loader.
 001abd24 Sets the NPC model's face (by its mode).
 001ac668 Sets the move's angle, target position and its two halves.
+001aca90 Destroys an eight-entry selection catalog: its buttons, scroll bar, animations, layouts and archive reader.
 001acb90 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 001accd4 Loads the 4 items from the save (+0x6adb8), or restocks them when asked.
 001acf0c Sets up the message board's panes and animations once.
@@ -1359,6 +1360,7 @@
 001fdf44 Whether the notice's message is closed; asks it to close once otherwise.
 001fe718 Seeds the day's random generator and rolls the weather of the coming days.
 001ff5c0 Adds the bone's movement since the last frame to the actor's motion and records its new position.
+001ff92c Constructs a drag icon node: a button node with an icon animation, enabled, at no offset.
 001ff9d8 Destroys a drag icon node: unbinds and destroys its icon animation, then the button action node.
 00200ab4 Copies the item layout entries (6 bytes each) of variant `index` of the table (+0xd0) into the buffer when it fits; their count, or 0.
 00200b9c Places the items of the cell's layout variant (up to 0x600 bytes of entries) in the cell, keeping their top bits.
@@ -1996,6 +1998,8 @@
 002b75bc Starts the state with the handler pair at 0x87a114.
 002b7910 Starts the state with the handler pair at 0x87a11c.
 002b7928 Loads the change window's layout archive.
+002b7938 Constructs a rental change window with one button: an archive accessor, a layout with two animations.
+002b79e8 Destroys a rental change window with one button: its button, animations, layout and archive reader.
 002b7cb0 Updates the layout at +4 and attaches it to the layout system.
 002b7fa0 The index of the first clear bit of the 32 bits at 0x952aec; 0 when all are set.
 002b8044 Sets the record's four words and takes a free slot index.
@@ -2223,6 +2227,10 @@
 002e7f04 Plays the tune with random variations (when not repeating the plain tune).
 002e8444 Zeroes the tune player, with a 120 tempo and its 12 volumes at 100.
 002e8cc8 Plays the sound with the id.
+002e8ce8 Constructs an insect or fish sound object: a sound object base with one sound slot, volume 1.
+002e9118 Starts a melody sound object (unless started): kind 10 in the scenes so flagged, then the base, and binds \n its melody players.
+002e9268 Stops a melody sound object (when started): its tune and melody players, its sound, then the base.
+002e92b0 Constructs a melody sound object: a sound object base with one sound slot and two positioned melody \n players.
 002e9324 Destroys the 3D sound object.
 002e9954 Releases the slot's sound handle (index below 0x30) and marks the slot free (-1).
 002e99d0 Initializes a free slot (-1).
@@ -2815,6 +2823,7 @@
 00327ce8 Appends the entry to the queue, first filling it with the object's parameters when asked.
 003280e0 Plays the layout's named animation.
 0032821c Sets the layout's animation frame when it is bound.
+003288a4 Destroys a letter stock drag window: its animations, drag icon control and group, buttons, layout and archive \n reader.
 003289a8 Gives the villager of the record (+2) the item (+0) into slot +3; a category 0x2f item without a slot goes to its +0x249e item.
 0032a3c8 Copies the record with a new item and its three color bytes.
 0032ae24 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
