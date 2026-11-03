@@ -16002,6 +16002,7 @@
 005e9098 script__CopyRepelTagEngine__virtual_4
 005e90ac script__CopyRepelTagEngine__deleting_destructor
 005e90bc script__CopyRepelTagEngine__destructor
+005e90cc DialogBox__refresh
 005e9150 store_word_constant_pack_0xc
 005e915c script__WordCPtr__WordCPtr_005e915c
 005e92b4 script__PatchimTargetEngine__virtual_5
@@ -16030,6 +16031,7 @@
 005e9f20 script__Chip__MeasureProcessor__virtual_3
 005e9fd4 script__Chip__MeasureProcessor__deleting_destructor
 005e9fd8 script__Chip__MeasureProcessor__destructor
+005e9fdc TextBox__measure
 005ea090 script__TalkMeasure__virtual_10
 005ea0a8 script__Chip__MeasureProcessor__MeasureProcessor
 005ea158 format_3_digits
@@ -16424,6 +16426,7 @@
 005ffd84 script__CountCode__destructor
 005ffd94 TalkScript__attach_window
 005fffc4 sead__SafeStringBase_char___SafeStringBase_005fffc4
+006001f0 TalkScript__set_option
 0060028c ObjectWithListener__set_values
 006002b8 SlotOwner__mark_slots
 006002e4 script__FlowEngine__FlowEngine
@@ -16457,6 +16460,7 @@
 00601f20 TalkWindow__reset_wait
 00601f44 script__InsertEngine__InsertEngine_00601f44
 00602144 TalkWindow__attach
+006021d0 TalkWindow__detach
 00602350 TalkWindow__set_wait
 00602604 TalkWindow__set_choice
 00602938 TalkWindow__request_close
@@ -16519,6 +16523,7 @@
 00606a24 Announcement__set
 00606a64 Announcement__reset
 00606ab4 Announcement__try_show
+00606bd0 Announcement__can_show
 00606d20 SceneFlagRef__clear
 00606d70 SceneFlagRef__set
 00606dc0 BsScene__pre_draw
@@ -16651,6 +16656,7 @@
 00612d1c SearchCand_7___SearchCand_00612d1c
 006130d4 SearchCand_16___SearchCand_006130d4
 00613130 SearchCand_16___SearchCand_00613130
+00613620 TownRecord__reset
 00613658 TimePair__clear
 00613684 Town__acre_block
 006136a8 Town__acre_small_block
@@ -16661,6 +16667,7 @@
 00613734 tile_address_00613734
 00613758 member_address_0x6480_
 00613764 Town__construct_map
+006137d8 TownLayout__init
 006138a4 clear_4000_bytes
 006138ac do_nothing_006138ac
 00613c8c EncryptedInt__add
@@ -16674,6 +16681,8 @@
 00613e7c UtlBase_DemoActor___destructor
 00613e80 place_villager_items_in_scene_2b
 0061402c place_first_villager_items_2b
+006140b4 FieldObjects__entry_for_item_c
+006140b8 FieldObjects__entry_for_item_b
 00614568 bgcheck__DynamicCylinder__DynamicCylinder
 00614588 bgcheck__DynamicCylinder__deleting_destructor
 006145ac destroy_dynamic_cylinder
@@ -16683,6 +16692,7 @@
 0061476c release_resource_987a8
 00614794 AcFtr__virtual_3
 00614798 bgcheck__GuardBox__virtual_2
+0061479c SoundSource__init
 00614854 bgcheck__MoveBg__MoveBg
 00614888 bgcheck__MoveBg__deleting_destructor
 006148ac destroy_move_bg
@@ -16711,6 +16721,8 @@
 00615b2c creature_size_scale
 00615bcc creature_appears_at_time
 00615e30 item_actor_kind_bytes
+00615e8c Fish__info
+00615f30 Player__has_caught
 00615ffc sea_creature_spawn_range
 00616058 creature_season_check
 006162e0 Item__from_catalog_index
@@ -16730,6 +16742,7 @@
 00617098 fill_station_flags
 006170f4 store_constants_6170f4_006170f4
 00617104 store_byte_constant_pack_0x4_00617104
+00617110 NetSession__update_veneer
 00617120 NetSession__station_ready
 006174fc NetSession__tick_close_timer
 0061754c NetSession__update
@@ -16739,6 +16752,7 @@
 00617824 NetSession__add_empty_visitor
 00617840 NetMessage__send
 006179d0 NetSession__process_leaving_stations
+00617c84 NetSession__finish_leave
 00617d08 NetSession__update_visit_state
 00617f90 NetSession__start_visit
 006180cc netgame__NetGameMgr__SingletonDisposer___deleting_destructor
@@ -16751,24 +16765,34 @@
 00618578 NetSession__assign_guest_slot
 00618684 NetSession__try_start_visit_as_host
 006186b8 NetSession__send_join_answer
+00618728 NetSession__connect
+00618930 NetSession__reset
+006189d0 NetSession__request_close
+00618a1c NetSession__check_component
 00618aa4 NetSession__try_start_visit_as_guest
 00618ad8 NetSession__try_begin_close_7
 00618b08 NetSession__try_begin_close_5
 00618b38 NetSession__try_start_visit_with_friends
+00618b9c NetSession__request_leave
 00618c00 NetSession__reset
+00618dd4 NetSession__start
 00618ecc NetSession__station_link_ok
 00618fb0 NetSession__end
 00619044 NetSession__construct
 00619298 NetSession__destruct
+006193d0 NetSession__update_all
 0061a41c SlotBlocks__update
 0061a684 set_station_byte_8
 0061a6a4 SlotBlocks__clear
 0061a71c SlotBlocks__construct
+0061a788 NetSession__station_veneer
+0061a79c NetSession__guest_entry_is_ready_veneer
 0061a7a0 net_guest_entry_is_ready
 0061a7b0 NetPeer__reset
 0061a7cc NetPeer__set
 0061a7f4 construct_stamp_with_pair
 0061a810 NetSession__request_station_bit
+0061a8b0 NetMessage__dispatch
 0061d888 request_stage_2b
 0061d9bc refresh_group_object
 0061d9e0 NetGuest__leave_done
@@ -16779,6 +16803,7 @@
 0061dd74 remove_station_from_masks
 0061de7c NetGuest__request_leave
 0061df58 NetGuest__start_join
+0061e11c NetGuest__update
 0061e488 NetGuest__advance_leave_state
 0061e540 begin_state_25
 0061e574 NetGuest__finish_visit
@@ -16788,6 +16813,7 @@
 0061ec88 NetGuest__begin_leave
 0061ee10 request_stage_72
 0061ee60 clamp_word_50_to_96
+0061ee74 NetGuest__receive
 0061f2a0 NetGuest__can_end_in_mode_2
 0061f2e8 request_choice
 0061f374 request_all
@@ -16806,6 +16832,7 @@
 0061fd60 netgame__MatchingList__ScanBuf__deleting_destructor
 0061fd64 netgame__MatchingList__ScanBuf__destructor
 0061fd68 NetSession__send_station_bit
+0061fe0c NetChat__update_session
 00620660 clear_slot_byte_9
 00620678 set_slot_byte_9
 00620dcc StationEntry__clear
@@ -16818,6 +16845,7 @@
 00621684 reset_station_slot
 006216d0 NetVisit__send_state_records
 00621b98 NetVisit__host_handle_state
+00621cf4 NetStation__init_parts
 00621da4 set_slot_state
 00621f0c set_slot_value
 006220f8 netgame__ConfirmMachine__ConfirmMachine_006220f8
@@ -16837,7 +16865,9 @@
 0062302c NetLink__queue_request
 00623168 NetLink__reset
 00623184 store_constants_623184
+00623194 NetLink__update_state
 006235cc NetVisit__remove_leaving_station
+00623664 NetLink__update_transfer
 006237a4 remove_station_from_three_masks
 006237ec NetVisit__finish_station_leave
 00623858 drop_session_mask_copy_a
@@ -16861,10 +16891,12 @@
 00623f2c netgame__ConfirmMachine__deleting_destructor
 00623f30 netgame__ConfirmMachine__destructor
 00623f34 PlayerStamp__stamp_current_player
+00623fb8 NetMessage__send_buffer
 00623ff0 construct_player_stamp
 00624008 construct_empty_player_stamp
 00624024 construct_nothing_00624024
 00624038 net_session_call_75f63c
+00624050 NetLink__update_by_state
 006245ec remove_station_from_first_mask
 00624600 NetVisit__advance_ending
 0062463c report_all_stations_left
@@ -16895,6 +16927,7 @@
 00624d24 init_entry_table_00624d24
 00624d48 construct_entry_table
 00624d84 world_state_check
+00624ee8 NetPlayers__slot_veneer
 00624f00 station_is_waited_for
 00624f14 clear_station_flags
 00624f30 StationBuffers__assign
@@ -16948,6 +16981,7 @@
 00625c20 clear_station_slot
 00625c40 init_part_06
 00625c7c clear_station_slots
+00625cbc NetSession__send_entry_all
 00625da4 SmallPacket__reset
 00625db8 SmallPacket__set_payload
 00625e2c SmallPacket__clear
@@ -16956,6 +16990,7 @@
 00625f58 store_constants_625f58
 00625f84 copy_word_0_2
 00625f90 clear_packed_a_00625f90
+00625fa8 NetSession__send_entry
 00626070 store_word_constant_pack_0x4_00626070
 0062607c SmallPayload__set_2
 006260f0 store_constants_6260f0
@@ -16977,6 +17012,7 @@
 00626454 SmallPacket2__reset
 0062646c SmallPayload__set_3
 006264e0 SmallPacket2__clear
+006264fc NetSession__send_entry_update
 006265c4 store_word_constant_pack_0x4_006265c4
 006265d0 SmallPayload__set_4
 00626644 store_constants_626644
@@ -16996,6 +17032,7 @@
 0062697c release_station_templates
 006269b0 begin_state_1f0
 00626a8c state_214_address
+00626a9c NetSession__refresh_local_entry
 00626ba8 state_214_above_2
 00626bc8 net_session_call_626a9c
 00626bd8 on_station_left
@@ -17006,6 +17043,7 @@
 00626d14 NetPeer__release
 00626d40 NetPeer__connect
 00626df0 create_net_game_mgr
+00627124 NetPart__update_session
 00627d44 PacketBuffer__append
 00627f74 PacketBuffer__reserve_record
 00627fe0 PacketBuffer__increment_counter
@@ -17016,6 +17054,8 @@
 00628124 call_small_handler
 00628148 dispatch_records
 006282a8 notify_target_006282a8
+006282c0 NetSharedTable__init
+0062834c NetSharedTable__reset
 00628518 NetRecord__clear
 0062854c sead__SafeStringBase_wchar_t___SafeStringBase_0062854c
 00628afc set_net_value_953600

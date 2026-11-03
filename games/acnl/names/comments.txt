@@ -3544,9 +3544,11 @@
 005e626c Starts the text with its options and runs it when there is one; the result.
 005e7dc4 Notes whether the character is native to the region's script or foreign.
 005e8498 Calls the dialog box's virtual function 5.
+005e90cc Refreshes the dialog box's state and its text.
 005e9974 Refreshes the talk window's text and its label when attached.
 005e9d64 The item offset pair (category 0x27) for the talk's value.
 005e9d90 Clears the pair (category 0x27).
+005e9fdc Measures the text box's text bounds.
 005ea158 Formats the number with three digits into the string.
 005ea8f8 Attaches the window to the message store and restamps its time.
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
@@ -3562,9 +3564,11 @@
 005fc110 Clears the page's line offsets and shows its end (the last line's width, or the default).
 005ffc14 Finds the script's label between the two nodes.
 005ffd94 Links the talk script with its window and, during a talk with no special partner, marks the talk as shown.
+006001f0 Sets the talk script's option.
 0060143c Binds the resource of the current mode's entry (from the normal or the alternative table) as the talk's argument.
 00601f20 Clears the wait and, unless asked to keep it, the flag and the window's vertical scroll.
 00602144 Links the talk window and its owner and, during a talk with no special partner, marks the talk as shown.
+006021d0 Detaches the talk window from its owner.
 00602350 Sets a positive wait in frames with its flag.
 00602604 Sets the choice's message, resets the selection and sets its flag.
 00602938 Requests closing the window with the flag, and closes the choice when one is open (state 8).
@@ -3588,6 +3592,7 @@
 00606a24 Sets the pending announcement: its message id, four flags and a value.
 00606a64 Resets the pending announcement to the default message and clears it.
 00606ab4 Shows the pending announcement when nothing blocks it (no announcement shown, no error screen, the session idle); whether it was shown.
+00606bd0 Whether the announcement may be shown now.
 00606d20 Clears the scene flag when it is set, and the cached state.
 00606d70 Sets the scene flag when it is clear, and the cached state.
 00606ec8 Starts the talk script from the text and attaches it to the talk window, then requests the window close.
@@ -3613,6 +3618,7 @@
 00612738 Updates the weather's items for the day.
 00612cec Stores 0x109 in a 16-bit field.
 00612d0c Stores 0x7db in a 16-bit field.
+00613620 Resets the town's record (its bytes to 7).
 00613658 Unsets the two time records (+0, +0xf).
 00613684 The address of the 0x400-byte block of acre (column below 5, row below 4) from +0x58 (the first one when out of range).
 006136a8 The address of the 0x100-byte block of acre (column below 5, row below 4) from +0x5058 (the first one when out of range).
@@ -3621,6 +3627,7 @@
 00613704 Whether (x, z) is within the 5 x 4 acres.
 00613718 Whether cell (x, z) is inside the town (x 0x10-0x5f, z 0x10-0x4f).
 00613764 Builds the town map: its sizes (2, 3, 3), the 42 terrain ids, the 20 acre blocks and their small blocks.
+006137d8 Initializes the town's layout record.
 006138a4 Clears 0x4000 bytes.
 00613dfc Copies 0x1404 bytes.
 00613e08 Clears a 0x1404-byte block (its word and data).
@@ -3628,9 +3635,12 @@
 00613e24 Clears a 0x1404-byte block and returns it.
 00613e80 Places a villager's items on the scene's free cells.
 0061402c In scene 0x2b: places the items of the first listed villager that is not leaving.
+006140b4 The field object entry for the item at the cell.
+006140b8 The field object entry for the item at the cell (the second layout).
 006145cc The normalized direction between two reported points.
 00614730 Adds the collider to the collision list.
 0061476c Releases a resource from the list at 0x9870a8 (when there is one).
+0061479c Initializes the sound source at the position with its angle.
 006148e4 Clears a notice record and its four 16-byte entries.
 00614a64 Sweeps the shape between the two points against the collision world.
 0061532c Clears a 0x30-byte record.
@@ -3638,6 +3648,8 @@
 00615534 Clears five words and a 16-bit value.
 00615b2c The model scale of a caught creature (kind below 0x6b, table 0x86a2c8) from its length: 1 + (length - base) / (range * 10), clamped to 0.7-1.3; 1.0 without a range.
 00615bcc Whether a creature appears at a time (its hours and months, by the scene's kind).
+00615e8c The fish's table entry (of 0x6b), and its size.
+00615f30 Whether the current player has caught the fish or the insect.
 00615ffc For a sea creature (category 0x28): its two spawn bytes (+0x48, +0x49) from the creature table.
 00616058 Whether a creature is in season at a time (by the scene's kind).
 006162e0 Builds the item of the catalog index (fish, sea creatures, then the others).
@@ -3649,6 +3661,7 @@
 00616fb0 Word +0xc of the object at 0x952b8c.
 00616fc4 Word +0x10 of the object at 0x952b8c.
 00617088 Clears byte `index` (below 4).
+00617110 Updates the net session.
 00617120 Whether station `index` is connected, not leaving, joined and not dropped (the four station masks, under the session lock).
 006174fc Counts the close timer (+0x132a0) down; when it ends, resets the link, the peer table and the link state.
 0061754c Updates the network session: the link, the visit state, the stations and the peers.
@@ -3657,6 +3670,7 @@
 00617824 Adds an empty entry (the default address and id) to the session's visitor log.
 00617840 Sends the message to the stations with its options.
 006179d0 Removes the leaving station and processes the guest leave; whether both were done.
+00617c84 Finishes leaving (in state 6): resets the network part.
 00617d08 Updates the visit: ends a pending notice, refreshes the slot blocks, the roles and the guest records, and moves to visit kind 2 when the link part asks.
 00617f90 Starts a visit: lays out and assigns the station buffers, sets this console's address and the station masks.
 00618164 Drops station `index` (below 4): clears its counters, slots, buffers, packets, records and masks (under the session lock) and drops its peer.
@@ -3666,23 +3680,33 @@
 00618578 Once a guest station is known: assigns the guest's slot and buffers and, unless keeping them, sets the slots of the other stations.
 00618684 When the link object accepts (0050d24c): starts the visit as the host; true when it did.
 006186b8 Sends the join answer (message 0x76: accepted when a guest is connected and assigned, else refused) and keeps it (+0x132b1).
+00618728 Connects the session through the request pool.
+00618930 Resets the session's state and tables when it may.
+006189d0 Requests closing the session (state 4) when idle.
+00618a1c Checks the online component's state for the session.
 00618aa4 When the link object accepts (0050d238): starts the visit as a guest with option 1; true when it did.
 00618ad8 Moves the session's close state (+0x1f0) from 0 or 1 to 2 with reason 7; true when it did.
 00618b08 Moves the session's close state (+0x1f0) from 0 or 1 to 2 with reason 5; true when it did.
 00618b38 When the link object accepts (0050d260): starts the visit with the friend list's value; true when it did.
+00618b9c Requests leaving the session (state 6) when idle.
 00618c00 Resets every part of the network session (stations, visit, peers, packets, records).
+00618dd4 Starts the session: resets its tables and state.
 00618ecc Whether station `index` is ready (when `check_masks`), its peer address is usable and, when asked, its player byte +0x24 is clear.
 00618fb0 Ends the session: resets it, restores this console's slot, releases the other three slots and counts the link down (closing it at 0).
 00619044 Builds the network session's parts (peers, records, buffers, friend check, visitor log).
 00619298 Destroys the network session's parts (lock, player blocks, guest record, peers, friend check, visitor log, avatars).
+006193d0 Updates the session's stations and their data.
 0061a41c Sends the pending slot record (0x1d) when the session allows it (or clears station 0's wait as a guest), and copies the reference clock when asked.
 0061a684 Stores a byte for station `index` (below 4) at +8.
 0061a6a4 Clears the slot blocks' state (stations 4 and 8, three flag pairs and the counters).
 0061a71c Builds the slot blocks' state (stations 8 and 4, two flag pairs and the counters).
+0061a788 Passes the station to the session.
+0061a79c Whether the session's guest entry is ready.
 0061a7a0 NetSession__guest_entry_is_ready on the network session.
 0061a7b0 Clears the peer's id and sets its address to the empty pair (-3, -1).
 0061a7cc Stores a peer's id, two halves and its address pair.
 0061a810 Asks for station `index`'s bit: through the link as the host, else sends record 0x30 with it.
+0061a8b0 Dispatches the message by its kind (below 0x5e).
 0061d9bc Refreshes the object at 0x95c6d0 (006c3e4c, then 006a69c0).
 0061d9e0 Whether the guest's leave (record kind 0x2b or 0x37) is done: the station dropped from the session masks, or every station ready.
 0061dad0 Stores the word at 0x87bd1c at +0x4c.
@@ -3690,6 +3714,7 @@
 0061dc30 Sends the visiting player home: requests the scene change to the home spawn point (by the group's spawn tile).
 0061de7c Asks to leave: directly in mode 2, else sends record 0x6a as the host or marks state 6 as a guest; true.
 0061df58 Starts joining a town: stamps the current player, sets the station masks and the friend checks.
+0061e11c Updates the guest in a multiplayer session.
 0061e488 Advances the leave states: 0x2e -> 0x2f and 0x5a -> 0x5b (resetting the leaving station), 0x39 -> 0x3a (ending the session).
 0061e574 Finishes the visit: in mode 2 requests the pending scene change; otherwise sells the visitor's shoes and pockets into the bank, takes off the set-A items and sends them home.
 0061e690 When the guests are ready: marks the announcement (+0x141) and sends record 0x14 to each waited station (and the given one); true when sent.
@@ -3697,12 +3722,14 @@
 0061eb20 Puts the arriving visitor in the town: builds their items and requests the scene change to a random spot near the entrance.
 0061ec88 Starts the leave: clears the flags, state 0x45 (or 0x4a when the main object is busy) and stops the leaving sound for this station.
 0061ee60 Caps +0x50 at 0x96.
+0061ee74 Handles a guest's message in a multiplayer session.
 0061f2a0 In mode 2 with a main-object value and state 0: whether the session may end (00618b9c).
 0061f3f8 Clears the guest records (states, flag pairs, stations 4, counters).
 0061f608 Accepts a friend key that is new to the three known ones (when the link allows it): sends it (0050d1b4) and records it; true when done or already known.
 0061f6a0 Records an accepted friend key in a free entry.
 0061fc98 Sends the 100-entry friend list (+0x11950) through the link object; clears the pending flags when it went through.
 0061fd68 Sends the station's bit (packet 0x30), or requests it as the host.
+0061fe0c Updates the chat for the session.
 00620e18 Sets the visit role from the session: 1 when this station hosts the guest, 3 without a guest, else 8 (for stations below 4).
 006212f0 In role 1 with a valid session: refreshes the station set and sends this station's kind state (record 0xd), or handles it locally as the host; then moves to role 2.
 006213c8 Refreshes the station's entry and slot, and in a session of more than one sends the update as a network record (kind 1).
@@ -3711,6 +3738,7 @@
 00621684 Clears station slot `slot` (fewer than 4): its entry, no value (0xa5), state 0, and its bit in the station mask.
 006216d0 Sends the visit state records for the stations in the mask.
 00621b98 Handles a station's state as the host: records it in the station mask and sends the answer records.
+00621cf4 Initializes the station's parts.
 00622158 Returns at once.
 0062217c Stores the current player's short id (or clears it), resets the peer table (006221e4) and marks it ready (+0x42aa).
 006221e4 Updates the chat under its lock for the current player.
@@ -3726,7 +3754,9 @@
 00622fe4 When the link is up and the station is below 5: requests the station's bit; true when sent.
 0062302c Queues a request mask for the link.
 00623168 Resets the link's time record and clears its two state bytes.
+00623194 Updates the link's state (when active).
 006235cc In state 6: removes the leaving station (+1) from the session's station mask; true.
+00623664 Updates the link's transfer when the session allows it.
 006237ec In state 0xa: records the leaving station, resets its slot, removes it from the mask and moves to state 0xb.
 006238d0 Removes a station from the session's mask and reports it (00626bd8).
 00623948 Removes a station from the session's mask and reports it (00626c2c).
@@ -3736,7 +3766,9 @@
 00623c8c Adds `delta` (negative to take away) to station `station`'s count, under the session's lock.
 00623cfc Adds `size` to what station `station` uses when it still fits in its 0xd002 bytes; true when it did.
 00623d48 Lays the buffer out once: each of the 4 stations but `own` gets 0xd002 bytes of it, in order.
+00623fb8 Sends the buffer (16 bytes) as a message.
 00624038 Calls 0075f63c on the network session.
+00624050 Updates the network link by its state (below 14).
 00624600 Moves state 5 to 7, or state 6 to 9 marking the session ended (+0x54).
 0062463c Reports every connected station (00626bd8) with a cleared flag pair.
 0062468c Whether every connected station passes the flag-pair check.
@@ -3746,6 +3778,7 @@
 00624954 Stores the entry id (up to 0xa5) of station `index` (below 4).
 00624968 Sets or clears the active bit of station `index` (below 4) in +4.
 00624d1c Copies 0x80 bytes.
+00624ee8 Passes the slot to the session's player list.
 00624f14 Clears the two flags (+0x14, +0x18) of station `index` (below 4).
 00624f30 Once (+0x1c): gives each of the other three stations a 0x16802-byte part of the buffer (+0), skipping this station's slot.
 00624fb4 Stores the flag of station `index` (below 4) at +0x18.
@@ -3770,11 +3803,13 @@
 00625b90 Clears a station entry (station 4, entry 0xa5).
 00625c20 Clears station `index` (below 4): entry 0xa5, station 4.
 00625c7c Clears the four station slots (entries 0xa5, stations 4).
+00625cbc Sends the local entry to the stations.
 00625da4 Clears a small packet (station 4, size 0).
 00625db8 Copies up to 5 payload bytes into the packet's buffer (+4) and keeps the size (+8).
 00625e2c Clears a small packet (station 4, no buffer, size 0).
 00625ee4 Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
 00625f84 Copies the word at +0 of the source.
+00625fa8 Sends the local entry to the station.
 0062607c Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
 00626118 Copies the word at +0 of the source.
 0062613c The rank of station `station` among the connected stations (how many connected ones come before it); 4 when it is not connected.
@@ -3791,6 +3826,7 @@
 00626454 Clears a packet (size 0, station 4, flag 0).
 0062646c Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
 006264e0 Clears a packet (no buffer, size 0, station 4, flag 0).
+006264fc Sends the local entry's update to the station.
 006265d0 Copies up to 5 bytes into the buffer (+0) and keeps the size (+4).
 006267a4 Calls 00618728 on the network session with the arguments.
 006267c0 Whether +0x23b of the network session is set.
@@ -3804,6 +3840,7 @@
 00626930 Resets the session's record at +0x28ec and handles network part 3.
 00626964 Passes the packet to the session's sender.
 0062697c For station `index` (below 4): releases its two template kinds (tables 0x881b8c and 0x881b90).
+00626a9c Refreshes the session's entry of the local station.
 00626bc8 Calls 00626a9c on the network session.
 00626bd8 After station `index` left: releases its templates, resets the global block, the NPC packets and its room data; when no station remains, resets the NPC share info.
 00626c2c Resets the session's shared tables and entries.
@@ -3813,6 +3850,9 @@
 00626d14 Resets the peer and releases its host link (+0x10) when it has one.
 00626d40 Connects the peer when its address is set: drops a dead host link, then opens a new one; true when linked.
 00626df0 Creates the net game manager on the net game heap and hands it to the session.
+00627124 Updates the network part's session state.
+006282c0 Initializes the shared table's 0x96 entries.
+0062834c Resets the shared table's entries (0x96 of them) from the default.
 00628518 Clears a network record (station 4).
 00628afc Stores a 16-bit value at 0x953600 and builds a word pointer to it.
 00628d08 Updates the network part's state.
