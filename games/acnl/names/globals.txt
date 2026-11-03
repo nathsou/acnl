@@ -428,9 +428,10 @@
 00953684 scene_load_requested
 009537c2 player_angle_y
 0095385c npc_lock_player_permit_bit_instance
-00953860 npc_lock_player_permit_instance
+00953860 npc_lock_player_permit_disposer
 00953864 npc_net_packet_mgr_instance
 0095386c npc_net_share_info_instance
+00953870 npc_net_share_info_disposer
 00953874 npc_permit_bit_mgr_instance
 00953af0 viewport_scale_guard
 00953af4 viewport_rect_guard

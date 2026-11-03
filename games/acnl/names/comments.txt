@@ -327,6 +327,8 @@
 0011d7bc Opens the service named at 0x8a275c, starts its client once and reads its 16-bit value into 0x952ad8 (0 on failure).
 0011d7ec The default locale (0x944408) for an empty name or the default name; 0 for any other.
 0011d834 Controls memory (svc 1): maps, frees or protects the range.
+0011d8c0 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+0011d924 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0011da44 When memory blocks are on (0x974f60) and the block is not reserved: reserves `size` (rounded to 0x1000) for it; a failure is fatal.
 0011daac The handle kept at 0x97dff8, fetched once through 0011f00c.
 0011db88 Keeps the thread-local storage pointer at 0x974f68.
@@ -352,7 +354,10 @@
 0011e8cc Converts the UTF-16 string to UTF-8 into the buffer.
 0011eaac Creates the save allocator heap (named SaveAllocator, `size` bytes) and keeps its allocator at 0x95bf7c.
 0011eafc Whether the applet state (0x94e3a8) is at least 2.
+0011eb28 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+0011ec8c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0011edd8 Starts the timer at the current tick, once.
+0011eea8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0011ef18 Makes the camera current.
 0011ef40 Marks job `index` of the job list (0xadf95c) as done, or the whole list (+0x3c) for -1.
 0011ef7c Stores a value at +0x38 of the job list (0xadf95c) when there is one.
@@ -382,6 +387,7 @@
 001201d0 Sends command 0x3 (header 0x30040) to the service at 0x97d7f8 and returns its result.
 0012089c Creates the script heap's children: libms, static, message, mail and flow.
 001209f8 Loads the font resources of the table.
+00120fcc Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 001210d4 Writes the GPU commands of the part at +0x68 into the command buffer.
 00121110 Sets the mode at 0xadf9e4 from the request: 0x400 and 0x401 give 0 and 1, 0x410 gives 2.
 00121140 Destroys the graphics object of the id.
@@ -394,9 +400,16 @@
 00122554 Sets the display mode (0x700 to 0x702) and its width: 400, or 800 for the stereoscopic mode 0x701.
 00122620 Appends an item when the array is not full.
 00122ca8 The word at +0x94 of the object held at +0x1c of 0x953384; 0 when missing.
+00122d60 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+00122e5c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+00122f14 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00122f70 Releases the sea sound manager and clears its flag.
 00123020 Releases the river sound manager.
+00123074 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+001230f0 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00123344 Creates the two audio sound heaps (named from 0x8391f8) when missing.
+0012339c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+00123444 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 001234e0 Releases the room music player and clears its flag.
 00123528 Releases the barcarolle player.
 00123590 Builds the record and sends it to the service.
@@ -428,6 +441,7 @@
 001251b0 Sets the friend notification mask, under the friend lock.
 0012564c Inserts the object (by its node offset, +0x20) at the end of the list (+0x14) and counts it (+0x1c).
 00125674 Copies the source's second word to +0x24 and sets the flag byte (+4).
+001257fc Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00125acc Constructs the unit heap with the two float parameters passed on the stack.
 00125b38 Loads the file at the path into the heap with the alignment, once; whether it is loaded.
 00125ca4 Removes the entry from the talk queue.
@@ -485,6 +499,8 @@
 0012b3dc Runs the function at 0x131154 on +0x10 under the lock at +4.
 0012b40c Shuts the system services down in order and releases their global objects.
 0012b7c4 Releases the font manager's fonts.
+0012b83c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+0012b940 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0012bfec Constructs a critical section: a disposer with an initialized recursive lock.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
 0012c984 Constructs a layout: a list node over a layout with draw info, at scale 1, nothing loaded.
@@ -571,6 +587,7 @@
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
 001320cc Constructs a disposer and registers it with a heap: the given one, else (by mode, arg 2) the heap that \n contains it or the current thread's heap.
 00132174 Constructs a disposer and registers it with the heap that contains it (when the heap manager is up).
+001321c8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00132364 Clears the layout's links (+8, +0x158), destroys its split part at +0x15c and finalizes the list at +0x30.
 001323b4 Calls virtual 8 of the object at offset 0x10 (with 0).
 00132410 Releases the scroll bar's press and its pane.
@@ -962,6 +979,7 @@
 001abcd4 Resets the 8 part ids (0x276 for none) and releases the model and its loader.
 001abd24 Sets the NPC model's face (by its mode).
 001ac668 Sets the move's angle, target position and its two halves.
+001acb90 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 001accd4 Loads the 4 items from the save (+0x6adb8), or restocks them when asked.
 001acf0c Sets up the message board's panes and animations once.
 001ad2e4 Sets the first word and clears the second.
@@ -1027,6 +1045,7 @@
 001b732c Clears the record: its ids at -1 and its two levels at 200.
 001b7530 True when adding is allowed (0xad56fb set, 0xad56fa clear) and the count (+0x18) is at most 15.
 001b7568 Adds the sale to the tally of the kind (+0x10): by count, price or a quarter of the item's price, by the shop's mode; true when the tally changed.
+001b7688 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 001b76ec Whether the item counts as the tour's prize (by the tour's kind).
 001b7b10 Tells the tour result of the tour's event.
 001b7b90 In area scene 9, marks the area visited once when its maps match and, in a network session, sends message 0x45.
@@ -1156,6 +1175,7 @@
 001d9a08 Updates the microphone sampling and its flags.
 001d9cdc Sets the mode (+0x80) when it is at most 2.
 001da158 Destroys the river sound object and detaches it.
+001da208 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 001dae5c Updates the sea sound unless the system mutes it.
 001db118 Starts the 3D sound once its data is loaded.
 001db214 Starts the 3D sound at the position with its kind.
@@ -1520,9 +1540,11 @@
 00243bd0 Updates the real estate's plots on its heap.
 002443b8 Damps the velocity (by 0.995), eases the position toward the target (by the blend +0x38), keeps the height, clamps the distance to 2900 and fills the listener record.
 00244a00 Creates the gyroid sound manager on the stage heap once and registers the object with it.
+00244b48 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00244bb4 Starts (or stops) the sound object's sound in the sound system and updates the object.
 002454f8 Builds the song's playback info from its table entry and tune values (under the info's lock).
 002458e4 Resets the player's counters and sets its beat length (900 / tempo, rounded up).
+00246cb8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00246df4 Stores the object in the first free of the 60 slots (+0x14) and counts it; 0x3d when full or null.
 00246f34 Frees slot `index` (below 60) and uncounts it.
 00246f64 Starts the furniture sound object (with the shared parameters) unless it already runs.
@@ -1694,6 +1716,7 @@
 00275798 Releases the bag window's layouts, its 10 models' layouts and its message window.
 002763bc Sets the source's mode: 0 follows the room music player, 1 follows the given object (state 3).
 0027643c Frees slot `index` (below 64) and uncounts it.
+0027646c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 002767bc Stores the object in the first free of the 64 slots and counts it; 0x41 when full.
 0027680c Starts the tune player on a tune (sound id 0x1000f83 plays the 16 notes).
 0027689c Plays the step sound for the ground kind (below 14), with its pitch from the table; kind 13 has its own sound.
@@ -1839,10 +1862,13 @@
 0029bfa4 Stores the 6 items of the outfit into outfit slot `index` (+0x18) of the player (the first slot's player in a session) and refreshes its view.
 0029c964 Sets the state and clears its stage.
 0029c974 Sets state 2 with the word.
+0029cb74 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0029cc7c Resets the 10 network entries (kind 0x24, index 0xa5) and their sent flags.
 0029cd5c Copies the 63 template entries (from template 9) and resets their kinds and sent flags.
 0029ce80 Resets the 63 entries' kinds and, when idle in a session, applies them as templates; clears their sent flags.
 0029cf30 Finishes releasing an entry: applies the template of kind arg 1 + 9.
+0029cf7c Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
+0029d060 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0029d150 Zeroes the 64 bytes at +0x10.
 0029d228 Shares the NPCs' permits and schedules with the waited stations.
 0029d354 Requests the permit of NPC `slot`: marks its packet sent and asks the host (message 0x40), or, as the host, grants it directly.
@@ -1850,6 +1876,7 @@
 002a2850 Detaches the layout at +0x24 from the layout system.
 002a2ad0 Releases the layout at +0x24.
 002a324c Stores the id with its priority in the first free of the 10 entries (counting it), else replaces the lowest-priority one.
+002a3654 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 002a3e08 Plays the song of the index through the sound system with its sound data.
 002a4abc Constructs the room music player: its two buffers (0x262 and 0x14 entries), ids at -1 and cleared fades.
 002a4b84 Points the object at the room music player.
@@ -1958,6 +1985,7 @@
 002c2058 Applies the default value (30) and marks it unset.
 002c2078 Initializes the flags and colors to their defaults.
 002c20ec Clears the flags and the switches.
+002c21c4 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 002c24dc Copies the town's name (0x12 bytes) into the record.
 002c2510 Looks the resource up in the data at +0x62138 and stores it (+0x2c), marking it set.
 002c2544 Sets the flag (+0x31) and enables the switch at +0x22.
@@ -2081,6 +2109,7 @@
 002e086c Finishes the animation at +0x3ac and updates the layout.
 002e08c8 Restarts the text (unless the button has none), then updates the layout.
 002e0908 Restarts the text and the animation at +0x384, stopping the button node when the list says so, and resets the timing words.
+002e0bec Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 002e0d04 Counts the used slots (bit 0 set and kind not 4) in the 16 slots of each of the 3 records, into +0xa0.
 002e173c Removes the first entry whose two bytes are (row, value) from the row's list (+0x10 + row * 0x24), else from the shared list at +0x7c.
 002e1818 Resets the candidate, counts the used slots into +0xa0 and marks the count done (+0xa1).
@@ -2705,6 +2734,7 @@
 00321ae8 Forwards to SoundSystem__sound_value on the sound system.
 00321af8 Runs the function at 0x13c1d4 on the sound system.
 00321cd4 Loads the room music player's data on the stage heap.
+00321ff0 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 003220e0 Plays the room music player's song (from its ready state).
 0032245c Stops the room music player (in its playing states).
 003232a8 Sets byte `index` (below 16) at +0x40; false out of range.
@@ -2716,6 +2746,7 @@
 0032821c Sets the layout's animation frame when it is bound.
 003289a8 Gives the villager of the record (+2) the item (+0) into slot +3; a category 0x2f item without a slot goes to its +0x249e item.
 0032a3c8 Copies the record with a new item and its three color bytes.
+0032ae24 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0032ae8c Updates the barcarolle player's music.
 0032af5c Stops the player's sound (+0x1ec4) and clears its playing flags.
 0032b774 When sound is allowed: runs the member handler of the current state (+0x10) from the table at 0x839048.
@@ -2738,6 +2769,7 @@
 003302c8 Starts the sound player unless it plays.
 00331550 Gives the villager of the record (+2) the item (+0) as its +0x8e6 item.
 00331778 Copies the half at +0x2e of the target (+0x4e4) to +0x4ec and marks it set.
+003317b4 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 003319e8 Resets the permit record (state 4, mask 0x3f).
 00331a0c Sets the two halves and the two floats.
 00331a20 Zeroes the two halves and the two floats.
@@ -3501,6 +3533,7 @@
 0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
 0053d490 Constructs a disposer and registers it as a child of the heap that contains it (when the thread has one).
 0053d530 Destroys a disposer: its heap forgets it, and it is left with the disposer list as its heap.
+0053d580 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
 0053dffc Whether the device has a file (path arg 2), into a flag (arg 1); false when the device is not open or \n there is no flag.
 0053e71c Tests the touch against the pane and records the hit.
@@ -3597,6 +3630,7 @@
 005657ac Moves the point toward the target in the xz plane by at most the step (all the way for 0); true when it arrived.
 00565958 Moves the point a fraction of the way toward the target in the xz plane, the move clamped between the minimum and maximum; the distance left.
 00565a68 Moves the point a fraction of the way toward the target in the xz plane, by at most the cap.
+00566650 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0056677c Under the lock, flushes the pending GPU commands (the queued ones or the buffer's range) and counts the flush.
 00567224 Unless busy, starts the loader's load (virtual 3) once when everything it needs is ready.
 00567a10 Sets the layout's draw priority and refreshes it.
@@ -4448,6 +4482,7 @@
 005ce32c Signed byte (table 0x95d720) of the terrain kind at a position.
 005ce368 Signed byte +0xfad of the error/EULA manager.
 005ce568 Calls the member callback (+0x1c, +0x20) of the error/EULA manager when one is set.
+005cea50 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 005cebe4 Calls 0011edd8 on the object at 0xac1930 with 0.
 005cec38 When a home-menu or power request is pending: waits until it is handled, marks 0x94e3ad and resumes the object at 0xac1930.
 005cecfc When neither 0x94e3ad nor 0x94e3af is set: enables the 0x3fff notifications once and marks 0x94e3ac.
@@ -4517,6 +4552,7 @@
 005e8348 Starts the message engine on the text (or marks it done without one).
 005e8498 Calls the dialog box's virtual function 5.
 005e90cc Refreshes the dialog box's state and its text.
+005e9848 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 005e9974 Refreshes the talk window's text and its label when attached.
 005e9d64 The item offset pair (category 0x27) for the talk's value.
 005e9d90 Clears the pair (category 0x27).
@@ -4528,6 +4564,7 @@
 005f10b0 Starts loading the resource (split or plain); whether it started.
 005f11b4 Sets the talk target's word slot (its virtual function 33).
 005f1344 Sets the talk target's text (its virtual function 39).
+005f32f8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 005f3d70 Runs the talk script's command (its kind).
 005f6b44 Formats the amount with its separators for the region.
 005f6dcc Scans the text table for the entry.
@@ -4562,6 +4599,7 @@
 00605600 Whether the NPC id is a special NPC's (0x109 to 0x168).
 00605618 The byte of the table at 0x94ea68 for the index.
 00605628 The byte of the table at 0x94ebd1 for the index.
+00605ca0 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00605d44 Registers the background download storage on the stage heap when the save allows it.
 00606a24 Sets the pending announcement: its message id, four flags and a value.
 00606a64 Resets the pending announcement to the default message and clears it.
@@ -4619,6 +4657,7 @@
 006148e4 Clears a notice record and its four 16-byte entries.
 00614a64 Sweeps the shape between the two points against the collision world.
 0061532c Clears a 0x30-byte record.
+006153d0 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 006154b0 Copies up to 16 letters and digits, clearing the rest from the first other character.
 00615534 Clears five words and a 16-bit value.
 00615b2c The model scale of a caught creature (kind below 0x6b, table 0x86a2c8) from its length: 1 + (length - base) / (range * 10), clamped to 0.7-1.3; 1.0 without a range.
@@ -4642,6 +4681,7 @@
 0061754c Updates the network session: the link, the visit state, the stations and the peers.
 006176fc Copies entries of the session's visitor log (+0x28ec).
 00617724 Opens the link when needed (initializing the peer table and sending this player's stamp on the first open) and counts it; whether it is open.
+006177bc Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 00617824 Adds an empty entry (the default address and id) to the session's visitor log.
 00617840 Sends the message to the stations with its options.
 006179d0 Removes the leaving station and processes the guest leave; whether both were done.
@@ -4702,6 +4742,7 @@
 0061f3f8 Clears the guest records (states, flag pairs, stations 4, counters).
 0061f608 Accepts a friend key that is new to the three known ones (when the link allows it): sends it (0050d1b4) and records it; true when done or already known.
 0061f6a0 Records an accepted friend key in a free entry.
+0061f974 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0061fc98 Sends the 100-entry friend list (+0x11950) through the link object; clears the pending flags when it went through.
 0061fd68 Sends the station's bit (packet 0x30), or requests it as the host.
 0061fe0c Updates the chat for the session.
@@ -5479,6 +5520,7 @@
 006e23dc When idle and allowed, starts the request (its first handler pair), clearing its result; true when it started.
 006e247c Resets the data store and sets its state to 8.
 006e2534 When idle, and the session part allows it, starts the request (its second handler pair); true when it started.
+006e25f8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 006e2724 Polls the request's results: converts the received entries when done, or reads the error code (-1 while failing).
 006e2820 Sets up the request's query: the key, the filter ids (all four kinds for 0xffff, else the given one) and its bytes.
 006e35fc When idle, prepares the upload record (its stamp, kind and save id) and starts the request; true when it started.
@@ -5509,6 +5551,7 @@
 006ea9dc Updates the NPC's head looking toward its target.
 006ed200 In a session, packs the NPC's state, a new sequence number and its target position into its shared record.
 006ee02c Sets the action's cell (+0x4e0), and its start cell in the early stages.
+006ee4f8 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 006eedc8 Copies the 8-byte entries of variant `index` of the layout table at 0xab7fc0 into the buffer when it fits; their count, or 0.
 006eeef4 Initializes the 99 shadows (0x8c bytes each) of the pool at 0xabe1a4 and its 27 layer lists, with all shadows free.
 006ef0a0 Queues the shadow in its layer's draw list (once), drawing it at once when it is ready.
