@@ -14426,7 +14426,7 @@
 0056a3cc copy_float3
 0056a3f4 ssys__ma__Vec3i__deleting_destructor
 0056a3f8 ssys__ma__Vec3i__destructor
-0056a3fc sead__FixedSafeString_256___FixedSafeString_0056a3fc
+0056a3fc file_exists_b
 0056a48c store_constants_56a48c
 0056a4a4 file_exists
 0056a534 ObjectBinding__bind_from_word_4
@@ -14629,7 +14629,7 @@
 005782c0 AcNpc__virtual_80
 005782c4 set_npc_flags_10_11
 005782f8 AcNpc__virtual_57
-005783f4 AcNpc__virtual_71
+005783f4 AcNpc__end_talk
 0057884c AcNpc__virtual_78
 00578850 AcNpc__virtual_50
 00578858 AcNpc__virtual_84

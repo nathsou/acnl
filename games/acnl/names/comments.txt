@@ -4061,6 +4061,7 @@
 0055224c Particle command: at each interval, adds a random offset scaled per axis to the velocity; the next command.
 005547e0 The emitter's own matrix, or its set's when it follows the set.
 005547f8 Resets the emitter's state and timers.
+00554de0 Constructs a particle project for a resource (arg 1) with its two ids (args 2 and 3) and a scale: three \n empty names and 64 empty emitter slots.
 00554fbc Constructs a particle texture's data: a texture with no image.
 00555024 Destroys a particle texture's data: frees its image, then the texture.
 005551f4 Resets the emitter's fade.
@@ -4157,6 +4158,7 @@
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
 0056a1d4 Rotates the vector about the x axis by the angle.
 0056a2c0 Sets the transform's scale, rotation and translation.
+0056a3fc Whether a file (path arg 0) exists, asked of the device the file device manager finds for it; false when \n no device has it.
 0056a4a4 Whether a file (path arg 0) exists, asked of the device the file device manager finds for it; false \n when no device has it.
 0056a534 Binds the object to the source's second word.
 0056a53c Queries the file request's state (under the file lock); 0 without a request.
@@ -4222,8 +4224,10 @@
 005757b8 Sets the countdown and its start to the value.
 005757d4 Initializes the query at the origin and its 9 cell entries.
 005761c8 Plays the furniture's sound at its position, unless it is a special kind, held or moving.
+005776fc Destroys a furniture actor: its animations, remake texture loaders, resource loader, talk receptor, moving \n background and demo actor base.
 00577810 Allocates the cleared block from the scene pool when there is one, else from the heap.
 00578018 Removes the node from the list at +0x70 and clears its links.
+005783f4 Ends an NPC's talk: cancels its talk queue entry (or checks its partner), and sends its player lock when \n this console holds it.
 0057885c When the NPC's saved place is in the current area: places it there (on the ground unless flying) with its angle; whether it did.
 00578948 Resets an NPC's walk: back to its saved speed, no direction, and one step (40) less ahead when it is \n far.
 00578988 Whether the NPC belongs to another player; records the owner (4 for none).
