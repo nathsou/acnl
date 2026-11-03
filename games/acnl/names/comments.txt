@@ -4013,7 +4013,7 @@
 0053d2b4 Stores the current system tick.
 0053d2cc The CRC-16 (polynomial 0xa001, table built once) of the bytes.
 0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
-0053d490 Constructs a disposer and registers it as a child of the heap that contains it (when the thread has one).
+0053d490 Constructs a disposer and registers it as a child of the heap that contains it (when the heap manager is \n up).
 0053d530 Destroys a disposer: its heap forgets it, and it is left with the disposer list as its heap.
 0053d580 Creates the singleton on a heap (arg 0), with its disposer, unless it exists.
 0053d7c8 Constructs the thread manager: an empty thread list and a thread-local slot for the current thread.
