@@ -38,6 +38,7 @@
 00100a8c Destroys the villager part: its four extra villagers, the two boards, its records and the ten villagers.
 00100b80 Forwards to Player__destruct.
 00100b8c Destroys a player record's parts (items, letters, patterns and the rest).
+00100d0e Converts a multibyte string to wide characters without a shift state (C mbstowcs).
 00100e5c Formats into a buffer of `size` bytes, terminated when there is room; returns the length the output needed.
 00100e94 Formats wide characters into a buffer of `count` characters; -1 when the output did not fit.
 00100ef8 Formats into a buffer (C sprintf); returns the count written.
@@ -740,6 +741,7 @@
 0013c1e8 Reads the player's info from the sound archive.
 0013c240 Reads the sequence's info from the sound archive.
 0013c2f0 Reads the archive's group info.
+0013c348 A wave sound file's info block (the section with kind 0x6800); 0 when it has none.
 0013c3c0 Entry `index` of the table at +word_c when its kind is 0x4900: its data; null otherwise.
 0013c3f4 Entry `index` of the table at +word_14 when its kind is 0x4902: its data; null otherwise.
 0013c430 The data of key 9 of the sparse array at +4 (an offset from the object), or the empty data.
@@ -769,6 +771,7 @@
 0013d040 Joins the thread when it runs.
 0013d060 Calls the free hook.
 0013d24c Runs the thread's main loop.
+0013d408 Destroys the sound effects manager: its ten effect slots, then resets it.
 0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
 0013d4f0 Whether the bank's slot (below 6) is loaded.
 0013d6d0 Unlinks the request from the pending list (when queued or running, under the list lock) and clears it.
@@ -798,6 +801,7 @@
 0013ef18 Stops the player's sound (+8) at once when it has one.
 0013efb4 Destroys a disposer: its heap forgets it, and it is left with the singletons' list as its heap.
 0013f2e4 Reads the archive's wave archive info.
+0013f3cc A wave archive file's info block (its first or second section, whichever has kind 0x6800).
 0013f5e8 The low byte of the value of key 0 of the sparse array at +8, or 0x40.
 0013f610 Bits 8-15 of the value of key 0 of the sparse array at +8, or 0.
 0013f63c The referenced value, or -1.
@@ -809,6 +813,8 @@
 0013f81c Copies a player entry's words and its flags; true when found.
 0013f890 Copies a wave archive entry's word, data and flag; true when found.
 0013f8cc A group file's file block (the section with kind 0x7801); 0 when it has none.
+0013f934 A group file's info block (the section with kind 0x7800); 0 when it has none.
+0013f9a0 A group file's extended info block (the section with kind 0x7802); 0 when it has none.
 0013fd78 Stops the microphone input in its active states.
 0013fe18 Calls 001429f4 with the required handle at 0x974ef8.
 0013ff94 Calls the service handler for the command (+0xa0: table in its low nibble, entry above), or returns the not-found result.
@@ -1515,6 +1521,7 @@
 0022e048 Starts the bulletin board's message in the message store.
 0022e05c Starts the message in the message store.
 0022e070 Whether the message store's window is open.
+0022e08c Constructs a mail load adapter: a mail receptor with three empty words, nothing loaded.
 0022e168 Copies a 0x26c-byte pattern header.
 0022e194 Resets the pattern's flags (type 4, shareable).
 0022e1c0 Takes the online state's mode and value (when connected), keeping the mode below 3 and marking it, and copies the pending word.
@@ -3700,6 +3707,7 @@
 0056939c Starts the button's animation unless it is locked.
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 00569774 Binds a texture (arg 1) to an animation target: its format, scale 1, offset 0, and whether it lacks mipmaps.
+00569ab8 Constructs an archive resource accessor for layouts: an archive accessor in VRAM with an empty texture \n buffer list.
 00569b44 Sets the fade's start, target (at least 0), speed and mode.
 00569e6c Draws the layout on the top (0) or the bottom (1) screen.
 00569e90 Sets up the screen for 400 x 240 and resets its list.
@@ -4562,6 +4570,7 @@
 005d5374 Constructs the text receptor with the default font settings and the values.
 005d53b0 Advances to the next page when there is one, and puts it.
 005d53d4 Constructs the text receptor with the given style and the default font settings.
+005d5414 Constructs a 400-character script word (over a 1536-character one).
 005d60d4 Clears the text buffer and the line starts, marking the last line.
 005d6168 Constructs a render base: black colors, no scale yet, a character buffer (arg 1) and room for arg 2 lines.
 005d6510 Text tag: sets the color (from the tag's two halves) and skips the tag.
