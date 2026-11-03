@@ -2545,8 +2545,23 @@
 00659750 Packs the player's motion (angles and speeds) into the record.
 006598a8 In flagged scenes, sets the BGM's kind 6 (when asked) and pushes the special BGM 0x26a once, setting mode 2.
 00659c08 Requests player state 0x1f unless the player is locked (bit 5 of +0x8c5).
+00659d14 Requests player state 0x72 with the word, two bytes and the position (fixed point, x4).
 00659d9c Requests player state 0x14 with a target position, an angle and options.
 00659e34 Requests player state 0x15 with an angle and three option bytes.
+00659f14 Requests player state 0xb0 with the vector (fixed point, x4) and the position.
+0065d5a8 Leaves 0.8 x 2 x 0.97 in the float register; the shared parameters.
+0065d5d4 Resets the swing (scale 1, 300 frames) and, in flagged scenes, the target cell.
+0065d7ec Stops the tool at +0xd00 and clears bit 6 of +0x174.
+0065daa8 Applies the movement with the player's speed (+0x914 when moving, else 0).
+0065db0c Handles a catch: counts it in the badges and tallies and records it in the encyclopedia.
+0065de40 Counts the tool's animation frames down and restarts the tool when its frame changes; true when it is over.
+0065df50 Plays the dig sound once (when the record is given) and marks the cell in both wear bit maps.
+0065e0b8 Marks the player leaving its state and changes to the state's exit state (state 6 waits 8 frames).
+0065e190 Requests player state 0xe3 with the byte.
+0065e1bc Requests player state 0x45 with the word, flags, position and angle.
+0065e2e0 Requests player state 0x53 (with the flag) or 0x52 with the four bytes; true when it changed.
+0065fc64 When an item blocks the cell at the position, hits it and targets the cell.
+0065fcc0 When an item blocks the cell, hits it and targets the cell; true when it did.
 00665130 Requests player state 0x19.
 0066ac8c Fills the state parameters (up to 3 entries, with three option bits) and requests the state change.
 00678278 Requests player state 0xc4 with an id, a value, a flag and a position (the player's own when none).
