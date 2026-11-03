@@ -585,7 +585,37 @@
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
 001c4c14 Calls 005bf518.
 001d7ba4 Forwards to the function at 0x1d560c.
+001e00c8 Resets the record's constants and constructs its part.
+001e00e4 Constructs the 8 patterns' names.
+001e0114 Clears the 8 patterns: their names, creators, palettes, flags and pixels.
+001e0220 Stores the stamp of event 0x863 (+4) and sets bit 0 of the flags (+0x22).
+001e025c Stamps the mail data and sets its flag (on), or clears both (off).
+001e02b4 Sets (on) or clears (off) bit 8 of the mail data's flags.
+001e02f0 Clears the mail data's stamp, record header and flags.
+001e0318 Zeroes the mail data's header, stamp and flags.
+001e0354 Increments the byte at (x, y) of a grid 16 bytes wide, saturating at 0xff.
+001e17fc Adds to the 4-bit field at bits 5 to 8 of +0x18, clamped to 0 to 14.
+001e18ac Adds to the 4-bit field at bits 7 to 10 of +0x17, clamped to 0 to 15.
+001e1b84 Adds to the high nibble of +0x11, clamped to 0 to 14.
+001e1bb0 Adds to the top 5 bits of +1, clamped to 0 to 31.
+001e1bf4 Adds to the 4-bit field at bits 3 to 6 of +0x10, clamped to 0 to 10.
+001e1c28 Sets the 4-bit field at bits 2 to 5 of +0xa.
+001e1c58 Adds to the top 3 bits of +0x25, clamped to 0 to 7.
+001e4214 When the storage's range (+0xc800 to +0xc808) is set and the day is in it, delivers the day's letters; true when it did.
+001e4294 Sets the delivery range: from the time stamp to the next 9:00 or 17:00 (9:00 the next day after 17:00).
+001e4348 Copies the letter into slot `index` (0x280 bytes each) of the storage.
+001e43f0 Clears the 80 letters and the delivery range.
+001e442c Moves the kept letters to the front of the 80 slots, clearing the others; the number kept.
+001e4524 Sets the state byte; state 1 also sets bit 5 of the town flag at +0x62152 and updates the town's record.
+001e4578 Places item `index` (below 18) in the room or the field once, when its owner is the current player.
+001e46e8 Places item `index` (below 6) in the room or the field once, when its owner is the current player.
+001e57e8 Resets the request record with mode 0x20001800.
+001e5820 When loaded, releases the loader at 0x982018 and resets its state to 4.
 001e5894 Transforms a point by the camera manager's view matrix (+0x29c), when there is a camera manager.
+001e5ba0 Initializes the scene's shared resources.
+001e5dc8 Sets the two scene flags (0x95210c, 0x9520c6).
+001e5de0 Stores the value plus 1 at 0x95210c.
+001e5df4 The 8-bit color of the kind (from its float color).
 00200ab4 Copies the item layout entries (6 bytes each) of variant `index` of the table (+0xd0) into the buffer when it fits; their count, or 0.
 00200b9c Places the items of the cell's layout variant (up to 0x600 bytes of entries) in the cell, keeping their top bits.
 00200ca0 Loads the large cell's 0xa00-byte block from the shared layout of the cell's id.
