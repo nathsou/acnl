@@ -17,10 +17,12 @@
 001297c4 Opens the microphone service (mic:u) once.
 00129898 Gives the microphone service its sample buffer (address and size aligned to 4 KiB).
 00129c7c Connects to the service manager's port (srv:) once, retrying every half millisecond while the port does not exist yet; counts the users.
+0012a518 Waits without a timeout on the handle (svc WaitSynchronization1), a failure reported.
 0012e640 Signed 64-bit division through the unsigned one, the operands and the quotient negated as their signs need.
 0012eeb0 Mounts the RomFS archive as rom:.
 0012ef20 Waits until the event is signaled (an automatic one is cleared again by the waiter that wakes).
 0012f170 Creates a shared memory block over page-aligned memory (fails when already created).
+0012f204 A failed result code (negative) is reported as fatal, unless its level is one the caller tolerates; a success passes through.
 0013187c Gives an empty array room for `capacity` pointers from the heap.
 00131a88 Takes the lock unless the current thread holds it already, and counts the nesting.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
@@ -30,6 +32,7 @@
 001357ec Ends one level of holding the lock; the last one clears the owner and releases it.
 00136718 Unlinks every node, counting each down and leaving it detached.
 00137c60 An empty intrusive list whose nodes sit 0x10 bytes into their objects.
+0013864c Releases what the handle holds (through the service when it owns a service handle, else through the owner's virtual function 7) and clears it.
 00138c78 The value of a thread-local slot for the current thread.
 001391d8 Allocates from the current heap, 4-byte aligned.
 0013a38c Takes the first free one of the 16 thread-local slots (fatal when none is free).
@@ -39,20 +42,71 @@
 0013b584 Reads a wave sound file (CWSD, version up to 1.0.1.0): its header and INFO block.
 0013c850 The bank file's INFO block (block id 0x5800); null when the file has none.
 0013cc9c Takes a block off the pool's free list under its lock (zeroed when the pool clears its blocks); null when none is left.
+0013cd00 Copies `source` into the string's buffer, at most `length` characters (all of it when negative) and fewer than its capacity, then terminates it; the number copied.
 0013e75c Sets a heap's range (filled with the debug pattern when its option asks) and adds it to its parent's list of heaps.
 0013ec20 Reads a wave archive (CWAR, version 1.0.0.0): its INFO block and, when asked, its file table.
+00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
+00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
+001c4bc8 ORs `bits` into the 16-bit cell (x, y), keeping only its low 4 bits.
+001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
+0026d644 The label at slot `slot` (two layouts, by the page flag at +0x8431) shows the current player's pocket item there with its lock, or is cleared when the slot is empty.
+002f737c Bit `index` (fewer than 5) of the flag bytes; 0 for a larger index.
+002f73b8 Releases what the part loaded (its graphics context current while it does) and destroys the load split base part at +0x1c.
 002f7c90 The formatter's sink for an unbounded buffer: stores the character and advances.
 002f7ccc The wide formatter's sink for a bounded buffer: stores the character while there is room.
 002f7cdc Formats to a file; -1 when the file is in error.
+002fc2a4 Adds to the set (one bit per item id, up to 0x172b) every item of `kind` (its data's byte 0xd); kinds 1-8 add fixed groups through ItemSet__add_group.
+002ff368 A letter (0x280 bytes): its header cleared, an empty attached item, then cleared like Letter__clear.
+002ff408 Clears a letter: header, the opening line (0x42 bytes), the body (0x182 bytes), the closing line (0x42 bytes), flags, and an empty attached item.
+00304530 The two load splits shared by the callers, constructed on first use.
+003059f8 Clears a design pattern (0x870 bytes): the title (0x2a bytes), the creator's identity, the palette (15 bytes), the pixels (0x800 bytes) and the type.
+003075cc Allocates `size` bytes from the current heap, 4-byte aligned.
+00314278 Whether (word r0, signed bytes 0 and 1 of r1) equals (word r3, the same bytes of the stack argument).
+00314a1c A cursor past the last element of the list: its index is the list's count (virtual function 4).
+00314a9c A cursor on the first element of the list (virtual function 5 copies the element), at index 0.
+00314b58 Moves the cursor to the next element and copies it in, while there is one.
+0031e810 Hides the layout's root pane group (clears its visible bit) and lays the layout out again, when it was shown.
+00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
+003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
+00403828 Sets word `index` (fewer than 6) of the array at +0x210.
+0047ea68 The CRC-32 of `size` bytes (polynomial 0x04c11db7, most significant bit first, its table built on the stack), starting from `seed`; complemented.
+004b4fc0 The pane of the layout's tree with this name (searching below the root pane).
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
+005221d8 Entry `index` of the 16-bit table at +word_c (filled up to it first when it lies past +word_10); -1 for an index out of range or an empty entry past the first.
 00528924 Converts a UTF-8 string of one- to three-byte characters into at most `capacity - 1` UTF-16 units and a terminator; an invalid lead byte leaves the output empty.
 00529ddc Allocates and zeroes `size` bytes (null when the allocation fails).
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
+00537028 Takes the part off the menu list when it is on it, then unloads it.
+00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
+00582e4c Plays sound `id` at the position given (r1, through the camera when there is one).
+0059e65c Clears the tile (x, z) of the field's grids, and (when asked) removes the objects standing there.
 005ca4b4 Whether entry `index` of the object name table (252 entries) is "fobj".
+005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
+005e2e50 Restarts the message engine at +0x44 on the text the source's virtual function 3 returns, and runs it.
+005e34c4 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
+005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
+005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
+0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
+0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
+00653a68 Runs the current state's update handler (the state table's +8 member), and counts the frames spent in the state (+0x153c) while it stays the same.
+006548ac Changes to `state` unless the player is in it already (true then).
+0068229c Changes to `state` when the item the player holds is of `kind` (only the test when `test_only`).
+006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
 006c5c60 The height of the ground at a position (0 outside the map).
 006c6640 The height at a position: the ground's, or for water, cliffs and similar terrain the surface's.
+006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
+0070ab24 Slot `index` (fewer than 4; 0x18 bytes each, from +0xe0) passed on to call_007460e8; 0 for a larger index.
+0070b1a4 Entry `index` of an array of 12-byte entries (entry 0 when index is 10 or more).
+0070d904 The 16-bit cell (x, y) of the array.
+00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
+00736a1c The entry of a resource dictionary (a radix tree on the name's bits) whose name is `name` (of `length` bytes); null when none.
+00745d44 The index of the entry with this name in the resource's dictionary (16-byte entries); -1 when there is none.
+007553d8 The index (0-3) of the file extension `text` (up to 4 characters, compared in capitals, a leading '.' ignored) in the table of known extensions; 0 when unknown.
 00759a54 A position from x and z packed as 16-bit quarter units, at the ground's height there.
+00759ab0 The world position of a pair of 16-bit coordinates in quarter units (x, z), on the ground.
+00766b00 Entry `index` of an array of 8 entries of 12 bytes (entry 1 when out of range).
 00779500 Allocates from the current heap, 4-byte aligned.
+00825c64 Whether one of the 8 slots holds an object whose id (+0xb0) is `id`.

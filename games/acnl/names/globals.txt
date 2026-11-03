@@ -21,6 +21,7 @@
 0097e064 srv_state
 0097e06c srv_port
 00981fd8 pointer_list
+00985638 state_params_buffer
 00ae0ab8 fatal_error_info
 00ae0b5c frd_lock
 00aed620 srv_lock

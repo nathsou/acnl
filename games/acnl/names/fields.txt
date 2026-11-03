@@ -1,3 +1,7 @@
+AcPlayer_rec 153c frames_in_state
+AcPlayer_rec 1a9 state
+AcPlayer_rec 1aa previous_state
+AcPlayer_rec 8bc state_params
 Object_00100400_0 8 start
 Object_00100400_0 c size
 Object_00122620_0 0 count
@@ -21,9 +25,19 @@ Object_00135748_0 4 owner
 Object_00135748_0 8 depth
 Object_001357ec_0 4 owner
 Object_001357ec_0 8 depth
+Object_0013cd00_0 4 buffer
+Object_0013cd00_0 8 capacity
+Object_00141a9c_0 0 mask
 Object_002f7c90_1 0 at
 Object_002f7ccc_1 0 at
 Object_002f7ccc_1 4 end
+Object_003059f8_0 86c type
+Object_00314a1c_0 0 index
+Object_00314a1c_0 4 list
+Object_00314a9c_0 0 index
+Object_00314a9c_0 4 list
+Object_00314b58_0 0 index
+Object_00314b58_0 4 list
 Object_0055cabc_0 0 x
 Object_0055cabc_0 4 y
 Object_0055cabc_0 8 z
@@ -34,3 +48,7 @@ Object_00569544_0 18 target
 Object_00569544_0 4 end
 Object_00569544_0 8 frame
 Object_00569544_0 c previous
+Object_005e34c4_0 8 file
+Object_005e34c4_0 c id
+Object_005e3550_0 8 file
+Object_005e3550_0 c id
