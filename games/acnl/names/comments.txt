@@ -2532,6 +2532,7 @@
 002f99b8 Marks the stream as failed and empties its buffer.
 002f99cc Writes `size` bytes of the stream's buffer through its handle (seeking first when a read left the position elsewhere); 0 when all of it went, -1 (the stream marked failed) otherwise.
 002f9a18 Writes out what the stream's buffer holds (when it is writing) and empties it.
+002f9a64 Flushes a file's write buffer and rewinds it, clearing its pending write state.
 002f9aa8 Zeroes the shared NPC info, with its byte ring cleared and its four halves at the default.
 002fa47c Empties the record's string, sets its ids (+0xc8 to +0xfc) to -1 and its item to empty.
 002fa5b0 Whether `value` is one of the `count` 16-bit values: !negate when it is, negate when it is not.
@@ -2583,6 +2584,7 @@
 00300814 Returns at once.
 00300888 Finds the `n`th cell holding `value` in the 16 x 16 byte grid (row by row): its column and row; false when there are fewer.
 00300900 The net session's signed value for the object.
+003009ec Constructs a nine-character script word and sets the player's town name (arg 1) into it.
 00300a64 Calls the object's virtual function 34.
 00300ff8 Updates the house upgrade's state with the options.
 003013c0 Clears a bulletin board notice: its header, text and stamps.
@@ -2879,6 +2881,7 @@
 0030b018 Resets the network menu: its buttons, toggle (from the session's state), the peer indicator (any of the 32 stations) and animations.
 0030b150 Jumps to Item__has_flag_bit_10_in_type_10.
 0030b154 Forwards to the function at 0x6b9904.
+0030b15c Shows UI message 0x17a in the window's text view.
 0030b250 Clears a timed record: its header and identity, kind 0x21, no slots (0xff), month 9, an empty item.
 0030b36c For records of kinds 0xe to 0x11 in their early stages: applies the record's mode once its scheduled time has passed, else marks it waiting (bit 2 of +0x24).
 0030b410 Forwards to the function at 0x6b9934.
@@ -2887,6 +2890,7 @@
 0030b544 Clears the waiting bit (bit 2 of +0x24) of records of kinds 0xe and 0x10 in their early stages.
 0030baa8 Selects the first (on) or second button of the pair at +0x84c and +0x92c.
 0030bb48 Forwards to the function at 0x6b9d30.
+0030bb4c Shows UI message 0x179 in the window's text view.
 0030bc40 Jumps to item_number_in_6c_70.
 0030bc44 Whether villager `id` (below 0x18f) has a type (the low nibble of its data's +0x1c) of 0, 1 or 2.
 0030bc90 Schedules the villager's move (in days) and sets its moving flags and state.
@@ -2992,6 +2996,7 @@
 0030f320 Sets the villager's memory entry (below 0x1e) with its values.
 0030f48c Formats into a fixed string (its buffer and size), truncated and terminated; returns the length.
 0030f4fc Copies the player's identity and town into the record.
+0030fc18 Whether a date (arg 1) is the player's birthday (when set): the same month and day, with a February 29 \n birthday on February 28 in other years.
 0030feb4 Sets the state byte (+0x24) of the 10 runtime villager entries to 0x21, sparing (unless forced) those in state 0x12 or of class 0xb.
 0030ff24 The days since the villager's date.
 003100dc Picks a random style (of 7) for the villager.

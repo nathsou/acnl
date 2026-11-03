@@ -6801,7 +6801,7 @@
 0030f600 script__WordFix_14u___WordFix_0030f600
 0030fbb4 block_or_first
 0030fbd0 count_equal_33
-0030fc18 player_check_30fc18
+0030fc18 Player__is_birthday_on
 0030fca0 first_active_entry
 0030feb4 VillagerTable__reset_states
 0030ff24 Villager__days_since
