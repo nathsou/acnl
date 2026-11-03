@@ -484,7 +484,7 @@
 0012b40c Shuts the system services down in order and releases their global objects.
 0012b7c4 Releases the font manager's fonts.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
-0012ca6c Stores the value at +4; returns true.
+0012ca6c Stores arg 1 at the object's offset 4 and returns 1.
 0012cb84 Releases the scene's objects.
 0012cc78 Finalizes the save data and its blocks.
 0012d19c Releases the talk window holder's windows.
@@ -549,6 +549,7 @@
 001307c8 Sends command 0x3b to the service and writes its output.
 00130804 The file's first entry, or null.
 00131154 Records the frame heap's state; -1 when it cannot.
+00131280 Allocates size bytes (arg 0) on a heap (arg 1) with an alignment (arg 2): an entry before Heap__allocate, \n which it runs into.
 0013133c Clears the address book, under its lock.
 00131580 Destroys five font sets (a font resource, its load split and its other part each), last to first.
 001316b8 Calls virtual 10 of the file device when it is mounted (+0x4c), else 0.
@@ -559,7 +560,7 @@
 00131dc4 Allocates the block from the heap, with its name.
 00131e5c Builds an expandable heap in the memory at `start` (its size rounded up to 4 bytes; null when too small for the header).
 00132364 Clears the layout's links (+8, +0x158), destroys its split part at +0x15c and finalizes the list at +0x30.
-001323b4 Calls virtual 8 (with 0) of the layout at +0x10.
+001323b4 Calls virtual 8 of the object at offset 0x10 (with 0).
 00132410 Releases the scroll bar's press and its pane.
 00132558 Flushes the save data's pending block.
 001325a0 Destroys the 56 and 2 slot entries and the table at +0xf0.
@@ -2177,6 +2178,7 @@
 002fb7b0 Releases flag-manager flag 0x24 when the record holds it (bit 2 of +0x79), clearing bits 1 and 2.
 002fbf60 Starts the task at 0x2fbf7c with argument 1.
 002fc194 Zeroes the record's bytes and identity (+0x16), with its index bytes at 0xff and its two ids at -1.
+002fc288 Clears an item bit set and returns it.
 002fc2a4 Adds to the set (one bit per item id, up to 0x172b) every item of `kind` (its data's byte 0xd); kinds 1-8 add fixed groups through ItemSet__add_group.
 002fc8e8 Copies an item (its number and its flags halves).
 002fc934 Copies an item (its number and its flags halves): a second copy of Item__copy.
@@ -2189,6 +2191,7 @@
 002fd648 Calls the function on each of the 2x2 blocks (with the value).
 002fdd50 Finds set bit number `n` in 0x140 16-bit words, keeping the position in `cursor` (word index, bit, and an x/y position 16 bits to a row, 0x60 wide); true when found.
 002fe2e0 Updates the sound data loader when it is up.
+002fe7cc An entry of the map table, by index.
 002fe7dc A local static's guard: 1 the first time (and marks the guard), 0 afterwards.
 002fea94 Calls the function on each cell of the 2x2 blocks.
 002ff1cc Daily update of the second contest ranking: resets it for a new contest, updates the schedule and sends the prizes.
@@ -2196,6 +2199,7 @@
 002ff3fc Clears the record (0x280 bytes) at the index.
 002ff408 Clears a letter: header, the opening line (0x42 bytes), the body (0x182 bytes), the closing line (0x42 bytes), flags, and an empty attached item.
 002ff4d4 Checks one of nine item properties (`property`, 0-8; with an option flag) of an item.
+002ff6f4 A random integer below n (arg 0): an entry one instruction before random_below, which it runs into.
 002ff724 Removes entry `index` of the best three by moving the later ones up, and clears the last.
 002ff864 Recomputes the second ranking, then finishes it when it is in use (bit 0) and not locked (bit 7).
 002ff950 Removes the places whose players are no longer valid, moving the later ones up.
@@ -2230,6 +2234,7 @@
 003026a0 Forwards to construct_empty_item_a5.
 003026bc Forwards to Item__is_id_in_b_to_1a_set.
 003026cc The town's byte at save +0x6e2b0.
+003026e8 The low byte of a 16-bit id.
 00302788 Starts the message in the message store.
 0030279c Sets the word from the table for the value.
 0030289c Starts the bulletin board's message in the message store.

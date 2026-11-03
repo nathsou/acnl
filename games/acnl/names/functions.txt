@@ -869,7 +869,7 @@
 0012c984 ssys__ma__lyt__Layout__Layout
 0012ca50 construct_font_source
 0012ca54 store_constants_12ca54_0012ca54
-0012ca6c set_word_4
+0012ca6c set_word_4_and_succeed
 0012ca78 construct_node_member
 0012ca7c construct_load_split
 0012cb24 call_12cb24
@@ -976,7 +976,7 @@
 00131154 FrameHeap__push_state
 001311dc nw__snd__SoundHeap__SoundHeap
 0013121c SoundMelodyPlayerOneSeqTimeTone__SoundMelodyPlayerOneSeqTimeTone
-00131280 allocate_from_heap_00131280
+00131280 allocate_on_heap_entry
 00131294 Heap__allocate
 0013133c NetAddressBook__clear
 0013138c ComponentHolder__release_objects
@@ -5963,7 +5963,7 @@
 002fc20c construct_empty_item
 002fc224 read_state_value
 002fc25c second_random_below
-002fc288 call_24a5ec_returning_first
+002fc288 ItemBitSet__clear_and_return
 002fc2a4 ItemSet__add_kind
 002fc814 CategorySlots__store
 002fc8e8 Item__copy
@@ -6067,7 +6067,7 @@
 002ff408 Letter__clear
 002ff4d4 Item__check_property
 002ff6a4 Item__is_in_id_set_c
-002ff6f4 roll_2ff6f4
+002ff6f4 random_below_entry
 002ff6f8 random_below
 002ff724 Top3__remove
 002ff800 set_item_flags_bit_15
