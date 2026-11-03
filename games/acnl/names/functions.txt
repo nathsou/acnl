@@ -11793,15 +11793,18 @@
 004fe69c gui__Widget__destructor
 004fe6c8 set_menu_callbacks
 004fe968 LayoutAnims__all_stopped
+004fe9f4 LayoutAnims__part_state
 004fea68 gui__ButtonEx__virtual_10
 004feb10 gui__ButtonEx__virtual_12
 004feb30 gui__ButtonEx2__virtual_14
+004feb7c LayoutAnims__start_part
 004fec08 gui__ButtonEx__virtual_11
 004fecb4 gui__ButtonEx2__virtual_13
 004fed2c LayoutAnim__init_tracks
 004fee20 gui__ButtonEx__virtual_7
 004feea8 gui__ButtonEx2__virtual_2
 004feee4 do_nothing_004feee4
+004fef54 LayoutAnims__part
 004fefc8 gui__EditArea__virtual_4
 004fefd4 gui__ButtonEx__virtual_4
 004ff300 LayoutAnims__stop_part
@@ -11867,6 +11870,7 @@
 005020cc sead__SafeStringBase_wchar_t___SafeStringBase_005020cc
 005022e0 TextAreaMail__place_by_mode
 005023c8 TextAreaMail__bind_panes
+005024fc TextAreaMail__setup
 005028b0 lyt__TextAreaMail__virtual_14
 00502958 lyt__TextAreaMail__virtual_5
 00502e54 lyt__TextAreaMail__virtual_4
@@ -11910,6 +11914,7 @@
 00508f3c lyt__TextAreaOneLineComTitle__destructor
 00508fc8 Layout__set_group_visible
 005091fc Layout__bind_animation
+005092c4 Layout__bind_animations
 005095b0 lyt__Object__virtual_3
 005095dc Layout__register
 005096b8 lyt__Object__virtual_2
@@ -11920,6 +11925,7 @@
 0050a164 lyt__ObjectEx__deleting_destructor
 0050a174 lyt__TextArea__virtual_6
 0050a178 lyt__TextArea__virtual_12
+0050a5ac LetterList__current_hidden
 0050a650 lyt__TextArea__virtual_13
 0050a710 LetterList__visible_count
 0050a754 lyt__TextArea__virtual_5
@@ -11933,6 +11939,7 @@
 0050c284 lyt__TourList__virtual_13
 0050c318 lyt__TourList__deleting_destructor
 0050c358 lyt__TourList__destructor
+0050c424 AnmObject__update
 0050c62c lyt__AnmObject__virtual_6
 0050c648 lyt__AnmObject__virtual_4
 0050c67c lyt__AnmObject__virtual_3
@@ -11961,6 +11968,7 @@
 0050cb20 net__SearchDataResult__deleting_destructor
 0050cb24 DataStore__DataInfo__destructor
 0050cb28 net__SearchDataResult__destructor
+0050cb2c List100__find
 0050cb9c List100__push
 0050cc2c List100__clear
 0050cc60 global_95366c_capped
@@ -11968,16 +11976,25 @@
 0050cd1c SharedService__release
 0050cd64 SharedService__create
 0050ce40 SharedService__acquire
+0050cfb8 RequestPool__cancel
+0050cfcc RequestPool__is_idle
 0050d09c RequestPool__request_1e
+0050d0c4 RequestPool__request_post
 0050d10c RequestPool__request_connect
 0050d128 RequestPool__request_list
 0050d150 RequestPool__request_1b
 0050d18c RequestPool__request_19
+0050d1b4 RequestPool__request_get_meta
 0050d1f4 RequestPool__request_1f
 0050d210 RequestPool__request_1c
+0050d238 RequestPool__request_rate
+0050d24c RequestPool__request_search
+0050d260 RequestPool__request_delete
 0050d274 RequestPool__request_1d
 0050d368 script__WordPtrSv__WordPtrSv_0050d368
 0050d3dc RequestPool__request_store
+0050d3f0 RequestPool__request_download
+0050d420 RequestPool__request_upload
 0050d478 RequestPool__release_component
 0050d4dc read_u32_0x009535e8_
 0050d698 script__WordFix_64u___WordFix_0050d698
@@ -11995,13 +12012,17 @@
 0050e1d0 sead__SafeStringBase_char___SafeStringBase_0050e1d0
 0050e248 nn__nex__ResultRange__ResultRange_0050e248
 0050e778 NetGame__start_session
+0050ecf4 NetGame__release_session
 0050ed5c NetGame__init_nex
 0050ee4c NetGame__allocate_heap
 0050f004 NetGame__end_session
 0050f118 NetGame__login
 0050f21c nn__nex___DDL_DataStorePrepareUpdateParam___DDL_DataStorePrepareUpdateParam
+0050f7a0 NetGame__release_station
 0050f8f4 nn__nex___DDL_DataStorePreparePostParam___DDL_DataStorePreparePostParam_0050f8f4
+00510358 NetGame__allocate_buffer
 00510570 nn__nex__DataStoreGetMetaParam__DataStoreGetMetaParam
+00510738 NetGame__wait_result
 00510878 OnlineClient__shutdown
 005108f8 nn__nex___DDL_DataStorePrepareGetParam___DDL_DataStorePrepareGetParam_005108f8
 00510b68 OnlineSession__logout
@@ -12010,6 +12031,7 @@
 00511504 OnlineSession__is_ready
 00511518 nn__pia__local__LocalSessionSearchCriteria__LocalSessionSearchCriteria
 005117a8 nn__pia__local__UdsNetworkSetting__UdsNetworkSetting
+005118d4 NetGame__update
 00511a04 OnlineSession__leave
 00511a9c nn__nex__ResultRange__ResultRange_00511a9c
 00511d70 nn__pia__local__UdsJoinSessionSetting__UdsJoinSessionSetting
@@ -12025,6 +12047,7 @@
 00512d88 nn__pia__common__StationAddress__StationAddress_00512d88
 00512e64 OnlineSession__report_string_66
 00512eb4 nn__nex___DDL_UserMessage___DDL_UserMessage
+00513160 NetGame__make_station_url
 005132e8 nn__pia__inet__NexSessionSearchCriteriaUnused__NexSessionSearchCriteriaUnused
 00513a08 nn__pia__inet__NexSessionSearchCriteriaOwner__NexSessionSearchCriteriaOwner
 00513e6c OnlineSession__set_app_data
@@ -12042,7 +12065,9 @@
 005151e0 script__WordPtrSv__WordPtrSv_005151e0
 005152d4 OnlineSession__set_default_timeout
 005152f4 OnlineSession__report_string_67
+005158b8 NetGame__connect_server
 00515cdc OnlineSession__update_locked
+00515d1c NetGame__release_client
 00515e38 nn__nex___DDL_DataStorePermission___DDL_DataStorePermission_00515e38
 00516230 nn__nex__DataStoreRatingTarget__DataStoreRatingTarget
 005164c0 net__nex__Impl__NotificationEventHandler__NotificationEventHandler
@@ -12077,7 +12102,9 @@
 00519e3c Boss__task_start
 00519ed0 Boss__register_task
 00519fc0 Boss__delete_task_data
+0051a044 RequestPool__read_response
 0051a2c4 Boss__register_datastore_task
+0051a414 RequestPool__parse_response
 0051a740 Boss__read_data
 0051a874 read_utf16_string
 0051a9f0 write_utf8_string
@@ -12085,6 +12112,7 @@
 0051ab9c net__Sender__Handle__Handle
 0051abe4 net__Sender__Handle__deleting_destructor
 0051abf4 net__Sender__Handle__destructor
+0051ac04 RequestPool__release
 0051ad60 RequestPool__acquire
 0051ae04 RequestPool__RequestPool
 0051b048 veneer_47f3a0
@@ -12159,8 +12187,11 @@
 0051f9cc VillagerRecords__same_villager
 0051fb04 pick_villager_partner_weighted
 0051fc14 ResourceTable__load_entry
+0051fc48 VillagerRecords__find_nearest
 0051fe30 read_u32_0x0097528c_
+0051ff28 VillagerRecords__find
 005204b0 MessageHandle__close
+005204c8 MessageHandle__close_if_open
 00520584 clear_scene_flag_2
 005205b8 set_scene_flag_2
 005205ec extra_byte_has_bits
@@ -12251,6 +12282,7 @@
 00524320 sead__SafeStringBase_char___SafeStringBase_00524320
 00524478 Keyboard__destroy_resources
 005244c0 Keyboard__glyph_of
+005244d4 ScrollState__moved
 00524528 KeyEvent__init_char
 00524598 KeyEvent__init_command
 005245bc clear_fields_5245bc
@@ -12300,6 +12332,7 @@
 00525ea8 namespace___VillagePrologueBuilder__virtual_6
 00525fd4 namespace___VillagePrologueBuilder__deleting_destructor
 00525fe4 namespace___VillagePrologueBuilder__destructor
+0052652c BalloonString__setup
 005269b4 namespace___SearchNpcCB__virtual_0
 005269e8 place_items_by_terrain
 00526ea0 cell_below_is_free_shore
@@ -12320,6 +12353,7 @@
 00528ce0 write_depth_offset_command
 00528d50 store_constants_3dc16c_00528d50
 00528d60 generate_town_map
+005291b0 Model__bind_animation_at
 00529334 room_wallpaper
 0052953c room_flooring
 0052984c Model__bind_animation
@@ -12385,6 +12419,7 @@
 0052c940 set_talk_flag_in_state_b
 0052c974 TalkQueue__push_player_8
 0052c9fc reset_talk_flag_5
+0052cb48 Talk__can_start
 0052cc5c talk_flag_bit_1
 0052cc74 TalkQueue__push_player_6
 0052ccfc Talk__claim_listener
@@ -12435,7 +12470,9 @@
 0052ea74 font__Base__Base_2
 0052ea8c font__Base__deleting_destructor
 0052ea9c font__Base__destructor
+0052ec20 world_to_cell
 0052ed04 GridPoint__set_tile_in_block
+0052ed80 world_to_cell_corner
 0052edfc block_of_cell
 0052ee54 get_reported_point
 0052eed0 cell_of_block_and_position
@@ -12531,6 +12568,7 @@
 00535ab0 Map__place_structure_at
 00536054 return_constant_0xa183dc_
 00536060 item_default_value
+00536094 Item__placement_group
 005360e0 kind_table_878198_word
 00536110 half_of_86_a184e4
 00536130 Item__model_word
@@ -12539,6 +12577,7 @@
 00536214 Item__category_flags
 0053625c sead__FixedSafeString_64___FixedSafeString_0053625c
 0053656c sead__FixedSafeString_64___FixedSafeString_0053656c
+00536650 Item__model_scale
 005369d0 ResModel__material_byte_34
 00536a28 ResModel__material_texture
 00536aa0 sead__FixedSafeString_64___FixedSafeString_00536aa0
@@ -12574,6 +12613,7 @@
 00537968 pead__MainThread__destructor
 00537b6c popcount32
 00537bb0 index_of_nth_set_bit
+00537c28 ResourceMgr__find_loaded
 00537ca8 store_global_word_537ca8
 00537ce0 OwnedBuffer__release
 00537d18 pead__DelegateThread__virtual_3

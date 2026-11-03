@@ -2353,7 +2353,10 @@
 004fe5b8 Whether the selection accepts any of the eight direction inputs.
 004fe6c8 Sets the two menu callbacks.
 004fe968 Whether the layout's main animation and its 5 parts are all stopped.
+004fe9f4 The state of the layout's animation part (below 8).
+004feb7c Starts the layout's animation part with the flag.
 004fed2c Initializes the animation's tracks.
+004fef54 The layout's animation part (below 8).
 004ff300 Stops the layout's animation part.
 005008b4 Resets the 5 tracks and copies the forward or the reverse curve set (0xe8 bytes) in, then starts it.
 005013dc Animation command: scales the pane's size (x, y or both) by the percentage that follows, or restores the saved size.
@@ -2363,14 +2366,19 @@
 00502030 When the scroll moved: shows the arrow when there are more than 3 lines, else hides it.
 005022e0 Places the text area for its mode (0 to 2) and shows the matching panes.
 005023c8 Finds the text area's eight panes, binds their texts and shows the first page.
+005024fc Sets up the mail text area's layout and font.
 00504a34 Finds the board's ten panes, binds their texts, shows the first page and stops the flight.
 00504c54 Shows the board's page text in its panes.
 00508fc8 Shows or hides every pane of the group and marks the layout for update (state 2).
 005091fc Creates an animation object for the resource on the pane (or the resource's own target) and adds it to the layout's list; the object, or null.
+005092c4 Binds the layout's animations to its panes.
 005095dc Sets up the layout's animation list and inserts it among the drawn layouts by priority.
+0050a5ac Whether the current letter is hidden from the list.
 0050a710 The number of letters in the list, less one when the current one is hidden.
+0050c424 Updates the animation object's tracks.
 0050c9a4 Clears the record and invalidates its id.
 0050ca3c Invalidates the record's id and clears it.
+0050cb2c Finds the value in the list of 100.
 0050cb9c Appends the value when fewer than 100 are stored.
 0050cc2c Clears the 100 values and the counts.
 0050cc60 The value at 0x95366c, capped at 5.
@@ -2378,15 +2386,24 @@
 0050cd1c Drops a reference to the shared service and, at the last one, shuts it down.
 0050cd64 Creates the shared service state (its lock and handle) once.
 0050ce40 Takes a reference to the shared service, starting it at the first one.
+0050cfb8 Cancels the online component's request.
+0050cfcc Whether the online component is idle.
 0050d09c Posts request 0x1e to the online component.
+0050d0c4 Posts the request with its data (when given) to the online component.
 0050d10c Posts the connect request to the online component.
 0050d128 Posts the list request to the online component.
 0050d150 Posts request 0x1b to the online component.
 0050d18c Posts request 0x19 to the online component.
+0050d1b4 Posts the meta request to the online component.
 0050d1f4 Posts request 0x1f to the online component.
 0050d210 Posts request 0x1c to the online component.
+0050d238 Posts the rating request to the online component.
+0050d24c Posts the search request to the online component.
+0050d260 Posts the delete request to the online component.
 0050d274 Posts request 0x1d to the online component.
 0050d3dc Posts the data store request to the online component.
+0050d3f0 Posts the download request to the online component; 1 without one.
+0050d420 Posts the upload request to the online component; 1 without one.
 0050d478 Releases the online component's objects and, once disconnected, frees it.
 0050d8f0 Ends the store's open operation, if any, and shuts the service down.
 0050d9c4 Reads the slot's entry when it is in range and fits; 0 on success, 1 when it does not exist, else 8.
@@ -2399,15 +2416,20 @@
 0050df24 Writes the C string followed by the wide string to the log.
 0050df80 Writes the wide string to the log.
 0050e778 Sets up the online session and creates or joins its gathering.
+0050ecf4 Releases the online session under its lock, when NEX is up.
 0050ed5c Allocates the pool of 100 entries once and sets up NEX's thread variables and log level.
 0050ee4c Allocates the online heap (0xe8000 bytes) unless it exists.
 0050f004 Leaves the gathering, stops the transport and the services, and releases the session.
 0050f118 Initializes NEX and logs in to the server; on failure, undoes the setup. Whether it is logged in.
+0050f7a0 Releases the local station's resources.
+00510358 Allocates the online buffer (64 KiB) when the system allows it.
+00510738 Waits for the call's result (up to 10 seconds).
 00510878 Shuts the online client down when nothing uses it: releases the service, the shared state at 0x96b930 and the buffer (+0x24).
 00510b68 Logs out of the online service (waiting for the call to finish), then resets the session's state and timeouts.
 0051139c Logs into the online service and waits for the result; reports the error (level 3) on failure. True when logged in (+0x6b).
 00511468 Joins the online gathering and waits for the result; reports the error on failure. Marks it joined (+0x6a).
 00511504 True when the online state check passes.
+005118d4 Updates the online game under its lock.
 00511a04 Leaves the online gathering and waits for the result; reports the error on failure.
 0051207c Maps the level from 00413478 (0 -> 0, 1/2 -> 1, else 3) and keeps the requested one when they differ.
 005122a8 Connects to the online service with the game's server key and credentials, then logs in and opens the gathering.
@@ -2415,6 +2437,7 @@
 00512940 Logs out and clears the joined flag.
 00512a98 Searches the online gatherings matching the parameters and waits for the results.
 00512e64 Reports event 0x66 with the string (when given).
+00513160 Builds the station URL for the session.
 00513e6c Sets the session's application data (up to 0xb8 bytes).
 00514264 Joins the session with the setting; maps the service's errors to the game's codes (0x80000001 to 3, else reports it and gives 0x80000006).
 0051433c Creates a session for up to 4 players with the game's attributes (mode, region, version); true on success.
@@ -2425,7 +2448,9 @@
 00515148 Reports the end of the session (event 0x65) when connected, logs out and clears its state.
 005152d4 Sets the service's timeout to 2000 ms when it exists.
 005152f4 Reports event 0x67 with the string and the two values.
+005158b8 Connects to the NEX server with its access key.
 00515cdc Updates the session and, under its lock, the service at 0x974a14.
+00515d1c Releases the NEX client when it exists.
 0051659c Sets up the network clock once: its time source and callbacks.
 005166a8 Fills the status record with the clock's addresses, times and flags (cleared when not set up).
 005182f4 Constructs the network clock: its lock, notification handler, four address records and cleared times; registers it at 0x95365c.
@@ -2455,11 +2480,14 @@
 00519e3c Initializes the SpotPass task of the id and starts it; true on success.
 00519ed0 Registers the SpotPass task with its policy and action, then starts it; true on success (the known errors give false).
 00519fc0 Initializes the SpotPass task of the id and deletes its data; true on success.
+0051a044 Reads the request's response into the buffer.
 0051a2c4 Registers a SpotPass data store download task (its interval in hours and policy) and starts it.
+0051a414 Parses the request's response.
 0051a740 Reads the SpotPass data (with the network daemon suspended).
 0051a874 Reads the string of the id into the UTF-16 buffer (up to `size` characters, terminated); the number of characters read.
 0051a9f0 Converts the string to UTF-8 into the buffer (terminated) and writes it; the number of bytes written.
 0051aa84 Resets the request (under the locks) and puts it back on the pool's free list.
+0051ac04 Releases the request, under the pool's lock.
 0051ad60 Takes a free request from the pool for the key and the two values (all set), moving it to the used list; null when none is free.
 0051ae04 Constructs the pool's 3 requests (0x30 bytes each), its two lists and lock, with every request free.
 0051b048 Forwards to the function at 0x47f3a0.
@@ -2493,7 +2521,10 @@
 0051f9cc Whether the two villager records are the same villager.
 0051fb04 Picks a random town villager for the villager, weighting each by their relation score and skipping the ones who are away or moving.
 0051fc14 Loads the resource of the table entry for the id.
+0051fc48 Finds the nearest villager record.
+0051ff28 Finds the villager's record in the store.
 005204b0 Closes the message the handle shows.
+005204c8 Closes the message the handle shows when it is open.
 00520bec Builds the global string pool (0x97528c): its three 1024-entry tables, its four buckets and the 1024 bucket flags.
 00520ce8 The address of 12-byte entry `index` of the table at 0x975294 (count 0x97529c), or 0.
 00520d1c Calls the first handler of entry `index` of the handler table at 0x975298.
@@ -2530,12 +2561,14 @@
 005242b8 Clears +0x99 of the keyboard object (0x95e0fc) when there is one.
 00524478 Frees the keyboard's buffer (0x95e0e0) and its two layout parts, and clears 0x95e0e4.
 005244c0 The glyph of a character in the keyboard's font (0x95e0e0).
+005244d4 Whether the scroll moved since the last frame.
 00524528 Initializes a key event for a character (kind 0).
 00524598 Initializes a key event for a command (kind 1).
 00524838 Sets the keyboard layout pair (+0x4c) from the language table (0x890530), with the regional variants for languages 4 and 1.
 00524b80 Finds the key under a point in the key table.
 00524d58 The button's value (+8) when its key is in the pressed mask, else its current entry (or 0).
 00525ae4 Creates a cell grid and fills every cell with the 16-bit ids of the source array, then finishes it.
+0052652c Sets up the balloon string's segments and shader.
 005269e8 Places items on the map by the terrain of each cell (a long routine over the map rectangle).
 00526ea0 Whether the two cells below a point are not shore (terrains 0x14, 0x31-0x33) holding a tree-like item (types 4, 6 or 8).
 00527088 Places items on the map by the terrain of each cell (the second routine).
@@ -2548,6 +2581,7 @@
 00528c6c The size in bytes of a vertex data type (0x1400-0x1406, from the table at 0x854107).
 00528ce0 Writes a GPU command (register 0xf004e) with the depth offset in 24-bit float format.
 00528d60 Generates the town map: picks the layout pieces at random and fills the grid.
+005291b0 Binds the named animation to the model at the slot.
 00529334 The wallpaper of the current room (the default 0x23eb, or the house room's, the villager's, the exhibit's) and its flag.
 0052953c The flooring of the current room (the default 0x234c, or the house room's, the villager's, the exhibit's) and its flag.
 0052984c Binds the named animation to the model.
@@ -2581,6 +2615,7 @@
 0052c878 In talk state 1 or 2: notifies the first talk partner (0x9516a4) when there is one.
 0052c8c4 Queues a talk entry of kind 2 (option 3, value 3) between an NPC and the player; true when it did.
 0052c974 Unless in talk state 0xe: queues a talk entry of kind 8 for the player; true when it did.
+0052cb48 Whether a talk may start now (none of the special talks).
 0052cc5c Bit 1 of the talk flags (0x9516a0).
 0052cc74 Unless in talk state 0xe: queues a talk entry of kind 6 (option 1) for the player; true when it did.
 0052ccfc Keeps an object as the listener (0x9516b4) when there is none; true when it did.
@@ -2602,7 +2637,9 @@
 0052e32c The matrix placing an object at the position on the scene's curve, with its rotation.
 0052e3ec When the current mode has flag 2: calls 0075d24c with the static zero vector and the two arguments.
 0052e5ac Calls the handler of the NPC's state (a member function pointer).
+0052ec20 The cell of the world position.
 0052ed04 The tile's coordinates within its 16x16 block (wrapping below zero as the game does).
+0052ed80 The cell of the world position (by corners).
 0052ef44 The world position of the cell's corner.
 0052ef8c The world position of the cell's center.
 0052f260 Destroys the placement query.
@@ -2612,10 +2649,12 @@
 0053149c Constructs the item model: its allocators, skeletal model, animation, the two part slots and lists.
 0053152c Destroys the item model's parts, allocators and animation.
 00535ab0 Places the structure at the cell in the map.
+00536094 The item's placement group (below 14), or 0.
 005360e0 The first or second word of the entry of the kind (below 0xaa, 0xc bytes each) of the table at 0x878198.
 00536110 Half `index` (below 0x56) of the table at 0xa184e4; the default otherwise.
 00536130 The model word of the item (by its model index, with the variant for indices 0x136 and 0x151); the default otherwise.
 005361e8 Entry `index` (below 0x9b, 3 bytes each) of the table held at 0xa183a0; null otherwise.
+00536650 The item's model scale (by its kind).
 005369d0 The byte at +0x34 of the model's material `index` (only for materials of the right kind).
 00536a28 The texture of the model's material `index` (only for materials of the right kind); null otherwise.
 00536cfc For tools (category 0x1c), binds the tool's texture to the model's material.
@@ -2635,6 +2674,7 @@
 005378e4 Updates the exhibition park when it exists.
 00537b6c The number of set bits of the word.
 00537bb0 The index of the n-th set bit (from 1) of the word; -1 when there are fewer.
+00537c28 Finds the loaded resource with the name.
 00537ce0 Releases the part (+4) and frees the buffer from its heap.
 00537d70 Allocates `count` empty pointer slots and sets the pool up on them.
 00537dd8 Zeroes the pool, with its index at -1.
