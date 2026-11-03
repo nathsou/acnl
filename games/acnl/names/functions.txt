@@ -17922,7 +17922,7 @@
 00628ce4 construct_constants_holder
 00628d08 NetPart__update
 00629438 part_check_9438
-006295d8 part_handle_95d8
+006295d8 PartMask__claim
 00629690 table_scan_629690
 006297a8 send_own_player_stamp
 006297f0 store_constants_6297f0

@@ -971,6 +971,7 @@
 001b1a18 Moves a reached progress (state 2) to finished (state 4).
 001b1a2c Sets the first two bytes.
 001b1a44 Zeroes the progress record and its number pair.
+001b1b40 Copies three bytes.
 001b1bf8 Puts the remembered item back in the field (or clears the tile).
 001b1c70 Adds the items of the set to the slots, closing gaps first.
 001b2114 Stores the item in the first empty of the 16 slots (closing gaps first); true for kind 0x95 items, false when full.
@@ -1648,6 +1649,7 @@
 0026f8a8 Whether the item is set, the scene allows it, and its category is flagged.
 0026f9c4 Loads the item window's layouts (the plain or the selection screen, and the icons); whether both loaded.
 0026fa8c Sets the current player's pocket slot to the item.
+0026fe3c Destroys an item drag window: its drag icon control and groups, nodes, animations, archive readers and \n layouts.
 0027041c Resets the record at +0x100: id -1, mode 2, flags cleared.
 00270ce0 Unloads the split part at +0x14.
 00271290 Sets the color of the current model slot's material (from its resource file) to the slot's color pair; false without a model.
@@ -1991,6 +1993,7 @@
 002d1a70 Stops and frees slot `index` (below 52), uncounting it.
 002d1b3c Counts one more furniture of the kind in its slot of the 3 (taking a free one for a new kind).
 002d1c1c Starts fading channel `index` (below 2) over the frames; with no frames, applies the volume at once (virtual 13).
+002d2b90 Destroys a furniture sound object: stops it, detaches its two sounds and stops the base.
 002d2d60 Plays the sound furniture's song with its volume.
 002d2e80 Sets the volume (and fade frames, 15 by default) of the slots playing the sound for the owner.
 002d3068 Starts the sound furniture with its song and options.
@@ -3444,6 +3447,7 @@
 0053d2b4 Stores the current system tick.
 0053d2cc The CRC-16 (polynomial 0xa001, table built once) of the bytes.
 0053d3b0 The CRC-32 (polynomial 0xedb88320, table built once) of the bytes.
+0053d490 Constructs a disposer and registers it as a child of the heap that contains it (when the thread has one).
 0053dfa0 Reads from the file through the device (virtual 19) when the device is open and the arguments are set.
 0053dffc Whether the device has a file (path arg 2), into a flag (arg 1); false when the device is not open or \n there is no flag.
 0053e71c Tests the touch against the pane and records the hit.
@@ -4419,6 +4423,7 @@
 005d53d4 Constructs the text receptor with the given style and the default font settings.
 005d60d4 Clears the text buffer and the line starts, marking the last line.
 005d6510 Text tag: sets the color (from the tag's two halves) and skips the tag.
+005d6868 Constructs a main renderer: a render base with room for twice arg 2 points, all at the origin, no scale \n yet (-1).
 005d69bc Sets the text box's message with its words.
 005d6bfc Unlocks the text box (the second layout) and refreshes its pane.
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
@@ -4764,6 +4769,7 @@
 00628518 Clears a network record (station 4).
 00628afc Stores a 16-bit value at 0x953600 and builds a word pointer to it.
 00628d08 Updates the network part's state.
+006295d8 Claims a part (arg 1): when the part is allowed (parts 3 and 5 also by the request pool's checks), \n marks it taken (its high bit) in the mask; 1 when claimed.
 00629690 Scans the table for the value.
 006297a8 Stamps the current player into a record and sends it (0x10 bytes) through the link object at 0xa22020.
 006298a8 Clears a peer list header (stations 4 and 4, state 3).
@@ -5464,6 +5470,7 @@
 006f1cfc Counts the items of the category (by its sections for category 0x27) that pass the check.
 006f1f14 Adds group 5 (when r3), 3 and 4 (when the stack arguments say so) of `index` to the set.
 006f2178 Counts the insects that pass the check.
+006f2908 Adds items of a group to an item set: picks items of the group's category by their traits, at random.
 006f2c1c Finds the item of the set in the category.
 006f3d0c Resets the town's flags (of the 0x55 kinds).
 006f432c Decodes the record's packed bit fields.
