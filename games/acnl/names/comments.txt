@@ -1129,6 +1129,21 @@
 002b8e84 Shows the pane and writes the number (up to 10 digits) into the label's text.
 002b9aa4 Shows or hides the item name pane.
 002ba344 Advances the list's counter by the step (mod 3) and moves every child pane by the offset.
+002ba3cc Attaches the layout at +0x34c to the layout system.
+002ba788 Loads the item selection window's layout archive; marks it loaded (+0x4e0).
+002bc8e8 Marks the cell (x, y) of the candidate grid.
+002bc94c Requests the sound data of the id for bank `index` (below 6) and starts its loader; the request's index, or -1.
+002bcb60 Releases the flagged banks' sound data once their loaders are idle.
+002bcd40 Fades to the volume over frames scaled by how far it has to go, and applies the volume (times the master when it has one).
+002be4a4 Writes the record of the player (the first matching or free of the 32 records).
+002be534 Clears the 32 records (0x14b0 bytes each).
+002be76c Destroys the 32 records.
+002be798 The oldest local entry without a visitor (of the 16), and its index.
+002be82c Clears the visit bits of the visitor in each of the 16 entries.
+002be864 Removes the visitor from each of the 16 entries.
+002be89c Clears the local entries that are no longer valid.
+002be8f0 Constructs the 16 park entries.
+002bea00 Fills the park entry from the town data with the next id and stores it.
 002d0920 The object held by the player of `slot` when it is the player's current held object and still valid; else 0.
 002d0998 The record (+0x668) of the object held by the slot; null without one.
 002d0cf8 Constructs the model with its skeletal model, base animation (kind 0x16, enabled) and its second animation.
