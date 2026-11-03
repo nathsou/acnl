@@ -6634,7 +6634,7 @@
 0030b150 Item__has_flag_bit_10_in_type_10_veneer
 0030b154 veneer_6b9904
 0030b15c show_ui_message_17a
-0030b250 update_with_value_4e
+0030b250 TimedRecord__clear
 0030b36c ScheduledRecord__check_due
 0030b410 veneer_6b9934
 0030b414 VillagerTable__update
