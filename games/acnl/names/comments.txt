@@ -501,6 +501,8 @@
 00141a9c Element `index` of an array that stores only the elements whose bit is set in its mask (they follow the mask, in order); false when the bit is clear.
 00148710 out = M * (v, 1) for a 3x4 matrix M.
 0018eab0 Forwards to the function at 0x8161b8.
+001a360c Requests the controller's mode `kind` aimed at the position, with its parameter.
+001a5144 Requests the default mode (+0xf0) back and releases the two flags it holds (0x27, 0x2b).
 001b1010 Loads the six static data tables; true when all loaded.
 001b1900 Takes the received letter (version 3, newer than the current one) when its checksum over 0x28c bytes matches and its letter is valid; true when taken.
 001b19ac Constructs an empty received letter record.
@@ -2363,6 +2365,40 @@
 0068b404 Handles the goal: in tour kind 10 counts it for the tour's result, else runs the flagged callback.
 0068b4d0 Leaves the special mode (bit 6 of +0x91a) or, when bit 5 is set, changes to state 0x21; true when it did.
 0068c4e4 Gives the player tool 0x33a1 (moving the held tool to the pockets), or takes it back from the hand and pockets.
+0068c644 Starts moving the player to the item's spot (releasing the held flag first).
+0068cbb8 When fishing, finds a fish near the point 10 ahead of the player and, when one bites, starts state 0x26; true when it did.
+0068ce74 Tries to place the player at a free spot behind the position, stopping the special music.
+0068d170 Unless muted (bit 5 of +0x66), plays the voice sound and, when asked, marks the player busy.
+0068dc14 Unless muted (bit 5 of +0x66), plays the sound and, when asked, marks the player busy.
+0068eb30 True when the mode controller (0x950874) is in mode 5.
+0068eba8 Restores the default mode when the controller is in mode 5.
+0068ebc4 Updates the mode controller when it exists.
+0068ec10 True when the mode controller has a target (+0x135 not -1).
+0068ec64 Passes the request to the mode controller when it exists.
+0068ec98 Requests mode 3 of the mode controller.
+0068ecbc Queries the mode controller when it exists.
+0068eec8 Passes the value to the mode controller when it exists.
+0068ef60 Requests mode 0x12 of the mode controller.
+0068ef84 Requests mode 2 of the mode controller.
+0068efa8 Runs the controller's check with the value when it exists.
+0068efc8 Attaches the position and target to the mode controller when it exists.
+0068eff0 Restores the default mode when the controller is in mode 0xc.
+0068f00c In mode 0x19, sets the controller's handler and restores the default mode.
+0068f088 Requests mode 2 of the mode controller.
+0068f0d8 The signed byte at +0x1ba of the mode controller; 0 without one.
+0068f114 Restores the controller's default mode when it exists.
+0068f130 Requests mode 0xc of the mode controller.
+0068f14c Runs the controller's function at 0x1a51d0 when it exists.
+0068f168 Requests mode 6 of the mode controller.
+0068f1c8 Requests mode 0xf of the mode controller, with step 5.
+0068f1ec Runs the controller's function at 0x1a5f58 when it exists.
+0068f208 Runs the controller's function at 0x1a5f98 when it exists.
+0068f290 In mode 0x1a, requests mode 0 with step 0x17.
+0068f2ac Restores the controller's default mode when it exists.
+0068f2c8 Requests mode 0x1b aimed above the position (raised by the controller's offset).
+0068f398 Requests mode 0x4d aimed at object 0x59.
+0068f3fc 100.
+0068f460 Requests mode 0x69 aimed at the controller's own target.
 0069a764 Looks through the pointer list at +0xee354 for an entry matching the two arguments.
 006a51ec Updates the save data range at +0x6e224 and checks the one at +0x6e2a4.
 006bbd54 The item `index` of `category` (empty when the category has fewer items), then the kind's own setup from its handler table.
