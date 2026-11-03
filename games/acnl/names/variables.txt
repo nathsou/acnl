@@ -1865,7 +1865,9 @@
 00246c68 r1@246c84 sound_handle
 00246cb8 r0@246cdc block_2
 00246cb8 r0@entry singleton_disposer
+00246df4 arg0 slot_table
 00246df4 r1@entry sound_obj_river
+00246f34 arg0 slot_table
 00246f34 r1@entry sound_handle
 00246f64 arg0 sound_obj_furniture_holder
 00247240 arg0 sound_obj_furniture_holder
