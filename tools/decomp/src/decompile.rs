@@ -377,6 +377,32 @@ L_f000:
 #undef SI
 }";
 
+    // a loop that reads a CPU field the proof leaves unrelated at its header (Relations::free)
+    const READS_CPU_IN_LOOP: &str = "L_2000:
+  BEFORE
+  { u32 a = 0; (void)a; u32 b = 0x0u; u32 res = b; r0 = res; }
+L_2004:
+  { u32 a = r0; u32 b = c->r[2]; u32 res = a + b; r0 = res; }
+  { u32 a = r1; u32 b = 0x1u; u32 res = a - b; zf = res == 0; r1 = res; }
+  if (!zf) { goto L_2004; }
+  tpc = r14; c->pc = tpc; SO(); return;";
+
+    #[test]
+    fn unrelated_cpu_fields_differ_at_loop_headers() {
+        // a field left unrelated holds a value of its own in each program at the header: two programs that leave
+        // other values there before the loop are not taken for equal
+        let f = |before: &str| {
+            parse::function(&function("f_00002000", &["r0", "r1", "r14"], &READS_CPU_IN_LOOP.replace("BEFORE", before))).unwrap()
+        };
+        let (a, b) = (f(""), f("c->r[2] = 0x5u;"));
+        let cfg = z3::Config::new();
+        let ctx = z3::Context::new(&cfg);
+        let related = crate::check::Relations::default();
+        assert!(matches!(crate::check::equivalent_with_loops_free(&ctx, &a, &a, &[], &[], &related), Verdict::Proved));
+        let free = crate::check::Relations { free: ["r2".to_string()].into_iter().collect(), ..Default::default() };
+        assert!(!matches!(crate::check::equivalent_with_loops_free(&ctx, &a, &b, &[], &[], &free), Verdict::Proved));
+    }
+
     #[test]
     fn round_trip_float_comparison() {
         // the flags' test as the float comparison (LE also holds for NaN: !(a > b)); >= instead is caught

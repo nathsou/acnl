@@ -365,6 +365,14 @@ pub fn equivalent_with_loops_free<'c>(ctx: &'c Context, original: &Function, can
                 let name = if related.contains(v) && (ctypes.get(v) == Some(t) || shared_sp) { format!("v_{}", v) } else { format!("o_{}", v) };
                 oinit.vars.insert(v.clone(), (*t, BV::new_const(ctx, name, t.bits())));
             }
+            // the CPU fields left unrelated: a value of its own in each program (they are not proved equal on arrival;
+            // the invariants below may still tie some of them to a variable)
+            for k in free {
+                if oinit.cpu.contains_key(k) {
+                    oinit.cpu.insert(k.clone(), BV::new_const(ctx, format!("o_cpu_{}", k), 32));
+                    cinit.cpu.insert(k.clone(), BV::new_const(ctx, format!("c_cpu_{}", k), 32));
+                }
+            }
             // a candidate that keeps sp in the CPU (GUEST_EXPORT_FRAMED): the CPU's sp is the related one
             if !ctypes.contains_key("r13") && (!saved.is_empty() || !slots.is_empty()) {
                 cinit.cpu.insert("r13".into(), BV::new_const(ctx, "v_r13", 32));
@@ -848,14 +856,14 @@ pub fn verify_cpp(ctx: &Context, original: &Function, d: &crate::decompile::Deco
     };
     let declared: HashSet<String> = declared.iter().map(base).collect();
     let assigned: HashSet<String> = assigned.iter().map(base).collect();
-    // a register a caller observes that the C++ leaves in the CPU: it keeps no variable for it, or neither writes the
-    // CPU's copy nor its variable (both keep the entry value)
+    // a register the C++ leaves in the CPU: it keeps no variable for it, or neither writes the CPU's copy nor its
+    // variable (both keep the entry value); lr is related through the return address the C++ keeps
     let mirrored = df
         .synced
         .iter()
         .map(|(v, f)| (v.clone(), crate::sym::cpu_key(f)))
         .filter(|(v, k)| {
-            OBSERVED.contains(&k.as_str()) && k != "pc" && (!declared.contains(v) || (!written.contains(k) && !assigned.contains(v)))
+            k != "pc" && k != "r14" && (!declared.contains(v) || (!written.contains(k) && !assigned.contains(v)))
         })
         .collect();
     equivalent_with_loops_free(ctx, &df, cpp, &slots, &[], &Relations { free, lr_slot, restored, unobserved: crate::results::unobserved(original.address), mirrored })

@@ -405,9 +405,21 @@ edit. The reading spells out what runs around the C++ (guest/include/guest/abi.h
 
 When the decompiled function keeps its pushes (functions with loops), the C++ keeps them too and returns through its
 copy of the entry lr: at the loop headers both are related by the invariant that the lr slot still holds that lr,
-and the save area bytes are the same in both (assumed at a header, proved on arrival). A register a caller observes
-that the C++ leaves in the CPU (it keeps no variable for it, or touches neither the variable nor the CPU's copy) holds
-what the decompiled function keeps in its variable, at every header (assumed there, proved on arrival like the rest).
+and the save area bytes are the same in both (assumed at a header, proved on arrival). A register the C++ leaves in
+the CPU (it keeps no variable for it, or touches neither the variable nor the CPU's copy) holds what the decompiled
+function keeps in its variable, at every header where that variable is live (assumed there, proved on arrival like
+the rest). The CPU fields the proof leaves unrelated at the headers (the CPU copies of the registers the decompiled
+function keeps in variables, pc) hold a value of their own in each program there; before 2026-11-03 they started
+equal in both without being proved equal on arrival (a gap: `unrelated_cpu_fields_differ_at_loop_headers`). The
+5,893 committed drafts prove again with it closed.
+
+Tried (2026-11-03): leaving the scratch registers (r2, r3, r12, s2-s15, the flags) unrelated at the headers too,
+so that a scratch result reaching a header flows on only when something after it reads it (a call's scratch results
+depend on every argument register in the model, so relating them at a header makes every call before one hand over
+all its arguments and read them back). On a sample of 294 drafts: 948 CPU accesses -> 920, 13,887 lines -> 13,869,
+one draft no longer proved; with call sites and the assumed signatures as well, 876. The rest come from callees
+without a signature, or whose signature lists every argument register, along the same chains; the change was not
+kept.
 `DECOMP_DEBUG=1` prints, for each segment, the obligations the simplifier cannot settle alone.
 
 A short block that ends the function (straight code ending in a return or a tail call) is written in place of each goto
