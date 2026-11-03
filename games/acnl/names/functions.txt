@@ -1377,7 +1377,7 @@
 001414b4 SoundHeap__clear
 0014152c sead__AudioFxCtr__destructor
 0014156c SoundFxMgr__reset
-00141650 SoundHandle__dispose
+00141650 Heap__remove_disposer
 001416b0 return_constant_0x97e098_
 001416bc SoundArchive__block_offset
 001416ec SoundArchive__find_kind_3
@@ -3304,7 +3304,7 @@
 0022c48c MapIcon__set_position
 0022c53c DragIconGroup__DragIconGroup
 0022c5c8 DragIconGroup__virtual_1_0022c5c8
-0022c5d8 DragIconGroup__virtual_0_0022c5d8
+0022c5d8 DragIconGroup__destructor
 0022c62c ExplainWindow__virtual_10
 0022c720 ButtonAnim4__start
 0022c7c8 InOutWindow__InOutWindow_0022c7c8
@@ -14399,7 +14399,7 @@
 00569508 apply_value
 00569544 FrameControl__advance
 005695e4 construct_dummy_layout
-00569774 copy_animation_target
+00569774 TextureAnim__bind_texture
 005697e0 Animation__set_value
 005697f8 Animation__setup
 00569838 ssys__ma__lyt__Animation__deleting_destructor

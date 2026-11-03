@@ -487,6 +487,7 @@
 0012bfec Constructs a critical section: a disposer with an initialized recursive lock.
 0012c0e8 Loads the sound data (with the given or default heap, +0x228) when the loader is ready; false otherwise.
 0012ca6c Stores arg 1 at the object's offset 4 and returns 1.
+0012ca7c Constructs a load split: a list node, a file handle and a 128-character path, nothing loaded.
 0012cb84 Releases the scene's objects.
 0012cc78 Finalizes the save data and its blocks.
 0012d19c Releases the talk window holder's windows.
@@ -512,6 +513,7 @@
 0012ebf4 Releases the slot's sound data request (all of it when asked, else its own, +0x14).
 0012ecd4 Clears the 0x3000-byte buffer at 0xad6670 and its four counters.
 0012edc0 Constructs the file with an empty path record.
+0012ede8 Calls virtual 12 of an object, unless the object is null.
 0012ee00 Sends command 0x80c with its buffers to the service.
 0012ee60 Sends command 0x80e (header 0x80e0080) to the service of the given handle and returns its result.
 0012ee90 The object at 0x974f20; a fatal error when it is missing.
@@ -633,6 +635,7 @@
 0013864c Releases what the handle holds (through the service when it owns a service handle, else through the owner's virtual function 7) and clears it.
 001386f4 Releases the split's handle and takes one from the count of handles in use.
 0013873c Updates the sound player's state.
+00138998 Frees the object a pair holds (with its buffer), then clears the pair.
 001389c0 Destroys eight 0x40-byte entries.
 00138bbc Removes the pointer from the list.
 00138c2c The last index of list `index` (fewer than 6), read under its lock; -1 without one.
@@ -724,6 +727,7 @@
 0013ee40 Clears the sound heap (under its lock): stops the sounds using it and frees its sections.
 0013eeb8 Loads the sound heap's entries.
 0013ef18 Stops the player's sound (+8) at once when it has one.
+0013efb4 Destroys a disposer: its heap forgets it, and it is left with the singletons' list as its heap.
 0013f2e4 Reads the archive's wave archive info.
 0013f5e8 The low byte of the value of key 0 of the sparse array at +8, or 0x40.
 0013f610 Bits 8-15 of the value of key 0 of the sparse array at +8, or 0.
@@ -757,7 +761,7 @@
 00141490 Clears the sound heap and resets its state (mode 3).
 001414b4 Clears the sound heap.
 0014156c Resets the sound effect manager's 2 slots.
-00141650 Disposes the sound handle's resources.
+00141650 Unlinks a disposer (arg 1) from a heap's disposer list, under the heap's lock when it is thread-safe.
 001416bc The offset of the archive's block of the kind 0x6801, or none.
 001416ec Finds the archive's entry of kind 3 with the id.
 00141728 The entry a handle names (top byte 1, then its index) in the table at the object's +word_4 (8-byte entries holding offsets); null for another kind of handle or an index out of range.
@@ -1416,6 +1420,7 @@
 0022c390 Sets the map icon from the record.
 0022c48c Sets the map icon's position and its flag.
 0022c53c Constructs a drag icon group: a layout list with a list node and seven layout animations, all enabled.
+0022c5d8 Destroys a drag icon group's seven layout animations.
 0022c720 Stops the current animation and starts animation 0 to 3 from zero.
 0022d64c Refreshes the map screen's grid of structures.
 0022d734 Clears the counter (0xa182f8) and reseeds the random state at 0xa182fc.
@@ -1522,6 +1527,7 @@
 0024a6d0 Marks the badges whose counters reached their goal and sums their points by tier (capped at 99999).
 0024a7d4 Clears the badge counters (+0x1c), their flags (+0x1b4) and records.
 0024a848 Clears the badge counters (+0x1c), their flags (+0x1b4) and records.
+0024b448 Adds an amount (arg 2, negative subtracts) to a player counter (arg 1), kept encrypted and capped by the \n counter's kind; not while the net session is in mode 3.
 0024b500 Adds to the badge counter of the kind (clamped to its maximum).
 0024b600 Sets the counted bit (bit 2) of badge `index` once, counting it in the current split.
 0024b630 Counts the id for counter 0x12 when it is not among the up to 5 ids already counted (+0x228).
@@ -1966,6 +1972,7 @@
 002cd574 Allocates and constructs the park data (0x17be10 bytes), from the scene heap or the stage heap.
 002cd5e4 Destroys and frees the park data, and marks the park not ready.
 002cd640 Initializes the request (type 0x3800) with its three arguments.
+002cdcb0 Constructs an item drag icon group: a drag icon group with four more layout animations.
 002cdd40 Adds the object's icon (+0x20) to the drag icon list.
 002cdf30 Whether the day's event counter of the current player is in progress (between 1 and 101); else forgets the event.
 002cf018 Sets channel 0's buffer and size, and resets its progress, under the lock.
@@ -2266,6 +2273,7 @@
 003036c0 Jumps to 0x75db08.
 003036c4 Jumps to 0x70c098.
 003036cc Jumps to 0x827280.
+003036dc Schedules (arg 0) at a time stamp (arg 1), measured from the game time's earliest.
 003037e8 Refreshes the villager house's items for the current time.
 00303b10 Copies the empty item into `item`.
 00303f50 Stores a 16-bit value at +0x1d9c and marks +0x1d9e.
@@ -2481,6 +2489,7 @@
 0030c4f0 Forwards to the function at 0x695584.
 0030c4f4 Clears the 4 x 2 records of 0x40 bytes (kind 0x21, empty identity) and the trailing index byte.
 0030c578 Sets the record's kind 0x21, count 1 and index 0xff.
+0030c598 Clears 16 entries of 12 bytes.
 0030c824 The villager's entry (0x50 bytes) in the runtime table at 0xa82c58, found by its id; null when it is not in the town.
 0030c860 Jumps to 0x7ca59c.
 0030c864 Jumps to 0x7ca62c.
@@ -3267,6 +3276,7 @@
 00521070 Builds an object with the parameter set at 0x8a3b28 (00520f7c).
 005210a8 Releases a string from the global string pool.
 00521a48 Builds an object with the parameter set at 0x8a3b40 (00520f7c).
+00521a8c Constructs a framework process: not started, with a fresh id from the string pool's table.
 00521ae4 Appends `node` to `parent`'s children (first child +8, next sibling +0x10, previous +0xc), or to the roots (`roots`) without a parent.
 00521ddc The current viewport's rectangle (of the first render target when it has one), or a static empty one when the error/EULA screen is up.
 00521e74 The current render target's scale (+0x11c), or a static zero when the error/EULA screen is up.
@@ -3548,6 +3558,7 @@
 00568b38 Takes the entry out of the layout list (when found) and returns it.
 0056939c Starts the button's animation unless it is locked.
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
+00569774 Binds a texture (arg 1) to an animation target: its format, scale 1, offset 0, and whether it lacks mipmaps.
 00569b44 Sets the fade's start, target (at least 0), speed and mode.
 00569e6c Draws the layout on the top (0) or the bottom (1) screen.
 00569e90 Sets up the screen for 400 x 240 and resets its list.
