@@ -1325,10 +1325,17 @@
 0047ea68 The CRC-32 of `size` bytes (polynomial 0x04c11db7, most significant bit first, its table built on the stack), starting from `seed`; complemented.
 004b4fc0 The pane of the layout's tree with this name (searching below the root pane).
 004b9b64 Marks the event (+0x1c = 1) and passes its value (+0x18) to virtual 0x3c of the listener at +0x20.
+004e0288 True when the check at 0x1531b8 gives exactly 1.
 004e029c Stores the three components call_004dfb58 gives (from the arguments) into entry `index` (0x24 bytes) as half floats, with a flag.
+004e0960 Sets the motion parameters (target, mode 5, two halves, the float).
+004e0998 Sets the motion parameters (target, word, three halves) with no float.
 004e09c8 Appends `node` to the queue unless it is in it already.
+004e0a48 Calls slot 4 of the transform node at 0x951530.
+004e10ac Leaves 64 and 2 in the float registers.
 004e1204 Empties the room's furniture grids (64 rows of 0x50 cells, and the 16 x 16 upper layer at +0x1400: -1 each) and its table of 48 furniture objects.
 004e12b4 The furniture object of the grid entry call_004e1768 gives (its index into the table); null when none.
+004e13d0 The first of the two entries' furniture that is usable now (by its id and flags); null when none.
+004e14ec True when the furniture of the last valid entry (of the two) is of effective kind 0x2d.
 004e1668 Resets the two 0x40-byte slots from `slots`: no owner (-1), kind 4, every float 0.
 004e1a7c The room module's flag byte.
 004e1a90 The room module's flag byte (a second copy of room_flag).
@@ -1354,6 +1361,22 @@
 004e4ab8 Calls 004e40e8 with its second argument as the first too.
 004e54a4 Places at the cell under `position` through 004e21e0 with the offset 32: 2 when it did, 0 when not, 3 when the furniture there is of kind b/12/c, 4 when there is none.
 004e5818 In scene 0x2b, for a special-set item: when the map cell (x, z) is empty, builds an empty item record and passes it to 0057456c; true when it did.
+004e5924 Applies a received room item message: places or removes the item at (x, y) and updates the room's bit table.
+004e5b74 Applies a received field item message: places, removes or changes the item at the position.
+004e6200 The item of the furniture at the position in a room scene; empty otherwise.
+004e628c Applies the wallpaper and floor (category 0x2f, below 91) of the room message and, when asked, sends it on (message 0x52).
+004e645c Copies the received position and cell into the scene record of its mode.
+004e64a4 Applies a received furniture message to the room's furniture.
+004e664c Applies a received cell change at (x, y), by its flags.
+004e668c Forwards the scene pair message (0x55) to the waited stations, then copies its 8 bytes into the scene record (first or second half).
+004e6774 Starts the room timer of the station from the packed position and kind; answers 0x59 when it started, else 0x5a.
+004e6a3c Sets the room's wallpaper and floor (below 91) in its scene and map records and, in a session, sends message 0x56.
+004e6b48 Sets the scene record's position and, in a session, sends message 0x53.
+004e6b9c Unpacks the room item message (item, cell and flags) and applies it.
+004e6c70 Places the received item at the cell of the map of the mode (the current map when it is the current scene), clearing the tile.
+004e6e84 True for flagged kinds in odd area scenes while the tour record is in state 9.
+004e7234 Places the item at the cell of the map of the mode, clearing the tile, and when asked sends message 0x4e.
+004e7344 True for flagged kinds in odd area scenes (without flag 0x100000) while the tour record is in state 9.
 004e9a28 The furniture object at cell (x, z) of the room grid (from the table of up to 48); null when none.
 004e9a78 The room furniture at cell (x, z) of a layer, within the capped furniture count.
 004f2d48 Sets the color's components given as 0-255 (256 and above leave a component as it was).
