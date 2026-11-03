@@ -2335,9 +2335,44 @@
 0056f1b8 Updates the furniture's shadow from its position and size.
 0056f34c Packs the furniture's location: its scene in the high bits, then its room furniture index, or its cell and layer (or the carried marker).
 0056fd94 Finds the furniture's slot in the room grid and furniture list.
+00570544 Switches the furniture on or off (lights, sounds, animations) by its kind.
+00570adc Whether each flagged slot of the furniture (seat, sides, top) is free or already the object's.
+00571d28 Finds the furniture beside this one in the room grid, in the direction.
+00572624 Initializes the furniture's contents and claims its flag.
+00572fb4 Updates the furniture's camera use and its sound.
+0057322c Places the furniture on the tile's height outdoors, or the floor in a room.
+005739fc Tells the sound object whether the audio furniture is playing (states 1 and 4).
+00573aac Toggles the furniture's switch when it has one; whether it may be used.
+00573aec The ground's height under the furniture at the position.
+0057456c Tells the sound object whether the furniture is playing.
+0057579c Counts down one; whether it had already reached zero.
+005757b8 Sets the countdown and its start to the value.
+005757d4 Initializes the query at the origin and its 9 cell entries.
+005761c8 Plays the furniture's sound at its position, unless it is a special kind, held or moving.
+00577810 Allocates the cleared block from the scene pool when there is one, else from the heap.
+00578018 Removes the node from the list at +0x70 and clears its links.
+0057885c When the NPC's saved place is in the current area: places it there (on the ground unless flying) with its angle; whether it did.
+00578988 Whether the NPC belongs to another player; records the owner (4 for none).
+00578af4 Sets the NPC's wait to 95 frames.
+00578b38 When the NPC qualifies and is the main object's: releases its saved entry.
 00578bc8 When bit 4 of +0xb0a is set and there is an NPC manager: notifies it.
 00579024 Copies the data of the object found for an id (else uses +0x2e).
+005791c4 When the mode allows it: resets the deadline, marks the share pending and shares the NPC's schedules.
+005792fc Marks the NPC busy, plays the player's reaction for the slot and begins the NPC's reaction action.
+00579514 Begins the NPC's next action, frees the main player and clears the busy mark.
+00579e44 Sets the secondary animation id and its parameters (from the two presets, or none).
+00579fd0 Sets the animation set's id, primary and secondary animations with their parameters.
+0057a0a0 Sets the primary animation id and its parameters (from the preset, or none).
+0057a3f8 Sets the segment's two points.
+0057a42c Sets the segment to the default one.
+0057afd4 Clears the pending share once its deadline has passed; whether the NPC is not held.
 0057b9dc When `enable`: keeps the two extra arguments at 0x94dfd8 and runs 00529c80 in mode 2; else returns 0.
+0057bb70 Whether the mode is 0 or 2.
+0057bb84 Whether the mode is 0 or 1.
+0057bd78 Clears the two words; true.
+0057bd94 Clears the entry with no NPC (0x169).
+0057d55c Starts the NPC's leaving, clears the town flag and starts its walk animation unless it plays already.
+0057ddf4 Lays out the keyboard's glyphs for the current mode.
 00581050 Creates the grid map (005814d0) and its 0x4000-byte work buffer; on failure releases the cells.
 005812ec Creates the grid map (005810ac) and its 0x4000-byte work buffer; on failure releases the cells.
 00581354 Places an item in the small cell under a world position, when it is inside the map.
@@ -3383,7 +3418,40 @@
 0068f398 Requests mode 0x4d aimed at object 0x59.
 0068f3fc 100.
 0068f460 Requests mode 0x69 aimed at the camera controller's own target.
+006904b4 When the item may be placed here (a furniture item or a forced placement, the scene allows it and the room has space): starts placing it.
+00691210 Runs the check from the player's position and angle; -1 without a player.
+0069125c Toggles the music or the switch of the furniture at the position, and its audio.
+00691544 Sets the placement's item (without its top flags), its cell, angle and mode.
+006915b0 Toggles the music or the switch of the furniture at the position, and its audio (the second variant).
+00691754 Runs the check from the player's position and angle; 4 without a player.
+00691ae8 Releases the held object and clears its item; true.
+00691b7c Whether the two cells are adjacent, or a straight path joins them along either corner without hitting anything.
+00691cb4 Checks the furniture in front of the player and queues the NPC's talk about it.
+0069335c Whether the scene (by its flags, the player's slot, or the tour's state) blocks using tools.
+006934a0 Whether the current scene has one of the special-area flags.
+00693a64 Posts the notice (0x33a8, or 0x33a9 with the flag) for the value.
+00693cc8 The angle of the direction (0 to 3, a quarter turn each).
+00694178 Takes the first free block of the pool, marking its bit; null when all are used.
+0069438c When the move with the id ends: places the model at its end, writes the position and forgets the move.
+00694918 Restarts the tab animations, shows the page and starts the open animation.
+00694b54 Clears the selection, restarts the tab animations and starts the open animation.
+006953b8 Selects the tab with the flag when it changes, and starts the select animation.
+00695584 Spawns the object (mode 2) and appends it to the list.
+00695ce4 Loads the scene's resources on the stage heap.
+0069697c Checks the player's letters, pockets and position for the scene's events.
+00697e88 Removes the point with the id from the list (0xc bytes each); whether it was there.
+00697f60 Shows or hides the event NPC's model, and its shadow unless asked.
+0069858c Sets the deadline of the listed NPC with the slot; whether it was found.
+006985f0 Whether the cell is at least 25 cells (Manhattan) from each of the points.
+00698ac0 Whether the day's event may start: the player's flags allow it, it is enabled and not done, and nobody is visiting.
+0069a214 Starts the event NPC's talk and sets its villager state.
 0069a764 Looks through the pointer list at +0xee354 for an entry matching the two arguments.
+0069a91c Calls virtual function 60 of the listed NPC with the slot.
+0069aec4 Whether the evening event may start: alone, past the hour, in fair weather, and with the player's badge ready.
+0069b0ac Chooses a free cell for the event near the plaza or the structures.
+0069b3f0 Spawns the event NPC at the chosen cell.
+0069c838 Whether the current player still needs the event's introduction.
+0069f26c Clears the event's town flags when no player qualifies, and whether the save's flag is set.
 006a04c4 Updates the villagers' states for the day (moving, events) and marks them in the bit set.
 006a0848 Outside flagged scenes, spawns the actor in front of the current player's house and records it in the actor list (+0xeb54).
 006a0ecc Updates the villagers' visit records for the current player.
