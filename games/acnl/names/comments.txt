@@ -879,6 +879,40 @@
 0022e194 Resets the pattern's flags (type 4, shareable).
 0022e1c0 Takes the online state's mode and value (when connected), keeping the mode below 3 and marking it, and copies the pending word.
 0022fcb8 Finds the named animation in the model's resources and binds it; marks it bound (+0x4f9).
+002306c4 Sets the talk's word slot to the number with its digits; whether there was a talk to set.
+00231ad4 Stores the gift item and its flag, and tells the gift manager for the main player and the NPC.
+00237008 Sets the talk's mode and marks each listener NPC as in a talk.
+00237d58 Stores the pending text and its value when none is pending; whether it was stored.
+002383c0 Starts the word fix at the position, numbering it on first use.
+002389f8 Sets the talk's word slot to the fashion word of the index (1 to 10); 0 leaves it.
+00238e10 Sets the talk's word slot to the name of the object kind.
+00238f7c Sets the talk's word slot to the name of the map structure's group.
+00239738 Sets the talk's word slot to the impression word for the person's gender; whether there was a talk to set.
+002397ec Sets the talk's word slot to the player's impression word for their gender.
+00239cd0 When idle (4): starts turning (mode 3) toward the player, with the flag.
+0023a200 When idle (4): starts turning (mode 1) toward the player, with the flag.
+0023a254 When idle (4): starts turning (mode 0) toward the object at the speed.
+0023a440 Begins the end action of the talking NPC and of each listener still in their talk idle (action 0xc); whether any began.
+0023ae64 Starts the talk: with no script, attaches it to the talk window and asks it to close; else runs the script. Then calls its virtual function 71.
+0023b0d4 Sets the talk's word slot to the message of the archive; whether there was a talk to set.
+0023b164 Sets the talk's word slot to the word.
+0023b1b4 Whether the talk still has a script running, a pending close, or a window not idle.
+0023b248 Sets the string to the message of the archive.
+0023b480 Sets the talk's word slot to the amount; whether there was a talk to set.
+0023bf10 The negation of the wireless check A.
+0023c544 Whether the wireless state is 1.
+0023c5e4 The negation of the wireless check B.
+0023c634 Whether the wireless state is 0.
+0023c65c Whether going online is blocked: by the system, a pending error, or the save's restriction.
+0023c6c0 The negation of the wireless check C.
+0023c730 Steps back one of the three pages and plays its animation.
+0023c860 Draws the screen's layout.
+0023c9c8 Releases the screen's layout and its parts.
+0023c9e4 Updates the screen's layout and its animations.
+0023cb48 Applies the cloth colors of the slot's model when it is loaded; whether it was.
+0023d5ec Whether the pockets hold an item the NPC may be given (by kind and the event's rules).
+0023f704 Copies one pattern image (64x32) into another, filling where the source is smaller with the background color, and imports it.
+0023f820 Copies one pattern image into another (the second layout), filling outside the source with the background color, and imports it.
 00240080 Runs the function at 0x7206e0 on structure list `index` (below 4, from 0xab7de4) when it exists.
 002404b0 True when the construction site (save +0x6e2a4) is set (or finished) and is in block (x, y) for the structure kind.
 0024088c Finds the structure matching the record in the main list (0xab7df4) and removes it.
@@ -2196,7 +2230,45 @@
 0053f6c4 The number of set bits of the word.
 0053fda8 Sets the camera's center from the viewport's bounds and its look-at below it, then updates its view.
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
+005500a0 Takes the next free emitter of the ring, links it into its group's list and resets it; null (with a warning) when all are in use.
+00550204 Creates the emitter set with the transform's position and no rotation.
+00550438 Takes the next free particle of the ring and counts it; null (with a warning) when all are in use.
+005504e8 Clears the renderer's buffer use and the system's counts, and resets the render state.
+00551d94 Particle command: rotates the vector about the axis (x, y or z) by the angle; the next command.
+00551e58 Scales the particle's alpha (and/or scale) by the emitter's flicker table at its age.
+00552190 Particle command: moves the particle's velocity toward the target on the flagged axes by the rate; the next command.
+0055224c Particle command: at each interval, adds a random offset scaled per axis to the velocity; the next command.
+005547e0 The emitter's own matrix, or its set's when it follows the set.
+005551f4 Resets the emitter's fade.
+00555824 Writes the renderer's GPU state commands (blend, depth and the color constants) into the buffer; its end.
+00555f90 Writes the renderer's base state and the 3x4 matrix as GPU commands; their end.
+00556050 Begins the renderer's frame.
+00556094 Copies the renderer's setup commands into the buffer once per frame and resets the render state; their end.
+00556128 Writes the commands enabling the 12 lights and their colors; their end.
+00556d80 Allocates and relocates the effect resource's data and its textures.
+00556ea0 Replaces the emitter's data and, when asked, notifies the system for the two screens.
+0055746c Sets the particle's texture offset from its animation frame (by age or by life).
+005574f0 Initializes the camera's field of view, distances and position.
+0055b6e0 Counts the set's live emitters and draws the set with them.
+0055ba48 The next value of the effect random generator, in [0, 1].
+0055badc Loads the particle shader and finds its uniforms by name.
+0055bc90 Sets up the three vertex buffers (position and two UV sets) of each of the 3 frames, and the index buffer.
+0055c0c8 Loads the shader, sets up its buffers and builds its setup and light command lists.
+0055c1b8 Once per state change: writes the commands binding the shader and its lights; their end.
+0055c27c Copies the shader's light commands into the buffer; their end.
+0055c2b0 Writes the shader's uniforms as GPU commands.
+0055c5ec Destroys the particle model manager's resource factory.
+0055c73c Decodes the base64 text into bytes.
+0055c96c Encodes the bytes as base64 (the standard or the URL alphabet), with padding.
 0055cabc Seeds the four state words from one value (each the previous one mixed with 1812433253, as Mersenne Twister seeding does).
+0055d510 Clamps the four channels to [0, 1].
+0055d5c0 Interpolates between the two vectors by the clamped factor.
+0055d634 Interpolates between the two colors by the clamped factor.
+0055debc Allocates the aligned block from the end of a free block, splitting off what remains; the used block.
+0055dfa4 Adds the block to the used list (in address order when the heap keeps it sorted).
+0055e9d0 Whether the task and its whole chain of children are loaded (state 4), under the lock.
+0055ed48 Starts loading the resource with its argument on the thread's heap, and chains it after its parent; the task.
+0055f1ac When the task's lock is free: finishes the task and unlocks it.
 005601b8 Sets the 8-bit color channels from the four floats, each clamped to 0 to 1 (stored in reverse order).
 0056029c Builds the shared name table from the source entries for the kind.
 005603f0 The shared critical section at 0xae544c, constructed once.
