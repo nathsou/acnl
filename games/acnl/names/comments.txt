@@ -47,6 +47,7 @@
 0010125c printf's %x, %X and %p: the digits of the 64-bit value (r2, r3), least significant first, then the 0x prefix for the # flag.
 00101334 strtol in base 10, errno left as it was.
 001013c4 Calls 0010218c and returns its object.
+00101800 Copies at most count (arg 2) wide characters, padding with the terminator (C wcsncpy); returns dst.
 0010181c Copies count (arg 2) 16-bit characters.
 00101a00 Forwards to store_word_af75e8.
 00101a1e Whether the wide character has class bit 1.
@@ -1921,6 +1922,7 @@
 0029a5f8 Starts the menu state (kind 0x20c, 0xb, 7) and tells the menu selection.
 0029aeac Drops the dragged icon when ready.
 0029b480 Resets the sub-menu and its child window.
+0029b6f8 Updates a drag icon control: the button actions, then advances each shown icon's frame control.
 0029b840 Sets bit `index` (below 399) of the bit set.
 0029b868 Clears the 50-byte bit set.
 0029bde8 The half-tile coordinates of the cell (two per tile, by the tile's shape).
@@ -2860,6 +2862,10 @@
 003319e8 Resets the permit record (state 4, mask 0x3f).
 00331a0c Sets the two halves and the two floats.
 00331a20 Zeroes the two halves and the two floats.
+00331a40 Starts a furniture audio sound object (unless started): kind 9, then the furniture start.
+00331c1c Stops a furniture audio sound object (when started): the room music player stops it if it is its source, \n then the furniture stop.
+00331c7c Constructs a furniture audio sound object: a furniture sound object with its own vtable.
+00331d0c Destroys a furniture audio sound object: stops it (as SoundObjFurnitureAudio__stop), then the furniture \n sound object.
 00332688 Copies the letter (with its item and texts) into the first free of the 80 letter slots.
 003327e8 Adds an exhibition letter with the item to the 5 pending letters (0x280 bytes each); false when full.
 003328ec Constructs the 5 pending letters.
@@ -3268,6 +3274,7 @@
 004fed2c Initializes the animation's tracks.
 004fef54 The layout's animation part (below 8).
 004ff300 Stops the layout's animation part.
+004ff388 Constructs a GUI button from a description (arg 1): a widget with the description's sounds (defaults for \n the unset ones) and name.
 005008b4 Resets the 5 tracks and copies the forward or the reverse curve set (0xe8 bytes) in, then starts it.
 005013dc Animation command: scales the pane's size (x, y or both) by the percentage that follows, or restores the saved size.
 00501580 Animation command: scales the pane's size by the percentage that follows on the chosen axes, or restores the saved size.
@@ -6749,6 +6756,7 @@
 0081d12c Constructs a 20-character script word (filled with the empty character).
 0081d248 Constructs a 21-character script word (filled with the empty character).
 0081d8c0 Constructs a 33-character script word, empty.
+0081e020 Constructs a 50-character script word (filled with the empty character).
 00825aa4 Unlinks the node from its owner's list and clears its owner.
 00825acc Unlinks the node and links it into the new owner's list (+0x70).
 00825b04 Unlinks the node from its owner's list and clears its owner; the node.
