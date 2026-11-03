@@ -3143,6 +3143,7 @@
 005cd270 Unlinks the held node (unless 004dbc3c keeps it) and resets the request record (kind 0x800000, id -1).
 005cd2f4 The word at 0x95c348; when it is 0, resets through 001b979c and clears 0x95c33e.
 005cd754 Clears every part of the town flags block (+0x621d0 of the town data).
+005cd8a0 Clears the save's number pairs below the id range.
 005cda08 Clears the two extra entries (+0xe8) and their count (+5).
 005cda44 Puts an entry (three bytes) in the first free of the 56 slots (+8) and counts it (+4); its index (0 when full).
 005cdab4 Puts an entry in the first free of the two extra slots (+0xe8) and counts it (+5).
@@ -3164,6 +3165,7 @@
 005cedec When a request is pending (0x94e3f0) and allowed: runs it under the member lock at 0xae563c, then finishes the wait.
 005cfa38 When 0071a084 allows it: refreshes the visitor list from the current entry (or a new one from 0x9535e4).
 005cfa78 Whether the visitor list is empty, computed once (0x9514c4) and kept.
+005cfaec When online is allowed: copies the villager into the store's slot, clearing the stale ones.
 005cfcf0 When visits are pending (0x9514c6): adds the new visits (above the counted ones) to the town's visit count, capped at 20, and clears the pending state.
 005cfef0 Forwards to 0071a084.
 005cfef4 Records a visitor (id and two bytes) and, when new, counts the visit for the visitor's player and the town counters.
@@ -3195,11 +3197,34 @@
 005daf1c Empties the selected pocket slot (below 16) of the current player.
 005dc9d4 Adds the item to the current player's pockets and refreshes them.
 005dd5b8 Formats the number with three digits into the string.
+005e19a8 Sets the value as kind 1.
+005e1a00 Sets the value as kind 2.
 005e2e50 Restarts the message engine at +0x44 on the text the source's virtual function 3 returns, and runs it.
+005e3238 Formats the hour (below 60) with two digits, for the region's clock; kind 3.
+005e32a0 Formats the amount with its separators for the region; kind 5.
+005e3344 Formats the number for the region's conventions.
 005e34c4 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
+005e350c Initializes the message reference with its archive, label, arguments and speed.
 005e3550 A reference to message `id` of the message file `file`, with its stack arguments (two floats and a byte).
+005e35dc Clears the message reference (kind 2, no message).
 005e49c0 Sets up a choice list: `count` choices with `default` selected (none when out of range).
+005e626c Starts the text with its options and runs it when there is one; the result.
+005e7dc4 Notes whether the character is native to the region's script or foreign.
+005e8498 Calls the dialog box's virtual function 5.
+005e9974 Refreshes the talk window's text and its label when attached.
+005e9d64 The item offset pair (category 0x27) for the talk's value.
+005e9d90 Clears the pair (category 0x27).
+005ea158 Formats the number with three digits into the string.
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
+005f10b0 Starts loading the resource (split or plain); whether it started.
+005f11b4 Sets the talk target's word slot (its virtual function 33).
+005f1344 Sets the talk target's text (its virtual function 39).
+005f6b44 Formats the amount with its separators for the region.
+005f6dcc Scans the text table for the entry.
+005fbc20 Closes the message window: resets its engine and clears its text.
+005fbfbc Lays out the message window's lines.
+005fc110 Clears the page's line offsets and shows its end (the last line's width, or the default).
+005ffd94 Links the talk script with its window and, during a talk with no special partner, marks the talk as shown.
 0060143c Binds the resource of the current mode's entry (from the normal or the alternative table) as the talk's argument.
 00601f20 Clears the wait and, unless asked to keep it, the flag and the window's vertical scroll.
 00602144 Links the talk window and its owner and, during a talk with no special partner, marks the talk as shown.
@@ -3333,6 +3358,7 @@
 0061f608 Accepts a friend key that is new to the three known ones (when the link allows it): sends it (0050d1b4) and records it; true when done or already known.
 0061f6a0 Records an accepted friend key in a free entry.
 0061fc98 Sends the 100-entry friend list (+0x11950) through the link object; clears the pending flags when it went through.
+0061fd68 Sends the station's bit (packet 0x30), or requests it as the host.
 00620e18 Sets the visit role from the session: 1 when this station hosts the guest, 3 without a guest, else 8 (for stations below 4).
 006212f0 In role 1 with a valid session: refreshes the station set and sends this station's kind state (record 0xd), or handles it locally as the host; then moves to role 2.
 006213c8 Refreshes the station's entry and slot, and in a session of more than one sends the update as a network record (kind 1).
@@ -3441,6 +3467,7 @@
 00626df0 Creates the net game manager on the net game heap and hands it to the session.
 00628518 Clears a network record (station 4).
 00628afc Stores a 16-bit value at 0x953600 and builds a word pointer to it.
+00629690 Scans the table for the value.
 006297a8 Stamps the current player into a record and sends it (0x10 bytes) through the link object at 0xa22020.
 006298a8 Clears a peer list header (stations 4 and 4, state 3).
 006298cc Finishes the list's part and stores this console's address (by link mode) as its own peer.
@@ -3463,8 +3490,45 @@
 0062c790 Copies up to `count` entries (0x7c bytes) of the circular log from `start` into `out` (under the lock), gives the total and clears the new flag when asked.
 0062c868 Clears the visitor log, initializes its lock and clears its state.
 0062c8cc Clears the log state and frees its two entry buffers.
+0062cc14 Whether the entry (below 0x18f) has kind 0 or 1.
+0062cca0 Whether the entry (below 0x18f) has kind 0, 1 or 2.
+0062d0f4 Whether the structure fits at the position: by the terrain for a single cell, else its rectangle.
+0062d1e4 Whether the structure's rectangle at the position passes every placement check.
+0062d4e0 The default structure rectangle (built once).
+0062d5dc Scans the position's blocks for the structure's listed kinds.
+0062e47c Finds a spot in the block where the structure fits.
+00630148 The float of the table at 0x89515c for the index (below 7, else the first).
+006310c0 Starts the furniture's action 0x1f with the offset.
+00631cc0 Whether the NPC's id is one of the kind's two ids (any kind for 7 or more).
+00631d5c Updates the talk codes for the NPC's kind and loads the kind's handler.
+006322a0 Resets the talk state when it was active, and clears it.
+006323d8 Extends the countdown by the wait (in frames) for the index when available, and marks it waiting.
+00632594 Plays the effect at the NPC's head, or moves the one already running.
+00632648 Updates the talk codes for the NPC and resets the talk state.
+00636bf0 Adds a random choice (of 3) to the talk's choices.
+0063ca1c Finds the current player's position for the NPC.
+0063cb74 Chooses the item the NPC gives the player.
+0063cd2c The days since the designated villager moved in.
+0063d364 Gives the request's reward: to the pockets or by letter, and counts it.
+0063da4c Picks a random item of the 5 from the mask (for kinds 1 and 2) and sets it as the talk's word.
+006405f4 Records the letter's slot and state (none, sent, or sent without its present) for the talk.
+00641f88 Sets the talk's words to the NPC's skill, family and dream, and its two values.
+0064664c Counts the active NPCs for the scene (or the player's house).
+0064bed4 Adds the item to the player's pockets, records it with the partner and removes it from the villager.
+0064c130 Flags the villager for the player and ends the talk's wait when it was set.
 0064d0b8 Leaves the current state for `state`: the old state's exit handler and the new one's enter handler come from the state table (pointers to members, 0x1c bytes per state); `params` (0x26 bytes) become the state's parameters when given.
+0064d78c Chooses the NPC's comment on the item (by kind and the weather).
+0064dd60 The tour's value at +0x1d, or 0 without a tour.
+0064dd78 For the local player: sets the music for the tour and marks it started.
+0064de10 Plays the digging sound for what is at the position (an item, a fossil, a rock).
 0064ee94 The point at `angle` on the circle around `center` (offset_on_circle), put on the ground when asked.
+0064f018 Adds the item to the slot player's pockets, marked as a present when it qualifies.
+0064f068 Whether the tour is of the group and the sub-kind (0x40 for any).
+0064f0bc Whether the weather is clear or cloudy (0 or 1).
+0064f0dc Whether the weather is rain (3 or 4).
+0064f298 The position of the field item at the cell, or the cell's corner on the ground.
+0064f314 Adds the item to the player's pockets, marked as a present when it qualifies; the slot.
+0064f3b4 For the local player: requests the flag once (remembering the first 50).
 00650174 Runs the NPC source's operation at the cell of object `id`; 0 when there is none.
 00650234 In flagged scenes, sets the BGM's kind 6 (when asked) and pushes the special BGM once, setting mode 4.
 006502a8 Unless locked, turns the x angle (+0x2c) toward the target (+0x958) while asked (bit 3 of +0x17a), and marks it turned.
@@ -3906,6 +3970,9 @@
 006ce67c Keeps the current and previous scene kinds (0x94e4b4, 0x94e4b5) and sets the fade kind (+0xa12) for the scene change.
 006ce770 Signed byte +0xa10 of the black-wait object (0x94e4b8), or 0.
 006ceedc Whether the black-wait object is ready (+0xa13), marking it when its two flags allow it.
+006cef28 Whether the window at 0x94e4b8 is in its open animation.
+006cf2c0 Finds the block with the kind around the cell.
+006cf534 Whether the block's kind is the current one.
 006d1bc8 True unless the menu is in state 2, then asks the menu object (0x94fc2c).
 006d1ce4 True when the menu's selection (0x94fd3c) accepts kind 8.
 006d1cf8 Adds the window to the menu's window list (once) and wakes the menu from state 3.
@@ -4399,6 +4466,7 @@
 00750e1c The furniture's extents turned to its direction (absolute values) into `out`.
 00750eb4 Bit 3 of byte +4 of the furniture's data (+0x5f4), or 0 without data.
 00750ed0 Whether one of the cells the furniture covers holds an item (furniture of class 1 placed on the field only).
+00751410 The height of the furniture's surface at the position.
 007516f8 Whether the item under the furniture (facing its direction) is the same on the current and the previous map.
 00751864 The address of 8-byte entry `index` from +0x14.
 00751f40 The offset from object `id` to the position (the object's own when none is given), with its horizontal distance in s0; a far default without the object.
@@ -4419,6 +4487,7 @@
 00754100 For entry `index` (0x48 bytes from +8): calls 00754988 when its field is set.
 0075412c Inserts an 8-byte value at the position found by 007541e8, growing the vector when needed and moving the rest up.
 007544a4 Whether the photo's folder name (8 characters) has the current date digits (0x98167c) and a valid number; gives the number when asked.
+0075454c Finds the photo file by its folder and file names.
 007546b4 The number of whole days (86,400 seconds) in the 64-bit second count (rounded toward minus infinity for a negative one).
 00754830 Converts the date fields read by 007546f0 into a count.
 00754890 Writes the time as an EXIF date and time (year:month:day hour:minute:second) into `out`.
@@ -4438,7 +4507,9 @@
 00754cd4 Word `index` of the table at +0x10.
 00754ce0 Byte +0xe, or 2 when above 1.
 00754cf8 The index after `start` of the first entry (0x24 bytes from +4) whose kind (+0x1c & 7) is in the mask 1 << `bit`, or -1.
+00754eb8 Builds the photo's path from its folder and file names.
 00755000 Writes the photo's full path into `out`: the base, '/', its folder (in capitals), '/', its file name (in capitals) and the extension `extension` names.
+00755110 Halves the photo's size until it fits.
 0075523c Whether the cursor is valid (+4, start +0x24 <= end +0x20, index +0x1c below the count +0x18) and its 0x228-byte entry has +0x21c set.
 00755290 Whether the cursor is valid and its 0x228-byte entry has +0x21c clear.
 007552e8 The cursor's current 0x228-byte entry (+0x14), or 0 when it is not valid.
@@ -4455,8 +4526,10 @@
 00755578 Whether the record has no time range (bit 0 of +0x28 clear) or both its times (+0x14, +0x1c) are within range.
 007555bc Bits 5-12 of +0x2c.
 007555cc The extension (up to 4 characters) in capitals, as a wide string in `out`; its length.
+00755620 Parses the photo's record from its folder and file names.
 007556f0 Word `index` of the table at +0x30.
 007556fc Whether the 16-bit value at +2 is at most 0x270e.
+00755788 Halves the photo's size until it fits (the second variant).
 00755864 The count of the table at +8 (0073663c).
 0075586c The count for `index` of the table at +8 (0073666c).
 00755874 The count of the table at +8 divided by 2^shift (+0x68), rounded up.
@@ -4499,6 +4572,8 @@
 00758118 Bits 3-4 of +0x270.
 00758128 Whether the letter's town (the villager's or the player's) differs from this town (save +0x621b8).
 007581ec Whether the sender kind (+0x30) is 1 or 3.
+007586b4 Sets the talk's words for the villager's items.
+00758bac The villager's first item with a name, demoted to its plain kind.
 00759190 Whether every entry of the 56 and 2 slots (save +0x4be00) is valid (no unknown structure kinds).
 00759328 Computes the time (from now, or from the day start when `from_day_start`) and passes it to 007593ec.
 007593ec Schedules at a 64-bit time measured from the day start (with the day count since then).
@@ -4569,9 +4644,13 @@
 0075f34c Whether the four 8-byte ids match the ids (+0x10) of the four 0x18-byte entries.
 0075f448 Whether the address of peer `index` (below 4) is usable, read under the session lock.
 0075f578 The peer index of this console's address, or 4 when it has none.
+0075f644 The identity of the slot's player (below 4) when present, under the lock.
+0075f728 Whether the player may leave: not the main object, and the session does not forbid it.
+0075f780 The value, read under the lock.
 0076054c In a local game with no main-object value: whether the villager's record of the current player (when the player has flag 2 of +0x5705) has bit 7 of +0xbc; a non-negative `mode` also needs the talk byte to be 0 or 1.
 007608f8 How a villager reacts to being shown `item` by the current player: kinds for two particular items, insects (8), fish and sea creatures (7), category 0x35 (4), 0x75/0x76 (10), the saved item of category 0x33 or 0x34 (1-3), anything else 9.
 00760c70 Whether the villager may start a talk (00761ab0) about the current player's pending record: not yet seen by this villager and its record not busy.
+00760d60 Finds a present the villager may give, with room in the pockets.
 00760e7c Whether the villager may walk up to the current player now: the player has flag 2 of +0x5705, the hour fits, nothing blocks it (lists 2 and 0xd), and its model is free.
 00761ab0 Whether villagers may start talks now: the scene allows it (bit 0x20), no event or busy NPC manager, the hour is from 6 to 17, and no scheduled place is open (except place 5).
 00761f60 The personality (0-7, the high nibble of the villager data's +0x1c) of the villager the talk is with; 0 when there is none.
@@ -4596,6 +4675,7 @@
 00763c44 The point 32 units ahead of the slot player's recorded position (at ground height), or its own position; kept in a static vector.
 00763d34 When no slot is set (0x9506b0 = 0xff): marks +0x2f1f of the object of the source at 0x9506b4.
 00763d80 The position of the source object at 0x9506b4 when no slot is set, else the object's own position.
+00764500 The height of the seat in front of the player (on furniture of class 4 or 5).
 00764608 Calls 004e40e4 with its second argument as the first too.
 00764610 Makes a request of kind 0x4a with a copy of the item.
 00764634 Makes a request of kind 0x4c with a copy of the item and a position.
@@ -4651,6 +4731,7 @@
 00769cc0 The variant (0-3, then 0-1) of an item from 0x30cc to 0x30d1; -1 for other items.
 00769fb8 Whether the item id (bit 15 ignored) is one of the 18 ids of the table at 0x88e622.
 0076a068 Whether an item with a valid value-06 entry is flagged (bit 3 of +0x20), passes one of two entry checks, or is 0x2f38, 0x304a or 0x304b.
+0076a11c The furniture's slot for the item's kind.
 0076a4ac Whether the item's flags have any of the bits 0x388.
 0076a590 For an item of category 0x33 or 0x34: the item at the same offset in category 0x75 or 0x76; 0x7ffe otherwise or out of range.
 0076a730 Whether the current player's pocket item in `slot` is unlocked and usable in the current scene (0076a7f8, after the scene checks).
@@ -4664,6 +4745,7 @@
 0076ae38 Whether the item id (bit 15 ignored) is 0x3057, 0x3058, 0x305a, 0x305b, 0x3064, 0x3065, 0x3067 or 0x3068.
 0076afbc Whether the item has kind-11 data with a family (+0x11, 1-0x55) whose group (+0x19 >> 4) is 0-2 or 6 and above.
 0076b1e0 Checks the two nibbles of the item's data (+2) against a limit chosen by the higher one.
+0076b2b4 Fills the furniture record's open slots with items.
 0076b984 The part of the item's wear entry from +4 (clearing its +0xc), or 0 when it has none or its kind (+4) is 0.
 0076bab4 Bits 8-11 of the item's flags.
 0076bb90 The colour multiplier of an item with a valid value-06 entry and a colour variant (bits 10-13 of its flags) of 0xa-0xd; otherwise the static white (1, 1, 1, 1).
