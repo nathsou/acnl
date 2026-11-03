@@ -4542,6 +4542,7 @@ Frame_00107544 4 bbs_notices
 Frame_00107544 8 res
 Frame_00107634 14 tpc
 Frame_001082e8 0 now
+Frame_00108354 0 now
 Frame_0010abc8 14 tpc
 Frame_0010b448 14 tpc
 Frame_00112584 0 villager_part
@@ -4563,6 +4564,7 @@ Frame_001916f0 0 child
 Frame_001916f0 20 model
 Frame_001916f0 4 pane
 Frame_001aff90 0 object_0_vtable
+Frame_001b49b0 2 packed_id
 Frame_001b95f8 0 object_0_vtable
 Frame_001ba7c0 0 object_0_vtable
 Frame_001c1e54 0 object_0_vtable
@@ -4600,6 +4602,7 @@ Frame_0023b900 5c object_5c_vtable
 Frame_00257660 50 object_50_vtable
 Frame_00257660 7c object_7c_vtable
 Frame_00257660 c object_c_vtable
+Frame_0025f970 2c villager_personality
 Frame_0026b3a0 0 button
 Frame_0026b3a0 4 pane
 Frame_00270ce8 20 object_20_vtable
@@ -4645,10 +4648,12 @@ Frame_0031f2dc 0 child
 Frame_00335328 0 object_0_vtable
 Frame_0033d150 4 object_4_vtable
 Frame_0033dcb0 1dc object_1dc_vtable
+Frame_004e240c 0 scene
 Frame_004e240c 4 layer
 Frame_004e2504 8 map
 Frame_004e26bc 0 object_0_vtable
 Frame_004e2cfc 28 object_28_vtable
+Frame_004e5924 0 layer
 Frame_0050d91c 8 object_8_vtable
 Frame_0050e1d0 8 object_8_vtable
 Frame_00512d88 28 object_28_vtable
@@ -4668,12 +4673,14 @@ Frame_00597678 0 field_drops
 Frame_00597c30 0 field_drops
 Frame_00598218 0 field_drops
 Frame_005983ac 0 field_drops
+Frame_0059a070 34 period
 Frame_0059a070 44 object_44_vtable
 Frame_0059a070 8 object_8_vtable
 Frame_0059a644 0 object_0_vtable
 Frame_0059c7e0 10 object_10_vtable
 Frame_0059c7e0 8 object_8_vtable
 Frame_0059cae8 0 object_deco_name_address
+Frame_005a3474 a8 program
 Frame_005ab5a4 0 object_0_vtable
 Frame_005ccfc4 0 object_0_vtable
 Frame_005ccfc4 4 save_process
@@ -4704,10 +4711,13 @@ Frame_006483f4 18 object_18_vtable
 Frame_006483f4 20 object_20_vtable
 Frame_006483f4 28 object_28_vtable
 Frame_006483f4 8 object_8_vtable
+Frame_00659674 0 field_objects
 Frame_00660c10 0 player
 Frame_0066ac8c 0 params
 Frame_0066b280 0 player
+Frame_0068f398 c object_data
 Frame_006a4f98 0 object_0_vtable
+Frame_006a6408 4 room_size
 Frame_006a8988 8 object_8_vtable
 Frame_006a8a0c 8 object_8_vtable
 Frame_006a8aac 8 object_8_vtable
@@ -4940,6 +4950,7 @@ Local_0033a7a4@r4@33a7ec e4 control1_button_vtable
 Local_0033e960@r0@33e964 0 vtable
 Local_0033e960@r0@33e964 104 vtable_104
 Local_0033e960@r0@33e964 7c versatile_plate_talk_recept_vtable
+Local_004e5924@ea@4e5924 18 layer
 Local_004f2ef0@ea@4f2ef0 0 model
 Local_0050bcb4@r0@50bcbc 0 vtable
 Local_0050bcb4@r0@50bd10 64 text_area_tag_processor_vtable
@@ -4959,9 +4970,13 @@ Local_005810ac@ea@5810ac 4 grid_map
 Local_005822c4@r0@5822f4 0 vtable
 Local_0058b6fc@r1@58b710 8 sound_id
 Local_0058b6fc@r1@58b710 c fade
+Local_0058bc7c@r0@58bc98 8 sound_id
 Local_005921e0@r0@592224 0 vtable
 Local_005948ec@r0@594934 0 vtable
 Local_00595194@r0@5951d8 0 vtable
+Local_00596334@r5@596354 10 active
+Local_005969c0@ea@596a20 4 buried_form
+Local_00596a60@r0@596a90 10 active
 Local_0059a2d8@r4@59a36c 0 vtable
 Local_0059b2c4@ea@59b2c4 0 object_deco
 Local_0059cd24@ea@59cd24 0 object_coin_stone
@@ -5051,6 +5066,9 @@ Object_0013e75c_0 c start
 Object_0013ec20_0 0 wave_archive_file
 Object_0013f81c_0 3c table
 Object_00141a9c_0 0 mask
+Object_001aa630_0 660 key
+Object_001aa88c_0 660 list
+Object_001aaed4_0 141 scene_flagged
 Object_001cd810_0 4 ac_npc
 Object_001d7b90_0 98 sound_obj_base
 Object_00200b7c_0 0 vtable
@@ -5073,6 +5091,7 @@ Object_002990d8_0 788 child_788
 Object_002990d8_0 78c pane
 Object_002990d8_0 790 pane_790
 Object_002990d8_0 794 pane_794
+Object_002aafd4_0 11f4 time_period
 Object_002bf468_0 0 crc
 Object_002cd5e4_0 0 park_sets3
 Object_002d70b8_0 0 vtable
@@ -5130,6 +5149,7 @@ Object_0058e508_0 5 day
 Object_0058ed38_0 0 vtable
 Object_0058f4cc_0 0 vtable
 Object_0058fc38_0 30 cell
+Object_0059f7c8_0 12 scene
 Object_005aa970_0 0 vtable
 Object_005b19e8_0 0 crc
 Object_005bd2e8_0 c number
@@ -5341,6 +5361,7 @@ pead__IDisposer 4 heap
 pead__Mutex 0 vtable
 pead__Thread 0 vtable
 pead__Thread 10 safe_string_base_char_vtable
+pead__Thread 80 physical_address
 pead__ThreadMgr 0 vtable
 script__ChoiceStandard 0 vtable
 script__Insert 0 vtable
@@ -5420,6 +5441,7 @@ sead__TextWriter 0 vtable
 sead__Thread 0 vtable
 sead__Thread 10 safe_string_base_char_vtable
 sead__Thread 18 thread_vtable
+sead__Thread 88 physical_address
 sead__ThreadMgr 0 vtable
 sead__Viewport 0 vtable
 sead__ptcl__PtclLoadCheck 0 vtable

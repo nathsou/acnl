@@ -907,6 +907,7 @@
 0013ef18 arg0 sound_melody_player_one_seq_base
 0013ef18 sound_melody_player_one_seq_base player
 0013efb4 arg0 i_disposer
+0013efb4 r0@13efc8 disposer_heap
 0013f398 arg0 wave_archive_file
 0013f3cc arg0 wave_archive_file
 0013f5e8 r0@13f5f8 found_2
@@ -1500,6 +1501,7 @@
 002026e4 r0@202704 block
 002026e4 r0@entry grid_map
 00203170 r0@203190 block
+00203170 r0@entry grid_map
 0020350c r0@entry layout_with_anims4
 00203558 r0@203568 scene_flagged
 00203558 r0@20357c owner_2
@@ -1645,6 +1647,7 @@
 00225984 r0@225a08 map_2
 00225984 r0@225b34 string_pool
 00225984 r0@entry field_item_fx
+00225984 r1@225b2c talk
 00226828 r0@226834 map_2
 00226828 r0@226898 cell_2
 00226828 r2@226930 map
@@ -1739,9 +1742,11 @@
 0023adbc arg0 obj_talk_recept
 0023ae64 arg0 talk_recept
 0023b0d4 arg0 poster_talk_recept
+0023b0d4 r0@23b0ec talk_owner
 0023b0d4 r0@23b0f8 talk_target
 0023b0d4 r4@23b104 message_archive
 0023b164 arg0 poster_talk_recept
+0023b164 r0@23b174 talk_owner
 0023b164 r0@23b180 talk_target
 0023b1b4 arg0 talk_recept
 0023b248 r0@entry safe_string
@@ -1751,6 +1756,7 @@
 0023b50c r4@entry message
 0023b5ec arg0 word_fix_33u
 0023b87c arg0 poster_talk_recept
+0023b87c r0@23b88c talk_owner
 0023b900 arg0 word_fix_33u
 0023b900 r0@23b928 scene
 0023b900 r0@23b934 scene_flagged
@@ -1835,14 +1841,17 @@
 002469c4 r0@entry sound_obj_base
 00246b90 arg0 sound_obj_river
 00246b90 r0@246bb4 slot_table60
+00246b90 r1@246ba4 sound_handle
 00246bd4 arg0 sound_obj_river
 00246c68 arg0 sound_obj_river
 00246c68 r0@246c94 slot_table60
+00246c68 r1@246c84 sound_handle
 00246cb8 r0@246cdc block_2
 00246cb8 r0@entry singleton_disposer
 00246df4 arg0 slot_table60
 00246df4 r1@entry sound_obj_river
 00246f34 arg0 slot_table60
+00246f34 r1@entry sound_handle
 00246f64 arg0 sound_obj_furniture_holder
 00247240 arg0 sound_obj_furniture_holder
 0024727c arg0 sound_obj_furniture_holder
@@ -1928,6 +1937,7 @@
 00250b58 r0@250cf0 string_pool
 00250b58 r0@entry fish_mgr
 00250b58 r11@entry two_bit_flags6
+00250b58 r6@entry talk
 00251690 arg0 object
 00251818 arg0 object
 00251868 r0@entry object
@@ -2950,6 +2960,7 @@
 003094f0 r0@309548 low_byte_2
 003094f0 r0@309598 found_2
 003095b4 r0@entry player_stats
+003095b4 r1@entry now
 00309970 r0@309998 save_data_2
 00309a44 r0@309a4c is_villager_2
 00309a44 r0@309a7c now
@@ -3304,11 +3315,13 @@
 0033d150 r1@33d194 month
 0033d150 r1@33d1a8 day
 0033dab8 r0@entry badge_window
+0033dab8 r1@entry player_counter_2
 0033db9c arg0 badge_window
 0033db9c r0@33dba8 player_2
 0033db9c r0@33dbc8 player_counter_2
 0033dcb0 r0@33dcf0 player_2
 0033dcb0 r0@entry badge_window
+0033dcb0 r1@entry player_counter_2
 0033e040 r0@33e050 data_base_2
 0033e040 r0@33e054 records_2
 0033e040 r0@33e060 valid_villager_2
@@ -3420,6 +3433,7 @@
 004e4510 r0@4e4538 map_5
 004e4510 r0@4e459c previous_item
 004e4510 r0@4e45b4 item
+004e4510 r0@entry scene_3
 004e4510 r4@entry x
 004e4510 r7@entry z
 004e4510 r8@entry previous_map
@@ -3634,6 +3648,7 @@
 0050a710 r0@entry letter_list
 0050bcb4 r0@entry text_area
 0050c800 arg0 anm_object
+0050c800 r2@entry pane_2
 0050c9a4 arg0 record34
 0050ca3c arg0 record34
 0050cae0 arg0 search_data_result
@@ -4559,6 +4574,7 @@
 0059ecbc r0@59ee48 scene
 0059ecbc r0@59ee54 scene_flagged
 0059ecbc r0@entry field_drop
+0059ecbc r1@entry active_2
 0059f71c arg0 field_drop_message
 0059f7c8 arg0 field_drop_message
 0059f7c8 r0@59f870 scene
@@ -4621,6 +4637,7 @@
 005a593c r0@5a5a9c text
 005a593c r0@5a5aec extension
 005a593c r0@entry picture_db
+005a593c r2@5a5a50 upper
 005a6218 r0@5a6280 path_2
 005a6218 r0@entry picture_db
 005a66d4 arg0 image_database
@@ -5265,6 +5282,7 @@
 00613e80 r0@613ea4 save_data_2
 00613e80 r0@613f70 category_2
 0061402c r0@614030 scene
+0061402c r0@entry scene_3
 00614568 arg0 dynamic_cylinder
 00614854 arg0 move_bg
 006148e4 arg0 notice
@@ -5307,6 +5325,7 @@
 00617f90 arg0 net_session
 00617f90 r0@61808c player_2
 00618164 r0@entry net_session
+00618164 r1@entry villager_table
 006182f4 arg0 net_session
 00618384 arg0 net_session
 006184d8 arg0 net_session
@@ -5345,6 +5364,7 @@
 0061a810 r0@61a868 net_link
 0061d9e0 r0@entry net_guest
 0061dae4 r0@entry net_guest
+0061dae4 r1@61db90 room_timers
 0061dae4 r6@61db9c villager_table
 0061dc30 r0@entry net_guest
 0061de7c arg0 net_guest
@@ -5488,6 +5508,7 @@
 0062c0cc arg0 visitor_log
 0062c14c r0@62c150 player_2
 0062c14c r0@62c18c flag_2
+0062c14c r0@62c1b0 wireless_check
 0062c20c r0@entry visitor_log
 0062c274 arg0 net_session
 0062c790 arg0 visitor_log
@@ -5607,6 +5628,7 @@
 006519c8 arg0 slot_object
 006531d0 arg0 slot_object
 00653724 r0@653764 string_pool
+00653724 r1@653744 talk
 00653888 r0@6538a0 params_2
 00653888 r0@entry player
 006538e0 r0@entry slot_object
@@ -5867,6 +5889,7 @@
 006904b4 r0@6904c8 item_data_2
 006904b4 r0@6904f8 scene_2
 006904b4 r0@690530 string_pool
+006904b4 r7@6904c0 talk
 00691210 r0@691224 object_2
 00691210 r0@entry ac_player
 0069125c r0@69126c room_grid
@@ -5918,6 +5941,7 @@
 00695ce4 r0@695d68 scene_4
 00695ce4 r0@695d74 scene_flagged_2
 00695ce4 r0@entry scene
+00695ce4 r8@entry talk
 0069697c r0@696980 data_base_2
 0069697c r0@696a0c player_2
 0069697c r0@696a4c category_7
@@ -5962,8 +5986,10 @@
 0069b0ac r0@69b0c4 scene_flagged
 0069b0ac r0@69b0d0 player_2
 0069b0ac r0@69b37c string_pool
+0069b0ac r0@entry talk
 0069b3f0 arg0 event
 0069b3f0 r0@69b544 string_pool
+0069b3f0 r0@entry talk
 0069c838 r0@69c83c player_2
 0069c838 r0@entry event
 0069f26c r0@69f278 player_2
@@ -5977,6 +6003,7 @@
 006a04c4 r0@6a0508 valid_villager_3
 006a04c4 r0@6a0544 valid_villager_4
 006a04c4 r7@entry villagers
+006a0848 arg0 talk
 006a0848 r0@6a0854 scene
 006a0848 r0@6a0860 scene_flagged
 006a0848 r0@6a086c player_2
@@ -6165,8 +6192,10 @@
 006bd550 r0@entry player
 006bd910 r4@entry player
 006bddec arg0 player
+006bead8 arg0 held_object_2
 006bf18c r0@6bf194 category_2
 006bf18c r0@entry item
+006c1678 r1@entry object_veneer_2
 006c1688 arg0 held_object
 006c1938 arg0 held_object
 006c19d0 arg0 chara_model
@@ -6579,6 +6608,7 @@
 006ffd84 r0@6ffe70 quotient
 006ffd84 r0@6ffe80 quotient_2
 00700558 r0@entry insect
+00700974 arg0 now
 00700cdc r0@700ce8 map_table_2
 00700cdc r0@700d50 item_2
 00700f58 arg0 time_stamp
@@ -6698,6 +6728,7 @@
 0071596c r1@entry index
 007159b0 r0@7159c8 player_2
 00715aec r0@entry counter_table
+00715b88 r1@entry player_counter_2
 00715bc4 r0@entry counter_table
 00715c98 r0@entry record
 00715c98 r1@entry kind
@@ -6753,6 +6784,7 @@
 0071d528 r0@entry design_block
 0071d5f8 r0@entry design_block
 0071d664 r0@entry design_blocks
+0071d664 r1@entry park_entry
 0071d6e4 r0@entry design_blocks
 0071d7b4 r0@entry block17be10
 0071d9c4 arg0 block28f4
@@ -6962,6 +6994,7 @@
 00754bd0 arg0 file
 00754bd0 arg1 header
 00754c40 arg0 file
+00754c88 arg0 entry_3
 00754eb8 r0@entry photo_path
 00755000 r4@entry out
 00755000 r6@entry extension
