@@ -1934,10 +1934,12 @@
 00274384 Loads the letter window's layout archive.
 00274394 The word at +0x1250 of entry `index` of the shown page.
 00274478 Sets the animation at +0x430 from the NPC's distance value plus 4.
+00274500 Constructs a post drag window: an archive accessor, a layout with four animations, two buttons, ten slots and \n a letter drag icon group.
 0027460c Destroys a post drag window: its drag icon group, buttons, animations, layout and archive reader.
 00274754 Loads the item selection window, the item icons (unless shared) and the bag's layout archives.
 0027480c Sets or clears bit 3 of the flags (+0xd4) of the 10 models (0x348 bytes each, +0x8e0).
 00275798 Releases the bag window's layouts, its 10 models' layouts and its message window.
+00275808 Constructs the gift bag window: two archive accessors and layouts, ten item slots and a name window.
 002762c4 Constructs a sound conductor: no sequence, tempo 120, volume 1.
 002763bc Sets the source's mode: 0 follows the room music player, 1 follows the given object (state 3).
 0027643c Frees slot `index` (below 64) and uncounts it.
@@ -1950,6 +1952,7 @@
 00277d98 Starts a player's sound object (unless started): takes its owner and starts the base.
 00277e1c Restarts the furniture's animation with its key.
 00277e54 Restarts the furniture's animation with its key.
+00277f80 Stops a player's sound object (when started): drops its owner, detaches its four sounds and stops the base.
 00277fe4 Constructs a player's sound object: a sound object base with four sound slots and a fade.
 00278140 Destroys the ambient sound object.
 002782dc Plays the sound object's sound of the kind with the count.
@@ -2001,6 +2004,7 @@
 0027e13c When the NPC of kind 'sza' exists with the default id and its timer set, moves the clock by its span and starts event 0xe.
 0027e634 Resets the request record with mode 0x1800181 and its handler.
 0027e670 Refreshes the shared NPC info, then resets the request record with mode 0x24000942 and its three handlers.
+0027eeac Steps a road search agent: searches its grid from its cell, picks a random candidate and steps toward it.
 00280568 Starts the NPC's appearance: its model, animation, camera and action.
 00280ea0 Raises the NPC's visibility over 20 frames, then begins its next action.
 002812b0 Clears the save flag (+0x6acd) the NPC holds.

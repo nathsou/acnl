@@ -4072,7 +4072,7 @@
 00277e1c AcFtr__start_animation
 00277e54 AcFtr__start_animation_b
 00277e8c SoundObjPlayer__virtual_4
-00277f80 stop_player
+00277f80 SoundObjPlayer__stop
 00277fe4 SoundObjPlayer__construct
 0027804c SoundObjPlayer__deleting_destructor
 00278140 SoundObjAmbient__destroy
@@ -4226,7 +4226,7 @@
 0027e934 AcNpcSpPreSisyo__virtual_81
 0027ebc8 AcNpcSpPreSisyo__virtual_71
 0027ec34 AStarForeachPreSisyoCB__AStarForeachPreSisyoCB
-0027eeac RoadSearchDefaultAgent__RoadSearchDefaultAgent_0027eeac
+0027eeac RoadSearchDefaultAgent__step
 0027f124 AcNpcSpPreSisyo__deleting_destructor
 0027f218 AcNpcSpPreSisyo__destructor
 0027fb5c AcNpcSpResetsan__TalkRecept__select_message_set
