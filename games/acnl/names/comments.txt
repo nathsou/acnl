@@ -613,6 +613,23 @@
 001ded24 Clears the 4 log entries (0x68 bytes each) and the log's position.
 001dedc0 Resets the log's entries.
 001deecc Constructs the 4 log entries and the current visit record, then resets the log.
+001def90 Resets the room score record's items (all empty, 0x7ffe) and its bytes.
+001df020 Resets the room score record: no score, kind 8, its items empty and its levels cleared.
+001df0b0 Resets the room score record: no score, kind 8, its items empty and its levels cleared.
+001df14c Stores the score and raises the best tier reached (of the 8 or 5 tier thresholds, by the kind).
+001df1f4 Resets the score, kind and items of the record (keeping its best tiers).
+001df274 The mailbox of player `index` (0x1b88 bytes each, from +0x2058).
+001df324 The data block at 0x982040 when it is loaded and not locked; 0 otherwise.
+001df350 The letter block of player `index` (0x5a0 bytes each, from +0x8e78).
+001df368 The data block at 0x982068 when it is loaded and not locked; 0 otherwise.
+001df394 The data block at 0x982018 when it is loaded; 0 otherwise.
+001df3b4 The data block at 0x982040 when it is loaded; 0 otherwise.
+001df4c4 Constructs the 6 items of the outfit, all empty.
+001df564 Adds to the low 3 bits of the byte, clamped to 0 to 7.
+001df598 Adds to the 8-bit field from bit 1 of +3, clamped to 0 to 255.
+001df5e8 Adds to the 3-bit field at bits 1 to 3 of +4, clamped to 0 to 7.
+001df61c Adds to the 3-bit field at bits 3 to 5 of +0, clamped to 0 to 7.
+001df668 Adds to the 3-bit field at bits 4 to 6 of +4, clamped to 0 to 7.
 001e00c8 Resets the record's constants and constructs its part.
 001e00e4 Constructs the 8 patterns' names.
 001e0114 Clears the 8 patterns: their names, creators, palettes, flags and pixels.
