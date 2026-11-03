@@ -312,6 +312,9 @@ result):
   last simplification, which joins nested conditions into one (`if (a) { if (b) goto L; }` into `if (a && b)
   goto L;`) that the patterns above then take.
 - `if (c) { X } X` with X leaving the function (a return, a jump) is `X`.
+- Two ifs on the same (or the negated) condition merge, also across an assignment the compiler scheduled between them
+  when the two commute (`if (c) { A } x = e; if (c) { B }` is `x = e; if (c) { A B }`: A and B neither change what e
+  reads nor touch x, c does not read x).
 - The model converts a narrow integer to a float through its 32-bit promotion (`float(s16 x)` is `float(s32 x)`, as
   in C), so the C++ may write either; F2U(U2F(x)) and U2F(F2U(x)) are x. A float access of a word field (or the
   other way round) goes through its bits (`std::bit_cast<float>(arg0->word_8)`); own float fields are `float_k`.
@@ -326,6 +329,9 @@ result):
   size of an array's elements. Multiplications, like the join copies, the returned first argument kept and the
   second structuring, can make the solver time out where the plainer function did not, so a function whose proof
   does not go through is decompiled once more without them (decompile::FULL).
+- The address of a global object (a constant in the program's data or bss, 0x945000 up to the end of the bss, not a
+  multiple of 1000 or of 0x1000: 0x989680 is ten million nanoseconds) is a named constant, `inline constexpr u32 global_<address>_address = 0x...u;`, which the names layer names like the
+  global (`globals.txt`: `empty_item_address`), as vtables are.
 - Sign and bit tests read as comparisons where only truth matters (simplify.rs, again after the flags are written
   into conditions; the same rewrites as text after values are folded in, emit.rs tidy_masks): `x >> 31`,
   `(x & 0x80000000) >> 31`, `x & 0x80000000` and those compared with 0 are `s32(x) < 0`; a bit moved to the top and
@@ -443,7 +449,10 @@ receive `this` of its class, a function storing a vtable at its argument's offse
 argument passed on makes the callee's argument at least that class (the closest common ancestor of all it receives),
 until nothing changes. A class's struct holds the fields its typed arguments access and its primary bases' fields, at
 their offsets (packed). A 32-bit field that every function only reads as a float or writes from one is a `float`
-(`float_<offset>`); one that some function uses as an integer stays `u32`. First run: 3705 class structs for 25392
+(`float_<offset>`); one that some function uses as an integer stays `u32`. A function that only clears a field (stores
+0) or copies it to or from another field as a word has no vote on its type (`NO_VOTE`): the other functions decide,
+and a field no function votes on is a `u32` (2026-11-03: 6354 float fields instead of 5893 with the same inputs; the
+header is generated as `build/acnl/structs_generated.hpp` and named into the repository's by names.py). First run: 3705 class structs for 25392
 arguments of 25229 functions; with floats (2026-11-01): 3701 structs, 4649 float fields, for 25522 arguments of 25346
 functions (run with `DECOMP_SIGNATURES=build/tools/sig_38k.txt`, `DECOMP_TYPES` unset, about 17 minutes). The header goes to
 `games/acnl/src/recovered/structs.hpp` and the type database (structs, parameter types) to OUTDIR; with

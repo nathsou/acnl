@@ -12,8 +12,15 @@
 00952c94 sound_heap
 00952c9c net_heap
 00952cac work_heap
+0095bfdc empty_item
 0095ded4 script_libms_heap
 0095ded8 script_static_heap
 0095dedc script_message_heap
 0095dee0 script_mail_heap
 0095dee4 script_flow_heap
+0097e064 srv_state
+0097e06c srv_port
+00981fd8 pointer_list
+00ae0ab8 fatal_error_info
+00ae0b5c frd_lock
+00aed620 srv_lock

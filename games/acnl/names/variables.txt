@@ -190,7 +190,7 @@
 0012efe8 arg0 event
 0012f154 arg0 lock
 0012f170 arg0 block
-0012f170 r0@12f178 result
+0012f170 r0@12f18c result
 0012f170 r1@entry address
 0012f170 r2@entry size
 0012f598 r0@entry result

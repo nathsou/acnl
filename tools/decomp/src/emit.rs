@@ -337,6 +337,19 @@ fn jump_targets(list: &[Stmt], prefix: &[usize], exits: &HashMap<String, Exit>, 
 
 // The vtables of the RTTI's classes (DECOMP_RTTI, default build/acnl/rtti.json), by address: `vtable_<class>`, or
 // `vtable_<class>_at_<offset>` for the one of a base class at that offset; the constants written by those names.
+// The program's writable data and bss (the exheader of ACNL: data at 0x945000, 62 pages, then 0x175d54 bytes of bss):
+// a constant there is a global object's address.
+const DATA_START: u64 = 0x0094_5000;
+const DATA_END: u64 = 0x0094_5000 + 62 * 0x1000 + 0x0017_5d54;
+
+// a constant that is a global object's address: in the data or bss, and not a round number (10000000 = 0x989680 is a
+// count of nanoseconds, a multiple of 0x1000 more often a size or a limit than an object)
+fn is_data_address(v: u64) -> bool {
+    const DECIMAL_ROUND: u64 = 1000;
+    const PAGE: u64 = 0x1000;
+    (DATA_START..DATA_END).contains(&v) && v % DECIMAL_ROUND != 0 && v % PAGE != 0
+}
+
 fn vtable_names() -> &'static HashMap<u64, String> {
     static NAMES: std::sync::OnceLock<HashMap<u64, String>> = std::sync::OnceLock::new();
     NAMES.get_or_init(|| {
@@ -657,6 +670,13 @@ impl Emitter {
         Ok(match e {
             Expr::Num(v, Ty::U32) if vtable_names().contains_key(v) => {
                 let name = vtable_names()[v].clone();
+                self.vtables.borrow_mut().insert(*v, name.clone());
+                name
+            }
+            // the address of a global object (in the program's data or bss): a constant of its own, which the names
+            // layer names like the global (`global_<address>_address`)
+            Expr::Num(v, Ty::U32) if is_data_address(*v) => {
+                let name = format!("global_{:08x}_address", v);
                 self.vtables.borrow_mut().insert(*v, name.clone());
                 name
             }
@@ -1014,6 +1034,8 @@ impl Emitter {
             return format!("guest::cpu()->{}[{}]", if v.starts_with('S') { "s" } else { "r" }, &v[1..]);
         }
         match self.values.constant(path, v) {
+            // (a vtable or a global's address by its name)
+            Some((k, Ty::U32)) => self.expr(&Expr::Num(k, Ty::U32), 0).unwrap_or_else(|_| num(k, Ty::U32)),
             Some((k, t)) => num(k, t),
             None => {
                 let name = self.values.read(path, v);

@@ -871,6 +871,50 @@ fn has_control(list: &[Stmt]) -> bool {
     })
 }
 
+// what the statements' expressions read (conditions, values, addresses)
+fn list_reads(list: &[Stmt], r: &mut Reads) {
+    for s in list {
+        match s {
+            Stmt::Decl(_, _, Some(e), ..) | Stmt::Assign(_, e, ..) | Stmt::SetCpu(_, e) | Stmt::Switch(e, _) | Stmt::ReturnUnlessPc(e) => reads(e, r),
+            Stmt::Store(_, a, v) => {
+                reads(a, r);
+                reads(v, r);
+            }
+            Stmt::If(c, a, b) => {
+                reads(c, r);
+                list_reads(a, r);
+                list_reads(b, r);
+            }
+            Stmt::While { body, check, cond, .. } => {
+                reads(cond, r);
+                list_reads(body, r);
+                list_reads(check, r);
+            }
+            _ => {}
+        }
+    }
+}
+
+// whether `x = e` (or its declaration) gives the same as before when moved above `if (c) { A } else { B }`: A and B
+// neither change what e reads nor read or write x, and c does not read x
+fn commutes(s: &Stmt, c: &Expr, a: &[Stmt], b: &[Stmt]) -> bool {
+    let (x, e) = match s {
+        Stmt::Assign(x, e, ..) | Stmt::Decl(_, x, Some(e), ..) => (x, e),
+        _ => return false,
+    };
+    let mut re = Reads::default();
+    reads(e, &mut re);
+    if re.cpu || re.out_params || modifies(a, &re) || modifies(b, &re) {
+        return false;
+    }
+    let mut used = Reads::default();
+    reads(c, &mut used);
+    list_reads(a, &mut used);
+    list_reads(b, &mut used);
+    let only_x = Reads { vars: vec![x.clone()], ..Reads::default() };
+    !used.vars.contains(x) && !modifies(a, &only_x) && !modifies(b, &only_x)
+}
+
 fn merge_ifs(list: &mut Vec<Stmt>, types: &HashMap<String, Ty>) -> bool {
     let mut changed = false;
     for s in list.iter_mut() {
@@ -878,6 +922,22 @@ fn merge_ifs(list: &mut Vec<Stmt>, types: &HashMap<String, Ty>) -> bool {
             changed |= merge_ifs(a, types);
             changed |= merge_ifs(b, types);
         }
+    }
+    // if (c) { A } x = e; if (c) { B }  ->  x = e; if (c) { A } if (c) { B }  when the assignment and the first if
+    // commute (the compiler scheduled an unrelated instruction between two predicated ones): then merged below
+    let mut i = 0;
+    while i + 2 < list.len() {
+        if let (Stmt::If(c1, a1, b1), Stmt::If(c2, ..)) = (&list[i], &list[i + 2]) {
+            // (only when the merge then goes through: the first if has no control flow and keeps c's operands)
+            let mut rc = Reads::default();
+            reads(c1, &mut rc);
+            let mergeable = !has_control(a1) && !has_control(b1) && !modifies(a1, &rc) && !modifies(b1, &rc);
+            if mergeable && (c1 == c2 || negation_of(c1, c2, types)) && commutes(&list[i + 1], c1, a1, b1) {
+                list.swap(i, i + 1);
+                changed = true;
+            }
+        }
+        i += 1;
     }
     let mut i = 0;
     while i + 1 < list.len() {
