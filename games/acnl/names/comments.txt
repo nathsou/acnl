@@ -584,7 +584,35 @@
 001c4bc8 ORs `bits` into the 16-bit cell (x, y), keeping only its low 4 bits.
 001c4bf4 Writes `value` to the 16-bit cell (x, y) of the array.
 001c4c14 Calls 005bf518.
+001d051c Finishes the pending work (+0x1bc) with mode 2 and clears it; 0.
+001d2694 Plays motion 0xae with the speeds.
+001d2e8c Sets the face byte (+0x224) and the hair word (+0x228).
+001d5348 Stops the sound (state 5) or, when idle, ends the special sound (in scene 0x27, playing the end sound) and forgets it.
+001d560c Stops the two sounds, gives back the event's sound data (0x100026b or 0x100026c) and resets its state.
+001d56a0 Plays the event's start sound (0x100009b), with its parameter when asked and set.
+001d71c8 Stops the sound (state 5), or pauses it (state 2) when it was playing.
+001d7b90 Forgets the object when it is the remembered one (+0x98).
 001d7ba4 Forwards to the function at 0x1d560c.
+001d7ee0 In scene 0x66, plays sound 0x100078d on the handle.
+001d7f24 Stops slot `index` (+0x2c) and plays the sound on it.
+001d8760 Plays or stops the scene's sounds by its kind (0x65 and 0x67).
+001d9578 Starts the microphone sampling with the rate of the mode; true when it started (state 2).
+001d9a08 Updates the microphone sampling and its flags.
+001d9cdc Sets the mode (+0x80) when it is at most 2.
+001dc6e8 Visits the structure's rectangle, placing its cells.
+001de400 Copies the 4-byte entries of variant `index` of the layout table at 0xac3750 into the buffer when it fits; their count, or 0.
+001de4a8 Clears the bits of field `index` (2 bits each) given by the value plus 1.
+001de4c0 The total of the 6 two-bit fields (3 counts 2, 1 or 2 count 1).
+001de7d0 The level of field `index`: 2 for both bits, 1 for one, 0 for none.
+001de7f8 True when field `index` has the bit of the value plus 1.
+001de848 Resets the record (+0x1224) of the first of the 4 house blocks to state 0x1e.
+001de880 Starts the player's event once per slot (outside slot 8) when the player is flagged (bit 1 of +0x5701).
+001de99c When the visit (kind 3) is from this town's mayor, stores it in the next of the 4 log entries with its time.
+001dec8c Clears the log's trailing words and bytes.
+001decb0 Clears the log's current visit record.
+001ded24 Clears the 4 log entries (0x68 bytes each) and the log's position.
+001dedc0 Resets the log's entries.
+001deecc Constructs the 4 log entries and the current visit record, then resets the log.
 001e00c8 Resets the record's constants and constructs its part.
 001e00e4 Constructs the 8 patterns' names.
 001e0114 Clears the 8 patterns: their names, creators, palettes, flags and pixels.
