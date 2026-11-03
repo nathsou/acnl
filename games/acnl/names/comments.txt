@@ -2168,15 +2168,59 @@
 003505bc Whether the background service is set up (under its lock).
 003506c8 Reads the background service's value of the kind; a fatal error on failure.
 003507b0 Reads the network status from the ac service.
+0035084c Reads the wireless state from the ac service.
+00350b88 Reads the string from the NEX buffer.
+00351528 Searches the data store.
+0035153c Searches the data store (the second form).
+0035427c Loads the DSP component when the service is up.
 003548f0 Sets the NEX string to a copy of the wide string (or empty).
 00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
 00361988 Frees the NEX block through its own deleter, or the plain heap.
 003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
 00377160 Shuts down NEX's threads and its scheduler.
 003cf0b8 Clears the list's nodes into its free list.
+003d0eec Appends the wide string to the NEX string.
+003d32f0 Destroys the variant's value (for its string kind).
+003da354 Loads the network config, marking it failed on error.
+003da4ac Checks the network config (the ac service); whether it succeeded.
+003da4cc Initializes the network config (kind 3) and clears it.
+003fd604 Jumps to 0x79ffd8.
+003fd608 Jumps to 0x79ffe0.
+003fe3d8 Whether the item at the index (below 40) is set.
+003fe3dc The address of the cell in the 6x10 grid.
+003fe3e0 The address of the cell in the 9x10 grid.
+003fe3e4 The item slot unless it is locked.
 00403828 Sets word `index` (fewer than 6) of the array at +0x210.
+00405464 Jumps to 0x756108.
+00405840 The entry 22 at the index.
+00405aa4 Jumps to 0x755d6c.
+00406448 The item's size kind.
+0040644c The item's flag bits 8 to 11.
+00407b00 Jumps to 0x757720.
+0040aca8 Sets the match's game mode and marks it set.
 0040acc4 Sets the match attribute (below 6) to the value and marks it set.
+0040ad14 Sets whether only vacant matches count and marks it set.
+0040ad30 Sets whether the match is open and marks it set.
+0040ad4c Sets the match's flag and marks it set.
+0040ad68 Sets the match's maximum participants and marks it set.
+0040ad88 Sets the match's minimum participants and marks it set.
+004133a0 Whether the result is a retryable error.
+00413478 Whether the result is one of the network errors.
+004137d8 Converts the result to its error code (0 for success).
+00414120 Releases the local module's object.
+00415208 Shuts the local module down.
+00415b1c Sets up the local module with its settings.
+00415d24 Finalizes the local module.
+00425840 Shuts down the Pia module when it is up.
+00426174 Flushes the queue under its lock.
+00429ac4 Starts the Pia session module, when Pia is up.
+00449ee4 Starts the Pia session with its settings, when Pia is up.
 0044a814 Destroys the Pia session and frees it.
+0044acbc Updates the facade (unless it is busy).
+0044af48 Sets the facade's session when it is valid.
+0044b0fc Starts the facade's step with its options.
+0044b700 Joins the session with its options, when one is found.
+0044b7d8 Updates the facade's matchmaking state (the second step).
 0044b868 Updates the facade's matchmaking state.
 0044badc Waits for the time (milliseconds) when Pia is ready.
 0044bca4 Sets the facade's callback when none is set.
