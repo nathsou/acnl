@@ -51,7 +51,8 @@ def rename_fields(text, names):
         for old, new in fields.items():
             body = re.sub(r'(\s)%s;' % re.escape(old), r'\1%s;' % new, body)
         return m.group(1) + body
-    text = re.sub(r'(struct (?:__attribute__\(\(packed\)\) )?(\w+) \{\n)(.*?\n\})', struct_body, text, flags=re.S)
+    # (the body is whole lines up to the first that closes it: an empty struct must not run on into the next)
+    text = re.sub(r'(struct (?:__attribute__\(\(packed\)\) )?(\w+) \{\n)((?:[^\n]*\n)*?\})', struct_body, text)
     def offset(m):
         new = structs.get(m.group(1), {}).get('fields', {}).get(m.group(2))
         return 'GUEST_OFFSET(%s, %s,' % (m.group(1), new) if new else m.group(0)

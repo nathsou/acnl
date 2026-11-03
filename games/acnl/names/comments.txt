@@ -321,6 +321,8 @@
 0012564c Inserts the object (by its node offset, +0x20) at the end of the list (+0x14) and counts it (+0x1c).
 00125674 Copies the source's second word to +0x24 and sets the flag byte (+4).
 00125acc Constructs the unit heap with the two float parameters passed on the stack.
+00125b38 Loads the file at the path into the heap with the alignment, once; whether it is loaded.
+00125ca4 Removes the entry from the talk queue.
 001266a4 Creates the first block and points both ends of the list at 0x97d46c at it; -1 when it cannot.
 001266e8 Decompresses the data block into the buffer.
 001275f0 Initializes the service object at 0x974a88 and its four parts.
@@ -485,6 +487,7 @@
 0013cc9c Takes a block off the pool's free list under its lock (zeroed when the pool clears its blocks); null when none is left.
 0013cd00 Copies `source` into the string's buffer, at most `length` characters (all of it when negative) and fewer than its capacity, then terminates it; the number copied.
 0013d444 Stops the camera when it is running and destroys its six 0xec-byte parts.
+0013d4f0 Whether the bank's slot (below 6) is loaded.
 0013d6d0 Unlinks the request from the pending list (when queued or running, under the list lock) and clears it.
 0013d85c Closes the file stream's handle (+4; a pending failure is fatal).
 0013dee0 The handle at 0x974ef8 (a fatal error when it is not set).
@@ -870,6 +873,7 @@
 00206f7c Sets up the item button: its control, its item pane and position, animation targets and sounds.
 00207168 Calls the function at 0x207190 with a record holding the half.
 00207330 Creates the particle system (0x24 bytes) into 0x957308; true when it did.
+002073dc Starts the effect of the id at the position with its owner, replacing the running one.
 0020758c Spawns the effect through a temporary particle handle.
 00207710 Stops the emitter set (+4) and frees its buffer (+0xc).
 00207750 Resets the handle and spawns effect `id` with the group and draw kind (from the priority), rotating it in scenes that need it; true when spawned.
@@ -1006,6 +1010,7 @@
 0023d5ec Whether the pockets hold an item the NPC may be given (by kind and the event's rules).
 0023f704 Copies one pattern image (64x32) into another, filling where the source is smaller with the background color, and imports it.
 0023f820 Copies one pattern image into another (the second layout), filling outside the source with the background color, and imports it.
+0023fc84 Queries the cell of the layer (below 4) for its contents.
 00240080 Runs the function at 0x7206e0 on structure list `index` (below 4, from 0xab7de4) when it exists.
 002404b0 True when the construction site (save +0x6e2a4) is set (or finished) and is in block (x, y) for the structure kind.
 0024088c Finds the structure matching the record in the main list (0xab7df4) and removes it.
@@ -1322,6 +1327,7 @@
 002a6594 Clears the owner word.
 002a65d0 Zeroes the fade state with a step of 1.
 002a661c Clears the 10 daily counter entries (+0x1418, 4 bytes each).
+002a66ec Sets up the menu list's entries with their messages.
 002a684c Updates the daily counters for the new day.
 002a6b44 Constructs the base part and clears the 12 daily counter entries.
 002a70d0 Clears the visit record: its identity, player reference and 10 ids, with its index at -1.
@@ -1422,6 +1428,7 @@
 002ccbd4 Disables the window's button (+0xd9).
 002ccc70 Selects or unselects the button `index` (0x518 bytes each), disabling the others' input when selected.
 002cd064 Starts the open animation of the visible buttons and of the window.
+002cd0e0 Updates each button of the list (0x518 bytes each).
 002cd120 Finishes the animation of the visible buttons and starts the window's next one.
 002cd2c0 Starts the window's close animation.
 002cd2e0 Sets the message of the button `index` and marks it for update.
@@ -1584,6 +1591,7 @@
 002f4d2c Finds the design edit base in the model's cloth dictionary.
 002f4dcc Finds the cloth entry in the model's cloth dictionary.
 002f6a30 Sets or clears flag 0x10 (+0xd4) and the matching mask bits of +0xc4 (0x60000 or 0x14000, chosen once).
+002f6b14 Updates each usable node of the tree (its virtual function 2), skipping those that refuse.
 002f6b8c Clears bit 2 of the flags (+0xd4), sets the mode 0xc04 and the model's flag 0x10.
 002f6d18 Clears the menu state flag and notifies the state's handler (+0x1f4).
 002f6db4 Sets byte +0xd6 of each child with id `id` (all when -1) and remembers the last one at +0xb4.
@@ -1600,6 +1608,7 @@
 002f7ef4 Calls virtual 24 of entry `index` among the four shown from +0x2434 (0x290 bytes each, +0x18b4); out-of-page indices use entry -1.
 002f80c8 Fills the thread start record (argument, entry functions) and starts it.
 002f81e4 Stores the design of entry `index` (relative to the shown page) into the selected design storage slot.
+002f86c0 Unsigned division.
 002f86f0 Stores the half at +0xa0 + index * 2 (index below 4) of the shared NPC info.
 002f872c Picks a random entry of the weighted table at 0x94d7b0.
 002f8b78 Adds the two doubles when both are finite.
@@ -1642,6 +1651,7 @@
 00300888 Finds the `n`th cell holding `value` in the 16 x 16 byte grid (row by row): its column and row; false when there are fewer.
 00301400 1 when the date is after (year, month, day), -1 when before, 0 when the same.
 003016d4 Sets (or clears) bit `index` of a bit array of 28 bits.
+00301da8 Whether the year is a leap year (divisible by 4, and by 400 when by 100).
 00301f08 Posts the notice on the bulletin board (save +0x6e238), making room by dropping the oldest when it is full.
 00301f80 Forwards to send_nintendo_letter.
 00301f84 Stores three words at +4, +8 and +0xc.
@@ -1654,6 +1664,7 @@
 0030269c Forwards to byte_table_6f94a0_at.
 003026a0 Forwards to construct_empty_item_a5.
 003026bc Forwards to Item__is_id_in_b_to_1a_set.
+003026cc The town's byte at save +0x6e2b0.
 00302fe8 Forwards to Item__check_data_nibbles.
 00303014 Forwards to Item__is_id_a0_a6_ac_b3_or_bd.
 00303274 Sends the prizes of the finished second contest to the ranked players by letter.
@@ -1676,6 +1687,7 @@
 00304ce4 Makes the held node the head of the list at 0xad5638 unless 004dbc3c accepts it.
 00304ed0 Forwards to special_slot_value.
 00304ef0 Calls 00304f30 with the slot value 4.
+00304f30 The special item's variant for the slot (below 7).
 0030504c Forwards to reset_ad5074_entries.
 0030514c Forwards to copy_table_9516c0_entry.
 00305280 Initializes an entry of kind `kind` (0, 1 or 2); kind 2 also sets a save flag.
@@ -1748,6 +1760,7 @@
 003099d0 The value (0xa83370 or 0xa83374) of the first of bits 9 and 10 set in the bit set; -1 when neither is.
 00309a44 True when the villager's birthday (month and day of its table entry) is the given day (today when null).
 00309bbc Forwards to the function at 0x5e90cc.
+00309bd4 Whether the day's check of the kind allows it (not on a visit, and the counter for today).
 0030a344 Forwards to the function at 0x76880c.
 0030a390 Refreshes the villager's record book and counts for the day.
 0030a484 Forwards to set_half_7db.
@@ -1979,6 +1992,7 @@
 0033f368 Applies a received villager state message: sets its state (0x17, 2 or 0) and updates its NPC.
 0033fb8c Clears bit 6 of the shared NPC info unless the word is set.
 0033fbb4 Writes the secretary's letter to the player (its variant by the player's state), with its item.
+0034a784 Binds the attribute (by its kind, below 16) to the buffer's address with the format.
 00354ba0 Frees a block allocate_with_header gave: through the free function its header holds, else free_plain; null does nothing.
 003619b0 Allocates `size` bytes (rounded up to 4) behind an 8-byte header, through the allocator hook when one is set.
 00403828 Sets word `index` (fewer than 6) of the array at +0x210.
@@ -1987,6 +2001,7 @@
 0047ea68 The CRC-32 of `size` bytes (polynomial 0x04c11db7, most significant bit first, its table built on the stack), starting from `seed`; complemented.
 004b4fc0 The pane of the layout's tree with this name (searching below the root pane).
 004b9b64 Marks the event (+0x1c = 1) and passes its value (+0x18) to virtual 0x3c of the listener at +0x20.
+004ddc34 The local station of the online session.
 004e0288 True when the check at 0x1531b8 gives exactly 1.
 004e029c Stores the three components call_004dfb58 gives (from the arguments) into entry `index` (0x24 bytes) as half floats, with a flag.
 004e0960 Sets the motion parameters (target, mode 5, two halves, the float).
@@ -1999,6 +2014,7 @@
 004e13d0 The first of the two entries' furniture that is usable now (by its id and flags); null when none.
 004e14ec True when the furniture of the last valid entry (of the two) is of effective kind 0x2d.
 004e1668 Resets the two 0x40-byte slots from `slots`: no owner (-1), kind 4, every float 0.
+004e1768 Scans the room grid's furniture (outside the special room).
 004e1a7c The room module's flag byte.
 004e1a90 The room module's flag byte (a second copy of room_flag).
 004e1aa4 Whether the lookup through 004e1174 finds entry 1 of the table at 0x572258.
@@ -2408,6 +2424,7 @@
 0053f6c4 The number of set bits of the word.
 0053fda8 Sets the camera's center from the viewport's bounds and its look-at below it, then updates its view.
 00540c1c Sets an array header {0, count, buffer} when there is a buffer and a positive count; the elements' address (the header's +4).
+00544a20 Finishes the formatted output into the buffer; whether it fit.
 005500a0 Takes the next free emitter of the ring, links it into its group's list and resets it; null (with a warning) when all are in use.
 00550204 Creates the emitter set with the transform's position and no rotation.
 00550438 Takes the next free particle of the ring and counts it; null (with a warning) when all are in use.
@@ -2476,6 +2493,7 @@
 00568b38 Takes the entry out of the layout list (when found) and returns it.
 00569544 Advances the frame by the rate; at the end it loops (flag 1 clamps instead), backwards with flag 2.
 00569b44 Sets the fade's start, target (at least 0), speed and mode.
+00569e6c Draws the layout on the top (0) or the bottom (1) screen.
 00569e90 Sets up the screen for 400 x 240 and resets its list.
 00569ebc Sets up the screen's viewport and projection for the size.
 0056a178 Scales the vector to length 1; 0 (the vector unchanged) when its length is too small to divide by.
@@ -2504,6 +2522,7 @@
 0056c76c (year - 2008) mod 12.
 0056c7b0 Sets bit 2 of the clock flags.
 0056cf7c Flags the clock (bit 0, and the save's bit) while the date is before January 6, 2012; clears both otherwise.
+0056d488 Sets the text box's word 9 to the string.
 0056d828 Sets the message word to the villager of the record (by its table id), or runs the default.
 0056d874 For a villager id below 0x18f: clears byte +0xf of its 0x22-byte entry in the table at 0xa83aec+4 and fills its word from the word resources.
 0056d9cc Sets the message word to the name of the field object of the kind, or runs the default.
@@ -2570,6 +2589,7 @@
 00582c9c Starts a task through 00152dc8; marks +0xa8 = 1 when it could not.
 00582d40 While +0xa8 is 2, polls the task: true once it finished (and marks +0xa8 = 1).
 00582e4c Plays sound `id` at the position given (r1, through the camera when there is one).
+00582e9c Plays the sound at the world position, seen from the camera, for the object with the volume.
 00582f18 Whether the state (+0x10) of the barcarolle player is 2.
 00582f38 Signed byte +0x1ebf of the barcarolle player.
 00582f50 Signed 16-bit +0x12 of the barcarolle player.
@@ -2709,6 +2729,7 @@
 0058fcb0 Writes the item's render state (blend, depth, alpha) as GPU commands.
 0058fde0 Packs the color and its flags.
 0058fe4c Sets up the field item's model from its map entry.
+00590720 Initializes the field item with its item, cell, kind and flags.
 005929c0 Updates the field object by its item's kind and map entry.
 005937b4 Refreshes the field object's state from its item's kind.
 00593fbc Remembers the old position, moves to the new one with the scale, and starts its 15-frame growth animation.
@@ -2890,6 +2911,7 @@
 005afd20 Stores the writer's three words, its scale and its flag (+0x1c to +0x2c).
 005afe90 Clears an 18-byte picture entry.
 005aff24 Moves the directory cursor to the next entry, reading the next batch of 64 entries when needed; false at the end or on an error (reported unless quiet).
+005b00a8 Releases the handle's object when it holds one.
 005b0120 Clears slot `index` (+0x30 table) and its bit in bits 9-12 of +0x28.
 005b0164 Writes the photo's file name (the prefix and the number + 1, four digits) into the path's name field (8 characters).
 005b01c0 Copies up to `size` characters of a name into a field, padding the rest.
@@ -2925,6 +2947,7 @@
 005b30c4 Copies a rectangle of a 16-bit framebuffer (stored a column at a time, as the screens are) into an image stored a row at a time.
 005b3198 Converts float samples to integers (with their absolute values).
 005b3ed4 The current scene becomes the previous one; no current or next scene.
+005b3f88 The index of the scene among those of kind 0x15, or -1 (scenes below 0xa5).
 005b4088 The next scene becomes the current one (the current one the previous); no next scene.
 005b4148 Starts a scene change (0x95732c) and loads the current scene's resources with the first set (0x95787c).
 005b4198 Starts a scene change (0x95732c) and loads the current scene's resources with the second set (0x95788c).
@@ -2991,7 +3014,7 @@
 005be844 Clears (0xffff) every entry of the 11-entry 16-bit id list equal to `id`.
 005be87c Clears the 11-entry 16-bit id list (0xffff).
 005be8c0 Clears the 11-entry 16-bit id list (0xffff).
-005bf518 The model's data, word +0x1c and word +0x18 from a resource (for model kinds with flags 0x20000011).
+005bf518 Initializes the view of the texture resource's image (or none when it is not a texture).
 005bf748 Appends an entry to a queue.
 005bf758 The first node of the list (+4, next +8) whose +0xc is `key`, or 0.
 005bf7cc Stores a position and an angle (and clears +0x10) in a spawn point.
@@ -3190,6 +3213,7 @@
 005d60d4 Clears the text buffer and the line starts, marking the last line.
 005d6510 Text tag: sets the color (from the tag's two halves) and skips the tag.
 005d6cc0 Restarts the message engine at +0x78 on the text the source's virtual function 3 returns, and runs it.
+005d6d28 Lays out the text box's lines (the second layout) and sets the text's size.
 005d72a4 Text tag: places the ruby text above its base characters, centered, and skips the tag.
 005d79bc Sets the style to the preset of the index (below 7), else the default.
 005d79e0 Builds the text scale command (in 1/32 units), once; the command.
@@ -3199,7 +3223,10 @@
 005dd5b8 Formats the number with three digits into the string.
 005e19a8 Sets the value as kind 1.
 005e1a00 Sets the value as kind 2.
+005e2c98 Binds the text box to the pane, taking its font and size, unless it is locked.
+005e2e04 Unlocks the text box and refreshes its pane.
 005e2e50 Restarts the message engine at +0x44 on the text the source's virtual function 3 returns, and runs it.
+005e2f94 Lays out the text box's lines for its pane and sets the text's size.
 005e3238 Formats the hour (below 60) with two digits, for the region's clock; kind 3.
 005e32a0 Formats the amount with its separators for the region; kind 5.
 005e3344 Formats the number for the region's conventions.
@@ -3215,6 +3242,7 @@
 005e9d64 The item offset pair (category 0x27) for the talk's value.
 005e9d90 Clears the pair (category 0x27).
 005ea158 Formats the number with three digits into the string.
+005ea8f8 Attaches the window to the message store and restamps its time.
 005ea964 Loads message `id` of the message file `file` into `out`; true when it was found.
 005f10b0 Starts loading the resource (split or plain); whether it started.
 005f11b4 Sets the talk target's word slot (its virtual function 33).
@@ -4071,6 +4099,8 @@
 006efd40 Fills the valid cells of the 16 x 16 block with the default item (0x95bfd2).
 006efd9c Constructs the 256 item cells.
 006efdb0 Converts the items of the block's cells.
+006f0130 The current player's counter of the kind (in their counter block).
+006f0450 The player's flag of the kind (below 18).
 006f09d4 Picks a random item from the set bits of the item bit set, of the wanted type.
 006f14b0 Sets the bits of the category's items that pass its check (the insect flag for insects).
 006f15c4 Builds the candidate item set from the trait bytes and picks an item.
@@ -4163,6 +4193,7 @@
 0070aabc True when the first sub object (+0x184c, else +0x1850) is ready.
 0070ab24 Slot `index` (fewer than 4; 0x18 bytes each, from +0xe0) passed on to call_007460e8; 0 for a larger index.
 0070ac44 The animation value of slot `index` (below 4, 0x18 bytes each, +0xe0); 0 otherwise.
+0070ac68 The world matrix of the model's joint (none for a negative index); whether it has one.
 0070b140 The worn accessory item (slot +0x14 of class 5, unless the hat slot holds a category 8 item), or empty.
 0070b1a4 Entry `index` of an array of 12-byte entries (entry 0 when index is 10 or more).
 0070b334 Whether a range of kind 1 or 2 has a start and an end, start <= end.
@@ -4197,6 +4228,7 @@
 0070e494 The top two bits of the word at +8.
 0070e4a0 The top bit of the half at +0xc.
 0070e4e4 Bits 23 to 26 of the word at +8.
+0070e594 The matrix of the player's hand, from the player manager's model.
 0070e6c0 True for action 0x123 when the player's held tool (slot 7 of class 7) is of category 0x14.
 0070e6f0 True when the player's outfit (top, or the dress slot) allows the action.
 0070ead8 True when the mode word (+0xc) is 2, 3 or 4.
@@ -4276,6 +4308,8 @@
 007179a0 Finds the `n`-th map cell with value 0x28 and calls 00535ab0 there with the entry; 0 when there is none.
 007179ec The value of slot `index` (below 8; +0x34) minus 4 when it is at least 4, else -1.
 00717aac The kind of slot `index` (below 8; +0x34): 1 for values 0-3, 2 for 4 and above, 0 otherwise.
+0071831c The town's byte at save +0x6e2b2.
+00718340 The town's byte at save +0x6e2b3.
 00718364 Whether the 16-bit value is at most 0xfc.
 007186c4 Applies the template of kind (table 0x846bcb) to the 6-byte entry of `index` (below 8) at +0xe4.
 007187e8 Builds the character set used for passwords in the current mode.
@@ -4351,6 +4385,7 @@
 00720348 Whether byte +0x1f is set.
 00720358 The cell (x, y) of grid 0 (10 x 10 words at +0x62) or grid 1 (8 x 8 words at +0x1f2); the first cell of grid 0 when out of range.
 0072543c Whether the date bytes at +0xe match those at +5.
+00726d2c Finds the named uniform of the shader (vertex or geometry) and writes its location.
 00736a1c The entry of a resource dictionary (a radix tree on the name's bits) whose name is `name` (of `length` bytes); null when none.
 007400f8 The word at the adjusted +0x2c part of the resource file (+0x3c of +4).
 00740114 Finds an entry of the resource (+0x3c) and gives its id and value; true when found.
@@ -4556,6 +4591,7 @@
 007573c0 Whether one of the six entries matches the villager (+0x1028): same id, name and value.
 00757948 0 when bit 2 of +0x75 is set, else 1 or 2 by bit 0.
 00757968 0 when bit 2 of +0x75 is set, 1 with bit 5, 2 with bit 3, else 0.
+00757aa0 Reads the bytes from the buffer at the position.
 00757b34 The position (x, z) of the record (+0xc, +0x10) put on the surface below it.
 00757b6c The cell (x, z) under the object's position (+0xc, +0x10) at the surface height.
 00757bc4 Whether the town part (+0x80) passes both checks.
@@ -4744,6 +4780,7 @@
 0076ae1c The flag value (without the top two bits) of item 0x2000, else 0.
 0076ae38 Whether the item id (bit 15 ignored) is 0x3057, 0x3058, 0x305a, 0x305b, 0x3064, 0x3065, 0x3067 or 0x3068.
 0076afbc Whether the item has kind-11 data with a family (+0x11, 1-0x55) whose group (+0x19 >> 4) is 0-2 or 6 and above.
+0076aff4 Builds the item's display (its id and the variant for its kind).
 0076b1e0 Checks the two nibbles of the item's data (+2) against a limit chosen by the higher one.
 0076b2b4 Fills the furniture record's open slots with items.
 0076b984 The part of the item's wear entry from +4 (clearing its +0xc), or 0 when it has none or its kind (+4) is 0.

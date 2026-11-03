@@ -622,7 +622,9 @@
 001257fc sead__AudioMgr__SingletonDisposer___SingletonDisposer_
 00125acc UnitHeap__construct_with_floats
 00125aec construct_layout_animation
+00125b38 FileLoader__load
 00125b3c ObjectBinding__bind
+00125ca4 TalkQueue__remove
 00125ca8 LayoutList__insert
 00125e08 construct_layout_list
 00125e28 global_value_94e43f
@@ -1060,6 +1062,7 @@
 0013d404 SoundFader__destructor
 0013d408 SoundFxMgr__destructor
 0013d444 Camera__destruct
+0013d4f0 SoundBank__slot_ready
 0013d598 SoundFaderPlayer__destructor
 0013d59c SoundSharedObjMgr__destructor
 0013d6d0 SoundRequest__cancel
@@ -2500,6 +2503,7 @@
 0020714c read_word_957308
 00207168 call_207190_with_half
 00207330 create_particle_system
+002073dc EffectHandle__start
 0020758c spawn_effect_temp
 0020763c sead__SafeStringBase_char___SafeStringBase_0020763c
 00207710 ParticleSet__release
@@ -3057,6 +3061,7 @@
 0023fa30 ProButtonNode__ProButtonNode
 0023fb4c ProButtonNode__virtual_1_0023fb4c
 0023fb5c ProButtonNode__virtual_0_0023fb5c
+0023fc84 GridLayer__query_cell
 00240010 word_ab7de4
 00240080 StructureLists__call_on_list
 002404b0 construction_site_is
@@ -4139,6 +4144,7 @@
 002a6594 clear_owner
 002a65d0 FadeState__construct
 002a661c DailyCounters__clear
+002a66ec MenuList__setup_entries
 002a684c DailyCounters__update_day
 002a6b44 DailyCounters__construct
 002a70d0 PlayerVisitRecord__construct
@@ -4675,6 +4681,7 @@
 002ccbd4 Window__disable_button
 002ccc70 ButtonList__set_selected
 002cd064 ButtonList__start_open
+002cd0e0 ButtonList__update_all
 002cd120 ButtonList__finish_open
 002cd17c Control1Button__virtual_2_002cd17c
 002cd2c0 ButtonList__start_close
@@ -5241,6 +5248,7 @@
 002f6a30 Model__set_flag_10
 002f6ab0 ButtonActionControl__virtual_14
 002f6adc call_virtual_3_of_each_node
+002f6b14 NodeTree__update_all
 002f6b8c Model__reset_mode_c04
 002f6ba8 ButtonActionControl__virtual_10
 002f6d18 leave_menu_state
@@ -5302,6 +5310,7 @@
 002f8574 copy_bytes_at_any_alignment
 002f85fc ChangeStockMyDesign__virtual_1_002f85fc
 002f860c ChangeStockMyDesign__virtual_0_002f860c
+002f86c0 udiv
 002f86f0 NpcNetShareInfo__set_half_a0
 002f8720 memcpy
 002f872c pick_random_weighted_entry
@@ -5563,6 +5572,7 @@
 00301d30 halfword_slot
 00301d3c copy_two_bytes
 00301d50 write_bit
+00301da8 is_leap_year
 00301df4 player_in_array
 00301e20 is_villager_record
 00301e64 read_field_u16_0x2c_
@@ -5622,6 +5632,7 @@
 003026b8 Item__is_in_id_set_d_veneer
 003026bc Item__is_id_in_b_to_1a_set_veneer
 003026c4 member_address_0xc_
+003026cc town_byte_6e2b0
 003026e8 low_byte_of_id
 003026f4 clear_item_flags_bit_14_veneer
 003026f8 NoticeLoadAdapt__NoticeLoadAdapt
@@ -5729,6 +5740,7 @@
 00304ed4 cell_corner_veneer
 00304ed8 record_2160_address_of_8_00304ed8
 00304ef0 item_property_with_slot_4
+00304f30 SpecialItem__variant
 0030503c sead__SafeStringBase_char___SafeStringBase_0030503c
 00305040 photo__Mgr__SingletonDisposer___SingletonDisposer_
 00305044 BossMgr__SingletonDisposer___SingletonDisposer_
@@ -5937,6 +5949,7 @@
 00309ac8 villager_check_309ac8
 00309bb8 store_word_constant_pack_0xc_veneer
 00309bbc call_005e90cc_veneer
+00309bd4 DailyCheck__allows
 00309ccc index_in_pair_a83370
 00309eb8 SaveVillager__find_player_record_00309eb8
 00309ef0 SavedRecordInner__has_value
@@ -7169,6 +7182,7 @@
 003492f4 nn__fs__Directory__deleting_destructor
 0034931c nn__fs__Directory__destructor
 0034a630 clear_block9_0034a630
+0034a784 VertexBuffer__bind_attribute
 0034b124 read_u8_0x00981eb0_
 0034b404 nn__os__ThreadPool__virtual_3
 0034b77c nn__os__ThreadPool__virtual_0
@@ -11064,6 +11078,7 @@
 004dd118 script__WordCPtrSv__WordCPtrSv_004dd118
 004dd330 script__WordCPtrSv__WordCPtrSv_004dd330
 004dd824 sead__SafeStringBase_wchar_t___SafeStringBase_004dd824
+004ddc34 Online__local_station
 004dec84 Tab_2___deleting_destructor
 004ded18 Tab_2___destructor
 004deda8 Tab_4___deleting_destructor
@@ -11115,6 +11130,7 @@
 004e13d0 RoomGrid__usable_furniture_of_entries
 004e14ec RoomGrid__entry_furniture_is_kind_2d
 004e1668 reset_room_light_slots
+004e1768 RoomGrid__scan_furniture
 004e1a7c room_flag
 004e1a90 room_flag_2
 004e1aa4 has_room_object_1
@@ -12725,6 +12741,7 @@
 005448fc sead__MethodTreeNode__deleting_destructor
 00544928 sead__MethodTreeNode__destructor
 00544950 sead__FixedSafeString_128___FixedSafeString_00544950
+00544a20 PrintOutput__finish_to_buffer
 00544f18 print_finish
 00544fec print_append
 0054505c sead__PrintStreamSrc__virtual_0
@@ -13374,6 +13391,7 @@
 00569d50 layout_allocator_4
 00569d60 ssys__ma__lyt__LayoutMgr__LayoutMgr
 00569dc4 layout_allocator_8
+00569e6c LayoutRenderer__draw_on_screen
 00569e90 Screen__init_400x240
 00569ebc Screen__setup_viewport
 0056a11c ssys__ma__lyt__LayoutMgr__deleting_destructor
@@ -13471,6 +13489,7 @@
 0056d0fc current_season
 0056d19c set_reference_time
 0056d230 set_clock_from_span
+0056d488 TextBox__set_word_9
 0056d4f0 script__WordFix_25u___WordFix
 0056d5dc script__WordFix_21u___WordFix_0056d5dc
 0056d828 Message__set_villager_word
@@ -13744,6 +13763,7 @@
 00582db8 store_byte_constant_pack_0xa8_00582db8
 00582dc4 store_byte_constant_pack_0xa8_00582dc4
 00582e4c play_sound_at
+00582e9c play_sound_at_world
 00582f18 barcarolle_player_state_is_2
 00582f38 barcarolle_player_byte_1ebf
 00582f50 barcarolle_player_half_12
@@ -14315,6 +14335,7 @@
 0058fdc8 fgobj__ObjectBase__virtual_2
 0058fde0 FieldItem__set_color
 0058fe4c FieldItem__setup_model
+00590720 FieldItem__init
 00590aac fgobj__ObjectScale__virtual_5
 00590ad8 fgobj__ObjectBase__virtual_5
 00590f1c fgobj__ObjectBase__ObjectBase
@@ -14704,6 +14725,7 @@
 005aff24 DirCursor__next
 005affd8 nn__fs__Directory__Directory_005affd8
 005b006c nn__fs__Directory__Directory_005b006c
+005b00a8 Handle__release
 005b0120 PhotoRecord__clear_slot
 005b0164 set_photo_file_name
 005b01c0 copy_name_padded
@@ -14824,6 +14846,7 @@
 005b3e28 photo__Allocator__destructor
 005b3ec4 read_u32_0x00957328_
 005b3ed4 leave_scene
+005b3f88 scene_index_of_kind_15
 005b4018 mode_page_player_is_main_slot
 005b4088 advance_scene
 005b40fc mode_value_9575d8
@@ -14956,7 +14979,7 @@
 005bf4ec BsRoot__do_delete
 005bf504 BsRoot__deleting_destructor
 005bf514 BsRoot__destructor
-005bf518 ResModel__info
+005bf518 TextureView__from_resource
 005bf57c Layout__virtual_6
 005bf714 Layout__deleting_destructor
 005bf744 Layout__destructor
@@ -15378,6 +15401,7 @@
 005d6908 script__RenderMain__deleting_destructor
 005d6964 script__RenderMain__destructor
 005d6cc0 start_window_message
+005d6d28 TextBox__layout_lines_b
 005d6fac script__RenderRuby__RenderRuby_005d6fac
 005d703c script__MsgEngine__MsgEngine_005d703c
 005d72a4 RenderRuby__place_ruby
@@ -15536,7 +15560,10 @@
 005e2c1c script__InsertEngine__virtual_6
 005e2c70 script__InsertEngine__deleting_destructor
 005e2c80 script__InsertEngine__destructor
+005e2c98 TextBox__bind_pane
+005e2e04 TextBox__unlock
 005e2e50 start_message
+005e2f94 TextBox__layout_lines
 005e3128 script__RenderTrace__RenderTrace
 005e3194 script__RenderMain__RenderMain_005e3194
 005e3238 WordNumber__set_hour
@@ -15717,6 +15744,7 @@
 005ea79c script__WordRes__WordRes_005ea79c
 005ea83c script__WordRes__WordRes_005ea83c
 005ea8dc LinkOwner__unlink
+005ea8f8 MessageStore__attach_window
 005ea964 load_message
 005ea9c0 script__UiSeq__virtual_5
 005eb7a4 script__CmpEngine__CmpEngine_005eb7a4
@@ -18780,6 +18808,8 @@
 006efdb0 Block16x16__convert_items
 006f0024 store_word_constant_pack_0x0_006f0024
 006f00ec notify_record
+006f0130 Player__counter
+006f0450 Player__flag_of_kind
 006f0578 keep_items_seen_by_player
 006f0900 add_category_5_items_with_byte_19_low
 006f09d4 pick_random_set_item
@@ -19019,6 +19049,7 @@
 0070ab10 query_70ab10
 0070ab24 slot_of_4_at_e0
 0070ac44 animation_value_of_slot
+0070ac68 Model__joint_matrix
 0070acac AnimationSlots__animation_value_38
 0070acd0 AnimationSlots__test_frame
 0070acf0 HumanModel__virtual_10
@@ -19129,6 +19160,7 @@
 0070e4b0 main_object_bit_set
 0070e4e4 word_8_bits_23_26
 0070e4f4 masked_byte_70e4f4
+0070e594 PlayerModel__hand_matrix
 0070e628 NpcAmbCamModelBase_PlayerModel___virtual_10
 0070e6c0 Player__holds_category_14_for_123
 0070e6f0 Player__outfit_allows_action
@@ -19313,6 +19345,8 @@
 00717af4 list_has_similar_item
 00718270 copy_row8_item_cleared
 007182f0 row8_item_is_category_7c
+0071831c town_byte_6e2b2
+00718340 town_byte_6e2b3
 00718364 halfword_at_most_fc
 00718378 halfword_is_fc_or_more
 0071838c UlcdFramework__virtual_1
@@ -19640,6 +19674,7 @@
 00725d50 nn__fs__CTR__MPCore__detail__FileServerArchive__Directory__virtual_3
 00725d8c write_state_commands
 00725e90 FrameBufferShadow__virtual_5
+00726d2c Shader__find_uniform
 00727c84 write_part_6c
 0072820c nn__cec__CTR__MessageBox__virtual_13
 00728284 nn__cec__CTR__MessageBox__virtual_12
@@ -21126,6 +21161,7 @@
 00757a88 AcStrcCampingCar__virtual_36
 00757a90 AcStrcCampingCar__virtual_34
 00757a98 AcStrcCampingCar__virtual_30
+00757aa0 Buffer__read_bytes
 00757b34 position_on_surface
 00757b6c cell_under_object
 00757bbc ScBoot__virtual_16
@@ -21731,6 +21767,7 @@
 0076af70 item_data_14_low_nibble
 0076af88 item_number_in_set_76af88
 0076afbc Item__is_kind_11_family_up_to_2
+0076aff4 ItemDisplay__from_item
 0076b1e0 Item__check_data_nibbles
 0076b24c item_data_17_high_nibble
 0076b274 Item__count_if_category_29
