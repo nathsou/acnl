@@ -255,6 +255,39 @@ struct Parser<'a> {
     released: bool, // frame.release() just ran: the next return (a tail call) does not restore sp again
     depth: usize, // blocks open
     pub layout: Vec<LayoutAssumption>,
+    // the calls read inside the expression being read, lowered (each with its result in a temporary): they go before
+    // the statement, which must leave no other order open (nested_before)
+    pending: Vec<Stmt>,
+}
+
+// A value C++ computes the same whenever it evaluates it beside a call (the order of an expression's operands, and of a
+// call's arguments, is left open): constants, variables and pure operations on them; no memory, CPU or short-circuit,
+// and no call in a condition's branches.
+fn inert(e: &Expr) -> bool {
+    match e {
+        Expr::Num(..) | Expr::Float(..) | Expr::Var(_) | Expr::AddrOf(_) => true,
+        Expr::Un(_, a) | Expr::Cast(_, a) => inert(a),
+        Expr::Bin(BinOp::LAnd | BinOp::LOr, ..) => false,
+        Expr::Bin(_, a, b) => inert(a) && inert(b),
+        Expr::Call(_, args) => args.iter().all(inert),
+        // (`f(x) == 0 ? a : b`: the condition is computed first, so a call in it runs whichever branch is taken)
+        Expr::Cond(c, a, b) => inert(c) && inert(a) && inert(b) && nested_results(a) + nested_results(b) == 0,
+        Expr::Cpu(_) | Expr::Load(..) => false,
+    }
+}
+
+// the results of calls inside an expression it reads (their temporaries, try_call): at most one, C++ leaving the order
+// of two open
+const NESTED: &str = "__nested";
+fn nested_results(e: &Expr) -> usize {
+    match e {
+        Expr::Var(v) => v.starts_with(NESTED) as usize,
+        Expr::Un(_, a) | Expr::Cast(_, a) | Expr::Load(_, a) => nested_results(a),
+        Expr::Bin(_, a, b) => nested_results(a) + nested_results(b),
+        Expr::Cond(c, a, b) => nested_results(c) + nested_results(a) + nested_results(b),
+        Expr::Call(_, args) => args.iter().map(nested_results).sum(),
+        Expr::Num(..) | Expr::Float(..) | Expr::Cpu(_) | Expr::AddrOf(_) => 0,
+    }
 }
 
 fn db_base(b: &str) -> R<CType> {
@@ -591,7 +624,23 @@ impl<'a> Parser<'a> {
                     return Ok(V::R(Expr::Num(address as u64, Ty::U32), CType::Ptr(Box::new(t))));
                 }
                 if self.is("(") {
-                    if self.resolve(&n, &|q| self.scope.callees.contains_key(q)).is_some() || n == "guest" {
+                    if self.resolve(&n, &|q| self.scope.callees.contains_key(q)).is_some() {
+                        // a call inside an expression: lowered ahead of the statement, its result in a temporary
+                        self.i -= 1;
+                        let mut lowered = Vec::new();
+                        let (e, t) = self.try_call(&mut lowered)?.ok_or("a call inside an expression")?;
+                        let ty = match &t {
+                            CType::Val(ty) => *ty,
+                            CType::Ptr(_) => Ty::U32,
+                            _ => return Err(format!("the result of {} (a {:?}) inside an expression", n, t)),
+                        };
+                        self.fresh += 1;
+                        let name = format!("{}{}", NESTED, self.fresh);
+                        lowered.push(Stmt::Decl(ty, name.clone(), Some(e), Origin(0)));
+                        self.pending.extend(lowered);
+                        return Ok(V::R(Expr::Var(name), t));
+                    }
+                    if n == "guest" {
                         return Err(format!("call of {} inside an expression", n));
                     }
                     if !self.helpers.contains(&n) {
@@ -879,7 +928,8 @@ impl<'a> Parser<'a> {
         if self.is_id("gptr") && self.peek_at(1) == Some(&Tok::P("<")) {
             let save = self.i;
             if let Some(t @ CType::Ptr(_)) = self.try_type()? {
-                if self.eat("(") {
+                // (not `gptr<T>(f(x) - 4u)`: an expression, the call inside it)
+                if self.eat("(") && !self.call_continues_to(")") {
                     if let Some((e, rt)) = self.try_call(out)? {
                         if !matches!(rt, CType::Val(Ty::U32) | CType::Ptr(_)) {
                             return Err(format!("a pointer from a call returning {:?}", rt));
@@ -917,6 +967,8 @@ impl<'a> Parser<'a> {
         self.fresh += 1;
         let k = self.fresh;
         let mut values = Vec::new();
+        // (calls inside the arguments: one at most, and the arguments inert around it)
+        let outer = std::mem::take(&mut self.pending);
         if by_address {
             let (t, tt) = self.expr()?;
             if !matches!(tt, CType::Val(ty) if !ty.float() && ty.bits() == 32) {
@@ -936,6 +988,13 @@ impl<'a> Parser<'a> {
             }
         }
         self.expect(")")?;
+        let nested = std::mem::replace(&mut self.pending, outer);
+        if !nested.is_empty() {
+            if values.iter().map(|(e, _)| nested_results(e)).sum::<usize>() > 1 || !values.iter().all(|(e, _)| inert(e)) {
+                return Err("a call in an argument beside another call, or beside a read of memory or the CPU (C++ leaves their order open)".into());
+            }
+            out.extend(nested);
+        }
         // the arguments are evaluated first (temporaries), then handed over as detail::call does
         let mut core = 0u32;
         let mut single = 0u32;
@@ -1012,7 +1071,59 @@ impl<'a> Parser<'a> {
         }))
     }
 
+    // the calls inside an expression just read (pending), into `out` ahead of its statement: when the expression is
+    // inert around them (their order against the rest is not open)
+    // a call by name that is not the whole value (`f(x) + 1;`): read as an expression, the call inside it
+    fn call_continues(&self) -> bool {
+        self.call_continues_to(";")
+    }
+
+    // (a call by name here, not followed by `end`)
+    fn call_continues_to(&self, end: &'static str) -> bool {
+        let (Some(Tok::Id(n)), Some(Tok::P("("))) = (self.peek(), self.peek_at(1)) else { return false };
+        if self.resolve(n, &|q| self.scope.callees.contains_key(q)).is_none() {
+            return false;
+        }
+        let mut depth = 0;
+        for (k, t) in self.t[self.i + 1..].iter().enumerate() {
+            match t {
+                Tok::P("(") => depth += 1,
+                Tok::P(")") => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return self.t.get(self.i + k + 2) != Some(&Tok::P(end));
+                    }
+                }
+                _ => {}
+            }
+        }
+        false
+    }
+
+    fn nested_before(&mut self, e: &Expr, out: &mut Vec<Stmt>) -> R<()> {
+        if self.pending.is_empty() {
+            return Ok(());
+        }
+        if !inert(e) || nested_results(e) > 1 {
+            return Err("a call inside an expression beside another call, a read of memory or the CPU, or a short-circuit (C++ leaves their order open)".into());
+        }
+        out.append(&mut self.pending);
+        Ok(())
+    }
+
     fn stmt(&mut self, out: &mut Vec<Stmt>) -> R<()> {
+        // (calls inside expressions only where the statement takes them in: nested_before)
+        if !self.pending.is_empty() {
+            return Err("a call inside an expression here".into());
+        }
+        self.stmt_inner(out)?;
+        if !self.pending.is_empty() {
+            return Err("a call inside an expression here".into());
+        }
+        Ok(())
+    }
+
+    fn stmt_inner(&mut self, out: &mut Vec<Stmt>) -> R<()> {
         // label
         if let (Some(Tok::Id(l)), Some(Tok::P(":"))) = (self.peek().cloned(), self.peek_at(1).cloned()) {
             if !matches!(l.as_str(), "default" | "case") {
@@ -1040,6 +1151,7 @@ impl<'a> Parser<'a> {
             self.expect("(")?;
             let (c, _) = self.expr()?;
             self.expect(")")?;
+            self.nested_before(&c, out)?;
             let a = self.block()?;
             let b = if self.is_id("else") {
                 self.i += 1;
@@ -1148,12 +1260,13 @@ impl<'a> Parser<'a> {
             if self.eat(";") {
                 return self.epilogue(None, out);
             }
-            if let Some((r, rt)) = self.try_call(out)? {
+            if let Some((r, rt)) = if self.call_continues() { None } else { self.try_call(out)? } {
                 self.expect(";")?;
                 return self.epilogue(if rt == CType::Void { None } else { Some(r) }, out);
             }
             let (e, _) = self.expr()?;
             self.expect(";")?;
+            self.nested_before(&e, out)?;
             return self.epilogue(Some(e), out);
         }
         // guest::StackFrameOf<T> frame; at the top of the function: a StackFrame of sizeof(T) bytes, laid out as T
@@ -1192,10 +1305,14 @@ impl<'a> Parser<'a> {
                     other => return Err(format!("local of type {:?}", other)),
                 };
                 let init = if self.eat("=") {
-                    let (e, et) = match self.try_call(out)? {
+                    let (e, et) = match if self.call_continues() { None } else { self.try_call(out)? } {
                         Some((e, CType::Void)) => return Err(format!("void result used: {:?}", e)),
                         Some(x) => x,
-                        None => self.expr()?,
+                        None => {
+                            let x = self.expr()?;
+                            self.nested_before(&x.0, out)?;
+                            x
+                        }
                     };
                     if is_float(&et) != ty.float() && !matches!(e, Expr::Num(0, _)) {
                         return Err(format!("{} initialised with a {:?}", n, et));
@@ -1325,12 +1442,16 @@ impl<'a> Parser<'a> {
             }
             return Ok(());
         }
-        let (value, vt) = match self.try_call(out)? {
+        let (value, vt) = match if self.call_continues() { None } else { self.try_call(out)? } {
             Some((e, CType::Void)) => return Err(format!("void result used: {:?}", e)),
             Some(x) => x,
             None => self.expr()?,
         };
         self.expect(";")?;
+        // (calls inside the value of a variable's assignment; a store's address could read what they write)
+        if matches!(place, Place::Var(_)) {
+            self.nested_before(&value, out)?;
+        }
         match place {
             Place::Var(n) => {
                 let t = self.vars[&n].clone();
@@ -1528,7 +1649,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
                 let mut fields = Vec::new();
                 let mut offset = 0u64;
                 while t.get(j) != Some(&Tok::P("}")) {
-                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
+                    let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: j, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![], pending: vec![] };
                     let ft = p.try_type()?.ok_or_else(|| format!("field type in {}", name))?;
                     let fname = p.ident()?;
                     let ft = if p.eat("[") {
@@ -1558,7 +1679,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" && matches!(t.get(i + 1), Some(Tok::Id(g)) if g == "guest") => {
                 // inline guest::global<T, 0xADDR> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![], pending: vec![] };
                 p.expect_id("guest")?;
                 p.expect("::")?;
                 p.expect_id("global")?;
@@ -1577,7 +1698,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" && matches!(t.get(i + 2), Some(Tok::Id(u)) if u == "u32") => {
                 // inline constexpr u32 name = 0xVALUE;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![], pending: vec![] };
                 p.expect_id("constexpr")?;
                 p.expect_id("u32")?;
                 let name = p.ident()?;
@@ -1589,7 +1710,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             Tok::Id(n) if n == "inline" => {
                 // inline constexpr guest::Function<0xADDR, R(A...)> name;
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i: i + 1, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![], pending: vec![] };
                 p.expect_id("constexpr")?;
                 p.expect_id("guest")?;
                 p.expect("::")?;
@@ -1620,7 +1741,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             }
             _ => {
                 // a function definition: TYPE NAME ( ... ) { ... }
-                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
+                let mut p = Parser { t: &t, half: None, ns: ns.join("::"), i, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame: 0, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![], pending: vec![] };
                 match p.try_type()? {
                     Some(_) => {
                         let name = p.ident()?;
@@ -1647,7 +1768,7 @@ pub fn read(text: &str, helpers: &HashSet<String>) -> R<File> {
             continue;
         };
         let ns = name.rfind("::").map_or(String::new(), |k| name[..k].to_string());
-        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![] };
+        let mut p = Parser { t: &t, half: None, ns, i: at, scope: &scope, vars: HashMap::new(), helpers, fresh: 0, ret: CType::Void, frame, loops: 0, stack_frame: 0, frame_struct: None, released: false, depth: 0, layout: vec![], pending: vec![] };
         let f = function(&mut p, address);
         out.push(Export { address, function: f, layout: p.layout });
     }

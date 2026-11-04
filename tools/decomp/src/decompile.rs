@@ -555,7 +555,8 @@ L_2004:
         assert!(e.as_ref().is_err_and(|w| w.contains("does not wrap")), "{:?}", e.map(|_| ()));
     }
 
-    // a shrink-wrapped prologue: an early return before the push, then a call and a return through the saved lr
+    // a shrink-wrapped prologue: an early return before the push, then a call and a return through the saved lr (the
+    // call written inside the returned sum)
     const SHRINK_WRAPPED: &str = "L_7000:
   { u32 a = r0; u32 b = 0x0u; u32 res = a - b; zf = res == 0; (void)res; }
   if (zf) { tpc = r14; c->pc = tpc; SO(); return; }
@@ -568,7 +569,7 @@ L_7014:
 
     #[test]
     fn round_trip_shrink_wrapped() {
-        round_trip("f_00007000", &["r0", "r4", "r13", "r14"], SHRINK_WRAPPED, ("r0_1 + r0", "r0_1 - r0"));
+        round_trip("f_00007000", &["r0", "r4", "r13", "r14"], SHRINK_WRAPPED, (") + r0;", ") - r0;"));
     }
 
     // a loop in a function that writes neither r0 nor r1 (a caller still observes them: the C++ leaves them in the CPU)
@@ -643,5 +644,68 @@ L_8004:
         let ctx = z3::Context::new(&cfg);
         let d = crate::decompile::decompile(&b);
         assert!(matches!(crate::check::verify(&ctx, &a, &d), Verdict::Differs(_)));
+    }
+
+    #[test]
+    fn reads_a_call_inside_an_expression_only_where_its_order_is_fixed() {
+        // (C++ leaves open the order of a call against the rest of its expression, and of a call's arguments)
+        let helpers = std::collections::HashSet::new();
+        let file = |body: &str| {
+            format!(
+                "inline constexpr guest::Function<0x00004000, u32(u32)> f;\ninline constexpr guest::Function<0x00005000, u32(u32, u32)> g;\n\nu32 f_00006000(u32 arg0, gptr<u32> arg1) {{\n{}\n}}\nGUEST_EXPORT(0x00006000, f_00006000);\n",
+                body
+            )
+        };
+        let read = |b: &str| -> Result<(), String> { crate::cpp::read(&file(b), &helpers)?.exports.remove(0).function.map(|_| ()) };
+        for ok in [
+            "    return g(f(arg0), 1u);",
+            "    if (f(arg0) == 0) {\n        return 1u;\n    }\n    return 0u;",
+            "    u32 x = f(arg0) + 1u;\n    return x;",
+            "    return f(f(arg0));",
+            "    g(f(*arg1), arg0);\n    return 0u;",
+            "    gptr<u32> p = gptr<u32>(f(arg0) - 4u);\n    return *p;",
+            "    return f(arg0) == 0 ? 2u : arg0;",
+        ] {
+            assert!(read(ok).is_ok(), "{}: {:?}", ok, read(ok));
+        }
+        for refused in [
+            "    return g(f(arg0), *arg1);",
+            "    return g(f(arg0), f(1u));",
+            "    return f(arg0) + f(1u);",
+            "    return g(f(arg0) + f(1u), 0u);",
+            "    return f(arg0) + *arg1;",
+            "    return arg0 != 0 && f(arg0) != 0;",
+            "    return arg0 == 0 ? f(arg0) : 1u;",
+            "    *arg1 = f(arg0) + 1u;\n    return 0u;",
+            "    u32 x = arg0;\n    x += f(arg0);\n    return x;",
+        ] {
+            assert!(read(refused).is_err(), "{}", refused);
+        }
+    }
+
+    #[test]
+    fn folds_calls_only_into_lines_cpp_reads() {
+        // (the emitter's text check against what cpp.rs reads: a call inside an expression with nothing beside it that
+        // reads memory or the CPU)
+        for ok in [
+            "    if (call_0012fb3c(r0) == 0) {",
+            "    return call_0031c31c(r0, r1_3, r3) + 0xcu;",
+            "    u32 r0_20 = call_001c1eb8(call_00304530(r0_18));",
+            "    call_0045ee4c(call_0044f0f4(*global_00974a6c, ea_7->word_0), r0 + 0x20u);",
+            "    arg0->word_4 = call_00301d0c(r0_5 + 0x1b0u, guest::cpu()->r[1]);",
+            "    gptr<Local_0020763c_ea_11> ea_11 = gptr<Local_0020763c_ea_11>(call_00301d0c(*global_00974a6c));",
+        ] {
+            assert!(crate::emit::reads_nested(ok), "{}", ok);
+        }
+        for refused in [
+            "    u32 r0_6 = call_005bf744(call_00567ef0(r4_1 - 0x248u) - 0x14cu, guest::cpu()->r[1]);",
+            "    u32 r0_4 = call_0012fea0(call_00136474(0x8b2f4cu), *global_008b2f4c, 0u);",
+            "    return call_00573aac(r0_1) == 0 ? 0u : r0_1;",
+            "    *gptr<u32>(r4 + 0x398a0u) = (call_00726a54(r4 + 4u) - r4) - 0x388a0u;",
+            "    u32 x = call_00726a54(r4) + call_00726a54(r5);",
+            "    } while (call_00726a54(r4) != 0);",
+        ] {
+            assert!(!crate::emit::reads_nested(refused), "{}", refused);
+        }
     }
 }

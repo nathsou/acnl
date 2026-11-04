@@ -291,9 +291,8 @@ result):
   of that function, with its signature: `return call_00100834(...)` rather than `call_address<u32>(0x100835u, ...)`.
 - Constants: a value defined as a constant plus a constant (`r0_32 = r0_31 - 0x2c`, r0_31 a constant) is a constant
   too; `K + x` is written `x + K`; a vtable's address (the RTTI's) is `vtable_<class>` (`vtable_<class>_at_<offset>`
-  for a base class's), declared `inline constexpr u32 vtable_X = 0x...u;`. The declarations that name a constant
-  (globals, callees, field offsets, vtables) carry no "(from the original)" comment; lines of code with a hex literal
-  do.
+  for a base class's), declared `inline constexpr u32 vtable_X = 0x...u;`. Hex constants are the original's: each
+  file of drafts says so once in its header (split.py), rather than a comment on every line that has one.
 - A field of the draft's own structs (`Object_`, `Local_`, `Frame_`) that is only stored as a float's bits and read
   back as a float is a `float` (`x->float_8 = S0;`, not `x->word_8 = std::bit_cast<u32>(S0);`). A float of a literal
   pool reads as its number; `-1.0f` reads back as the literal it is (the sign flipped), not as a negation.
@@ -372,6 +371,15 @@ result):
 - `s32(x & 0x80000000) >= 0` is `s32(x) >= 0`; `s32(u32(e))` with e an s32 is `e`; a constant stored that fits the
   field is a plain number; a conversion to the assigned variable's own type is left out (not then folded elsewhere).
 - An exit block may hold labels only exit gotos reach, and its size counts what is written (not the bookkeeping).
+- A call's result used once, on the next line, is written there (`if (call_x(a) == 0)`, `return call_y(call_x(a));`,
+  `u32 n = call_x(a) + 1u;`) when nothing else on that line reads memory or the CPU, short-circuits or calls (but the
+  line's own call): C++ leaves the order of a call against the rest of its expression open, and of a call's
+  arguments, so that order must not matter. cpp.rs reads such a call ahead of its statement and refuses any other
+  (`g(f(a), x->n)`, `f(a) + g(b)`, `f(a) && b`, a call in a loop's condition or inside a store's value); the emitter
+  checks each folded line the same way (emit.rs reads_nested), and a value holding a call goes into the next line
+  only, never past another statement. A temporary the names layer names
+  (variables.txt) keeps its name and is not folded, whether it holds a call or not; so adding names never changes
+  what is folded, while removing one does (that draft is then emitted again before it is proved).
 
 ## Proving the C++ (`prove-cpp`)
 

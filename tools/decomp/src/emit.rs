@@ -2583,10 +2583,184 @@ fn compound_text(e: &str) -> bool {
     false
 }
 
+// The values of the function the names layer names (DECOMP_NAMES, default games/acnl/names: variables.txt, keyed as
+// tools/decomp/names.py matches them: the register, and one of the instructions defining the value or the entry).
+fn named_values(function: u32, values: &crate::values::Values) -> HashSet<String> {
+    static LAYER: std::sync::OnceLock<HashMap<String, Vec<String>>> = std::sync::OnceLock::new();
+    let layer = LAYER.get_or_init(|| {
+        let dir = std::env::var("DECOMP_NAMES").unwrap_or("games/acnl/names".into());
+        let mut keys: HashMap<String, Vec<String>> = HashMap::new();
+        for l in std::fs::read_to_string(format!("{}/variables.txt", dir)).unwrap_or_default().lines() {
+            if let [f, key, _] = l.split_whitespace().collect::<Vec<_>>().as_slice() {
+                if !l.starts_with('#') {
+                    keys.entry(f.to_string()).or_default().push(key.to_string());
+                }
+            }
+        }
+        keys
+    });
+    let Some(keys) = layer.get(&format!("{:08x}", function)) else { return HashSet::new() };
+    values
+        .names_with_keys()
+        .filter(|(_, k)| {
+            keys.iter().any(|key| match key.split_once('@') {
+                Some((var, "entry")) => var == k.var && k.entry,
+                Some((var, at)) => var == k.var && u32::from_str_radix(at, 16).map_or(false, |a| k.origins.contains(&a)),
+                None => false,
+            })
+        })
+        .map(|(n, _)| n.clone())
+        .collect()
+}
+
+// Whether cpp.rs reads the calls of a line (a statement on one line): a call is the whole statement, or the whole value
+// of a declaration, assignment or return, with anything in its arguments; or it is inside an expression (an if's
+// condition, the value of a variable's declaration, assignment or return, or an argument), where C++ leaves its order
+// open against the rest of the expression and the other arguments: those must not read memory or the CPU,
+// short-circuit or call (one argument with calls in an argument list).
+pub(crate) fn reads_nested(line: &str) -> bool {
+    let t = line.trim_start();
+    let t = t.split("  //").next().unwrap_or(t).trim_end();
+    // (a loop's condition is read again on every turn, not ahead of the loop)
+    if ["}", "do ", "do{", "while ", "while(", "for ", "for(", "switch", "else"].iter().any(|p| t.starts_with(p)) {
+        return false;
+    }
+    let (value, top) = if let Some(c) = t.strip_prefix("if (").and_then(|c| c.strip_suffix(") {")) {
+        (c, false)
+    } else if let Some(v) = t.strip_prefix("return ").and_then(|v| v.strip_suffix(';')) {
+        (v, true)
+    } else if let Some(c) = t.strip_suffix(';') {
+        // `T y = v;`, `y = v;`, a store `place = v;` (the call only as the whole value), or a call statement
+        let c = c.split_once(' ').filter(|(ty, _)| matches!(*ty, "u8" | "u16" | "u32" | "u64" | "s8" | "s16" | "s32" | "s64" | "float")).map_or(c, |(_, r)| r);
+        // (a typed local: `gptr<T> y = gptr<T>(v);`)
+        let c = c.strip_prefix("gptr<").and_then(|r| r.split_once("> ")).map_or(c, |(_, r)| r);
+        match c.split_once(" = ") {
+            Some((place, v)) => {
+                let v = v.strip_prefix("gptr<").and_then(|r| r.split_once(">(")).and_then(|(_, r)| r.strip_suffix(')')).filter(|r| whole_call(r)).unwrap_or(v);
+                if place.contains("call_") || place.ends_with(|c: char| "+-*/%&|^<>!".contains(c)) {
+                    return false;
+                }
+                let plain = place.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+                if !plain && !whole_call(v) {
+                    return !v.contains("call_");
+                }
+                (v, true)
+            }
+            None => (c, true),
+        }
+    } else {
+        return false;
+    };
+    if top && whole_call(value) {
+        return args_read(value);
+    }
+    let (rest, calls) = without_calls(value);
+    calls.len() <= 1 && calls.iter().all(|c| args_read(c)) && (calls.is_empty() || inert_text(&rest))
+}
+
+// a call's arguments, read by cpp.rs: at most one with calls in it, and then every argument inert around them
+fn args_read(call: &str) -> bool {
+    let open = call.find('(').unwrap();
+    let inner = &call[open + 1..call.len() - 1];
+    let mut args = Vec::new();
+    let (mut depth, mut from) = (0, 0);
+    for (i, c) in inner.char_indices() {
+        match c {
+            '(' | '[' => depth += 1,
+            ')' | ']' => depth -= 1,
+            ',' if depth == 0 => {
+                args.push(&inner[from..i]);
+                from = i + 1;
+            }
+            _ => {}
+        }
+    }
+    args.push(&inner[from..]);
+    let with_calls = args.iter().filter(|a| a.contains("call_")).count();
+    if with_calls == 0 {
+        return true;
+    }
+    with_calls == 1
+        && args.iter().map(|a| without_calls(a).1.len()).sum::<usize>() == 1
+        && args.iter().all(|a| {
+            let (rest, calls) = without_calls(a);
+            calls.iter().all(|c| args_read(c)) && inert_text(&rest)
+        })
+}
+
+// the text with each outermost `call_<address>(...)` in it written `_` instead, and those calls
+fn without_calls(e: &str) -> (String, Vec<&str>) {
+    let mut rest = String::new();
+    let mut calls = Vec::new();
+    let mut i = 0;
+    while let Some(k) = e[i..].find("call_").map(|k| k + i) {
+        let ident = |c: Option<char>| c.map_or(false, |c| c.is_ascii_alphanumeric() || c == '_');
+        let Some(open) = e[k..].find('(').map(|o| o + k) else { break };
+        if ident(e[..k].chars().next_back()) || !e[k + 5..open].chars().all(|c| c.is_ascii_hexdigit()) {
+            rest.push_str(&e[i..k + 5]);
+            i = k + 5;
+            continue;
+        }
+        let mut depth = 0;
+        let mut close = e.len();
+        for (j, c) in e[open..].char_indices() {
+            match c {
+                '(' => depth += 1,
+                ')' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        close = open + j;
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        if close == e.len() {
+            break;
+        }
+        rest.push_str(&e[i..k]);
+        rest.push('_');
+        calls.push(&e[k..=close]);
+        i = close + 1;
+    }
+    rest.push_str(&e[i..]);
+    (rest, calls)
+}
+
+// text with no read of memory or the CPU, short-circuit, condition or call (cpp.rs's inert, as the emitter writes it)
+fn inert_text(t: &str) -> bool {
+    !["->", "[", "?", "&&", "||", "guest::", "*", "frame", ".", "call_"].iter().any(|p| t.contains(p))
+}
+
+// `call_<address>(...)`: one call, the whole text
+fn whole_call(e: &str) -> bool {
+    let Some(open) = e.find('(') else { return false };
+    if !e.starts_with("call_") || !e[5..open].chars().all(|c| c.is_ascii_hexdigit()) || !e.ends_with(')') {
+        return false;
+    }
+    let mut depth = 0;
+    for (i, c) in e.char_indices().skip(open) {
+        match c {
+            '(' => depth += 1,
+            ')' => {
+                depth -= 1;
+                if depth == 0 {
+                    return i == e.len() - 1;
+                }
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
 // A value its single use takes in: `T x = e;` with x read on one later line only, once, in the same block, with no
 // loop start, label or shallower line between, none of e's variables assigned between, and (when e reads memory) only
-// assignments to plain variables between. The statements compute the same (the C++ is proved anyway).
-fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>, conditions_only: &HashSet<String>) -> String {
+// assignments to plain variables between. The statements compute the same (the C++ is proved anyway). A call's u32
+// result (the type every callee returns), or a value holding one, only into the next line, where reads_nested says
+// cpp.rs reads it.
+fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>, conditions_only: &HashSet<String>, named: &HashSet<String>) -> String {
     let mut lines: Vec<String> = body.lines().map(|l| l.to_string()).collect();
     let indent = |l: &str| (l.len() - l.trim_start().len()) / 4;
     let words = |t: &str| -> Vec<String> {
@@ -2609,11 +2783,19 @@ fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>, conditions_onl
             let Some((name, rhs)) = rest.split_once(" = ") else { continue };
             let rhs = rhs.split("  //").next().unwrap_or(rhs).trim_end();
             let Some(rhs) = rhs.strip_suffix(';') else { continue };
+            // (a value the names layer names keeps its name)
+            if named.contains(name) {
+                continue;
+            }
             // (a register read back from the CPU after a call: while nothing changes the CPU)
             let cpu_read = rhs.starts_with("guest::cpu()->") && rhs.ends_with(']') && !rhs.contains(' ');
+            let call = !cpu_read && ty == "u32" && whole_call(rhs);
+            // (a value holding a call, written there by an earlier fold: as a call, into the next line only)
+            let with_call = rhs.contains("call_");
             let memory = match foldable.get(name) {
-                Some(&m) => m,
+                Some(&m) => m || with_call,
                 None if cpu_read => false,
+                None if call => true,
                 None => continue,
             };
             let uses: Vec<usize> = (0..lines.len()).filter(|&i| i != d && mentions(&lines[i], name)).collect();
@@ -2622,6 +2804,9 @@ fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>, conditions_onl
             let at = indent(&line);
             let use_code = lines[u].split("  //").next().unwrap_or(&lines[u]).to_string();
             if u < d || use_code.matches(name).count() != 1 || indent(&lines[u]) < at || use_code.trim_start().starts_with('}') {
+                continue;
+            }
+            if with_call && !(u == d + 1 && indent(&lines[u]) == at) {
                 continue;
             }
             let operands = words(rhs);
@@ -2668,6 +2853,10 @@ fn fold_single_uses(body: &str, foldable: &HashMap<String, bool>, conditions_onl
             out.push_str(&use_code[last..]);
             let out = tidy_masks(&out);
             if out.trim().len() > 110 {
+                continue;
+            }
+            // (a line with a call inside an expression: as cpp.rs reads it)
+            if out.contains("call_") && !reads_nested(&out) {
                 continue;
             }
             let comment = lines[u][use_code.len()..].to_string();
@@ -3271,6 +3460,9 @@ fn register_list(mask: u32) -> String {
     (0..15).filter(|r| mask >> r & 1 != 0).map(|r| if r == 14 { "lr".to_string() } else { format!("r{}", r) }).collect::<Vec<_>>().join(", ")
 }
 
+// the comment the passes put on a line with a hex constant (no magic numbers); left out of the final text
+const ORIGINAL_TAG: &str = "  // (from the original)";
+
 pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
     // accesses through an argument register that still holds the argument read as its fields
     let f = &crate::values::arguments_in_addresses(&d.function);
@@ -3664,7 +3856,7 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         sinkable.into_iter().map(|(n, t)| match e.typed.get(&n) { Some(st) => (n, format!("gptr<{}>", st)), None => (n, t) }).collect();
     let body = kept_results(&body);
     let (body, sunk) = sink_declarations(&body, &sinkable);
-    let body = fold_single_uses(&body, &e.foldable, &e.conditions_only);
+    let body = fold_single_uses(&body, &e.foldable, &e.conditions_only, &named_values(f.address, &e.values));
     // (and every line's masks and bit tests, folded or not)
     let body: String = body.lines().map(|l| tidy_masks(l) + "\n").collect();
     let body = drop_unread_flags(&body);
@@ -3781,6 +3973,9 @@ pub fn emit(d: &crate::decompile::Decompiled) -> R<String> {
         )),
         None => out.push_str(&format!("GUEST_EXPORT(0x{:08x}, d_{:08x}::{});\n", addr, f.address, base)),
     }
+    // (the hex constants are the original's: the files say so once, tools/decomp/split.py, instead of every line;
+    // the passes above read the tag to keep such lines apart)
+    let out = out.replace(ORIGINAL_TAG, "");
     Ok(with_keys(&float_fields(&out), &e.values))
 }
 
