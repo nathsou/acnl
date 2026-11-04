@@ -1,6 +1,7 @@
 // Functions decompiled by tools/decomp (docs/decomp.md), each proved equal to the recompiled original (prove-cpp). The
 // names come from games/acnl/names (tools/decomp/names.py); the others are generated (d_<address>::f_<address>,
-// Object_<address>_<argument>, word_<offset>) and still to be chosen.
+// Object_<address>_<argument>, word_<offset>) and still to be chosen. Hexadecimal constants are the original's
+// (addresses, offsets, sizes and ids as the game has them).
 #include "guest/guest.hpp"
 
 #include <bit>
@@ -21,9 +22,9 @@ void NexTree__recycle_nodes_7f6f40(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7f6f40(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7f6f40(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -47,9 +48,9 @@ void NexTree__recycle_nodes_7f7aec(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7f7aec(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7f7aec(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -73,9 +74,9 @@ void NexTree__recycle_nodes_7f82c4(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7f82c4(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7f82c4(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -99,9 +100,9 @@ void NexTree__recycle_nodes_7f8960(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7f8960(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7f8960(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -125,9 +126,9 @@ void NexTree__recycle_nodes_7f94f4(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7f94f4(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7f94f4(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -151,9 +152,9 @@ void NexTree__recycle_nodes_7f9f44(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7f9f44(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7f9f44(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -177,9 +178,9 @@ void NexTree__recycle_nodes_7faacc(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7faacc(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7faacc(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -203,9 +204,9 @@ void NexTree__recycle_nodes_7fb4fc(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7fb4fc(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7fb4fc(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -231,11 +232,11 @@ void NexTree__recycle_string_nodes_7fc258(u32 nex_tree, u32 r1) {
     u32 r6 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_string_nodes_7fc258(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_string_nodes_7fc258(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r5_1 = r4;
-        u32 r7_1 = r4 + 0x10u;  // (from the original)
+        u32 r7_1 = r4 + 0x10u;
         r4 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r5_1 + 0xcu) = *gptr<u32>(r6 + 4u);  // (from the original)
+        *gptr<u32>(r5_1 + 0xcu) = *gptr<u32>(r6 + 4u);
         NexVariant__destroy(r7_1 + 8u);
         nn__nex__String__virtual_0(r7_1);
         *gptr<u32>(r6 + 4u) = r5_1;
@@ -262,12 +263,12 @@ void NexTree__recycle_string_nodes_7fcd40(u32 nex_tree, u32 r1) {
     u32 r6 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_string_nodes_7fcd40(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_string_nodes_7fcd40(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r1_2 = *gptr<u32>(r6 + 4u);
         u32 r5_1 = r4;
-        u32 r7_1 = r4 + 0x10u;  // (from the original)
+        u32 r7_1 = r4 + 0x10u;
         r4 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
+        *gptr<u32>(r5_1 + 0xcu) = r1_2;
         nex_free(*gptr<u32>(r7_1 + 8u), r1_2);
         nn__nex__String__virtual_0(r7_1);
         *gptr<u32>(r6 + 4u) = r5_1;
@@ -292,12 +293,12 @@ void NexTree__recycle_string_nodes_7fd790(u32 nex_tree, u32 r1) {
     u32 r6 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_string_nodes_7fd790(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_string_nodes_7fd790(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r1_2 = *gptr<u32>(r6 + 4u);
         u32 r5_1 = r4;
-        u32 r0_1 = r4 + 0x10u;  // (from the original)
+        u32 r0_1 = r4 + 0x10u;
         r4 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
+        *gptr<u32>(r5_1 + 0xcu) = r1_2;
         nn__nex__String__virtual_0(r0_1, r1_2);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
@@ -322,11 +323,11 @@ void NexTree__recycle_string_nodes_7fe0ac(u32 nex_tree, u32 r1) {
     u32 r6 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_string_nodes_7fe0ac(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_string_nodes_7fe0ac(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r5_1 = r4;
-        u32 r7_1 = r4 + 0x10u;  // (from the original)
+        u32 r7_1 = r4 + 0x10u;
         r4 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r5_1 + 0xcu) = *gptr<u32>(r6 + 4u);  // (from the original)
+        *gptr<u32>(r5_1 + 0xcu) = *gptr<u32>(r6 + 4u);
         nn__nex__String__virtual_0(r7_1 + 8u);
         nn__nex__String__virtual_0(r7_1);
         *gptr<u32>(r6 + 4u) = r5_1;
@@ -351,12 +352,12 @@ void NexTree__recycle_string_nodes_7fed54(u32 nex_tree, u32 r1) {
     u32 r6 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_string_nodes_7fed54(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_string_nodes_7fed54(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r1_2 = *gptr<u32>(r6 + 4u);
         u32 r5_1 = r4;
-        u32 r0_1 = r4 + 0x10u;  // (from the original)
+        u32 r0_1 = r4 + 0x10u;
         r4 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
+        *gptr<u32>(r5_1 + 0xcu) = r1_2;
         nn__nex__String__virtual_0(r0_1, r1_2);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
@@ -380,9 +381,9 @@ void NexTree__recycle_nodes_7ff900(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_7ff900(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_7ff900(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();

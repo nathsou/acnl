@@ -1,6 +1,7 @@
 // Functions decompiled by tools/decomp (docs/decomp.md), each proved equal to the recompiled original (prove-cpp). The
 // names come from games/acnl/names (tools/decomp/names.py); the others are generated (d_<address>::f_<address>,
-// Object_<address>_<argument>, word_<offset>) and still to be chosen.
+// Object_<address>_<argument>, word_<offset>) and still to be chosen. Hexadecimal constants are the original's
+// (addresses, offsets, sizes and ids as the game has them).
 #include "guest/guest.hpp"
 #include "player/slot_object.hpp"
 #include "recovered/structs.hpp"
@@ -69,13 +70,13 @@ GUEST_OFFSET(AcPlayer, word_878, 0x878);
 GUEST_OFFSET(AcPlayer, word_87c, 0x87c);
 GUEST_OFFSET(AcPlayer, word_880, 0x880);
 
-struct __attribute__((packed)) Object_0067349c_1 {
+struct __attribute__((packed)) AcPlayerSetMoveAndMarkCellsArg1 {
     u32 word_0;
     u8 unknown_4[0x4];  // (not used here)
     u32 word_8;
 };
-GUEST_OFFSET(Object_0067349c_1, word_0, 0x0);
-GUEST_OFFSET(Object_0067349c_1, word_8, 0x8);
+GUEST_OFFSET(AcPlayerSetMoveAndMarkCellsArg1, word_0, 0x0);
+GUEST_OFFSET(AcPlayerSetMoveAndMarkCellsArg1, word_8, 0x8);
 
 struct __attribute__((packed)) Local_0067349c_r0_4 {
     u8 byte_0;
@@ -85,16 +86,16 @@ GUEST_OFFSET(Local_0067349c_r0_4, byte_0, 0x0);
 inline constexpr u32 changed_cells_a_address = 0x00aadaf4u;
 inline constexpr guest::Function<0x003171b4, u32(u32, u32, u32, u32)> position_to_cell;
 
-struct __attribute__((packed)) Frame_0067349c {
+struct __attribute__((packed)) AcPlayerSetMoveAndMarkCellsFrame {
     u32 word_0;
     u32 word_4;
 };
-GUEST_OFFSET(Frame_0067349c, word_0, 0x0);
-GUEST_OFFSET(Frame_0067349c, word_4, 0x4);
-GUEST_SIZE(Frame_0067349c, 0x8);
+GUEST_OFFSET(AcPlayerSetMoveAndMarkCellsFrame, word_0, 0x0);
+GUEST_OFFSET(AcPlayerSetMoveAndMarkCellsFrame, word_4, 0x4);
+GUEST_SIZE(AcPlayerSetMoveAndMarkCellsFrame, 0x8);
 
-void AcPlayer__set_move_and_mark_cells(gptr<AcPlayer> ac_player, gptr<Object_0067349c_1> arg1) {
-    guest::StackFrameOf<Frame_0067349c> frame;  // the original's stack frame
+void AcPlayer__set_move_and_mark_cells(gptr<AcPlayer> ac_player, gptr<AcPlayerSetMoveAndMarkCellsArg1> arg1) {
+    guest::StackFrameOf<AcPlayerSetMoveAndMarkCellsFrame> frame;  // the original's stack frame
     u32 r1 = arg1.addr();
     ac_player->byte_870 = 9;
     ac_player->word_874 = ac_player->word_47c;
@@ -104,29 +105,29 @@ void AcPlayer__set_move_and_mark_cells(gptr<AcPlayer> ac_player, gptr<Object_006
     ac_player->word_880 = arg1->word_8;
     position_to_cell(frame.at(0).addr(), frame.at(4).addr(), r1, r3_1);
     r1 = changed_cells_a_address;
-    u32 r3 = ~0u;
+    u32 j = ~0u;
     u32 r12 = 1u;
     do {
-        u32 r2 = ~0u;
+        u32 i = ~0u;
         do {
-            u32 r0_2 = frame->word_0 + r2;
-            u32 cf_1 = r0_2 >= 0x70u;  // (from the original)
-            u32 r4_1 = frame->word_4 + r3;
+            u32 r0_2 = frame->word_0 + i;
+            u32 cf_1 = r0_2 >= 0x70u;
+            u32 r4_1 = frame->word_4 + j;
             if (!cf_1) {
-                cf_1 = r4_1 >= 0x70u;  // (from the original)
+                cf_1 = r4_1 >= 0x70u;
             }
-            u32 r0_3 = cf_1 ? 0x3100u : r0_2 + r4_1 * 0x70u;  // (from the original)
-            if (r0_3 < 0x3100u) {  // (from the original)
+            u32 r0_3 = cf_1 ? 0x3100u : r0_2 + r4_1 * 0x70u;
+            if (r0_3 < 0x3100u) {
                 gptr<Local_0067349c_r0_4> r0_4 = gptr<Local_0067349c_r0_4>(r1 + (r0_3 >> 3));
-                r0_4->byte_0 = u8(u32(r0_4->byte_0) | lsl_r(r12, (r0_3 & 7u) & 0xff));  // (from the original)
-                *gptr<u8>(r1 + 0x620u) = u8(r12);  // (from the original)
+                r0_4->byte_0 = u8(u32(r0_4->byte_0) | lsl_r(r12, (r0_3 & 7u) & 0xff));
+                *gptr<u8>(r1 + 0x620u) = u8(r12);
             }
-            r2 += 1u;
+            i += 1u;
             guest::preempt();
-        } while (s32(r2) <= 1);
-        r3 += 1u;
+        } while (s32(i) <= 1);
+        j += 1u;
         guest::preempt();
-    } while (s32(r3) <= 1);
+    } while (s32(j) <= 1);
 }
 
 }  // namespace d_0067349c
@@ -243,18 +244,18 @@ inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_r
 inline constexpr guest::Function<0x00656c20, u32(u32)> state_params_with_8bc;
 inline constexpr guest::Function<0x00723af8, u32(u32, u32, u32, u32)> masked_byte_723af8;
 
-struct __attribute__((packed)) Frame_006739b8 {
+struct __attribute__((packed)) AcPlayerStartStateByKindFrame {
     u16 half_0;
     u8 unknown_2[0xa];  // (not read or written by name)
     u32 word_c;
     u8 unknown_10[0x28];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_006739b8, half_0, 0x0);
-GUEST_OFFSET(Frame_006739b8, word_c, 0xc);
-GUEST_SIZE(Frame_006739b8, 0x38);
+GUEST_OFFSET(AcPlayerStartStateByKindFrame, half_0, 0x0);
+GUEST_OFFSET(AcPlayerStartStateByKindFrame, word_c, 0xc);
+GUEST_SIZE(AcPlayerStartStateByKindFrame, 0x38);
 
 u32 AcPlayer__start_state_by_kind(u32 ac_player, u32 r1, u32 r2, u32 r3) {
-    guest::StackFrameOf<Frame_006739b8> frame;  // the original's stack frame
+    guest::StackFrameOf<AcPlayerStartStateByKindFrame> frame;  // the original's stack frame
     u32 r4 = guest::cpu()->r[4];
     u32 r5 = guest::cpu()->r[5];
     u32 r6 = guest::cpu()->r[6];
@@ -279,22 +280,22 @@ u32 AcPlayer__start_state_by_kind(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     ea_1->word_28 = r10;
     ea_1->word_2c = r11;
     ea_1->word_30 = r14;
-    gptr<Local_006739b8_ea_2> ea_2 = gptr<Local_006739b8_ea_2>(frame.at(0x40).addr());  // (from the original)
+    gptr<Local_006739b8_ea_2> ea_2 = gptr<Local_006739b8_ea_2>(frame.at(0x40).addr());
     u32 r5_1 = ea_2->word_0;
     u32 r8_1 = ea_2->word_4;
     u32 r10_1 = ea_2->word_8;
-    gptr<Local_006739b8_ea_3> ea_3 = gptr<Local_006739b8_ea_3>(frame.at(0x38).addr());  // (from the original)
+    gptr<Local_006739b8_ea_3> ea_3 = gptr<Local_006739b8_ea_3>(frame.at(0x38).addr());
     u32 r7_1 = ea_3->word_0;
     u32 r9_1 = ea_3->word_4;
-    u32 r0_2 = masked_byte_723af8(ac_player + 0x68u, r1, r2, r3);  // (from the original)
-    if (r0_2 == 0 && r1 != 0 && r1 < 0x41u) {  // (from the original)
-        u32 params_2 = state_params_with_8bc(ac_player);
-        gptr<Local_006739b8_ea_4> ea_4 = gptr<Local_006739b8_ea_4>(params_2 + 0xeu);  // (from the original)
+    u32 r0_2 = masked_byte_723af8(ac_player + 0x68u, r1, r2, r3);
+    if (r0_2 == 0 && r1 != 0 && r1 < 0x41u) {
+        u32 params = state_params_with_8bc(ac_player);
+        gptr<Local_006739b8_ea_4> ea_4 = gptr<Local_006739b8_ea_4>(params + 0xeu);
         ea_4->byte_0 = u8(r1);
         ea_4->byte_1 = u8(frame->word_c);
         ea_4->byte_2 = u8(r3);
         ea_4->byte_3 = u8(r7_1);
-        *gptr<u8>(params_2 + 0x14u) = u8(r8_1);  // (from the original)
+        *gptr<u8>(params + 0x14u) = u8(r8_1);
         ea_4->byte_7 = u8(u32(ea_4->byte_7) & ~1u | r9_1);
         if (r5_1 != 0) {
             u32 r1_2 = *gptr<u16>(r5_1);
@@ -302,13 +303,13 @@ u32 AcPlayer__start_state_by_kind(u32 ac_player, u32 r1, u32 r2, u32 r3) {
             ea_4->half_4 = u16(r1_2);
             r1_3 = u32(ea_4->byte_7) | 2u;
         } else {
-            u32 r1_4 = *gptr<u16>(ac_player + 0x2eu);  // (from the original)
+            u32 r1_4 = *gptr<u16>(ac_player + 0x2eu);
             frame->half_0 = u16(r1_4);
             ea_4->half_4 = u16(r1_4);
             r1_3 = u32(ea_4->byte_7) & ~2u;
         }
-        ea_4->byte_7 = u8(r1_3 & 0xfbu | r10_1 << 2);  // (from the original)
-        gptr<Local_006739b8_ea_5> ea_5 = gptr<Local_006739b8_ea_5>(frame.at(0x14).addr());  // (from the original)
+        ea_4->byte_7 = u8(r1_3 & 0xfbu | r10_1 << 2);
+        gptr<Local_006739b8_ea_5> ea_5 = gptr<Local_006739b8_ea_5>(frame.at(0x14).addr());
         u32 r4_1 = ea_5->word_0;
         u32 r5_2 = ea_5->word_4;
         u32 r6_1 = ea_5->word_8;
@@ -327,9 +328,9 @@ u32 AcPlayer__start_state_by_kind(u32 ac_player, u32 r1, u32 r2, u32 r3) {
         guest::cpu()->r[10] = r10_2;
         guest::cpu()->r[11] = r11_1;
         frame.release();
-        return AcPlayer_rec__change_state(ac_player, 0xafu, params_2, 0u);  // (from the original)
+        return AcPlayer_rec__change_state(ac_player, 0xafu, params, 0u);
     }
-    gptr<Local_006739b8_ea_6> ea_6 = gptr<Local_006739b8_ea_6>(frame.at(0x14).addr());  // (from the original)
+    gptr<Local_006739b8_ea_6> ea_6 = gptr<Local_006739b8_ea_6>(frame.at(0x14).addr());
     u32 r4_2 = ea_6->word_0;
     u32 r5_3 = ea_6->word_4;
     u32 r6_2 = ea_6->word_8;
@@ -356,20 +357,20 @@ GUEST_EXPORT(0x006739b8, d_006739b8::AcPlayer__start_state_by_kind);
 // Changes the player's state to 0x8e with the value.
 namespace d_00673a94 {
 
-struct __attribute__((packed)) Object_00673a94_1 {
+struct __attribute__((packed)) AcPlayerStartState8eArg1 {
     u32 word_0;
 };
-GUEST_OFFSET(Object_00673a94_1, word_0, 0x0);
+GUEST_OFFSET(AcPlayerStartState8eArg1, word_0, 0x0);
 
 inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_rec__change_state;
 inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_params_with_8bc;
 
-u32 AcPlayer__start_state_8e(u32 ac_player, gptr<Object_00673a94_1> arg1, u32 r2, u32 r3) {
+u32 AcPlayer__start_state_8e(u32 ac_player, gptr<AcPlayerStartState8eArg1> arg1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 params_2 = state_params_with_8bc(ac_player, arg1.addr(), r2, r3);
-    *gptr<u32>(params_2 + 0xeu) = arg1->word_0;  // (from the original)
+    u32 params = state_params_with_8bc(ac_player, arg1.addr(), r2, r3);
+    *gptr<u32>(params + 0xeu) = arg1->word_0;
     frame.release();
-    return AcPlayer_rec__change_state(ac_player, 0x8eu, params_2, 0u);  // (from the original)
+    return AcPlayer_rec__change_state(ac_player, 0x8eu, params, 0u);
 }
 
 }  // namespace d_00673a94
@@ -379,19 +380,19 @@ GUEST_EXPORT(0x00673a94, d_00673a94::AcPlayer__start_state_8e);
 // Changes the player's state to 0x33 at the position (in quarter units), the angle and the value.
 namespace d_00673ac4 {
 
-struct __attribute__((packed)) Object_00673ac4_1 {
+struct __attribute__((packed)) AcPlayerStartState33Arg1 {
     float float_0;
     float float_4;
     float float_8;
 };
-GUEST_OFFSET(Object_00673ac4_1, float_0, 0x0);
-GUEST_OFFSET(Object_00673ac4_1, float_4, 0x4);
-GUEST_OFFSET(Object_00673ac4_1, float_8, 0x8);
+GUEST_OFFSET(AcPlayerStartState33Arg1, float_0, 0x0);
+GUEST_OFFSET(AcPlayerStartState33Arg1, float_4, 0x4);
+GUEST_OFFSET(AcPlayerStartState33Arg1, float_8, 0x8);
 
-struct __attribute__((packed)) Object_00673ac4_2 {
+struct __attribute__((packed)) AcPlayerStartState33Arg2 {
     u16 half_0;
 };
-GUEST_OFFSET(Object_00673ac4_2, half_0, 0x0);
+GUEST_OFFSET(AcPlayerStartState33Arg2, half_0, 0x0);
 
 struct __attribute__((packed)) Local_00673ac4_ea_1 {
     u32 word_0;
@@ -432,15 +433,15 @@ GUEST_OFFSET(Local_00673ac4_ea_9, word_10, 0x10);
 inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_rec__change_state;
 inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_params_with_8bc;
 
-struct __attribute__((packed)) Frame_00673ac4 {
+struct __attribute__((packed)) AcPlayerStartState33Frame {
     u16 half_0;
     u8 unknown_2[0x16];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_00673ac4, half_0, 0x0);
-GUEST_SIZE(Frame_00673ac4, 0x18);
+GUEST_OFFSET(AcPlayerStartState33Frame, half_0, 0x0);
+GUEST_SIZE(AcPlayerStartState33Frame, 0x18);
 
-void AcPlayer__start_state_33(u32 ac_player, gptr<Object_00673ac4_1> arg1, gptr<Object_00673ac4_2> arg2, u32 r3, float S0, float S1) {
-    guest::StackFrameOf<Frame_00673ac4> frame;  // the original's stack frame
+void AcPlayer__start_state_33(u32 ac_player, gptr<AcPlayerStartState33Arg1> arg1, gptr<AcPlayerStartState33Arg2> arg2, u32 r3, float S0, float S1) {
+    guest::StackFrameOf<AcPlayerStartState33Frame> frame;  // the original's stack frame
     u32 r4 = guest::cpu()->r[4];
     u32 r5 = guest::cpu()->r[5];
     u32 r6 = guest::cpu()->r[6];
@@ -453,11 +454,11 @@ void AcPlayer__start_state_33(u32 ac_player, gptr<Object_00673ac4_1> arg1, gptr<
     ea_1->word_c = r6;
     ea_1->word_10 = r7;
     ea_1->word_14 = r14;
-    u32 params_2 = state_params_with_8bc(ac_player, arg1.addr(), arg2.addr(), r3);
+    u32 params = state_params_with_8bc(ac_player, arg1.addr(), arg2.addr(), r3);
     float S0_1 = 4.0f;
     u32 r1_1 = vcvt_sz_f(arg1->float_0 * S0_1);
     frame->half_0 = u16(r1_1);
-    gptr<Local_00673ac4_ea_3> ea_3 = gptr<Local_00673ac4_ea_3>(params_2 + 0xeu);  // (from the original)
+    gptr<Local_00673ac4_ea_3> ea_3 = gptr<Local_00673ac4_ea_3>(params + 0xeu);
     ea_3->half_0 = u16(r1_1);
     u32 r3_1 = vcvt_sz_f(arg1->float_4 * S0_1);
     frame->half_0 = u16(r3_1);
@@ -467,7 +468,7 @@ void AcPlayer__start_state_33(u32 ac_player, gptr<Object_00673ac4_1> arg1, gptr<
     u32 r3_2 = std::bit_cast<u32>(S0_2);
     frame->half_0 = u16(r3_2);
     *gptr<u16>(ea_3.addr() + 4u) = u16(r3_2);
-    *gptr<u8>(params_2 + 0x14u) = u8(u32(s32(u32(arg2->half_0)) >> 8));  // (from the original)
+    *gptr<u8>(params + 0x14u) = u8(u32(s32(u32(arg2->half_0)) >> 8));
     ea_3->byte_7 = u8(r3);
     gptr<Local_00673ac4_ea_9> ea_9 = gptr<Local_00673ac4_ea_9>(frame.at(4).addr());
     u32 r4_1 = ea_9->word_0;
@@ -482,7 +483,7 @@ void AcPlayer__start_state_33(u32 ac_player, gptr<Object_00673ac4_1> arg1, gptr<
     guest::cpu()->r[6] = r6_1;
     guest::cpu()->r[7] = r7_1;
     frame.release();
-    AcPlayer_rec__change_state(ac_player, 0x33u, params_2, 0u);
+    AcPlayer_rec__change_state(ac_player, 0x33u, params, 0u);
     return;
 }
 
@@ -507,14 +508,14 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 void AcPlayer__start_state_6a(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x18);  // the original's stack frame
-    u32 params_2 = state_params_with_8bc(ac_player, r1, r2, r3);
-    gptr<Local_00673b5c_ea_1> ea_1 = gptr<Local_00673b5c_ea_1>(params_2 + 0xeu);  // (from the original)
+    u32 params = state_params_with_8bc(ac_player, r1, r2, r3);
+    gptr<Local_00673b5c_ea_1> ea_1 = gptr<Local_00673b5c_ea_1>(params + 0xeu);
     ea_1->byte_0 = u8(r1);
     ea_1->byte_1 = u8(r2);
     ea_1->byte_2 = u8(r3);
     frame.release();
-    AcPlayer_rec__change_state(ac_player, 0x6au, params_2, 0u);
-    return;  // (from the original)
+    AcPlayer_rec__change_state(ac_player, 0x6au, params, 0u);
+    return;
 }
 
 }  // namespace d_00673b5c
@@ -538,7 +539,7 @@ inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_r
 inline constexpr guest::Function<0x006651b4, u32(u32, u32)> AcPlayer__start_state_9d;
 
 void AcPlayer__update_wake(gptr<AcPlayer_rec> ac_player_rec, u32 r1_unused, u32 r2, u32 r3) {
-    gptr<Local_006742c0_r4_1> r4_1 = gptr<Local_006742c0_r4_1>(ac_player_rec.addr() + 0x171u);  // (from the original)
+    gptr<Local_006742c0_r4_1> r4_1 = gptr<Local_006742c0_r4_1>(ac_player_rec.addr() + 0x171u);
     if ((u32(ac_player_rec->flags) >> 5u & 1u) != 0) {
         u32 wake_flags = ac_player_rec->wake_flags;
         if ((wake_flags & 1u) != 0) {
@@ -556,7 +557,7 @@ void AcPlayer__update_wake(gptr<AcPlayer_rec> ac_player_rec, u32 r1_unused, u32 
             } else {
                 if ((r0_2 >> 1u & 1u) != 0) {
                     r4_1->byte_7 = u8(r0_2 & ~2u);
-                    AcPlayer_rec__change_state(ac_player_rec.addr(), 0xe0u, 0u, 0u);  // (from the original)
+                    AcPlayer_rec__change_state(ac_player_rec.addr(), 0xe0u, 0u, 0u);
                 }
             }
         }
@@ -576,8 +577,7 @@ inline constexpr guest::Function<0x001b7b90, u32(u32)> report_area_visit;
 inline constexpr guest::Function<0x0064f068, u32(u32, u32, u32, u32)> Tour__is_kind;
 
 u32 TourResult__report_visit_if_new() {
-    u32 r0_1 = Tour__is_kind(9u, 0x40u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    if (r0_1 == 0) {
+    if (Tour__is_kind(9u, 0x40u, guest::cpu()->r[2], guest::cpu()->r[3]) == 0) {
         return 1u;
     }
     u32 r0_2 = *tour_result_instance;
@@ -606,10 +606,10 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 void AcPlayer__start_state_e2(gptr<SlotObject> slot_object, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x20);  // the original's stack frame
-    u32 params_2 = state_params_with_8bc(slot_object.addr(), r1, r2, r3);
-    gptr<Local_00678300_r4_1> r4_1 = gptr<Local_00678300_r4_1>(params_2 + 0xeu);  // (from the original)
-    *gptr<u8>(params_2 + 0x13u) = u8(r3);  // (from the original)
-    float3_xz_to_short2_a(r4_1.addr(), slot_object.addr() + 0x14u);  // (from the original)
+    u32 params = state_params_with_8bc(slot_object.addr(), r1, r2, r3);
+    gptr<Local_00678300_r4_1> r4_1 = gptr<Local_00678300_r4_1>(params + 0xeu);
+    *gptr<u8>(params + 0x13u) = u8(r3);
+    float3_xz_to_short2_a(r4_1.addr(), slot_object.addr() + 0x14u);
     r4_1->byte_4 = u8(u32(s32(u32(slot_object->angles[1])) >> 8));
     if (r1 != 0) {
         float3_xz_to_short2_a(r4_1.addr(), r1);
@@ -618,8 +618,8 @@ void AcPlayer__start_state_e2(gptr<SlotObject> slot_object, u32 r1, u32 r2, u32 
         r4_1->byte_4 = u8(u32(s32(u32(*gptr<u16>(r2))) >> 8));
     }
     frame.release();
-    AcPlayer_rec__change_state(slot_object.addr(), 0xe2u, params_2, 0u);
-    return;  // (from the original)
+    AcPlayer_rec__change_state(slot_object.addr(), 0xe2u, params, 0u);
+    return;
 }
 
 }  // namespace d_00678300
@@ -640,12 +640,12 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 void AcPlayer__start_state_88(gptr<AcPlayer> ac_player, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x10);  // the original's stack frame
-    if (ac_player->byte_1a9 != 0x88u) {  // (from the original)
-        u32 params_2 = state_params_with_8bc(ac_player.addr(), r1, r2, r3);
-        *gptr<u8>(params_2 + 0xeu) = u8(r1);  // (from the original)
+    if (ac_player->byte_1a9 != 0x88u) {
+        u32 params = state_params_with_8bc(ac_player.addr(), r1, r2, r3);
+        *gptr<u8>(params + 0xeu) = u8(r1);
         frame.release();
-        AcPlayer_rec__change_state(ac_player.addr(), 0x88u, params_2, 0u);
-        return;  // (from the original)
+        AcPlayer_rec__change_state(ac_player.addr(), 0x88u, params, 0u);
+        return;
     }
     guest::cpu()->r[1] = r1;
 }
@@ -670,10 +670,10 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 u32 AcPlayer__start_state_89(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x20);  // the original's stack frame
-    u32 params_2 = state_params_with_8bc(ac_player, r1, r2, r3);
-    gptr<Local_006783c0_r4_1> r4_1 = gptr<Local_006783c0_r4_1>(params_2 + 0xeu);  // (from the original)
-    *gptr<u8>(params_2 + 0xeu) = u8(r1);  // (from the original)
-    u32 r5_1 = r3 >> 8u & 0xffu;  // (from the original)
+    u32 params = state_params_with_8bc(ac_player, r1, r2, r3);
+    gptr<Local_006783c0_r4_1> r4_1 = gptr<Local_006783c0_r4_1>(params + 0xeu);
+    *gptr<u8>(params + 0xeu) = u8(r1);
+    u32 r5_1 = r3 >> 8u & 0xffu;
     if (r2 != 0) {
         float3_xz_to_short2_a(r4_1.addr() + 1u, r2);
         r4_1->byte_5 = u8(r5_1);
@@ -682,7 +682,7 @@ u32 AcPlayer__start_state_89(u32 ac_player, u32 r1, u32 r2, u32 r3) {
         r4_1->byte_5 = u8(r5_1);
     }
     frame.release();
-    return AcPlayer_rec__change_state(ac_player, 0x89u, params_2, 0u);  // (from the original)
+    return AcPlayer_rec__change_state(ac_player, 0x89u, params, 0u);
 }
 
 }  // namespace d_006783c0
@@ -719,12 +719,12 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 void AcPlayer__start_state_50(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x20);  // the original's stack frame
-    gptr<Local_00678434_ea_1> ea_1 = gptr<Local_00678434_ea_1>(frame.at(0x20).addr());  // (from the original)
+    gptr<Local_00678434_ea_1> ea_1 = gptr<Local_00678434_ea_1>(frame.at(0x20).addr());
     u32 r4_1 = ea_1->word_0;
     u32 r5_1 = ea_1->word_4;
-    u32 params_2 = state_params_with_8bc(ac_player, r1, r2, r3);
-    gptr<Local_00678434_r0_2> r0_2 = gptr<Local_00678434_r0_2>(params_2 + 0xeu);  // (from the original)
-    *gptr<u8>(params_2 + 0x14u) = 0;  // (from the original)
+    u32 params = state_params_with_8bc(ac_player, r1, r2, r3);
+    gptr<Local_00678434_r0_2> r0_2 = gptr<Local_00678434_r0_2>(params + 0xeu);
+    *gptr<u8>(params + 0x14u) = 0;
     r0_2->byte_8 = u8(r5_1);
     r0_2->word_2 = *gptr<u32>(r4_1);
     r0_2->byte_0 = u8(r1);
@@ -732,8 +732,8 @@ void AcPlayer__start_state_50(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     r0_2->byte_7 = 0;
     float3_xz_to_short2_a(r0_2.addr() + 9u, r3, 0u);
     frame.release();
-    AcPlayer_rec__change_state(ac_player, 0x50u, params_2, 0u);
-    return;  // (from the original)
+    AcPlayer_rec__change_state(ac_player, 0x50u, params, 0u);
+    return;
 }
 
 }  // namespace d_00678434
@@ -768,7 +768,7 @@ inline constexpr u32 effect_spawn_context_address = 0x00ae5664u;
 inline constexpr guest::Function<0x002073dc, u32(u32, u32, u32, u32)> EffectHandle__start;
 inline constexpr guest::Function<0x0070ac68, u32(u32, u32, u32, u32)> Model__joint_matrix;
 
-struct __attribute__((packed)) Frame_006784dc {
+struct __attribute__((packed)) AcPlayerStartHandEffectsFrame {
     u32 word_0;
     u32 word_4;
     u32 word_8;
@@ -777,42 +777,42 @@ struct __attribute__((packed)) Frame_006784dc {
     u16 half_10;
     u8 unknown_12[0x6];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_006784dc, word_0, 0x0);
-GUEST_OFFSET(Frame_006784dc, word_4, 0x4);
-GUEST_OFFSET(Frame_006784dc, word_8, 0x8);
-GUEST_OFFSET(Frame_006784dc, half_c, 0xc);
-GUEST_OFFSET(Frame_006784dc, half_e, 0xe);
-GUEST_OFFSET(Frame_006784dc, half_10, 0x10);
-GUEST_SIZE(Frame_006784dc, 0x18);
+GUEST_OFFSET(AcPlayerStartHandEffectsFrame, word_0, 0x0);
+GUEST_OFFSET(AcPlayerStartHandEffectsFrame, word_4, 0x4);
+GUEST_OFFSET(AcPlayerStartHandEffectsFrame, word_8, 0x8);
+GUEST_OFFSET(AcPlayerStartHandEffectsFrame, half_c, 0xc);
+GUEST_OFFSET(AcPlayerStartHandEffectsFrame, half_e, 0xe);
+GUEST_OFFSET(AcPlayerStartHandEffectsFrame, half_10, 0x10);
+GUEST_SIZE(AcPlayerStartHandEffectsFrame, 0x18);
 
 void AcPlayer__start_hand_effects(gptr<AcPlayer> ac_player) {
-    guest::StackFrameOf<Frame_006784dc> frame;  // the original's stack frame
+    guest::StackFrameOf<AcPlayerStartHandEffectsFrame> frame;  // the original's stack frame
     u32 r1_2 = 0;
     u32 r0_1 = ac_player->half_2e;
     frame->half_c = 0;
     frame->half_e = u16(r0_1);
     frame->half_10 = 0;
     u32 r0_2 = ac_player->word_a58;
-    if (r0_2 == 0 || ac_player->word_a5c != *gptr<u32>(r0_2 + 0xcu)) {  // (from the original)
-        Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x430u, ac_player->word_260, 1u);  // (from the original)
+    if (r0_2 == 0 || ac_player->word_a5c != *gptr<u32>(r0_2 + 0xcu)) {
+        Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x430u, ac_player->word_260, 1u);
         frame->word_8 = 0;
         frame->word_4 = 1;
-        frame->word_0 = 0xae5664;  // (from the original)
-        EffectHandle__start(ac_player.addr() + 0xa4cu, 0x148u, ac_player.addr() + 0x430u, frame.at(0xc).addr());  // (from the original)
+        frame->word_0 = 0xae5664;
+        EffectHandle__start(ac_player.addr() + 0xa4cu, 0x148u, ac_player.addr() + 0x430u, frame.at(0xc).addr());
     }
     u32 r0_5 = ac_player->word_a70;
     if (r0_5 != 0) {
         r1_2 = ac_player->word_a74;
-        if (r1_2 == *gptr<u32>(r0_5 + 0xcu)) {  // (from the original)
+        if (r1_2 == *gptr<u32>(r0_5 + 0xcu)) {
             guest::cpu()->r[1] = r1_2;
             return;
         }
     }
-    Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x43cu, ac_player->word_264, 1u);  // (from the original)
+    Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x43cu, ac_player->word_264, 1u);
     frame->word_8 = 0;
     frame->word_4 = 1;
-    frame->word_0 = 0xae5664;  // (from the original)
-    EffectHandle__start(ac_player.addr() + 0xa64u, 0x148u, ac_player.addr() + 0x43cu, frame.at(0xc).addr());  // (from the original)
+    frame->word_0 = 0xae5664;
+    EffectHandle__start(ac_player.addr() + 0xa64u, 0x148u, ac_player.addr() + 0x43cu, frame.at(0xc).addr());
     r1_2 = guest::cpu()->r[1];
 }
 
@@ -849,14 +849,14 @@ inline constexpr guest::Function<0x001d2e8c, u32(u32, u32, u32)> set_face_and_ha
 inline constexpr guest::Function<0x001d32c8, u32(u32, u32)> copy_item_set;
 
 u32 AcPlayer__restore_outfit(gptr<AcPlayer> ac_player) {
-    copy_item_set(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x920u);  // (from the original)
+    copy_item_set(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x920u);
     u32 r2_1 = ac_player->word_944;
     u32 r1_2 = ac_player->byte_942;
-    set_face_and_hair(ac_player.addr() + 0x1b4u, r1_2, r2_1);  // (from the original)
+    set_face_and_hair(ac_player.addr() + 0x1b4u, r1_2, r2_1);
     ac_player->word_3e0 = ac_player->word_948;
     u32 r0_3 = ac_player->byte_94c;
     ac_player->byte_3e8 = u8(r0_3);
-    u32 r1_3 = u32(ac_player->byte_173) | 8u | 0x20u;  // (from the original)
+    u32 r1_3 = u32(ac_player->byte_173) | 8u | 0x20u;
     ac_player->byte_173 = u8(r1_3);
     guest::cpu()->r[1] = r1_3;
     return r0_3;
@@ -910,8 +910,7 @@ inline constexpr guest::Function<0x0064f068, u32(u32, u32, u32, u32)> Tour__is_k
 
 void TourResult__notify_if_flag() {
     guest::StackFrame frame(0x8);  // the original's stack frame
-    u32 r0_1 = Tour__is_kind(9u, 0x40u, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-    if (r0_1 == 0) {
+    if (Tour__is_kind(9u, 0x40u, guest::cpu()->r[2], guest::cpu()->r[3]) == 0) {
         return;
     }
     u32 r0_2 = *tour_result_instance;
@@ -954,19 +953,19 @@ GUEST_OFFSET(AcPlayer, word_a74, 0xa74);
 inline constexpr guest::Function<0x002e6500, u32(u32, u32, u32, u32)> EffectHandle__move_to;
 inline constexpr guest::Function<0x0070ac68, u32(u32, u32, u32, u32)> Model__joint_matrix;
 
-struct __attribute__((packed)) Frame_0067bda8 {
+struct __attribute__((packed)) AcPlayerMoveHandEffectsFrame {
     u16 half_0;
     u16 half_2;
     u16 half_4;
     u8 unknown_6[0x6];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_0067bda8, half_0, 0x0);
-GUEST_OFFSET(Frame_0067bda8, half_2, 0x2);
-GUEST_OFFSET(Frame_0067bda8, half_4, 0x4);
-GUEST_SIZE(Frame_0067bda8, 0xc);
+GUEST_OFFSET(AcPlayerMoveHandEffectsFrame, half_0, 0x0);
+GUEST_OFFSET(AcPlayerMoveHandEffectsFrame, half_2, 0x2);
+GUEST_OFFSET(AcPlayerMoveHandEffectsFrame, half_4, 0x4);
+GUEST_SIZE(AcPlayerMoveHandEffectsFrame, 0xc);
 
 void AcPlayer__move_hand_effects(gptr<AcPlayer> ac_player) {
-    guest::StackFrameOf<Frame_0067bda8> frame;  // the original's stack frame
+    guest::StackFrameOf<AcPlayerMoveHandEffectsFrame> frame;  // the original's stack frame
     u32 r1_1 = ac_player->half_2e;
     frame->half_0 = 0;
     frame->half_2 = u16(r1_1);
@@ -974,9 +973,9 @@ void AcPlayer__move_hand_effects(gptr<AcPlayer> ac_player) {
     u32 r0_1 = ac_player->word_a58;
     if (r0_1 != 0) {
         r1_1 = ac_player->word_a5c;
-        if (r1_1 == *gptr<u32>(r0_1 + 0xcu)) {  // (from the original)
-            Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x430u, ac_player->word_260, 1u);  // (from the original)
-            EffectHandle__move_to(ac_player.addr() + 0xa4cu, ac_player.addr() + 0x430u, frame.at(0).addr(), 1u);  // (from the original)
+        if (r1_1 == *gptr<u32>(r0_1 + 0xcu)) {
+            Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x430u, ac_player->word_260, 1u);
+            EffectHandle__move_to(ac_player.addr() + 0xa4cu, ac_player.addr() + 0x430u, frame.at(0).addr(), 1u);
             r1_1 = guest::cpu()->r[1];
         }
     }
@@ -986,12 +985,12 @@ void AcPlayer__move_hand_effects(gptr<AcPlayer> ac_player) {
         return;
     }
     u32 r1_4 = ac_player->word_a74;
-    if (r1_4 != *gptr<u32>(r0_4 + 0xcu)) {  // (from the original)
+    if (r1_4 != *gptr<u32>(r0_4 + 0xcu)) {
         guest::cpu()->r[1] = r1_4;
         return;
     }
-    Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x43cu, ac_player->word_264, 1u);  // (from the original)
-    EffectHandle__move_to(ac_player.addr() + 0xa64u, ac_player.addr() + 0x43cu, frame.at(0).addr(), 1u);  // (from the original)
+    Model__joint_matrix(ac_player.addr() + 0x1b4u, ac_player.addr() + 0x43cu, ac_player->word_264, 1u);
+    EffectHandle__move_to(ac_player.addr() + 0xa64u, ac_player.addr() + 0x43cu, frame.at(0).addr(), 1u);
 }
 
 }  // namespace d_0067bda8
@@ -1006,7 +1005,7 @@ inline guest::global<u32, 0x00886c44> global_00886c44;
 u32 constant_886c44_float() {
     float S0_1 = float(*global_00886c44);
     guest::cpu()->s[0] = S0_1;
-    return 0x886c44u;  // (from the original)
+    return 0x886c44u;
 }
 
 }  // namespace d_0067be68
@@ -1021,7 +1020,7 @@ inline guest::global<u32, 0x00886c48> global_00886c48;
 u32 constant_886c48_float() {
     float S0_1 = float(*global_00886c48);
     guest::cpu()->s[0] = S0_1;
-    return 0x886c48u;  // (from the original)
+    return 0x886c48u;
 }
 
 }  // namespace d_0067be7c
@@ -1037,7 +1036,7 @@ u32 step_length_double() {
     float S0_1 = 0.965f * S1_1;
     guest::cpu()->s[0] = S0_1;
     guest::cpu()->s[1] = S1_1;
-    return 0x886954u;  // (from the original)
+    return 0x886954u;
 }
 
 }  // namespace d_0067be90
@@ -1052,7 +1051,7 @@ inline guest::global<u32, 0x00886c48> global_00886c48;
 u32 constant_886c48_float_b() {
     float S0_1 = float(*global_00886c48);
     guest::cpu()->s[0] = S0_1;
-    return 0x886c48u;  // (from the original)
+    return 0x886c48u;
 }
 
 }  // namespace d_0067beac
@@ -1083,7 +1082,7 @@ inline guest::global<u32, 0x00ae565c> origin_y;
 inline guest::global<u32, 0x00ae5660> origin_z;
 
 void AcPlayer__clear_pending_drop(gptr<AcPlayer> ac_player) {
-    ac_player->half_5de = 0xf;  // (from the original)
+    ac_player->half_5de = 0xf;
     ac_player->byte_984 = 0;
     ac_player->word_988 = *origin_x;
     ac_player->word_98c = *origin_y;
@@ -1104,18 +1103,18 @@ inline constexpr guest::Function<0x0014fbac, u32(u32, u32)> import_thunk_14fbac;
 inline constexpr guest::Function<0x006dfde8, u32(u32, u32, u32, u32)> value_of_source;
 
 u32 EventNpc__position(u32 event_npc, u32 ac_player_rec) {
-    if (*event_npc_mode != 0xffu) {  // (from the original)
+    if (*event_npc_mode != 0xffu) {
         return 0u;
     }
     u32 r0_1 = *event_npc_source;
     if (r0_1 == 0) {
         return 0u;
     }
-    u32 value_2 = value_of_source(r0_1, ac_player_rec, guest::cpu()->r[2], guest::cpu()->r[3]);
-    if (value_2 == 0) {
-        return value_2;
+    u32 value = value_of_source(r0_1, ac_player_rec, guest::cpu()->r[2], guest::cpu()->r[3]);
+    if (value == 0) {
+        return value;
     }
-    import_thunk_14fbac(value_2, event_npc);
+    import_thunk_14fbac(value, event_npc);
     return 1u;
 }
 
@@ -1149,7 +1148,7 @@ u32 AcPlayer__update_swim(gptr<AcPlayer> ac_player, u32 r1, float S0, float S1) 
     u32 r0_6 = 0;
     u32 r4 = r0;
     u32 r6_1 = r1;
-    u32 r5 = r0 + 0x171u;  // (from the original)
+    u32 r5 = r0 + 0x171u;
     u32 res_1 = u32(ac_player->byte_171) >> 5u & 1u;
     u32 zf_1 = res_1 == 0;
     u32 r0_1 = res_1;
@@ -1163,7 +1162,7 @@ u32 AcPlayer__update_swim(gptr<AcPlayer> ac_player, u32 r1, float S0, float S1) 
         if (!u32(S0 == S1)) {
             guest::cpu()->s[0] = S0;
             guest::cpu()->s[1] = S1;
-            return_float_constant_0x41000000_(r4 + 0x800u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+            return_float_constant_0x41000000_(r4 + 0x800u, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
             u32 r0_3 = AcPlayer_rec__request_state_31(r4);
             r1 = guest::cpu()->r[1];
             S0 = guest::cpu()->s[0];
@@ -1173,7 +1172,7 @@ u32 AcPlayer__update_swim(gptr<AcPlayer> ac_player, u32 r1, float S0, float S1) 
             }
         }
         if (r6_1 != 0) {
-            r0 = *gptr<u8>(r4 + 0x91au);  // (from the original)
+            r0 = *gptr<u8>(r4 + 0x91au);
             r1 = r0 >> 1u & 1u;
             if (r1 == 0) {
                 goto L_67ebd4;
@@ -1251,15 +1250,15 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 void AcPlayer__start_state_79(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x20);  // the original's stack frame
-    u32 r5_1 = *frame.at<u32>(0x20);  // (from the original)
-    gptr<Params> params_2 = gptr<Params>(state_params_with_8bc(ac_player, r1, r2, r3));
-    float3_xz_to_short2_a(params_2.addr() + 0xfu, r1);  // (from the original)
-    params_2->byte_13 = u8(u32(s32(r2) >> 8));
-    *gptr<u8>(params_2.addr() + 0xeu) = u8(r3);  // (from the original)
-    params_2->byte_14 = u8(r5_1);
+    u32 r5_1 = *frame.at<u32>(0x20);
+    gptr<Params> params = gptr<Params>(state_params_with_8bc(ac_player, r1, r2, r3));
+    float3_xz_to_short2_a(params.addr() + 0xfu, r1);
+    params->byte_13 = u8(u32(s32(r2) >> 8));
+    *gptr<u8>(params.addr() + 0xeu) = u8(r3);
+    params->byte_14 = u8(r5_1);
     frame.release();
-    AcPlayer_rec__change_state(ac_player, 0x79u, params_2.addr(), 0u);
-    return;  // (from the original)
+    AcPlayer_rec__change_state(ac_player, 0x79u, params.addr(), 0u);
+    return;
 }
 
 }  // namespace d_0067ee38
@@ -1282,15 +1281,15 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 u32 AcPlayer__start_state_69(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x20);  // the original's stack frame
-    u32 r4_1 = *frame.at<u32>(0x20);  // (from the original)
-    u32 params_2 = state_params_with_8bc(ac_player, r1, r2, r3);
-    gptr<Local_0067ee90_ea_1> ea_1 = gptr<Local_0067ee90_ea_1>(params_2 + 0xeu);  // (from the original)
+    u32 r4_1 = *frame.at<u32>(0x20);
+    u32 params = state_params_with_8bc(ac_player, r1, r2, r3);
+    gptr<Local_0067ee90_ea_1> ea_1 = gptr<Local_0067ee90_ea_1>(params + 0xeu);
     ea_1->byte_0 = u8(r1);
     ea_1->byte_1 = u8(r2);
     float3_xz_to_short2_a(ea_1.addr() + 2u, r3);
-    *gptr<u8>(params_2 + 0x14u) = u8(u32(s32(u32(*gptr<u16>(r4_1))) >> 8));  // (from the original)
+    *gptr<u8>(params + 0x14u) = u8(u32(s32(u32(*gptr<u16>(r4_1))) >> 8));
     frame.release();
-    return AcPlayer_rec__change_state(ac_player, 0x69u, params_2, 0u);  // (from the original)
+    return AcPlayer_rec__change_state(ac_player, 0x69u, params, 0u);
 }
 
 }  // namespace d_0067ee90
@@ -1309,7 +1308,7 @@ struct __attribute__((packed)) AcPlayer {
 GUEST_OFFSET(AcPlayer, byte_17c, 0x17c);
 GUEST_OFFSET(AcPlayer, word_146c, 0x146c);
 
-struct __attribute__((packed)) Object_0067f020_1 {
+struct __attribute__((packed)) AcPlayerStartState2aArg1 {
     u32 word_0;
     u32 word_4;
     u32 word_8;
@@ -1317,32 +1316,32 @@ struct __attribute__((packed)) Object_0067f020_1 {
     u32 word_10;
     u32 word_14;
 };
-GUEST_OFFSET(Object_0067f020_1, word_0, 0x0);
-GUEST_OFFSET(Object_0067f020_1, word_4, 0x4);
-GUEST_OFFSET(Object_0067f020_1, word_8, 0x8);
-GUEST_OFFSET(Object_0067f020_1, word_c, 0xc);
-GUEST_OFFSET(Object_0067f020_1, word_10, 0x10);
-GUEST_OFFSET(Object_0067f020_1, word_14, 0x14);
+GUEST_OFFSET(AcPlayerStartState2aArg1, word_0, 0x0);
+GUEST_OFFSET(AcPlayerStartState2aArg1, word_4, 0x4);
+GUEST_OFFSET(AcPlayerStartState2aArg1, word_8, 0x8);
+GUEST_OFFSET(AcPlayerStartState2aArg1, word_c, 0xc);
+GUEST_OFFSET(AcPlayerStartState2aArg1, word_10, 0x10);
+GUEST_OFFSET(AcPlayerStartState2aArg1, word_14, 0x14);
 
 inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_rec__change_state;
 inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_params_with_8bc;
 
-u32 AcPlayer__start_state_2a(gptr<AcPlayer> ac_player, gptr<Object_0067f020_1> arg1, u32 r2, u32 r3) {
-    u32 params_2 = state_params_with_8bc(ac_player.addr(), arg1.addr(), r2, r3);
-    u32 r4_1 = params_2 + 0xeu;  // (from the original)
+u32 AcPlayer__start_state_2a(gptr<AcPlayer> ac_player, gptr<AcPlayerStartState2aArg1> arg1, u32 r2, u32 r3) {
+    u32 params = state_params_with_8bc(ac_player.addr(), arg1.addr(), r2, r3);
+    u32 r4_1 = params + 0xeu;
     *gptr<u32>(r4_1) = arg1->word_0;
     *gptr<u32>(r4_1 + 4u) = arg1->word_4;
     *gptr<u32>(r4_1 + 8u) = arg1->word_8;
-    *gptr<u32>(r4_1 + 0xcu) = arg1->word_c;  // (from the original)
-    *gptr<u32>(r4_1 + 0x10u) = arg1->word_10;  // (from the original)
-    *gptr<u32>(r4_1 + 0x14u) = arg1->word_14;  // (from the original)
+    *gptr<u32>(r4_1 + 0xcu) = arg1->word_c;
+    *gptr<u32>(r4_1 + 0x10u) = arg1->word_10;
+    *gptr<u32>(r4_1 + 0x14u) = arg1->word_14;
     ac_player->word_146c = r2;
-    u32 r0_2 = AcPlayer_rec__change_state(ac_player.addr(), 0x2au, params_2, 0u);  // (from the original)
+    u32 r0_2 = AcPlayer_rec__change_state(ac_player.addr(), 0x2au, params, 0u);
     u32 r1_1 = guest::cpu()->r[1];
     if (r0_2 != 0) {
         u32 r0_3 = *gptr<u8>(r4_1);
         if ((r0_3 >= 3u || r0_3 == 0) && *gptr<u8>(r4_1 + 2u) == 7u) {
-            r1_1 = u32(ac_player->byte_17c) | 0x80u;  // (from the original)
+            r1_1 = u32(ac_player->byte_17c) | 0x80u;
             ac_player->byte_17c = u8(r1_1);
         }
         r0_2 = 1u;
@@ -1358,14 +1357,14 @@ GUEST_EXPORT_FRAMED(0x0067f020, d_0067f020::AcPlayer__start_state_2a, 0x41f0);  
 // Changes the player's state to the action at the position (in quarter units).
 namespace d_0067f0c8 {
 
-struct __attribute__((packed)) Object_0067f0c8_3 {
+struct __attribute__((packed)) AcPlayerStartStateWithPositionArg3 {
     float float_0;
     float float_4;
     float float_8;
 };
-GUEST_OFFSET(Object_0067f0c8_3, float_0, 0x0);
-GUEST_OFFSET(Object_0067f0c8_3, float_4, 0x4);
-GUEST_OFFSET(Object_0067f0c8_3, float_8, 0x8);
+GUEST_OFFSET(AcPlayerStartStateWithPositionArg3, float_0, 0x0);
+GUEST_OFFSET(AcPlayerStartStateWithPositionArg3, float_4, 0x4);
+GUEST_OFFSET(AcPlayerStartStateWithPositionArg3, float_8, 0x8);
 
 struct __attribute__((packed)) Local_0067f0c8_ea_1 {
     u32 word_0;
@@ -1417,15 +1416,15 @@ inline guest::global<u32, 0x00ae5660> origin_z;
 inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_rec__change_state;
 inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_params_with_8bc;
 
-struct __attribute__((packed)) Frame_0067f0c8 {
+struct __attribute__((packed)) AcPlayerStartStateWithPositionFrame {
     u16 half_0;
     u8 unknown_2[0x16];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_0067f0c8, half_0, 0x0);
-GUEST_SIZE(Frame_0067f0c8, 0x18);
+GUEST_OFFSET(AcPlayerStartStateWithPositionFrame, half_0, 0x0);
+GUEST_SIZE(AcPlayerStartStateWithPositionFrame, 0x18);
 
-void AcPlayer__start_state_with_position(u32 ac_player, u32 r1, u32 r2, gptr<Object_0067f0c8_3> arg3, float S0, float S1) {
-    guest::StackFrameOf<Frame_0067f0c8> frame;  // the original's stack frame
+void AcPlayer__start_state_with_position(u32 ac_player, u32 r1, u32 r2, gptr<AcPlayerStartStateWithPositionArg3> arg3, float S0, float S1) {
+    guest::StackFrameOf<AcPlayerStartStateWithPositionFrame> frame;  // the original's stack frame
     u32 r4 = guest::cpu()->r[4];
     u32 r5 = guest::cpu()->r[5];
     u32 r6 = guest::cpu()->r[6];
@@ -1440,8 +1439,8 @@ void AcPlayer__start_state_with_position(u32 ac_player, u32 r1, u32 r2, gptr<Obj
     ea_1->word_c = r6;
     ea_1->word_10 = r7;
     ea_1->word_14 = r14;
-    u32 params_2 = state_params_with_8bc(ac_player, r1, r2, arg3.addr());
-    gptr<Local_0067f0c8_r0_2> r0_2 = gptr<Local_0067f0c8_r0_2>(params_2 + 0xeu);  // (from the original)
+    u32 params = state_params_with_8bc(ac_player, r1, r2, arg3.addr());
+    gptr<Local_0067f0c8_r0_2> r0_2 = gptr<Local_0067f0c8_r0_2>(params + 0xeu);
     float S0_1 = 4.0f;
     r0_2->byte_1 = u8(r1);
     r0_2->byte_0 = u8(r2);
@@ -1484,7 +1483,7 @@ void AcPlayer__start_state_with_position(u32 ac_player, u32 r1, u32 r2, gptr<Obj
     guest::cpu()->r[6] = r6_1;
     guest::cpu()->r[7] = r7_1;
     frame.release();
-    AcPlayer_rec__change_state(ac_player, 0x29u, params_2, 0u);
+    AcPlayer_rec__change_state(ac_player, 0x29u, params, 0u);
     return;
 }
 
@@ -1508,15 +1507,15 @@ inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_para
 
 u32 AcPlayer__start_state_9c(u32 ac_player, u32 r1, u32 r2, u32 r3) {
     guest::StackFrame frame(0x20);  // the original's stack frame
-    u32 r4_1 = *frame.at<u32>(0x20);  // (from the original)
-    u32 params_2 = state_params_with_8bc(ac_player, r1, r2, r3);
-    gptr<Local_0067f1b4_ea_1> ea_1 = gptr<Local_0067f1b4_ea_1>(params_2 + 0xeu);  // (from the original)
+    u32 r4_1 = *frame.at<u32>(0x20);
+    u32 params = state_params_with_8bc(ac_player, r1, r2, r3);
+    gptr<Local_0067f1b4_ea_1> ea_1 = gptr<Local_0067f1b4_ea_1>(params + 0xeu);
     ea_1->byte_0 = u8(r1);
     ea_1->word_1 = r2;
     float3_xz_to_short2_a(ea_1.addr() + 5u, r3);
-    *gptr<u8>(params_2 + 0x17u) = u8(u32(s32(r4_1) >> 8));  // (from the original)
+    *gptr<u8>(params + 0x17u) = u8(u32(s32(r4_1) >> 8));
     frame.release();
-    return AcPlayer_rec__change_state(ac_player, 0x9cu, params_2, 0u);  // (from the original)
+    return AcPlayer_rec__change_state(ac_player, 0x9cu, params, 0u);
 }
 
 }  // namespace d_0067f1b4
@@ -1526,14 +1525,14 @@ GUEST_EXPORT(0x0067f1b4, d_0067f1b4::AcPlayer__start_state_9c);
 // Changes the player's state to 0xb1 at the position, with the offset (in quarter units).
 namespace d_0067f208 {
 
-struct __attribute__((packed)) Object_0067f208_2 {
+struct __attribute__((packed)) AcPlayerStartStateB1Arg2 {
     float float_0;
     float float_4;
     float float_8;
 };
-GUEST_OFFSET(Object_0067f208_2, float_0, 0x0);
-GUEST_OFFSET(Object_0067f208_2, float_4, 0x4);
-GUEST_OFFSET(Object_0067f208_2, float_8, 0x8);
+GUEST_OFFSET(AcPlayerStartStateB1Arg2, float_0, 0x0);
+GUEST_OFFSET(AcPlayerStartStateB1Arg2, float_4, 0x4);
+GUEST_OFFSET(AcPlayerStartStateB1Arg2, float_8, 0x8);
 
 struct __attribute__((packed)) Local_0067f208_ea_1 {
     u32 word_0;
@@ -1575,15 +1574,15 @@ inline constexpr guest::Function<0x005d41b8, u32(u32, u32)> float3_xz_to_short2_
 inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_rec__change_state;
 inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_params_with_8bc;
 
-struct __attribute__((packed)) Frame_0067f208 {
+struct __attribute__((packed)) AcPlayerStartStateB1Frame {
     u16 half_0;
     u8 unknown_2[0x1e];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_0067f208, half_0, 0x0);
-GUEST_SIZE(Frame_0067f208, 0x20);
+GUEST_OFFSET(AcPlayerStartStateB1Frame, half_0, 0x0);
+GUEST_SIZE(AcPlayerStartStateB1Frame, 0x20);
 
-u32 AcPlayer__start_state_b1(u32 ac_player, u32 r1, gptr<Object_0067f208_2> arg2, u32 r3, float S0, float S1) {
-    guest::StackFrameOf<Frame_0067f208> frame;  // the original's stack frame
+u32 AcPlayer__start_state_b1(u32 ac_player, u32 r1, gptr<AcPlayerStartStateB1Arg2> arg2, u32 r3, float S0, float S1) {
+    guest::StackFrameOf<AcPlayerStartStateB1Frame> frame;  // the original's stack frame
     u32 r4 = guest::cpu()->r[4];
     u32 r5 = guest::cpu()->r[5];
     u32 r6 = guest::cpu()->r[6];
@@ -1600,9 +1599,9 @@ u32 AcPlayer__start_state_b1(u32 ac_player, u32 r1, gptr<Object_0067f208_2> arg2
     ea_1->word_14 = r8;
     ea_1->word_18 = r9;
     ea_1->word_1c = r14;
-    u32 params_2 = state_params_with_8bc(ac_player, r1, arg2.addr(), r3);
-    u32 r5_1 = params_2 + 0xeu;  // (from the original)
-    float3_xz_to_short2_a(params_2 + 0x14u, r1);  // (from the original)
+    u32 params = state_params_with_8bc(ac_player, r1, arg2.addr(), r3);
+    u32 r5_1 = params + 0xeu;
+    float3_xz_to_short2_a(params + 0x14u, r1);
     float S0_2 = 4.0f;
     u32 r0_3 = vcvt_sz_f(arg2->float_0 * S0_2);
     frame->half_0 = u16(r0_3);
@@ -1632,7 +1631,7 @@ u32 AcPlayer__start_state_b1(u32 ac_player, u32 r1, gptr<Object_0067f208_2> arg2
     guest::cpu()->r[8] = r8_1;
     guest::cpu()->r[9] = r9_1;
     frame.release();
-    return AcPlayer_rec__change_state(ac_player, 0xb1u, params_2, 0u);  // (from the original)
+    return AcPlayer_rec__change_state(ac_player, 0xb1u, params, 0u);
 }
 
 }  // namespace d_0067f208
@@ -1655,21 +1654,21 @@ inline constexpr guest::Function<0x0067f29c, u32(u32, u32, u32, u32)> call_AcPla
 inline constexpr guest::Function<0x006a5f0c, u32(u32, u32, u32, u32)> cell_corner;
 inline constexpr guest::Function<0x006c6640, u32(u32, u32)> surface_height_at_2;
 
-struct __attribute__((packed)) Frame_0067f29c {
+struct __attribute__((packed)) AcPlayerStartPickUpFrame {
     u32 word_0;
     u32 word_4;
     u32 word_8;
     u32 word_c;
     u8 unknown_10[0x8];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_0067f29c, word_0, 0x0);
-GUEST_OFFSET(Frame_0067f29c, word_4, 0x4);
-GUEST_OFFSET(Frame_0067f29c, word_8, 0x8);
-GUEST_OFFSET(Frame_0067f29c, word_c, 0xc);
-GUEST_SIZE(Frame_0067f29c, 0x18);
+GUEST_OFFSET(AcPlayerStartPickUpFrame, word_0, 0x0);
+GUEST_OFFSET(AcPlayerStartPickUpFrame, word_4, 0x4);
+GUEST_OFFSET(AcPlayerStartPickUpFrame, word_8, 0x8);
+GUEST_OFFSET(AcPlayerStartPickUpFrame, word_c, 0xc);
+GUEST_SIZE(AcPlayerStartPickUpFrame, 0x18);
 
 u32 AcPlayer__start_pick_up(u32 ac_player, u32 r1, u32 r2_unused, u32 r3, float S0) {
-    guest::StackFrameOf<Frame_0067f29c> frame;  // the original's stack frame
+    guest::StackFrameOf<AcPlayerStartPickUpFrame> frame;  // the original's stack frame
     u32 field_objects = 0;
     u32 r0_8 = 0;
     u32 r0_9 = 0;
@@ -1680,7 +1679,7 @@ u32 AcPlayer__start_pick_up(u32 ac_player, u32 r1, u32 r2_unused, u32 r3, float 
     u32 r0_12 = 0;
     u32 r5 = ac_player;
     u32 r10 = r1;
-    position_to_cell(frame.at(0).addr(), frame.at(4).addr(), ac_player + 0x14u, r3);  // (from the original)
+    position_to_cell(frame.at(0).addr(), frame.at(4).addr(), ac_player + 0x14u, r3);
     r3 = guest::cpu()->r[3];
     S0 = guest::cpu()->s[0];
     u32 r9 = ~0u;
@@ -1703,26 +1702,26 @@ L_67f2c0:;
         r3 = guest::cpu()->r[3];
         S0 = guest::cpu()->s[0];
         if (field_objects != 0) {
-            u32 entry_3 = FieldObjects__entry_for_item(field_objects, guest::cpu()->r[1], r2, r3);
+            u32 entry_2 = FieldObjects__entry_for_item(field_objects, guest::cpu()->r[1], r2, r3);
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
             S0 = guest::cpu()->s[0];
-            if (entry_3 != 0 && *gptr<u8>(entry_3 + 2u) != 0) {
+            if (entry_2 != 0 && *gptr<u8>(entry_2 + 2u) != 0) {
                 goto L_67f3f8;
             }
         }
         if (r10 != 0) {
-            u32 r4 = 0u;
+            u32 i = 0u;
             do {
-                if (*gptr<u8>(r5 + 0x1acu) != r4) {  // (from the original)
+                if (*gptr<u8>(r5 + 0x1acu) != i) {
                     guest::cpu()->s[0] = S0;
-                    u32 object_veneer_2 = look_up_object_veneer(r4 & 0xffu, 0u, r2, r3);  // (from the original)
+                    u32 object_veneer = look_up_object_veneer(i & 0xffu, 0u, r2, r3);
                     r2 = guest::cpu()->r[2];
                     r3 = guest::cpu()->r[3];
                     S0 = guest::cpu()->s[0];
-                    if (object_veneer_2 != 0) {
-                        position_to_cell(frame.at(8).addr(), frame.at(0xc).addr(), object_veneer_2 + 0x14u, r3);  // (from the original)
+                    if (object_veneer != 0) {
+                        position_to_cell(frame.at(8).addr(), frame.at(0xc).addr(), object_veneer + 0x14u, r3);
                         r1 = guest::cpu()->r[1];
                         r2 = guest::cpu()->r[2];
                         r3 = guest::cpu()->r[3];
@@ -1732,11 +1731,11 @@ L_67f2c0:;
                         }
                     }
                 }
-                r4 += 1u;
+                i += 1u;
                 guest::preempt();
-            } while (r4 < 4u);
+            } while (i < 4u);
         }
-        r2 = r5 + 0x14u;  // (from the original)
+        r2 = r5 + 0x14u;
         guest::cpu()->s[0] = S0;
         r0_8 = FieldObjects__entry_for_item_c(r7, r8, r2, r3);
         r1 = guest::cpu()->r[1];
@@ -1754,9 +1753,9 @@ L_67f2c0:;
         r6_1 = frame.at(8).addr();
         guest::cpu()->s[0] = S0_2;
         params = state_params_with_8bc(r5);
-        r0_12 = params + 0xeu;  // (from the original)
+        r0_12 = params + 0xeu;
         float3_xz_to_short2_a(r0_12, r6_1);
-        ac_player = AcPlayer_rec__change_state(r5, 0xe5u, params, 0u);  // (from the original)
+        ac_player = AcPlayer_rec__change_state(r5, 0xe5u, params, 0u);
         r1 = guest::cpu()->r[1];
         return ac_player;
 L_67f3f8:;
@@ -1780,4 +1779,4 @@ L_67f3f8:;
 }
 
 }  // namespace d_0067f29c
-GUEST_EXPORT_FRAMED(0x0067f29c, d_0067f29c::AcPlayer__start_pick_up, 0x47f0);  // pushes {r4, r5, r6, r7, r8, r9, r10, lr} first, as the original
+GUEST_EXPORT_FRAMED(0x0067f29c, d_0067f29c::AcPlayer__start_pick_up, 0x47f0);  // pushes {i, r5, r6, r7, r8, r9, r10, lr} first, as the original

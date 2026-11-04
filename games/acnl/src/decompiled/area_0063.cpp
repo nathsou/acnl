@@ -1,6 +1,7 @@
 // Functions decompiled by tools/decomp (docs/decomp.md), each proved equal to the recompiled original (prove-cpp). The
 // names come from games/acnl/names (tools/decomp/names.py); the others are generated (d_<address>::f_<address>,
-// Object_<address>_<argument>, word_<offset>) and still to be chosen.
+// Object_<address>_<argument>, word_<offset>) and still to be chosen. Hexadecimal constants are the original's
+// (addresses, offsets, sizes and ids as the game has them).
 #include "guest/guest.hpp"
 #include "recovered/structs.hpp"
 
@@ -17,9 +18,9 @@ u32 table_89515c_float(u32 r0) {
     if (r0 >= 7u) {
         r0 = 0u;
     }
-    u32 r0_1 = (r0 << 2) + 0x89515cu;  // (from the original)
+    u32 r0_1 = (r0 << 2) + 0x89515cu;
     float S0_1 = std::bit_cast<float>(*gptr<u32>(r0_1));
-    guest::cpu()->r[1] = 0x89515cu;  // (from the original)
+    guest::cpu()->r[1] = 0x89515cu;
     guest::cpu()->s[0] = S0_1;
     return r0_1;
 }
@@ -31,20 +32,20 @@ GUEST_EXPORT(0x00630148, d_00630148::table_89515c_float);
 // Starts the furniture's action 0x1f with the offset.
 namespace d_006310c0 {
 
-struct __attribute__((packed)) Object_006310c0_0 {
+struct __attribute__((packed)) AcFtrStartKind1fBArg0 {
     u8 unknown_0[0x308];  // (not used here)
     u8 byte_308;
 };
-GUEST_OFFSET(Object_006310c0_0, byte_308, 0x308);
+GUEST_OFFSET(AcFtrStartKind1fBArg0, byte_308, 0x308);
 
 inline constexpr guest::Function<0x005707f0, u32(u32, u32, u32, u32)> AcFtr__start_action;
 
-void AcFtr__start_kind_1f_b(gptr<Object_006310c0_0> ac_ftr) {
+void AcFtr__start_kind_1f_b(gptr<AcFtrStartKind1fBArg0> ac_ftr) {
     ac_ftr->byte_308 = 1;
     float S0_1 = -10.0f;
     guest::cpu()->s[0] = S0_1;
     AcFtr__start_action(ac_ftr.addr(), 0x1fu, guest::cpu()->r[2], guest::cpu()->r[3]);
-    return;  // (from the original)
+    return;
 }
 
 }  // namespace d_006310c0
@@ -54,20 +55,20 @@ GUEST_EXPORT(0x006310c0, d_006310c0::AcFtr__start_kind_1f_b);
 // Whether the NPC's id is one of the kind's two ids (any kind for 7 or more).
 namespace d_00631cc0 {
 
-struct __attribute__((packed)) Object_00631cc0_1 {
+struct __attribute__((packed)) NpcTalkIdMatchesKindArg1 {
     u8 unknown_0[0x68];  // (not used here)
     u32 word_68;
 };
-GUEST_OFFSET(Object_00631cc0_1, word_68, 0x68);
+GUEST_OFFSET(NpcTalkIdMatchesKindArg1, word_68, 0x68);
 
 
-u32 NpcTalk__id_matches_kind(u32 r0_unused, gptr<Object_00631cc0_1> arg1, u32 r2) {
+u32 NpcTalk__id_matches_kind(u32 r0_unused, gptr<NpcTalkIdMatchesKindArg1> arg1, u32 r2) {
     u32 r1 = arg1.addr();
-    u32 r0 = *gptr<u16>(arg1->word_68 + 0x70u);  // (from the original)
+    u32 r0 = *gptr<u16>(arg1->word_68 + 0x70u);
     if (r2 >= 7u) {
-        r2 = 0x842614u;  // (from the original)
+        r2 = 0x842614u;
         r1 = 0u;
-        u32 r3 = r2 + 0xeu;  // (from the original)
+        u32 r3 = r2 + 0xeu;
         for (;;) {
             r1 += 1u;
             r2 += 2u;
@@ -88,12 +89,12 @@ u32 NpcTalk__id_matches_kind(u32 r0_unused, gptr<Object_00631cc0_1> arg1, u32 r2
         guest::cpu()->r[1] = r1;
         return 0u;
     }
-    u32 r1_1 = gptr<u16>(0x842614u)[r2];  // (from the original)
+    u32 r1_1 = gptr<u16>(0x842614u)[r2];
     if (r1_1 == r0) {
         guest::cpu()->r[1] = r1_1;
         return 1u;
     }
-    u32 r1_2 = gptr<u16>(0x842622u)[r2];  // (from the original)
+    u32 r1_2 = gptr<u16>(0x842622u)[r2];
     if (r1_2 != r0) {
         guest::cpu()->r[1] = r1_2;
         return 0u;
@@ -130,14 +131,14 @@ u32 NpcTalk__update_codes_for_kind(u32 npc_talk, gptr<AcNpcNml> ac_npc_nml, u32 
     u32 r6_1 = r1;
     gptr<Local_00631d5c_r0_1> r0_1 = gptr<Local_00631d5c_r0_1>(ac_npc_nml->word_102c);
     if (r0_1.addr() != 0) {
-        r0_1 = gptr<Local_00631d5c_r0_1>(byte_08_unless_mode_above_1(r0_1.addr() + 0x28u, r1, r2, r3));  // (from the original)
+        r0_1 = gptr<Local_00631d5c_r0_1>(byte_08_unless_mode_above_1(r0_1.addr() + 0x28u, r1, r2, r3));
         r1 = guest::cpu()->r[1];
         u32 r4_1 = r0_1.addr();
         if (r0_1.addr() != 0) {
             r0_1 = gptr<Local_00631d5c_r0_1>(update_talk_codes(npc_talk, r6_1, r0_1.addr()));
             r1 = guest::cpu()->r[1];
             if (r4_1 < 7u) {
-                u32 ea_1 = (r4_1 << 3) + 0x842630u;  // (from the original)
+                u32 ea_1 = (r4_1 << 3) + 0x842630u;
                 r0_1 = gptr<Local_00631d5c_r0_1>(ea_1);
                 r1 = *gptr<u32>(ea_1);
                 if (r1 == 0) {
@@ -149,10 +150,10 @@ u32 NpcTalk__update_codes_for_kind(u32 npc_talk, gptr<AcNpcNml> ac_npc_nml, u32 
                 }
                 u32 r2_2 = r0_1->word_4;
                 r0_1 = gptr<Local_00631d5c_r0_1>(0u);
-                gptr<Local_00631d5c_ea_2> ea_2 = gptr<Local_00631d5c_ea_2>(npc_talk + 0x14u);  // (from the original)
+                gptr<Local_00631d5c_ea_2> ea_2 = gptr<Local_00631d5c_ea_2>(npc_talk + 0x14u);
                 ea_2->word_0 = r1;
                 ea_2->word_4 = r2_2;
-                *gptr<u8>(npc_talk + 0x38u) = u8(r0_1.addr());  // (from the original)
+                *gptr<u8>(npc_talk + 0x38u) = u8(r0_1.addr());
             }
         }
     }
@@ -203,11 +204,10 @@ inline constexpr guest::Function<0x00632488, u32(u32, u32, u32, u32)> index_is_a
 
 u32 NpcTalk__wait(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3) {
     u32 r5_1 = r1;
-    u32 r0_1 = index_is_available_00632488(npc_talk.addr(), r1, r2, r3);
-    if (r0_1 == 0) {
+    if (index_is_available_00632488(npc_talk.addr(), r1, r2, r3) == 0) {
         r5_1 = 0u;
     }
-    Countdown__extend(npc_talk.addr(), r5_1, 0xffffu & (r2 << 8) - r2 * 0x1fu << 3, r3);  // (from the original)
+    Countdown__extend(npc_talk.addr(), r5_1, 0xffffu & (r2 << 8) - r2 * 0x1fu << 3, r3);
     npc_talk->byte_39 = 1;
     return 1u;
 }
@@ -216,6 +216,8 @@ u32 NpcTalk__wait(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3) {
 GUEST_EXPORT_FRAMED(0x006323d8, d_006323d8::NpcTalk__wait, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_00632428: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Resets a talk's effect: when arg 1 is 0, releases it unless still flagged; else kills it now when it is
+// the current one.
 namespace d_00632428 {
 
 struct __attribute__((packed)) NpcTalk {
@@ -237,10 +239,10 @@ u32 reset_talk_state_00632428(gptr<NpcTalk> npc_talk, u32 r1) {
     u32 r0_2 = 0;
     u32 r5_1 = ~0u;
     if (r1 == 0) {
-        r0_2 = EffectHandle__flag(npc_talk.addr() + 0x1cu, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        r0_2 = EffectHandle__flag(npc_talk.addr() + 0x1cu, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
         r1 = guest::cpu()->r[1];
         if (r0_2 == 0) {
-            u32 r0_4 = EffectHandle__release(npc_talk.addr() + 0x1cu, r1);  // (from the original)
+            u32 r0_4 = EffectHandle__release(npc_talk.addr() + 0x1cu, r1);
             npc_talk->word_34 = r5_1;
             return r0_4;
         }
@@ -248,9 +250,9 @@ u32 reset_talk_state_00632428(gptr<NpcTalk> npc_talk, u32 r1) {
         r0_2 = npc_talk->word_28;
         if (r0_2 != 0) {
             r1 = npc_talk->word_2c;
-            r0_2 = *gptr<u32>(r0_2 + 0xcu);  // (from the original)
+            r0_2 = *gptr<u32>(r0_2 + 0xcu);
             if (r1 == r0_2) {
-                r0_2 = EffectHandle__kill_now(npc_talk.addr() + 0x1cu, r1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+                r0_2 = EffectHandle__kill_now(npc_talk.addr() + 0x1cu, r1, guest::cpu()->r[2], guest::cpu()->r[3]);
                 r1 = guest::cpu()->r[1];
             }
         }
@@ -309,26 +311,26 @@ u32 index_is_available_00632488(gptr<NpcTalk> npc_talk) {
                         *talk_index_available = 1;
                         return 1u;
                     }
-                    u32 scene = current_scene_id(player_state_block_address, r1_1);
-                    u32 r0_6 = flagged_mode_ordinal(scene);
-                    u32 save_data_2 = get_save_data(r0_6);
-                    u32 villager_record_2 = villager_record_at(save_data_2 + 0x292a4u, r0_6);  // (from the original)
-                    if (villager_record_2 != 0) {
-                        u32 r0_10 = check_villager_11a390(villager_record_2);
+                    u32 scene_2 = current_scene_id(player_state_block_address, r1_1);
+                    u32 r0_6 = flagged_mode_ordinal(scene_2);
+                    u32 save_data = get_save_data(r0_6);
+                    u32 villager_record = villager_record_at(save_data + 0x292a4u, r0_6);
+                    if (villager_record != 0) {
+                        u32 r0_10 = check_villager_11a390(villager_record);
                         r1_1 = guest::cpu()->r[1];
                         if (r0_10 != 0) {
                             *talk_index_available = 1;
                             return 1u;
                         }
                     }
-                    u32 r0_11 = *gptr<u8>((r4_1 + 0x8f77u) + 0x11u);  // (from the original)
-                    r1_1 = r0_11 << 0x19;  // (from the original)
+                    u32 r0_11 = *gptr<u8>((r4_1 + 0x8f77u) + 0x11u);
+                    r1_1 = r0_11 << 0x19;
                     if (s32(r1_1) < 0) {
                         u32 res_1 = r0_11 >> 7;
                         u32 zf_1 = res_1 == 0;
                         r1_1 = res_1;
                         if (zf_1) {
-                            zf_1 = r0_6 == (r0_11 >> 2u & 0xfu);  // (from the original)
+                            zf_1 = r0_6 == (r0_11 >> 2u & 0xfu);
                         }
                         if (zf_1) {
                             *talk_index_available = 1;
@@ -336,13 +338,13 @@ u32 index_is_available_00632488(gptr<NpcTalk> npc_talk) {
                             return 1u;
                         }
                     }
-                    if (s32(u32(*gptr<u8>(r4_1 + 0x5705u)) << 0x1d) < 0 || villager_record_2 == 0) {  // (from the original)
+                    if (s32(u32(*gptr<u8>(r4_1 + 0x5705u)) << 0x1d) < 0 || villager_record == 0) {
                         *talk_index_available = 1;
                         guest::cpu()->r[1] = r1_1;
                         return 1u;
                     }
-                    u32 r0_12 = player_slot_byte(4u);
-                    u32 r0_13 = SaveVillager__has_slot_flag(villager_record_2, r0_12);
+                    u32 slot_byte = player_slot_byte(4u);
+                    u32 r0_13 = SaveVillager__has_slot_flag(villager_record, slot_byte);
                     r1_1 = guest::cpu()->r[1];
                     if (r0_13 == 0) {
                         *talk_index_available = 1;
@@ -375,11 +377,11 @@ GUEST_OFFSET(NpcTalk, word_28, 0x28);
 GUEST_OFFSET(NpcTalk, word_2c, 0x2c);
 GUEST_OFFSET(NpcTalk, word_34, 0x34);
 
-struct __attribute__((packed)) Object_00632594_1 {
+struct __attribute__((packed)) NpcTalkPlayEffectArg1 {
     u8 unknown_0[0x68];  // (not used here)
     u32 word_68;
 };
-GUEST_OFFSET(Object_00632594_1, word_68, 0x68);
+GUEST_OFFSET(NpcTalkPlayEffectArg1, word_68, 0x68);
 
 inline constexpr u32 effect_spawn_params_address = 0x00975beeu;
 inline constexpr u32 effect_spawn_context_address = 0x00ae5664u;
@@ -387,34 +389,33 @@ inline constexpr guest::Function<0x002073dc, u32(u32, u32, u32, u32)> EffectHand
 inline constexpr guest::Function<0x002e66c0, u32(u32, u32, u32, u32)> EffectHandle__restart;
 inline constexpr guest::Function<0x0070ac68, u32(u32, u32, u32, u32)> Model__joint_matrix;
 
-struct __attribute__((packed)) Frame_00632594 {
+struct __attribute__((packed)) NpcTalkPlayEffectFrame {
     u32 word_0;
     u32 word_4;
     u32 word_8;
     u8 unknown_c[0x10];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_00632594, word_0, 0x0);
-GUEST_OFFSET(Frame_00632594, word_4, 0x4);
-GUEST_OFFSET(Frame_00632594, word_8, 0x8);
-GUEST_SIZE(Frame_00632594, 0x1c);
+GUEST_OFFSET(NpcTalkPlayEffectFrame, word_0, 0x0);
+GUEST_OFFSET(NpcTalkPlayEffectFrame, word_4, 0x4);
+GUEST_OFFSET(NpcTalkPlayEffectFrame, word_8, 0x8);
+GUEST_SIZE(NpcTalkPlayEffectFrame, 0x1c);
 
-void NpcTalk__play_effect(gptr<NpcTalk> npc_talk, gptr<Object_00632594_1> arg1, u32 r2) {
-    guest::StackFrameOf<Frame_00632594> frame;  // the original's stack frame
+void NpcTalk__play_effect(gptr<NpcTalk> npc_talk, gptr<NpcTalkPlayEffectArg1> arg1, u32 r2) {
+    guest::StackFrameOf<NpcTalkPlayEffectFrame> frame;  // the original's stack frame
     u32 r0_1 = arg1->word_68;
-    u32 r0_2 = Model__joint_matrix(r0_1, frame.at(0xc).addr(), *gptr<u32>(r0_1 + 0xb4u), 1u);  // (from the original)
-    if (r0_2 == 0) {
+    if (Model__joint_matrix(r0_1, frame.at(0xc).addr(), *gptr<u32>(r0_1 + 0xb4u), 1u) == 0) {
         return;
     }
     u32 r0_3 = npc_talk->word_28;
-    if (r0_3 != 0 && npc_talk->word_2c == *gptr<u32>(r0_3 + 0xcu) && npc_talk->word_34 == r2) {  // (from the original)
+    if (r0_3 != 0 && npc_talk->word_2c == *gptr<u32>(r0_3 + 0xcu) && npc_talk->word_34 == r2) {
         frame->word_0 = 1;
-        EffectHandle__restart(npc_talk.addr() + 0x1cu, frame.at(0xc).addr(), effect_spawn_params_address, effect_spawn_context_address);  // (from the original)
+        EffectHandle__restart(npc_talk.addr() + 0x1cu, frame.at(0xc).addr(), effect_spawn_params_address, effect_spawn_context_address);
         return;
     }
     frame->word_8 = 0;
     frame->word_4 = 1;
-    frame->word_0 = 0xae5664;  // (from the original)
-    EffectHandle__start(npc_talk.addr() + 0x1cu, r2, frame.at(0xc).addr(), effect_spawn_params_address);  // (from the original)
+    frame->word_0 = 0xae5664;
+    EffectHandle__start(npc_talk.addr() + 0x1cu, r2, frame.at(0xc).addr(), effect_spawn_params_address);
     npc_talk->word_34 = r2;
 }
 
@@ -435,7 +436,7 @@ u32 NpcTalk__reset_for_kind(u32 npc_talk, gptr<AcNpcNml> ac_npc_nml, u32 r2) {
     u32 r4_1 = r1;
     u32 r0_1 = ac_npc_nml->word_102c;
     if (r0_1 != 0) {
-        r0_1 = byte_08_unless_mode_above_1(r0_1 + 0x28u, r1, r2, guest::cpu()->r[3]);  // (from the original)
+        r0_1 = byte_08_unless_mode_above_1(r0_1 + 0x28u, r1, r2, guest::cpu()->r[3]);
         r1 = guest::cpu()->r[1];
         if (r0_1 != 0) {
             update_talk_codes(npc_talk, r4_1, 0u);
@@ -460,38 +461,38 @@ struct __attribute__((packed)) NpcTalk {
 };
 GUEST_OFFSET(NpcTalk, word_4, 0x4);
 
-struct __attribute__((packed)) Object_00636bf0_1 {
+struct __attribute__((packed)) NpcTalkAddRandomChoiceArg1 {
     u32 word_0;
 };
-GUEST_OFFSET(Object_00636bf0_1, word_0, 0x0);
+GUEST_OFFSET(NpcTalkAddRandomChoiceArg1, word_0, 0x0);
 
 inline constexpr guest::Function<0x002ff6f8, u32(u32, u32, u32, u32)> random_below;
 inline constexpr guest::Function<0x005e3550, u32(u32, u32, u32, u32)> MessageRef__set_2;
 inline constexpr guest::Function<0x00603a28, u32(u32, u32, u32)> script__CapitalTopEngine__CapitalTopEngine_00603a28;
 
-struct __attribute__((packed)) Frame_00636bf0 {
+struct __attribute__((packed)) NpcTalkAddRandomChoiceFrame {
     u32 word_0;
     u32 word_4;
     u32 word_8;
     u8 unknown_c[0x28];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_00636bf0, word_0, 0x0);
-GUEST_OFFSET(Frame_00636bf0, word_4, 0x4);
-GUEST_OFFSET(Frame_00636bf0, word_8, 0x8);
-GUEST_SIZE(Frame_00636bf0, 0x34);
+GUEST_OFFSET(NpcTalkAddRandomChoiceFrame, word_0, 0x0);
+GUEST_OFFSET(NpcTalkAddRandomChoiceFrame, word_4, 0x4);
+GUEST_OFFSET(NpcTalkAddRandomChoiceFrame, word_8, 0x8);
+GUEST_SIZE(NpcTalkAddRandomChoiceFrame, 0x34);
 
-u32 NpcTalk__add_random_choice(gptr<NpcTalk> npc_talk, gptr<Object_00636bf0_1> arg1, u32 r2, u32 r3) {
-    guest::StackFrameOf<Frame_00636bf0> frame;  // the original's stack frame
-    u32 random_2 = random_below(3u, arg1.addr(), r2, r3);
+u32 NpcTalk__add_random_choice(gptr<NpcTalk> npc_talk, gptr<NpcTalkAddRandomChoiceArg1> arg1, u32 r2, u32 r3) {
+    guest::StackFrameOf<NpcTalkAddRandomChoiceFrame> frame;  // the original's stack frame
+    u32 random = random_below(3u, arg1.addr(), r2, r3);
     frame->word_0 = 0;
     frame->word_4 = 8;
     frame->word_8 = 0;
-    MessageRef__set_2(frame.at(0x10).addr(), 0x841c7cu, random_2 + 0x1au, 0u);  // (from the original)
+    MessageRef__set_2(frame.at(0x10).addr(), 0x841c7cu, random + 0x1au, 0u);
     u32 r0_3 = npc_talk->word_4;
     u32 r1_1 = arg1->word_0;
     arg1->word_0 = r1_1 + 1u;
-    script__CapitalTopEngine__CapitalTopEngine_00603a28(r0_3, r1_1, frame.at(0x10).addr());  // (from the original)
-    return frame.at(0x10).addr();  // (from the original)
+    script__CapitalTopEngine__CapitalTopEngine_00603a28(r0_3, r1_1, frame.at(0x10).addr());
+    return frame.at(0x10).addr();
 }
 
 }  // namespace d_00636bf0
@@ -535,7 +536,7 @@ inline constexpr guest::Function<0x002fb94c, u32(u32, u32, u32, u32)> get_curren
 inline constexpr guest::Function<0x00318fbc, u32(u32, u32, u32)> call_on_9b3ce0;
 inline constexpr guest::Function<0x004e3a7c, u32(u32, u32, u32, u32)> BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c;
 
-struct __attribute__((packed)) Frame_0063ca1c {
+struct __attribute__((packed)) NpcTalkPlayerPositionFrame {
     u32 word_0;
     u32 word_4;
     u32 word_8;
@@ -543,37 +544,37 @@ struct __attribute__((packed)) Frame_0063ca1c {
     u32 word_10;
     u8 unknown_14[0x38];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_0063ca1c, word_0, 0x0);
-GUEST_OFFSET(Frame_0063ca1c, word_4, 0x4);
-GUEST_OFFSET(Frame_0063ca1c, word_8, 0x8);
-GUEST_OFFSET(Frame_0063ca1c, word_c, 0xc);
-GUEST_OFFSET(Frame_0063ca1c, word_10, 0x10);
-GUEST_SIZE(Frame_0063ca1c, 0x4c);
+GUEST_OFFSET(NpcTalkPlayerPositionFrame, word_0, 0x0);
+GUEST_OFFSET(NpcTalkPlayerPositionFrame, word_4, 0x4);
+GUEST_OFFSET(NpcTalkPlayerPositionFrame, word_8, 0x8);
+GUEST_OFFSET(NpcTalkPlayerPositionFrame, word_c, 0xc);
+GUEST_OFFSET(NpcTalkPlayerPositionFrame, word_10, 0x10);
+GUEST_SIZE(NpcTalkPlayerPositionFrame, 0x4c);
 
 u32 NpcTalk__player_position(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3) {
-    guest::StackFrameOf<Frame_0063ca1c> frame;  // the original's stack frame
+    guest::StackFrameOf<NpcTalkPlayerPositionFrame> frame;  // the original's stack frame
     u32 r5_2 = 0;
     u32 r5_1 = r1;
-    if (r1 < 0x10u) {  // (from the original)
-        gptr<Local_0063ca1c_r4_1> r4_1 = gptr<Local_0063ca1c_r4_1>(npc_talk.addr() + 0x270u);  // (from the original)
+    if (r1 < 0x10u) {
+        gptr<Local_0063ca1c_r4_1> r4_1 = gptr<Local_0063ca1c_r4_1>(npc_talk.addr() + 0x270u);
         npc_talk->byte_275 = 4;
         u32 r0_1 = npc_talk->word_f0;
         if (r0_1 != 0) {
-            u32 r0_2 = r0_1 + 0x1000u;  // (from the original)
-            u32 r6_1 = *gptr<u32>(r0_2 + 0x28u);  // (from the original)
-            u32 player_2 = get_current_player(r0_2, 4u, r2, r3);
+            u32 r0_2 = r0_1 + 0x1000u;
+            u32 r6_1 = *gptr<u32>(r0_2 + 0x28u);
+            u32 player = get_current_player(r0_2, 4u, r2, r3);
             r1 = guest::cpu()->r[1];
             u32 zf_1 = r6_1 == 0;
             if (!zf_1) {
-                zf_1 = player_2 == 0;
+                zf_1 = player == 0;
             }
             if (zf_1) {
                 return 0u;
             }
-            if (s32(r5_1) >= 0xc) {  // (from the original)
+            if (s32(r5_1) >= 0xc) {
                 frame->word_4 = 1;
                 frame->word_0 = r5_1;
-                u32 r0_4 = Villager__choose_greeting(r6_1, frame.at(8).addr(), frame.at(0xc).addr(), frame.at(0x10).addr());  // (from the original)
+                u32 r0_4 = Villager__choose_greeting(r6_1, frame.at(8).addr(), frame.at(0xc).addr(), frame.at(0x10).addr());
                 r1 = guest::cpu()->r[1];
                 if (r0_4 == 0) {
                     return 0u;
@@ -583,19 +584,19 @@ u32 NpcTalk__player_position(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3) {
                 r4_1->byte_5 = u8(frame->word_10);
                 return 1u;
             }
-            u32 r2_2 = *gptr<s8>(r6_1 + 0x24f0u);  // (from the original)
-            call_on_9b3ce0(frame.at(0).addr(), 0x48u, r2_2);  // (from the original)
+            u32 r2_2 = *gptr<s8>(r6_1 + 0x24f0u);
+            call_on_9b3ce0(frame.at(0).addr(), 0x48u, r2_2);
             gptr<Local_0063ca1c_r6_2> r6_2 = gptr<Local_0063ca1c_r6_2>(frame.at(0).addr() + r5_1 * 6u);
             u32 r0_6 = r6_2->half_0;
-            if (r0_6 == 0x6000u) {  // (from the original)
+            if (r0_6 == 0x6000u) {
                 r5_2 = 1u;
             } else {
-                u32 r0_7 = r0_6 - 0x6001u;  // (from the original)
+                u32 r0_7 = r0_6 - 0x6001u;
                 r5_2 = r0_7 == 0 ? 3u : r0_7 == 1u ? 0u : r0_7 == 2u ? 2u : 4u;
             }
             u32 r2_3 = r6_2->byte_5;
             u32 r1_2 = r6_2->byte_4;
-            u32 r0_9 = BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c(player_2 + 0x8d78u, r1_2, r2_3, r5_2);  // (from the original)
+            u32 r0_9 = BsNpcMgr__NpcPosGetCB__NpcPosGetCB_004e3a7c(player + 0x8d78u, r1_2, r2_3, r5_2);
             r1 = guest::cpu()->r[1];
             if (r0_9 == 0) {
                 return 0u;
@@ -654,27 +655,25 @@ u32 NpcTalk__choose_gift_item(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3) {
     u32 r0_1 = npc_talk->byte_280;
     if (r0_1 != 0) {
         if (r0_1 == 1u) {
-            u32 r0_2 = current_player_field_8d84(r0_1, r1, r2, r3);
-            set_bit_75(r0_2, 4u);
+            set_bit_75(current_player_field_8d84(r0_1, r1, r2, r3), 4u);
             u32 r1_1 = npc_talk->half_270;
             construct_item(frame.at(0).addr(), r1_1);
-            u32 r0_5 = is_special_item(frame.at(0).addr());
-            if (r0_5 != 0) {
-                SpecialItem__variant(frame.at(0).addr(), 1u, *gptr<u32>(npc_talk->word_f0 + 0x1030u), 0u);  // (from the original)
+            if (is_special_item(frame.at(0).addr()) != 0) {
+                SpecialItem__variant(frame.at(0).addr(), 1u, *gptr<u32>(npc_talk->word_f0 + 0x1030u), 0u);
             }
-            Item__copy(npc_talk.addr() + 0x130u, frame.at(0).addr());  // (from the original)
+            Item__copy(npc_talk.addr() + 0x130u, frame.at(0).addr());
             r1 = guest::cpu()->r[1];
             npc_talk->byte_138 = 0;
             npc_talk->byte_27a = 0;
             u32 r0_8 = npc_talk->word_f0;
             if (r0_8 != 0) {
-                u32 r0_9 = *gptr<u32>(r0_8 + 0x1028u);  // (from the original)
+                u32 r0_9 = *gptr<u32>(r0_8 + 0x1028u);
                 if (r0_9 != 0) {
-                    Item__copy(r0_9 + 0x249au, frame.at(0).addr());  // (from the original)
+                    Item__copy(r0_9 + 0x249au, frame.at(0).addr());
                     r1 = guest::cpu()->r[1];
                     u32 r0_11 = npc_talk->word_f0;
                     if (r0_11 != 0) {
-                        u32 r0_13 = set_item_amount(frame.at(4).addr(), frame.at(0).addr(), *gptr<u32>(r0_11 + 0x1030u));  // (from the original)
+                        u32 r0_13 = set_item_amount(frame.at(4).addr(), frame.at(0).addr(), *gptr<u32>(r0_11 + 0x1030u));
                         r1 = guest::cpu()->r[1];
                         if (r0_13 != 0) {
                             NetPresence__send_1(4u, frame.at(4).addr());
@@ -691,17 +690,16 @@ u32 NpcTalk__choose_gift_item(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3) {
     u32 r0_14 = current_player_field_8d84(r0_1, r1, r2, r3);
     u32 r0_15 = npc_talk->word_f0;
     if (r0_15 != 0) {
-        u32 r0_16 = *gptr<u32>(r0_15 + 0x1028u);  // (from the original)
+        u32 r0_16 = *gptr<u32>(r0_15 + 0x1028u);
         if (r0_16 != 0) {
-            u32 r1_7 = r0_16 + 0x249au;  // (from the original)
+            u32 r1_7 = r0_16 + 0x249au;
             Item__copy_b(frame.at(0).addr(), r1_7);
-            u32 number_2 = Item__number(frame.at(0).addr());
-            *gptr<u16>((npc_talk.addr() + 0x200u) + 0x70u) = u16(number_2);  // (from the original)
-            Item__copy(r1_7, r0_14 + 0x6cu);  // (from the original)
+            u32 number = Item__number(frame.at(0).addr());
+            *gptr<u16>((npc_talk.addr() + 0x200u) + 0x70u) = u16(number);
+            Item__copy(r1_7, r0_14 + 0x6cu);
             u32 r0_20 = npc_talk->word_f0;
             if (r0_20 != 0) {
-                u32 r0_22 = set_item_amount(frame.at(4).addr(), r0_14 + 0x6cu, *gptr<u32>(r0_20 + 0x1030u));  // (from the original)
-                if (r0_22 != 0) {
+                if (set_item_amount(frame.at(4).addr(), r0_14 + 0x6cu, *gptr<u32>(r0_20 + 0x1030u)) != 0) {
                     NetPresence__send_1(4u, frame.at(4).addr());
                 }
             }
@@ -709,8 +707,8 @@ u32 NpcTalk__choose_gift_item(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3) {
     }
     set_bit_75(r0_14, 3u);
     npc_talk->byte_27a = 1;
-    u32 r0_23 = npc_talk.addr() + 0x130u;  // (from the original)
-    Item__copy(r0_23, r0_14 + 0x6cu);  // (from the original)
+    u32 r0_23 = npc_talk.addr() + 0x130u;
+    Item__copy(r0_23, r0_14 + 0x6cu);
     npc_talk->byte_138 = 0;
     return r0_23;
 }
@@ -751,13 +749,13 @@ u32 NpcTalk__days_since_moved_in(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3)
     u32 r0_1 = npc_talk->word_f0;
     u32 r8 = r2;
     if (r0_1 != 0) {
-        u32 r0_2 = r0_1 + 0x1000u;  // (from the original)
-        u32 r4_1 = *gptr<u32>(r0_2 + 0x28u);  // (from the original)
+        u32 r0_2 = r0_1 + 0x1000u;
+        u32 r4_1 = *gptr<u32>(r0_2 + 0x28u);
         if (r4_1 != 0) {
-            u32 save_data_2 = get_save_data(r0_2, r1, r2, r3);
-            u32 r6_1 = save_data_2 + 0x292a4u;  // (from the original)
+            u32 save_data = get_save_data(r0_2, r1, r2, r3);
+            u32 r6_1 = save_data + 0x292a4u;
             u32 r0_4 = is_designated_villager(r6_1, r4_1);
-            if (r0_4 != 0 && *gptr<u8>(r6_1 + 0x1739fu) < 3u) {  // (from the original)
+            if (r0_4 != 0 && *gptr<u8>(r6_1 + 0x1739fu) < 3u) {
                 r0 = 0u;
             } else {
                 r0_5 = SaveVillager__has_flag_2510_bit0(r4_1);
@@ -767,35 +765,35 @@ u32 NpcTalk__days_since_moved_in(gptr<NpcTalk> npc_talk, u32 r1, u32 r2, u32 r3)
                     r0 = 1u;
                 }
             }
-            r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);  // (from the original)
+            r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);
             r1_3 = u32(s8(r0_6->byte_0)) + r5;
             *gptr<u32>(r7) = r1_3;
             *gptr<u32>(r8) = u32(s8(r0_6->byte_1)) + r5;
             guest::cpu()->r[1] = r1_3;
             return 1u;
 L_63cdc8:;
-            u32 now = game_time_now(r0_5);
-            u32 r0_9 = days_since_date(r4_1 + 0x250au, now, 1u);  // (from the original)
+            u32 now_2 = game_time_now(r0_5);
+            u32 r0_9 = days_since_date(r4_1 + 0x250au, now_2, 1u);
             if (s32(r0_9) < 7) {
                 r0 = 2u;
-                r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);  // (from the original)
+                r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);
                 r1_3 = u32(s8(r0_6->byte_0)) + r5;
                 *gptr<u32>(r7) = r1_3;
                 *gptr<u32>(r8) = u32(s8(r0_6->byte_1)) + r5;
                 guest::cpu()->r[1] = r1_3;
                 return 1u;
             }
-            if (s32(r0_9) < 0xe) {  // (from the original)
+            if (s32(r0_9) < 0xe) {
                 r0 = 3u;
-                r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);  // (from the original)
+                r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);
                 r1_3 = u32(s8(r0_6->byte_0)) + r5;
                 *gptr<u32>(r7) = r1_3;
                 *gptr<u32>(r8) = u32(s8(r0_6->byte_1)) + r5;
                 guest::cpu()->r[1] = r1_3;
                 return 1u;
             }
-            r0 = s32(r0_9) < 0x1e ? 4u : 5u;  // (from the original)
-            r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);  // (from the original)
+            r0 = s32(r0_9) < 0x1e ? 4u : 5u;
+            r0_6 = gptr<Local_0063cd2c_r0_6>((r0 << 1) + 0x841a0du);
             r1_3 = u32(s8(r0_6->byte_0)) + r5;
             *gptr<u32>(r7) = r1_3;
             *gptr<u32>(r8) = u32(s8(r0_6->byte_1)) + r5;
@@ -842,23 +840,23 @@ u32 NpcTalk__give_request_reward(u32 npc_talk, u32 r1, u32 r2) {
     u32 r5_1 = 0u;
     u32 r0_1 = RecordHolder__first_id(r2, r1, r2, guest::cpu()->r[3]);
     r1 = guest::cpu()->r[1];
-    if (r0_1 == 0x60u) {  // (from the original)
+    if (r0_1 == 0x60u) {
         u32 r0_2 = handle_value(r2, r1);
         r1 = guest::cpu()->r[1];
         if (r0_2 != 1u) {
             if (r0_2 == 2u) {
-                if (*gptr<u8>(npc_talk + 0x272u) != 2u) {  // (from the original)
+                if (*gptr<u8>(npc_talk + 0x272u) != 2u) {
                     goto L_63d410;
                 }
                 goto L_63d3e0;
             }
             if (r0_2 == 3u) {
                 r0_3 = player_state_block_address;
-                r5_2 = *gptr<u32>(r0_3 + 0x234u);  // (from the original)
+                r5_2 = *gptr<u32>(r0_3 + 0x234u);
                 if (r5_2 == 0) {
                     goto L_63d418;
                 }
-                r0_3 = Pockets__find_empty_slot(r5_2 + 0x6bd0u, r1);  // (from the original)
+                r0_3 = Pockets__find_empty_slot(r5_2 + 0x6bd0u, r1);
                 r1 = guest::cpu()->r[1];
                 if (s32(r0_3) < 0) {
                     goto L_63d418;
@@ -871,7 +869,7 @@ u32 NpcTalk__give_request_reward(u32 npc_talk, u32 r1, u32 r2) {
             }
             goto L_63d46c;
         }
-        if (*gptr<u8>(npc_talk + 0x272u) != 0) {  // (from the original)
+        if (*gptr<u8>(npc_talk + 0x272u) != 0) {
             goto L_63d410;
         }
         goto L_63d3e0;
@@ -887,16 +885,16 @@ L_63d418:;
         r4_1->word_0 = 1;
         r0_5 = get_data_base(r0_3, r1);
         r0_6 = slot_records_of(r0_5);
-        r1_2 = *gptr<u8>(npc_talk + 0x270u);  // (from the original)
-        r0_7 = r0_6 + 0x1744cu;  // (from the original)
+        r1_2 = *gptr<u8>(npc_talk + 0x270u);
+        r0_7 = r0_6 + 0x1744cu;
         villager_request = block_address_of_index_005bb2a0(r0_7, r1_2);
-        VillagerRequest__send_letter(villager_request, r5_2 + 0x55a6u);  // (from the original)
-        Player__counter(0xfu, 1u);  // (from the original)
-        add_to_current_player_counter(0x16u, 1u);  // (from the original)
+        VillagerRequest__send_letter(villager_request, r5_2 + 0x55a6u);
+        Player__counter(0xfu, 1u);
+        add_to_current_player_counter(0x16u, 1u);
         r1 = guest::cpu()->r[1];
         return 1u;
 L_63d46c:;
-        u32 r0_9 = *gptr<u8>(npc_talk + 0x274u);  // (from the original)
+        u32 r0_9 = *gptr<u8>(npc_talk + 0x274u);
         r5_1 = 1u;
         if (r0_9 != 0) {
             r0_9 = 1u;
@@ -923,21 +921,21 @@ struct __attribute__((packed)) NpcTalk {
 GUEST_OFFSET(NpcTalk, half_270, 0x270);
 GUEST_OFFSET(NpcTalk, byte_274, 0x274);
 
-struct __attribute__((packed)) Object_0063da4c_2 {
+struct __attribute__((packed)) NpcTalkPickRandomItemArg2 {
     u8 byte_0;
 };
-GUEST_OFFSET(Object_0063da4c_2, byte_0, 0x0);
+GUEST_OFFSET(NpcTalkPickRandomItemArg2, byte_0, 0x0);
 
 inline constexpr guest::Function<0x00116ebf, u32(u32, u32, u32, u32)> BitCount__init;
-inline constexpr guest::Function<0x002390f8, u32(u32, u32, u32)> script__WordFix_33u___WordFix_002390f8;
+inline constexpr guest::Function<0x002390f8, u32(u32, u32, u32)> ShopNpcTalkRecept__set_word;
 inline constexpr guest::Function<0x002fcbb0, u32(u32, u32)> construct_item;
 inline constexpr guest::Function<0x002fe419, u32(u32)> pick_random_set_bit;
 
-void NpcTalk__pick_random_item(gptr<NpcTalk> npc_talk, u32 r1, gptr<Object_0063da4c_2> arg2) {
+void NpcTalk__pick_random_item(gptr<NpcTalk> npc_talk, u32 r1, gptr<NpcTalkPickRandomItemArg2> arg2) {
     guest::StackFrame frame(0x14);  // the original's stack frame
     u32 bits = arg2.addr();
-    u32 r4_1 = npc_talk.addr() + 0x270u;  // (from the original)
-    npc_talk->half_270 = 0x7ffe;  // (from the original)
+    u32 r4_1 = npc_talk.addr() + 0x270u;
+    npc_talk->half_270 = 0x7ffe;
     npc_talk->byte_274 = u8(r1);
     if (r1 == 0 || r1 != 1u && r1 != 2u) {
         guest::cpu()->r[1] = r1;
@@ -957,11 +955,11 @@ void NpcTalk__pick_random_item(gptr<NpcTalk> npc_talk, u32 r1, gptr<Object_0063d
     if (r0_3 >= 5u) {
         return;
     }
-    u32 r1_3 = gptr<u16>(0x841980u)[r0_3];  // (from the original)
-    u32 r0_4 = frame.at(0xc).addr();  // (from the original)
+    u32 r1_3 = gptr<u16>(0x841980u)[r0_3];
+    u32 r0_4 = frame.at(0xc).addr();
     npc_talk->half_270 = u16(r1_3);
     construct_item(r0_4, r1_3);
-    script__WordFix_33u___WordFix_002390f8(npc_talk.addr(), r0_4, 0u);
+    ShopNpcTalkRecept__set_word(npc_talk.addr(), r0_4, 0u);
 }
 
 }  // namespace d_0063da4c

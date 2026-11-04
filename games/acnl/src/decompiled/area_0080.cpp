@@ -1,6 +1,7 @@
 // Functions decompiled by tools/decomp (docs/decomp.md), each proved equal to the recompiled original (prove-cpp). The
 // names come from games/acnl/names (tools/decomp/names.py); the others are generated (d_<address>::f_<address>,
-// Object_<address>_<argument>, word_<offset>) and still to be chosen.
+// Object_<address>_<argument>, word_<offset>) and still to be chosen. Hexadecimal constants are the original's
+// (addresses, offsets, sizes and ids as the game has them).
 #include "guest/guest.hpp"
 #include "recovered/structs.hpp"
 
@@ -22,9 +23,9 @@ void NexTree__recycle_nodes_800304(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_800304(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_800304(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -48,9 +49,9 @@ void NexTree__recycle_nodes_800e5c(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_800e5c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_800e5c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -74,9 +75,9 @@ void NexTree__recycle_nodes_801604(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_801604(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_801604(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -100,9 +101,9 @@ void NexTree__recycle_nodes_802148(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_802148(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_802148(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -126,9 +127,9 @@ void NexTree__recycle_nodes_802e2c(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_802e2c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_802e2c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -149,26 +150,26 @@ struct __attribute__((packed)) NexTree {
 };
 GUEST_OFFSET(NexTree, word_10, 0x10);
 
-struct __attribute__((packed)) Object_00803244_1 {
+struct __attribute__((packed)) NexTreeAssignArg1 {
     u8 unknown_0[0x10];  // (not used here)
     u32 word_10;
 };
-GUEST_OFFSET(Object_00803244_1, word_10, 0x10);
+GUEST_OFFSET(NexTreeAssignArg1, word_10, 0x10);
 
 inline constexpr guest::Function<0x00802560, u32(u32, u32, u32, u32)> NexTree__copy_root;
 inline constexpr guest::Function<0x00802ccc, u32(u32, u32, u32)> nn__nex___DDL_DataStoreRatingInfo___DDL_DataStoreRatingInfo_00802ccc;
 
-struct __attribute__((packed)) Frame_00803244 {
+struct __attribute__((packed)) NexTreeAssignFrame {
     u32 word_0;
     u32 word_4;
     u8 unknown_8[0x4];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_00803244, word_0, 0x0);
-GUEST_OFFSET(Frame_00803244, word_4, 0x4);
-GUEST_SIZE(Frame_00803244, 0xc);
+GUEST_OFFSET(NexTreeAssignFrame, word_0, 0x0);
+GUEST_OFFSET(NexTreeAssignFrame, word_4, 0x4);
+GUEST_SIZE(NexTreeAssignFrame, 0xc);
 
-void NexTree__assign(gptr<NexTree> nex_tree, gptr<Object_00803244_1> arg1) {
-    guest::StackFrameOf<Frame_00803244> frame;  // the original's stack frame
+void NexTree__assign(gptr<NexTree> nex_tree, gptr<NexTreeAssignArg1> arg1) {
+    guest::StackFrameOf<NexTreeAssignFrame> frame;  // the original's stack frame
     u32 r0 = nex_tree.addr();
     u32 r1 = arg1.addr();
     u32 r5 = r1;
@@ -185,8 +186,8 @@ void NexTree__assign(gptr<NexTree> nex_tree, gptr<Object_00803244_1> arg1) {
     r1 = nex_tree->word_10;
     if (r0_3 == 0) {
         *gptr<u32>(r1 + 8u) = r1;
-        u32 r0_4 = *gptr<u32>(r4 + 0x10u);  // (from the original)
-        *gptr<u32>(r0_4 + 0xcu) = r0_4;  // (from the original)
+        u32 r0_4 = *gptr<u32>(r4 + 0x10u);
+        *gptr<u32>(r0_4 + 0xcu) = r0_4;
     } else {
         u32 r2 = *gptr<u32>(r0_3 + 8u);
         if (r2 != 0) {
@@ -197,19 +198,19 @@ void NexTree__assign(gptr<NexTree> nex_tree, gptr<Object_00803244_1> arg1) {
             } while (r2 != 0);
         }
         *gptr<u32>(r1 + 8u) = r0_3;
-        r2 = *gptr<u32>(r4 + 0x10u);  // (from the original)
+        r2 = *gptr<u32>(r4 + 0x10u);
         u32 r0_5 = *gptr<u32>(r2 + 4u);
-        r1 = *gptr<u32>(r0_5 + 0xcu);  // (from the original)
+        r1 = *gptr<u32>(r0_5 + 0xcu);
         if (r1 != 0) {
             do {
                 r0_5 = r1;
-                r1 = *gptr<u32>(r1 + 0xcu);  // (from the original)
+                r1 = *gptr<u32>(r1 + 0xcu);
                 guest::preempt();
             } while (r1 != 0);
         }
-        *gptr<u32>(r2 + 0xcu) = r0_5;  // (from the original)
+        *gptr<u32>(r2 + 0xcu) = r0_5;
     }
-    *gptr<u32>(r4 + 0x14u) = *gptr<u32>(r5 + 0x14u);  // (from the original)
+    *gptr<u32>(r4 + 0x14u) = *gptr<u32>(r5 + 0x14u);
 }
 
 }  // namespace d_00803244
@@ -229,9 +230,9 @@ void NexTree__recycle_nodes_803a80(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_803a80(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_803a80(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -255,12 +256,12 @@ void NexTree__recycle_nodes_destroy_value(u32 nex_tree, u32 r1) {
     u32 r6 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_destroy_value(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_destroy_value(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r1_2 = *gptr<u32>(r6 + 4u);
-        u32 r0_1 = r4 + 0x10u;  // (from the original)
+        u32 r0_1 = r4 + 0x10u;
         u32 r5_1 = r4;
         r4 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
+        *gptr<u32>(r5_1 + 0xcu) = r1_2;
         NexList__clear_nodes(r0_1 + 4u, r1_2);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
@@ -284,9 +285,9 @@ void NexTree__recycle_nodes_80561c(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_80561c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_80561c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -310,9 +311,9 @@ void NexTree__recycle_nodes_806030(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_806030(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_806030(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -336,9 +337,9 @@ void NexTree__recycle_nodes_806b44(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_806b44(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_806b44(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -362,9 +363,9 @@ void NexTree__recycle_nodes_807658(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_807658(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_807658(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -388,9 +389,9 @@ void NexTree__recycle_nodes_80806c(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_80806c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_80806c(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -414,13 +415,13 @@ void NexTree__recycle_nodes_destroy_url(u32 nex_tree, u32 r1) {
     u32 r6 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_destroy_url(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_destroy_url(r6, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         u32 r1_2 = *gptr<u32>(r6 + 4u);
-        u32 r0_1 = r4 + 0x10u;  // (from the original)
+        u32 r0_1 = r4 + 0x10u;
         u32 r5_1 = r4;
         r4 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r5_1 + 0xcu) = r1_2;  // (from the original)
-        nn__nex__StationURL__virtual_0(r0_1 + 0x10u, r1_2);  // (from the original)
+        *gptr<u32>(r5_1 + 0xcu) = r1_2;
+        nn__nex__StationURL__virtual_0(r0_1 + 0x10u, r1_2);
         *gptr<u32>(r6 + 4u) = r5_1;
         guest::preempt();
     } while (r4 != 0);
@@ -443,9 +444,9 @@ void NexTree__recycle_nodes_809898(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_809898(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_809898(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -469,9 +470,9 @@ void NexTree__recycle_nodes_80a3ec(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_80a3ec(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_80a3ec(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -495,9 +496,9 @@ void NexTree__recycle_nodes_80aa88(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_80aa88(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_80aa88(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -521,9 +522,9 @@ void NexTree__recycle_nodes_80b4a0(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_80b4a0(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_80b4a0(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -547,9 +548,9 @@ void NexTree__recycle_nodes_80bfc4(u32 nex_tree, u32 r1) {
     u32 r5 = nex_tree;
     u32 r4 = r1;
     do {
-        call_NexTree__recycle_nodes_80bfc4(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+        call_NexTree__recycle_nodes_80bfc4(r5, *gptr<u32>(r4 + 0xcu), guest::cpu()->r[2], guest::cpu()->r[3]);
         r0_1 = *gptr<u32>(r4 + 8u);
-        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);  // (from the original)
+        *gptr<u32>(r4 + 0xcu) = *gptr<u32>(r5 + 4u);
         *gptr<u32>(r5 + 4u) = r4;
         r4 = r0_1;
         guest::preempt();
@@ -633,7 +634,7 @@ inline constexpr guest::Function<0x00748284, u32(u32, u32)> construct_grid_rect_
 inline constexpr guest::Function<0x0075291c, u32(u32, u32, u32, u32)> GridMap__large_cell_at;
 inline constexpr guest::Function<0x0075d608, u32(u32, u32, u32, u32)> GridCellLarge__terrain_at;
 
-struct __attribute__((packed)) Frame_0080cbac {
+struct __attribute__((packed)) GridMapApplyTerrainInRectFrame {
     u8 byte_0;
     u8 byte_1;
     u8 byte_2;
@@ -647,73 +648,73 @@ struct __attribute__((packed)) Frame_0080cbac {
     u32 word_50;
     u8 unknown_54[0x14];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_0080cbac, byte_0, 0x0);
-GUEST_OFFSET(Frame_0080cbac, byte_1, 0x1);
-GUEST_OFFSET(Frame_0080cbac, byte_2, 0x2);
-GUEST_OFFSET(Frame_0080cbac, byte_3, 0x3);
-GUEST_OFFSET(Frame_0080cbac, byte_20, 0x20);
-GUEST_OFFSET(Frame_0080cbac, byte_21, 0x21);
-GUEST_OFFSET(Frame_0080cbac, byte_22, 0x22);
-GUEST_OFFSET(Frame_0080cbac, byte_23, 0x23);
-GUEST_OFFSET(Frame_0080cbac, word_50, 0x50);
-GUEST_SIZE(Frame_0080cbac, 0x68);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_0, 0x0);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_1, 0x1);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_2, 0x2);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_3, 0x3);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_20, 0x20);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_21, 0x21);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_22, 0x22);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, byte_23, 0x23);
+GUEST_OFFSET(GridMapApplyTerrainInRectFrame, word_50, 0x50);
+GUEST_SIZE(GridMapApplyTerrainInRectFrame, 0x68);
 
 u32 GridMap__apply_terrain_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
-    guest::StackFrameOf<Frame_0080cbac> frame;  // the original's stack frame
-    u32 r4 = guest::cpu()->r[4];
+    guest::StackFrameOf<GridMapApplyTerrainInRectFrame> frame;  // the original's stack frame
+    u32 i = guest::cpu()->r[4];
     u32 r5 = guest::cpu()->r[5];
     u32 r6 = guest::cpu()->r[6];
     u32 r7 = guest::cpu()->r[7];
     u32 r14 = guest::cpu()->r[14];
     u32 r0_15 = 0;
-    gptr<Local_0080cbac_ea_1> ea_1 = gptr<Local_0080cbac_ea_1>(frame.at(0x48).addr());  // (from the original)
+    gptr<Local_0080cbac_ea_1> ea_1 = gptr<Local_0080cbac_ea_1>(frame.at(0x48).addr());
     ea_1->grid_map = grid_map;
     ea_1->word_4 = r1;
     ea_1->word_8 = r2;
-    ea_1->word_c = r4;
+    ea_1->word_c = i;
     ea_1->word_10 = r5;
     ea_1->word_14 = r6;
     ea_1->word_18 = r7;
     ea_1->word_1c = r14;
-    make_end_grid_rect_iterator(frame.at(0x10).addr(), grid_map, r2, r3);  // (from the original)
-    construct_grid_rect_iterator(frame.at(0x30).addr(), grid_map);  // (from the original)
-    u32 r0_4 = key_records_differ(frame.at(0x30).addr(), frame.at(0x10).addr());  // (from the original)
+    make_end_grid_rect_iterator(frame.at(0x10).addr(), grid_map, r2, r3);
+    construct_grid_rect_iterator(frame.at(0x30).addr(), grid_map);
+    u32 r0_4 = key_records_differ(frame.at(0x30).addr(), frame.at(0x10).addr());
     r1 = guest::cpu()->r[1];
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
     if (r0_4 != 0) {
         r7 = frame.at(0).addr();
         do {
-            r5 = frame.at(0x4c).addr();  // (from the original)
-            u32 tile = frame.at(0x38).addr();  // (from the original)
+            r5 = frame.at(0x4c).addr();
+            u32 tile = frame.at(0x38).addr();
             if (frame->word_50 != 0) {
                 block_of_cell(frame.at(8).addr(), tile, r2, r3);
                 gptr<Local_0080cbac_r3_3> r3_3 = gptr<Local_0080cbac_r3_3>(frame.at(8).addr());
-                u32 large_cell_2 = GridMap__large_cell_at(frame->word_50, r3_3->word_0, r3_3->word_4, r3_3.addr());
+                u32 large_cell = GridMap__large_cell_at(frame->word_50, r3_3->word_0, r3_3->word_4, r3_3.addr());
                 r1 = guest::cpu()->r[1];
                 r2 = guest::cpu()->r[2];
                 r3 = guest::cpu()->r[3];
-                if (large_cell_2 != 0) {
-                    GridPoint__set_tile_in_block(frame.at(0x28).addr(), tile, r2, r3);  // (from the original)
-                    gptr<Local_0080cbac_r3_4> r3_4 = gptr<Local_0080cbac_r3_4>(frame.at(0x28).addr());  // (from the original)
-                    u32 terrain_2 = GridCellLarge__terrain_at(large_cell_2, r3_4->word_0, r3_4->word_4, r3_4.addr());
-                    terrain_record(frame.at(0x20).addr(), terrain_2);  // (from the original)
+                if (large_cell != 0) {
+                    GridPoint__set_tile_in_block(frame.at(0x28).addr(), tile, r2, r3);
+                    gptr<Local_0080cbac_r3_4> r3_4 = gptr<Local_0080cbac_r3_4>(frame.at(0x28).addr());
+                    u32 terrain = GridCellLarge__terrain_at(large_cell, r3_4->word_0, r3_4->word_4, r3_4.addr());
+                    terrain_record(frame.at(0x20).addr(), terrain);
                     r1 = guest::cpu()->r[1];
                     r2 = guest::cpu()->r[2];
                     r3 = guest::cpu()->r[3];
-                    r4 = 0u;
+                    i = 0u;
                     frame->byte_0 = frame->byte_20;
                     frame->byte_1 = frame->byte_22;
                     frame->byte_2 = frame->byte_21;
                     frame->byte_3 = frame->byte_23;
                     do {
-                        u32 r0_11 = *gptr<u8>(r7 + r4);
+                        u32 r0_11 = *gptr<u8>(r7 + i);
                         u32 r0_12 = byte_95d91e(r0_11, r1, r2, r3);
                         r2 = guest::cpu()->r[2];
                         r3 = guest::cpu()->r[3];
                         r1 = *gptr<u8>(r5);
                         if (r1 == r0_12) {
-                            gptr<Local_0080cbac_ea_2> ea_2 = gptr<Local_0080cbac_ea_2>(frame.at(0x54).addr());  // (from the original)
+                            gptr<Local_0080cbac_ea_2> ea_2 = gptr<Local_0080cbac_ea_2>(frame.at(0x54).addr());
                             u32 r4_1 = ea_2->word_0;
                             u32 r5_1 = ea_2->word_4;
                             u32 r6_2 = ea_2->word_8;
@@ -725,20 +726,20 @@ u32 GridMap__apply_terrain_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
                             guest::cpu()->r[7] = r7_1;
                             return 1u;
                         }
-                        r4 += 1u;
+                        i += 1u;
                         guest::preempt();
-                    } while (r4 < 4u);
+                    } while (i < 4u);
                 }
             }
-            WrappingCursor__advance(frame.at(0x30).addr(), r1, r2, r3);  // (from the original)
-            r0_15 = key_records_differ(frame.at(0x30).addr(), frame.at(0x10).addr());  // (from the original)
+            WrappingCursor__advance(frame.at(0x30).addr(), r1, r2, r3);
+            r0_15 = key_records_differ(frame.at(0x30).addr(), frame.at(0x10).addr());
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
             guest::preempt();
         } while (r0_15 != 0);
     }
-    gptr<Local_0080cbac_ea_3> ea_3 = gptr<Local_0080cbac_ea_3>(frame.at(0x54).addr());  // (from the original)
+    gptr<Local_0080cbac_ea_3> ea_3 = gptr<Local_0080cbac_ea_3>(frame.at(0x54).addr());
     u32 r4_2 = ea_3->word_0;
     u32 r5_2 = ea_3->word_4;
     u32 r6_3 = ea_3->word_8;
@@ -843,7 +844,7 @@ inline constexpr guest::Function<0x007481ec, u32(u32, u32)> key_records_differ;
 inline constexpr guest::Function<0x0074824c, u32(u32, u32, u32, u32)> make_end_grid_rect_iterator;
 inline constexpr guest::Function<0x00748284, u32(u32, u32)> construct_grid_rect_iterator;
 
-struct __attribute__((packed)) Frame_0080d3cc {
+struct __attribute__((packed)) GridMapPlaceLayoutItemsInRectFrame {
     u32 word_0;
     u8 unknown_4[0x630];  // (not read or written by name)
     u32 cell;
@@ -854,17 +855,17 @@ struct __attribute__((packed)) Frame_0080d3cc {
     u32 word_690;
     u32 word_694;
 };
-GUEST_OFFSET(Frame_0080d3cc, word_0, 0x0);
-GUEST_OFFSET(Frame_0080d3cc, cell, 0x634);
-GUEST_OFFSET(Frame_0080d3cc, word_684, 0x684);
-GUEST_OFFSET(Frame_0080d3cc, word_688, 0x688);
-GUEST_OFFSET(Frame_0080d3cc, word_690, 0x690);
-GUEST_OFFSET(Frame_0080d3cc, word_694, 0x694);
-GUEST_SIZE(Frame_0080d3cc, 0x698);
+GUEST_OFFSET(GridMapPlaceLayoutItemsInRectFrame, word_0, 0x0);
+GUEST_OFFSET(GridMapPlaceLayoutItemsInRectFrame, cell, 0x634);
+GUEST_OFFSET(GridMapPlaceLayoutItemsInRectFrame, word_684, 0x684);
+GUEST_OFFSET(GridMapPlaceLayoutItemsInRectFrame, word_688, 0x688);
+GUEST_OFFSET(GridMapPlaceLayoutItemsInRectFrame, word_690, 0x690);
+GUEST_OFFSET(GridMapPlaceLayoutItemsInRectFrame, word_694, 0x694);
+GUEST_SIZE(GridMapPlaceLayoutItemsInRectFrame, 0x698);
 
 u32 GridMap__place_layout_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
-    guest::StackFrameOf<Frame_0080d3cc> frame;  // the original's stack frame
-    u32 r4 = guest::cpu()->r[4];
+    guest::StackFrameOf<GridMapPlaceLayoutItemsInRectFrame> frame;  // the original's stack frame
+    u32 i = guest::cpu()->r[4];
     u32 r5 = guest::cpu()->r[5];
     u32 r6 = guest::cpu()->r[6];
     u32 r7 = guest::cpu()->r[7];
@@ -874,14 +875,14 @@ u32 GridMap__place_layout_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
     u32 r11 = guest::cpu()->r[11];
     u32 r12 = guest::cpu()->r[12];
     u32 r14 = guest::cpu()->r[14];
-    u32 r0_11 = 0;
-    gptr<Local_0080d3cc_ea_1> ea_1 = gptr<Local_0080d3cc_ea_1>(frame.at(0x688).addr());  // (from the original)
+    u32 r0_10 = 0;
+    gptr<Local_0080d3cc_ea_1> ea_1 = gptr<Local_0080d3cc_ea_1>(frame.at(0x688).addr());
     ea_1->grid_map = grid_map;
     ea_1->word_4 = r1;
     ea_1->word_8 = r2;
     ea_1->word_c = r3;
-    gptr<Local_0080d3cc_ea_2> ea_2 = gptr<Local_0080d3cc_ea_2>(frame.at(0x660).addr());  // (from the original)
-    ea_2->word_0 = r4;
+    gptr<Local_0080d3cc_ea_2> ea_2 = gptr<Local_0080d3cc_ea_2>(frame.at(0x660).addr());
+    ea_2->word_0 = i;
     ea_2->word_4 = r5;
     ea_2->word_8 = r6;
     ea_2->word_c = r7;
@@ -891,70 +892,70 @@ u32 GridMap__place_layout_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
     ea_2->word_1c = r11;
     ea_2->word_20 = r12;
     ea_2->word_24 = r14;
-    u32 r5_1 = frame.at(0x638).addr();  // (from the original)
+    u32 r5_1 = frame.at(0x638).addr();
     make_end_grid_rect_iterator(r5_1, r1, r2, r3);
-    u32 r4_1 = frame.at(0x610).addr();  // (from the original)
+    u32 r4_1 = frame.at(0x610).addr();
     construct_grid_rect_iterator(r4_1, r1);
     u32 r0_1 = key_records_differ(r4_1, r5_1);
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
     if (r0_1 != 0) {
-        r6 = frame.at(0x690).addr();  // (from the original)
-        r10 = frame.at(0x624).addr();  // (from the original)
+        r6 = frame.at(0x690).addr();
+        r10 = frame.at(0x624).addr();
         do {
-            gptr<Local_0080d3cc_r0_2> r0_2 = gptr<Local_0080d3cc_r0_2>(frame.at(0x618).addr());  // (from the original)
+            gptr<Local_0080d3cc_r0_2> r0_2 = gptr<Local_0080d3cc_r0_2>(frame.at(0x618).addr());
             u32 r1_1 = frame->word_690;
             if (r1_1 != 0) {
-                u32 cell_2 = CellGrid__cell_at(r1_1, r0_2->word_0, r0_2->word_4, r1_1);
-                frame->cell = cell_2;
+                u32 cell = CellGrid__cell_at(r1_1, r0_2->word_0, r0_2->word_4, r1_1);
+                frame->cell = cell;
                 u32 r0_5 = field_nonzero_712600(frame->word_694);
                 r1_1 = guest::cpu()->r[1];
                 r2 = guest::cpu()->r[2];
                 r3 = guest::cpu()->r[3];
                 if (r0_5 != 0) {
                     u32 r3_4 = *gptr<u16>(frame->cell);
-                    u32 r0_7 = ItemLayoutTable__read_entries(frame->word_694, r6 + 8u, 0x600u, r3_4);  // (from the original)
+                    u32 r0_7 = ItemLayoutTable__read_entries(frame->word_694, r6 + 8u, 0x600u, r3_4);
                     r1_1 = guest::cpu()->r[1];
                     r2 = guest::cpu()->r[2];
                     r3 = guest::cpu()->r[3];
                     r7 = r0_7;
-                    r4 = 0u;
+                    i = 0u;
                     if (r0_7 >= 0u && r0_7 != 0) {
                         do {
-                            gptr<Local_0080d3cc_r5_2> r5_2 = gptr<Local_0080d3cc_r5_2>(r6 + (r4 + (r4 << 1) << 1));
+                            gptr<Local_0080d3cc_r5_2> r5_2 = gptr<Local_0080d3cc_r5_2>(r6 + i * 6u);
                             u32 r8_1 = r5_2->half_8;
                             u32 r9_1 = r5_2->byte_c;
                             u32 r11_1 = r5_2->byte_d;
                             construct_item(r10, r8_1, r2, r3);
-                            u32 r0_8 = item_has_valid_data(r10);
-                            if (r0_8 != 0) {
-                                u32 r5_3 = u32(r5_2->half_a) >> 0xe;  // (from the original)
-                                u32 r0_9 = construct_item(frame.at(0x64c).addr(), r8_1, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
-                                copy_item_with_top_bits(r10, r0_9, r5_3);
+                            if (item_has_valid_data(r10) != 0) {
+                                u32 r8_2 = frame.at(0x64c).addr();
+                                u32 r5_3 = u32(r5_2->half_a) >> 0xe;
+                                construct_item(r8_2, r8_1, guest::cpu()->r[2], guest::cpu()->r[3]);
+                                copy_item_with_top_bits(r10, r8_2, r5_3);
                             }
                             frame->word_0 = 0;
                             GridCellSmall__place_item(frame->cell, r10, r9_1, r11_1);
                             r1_1 = guest::cpu()->r[1];
                             r2 = guest::cpu()->r[2];
                             r3 = guest::cpu()->r[3];
-                            r4 += 1u;
+                            i += 1u;
                             guest::preempt();
-                        } while (r4 < r7);
+                        } while (i < r7);
                     }
                 }
             }
-            u32 r4_2 = frame.at(0x610).addr();  // (from the original)
+            u32 r4_2 = frame.at(0x610).addr();
             WrappingCursor__advance(r4_2, r1_1, r2, r3);
-            r0_11 = key_records_differ(r4_2, frame.at(0x638).addr());  // (from the original)
+            r0_10 = key_records_differ(r4_2, frame.at(0x638).addr());
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
             guest::preempt();
-        } while (r0_11 != 0);
+        } while (r0_10 != 0);
     }
     u32 r4_3 = frame.at(8).addr();
-    copy_aligned_bytes(r4_3, frame.at(0x690).addr(), 0x608u, r3);  // (from the original)
-    u32 r0_13 = copy_aligned_bytes(frame->word_688, r4_3, 0x608u, guest::cpu()->r[3]);  // (from the original)
-    gptr<Local_0080d3cc_ea_3> ea_3 = gptr<Local_0080d3cc_ea_3>(frame.at(0x660).addr());  // (from the original)
+    copy_aligned_bytes(r4_3, frame.at(0x690).addr(), 0x608u, r3);
+    u32 r0_12 = copy_aligned_bytes(frame->word_688, r4_3, 0x608u, guest::cpu()->r[3]);
+    gptr<Local_0080d3cc_ea_3> ea_3 = gptr<Local_0080d3cc_ea_3>(frame.at(0x660).addr());
     u32 r4_4 = ea_3->word_0;
     u32 r5_4 = ea_3->word_4;
     u32 r6_1 = ea_3->word_8;
@@ -972,7 +973,7 @@ u32 GridMap__place_layout_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
     guest::cpu()->r[9] = r9_2;
     guest::cpu()->r[10] = r10_1;
     guest::cpu()->r[11] = r11_2;
-    return r0_13;
+    return r0_12;
 }
 
 }  // namespace d_0080d3cc
@@ -1003,34 +1004,34 @@ u32 GridMap__load_shared_blocks_in_rect(u32 grid_map, u32 r1, u32 r2) {
     guest::StackFrame frame(0x20);  // the original's stack frame
     u32 r0_12 = 0;
     u32 r5 = r1;
-    make_end_grid_rect_iterator(frame.at(0x10).addr(), grid_map, r2, guest::cpu()->r[3]);  // (from the original)
+    make_end_grid_rect_iterator(frame.at(0x10).addr(), grid_map, r2, guest::cpu()->r[3]);
     construct_grid_rect_iterator(frame.at(0).addr(), grid_map);
-    u32 r0_4 = key_records_differ(frame.at(0).addr(), frame.at(0x10).addr());  // (from the original)
+    u32 r0_4 = key_records_differ(frame.at(0).addr(), frame.at(0x10).addr());
     r1 = guest::cpu()->r[1];
     r2 = guest::cpu()->r[2];
     if (r0_4 != 0) {
         do {
             gptr<Local_0080d59c_r4_1> r4_1 = gptr<Local_0080d59c_r4_1>(frame.at(8).addr());
             if (r5 != 0) {
-                u32 cell_2 = CellGrid__cell_at(r5, r4_1->word_0, r4_1->word_4);
-                u32 large_cell_2 = GridMap__large_cell_at(r5, r4_1->word_0, r4_1->word_4);
+                u32 cell = CellGrid__cell_at(r5, r4_1->word_0, r4_1->word_4);
+                u32 large_cell = GridMap__large_cell_at(r5, r4_1->word_0, r4_1->word_4);
                 r1 = guest::cpu()->r[1];
                 r2 = guest::cpu()->r[2];
-                if (large_cell_2 != 0) {
-                    u32 r0_7 = *gptr<u16>(cell_2);
+                if (large_cell != 0) {
+                    u32 r0_7 = *gptr<u16>(cell);
                     u32 shared_layouts = shared_load_splits(r0_7, r1, r2);
-                    u32 block_2 = SharedLayouts__block_of_id(shared_layouts, r0_7);
+                    u32 block = SharedLayouts__block_of_id(shared_layouts, r0_7);
                     r2 = guest::cpu()->r[2];
-                    r1 = block_2;
-                    if (block_2 != 0) {
-                        load_block_a00(large_cell_2, r1, 0xa00u);  // (from the original)
+                    r1 = block;
+                    if (block != 0) {
+                        load_block_a00(large_cell, r1, 0xa00u);
                         r1 = guest::cpu()->r[1];
                         r2 = guest::cpu()->r[2];
                     }
                 }
             }
             WrappingCursor__advance(frame.at(0).addr(), r1, r2);
-            r0_12 = key_records_differ(frame.at(0).addr(), frame.at(0x10).addr());  // (from the original)
+            r0_12 = key_records_differ(frame.at(0).addr(), frame.at(0x10).addr());
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
             guest::preempt();
@@ -1063,26 +1064,26 @@ inline constexpr guest::Function<0x007481ec, u32(u32, u32)> key_records_differ;
 inline constexpr guest::Function<0x0074824c, u32(u32, u32, u32, u32)> make_end_grid_rect_iterator;
 inline constexpr guest::Function<0x00748284, u32(u32, u32)> construct_grid_rect_iterator;
 
-struct __attribute__((packed)) Frame_0080d68c {
+struct __attribute__((packed)) GridMapClearItemsInRectFrame {
     u32 word_0;
     u8 unknown_4[0xc];  // (not read or written by name)
     u32 word_10;
     u32 word_14;
     u8 unknown_18[0x30];  // (not read or written by name)
 };
-GUEST_OFFSET(Frame_0080d68c, word_0, 0x0);
-GUEST_OFFSET(Frame_0080d68c, word_10, 0x10);
-GUEST_OFFSET(Frame_0080d68c, word_14, 0x14);
-GUEST_SIZE(Frame_0080d68c, 0x48);
+GUEST_OFFSET(GridMapClearItemsInRectFrame, word_0, 0x0);
+GUEST_OFFSET(GridMapClearItemsInRectFrame, word_10, 0x10);
+GUEST_OFFSET(GridMapClearItemsInRectFrame, word_14, 0x14);
+GUEST_SIZE(GridMapClearItemsInRectFrame, 0x48);
 
 u32 GridMap__clear_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
-    guest::StackFrameOf<Frame_0080d68c> frame;  // the original's stack frame
+    guest::StackFrameOf<GridMapClearItemsInRectFrame> frame;  // the original's stack frame
     u32 r0_14 = 0;
     u32 r0_17 = 0;
     u32 r5 = r1;
-    make_end_grid_rect_iterator(frame.at(0x28).addr(), grid_map, r2, r3);  // (from the original)
-    construct_grid_rect_iterator(frame.at(0x18).addr(), grid_map);  // (from the original)
-    u32 r0_4 = key_records_differ(frame.at(0x18).addr(), frame.at(0x28).addr());  // (from the original)
+    make_end_grid_rect_iterator(frame.at(0x28).addr(), grid_map, r2, r3);
+    construct_grid_rect_iterator(frame.at(0x18).addr(), grid_map);
+    u32 r0_4 = key_records_differ(frame.at(0x18).addr(), frame.at(0x28).addr());
     r1 = guest::cpu()->r[1];
     r2 = guest::cpu()->r[2];
     r3 = guest::cpu()->r[3];
@@ -1090,18 +1091,18 @@ u32 GridMap__clear_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
         u32 r8 = 0u;
         u32 r7 = 1u;
         do {
-            gptr<Local_0080d68c_r0_5> r0_5 = gptr<Local_0080d68c_r0_5>(frame.at(0x20).addr());  // (from the original)
+            gptr<Local_0080d68c_r0_5> r0_5 = gptr<Local_0080d68c_r0_5>(frame.at(0x20).addr());
             if (r5 != 0) {
-                u32 cell_2 = CellGrid__cell_at(r5, r0_5->word_0, r0_5->word_4, r3);
+                u32 cell = CellGrid__cell_at(r5, r0_5->word_0, r0_5->word_4, r3);
                 r1 = guest::cpu()->r[1];
                 r2 = guest::cpu()->r[2];
                 r3 = guest::cpu()->r[3];
-                u32 r6 = cell_2;
-                if (cell_2 != 0) {
-                    u32 r0_7 = block_cell_rect(cell_2, r1, r2, r3);
-                    make_end_grid_rect_iterator(frame.at(0x38).addr(), r0_7, guest::cpu()->r[2], guest::cpu()->r[3]);  // (from the original)
+                u32 r6 = cell;
+                if (cell != 0) {
+                    u32 r0_7 = block_cell_rect(cell, r1, r2, r3);
+                    make_end_grid_rect_iterator(frame.at(0x38).addr(), r0_7, guest::cpu()->r[2], guest::cpu()->r[3]);
                     construct_grid_rect_iterator(frame.at(8).addr(), r0_7);
-                    u32 r0_11 = key_records_differ(frame.at(8).addr(), frame.at(0x38).addr());  // (from the original)
+                    u32 r0_11 = key_records_differ(frame.at(8).addr(), frame.at(0x38).addr());
                     r1 = guest::cpu()->r[1];
                     r2 = guest::cpu()->r[2];
                     r3 = guest::cpu()->r[3];
@@ -1116,7 +1117,7 @@ u32 GridMap__clear_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
                             frame->word_0 = r7;
                             GridCellSmall__place_item(r6, empty_item_address, r2_8, r4_2);
                             WrappingCursor__advance(frame.at(8).addr(), guest::cpu()->r[1], guest::cpu()->r[2], guest::cpu()->r[3]);
-                            r0_14 = key_records_differ(frame.at(8).addr(), frame.at(0x38).addr());  // (from the original)
+                            r0_14 = key_records_differ(frame.at(8).addr(), frame.at(0x38).addr());
                             r1 = guest::cpu()->r[1];
                             r2 = guest::cpu()->r[2];
                             r3 = guest::cpu()->r[3];
@@ -1125,8 +1126,8 @@ u32 GridMap__clear_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
                     }
                 }
             }
-            WrappingCursor__advance(frame.at(0x18).addr(), r1, r2, r3);  // (from the original)
-            r0_17 = key_records_differ(frame.at(0x18).addr(), frame.at(0x28).addr());  // (from the original)
+            WrappingCursor__advance(frame.at(0x18).addr(), r1, r2, r3);
+            r0_17 = key_records_differ(frame.at(0x18).addr(), frame.at(0x28).addr());
             r1 = guest::cpu()->r[1];
             r2 = guest::cpu()->r[2];
             r3 = guest::cpu()->r[3];
@@ -1141,14 +1142,15 @@ u32 GridMap__clear_items_in_rect(u32 grid_map, u32 r1, u32 r2, u32 r3) {
 GUEST_EXPORT_FRAMED(0x0080d68c, d_0080d68c::GridMap__clear_items_in_rect, 0x41f0);  // pushes {r4, r5, r6, r7, r8, lr} first, as the original
 
 // f_0080ef60: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
+// Constructs a 32-character fixed string, empty.
 namespace d_0080ef60 {
 
 inline constexpr u32 vtable_pead__FixedSafeString_32_ = 0x00903a40u;
 
 void pead__BufferedSafeStringBase_char___BufferedSafeStringBase_0080ef60(gptr<pead__FixedSafeString_32_> fixed_safe_string) {
-    fixed_safe_string->word_4 = fixed_safe_string.addr() + 0xcu;  // (from the original)
-    fixed_safe_string->word_8 = 0x20;  // (from the original)
-    *gptr<u8>(fixed_safe_string->word_4 + 0x1fu) = 0;  // (from the original)
+    fixed_safe_string->word_4 = fixed_safe_string.addr() + 0xcu;
+    fixed_safe_string->word_8 = 0x20;
+    *gptr<u8>(fixed_safe_string->word_4 + 0x1fu) = 0;
     *gptr<u8>(fixed_safe_string->word_4) = 0;
     fixed_safe_string->vtable = vtable_pead__FixedSafeString_32_;
 }
