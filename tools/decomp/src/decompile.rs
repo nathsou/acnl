@@ -708,4 +708,25 @@ L_8004:
             assert!(!crate::emit::reads_nested(refused), "{}", refused);
         }
     }
+
+    #[test]
+    fn reads_the_address_of_a_field() {
+        // (guest::addr_of(place): a field's guest address, as the hand-written proved overrides write it)
+        let helpers = std::collections::HashSet::new();
+        let file = |body: &str| {
+            format!(
+                "struct __attribute__((packed)) Pair {{\n    u32 first;\n    u16 second[2];\n}};\n\nu32 f_00006000(gptr<Pair> arg0) {{\n{}\n}}\nGUEST_EXPORT(0x00006000, f_00006000);\n",
+                body
+            )
+        };
+        let read = |b: &str| crate::cpp::read(&file(b), &helpers).and_then(|mut f| f.exports.remove(0).function);
+        let f = read("    return guest::addr_of(arg0->second[1]).addr();").unwrap();
+        let ret = f.body.iter().find_map(|s| match s {
+            crate::ast::Stmt::SetCpu(crate::ast::CpuField::R(0), e) => Some(e.clone()),
+            _ => None,
+        });
+        // arg0 + 4 (first) + 2 (one u16)
+        assert!(format!("{:?}", ret).contains("Num(6"), "{:?}", ret);
+        assert!(read("    u32 x = 0u;\n    return guest::addr_of(x).addr();").is_err());
+    }
 }

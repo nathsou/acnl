@@ -525,6 +525,34 @@ recognisable, to be replaced by real ones later:
 - the objects their arguments point to: `Object_<address>_<argument>`, fields `byte_/half_/word_<offset>`;
 - callees: `call_<address>` (`guest::Function`), registers `r0`-`r14`, flags `nf/zf/cf/vf`.
 
+## Proved overrides
+
+A function rewritten by hand can keep the proof: written in the C++ that cpp.rs reads (the drafts' subset, with any
+names), it is proved equal to the decompiled function like a draft, and through it to the original. Such a file lives
+with the hand-written code (`games/acnl/src/player/hold_item.cpp`, `games/acnl/src/map/ground_height.cpp`), says
+"Proved equal to the original" in its opening comment, and replaces the draft at its address (split.py leaves out
+the drafts of addresses another source exports). `tools/decomp/prove_overrides.py` proves every such file again (after
+a change to the decompiler, the analyses or the names): it exits non-zero unless all are proved. A changed copy
+should fail (a constant, a swapped argument): try one after writing an override.
+
+What the subset gives a rewrite: structs with named and typed fields (arrays and nested structs too), the
+repository's structs (the type database: `gptr<SlotObject>` and its fields), named constants (`inline constexpr u32`),
+callees declared with named parameters, `guest::addr_of(frame->field).addr()` for the address of a frame field or any
+field of a file struct, early returns, and comments. What it keeps from the original:
+
+- the stack frame (`guest::StackFrame` / `StackFrameOf<T>` of the original's size: callees' stack use is part of
+  what is proved), and `frame.release()` before a tail call;
+- arguments passed on the stack: the call model has none, so the rewrite writes them to the frame's first words
+  itself, before the call (`frame->position = position;`);
+- the values the original puts in argument registers: a trailing `guest::cpu()->r[k]` (the register passed on as it
+  is) goes with a shorter declaration, since the register then holds the same value; but a value the original
+  writes there can be needed even where the callee's signature does not list the register (r3 in
+  `ground_height_at`; the proof says which), and stays as a named parameter of the declaration;
+- calls kept for their effects even when their result is unused, in the original's order;
+- loops: the proof relates the two programs at loop headers, pairing variables by name and order with the draft's
+  (`verify_cpp`), so a rewrite of a function with loops keeps the draft's declarations in order. Functions without
+  loops can be restructured freely.
+
 ## Plan for the full rewrite (2026-10-31)
 
 Everything mechanical is done by tools; a model is used only for names and short comments. Equivalence is proved,

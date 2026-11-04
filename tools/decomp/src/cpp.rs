@@ -553,6 +553,20 @@ impl<'a> Parser<'a> {
                     let a = Expr::Bin(BinOp::Add, Box::new(Expr::Cpu(CpuField::R(13))), Box::new(Expr::Num(k, Ty::U32)));
                     return Ok(V::R(a, CType::Ptr(Box::new(t))));
                 }
+                // guest::addr_of(place): the guest address of a field (guest/memory.hpp), as a pointer to it
+                if n == "guest" && self.peek_at(1) == Some(&Tok::P("::")) && self.peek_at(2) == Some(&Tok::Id("addr_of".into())) {
+                    self.i += 3;
+                    self.expect("(")?;
+                    let v = self.unary()?;
+                    self.expect(")")?;
+                    return match v {
+                        V::Pl(Place::Mem(a, off, t)) => {
+                            let a = if off == 0 { a } else { Expr::Bin(BinOp::Add, Box::new(a), Box::new(Expr::Num(off, Ty::U32))) };
+                            Ok(V::R(a, CType::Ptr(Box::new(t))))
+                        }
+                        other => Err(format!("guest::addr_of of {:?} (only a field of a file struct)", other)),
+                    };
+                }
                 if n == "guest" && self.peek_at(2) == Some(&Tok::Id("cpu".into())) {
                     self.i += 3;
                     self.expect("(")?;

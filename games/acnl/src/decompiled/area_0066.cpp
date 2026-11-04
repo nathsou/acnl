@@ -452,38 +452,6 @@ void AcPlayer__start_action_at(u32 ac_player, u32 r1, u32 r2, u32 r3) {
 }  // namespace d_00660c10
 GUEST_EXPORT(0x00660c10, d_00660c10::AcPlayer__start_action_at);
 
-// f_00660d14: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
-// Changes the player's state to 0x38 with the value and the flag.
-namespace d_00660d14 {
-
-struct __attribute__((packed)) AcPlayerStartState38Arg1 {
-    u32 word_0;
-};
-GUEST_OFFSET(AcPlayerStartState38Arg1, word_0, 0x0);
-
-struct __attribute__((packed)) Local_00660d14_ea_1 {
-    u32 word_0;
-    u8 byte_4;
-};
-GUEST_OFFSET(Local_00660d14_ea_1, word_0, 0x0);
-GUEST_OFFSET(Local_00660d14_ea_1, byte_4, 0x4);
-
-inline constexpr guest::Function<0x0064d0b8, u32(u32, u32, u32, u32)> AcPlayer_rec__change_state;
-inline constexpr guest::Function<0x00656c20, u32(u32, u32, u32, u32)> state_params_with_8bc;
-
-u32 AcPlayer__start_state_38(u32 ac_player, gptr<AcPlayerStartState38Arg1> arg1, u32 r2, u32 r3) {
-    guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 params = state_params_with_8bc(ac_player, arg1.addr(), r2, r3);
-    gptr<Local_00660d14_ea_1> ea_1 = gptr<Local_00660d14_ea_1>(params + 0xeu);
-    ea_1->word_0 = arg1->word_0;
-    ea_1->byte_4 = u8(r2);
-    frame.release();
-    return AcPlayer_rec__change_state(ac_player, 0x38u, params, 0u);
-}
-
-}  // namespace d_00660d14
-GUEST_EXPORT(0x00660d14, d_00660d14::AcPlayer__start_state_38);
-
 // f_00660d78: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 // Changes the player's state to the item's action at the position.
 namespace d_00660d78 {

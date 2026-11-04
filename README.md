@@ -69,6 +69,10 @@ against the original. To write or change one:
    `GUEST_OFFSET` to check field offsets), and export it at its address with `GUEST_EXPORT`. Functions that are still
    recompiled are called through `guest::Function<address, signature>`.
 
+A function can also be rewritten by hand and stay proved: written in the C++ the decompiler reads back, it is proved
+equal to the original (`tools/decomp/prove_overrides.py`; docs/decomp.md, "Proved overrides"). Examples:
+`games/acnl/src/player/hold_item.cpp` and `games/acnl/src/map/ground_height.cpp`.
+
 Style: braces around every `if`, `for`, `while` and `else` body; no magic numbers (enums, named constants, or a
 comment on the line). Rules that keep rewrites exact: keep the original's order of floating-point operations (the
 build uses `-ffp-contract=off`), reproduce ARM behaviour where C++ differs (`arm.hpp`: shifts by 32 or more,

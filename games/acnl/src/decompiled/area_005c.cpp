@@ -868,30 +868,6 @@ void player_queue_action_1(gptr<PlayerQueueAction1Arg0> arg0, u32 r1_unused, u32
 }  // namespace d_005c1b0c
 GUEST_EXPORT_FRAMED(0x005c1b0c, d_005c1b0c::player_queue_action_1, 0x4010);  // pushes {r4, lr} first, as the original
 
-// f_005c1b6c: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
-// Unless the player is locked: calls 00660d14 on it with the two arguments.
-namespace d_005c1b6c {
-
-inline constexpr guest::Function<0x005c33d0, u32(u32, u32, u32, u32)> look_up_object;
-inline constexpr guest::Function<0x00660d14, u32(u32, u32, u32, u32)> AcPlayer__start_state_38;
-
-u32 player_call_660d14(u32 r0, u32 r1, u32 r2) {
-    guest::StackFrame frame(0x10);  // the original's stack frame
-    u32 object = look_up_object(4u, 0u, r2, guest::cpu()->r[3]);
-    if (object != 0) {
-        if ((u32(*gptr<u8>(object + 0x8c5u)) >> 5u & 1u) != 0) {
-            object = 0u;
-        } else {
-            frame.release();
-            return AcPlayer__start_state_38(object, r0, r1, guest::cpu()->r[3]);
-        }
-    }
-    return object;
-}
-
-}  // namespace d_005c1b6c
-GUEST_EXPORT(0x005c1b6c, d_005c1b6c::player_call_660d14);
-
 // f_005c1bb4: decompiled by tools/decomp, proved equal to the recompiled code (names to choose).
 // Unless the player is locked: queues an action of kind 2 with an item.
 namespace d_005c1bb4 {
